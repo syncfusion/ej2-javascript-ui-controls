@@ -623,4 +623,54 @@ describe('Excel Filter =>', () => {
             gridObj = excelFilter = actionBegin = actionComplete = null;
         });
     });
-});
+    describe('Excel filter test case => ', () => {
+            let gridObj: Grid;
+            let drpdwn: string ='<input id="dropdown" value="1" >'; 
+            let actionComplete: (args: any) => void;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: filterData,
+                        allowFiltering: true,
+                        allowPaging: false,
+                        pageSettings: { currentPage: 1 },
+                        filterSettings: { type: 'Excel' },
+                        columns: [
+                            { field: 'OrderID', visible: true,filter:{operator:"equal" } },
+                            { field: 'CustomerID', headerText: 'CustomerID', filter:{operator:"contains" }},
+                            { field:'Fright',headerText:'Frieght', width:130 , filter:{operator:"equal" }},
+                            { field: 'ShipCountry',  headerText: 'Ship Country', width: 120,filter:{operator:"startswith" } }
+                        ],
+                        actionComplete : actionComplete
+                    }, done);
+                });
+
+                it('action complete', (done: Function) => {
+                        let flag: boolean = true;
+                        actionComplete = (args?: any): void => {
+                            if (flag) {
+                                flag = false;
+                                (gridObj.filterModule as any).filterModule.renderFilterUI((gridObj.columns[1] as any).field,args.filterModel.dlg);
+                                done();
+                            }
+                            done();
+                        };
+                        gridObj.actionComplete = actionComplete;
+                        (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();                
+                    });
+
+                it('comparing operator with default value', (done: Function) => {
+                    expect((gridObj.element.querySelector('.e-xlfl-optrdiv').firstChild.firstChild as any).value).toBe((gridObj.columns[1] as any).filter.operator);
+                    done();
+                });
+
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = drpdwn = getActualProperties = getString = null;
+                actionComplete = null;
+            });
+        });
+
+
+
+    });

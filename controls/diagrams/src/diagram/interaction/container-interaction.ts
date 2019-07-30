@@ -22,7 +22,7 @@ import { LaneModel } from '../objects/node-model';
 import { swimLaneMeasureAndArrange, checkLaneSize, checkPhaseOffset } from '../utility/swim-lane-util';
 import { updatePhaseMaxWidth, updateHeaderMaxWidth, updateConnectorsProperties } from '../utility/swim-lane-util';
 import { considerSwimLanePadding } from '../utility/swim-lane-util';
-import { DiagramAction } from '../enum/enum';
+import { DiagramAction, DiagramConstraints } from '../enum/enum';
 
 /**
  * Interaction for Container
@@ -147,19 +147,21 @@ export function createHelper(diagram: Diagram, obj: Node): Node {
 
 /** @private */
 export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | NodeModel): NodeModel | ConnectorModel {
-    let object: NodeModel | ConnectorModel;
+    let object: NodeModel | ConnectorModel; let container: Canvas;
     let nodes: NodeModel;
     if (diagram.selectedObject.helperObject) {
         nodes = diagram.selectedObject.helperObject;
     } else if (diagram.selectedItems.nodes.length > 0 || diagram.selectedItems.connectors.length > 0) {
         if (obj instanceof Selector && obj.nodes.length + obj.connectors.length === 1) {
             object = (obj.nodes.length > 0) ? obj.nodes[0] : obj.connectors[0];
+            container = diagram.selectedItems.wrapper.children[0] as Canvas;
         } else {
             object = obj as NodeModel;
+            container = diagram.selectedItems.wrapper as Canvas;
         }
         diagram.selectedObject.actualObject = object as NodeModel;
-        let container: Canvas = diagram.selectedItems.wrapper.children[0] as Canvas;
-        if (checkParentAsContainer(diagram, object)) {
+        if (checkParentAsContainer(diagram, object) ||
+            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.connectors.length === 0)) {
             let node: NodeModel = {
                 id: 'helper',
                 rotateAngle: container.rotateAngle,
@@ -210,7 +212,7 @@ export function checkChildNodeInContainer(diagram: Diagram, obj: NodeModel): voi
 }
 
 function removeChildrenInLane(diagram: Diagram, node: NodeModel): void {
-    if ((node as Node).parentId !== '') {
+    if ((node as Node).parentId && (node as Node).parentId !== '') {
         let prevParentNode: Node = (diagram.nameTable[(node as Node).parentId] as Node);
         if (prevParentNode.isLane && prevParentNode.parentId) {
             let swimlane: NodeModel = diagram.nameTable[prevParentNode.parentId];
@@ -236,18 +238,27 @@ function removeChildrenInLane(diagram: Diagram, node: NodeModel): void {
 /**
  * @private
  */
-export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: NodeModel, isUndo?: boolean): void {
+export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: NodeModel, isUndo?: boolean, historyAction?: boolean): void {
     if (!diagram.currentSymbol) {
         diagram.protectPropertyChange(true);
-        let swimlane: NodeModel;
+        let swimlane: NodeModel = diagram.nameTable[(parent as Node).parentId];
         node = diagram.getObject(node.id) || node;
         let child: string | NodeModel = (diagram.nodes.indexOf(node) !== -1) ? node.id : node;
-        if (parent.container.type === 'Canvas') {
+        if (parent.container.type === 'Canvas' && !historyAction) {
             let left: number = (node.wrapper.offsetX - node.wrapper.actualSize.width / 2) -
                 (parent.wrapper.offsetX - parent.wrapper.actualSize.width / 2);
             let top: number = (node.wrapper.offsetY - node.wrapper.actualSize.height / 2) -
                 (parent.wrapper.offsetY - parent.wrapper.actualSize.height / 2);
             node.margin.left = left; node.margin.top = top;
+        } else if (swimlane) {
+            let swimLaneBounds: Rect = swimlane.wrapper.bounds;
+            let parentBounds: Rect = parent.wrapper.bounds;
+            if ((swimlane.shape as SwimLane).orientation === 'Horizontal') {
+                node.margin.left -= parentBounds.x - swimLaneBounds.x;
+            } else {
+                let laneHeaderId: string = (parent as Node).parentId + (swimlane.shape as SwimLane).lanes[0].id + '_0_header';
+                node.margin.top -= parentBounds.y - swimLaneBounds.y - diagram.nameTable[laneHeaderId].wrapper.bounds.height;
+            }
         }
         let container: NodeModel = diagram.nameTable[parent.id];
         if (!container.children) { container.children = []; }
@@ -280,7 +291,7 @@ export function addChildToContainer(diagram: Diagram, parent: NodeModel, node: N
             if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
                 let entry: HistoryEntry = {
                     type: 'ChildCollectionChanged', category: 'Internal',
-                    undoObject: undoObj, redoObject: cloneObject(node)
+                    undoObject: undoObj, redoObject: cloneObject(node), historyAction: historyAction ? 'AddNodeToLane' : undefined
                 };
                 diagram.addHistoryEntry(entry);
             }

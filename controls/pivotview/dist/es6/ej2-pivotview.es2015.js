@@ -105,6 +105,7 @@ class PivotEngine {
         this.selectedHeaders = { selectedHeader: [], values: [] };
         this.rawIndexObject = {};
         this.isEditing = false;
+        /** @hidden */
         this.data = [];
         this.frameHeaderObjectsCollection = false;
         this.headerObjectsCollection = {};
@@ -167,8 +168,11 @@ class PivotEngine {
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
         this.valueContent = [];
-        if (dataSource.dataSource && dataSource.dataSource[0]) {
-            this.fields = Object.keys(dataSource.dataSource[0]);
+        if (!(dataSource.dataSource instanceof DataManager)) {
+            this.data = dataSource.dataSource;
+        }
+        if (this.data && this.data[0]) {
+            this.fields = Object.keys(this.data[0]);
             let keys = this.fields;
             let report = {};
             report[0] = dataSource.rows;
@@ -195,8 +199,7 @@ class PivotEngine {
             this.groups = dataSource.groupSettings ? dataSource.groupSettings : [];
             this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
-            fields = this.getGroupData(dataSource.dataSource);
-            this.data = dataSource.dataSource;
+            fields = this.getGroupData(this.data);
             this.validateFilters(dataSource);
             this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
             this.drilledMembers =
@@ -214,9 +217,9 @@ class PivotEngine {
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-            this.fillFieldMembers(dataSource.dataSource, this.indexMatrix);
+            this.fillFieldMembers(this.data, this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix(dataSource.dataSource);
+            this.valueMatrix = this.generateValueMatrix(this.data);
             this.filterMembers = [];
             let columnLength = this.columns.length - 1;
             this.columnKeys = {};
@@ -1385,7 +1388,7 @@ class PivotEngine {
     generateGridData(dataSource, headerCollection) {
         let keys = this.fields;
         let columns = dataSource.columns ? dataSource.columns : [];
-        let data = dataSource.dataSource;
+        let data = this.data;
         let rows = dataSource.rows ? dataSource.rows : [];
         let filterSettings = dataSource.filterSettings;
         let values = dataSource.values ? dataSource.values : [];
@@ -5061,7 +5064,8 @@ class Render {
         if (args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' ||
             args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' ||
             args.item.id === 'AggMax' || args.item.id === 'AggMoreOption') {
-            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
+            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].id;
+            this.fieldCaption = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
         }
         switch (selected$$1) {
             case 'pdf':
@@ -5136,7 +5140,7 @@ class Render {
                 break;
             case 'AggMoreOption':
                 ele.setAttribute('id', this.field);
-                ele.setAttribute('data-caption', this.field);
+                ele.setAttribute('data-caption', this.fieldCaption);
                 ele.setAttribute('data-field', this.field);
                 ele.setAttribute('data-type', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].aggregateType);
                 ele.setAttribute('data-basefield', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseField);
@@ -7577,7 +7581,7 @@ class DrillThroughDialog {
                     }
                     count = 0;
                     let items = [];
-                    for (let item of this.parent.dataSourceSettings.dataSource) {
+                    for (let item of this.parent.engineModule.data) {
                         delete item['__index'];
                         if (this.gridIndexObjects[count.toString()] === undefined) {
                             items.push(item);
@@ -7834,7 +7838,7 @@ class DrillThrough {
         if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && pivotValue.value !== undefined) {
             let indexArray = Object.keys(pivotValue.indexObject);
             for (let index of indexArray) {
-                rawData.push(this.parent.dataSourceSettings.dataSource[Number(index)]);
+                rawData.push(this.parent.engineModule.data[Number(index)]);
             }
             let aggType = this.parent.engineModule.fieldList[pivotValue.actualText].aggregateType;
             let valuetText = aggType === 'CalculatedField' ? valueCaption.toString() :
@@ -11266,6 +11270,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 setTimeout(this.getData.bind(this), 100);
             }
             else if (this.dataSourceSettings.dataSource.length > 0) {
+                this.engineModule.data = this.dataSourceSettings.dataSource;
                 this.initEngine();
             }
             else {
@@ -11297,7 +11302,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (!this.element.querySelector('.e-spinner-pane')) {
             showSpinner(this.element);
         }
-        this.setProperties({ dataSourceSettings: { dataSource: e.result } }, true);
+        this.engineModule.data = e.result;
         this.initEngine();
     }
     applyFormatting() {
@@ -15200,11 +15205,12 @@ let PivotFieldList = class PivotFieldList extends Component {
     generateData() {
         this.pivotFieldList = {};
         if (this.dataSourceSettings && this.dataSourceSettings.dataSource) {
-            if (this.dataSourceSettings.dataSource instanceof DataManager) {
-                setTimeout(this.getData.bind(this), 100);
-            }
-            else if (this.dataSourceSettings.dataSource.length > 0) {
+            if (this.dataSourceSettings.dataSource.length > 0) {
+                this.engineModule.data = this.dataSourceSettings.dataSource;
                 this.initEngine();
+            }
+            else if (this.dataSourceSettings.dataSource instanceof DataManager) {
+                setTimeout(this.getData.bind(this), 100);
             }
         }
         else {
@@ -15221,7 +15227,7 @@ let PivotFieldList = class PivotFieldList extends Component {
         this.dataSourceSettings.dataSource.executeQuery(new Query()).then(this.executeQuery.bind(this));
     }
     executeQuery(e) {
-        this.setProperties({ dataSourceSettings: { dataSource: e.result } }, true);
+        this.engineModule.data = e.result;
         this.initEngine();
     }
     fieldListRender() {

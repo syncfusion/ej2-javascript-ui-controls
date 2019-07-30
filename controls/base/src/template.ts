@@ -13,7 +13,7 @@ const CALL_FUNCTION: RegExp = new RegExp('\\((.*)\\)', '');
 const NOT_NUMBER: RegExp = new RegExp('^[0-9]+$', 'g');
 const WORD: RegExp = new RegExp('[\\w"\'.\\s+]+', 'g');
 const DBL_QUOTED_STR: RegExp = new RegExp('"(.*?)"', 'g');
-
+const SPECIAL_CHAR: RegExp = /\@|\#|\$/g;
 let exp: RegExp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
 
@@ -147,6 +147,9 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
             } else if (!!cnt.match(IF_OR_FOR)) {
                 // close condition 
                 cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
+            } else if (SPECIAL_CHAR.test(cnt)) {
+                // evaluate normal expression with special character
+                cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
             } else {
                 // evaluate normal expression
                 cnt = '"+' + addNameSpace(
@@ -165,3 +168,7 @@ function addNameSpace(str: string, addNS: Boolean, nameSpace: string, ignoreList
 // function hashCode(str: string): string {
 //     return str.split('').reduce((a: number, b: string) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0).toString();
 // }
+
+function NameSpaceForspecialChar(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[]): string {
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '["' + str : str);
+}

@@ -6987,14 +6987,11 @@ class ExportUtils {
             }
         }
         else if (Browser.info.name === 'msie') {
-            let canvas;
+            let canvas = element;
             if (!isCanvas) {
                 canvas = this.createCanvas();
-                image = canvas.toDataURL();
             }
-            else {
-                image = element.toDataURL();
-            }
+            image = canvas.toDataURL();
             if (type === 'PDF') {
                 this.exportPdf(canvas, orientation, width, height, isDownload, fileName);
             }
@@ -27604,6 +27601,10 @@ let RangeNavigator = class RangeNavigator extends Component {
      * @private
      */
     rangeResize(e) {
+        // To avoid resize console error
+        if (!document.getElementById(this.element.id)) {
+            return false;
+        }
         this.animateSeries = false;
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -30494,6 +30495,10 @@ class StockChart extends Component {
      * @private
      */
     stockChartResize(e) {
+        // To avoid resize console error
+        if (!document.getElementById(this.element.id)) {
+            return false;
+        }
         this.animateSeries = false;
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -35246,9 +35251,13 @@ class SparklineRenderer {
             queryModule = this.sparkline.query instanceof Query ? this.sparkline.query : new Query();
             let dataManager = dataModule.executeQuery(queryModule);
             dataManager.then((e) => {
-                this.sparkline.dataSource = e['result'];
+                this.sparkline.setProperties({ dataSource: e['result'] }, true);
                 this.sparkline.sparklineData = this.sparkline.dataSource;
+                this.sparkline.processSparklineData();
             });
+        }
+        else {
+            this.sparkline.processSparklineData();
         }
     }
     /**
@@ -36077,6 +36086,11 @@ let Sparkline = class Sparkline extends Component {
     render() {
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
+    }
+    /**
+     * @private
+     */
+    processSparklineData() {
         this.sparklineRenderer.processData();
         this.renderSparkline();
         this.element.appendChild(this.svgObject);

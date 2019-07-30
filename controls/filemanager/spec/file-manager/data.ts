@@ -973,3 +973,25 @@ export let idData4: any = {
     "error": null,
     "details": null
 }
+
+export let data24: any = {
+    "cwd": { "path": null, "action": null, "newName": null, "names": null, "name": "Files", "size": 0, "previousName": null, "dateModified": "2019-07-22T17:18:35.6490313+05:30", "dateCreated": "2019-07-22T15:05:29.16003+05:30", "hasChild": true, "isFile": false, "type": "", "id": null, "filterPath": "", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null },
+    "files": [
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Documents", "size": 0, "previousName": null, "dateModified": "2019-07-22T15:05:29.1730273+05:30", "dateCreated": "2019-07-22T15:05:29.16003+05:30", "hasChild": false, "isFile": false, "type": "", "id": null, "filterPath": "\\", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Downloads", "size": 0, "previousName": null, "dateModified": "2019-07-22T15:05:29.175025+05:30", "dateCreated": "2019-07-22T15:05:29.1740261+05:30", "hasChild": false, "isFile": false, "type": "", "id": null, "filterPath": "\\", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Music", "size": 0, "previousName": null, "dateModified": "2019-07-22T15:05:29.177026+05:30", "dateCreated": "2019-07-22T15:05:29.1760243+05:30", "hasChild": false, "isFile": false, "type": "", "id": null, "filterPath": "\\", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Pictures", "size": 0, "previousName": null, "dateModified": "2019-07-22T15:05:29.1973518+05:30", "dateCreated": "2019-07-22T15:05:29.177026+05:30", "hasChild": true, "isFile": false, "type": "", "id": null, "filterPath": "\\", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "Videos", "size": 0, "previousName": null, "dateModified": "2019-07-22T17:18:35.6560266+05:30", "dateCreated": "2019-07-22T15:05:29.2071306+05:30", "hasChild": false, "isFile": false, "type": "", "id": null, "filterPath": "\\", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "File.png", "size": 274, "previousName": null, "dateModified": "2019-07-22T15:05:29.1740261+05:30", "dateCreated": "2019-07-22T17:18:35.6140539+05:30", "hasChild": false, "isFile": true, "type": ".png", "id": null, "filterPath": "\\", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null },
+        { "path": null, "action": null, "newName": null, "names": null, "name": "File1.txt", "size": 274, "previousName": null, "dateModified": "2019-07-22T15:05:29.1740261+05:30", "dateCreated": "2019-07-22T17:18:35.6480326+05:30", "hasChild": false, "isFile": true, "type": ".txt", "id": null, "filterPath": "\\", "targetPath": null, "renameFiles": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "_fm_iconClass": null, "_fm_id": null, "_fm_pId": null, "_fm_selected": false, "_fm_icon": null, "data": null, "targetData": null, "permission": null }
+    ],
+    "error": null,
+    "details": null
+}
+
+export let data25: any = {
+    "cwd": null,
+    "files": null,
+    "error": { "code": "400", "message": "Cannot rename File.png to File.png: destination already exists.", "fileExists": null },
+    "details": null
+}

@@ -1116,6 +1116,13 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     MenuBase.prototype.render = function () {
         this.initialize();
         this.renderItems();
+        if (this.isMenu && this.template) {
+            var menuTemplateId_1 = this.element.id + TEMPLATE_PROPERTY;
+            resetBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
+            setTimeout(function () {
+                updateBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
+            }, 500);
+        }
         this.wireEvents();
     };
     MenuBase.prototype.initialize = function () {
@@ -5446,7 +5453,18 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.getIndexByItem = function (item) {
-        return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).indexOf(item);
+        var itemEle = this.getItemElements();
+        return [].slice.call(itemEle).indexOf(item);
+    };
+    Accordion.prototype.getItemElements = function () {
+        var itemEle = [];
+        var itemCollection = this.element.children;
+        [].slice.call(itemCollection).forEach(function (el) {
+            if (el.classList.contains(CLS_ITEM$1)) {
+                itemEle.push(el);
+            }
+        });
+        return itemEle;
     };
     Accordion.prototype.expandedItemsPop = function (item) {
         var index = this.getIndexByItem(item);
@@ -5547,7 +5565,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         return 'accordion';
     };
     Accordion.prototype.itemAttribUpdate = function () {
-        var itemEle = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
+        var itemEle = this.getItemElements();
         var itemLen = this.items.length;
         itemEle.forEach(function (ele) {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -5562,6 +5580,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      */
     Accordion.prototype.addItem = function (item, index) {
         var ele = this.element;
+        var itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             index = this.items.length;
         }
@@ -5572,7 +5591,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 ele.appendChild(innerItemEle);
             }
             else {
-                ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM$1)[index]);
+                ele.insertBefore(innerItemEle, itemEle[index]);
             }
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5586,7 +5605,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.expandedItemRefresh = function (ele) {
         var _this = this;
-        [].slice.call(ele.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
+        var itemEle = this.getItemElements();
+        [].slice.call(itemEle).forEach(function (el) {
             if (el.classList.contains(CLS_SLCTED)) {
                 _this.expandedItemsPush(el);
             }
@@ -5598,7 +5618,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.removeItem = function (index) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5615,7 +5636,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.select = function (index) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele) || isNullOrUndefined(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -5629,7 +5651,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.hideItem = function (index, isHidden) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5646,7 +5669,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.enableItem = function (index, isEnable) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5676,14 +5700,15 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.expandItem = function (isExpand, index) {
         var _this = this;
         var root = this.element;
+        var itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                var ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.querySelectorAll('.' + CLS_ITEM$1).length - 1];
+                var ele = itemEle[itemEle.length - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
                 var item = select('#' + this.lastActiveItemId, this.element);
-                [].slice.call(root.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
+                [].slice.call(itemEle).forEach(function (el) {
                     _this.itemExpand(isExpand, el, _this.getIndexByItem(el));
                     el.classList.remove(CLS_EXPANDSTATE);
                 });
@@ -5697,7 +5722,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            var ele = root.querySelectorAll('.' + CLS_ITEM$1)[index];
+            var ele = itemEle[index];
             if (isNullOrUndefined(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             }
@@ -8372,9 +8397,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.listBaseOption.ariaAttributes.level = 1;
         this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : this.getSortedData(this.rootData), this.listBaseOption);
         this.element.appendChild(this.ulElement);
-        if (this.nodeTemplate && this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
-            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
-        }
         if (this.loadOnDemand === false) {
             var rootNodes = this.ulElement.querySelectorAll('.e-list-item');
             var i = 0;
@@ -8386,8 +8408,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         else {
             this.finalizeNode(this.element);
         }
-        if (this.nodeTemplate && !this.loadOnDemand && this.isBlazorPlatform && !this.isStringTemplate) {
-            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+        if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+            this.updateBlazorTemplate();
         }
         this.parentNodeCheck = [];
         this.parentCheckData = [];
@@ -9515,12 +9537,18 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                 this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
+                if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
+                    this.updateBlazorTemplate();
+                }
             }
             else if (this.fields.dataSource instanceof DataManager && this.loadOnDemand) {
                 mapper_2.dataSource.executeQuery(this.getQuery(mapper_2, parentLi.getAttribute('data-uid'))).then(function (e) {
                     _this.treeList.pop();
                     childItems = e.result;
                     _this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
+                    if (_this.nodeTemplate && _this.isBlazorPlatform && !_this.isStringTemplate) {
+                        _this.updateBlazorTemplate();
+                    }
                 });
             }
         }
@@ -9540,8 +9568,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 this.ensureCheckNode(parentLi);
                 this.finalizeNode(parentLi);
                 if (this.loadOnDemand && this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-                    resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-                    updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+                    this.updateBlazorTemplate();
                 }
                 this.disableTreeNodes(childItems);
                 this.renderSubChild(parentLi, expandChild, loaded);
@@ -10028,9 +10055,14 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (this.autoCheck) {
             this.ensureChildCheckState(li);
             this.ensureParentCheckState(closest(closest(li, '.' + PARENTITEM), '.' + LISTITEM));
-        }
-        if (this.autoCheck) {
-            this.ensureStateChange(li);
+            var doCheck = void 0;
+            if (eventArgs.action === 'check') {
+                doCheck = true;
+            }
+            else if (eventArgs.action === 'uncheck') {
+                doCheck = false;
+            }
+            this.ensureStateChange(li, doCheck);
         }
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     };
@@ -10376,13 +10408,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             var pid = pNode ? pNode.getAttribute('data-uid') : null;
             var selected = currLi.classList.contains(ACTIVE);
             var expanded = (currLi.getAttribute('aria-expanded') === 'true') ? true : false;
+            var hasChildren = (currLi.getAttribute('aria-expanded') === null) ? false : true;
             var checked = null;
             if (this.showCheckBox) {
                 checked = select('.' + CHECKBOXWRAP, currLi).getAttribute('aria-checked');
             }
-            return { id: id, text: text, parentID: pid, selected: selected, expanded: expanded, isChecked: checked };
+            return {
+                id: id, text: text, parentID: pid, selected: selected, expanded: expanded,
+                isChecked: checked, hasChildren: hasChildren
+            };
         }
-        return { id: '', text: '', parentID: '', selected: '', expanded: '', isChecked: '' };
+        return { id: '', text: '', parentID: '', selected: '', expanded: '', isChecked: '', hasChildren: '' };
     };
     TreeView.prototype.getText = function (currLi, fromDS) {
         if (fromDS) {
@@ -10401,6 +10437,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.clearTemplate(['nodeTemplate']);
     };
     TreeView.prototype.reRenderNodes = function () {
+        resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
         this.element.innerHTML = '';
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             this.destroyTemplate(this.nodeTemplate);
@@ -10489,6 +10526,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
             tempArr = Array.prototype.slice.call(tempArr);
             append(tempArr, txtEle);
+            this.updateBlazorTemplate();
         }
         else {
             txtEle.innerHTML = newText;
@@ -11523,11 +11561,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.triggerEvent = function () {
         if (this.nodeTemplate && this.isBlazorPlatform && !this.isStringTemplate) {
-            resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-            updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this);
+            this.updateBlazorTemplate();
         }
         var eventArgs = { data: this.treeData };
         this.trigger('dataSourceChanged', eventArgs);
+    };
+    TreeView.prototype.updateBlazorTemplate = function () {
+        updateBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate', this, false);
     };
     TreeView.prototype.wireInputEvents = function (inpEle) {
         EventHandler.add(inpEle, 'blur', this.inputFocusOut, this);
@@ -11870,6 +11910,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      * Removes the component from the DOM and detaches all its related event handlers. It also removes the attributes and classes.
      */
     TreeView.prototype.destroy = function () {
+        resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
         this.element.removeAttribute('aria-activedescendant');
         this.element.removeAttribute('tabindex');
         this.unWireEvents();
@@ -12508,6 +12549,9 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
+        if (isBlazor()) {
+            delete closeArguments.model;
+        }
         this.trigger('close', closeArguments, function (observedcloseArgs) {
             if (!observedcloseArgs.cancel) {
                 if (_this.element.classList.contains(CLOSE)) {
@@ -12578,6 +12622,9 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
+        if (isBlazor()) {
+            delete openArguments.model;
+        }
         this.trigger('open', openArguments, function (observedopenArgs) {
             if (!observedopenArgs.cancel) {
                 removeClass([_this.element], VISIBILITY);
@@ -12626,7 +12673,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Sidebar.prototype.createBackDrop = function () {
-        if (this.target && this.showBackdrop) {
+        if (this.target && this.showBackdrop && this.getState()) {
             var sibling = document.querySelector('.e-main-content') ||
                 this.element.nextElementSibling;
             addClass([sibling], CONTEXTBACKDROP);

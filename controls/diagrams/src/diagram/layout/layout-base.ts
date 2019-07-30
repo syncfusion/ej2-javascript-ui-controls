@@ -378,11 +378,13 @@ export interface ILayout {
     /**
      * Provides horizontal alignment of the diagram layout
      * @default undefined
+     * @blazorDefaultValueIgnore
      */
     horizontalAlignment?: HorizontalAlignment;
     /**
      * Provides horizontal alignment of the diagram layout
      * @default undefined
+     * @blazorDefaultValueIgnore
      */
     verticalAlignment?: VerticalAlignment;
     /**

@@ -804,7 +804,16 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.expandedItems.push (index);  }
     }
     private getIndexByItem(item: HTEle): number {
-      return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).indexOf(item);
+      let itemEle: HTEle[] = this.getItemElements();
+      return [].slice.call(itemEle).indexOf(item);
+    }
+    private getItemElements(): HTEle[] {
+      let itemEle: HTEle[] = [];
+      let itemCollection: HTMLCollection = this.element.children;
+      [].slice.call(itemCollection).forEach((el: HTEle) => {
+         if (el.classList.contains(CLS_ITEM)) { itemEle.push(el); }
+      });
+      return itemEle;
     }
     private expandedItemsPop(item: HTEle): void {
       let index: number = this.getIndexByItem(item);
@@ -896,7 +905,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         return 'accordion';
     }
     private itemAttribUpdate(): void {
-      let itemEle: HTEle[] = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM));
+      let itemEle: HTEle[] = this.getItemElements();
       let itemLen: number = this.items.length;
       itemEle.forEach((ele: HTEle): void => {
         select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -911,6 +920,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public addItem (item: AccordionItemModel, index?: number): void {
       let ele: HTEle = this.element;
+      let itemEle: HTEle[] = this.getItemElements();
       if (isNOU(index)) {
         index = this.items.length; }
       if (ele.childElementCount >= index) {
@@ -919,7 +929,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (ele.childElementCount === index) {
           ele.appendChild(innerItemEle);
         } else {
-          ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM)[index]);
+          ele.insertBefore(innerItemEle, itemEle[index]);
         }
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -932,7 +942,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       }
     }
     private expandedItemRefresh(ele: HTEle): void {
-      [].slice.call(ele.querySelectorAll('.' + CLS_ITEM)).forEach( (el: HTEle) => {
+      let itemEle: HTEle[] = this.getItemElements();
+      [].slice.call(itemEle).forEach( (el: HTEle) => {
         if (el.classList.contains(CLS_SLCTED)) {
           this.expandedItemsPush(el);
         }
@@ -944,7 +955,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public removeItem(index: number): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele)) { return; }
       this.restoreContent(index);
       detach(ele);
@@ -959,7 +971,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public select(index: number): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele) || isNOU(select('.' + CLS_HEADER, ele))) {
            return; }
       (<HTEle>ele.children[0]).focus();
@@ -972,7 +985,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public hideItem(index: number, isHidden?: Boolean): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele)) {
            return; }
       if (isNOU(isHidden)) {
@@ -987,7 +1001,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public enableItem(index: number,  isEnable: boolean): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele)) {
            return; }
       let eleHeader: HTEle = <HTEle>ele.firstElementChild;
@@ -1013,13 +1028,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public expandItem(isExpand: boolean, index?: number): void {
       let root: HTEle = this.element;
+      let itemEle: HTEle[] = this.getItemElements();
       if (isNOU(index)) {
        if (this.expandMode === 'Single' && isExpand) {
-        let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[root.querySelectorAll('.' + CLS_ITEM).length - 1];
+        let ele: HTEle = <HTEle>itemEle[itemEle.length - 1];
         this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
        } else {
         let item: HTMLElement = <HTMLElement>select('#' + this.lastActiveItemId, this.element);
-        [].slice.call(root.querySelectorAll('.' + CLS_ITEM)).forEach( (el: HTEle) => {
+        [].slice.call(itemEle).forEach( (el: HTEle) => {
           this.itemExpand(isExpand, el, this.getIndexByItem(el));
           el.classList.remove(CLS_EXPANDSTATE);
         });
@@ -1028,7 +1044,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (item) { item.classList.add(CLS_EXPANDSTATE); }
       }
       } else {
-      let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[index];
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
            return; } else {
             if (this.expandMode === 'Single') {

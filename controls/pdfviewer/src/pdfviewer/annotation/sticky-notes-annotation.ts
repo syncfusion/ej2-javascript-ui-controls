@@ -90,6 +90,8 @@ export class StickyNotesAnnotation {
      * @private
      */
     public mainContainer: HTMLElement;
+    private isPageCommentsRendered: boolean = false;
+    private isCommentsRendered: boolean = false;
 
     /**
      * @private
@@ -154,12 +156,13 @@ export class StickyNotesAnnotation {
                     notes: annotation.notes, opacity: annotation.opacity, id: annotation.annotName, shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', pageIndex: annotation.pageIndex,
                 };
             } else {
+                let date: Date = new Date();
                 annotationName = this.pdfViewer.annotation.createGUID();
                 commentsDivid = proxy.addComments('sticky', pageIndex + 1);
                 document.getElementById(commentsDivid).id = annotationName;
                 annot = {
                     // tslint:disable-next-line:max-line-length
-                    bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src,
+                    bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: date.toLocaleString(),
                     shapeAnnotationType: 'StickyNotes', strokeColor: 'transparent', stampStrokeColor: '', annotName: annotationName, id: annotationName,
                 };
                 if (proxy.pdfViewer.toolbarModule.isAddComment) {
@@ -167,7 +170,6 @@ export class StickyNotesAnnotation {
                     proxy.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
                 }
                 proxy.pdfViewer.toolbar.isAddComment = false;
-                let date: Date = new Date();
                 annotationObject = {
                     // tslint:disable-next-line:max-line-length
                     author: this.author, modifiedDate: date.toLocaleString(), subject: 'Sticky Note', shapeAnnotationType: 'sticky',
@@ -195,50 +197,83 @@ export class StickyNotesAnnotation {
      */
     public createRequestForComments(): void {
         let jsonObject: object;
-        let pageIndex: number;
         let proxy: StickyNotesAnnotation = this;
-        for (pageIndex = 0; pageIndex < this.pdfViewerBase.pageCount; pageIndex++) {
-            jsonObject = { pageNumber: pageIndex, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments'};
-            if (this.pdfViewerBase.jsonDocumentId) {
-                // tslint:disable-next-line
-                (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+        let startIndex: number = 0;
+        let pageLimit: number = 20;
+        let pageCount: number = proxy.pdfViewerBase.pageCount;
+        if (!proxy.isCommentsRendered) {
+            if (pageLimit < pageCount) {
+                pageCount = pageLimit;
+            } else {
+                proxy.isPageCommentsRendered = true;
             }
-            let url: string = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderComments;
-            proxy.commentsRequestHandler = new AjaxHandler(proxy.pdfViewer);
-            proxy.commentsRequestHandler.url = url;
-            proxy.commentsRequestHandler.mode = true;
-            proxy.commentsRequestHandler.responseType = 'text';
-            proxy.commentsRequestHandler.send(jsonObject);
-            // tslint:disable-next-line
-            proxy.commentsRequestHandler.onSuccess = function(result: any) {
-                // tslint:disable-next-line
-                let data: any = result.data;
-                if (typeof data !== 'object') {
-                    data = JSON.parse(data);
-                }
-                if (data) {
-                    proxy.renderAnnotationComments(data, data.page);
-                }
-            };
-            // tslint:disable-next-line
-            proxy.commentsRequestHandler.onFailure = function(result: any) {
-                this.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
-            };
-            // tslint:disable-next-line
-            proxy.commentsRequestHandler.onError = function(result: any) {
-                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
-            };
         }
+        if (!this.isCommentsRendered) {
+            // tslint:disable-next-line:max-line-length
+            jsonObject = { pageStartIndex: startIndex, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments' };
+            proxy.isCommentsRendered = true;
+        } else {
+            // tslint:disable-next-line:max-line-length
+            jsonObject = { pageStartIndex: pageLimit, pageEndIndex: pageCount, hashId: this.pdfViewerBase.hashId, action: 'RenderAnnotationComments' };
+        }
+        if (this.pdfViewerBase.jsonDocumentId) {
+            // tslint:disable-next-line
+            (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
+        }
+        let url: string = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderComments;
+        proxy.commentsRequestHandler = new AjaxHandler(proxy.pdfViewer);
+        proxy.commentsRequestHandler.url = url;
+        proxy.commentsRequestHandler.mode = true;
+        proxy.commentsRequestHandler.responseType = 'text';
+        proxy.commentsRequestHandler.send(jsonObject);
+        // tslint:disable-next-line
+        proxy.commentsRequestHandler.onSuccess = function (result: any) {
+            // tslint:disable-next-line
+            let data: any = result.data;
+            if (typeof data !== 'object') {
+                try {
+                    data = JSON.parse(data);
+                    if (typeof data !== 'object') {
+                        proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderComments);
+                        data = null;
+                    }
+                } catch (error) {
+                    proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderComments);
+                    data = null;
+                }
+            }
+            if (data) {
+                if (data.popupAnnotation) {
+                    for (let j: number = data.startPageIndex; j < data.endPageIndex; j++) {
+                        if (data.popupAnnotation[j]) {
+                            proxy.renderAnnotationComments(data.popupAnnotation[j], j);
+                        }
+                    }
+                    if (!proxy.isPageCommentsRendered) {
+                        proxy.isPageCommentsRendered = true;
+                        proxy.createRequestForComments();
+                    }
+                }
+            }
+        };
+        // tslint:disable-next-line
+        proxy.commentsRequestHandler.onFailure = function (result: any) {
+            this.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+        };
+        // tslint:disable-next-line
+        proxy.commentsRequestHandler.onError = function (result: any) {
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderComments);
+        };
     }
 
     // tslint:disable-next-line
     private renderAnnotationComments(data: any, pageIndex: number): void {
         pageIndex = pageIndex + 1;
-        if (data.popupAnnotation) {
-            if (data.popupAnnotation.length !== 0) {
+        if (data) {
+            if (data.length !== 0) {
                 this.createPageAccordion(pageIndex);
-                for (let i: number = 0; i < data.popupAnnotation.length; i++) {
-                    this.createCommentControlPanel(data.popupAnnotation[i], pageIndex);
+                for (let i: number = 0; i < data.length; i++) {
+                    this.createCommentControlPanel(data[i], pageIndex);
                 }
                 // tslint:disable-next-line
                 let newCommentsDiv: any = document.querySelectorAll('.e-pv-new-comments-div');
@@ -301,26 +336,28 @@ export class StickyNotesAnnotation {
 
     private alignAccordionContainer(accordionDiv: HTMLElement, pageIndex: number): void {
         let isAdded: boolean = true;
-        if (this.isAccordionContainer) {
-            this.accordionContentContainer.appendChild(accordionDiv);
-            isAdded = false;
-        } else {
-            for (let i: number = 1; i <= this.pdfViewerBase.pageCount; i++) {
-                let nextElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + i);
-                if (nextElement) {
-                    if (pageIndex < i) {
-                        this.accordionContentContainer.insertBefore(accordionDiv, nextElement);
-                        isAdded = false;
-                        break;
+        if (this.accordionContentContainer) {
+            if (this.isAccordionContainer) {
+                this.accordionContentContainer.appendChild(accordionDiv);
+                isAdded = false;
+            } else {
+                for (let i: number = 1; i <= this.pdfViewerBase.pageCount; i++) {
+                    let nextElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + i);
+                    if (nextElement) {
+                        if (pageIndex < i) {
+                            this.accordionContentContainer.insertBefore(accordionDiv, nextElement);
+                            isAdded = false;
+                            break;
+                        }
                     }
                 }
             }
+            if (isAdded) {
+                this.accordionContentContainer.appendChild(accordionDiv);
+                isAdded = false;
+            }
+            this.isAccordionContainer = false;
         }
-        if (isAdded) {
-            this.accordionContentContainer.appendChild(accordionDiv);
-            isAdded = false;
-        }
-        this.isAccordionContainer = false;
     }
 
     /**
@@ -340,108 +377,111 @@ export class StickyNotesAnnotation {
     // tslint:disable-next-line
     public createCommentControlPanel(data: any, pageIndex: number, type?: string, annotationSubType?: string): string {
         let accordionContent: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_accordioncontent' + pageIndex);
-        // tslint:disable-next-line
-        let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + pageIndex);
-        if (accordionExpand) {
-            accordionExpand.ej2_instances[0].expandItem(true);
-        }
-        // tslint:disable-next-line:max-line-length
-        this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
-        this.commentsContainer.accessKey = pageIndex.toString();
-        if (data) {
-            this.commentsContainer.id = data.AnnotName;
-            this.commentsContainer.setAttribute('name', data.AnnotType);
-        }
-        if (type) {
-            this.commentsContainer.setAttribute('name', type);
-        }
-        this.commentsContainer.addEventListener('mousedown', this.commentsAnnotationSelect.bind(this));
-        // tslint:disable-next-line:max-line-length
-        let commentDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentdiv' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-div' });
-        this.commentsCount = this.commentsCount + 1;
-        this.commentsContainer.appendChild(commentDiv);
-        this.updateCommentPanelScrollTop(pageIndex);
-        accordionContent.appendChild(this.commentsContainer);
-        let title: string;
-        if (data) {
-            title = this.commentsContainer.getAttribute('name');
-            this.createTitleContainer(commentDiv, title, data.Subject);
-        } else {
-            title = this.commentsContainer.getAttribute('name');
-            this.createTitleContainer(commentDiv, title, annotationSubType);
-        }
-        // tslint:disable-next-line:max-line-length
-        let commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox', className: 'e-pv-comment-textbox' });
-        // tslint:disable-next-line
-        let editObj: any = new InPlaceEditor({
-            mode: 'Inline',
-            type: 'Text',
-            model: { placeholder: this.pdfViewer.localeObj.getConstant('Add a comment') + '..' },
-            emptyText: '',
-            editableOn: 'EditIconClick',
-            saveButton: {
-                content: this.pdfViewer.localeObj.getConstant('Post'),
-                cssClass: 'e-outline',
-                disabled: true
-            },
-            cancelButton: {
-                content: this.pdfViewer.localeObj.getConstant('Cancel'),
-                cssClass: 'e-outline'
-            },
-            submitOnEnter: true,
-        });
-        editObj.appendTo(commentTextBox);
-        // tslint:disable-next-line
-        let textBox: any = document.querySelectorAll('.e-editable-inline');
-        for (let j: number = 0; j < textBox.length; j++) {
-            textBox[j].style.display = 'none';
-        }
-        if (!data) {
-            editObj.enableEditMode = true;
-        }
-        // tslint:disable-next-line
-        commentTextBox.addEventListener('keydown', function (event: any) {
-            if (editObj.element.querySelector('.e-btn-save')) {
-                if (event.srcElement.value !== '') {
-                    editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
-                } else {
-                    editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = true;
+        if (accordionContent) {
+            // tslint:disable-next-line
+            let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + pageIndex);
+            if (accordionExpand) {
+                accordionExpand.ej2_instances[0].expandItem(true);
+            }
+            // tslint:disable-next-line:max-line-length
+            this.commentsContainer = createElement('div', { id: this.pdfViewer.element.id + 'commentscontainer' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-container' });
+            this.commentsContainer.accessKey = pageIndex.toString();
+            if (data) {
+                this.commentsContainer.id = data.AnnotName;
+                this.commentsContainer.setAttribute('name', data.AnnotType);
+            }
+            if (type) {
+                this.commentsContainer.setAttribute('name', type);
+            }
+            this.commentsContainer.addEventListener('mousedown', this.commentsAnnotationSelect.bind(this));
+            // tslint:disable-next-line:max-line-length
+            let commentDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentdiv' + pageIndex + '_' + this.commentsCount, className: 'e-pv-comments-div' });
+            this.commentsCount = this.commentsCount + 1;
+            this.commentsContainer.appendChild(commentDiv);
+            this.updateCommentPanelScrollTop(pageIndex);
+            accordionContent.appendChild(this.commentsContainer);
+            let title: string;
+            if (data) {
+                title = this.commentsContainer.getAttribute('name');
+                this.createTitleContainer(commentDiv, title, data.Subject, data.ModifiedDate);
+            } else {
+                title = this.commentsContainer.getAttribute('name');
+                this.createTitleContainer(commentDiv, title, annotationSubType);
+            }
+            // tslint:disable-next-line:max-line-length
+            let commentTextBox: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commenttextbox', className: 'e-pv-comment-textbox' });
+            // tslint:disable-next-line
+            let editObj: any = new InPlaceEditor({
+                mode: 'Inline',
+                type: 'Text',
+                model: { placeholder: this.pdfViewer.localeObj.getConstant('Add a comment') + '..' },
+                emptyText: '',
+                editableOn: 'EditIconClick',
+                saveButton: {
+                    content: this.pdfViewer.localeObj.getConstant('Post'),
+                    cssClass: 'e-outline',
+                    disabled: true
+                },
+                cancelButton: {
+                    content: this.pdfViewer.localeObj.getConstant('Cancel'),
+                    cssClass: 'e-outline'
+                },
+                submitOnEnter: true,
+            });
+            editObj.appendTo(commentTextBox);
+            // tslint:disable-next-line
+            let textBox: any = document.querySelectorAll('.e-editable-inline');
+            for (let j: number = 0; j < textBox.length; j++) {
+                textBox[j].style.display = 'none';
+            }
+            if (!data) {
+                editObj.enableEditMode = true;
+            }
+            // tslint:disable-next-line
+            commentTextBox.addEventListener('keydown', function (event: any) {
+                if (editObj.element.querySelector('.e-btn-save')) {
+                    if (event.srcElement.value !== '') {
+                        editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = false;
+                    } else {
+                        editObj.element.querySelector('.e-btn-save').ej2_instances[0].disabled = true;
+                    }
+                }
+            });
+            editObj.actionSuccess = this.createCommentDiv.bind(this, editObj);
+            commentDiv.appendChild(commentTextBox);
+            if (data) {
+                editObj.value = data.Note;
+                if (data.State) {
+                    // tslint:disable-next-line:max-line-length
+                    let statusContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_container', className: 'e-pv-status-container' });
+                    // tslint:disable-next-line:max-line-length
+                    let statusDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_div', className: 'e-pv-status-div' });
+                    let statusSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + 'status' + '_icon' });
+                    statusDiv.appendChild(statusSpan);
+                    statusContainer.appendChild(statusDiv);
+                    commentDiv.appendChild(statusContainer);
+                    this.updateStatusContainer(data.State, statusSpan, statusDiv, statusContainer);
+                }
+                if (data.Comments) {
+                    for (let j: number = 0; j < data.Comments.length; j++) {
+                        this.renderComments(data.Comments[j], this.commentsContainer);
+                    }
+                    if (data.Note !== ' ') {
+                        this.createCommentDiv(this.commentsContainer);
+                    }
                 }
             }
-        });
-        editObj.actionSuccess = this.createCommentDiv.bind(this, editObj);
-        commentDiv.appendChild(commentTextBox);
-        if (data) {
-            editObj.value = data.Note;
-            if (data.State) {
-                // tslint:disable-next-line:max-line-length
-                let statusContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_container', className: 'e-pv-status-container' });
-                // tslint:disable-next-line:max-line-length
-                let statusDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + 'status' + '_div', className: 'e-pv-status-div' });
-                let statusSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + 'status' + '_icon' });
-                statusDiv.appendChild(statusSpan);
-                statusContainer.appendChild(statusDiv);
-                commentDiv.appendChild(statusContainer);
-                this.updateStatusContainer(data.State, statusSpan, statusDiv, statusContainer);
-            }
-            if (data.Comments) {
-                for (let j: number = 0; j < data.Comments.length; j++) {
-                    this.renderComments(data.Comments[j], this.commentsContainer);
-                }
-                if (data.Note !== ' ') {
-                    this.createCommentDiv(this.commentsContainer);
-                }
-            }
+            this.isNewcommentAdded = true;
+            commentDiv.addEventListener('click', this.commentsDivClickEvent.bind(this));
+            commentDiv.addEventListener('mouseover', this.commentDivMouseOver.bind(this));
+            commentDiv.addEventListener('mouseleave', this.commentDivMouseLeave.bind(this));
+            commentDiv.addEventListener('mouseout', this.commentDivMouseLeave.bind(this));
+            commentDiv.addEventListener('focusout', this.commentDivMouseLeave.bind(this));
+            commentTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
+            commentTextBox.addEventListener('focusin', this.commentDivFocus.bind(this));
+            return (this.commentsContainer.id);
         }
-        this.isNewcommentAdded = true;
-        commentDiv.addEventListener('click', this.commentsDivClickEvent.bind(this));
-        commentDiv.addEventListener('mouseover', this.commentDivMouseOver.bind(this));
-        commentDiv.addEventListener('mouseleave', this.commentDivMouseLeave.bind(this));
-        commentDiv.addEventListener('mouseout', this.commentDivMouseLeave.bind(this));
-        commentDiv.addEventListener('focusout', this.commentDivMouseLeave.bind(this));
-        commentTextBox.addEventListener('dblclick', this.openEditorElement.bind(this));
-        commentTextBox.addEventListener('focusin', this.commentDivFocus.bind(this));
-        return (this.commentsContainer.id);
+        return '';
     }
     // tslint:disable-next-line
     private commentDivFocus(args: any): void {
@@ -489,12 +529,14 @@ export class StickyNotesAnnotation {
     // tslint:disable-next-line
     private createCommentDiv(args: any): void {
         let commentsContainer: HTMLElement;
+        let titleContainer: HTMLElement;
         // tslint:disable-next-line
         let newCommentDiv: any = createElement('div', { id: this.pdfViewer.element.id + '_newcommentdiv' + this.commentsCount, className: 'e-pv-new-comments-div' });
         if (args.localName) {
             commentsContainer = args;
         } else {
             commentsContainer = args.valueEle.parentElement.parentElement.parentElement.parentElement;
+            titleContainer = args.valueEle.parentElement.parentElement.previousSibling.childNodes[1];
         }
         // tslint:disable-next-line
         let commentObj: any = new InPlaceEditor({
@@ -529,7 +571,10 @@ export class StickyNotesAnnotation {
             }
         });
         if (args.valueEle) {
-            this.modifyTextProperty(args.value);
+            if (args.value != null && args.value !== '' && args.value !== ' ') {
+                this.modifyTextProperty(args.value);
+                this.updateModifiedDate(titleContainer);
+            }
             if (args.valueEle.parentElement.parentElement.parentElement.parentElement.childElementCount === 1) {
                 if (args.value != null && args.value !== '' && args.value !== ' ') {
                     commentsContainer.appendChild(newCommentDiv);
@@ -615,7 +660,15 @@ export class StickyNotesAnnotation {
         }
         replyDiv.style.border = 1 + 'px';
         replyDiv.style.borderColor = 'black';
-        this.createReplyDivTitleContainer(replyDiv);
+        if (undoRedoAction) {
+            if (data.modifiedDate !== undefined) {
+                this.createReplyDivTitleContainer(replyDiv, data.modifiedDate);
+            } else {
+                this.createReplyDivTitleContainer(replyDiv);
+            }
+        } else {
+            this.createReplyDivTitleContainer(replyDiv, data.ModifiedDate);
+        }
         replyDiv.addEventListener('mouseover', this.commentDivMouseOver.bind(this));
         replyDiv.addEventListener('mouseleave', this.commentDivMouseLeave.bind(this));
         replyDiv.addEventListener('click', this.commentDivOnSelect.bind(this));
@@ -735,9 +788,9 @@ export class StickyNotesAnnotation {
         if (data) {
             if (data.indent) {
                 this.commentsContainer.setAttribute('name', 'shape_measure');
-                this.createTitleContainer(commentDiv, 'shape_measure', data.subject);
+                this.createTitleContainer(commentDiv, 'shape_measure', data.subject, data.modifiedDate);
             } else if (data.shapeAnnotationType === 'sticky' || data.shapeAnnotationType === 'stamp' ) {
-                let annotType: string = this.createTitleContainer(commentDiv, data.shapeAnnotationType);
+                let annotType: string = this.createTitleContainer(commentDiv, data.shapeAnnotationType, null, data.modifiedDate);
                 this.commentsContainer.setAttribute('name', annotType);
                 if (annotType === 'sticky') {
                     if (!isCopy) {
@@ -746,13 +799,13 @@ export class StickyNotesAnnotation {
                 }
             } else if (data.shapeAnnotationType === 'textMarkup') {
                 this.commentsContainer.setAttribute('name', 'textMarkup');
-                this.createTitleContainer(commentDiv, 'textMarkup', data.subject);
+                this.createTitleContainer(commentDiv, 'textMarkup', data.subject, data.modifiedDate);
             } else {
                 this.commentsContainer.setAttribute('name', 'shape');
                 if (data.shapeAnnotationType === 'Line') {
-                    this.createTitleContainer(commentDiv, 'shape', data.subject);
+                    this.createTitleContainer(commentDiv, 'shape', data.subject, data.modifiedDate);
                 } else {
-                    this.createTitleContainer(commentDiv, 'shape', data.shapeAnnotationType);
+                    this.createTitleContainer(commentDiv, 'shape', data.shapeAnnotationType, data.modifiedDate);
                 }
             }
         }
@@ -829,11 +882,13 @@ export class StickyNotesAnnotation {
     private modifyProperty(args: any): any {
         let commentElement: string = args.element.parentElement.id;
         let parentElement: string = args.element.parentElement.parentElement.id;
+        let titleElement: HTMLElement = args.element.previousSibling.firstChild;
+        this.updateModifiedDate(titleElement);
         this.modifyCommentsProperty(args.value, commentElement, parentElement);
     }
 
     // tslint:disable-next-line
-    private createTitleContainer(commentsDivElement: HTMLElement, type: string, subType?: string): any {
+    private createTitleContainer(commentsDivElement: HTMLElement, type: string, subType?: string, modifiedDate?: string): any {
         let annotationType: string;
         if (type === 'stamp' || type === 'Stamp') {
             annotationType = 'stamp';
@@ -858,7 +913,11 @@ export class StickyNotesAnnotation {
         commentTitleContainer.appendChild(commentTypeSpan);
         // tslint:disable-next-line:max-line-length
         let commentsTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentTitle', className: 'e-pv-comment-title' });
-        commentsTitle.textContent = this.author;
+        if (!modifiedDate) {
+            commentsTitle.textContent = this.author + ' - ' + this.setModifiedDate();
+        } else {
+            commentsTitle.textContent = this.author + ' - ' + this.setExistingAnnotationModifiedDate(modifiedDate);
+        }
         commentTitleContainer.appendChild(commentsTitle);
         // tslint:disable-next-line:max-line-length
         let moreOptionsButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_more-options', className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
@@ -880,12 +939,16 @@ export class StickyNotesAnnotation {
     }
 
     // tslint:disable-next-line
-    private createReplyDivTitleContainer(commentsDivElement: HTMLElement): void {
+    private createReplyDivTitleContainer(commentsDivElement: HTMLElement, modifiedDate?: string): void {
         // tslint:disable-next-line:max-line-length
         let replyTitleContainer: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitleConatiner', className: 'e-pv-reply-title-container' });
         // tslint:disable-next-line:max-line-length
         let replyTitle: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_replyTitle', className: 'e-pv-reply-title' });
-        replyTitle.textContent = this.author;
+        if (!modifiedDate) {
+            replyTitle.textContent = this.author + ' - ' + this.setModifiedDate();
+        } else {
+            replyTitle.textContent = this.author + ' - ' + this.setExistingAnnotationModifiedDate(modifiedDate);
+        }
         replyTitleContainer.appendChild(replyTitle);
         // tslint:disable-next-line:max-line-length
         let moreButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_more-options', className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
@@ -1519,6 +1582,7 @@ export class StickyNotesAnnotation {
                                 this.pdfViewer.annotation.addAction(pageIndex, i, pageAnnotations[i], 'Text Property Added', '', clonedObject, pageAnnotations[i]);
                                 currentAnnotation = pageAnnotations[i];
                                 currentAnnotation.note = text;
+                                currentAnnotation.modifiedDate = new Date().toLocaleString();
                                 if (!isMeasure) {
                                     this.updateUndoRedoCollections(currentAnnotation, pageIndex);
                                 } else {
@@ -2191,6 +2255,96 @@ export class StickyNotesAnnotation {
         return annotType;
     }
 
+    private setExistingAnnotationModifiedDate(date: string): string {
+        let modifiedTime: string;
+        let modifiedDate: string;
+        let modifiedDateTime: string;
+        if (date !== '') {
+            // tslint:disable-next-line
+            let time: number = parseInt(date.split(' ')[1].split(':')[0]);
+            let month: string[] = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            if (date.split(' ').length === 3) {
+                modifiedTime = time + ':' + date.split(' ')[1].split(':')[1] + ' ' + date.split(' ')[2];
+            } else {
+                if (time >= 12) {
+                    if (time === 12) {
+                        modifiedTime = time + ':' + date.split(' ')[1].split(':')[1] + ' PM';
+                    } else {
+                        modifiedTime = (time - 12) + ':' + date.split(' ')[1].split(':')[1] + ' PM';
+                    }
+                } else {
+                    modifiedTime = time + ':' + date.split(' ')[1].split(':')[1] + ' AM';
+                }
+            }
+            // tslint:disable-next-line
+            let monthNumber: any = parseInt(date.split(' ')[0].split('/')[0]);
+            let monthString: string = month[monthNumber];
+            // tslint:disable-next-line
+            modifiedDate = monthString + ' ' + parseInt(date.split(' ')[0].split('/')[1]);
+            modifiedDateTime = modifiedDate + ', ' + modifiedTime;
+        } else {
+            modifiedDateTime = this.setModifiedDate();
+        }
+        return modifiedDateTime;
+    }
+
+    private setModifiedDate(): string {
+        let date: Date = new Date();
+        let modifiedDate: string = date.toString().split(' ').splice(1, 2).join(' ');
+        let modifiedTime: string = date.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':')
+            + ' ' + date.toLocaleTimeString().split(' ')[1];
+        let modifiedDateTime: string = modifiedDate + ', ' + modifiedTime;
+        return modifiedDateTime;
+    }
+
+    // tslint:disable-next-line
+    private updateModifiedDate(titleContainer: any): void {
+        if (titleContainer.id === this.pdfViewer.element.id + '_commenttype_icon') {
+            titleContainer = titleContainer.nextSibling;
+        }
+        titleContainer.textContent = this.author + ' - ' + this.setModifiedDate();
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public updateAnnotationModifiedDate(annotation: any, isBounds?: boolean, isUndoRedoAction?: boolean): void {
+        // tslint:disable-next-line
+        let titleContainer: any;
+        if (annotation) {
+            // tslint:disable-next-line
+            let commentsContainer: any = document.getElementById(annotation.annotName);
+            if (commentsContainer) {
+                if (!isBounds) {
+                    titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
+                    titleContainer.textContent = this.author + ' - ' + this.setModifiedDate();
+                } else {
+                    let type: string = this.findAnnotationType(annotation);
+                    // tslint:disable-next-line
+                    let pageAnnotations: any = this.getAnnotations(annotation.pageIndex, null, type);
+                    if (pageAnnotations != null && annotation) {
+                        for (let i: number = 0; i < pageAnnotations.length; i++) {
+                            if (annotation.annotName === pageAnnotations[i].annotName) {
+                                // tslint:disable-next-line:max-line-length
+                                if (annotation.bounds.x !== pageAnnotations[i].bounds.left || annotation.bounds.y !== pageAnnotations[i].bounds.top || annotation.bounds.height !== pageAnnotations[i].bounds.height || annotation.bounds.width !== pageAnnotations[i].bounds.width) {
+                                    titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
+                                    titleContainer.textContent = this.author + ' - ' + this.setModifiedDate();
+                                }
+                            }
+                        }
+                    }
+                }
+                if (isUndoRedoAction) {
+                    titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
+                    if (annotation.modifiedDate !== undefined) {
+                        titleContainer.textContent = this.author + ' - ' + this.setExistingAnnotationModifiedDate(annotation.modifiedDate);
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * @private
      */
@@ -2200,6 +2354,8 @@ export class StickyNotesAnnotation {
         this.isAccordionContainer = true;
         this.isEditableElement = false;
         this.isCreateContextMenu = false;
+        this.isPageCommentsRendered = false;
+        this.isCommentsRendered = false;
         if (this.commentMenuObj) {
             this.commentMenuObj.destroy();
         }

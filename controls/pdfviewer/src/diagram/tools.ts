@@ -326,7 +326,7 @@ export class MoveTool extends ToolBase {
     }
     /**   @private  */
     /* tslint:disable */
-    public mouseUp(args: MouseEventArgs): void {
+    public mouseUp(args: any): void {
         let object: SelectorModel;
         if (this.commandHandler) {
             this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
@@ -338,7 +338,7 @@ export class MoveTool extends ToolBase {
                 bounds: {
                     x: args.source.wrapper.offsetX, y: args.source.wrapper.offsetY,
                     width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
-                }
+                }, modifiedDate: args.source.modifiedDate
             };
             if (isLineShapes(args.source)) {
                 newShapeObject.vertexPoints = (args.source as PdfAnnotationBaseModel).vertexPoints;

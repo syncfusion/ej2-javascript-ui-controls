@@ -1359,6 +1359,9 @@ export class Edit {
         let currentViewData: IGanttData[] = this.parent.currentViewData;
         let ids: string[] = this.parent.ids;
         let currentItemIndex: number;
+        let recordIndex: number;
+        let updatedCollectionIndex: number;
+        let childIndex: number;
         switch (rowPosition) {
             case 'Top':
                 flatRecords.splice(0, 0, record);
@@ -1371,10 +1374,9 @@ export class Edit {
                 ids.push(record.ganttProperties.taskId.toString()); // need to check NAN
                 break;
             case 'Above':
-                let childIndex: number;
                 /*Record Updates*/
-                let recordIndex: number = flatRecords.indexOf(this.addRowSelectedItem);
-                let updatedCollectionIndex: number = currentViewData.indexOf(this.addRowSelectedItem);
+                recordIndex = flatRecords.indexOf(this.addRowSelectedItem);
+                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem);
                 this.recordCollectionUpdate(childIndex, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
             case 'Below':

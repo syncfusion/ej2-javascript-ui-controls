@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, Property, Event, Animation, Collection } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
-import { removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { getElement, removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ScheduleModel } from './schedule-model';
 import { HeaderRenderer } from '../renderer/header-renderer';
@@ -949,6 +949,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public getTimeString(date: Date): string {
         return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
     }
+    public getDateTime(date: Date): Date {
+        return date instanceof Date ? new Date(date.getTime()) : new Date(date);
+    }
     private setCalendarMode(): void {
         if (this.calendarMode === 'Islamic') {
             this.calendarUtil = new Islamic();
@@ -1236,7 +1239,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             || td.classList.contains(cls.HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }
-        if (this.activeViewOptions.headerRows.length > 0 && this.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
+        if (this.activeView.isTimelineView() && this.activeViewOptions.headerRows.length > 0 &&
+            this.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return true;
         }
         return false;
@@ -1713,6 +1717,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let tempEndIndex: number = endIndex;
         let cells: HTMLTableCellElement[] = [];
         for (let date of dates) {
+            date = this.getDateTime(date);
             util.resetTime(date);
             let renderDates: Date[] = this.activeView.renderDates;
             if (!isNullOrUndefined(groupIndex) && this.resourceBase && !this.activeView.isTimelineView()) {
@@ -1753,8 +1758,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getCellDetails(tdCol: Element | Element[]): CellClickEventArgs {
         let td: Element[] = (tdCol instanceof Array) ? tdCol : [tdCol];
-        let firstTd: Element = td[0];
-        let lastTd: Element = td.slice(-1)[0];
+        let firstTd: Element = getElement(td[0]);
+        let lastTd: Element = getElement(td.slice(-1)[0]);
         let startTime: Date = this.getDateFromElement(firstTd);
         let endTime: Date = this.getDateFromElement(lastTd);
         if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
@@ -1786,6 +1791,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Retrieves the resource details based on the provided resource index.
      * @param {number} index index of the resources at the last level.
      * @returns {ResourceDetails} Object An object holding the details of resource and resourceData.
+     * @isGenericType true
      */
     public getResourcesByIndex(index: number): ResourceDetails {
         if (this.resourceBase && this.resourceBase.lastResourceLevel) {
@@ -1915,6 +1921,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Retrieves the entire collection of events bound to the Schedule.
      * @method getEvents
      * @returns {Object[]} Returns the collection of event objects from the Schedule.
+     * @isGenericType true
      */
     public getEvents(startDate?: Date, endDate?: Date, includeOccurrences?: boolean): Object[] {
         let eventCollections: Object[] = [];
@@ -1922,6 +1929,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             eventCollections = this.eventBase.getProcessedEvents();
         } else {
             eventCollections = this.eventsData;
+        }
+        if (startDate) {
+            startDate = this.getDateTime(startDate);
+        }
+        if (endDate) {
+            endDate = this.getDateTime(endDate);
         }
         eventCollections = this.eventBase.filterEventsByRange(eventCollections, startDate, endDate);
         return eventCollections;
@@ -1932,6 +1945,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @method getOccurrencesByID
      * @param {number} eventID ID of the parent recurrence data from which the occurrences are fetched.
      * @returns {Object[]} Returns the collection of occurrence event objects.
+     * @isGenericType true
      */
     public getOccurrencesByID(eventID: number | string): Object[] {
         return this.eventBase.getOccurrencesByID(eventID);
@@ -1943,8 +1957,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param {Date} startTime Denotes the start time range.
      * @param {Date} endTime Denotes the end time range.
      * @returns {Object[]} Returns the collection of occurrence event objects that lies between the provided start and end time.
+     * @isGenericType true
      */
     public getOccurrencesByRange(startTime: Date, endTime: Date): Object[] {
+        startTime = this.getDateTime(startTime);
+        endTime = this.getDateTime(endTime);
         return this.eventBase.getOccurrencesByRange(startTime, endTime);
     }
 
@@ -1961,6 +1978,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
+     * @isGenericType true
      */
     public getCurrentViewEvents(): Object[] {
         return this.eventsProcessed;
@@ -1980,8 +1998,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @method getEventDetails
      * @param {Element} element Denotes the event UI element on the Schedule.
      * @returns {Object} Returns the event details.
+     * @isGenericType true
      */
     public getEventDetails(element: Element): Object {
+        element = getElement(element);
         let guid: string = element.getAttribute('data-guid');
         if (guid) {
             return this.eventBase.getEventByGuid(guid);
@@ -2001,8 +2021,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let eventStart: Date;
         let eventEnd: Date;
         let eventObj: { [key: string]: Object } = this.activeEventData.event as { [key: string]: Object };
-        if (startTime instanceof Date) {
-            eventStart = startTime;
+        if (startTime instanceof Date || typeof(startTime) === 'string') {
+            eventStart = startTime as Date;
             eventEnd = endTime;
         } else {
             eventObj = startTime as { [key: string]: Object };
@@ -2015,6 +2035,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (isNullOrUndefined(eventStart) || isNullOrUndefined(eventEnd)) {
             return true;
         }
+        eventStart = this.getDateTime(eventStart);
+        eventEnd = this.getDateTime(eventEnd);
         let eventCollection: Object[] = this.eventBase.filterEvents(eventStart, eventEnd);
         if (!isNullOrUndefined(groupIndex) && this.resourceBase && this.resourceBase.lastResourceLevel.length > 0) {
             eventCollection = this.eventBase.filterEventsByResource(this.resourceBase.lastResourceLevel[groupIndex], eventCollection);
@@ -2043,6 +2065,16 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public openEditor(data: Object, action: CurrentAction, isEventData?: boolean, repeatType?: number): void {
+        if (action === 'Add' && !isEventData) {
+            (data as { [key: string]: Object }).startTime = this.getDateTime(<Date>(data as { [key: string]: Object }).startTime);
+            (data as { [key: string]: Object }).endTime = this.getDateTime(<Date>(data as { [key: string]: Object }).endTime);
+            (data as { [key: string]: Object }).element = getElement((data as { [key: string]: Object }).element);
+        } else {
+            (data as { [key: string]: Object })[this.eventFields.startTime] =
+                this.getDateTime(<Date>(data as { [key: string]: Object })[this.eventFields.startTime]);
+            (data as { [key: string]: Object })[this.eventFields.endTime] =
+                this.getDateTime(<Date>(data as { [key: string]: Object })[this.eventFields.endTime]);
+        }
         this.currentAction = action;
         if (action !== 'Add') {
             this.activeEventData.event = data as { [key: string]: Object };

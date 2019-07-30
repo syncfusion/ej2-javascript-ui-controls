@@ -15,6 +15,12 @@ export class DataUtil {
     public static serverTimezoneOffset: number = null;
 
     /**
+     * Species whether are not to be parsed with serverTimezoneOffset value.
+     * @hidden
+     */
+    public static timeZoneHandling: boolean = true;
+
+    /**
      * Returns the value by invoking the provided parameter function.
      * If the paramater is not of type function then it will be returned as it is.
      * @param  {Function|string|string[]|number} value
@@ -1634,8 +1640,9 @@ export class DataUtil {
             let dupValue: string | Date = value;
             if (typeof value === 'string') {
                 let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                let offSet: number = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
                 if (ms) {
-                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
+                        return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
                 } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
                     let arr: string[] = (<string>dupValue).split(/[^0-9]/);
                     value = DataUtil.dateParse
@@ -1644,7 +1651,7 @@ export class DataUtil {
                                 parseInt(arr[1], 10) - 1,
                                 parseInt(arr[2], 10),
                                 parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
-                                DataUtil.serverTimezoneOffset, true);
+                                offSet, true);
                 }
             }
             return value;

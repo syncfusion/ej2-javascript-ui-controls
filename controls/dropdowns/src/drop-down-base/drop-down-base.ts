@@ -291,7 +291,6 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
      * It can be an array of JSON Objects or an instance of
      * `DataManager`.
      * @default []
-     * @isGenericType true
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[];

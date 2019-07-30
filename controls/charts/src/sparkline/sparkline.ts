@@ -60,6 +60,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public type: SparklineType;
     /**
      * To configure sparkline data source.
+     * @isGenericType true
      * @default null
      */
     @Property(null)
@@ -414,17 +415,17 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      */
     protected render(): void {
         // Sparkline rendering splitted into rendering and calculations
-
         this.sparklineRenderer.processDataManager();
+    }
 
+    /**
+     * @private
+     */
+    public processSparklineData(): void {
         this.sparklineRenderer.processData();
-
         this.renderSparkline();
-
         this.element.appendChild(this.svgObject);
-
         this.setSecondaryElementPosition();
-
         this.trigger('loaded', this.isBlazor ? {} : { sparkline: this });
     }
     /**

@@ -41,6 +41,7 @@ export function createExtDialog(parent: IFileManager, text: string, replaceItems
     parent.isApplySame = false;
     if (isNOU(parent.extDialogObj)) {
         parent.extDialogObj = new Dialog({
+            beforeOpen: beforeExtOpen.bind(this, parent),
             content: extOptions.content,
             header: extOptions.header,
             closeOnEscape: true,
@@ -454,14 +455,21 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
 
 function keydownAction(parent: IFileManager): void {
     let btnElement: HTMLInputElement[] = (selectAll('.e-btn', parent.dialogObj.element) as HTMLInputElement[]);
+    preventKeydown(btnElement);
+}
+
+function beforeExtOpen(parent: IFileManager): void {
+    let btnElement: HTMLInputElement[] = (selectAll('.e-btn', parent.extDialogObj.element) as HTMLInputElement[]);
+    preventKeydown(btnElement);
+}
+
+function preventKeydown(btnElement: HTMLInputElement[]): void {
     for (let btnCount: number = 0; btnCount < btnElement.length; btnCount++) {
-        /* istanbul ignore next */
         btnElement[btnCount].onkeydown = (e: KeyboardEvent) => {
             if (e.keyCode === 13) {
                 e.preventDefault();
             }
         };
-        /* istanbul ignore next */
         btnElement[btnCount].onkeyup = (e: KeyboardEvent) => {
             if (e.keyCode === 13) {
                 btnElement[btnCount].click();

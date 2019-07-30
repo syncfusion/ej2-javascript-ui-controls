@@ -5960,7 +5960,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
         this.localyMessage = {};
         /**
          * Specifies the default messages for validation rules.
-         * @default : { List of validation message };
+         * @default { List of validation message }
          */
         this.defaultMessages = {
             required: 'This field is required.',
@@ -8739,7 +8739,8 @@ let Uploader = class Uploader extends Component {
                         this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
                         this.removeProgressbar(liElement, 'failure');
                         liElement.querySelector('.e-icons').classList.remove(UPLOAD_INPROGRESS);
-                        let iconElement = liElement.querySelector('.' + ABORT_ICON);
+                        let iconElement = liElement.querySelector('.' + ABORT_ICON) ?
+                            liElement.querySelector('.' + ABORT_ICON) : liElement.querySelector('.' + REMOVE_ICON);
                         iconElement.classList.remove(ABORT_ICON);
                         if (!isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD))) {
                             detach(liElement.querySelector('.' + PAUSE_UPLOAD));

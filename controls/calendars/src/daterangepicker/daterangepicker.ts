@@ -101,7 +101,6 @@ export interface DateRange {
 export interface RangeEventArgs extends BaseEventArgs {
     /** 
      * Defines the value
-     * @isGenericType true
      */
     value?: Date[] | DateRange;
     /** Defines the value string in the input element */
@@ -253,7 +252,6 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Gets or sets the start and end date of the Calendar.
      * @default null
-     * @isGenericType true
      */
     @Property(null)
     public value: Date[] | DateRange;
@@ -457,8 +455,7 @@ export class DateRangePicker extends CalendarBase {
     /**     
      * Customizes the key actions in DateRangePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object 
+     * 
      * 
      * Input Navigation
      * <table> 
@@ -567,6 +564,9 @@ export class DateRangePicker extends CalendarBase {
      * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
      * alt+leftarrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object 
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };

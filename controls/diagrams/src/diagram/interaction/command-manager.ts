@@ -37,11 +37,10 @@ import { Size } from '../primitives/size';
 import { getObjectType, getPoint, intersect2, getOffsetOfConnector } from './../utility/diagram-util';
 import { LayerModel } from '../diagram/layer-model';
 import { Layer } from '../diagram/layer';
-import { SelectorConstraints, Direction } from '../enum/enum';
+import { SelectorConstraints, Direction, DiagramConstraints } from '../enum/enum';
 import { PageSettings } from '../diagram/page-settings';
 import { DiagramScroller, Segment } from '../interaction/scroller';
 import { remove } from '@syncfusion/ej2-base';
-import { ConnectTool } from './tool';
 import { getOppositeDirection, getPortDirection, findAngle, Intersection } from './../utility/connector';
 import { ILayout } from '../layout/layout-base';
 import { swapBounds, findPoint, orthoConnection2Segment, End, getIntersection } from './../utility/connector';
@@ -55,7 +54,6 @@ import { checkChildNodeInContainer, checkParentAsContainer, addChildToContainer 
 import { renderStackHighlighter } from './container-interaction';
 import { getConnectors, updateConnectorsProperties, findLaneIndex } from './../utility/swim-lane-util';
 import { GridPanel } from '../core/containers/grid';
-import { SwimLane } from '../objects/node';
 import { swimLaneSelection, pasteSwimLane, gridSelection } from '../utility/swim-lane-util';
 
 /**
@@ -3267,6 +3265,63 @@ export class CommandHandler {
                 targetPoint: obj.targetPoint
             } as Connector);
             this.diagram.updateDiagramObject(obj);
+        }
+    }
+    /**
+     * @private
+     */
+    public updateSelectedNodeProperties(object?: NodeModel | ConnectorModel[]): void {
+        if (this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+            let objects: NodeModel | ConnectorModel[] = []; let connectors: string[] = [];
+            let actualObject: NodeModel = this.diagram.selectedObject.actualObject;
+            let helperObject: NodeModel = this.diagram.selectedObject.helperObject;
+
+            if (helperObject && actualObject) {
+                let offsetX: number = (helperObject.offsetX - actualObject.offsetX);
+                let offsetY: number = (helperObject.offsetY - actualObject.offsetY);
+                let width: number = (helperObject.width - actualObject.width);
+                let height: number = (helperObject.height - actualObject.height);
+                let rotateAngle: number = (helperObject.rotateAngle - actualObject.rotateAngle);
+                this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
+                if (actualObject instanceof Node) {
+                    actualObject.offsetX += offsetX; actualObject.offsetY += offsetY;
+                    actualObject.width += width; actualObject.height += height; actualObject.rotateAngle += rotateAngle;
+                    this.diagram.nodePropertyChange(actualObject as Node, {} as Node, {
+                        offsetX: actualObject.offsetX, offsetY: actualObject.offsetY,
+                        width: actualObject.width, height: actualObject.height, rotateAngle: actualObject.rotateAngle
+                    } as Node);
+                    objects = this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect);
+                } else if (actualObject instanceof Selector) {
+                    for (let i: number = 0; i < actualObject.nodes.length; i++) {
+                        let node: Node = actualObject.nodes[i] as Node;
+                        node.offsetX += offsetX; node.offsetY += offsetY;
+                        node.width += width; node.height += height; node.rotateAngle += rotateAngle;
+                        this.diagram.nodePropertyChange(node, {} as Node, {
+                            offsetX: node.offsetX, offsetY: node.offsetY,
+                            width: node.width, height: node.height, rotateAngle: node.rotateAngle
+                        } as Node);
+                        objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect));
+                    }
+                }
+            } else {
+                if (object instanceof Connector) {
+                    objects.push(object);
+                } else if (object instanceof Selector && object.connectors.length) {
+                    objects = objects.concat(object.connectors);
+                }
+            }
+            for (let i: number = 0; i < objects.length; i++) {
+                if (objects[i] instanceof Connector && connectors.indexOf(objects[i].id) === -1) {
+                    connectors.push(objects[i].id);
+                }
+            }
+            this.diagram.lineRoutingModule.renderVirtualRegion(this.diagram, true);
+            for (let i: number = 0; i < connectors.length; i++) {
+                let connector: Object = this.diagram.nameTable[connectors[i]];
+                if (connector instanceof Connector) {
+                    this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
+                }
+            }
         }
     }
     /** @private */

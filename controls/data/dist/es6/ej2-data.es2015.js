@@ -1068,6 +1068,11 @@ class DataUtil {
  */
 DataUtil.serverTimezoneOffset = null;
 /**
+ * Species whether are not to be parsed with serverTimezoneOffset value.
+ * @hidden
+ */
+DataUtil.timeZoneHandling = true;
+/**
  * Throw error with the given string as message.
  * @param  {string} er
  */
@@ -2303,13 +2308,14 @@ DataUtil.parse = {
         let dupValue = value;
         if (typeof value === 'string') {
             let ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
+            let offSet = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
             if (ms) {
-                return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
+                return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
             }
             else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
                 let arr = dupValue.split(/[^0-9]/);
                 value = DataUtil.dateParse
-                    .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), DataUtil.serverTimezoneOffset, true);
+                    .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), offSet, true);
             }
         }
         return value;
@@ -2942,7 +2948,12 @@ class UrlAdaptor extends Adaptor {
     processResponse(data, ds, query, xhr, request, changes) {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            let handleTimeZone = DataUtil.timeZoneHandling;
+            if (ds && !ds.timeZoneHandling) {
+                DataUtil.timeZoneHandling = false;
+            }
             data = DataUtil.parse.parseJson(data);
+            DataUtil.timeZoneHandling = handleTimeZone;
         }
         let requests = request;
         let pvt = requests.pvtData || {};
@@ -3595,7 +3606,19 @@ class ODataAdaptor extends UrlAdaptor {
         let req = '';
         let stat = {
             'method': 'DELETE ',
-            'url': (data, i, key) => '(' + data[i][key] + ')',
+            'url': (data, i, key) => {
+                let url = DataUtil.getObject(key, data[i]);
+                if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                    return '(' + url + ')';
+                }
+                else if (url instanceof Date) {
+                    let dateTime = data[i][key];
+                    return '(' + dateTime.toJSON() + ')';
+                }
+                else {
+                    return `('${url}')`;
+                }
+            },
             'data': (data, i) => ''
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3634,7 +3657,18 @@ class ODataAdaptor extends UrlAdaptor {
         arr.forEach((change) => change = this.compareAndRemove(change, org.filter((o) => DataUtil.getObject(e.key, o) === DataUtil.getObject(e.key, change))[0], e.key));
         let stat = {
             'method': this.options.updateType + ' ',
-            'url': (data, i, key) => '(' + data[i][key] + ')',
+            'url': (data, i, key) => {
+                if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
+                    return '(' + data[i][key] + ')';
+                }
+                else if (data[i][key] instanceof Date) {
+                    let date = data[i][key];
+                    return '(' + date.toJSON() + ')';
+                }
+                else {
+                    return `('${data[i][key]}')`;
+                }
+            },
             'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -4360,11 +4394,16 @@ class DataManager {
     constructor(dataSource, query, adaptor) {
         /** @hidden */
         this.dateParse = true;
+        /** @hidden */
+        this.timeZoneHandling = true;
         this.requests = [];
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
         adaptor = adaptor || dataSource.adaptor;
+        if (dataSource && dataSource.timeZoneHandling === false) {
+            this.timeZoneHandling = dataSource.timeZoneHandling;
+        }
         let data;
         if (dataSource instanceof Array) {
             data = {

@@ -1195,9 +1195,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
                 this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
             } else {
-                this.valueContainer.value = '';
+                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
             }
             this.element = this.valueContainer;
+            for (let i: number = 0; i < this.originalElement.classList.length; i++) {
+                addClass([this.element], this.originalElement.classList[i]);
+            }
+            removeClass([this.element], classes.CLS_RTE_HIDDEN);
         } else {
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.element.innerHTML = this.originalElement.innerHTML.trim();

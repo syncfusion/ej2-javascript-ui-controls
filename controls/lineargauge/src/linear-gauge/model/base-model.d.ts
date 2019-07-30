@@ -32,6 +32,7 @@ export interface FontModel {
 
     /**
      * Opacity for text.
+     * @blazorDefaultValue 1
      */
     opacity?: number;
 

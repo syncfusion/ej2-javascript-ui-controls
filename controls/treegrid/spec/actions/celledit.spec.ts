@@ -6,6 +6,7 @@ import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SaveEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Sort } from '../../src/treegrid/actions/sort';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Grid Cell Edit spec 
@@ -503,7 +504,40 @@ describe('Cell Edit module', () => {
     afterAll(() => {
       destroy(gridObj);
     });
-  });  
+  });
+  describe('allowEditOnDblClick - Cell Editing', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Cell", newRowPosition: 'Below', allowEditOnDblClick: false },
+
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('allowEditOnDblClick - Cell Editing', () => {
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+      expect(isNullOrUndefined(gridObj.grid.editModule.formObj)).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   it('memory leak', () => {
     profile.sample();

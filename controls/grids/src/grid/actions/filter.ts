@@ -764,7 +764,11 @@ export class Filter implements IAction {
         this.matchCase = this.filterSettings.enableCaseSensitivity;
         switch (this.column.type) {
             case 'number':
-                this.operator = this.filterOperators.equal;
+                if (this.column.filter.operator) {
+                    this.operator = this.column.filter.operator as string;
+                } else {
+                    this.operator = this.filterOperators.equal;
+                }
                 skipInput = ['>', '<', '=', '!'];
                 for (let i: number = 0; i < value.length; i++) {
                     if (skipInput.indexOf(value[i]) > -1) {
@@ -797,7 +801,7 @@ export class Filter implements IAction {
                 }
                 break;
             case 'string':
-                this.matchCase = false;
+            this.matchCase = false;
                 if (value.charAt(0) === '*') {
                     this.value = (this.value as string).slice(1);
                     this.operator = this.filterOperators.startsWith;
@@ -808,7 +812,7 @@ export class Filter implements IAction {
                     this.value = (this.value as string).slice(1);
                     this.operator = this.filterOperators.endsWith;
                 } else {
-                    this.operator = this.filterOperators.startsWith;
+                        this.operator = this.filterOperators.startsWith;
                 }
                 break;
             case 'boolean':

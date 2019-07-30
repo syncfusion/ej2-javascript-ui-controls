@@ -400,6 +400,11 @@ export class ShapeAnnotation {
     // tslint:disable-next-line
     public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IShapeAnnotation {
         let currentAnnotObject: IShapeAnnotation = null;
+        if (annotationBase) {
+            if (property === 'bounds') {
+               this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
+            }
+        }
         let pageAnnotations: IShapeAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
@@ -534,7 +539,9 @@ export class ShapeAnnotation {
         let annotationName: string = this.pdfViewer.annotation.createGUID();
         // tslint:disable-next-line:max-line-length
         let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('shape', (annotationModel.pageIndex + 1), annotationModel.shapeAnnotationType);
-        document.getElementById(commentsDivid).id = annotationName;
+        if (commentsDivid) {
+            document.getElementById(commentsDivid).id = annotationName;
+        }
         annotationModel.annotName = annotationName;
         if (annotationModel.wrapper.bounds) {
             bound = {

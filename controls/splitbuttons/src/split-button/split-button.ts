@@ -98,7 +98,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * Triggers before opening the SplitButton popup.
      * @event
      * @blazorProperty 'OnOpen'
-     * @deprecated
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -107,7 +106,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
      * Triggers before closing the SplitButton popup.
      * @event
      * @blazorProperty 'OnClose'
-     * @deprecated
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -243,16 +241,6 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             beforeItemRender: (args: MenuEventArgs) => {
                 this.trigger('beforeItemRender', args);
             },
-            beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
-                this.trigger('beforeOpen', args, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
-                    args = observedArgs;
-                });
-            },
-            beforeClose: (args: BeforeOpenCloseMenuEventArgs) => {
-                this.trigger('beforeClose', args, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
-                    args = observedArgs;
-                });
-            },
             open: (args: OpenCloseMenuEventArgs) => {
                 this.trigger('open', args);
             },
@@ -262,6 +250,20 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             select: (args: MenuEventArgs) => {
                 this.trigger('select', args);
             }
+        };
+        dropDownBtnModel.beforeOpen = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
+            let callBackPromise: Deferred = new Deferred();
+            this.trigger('beforeOpen', args, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
+                callBackPromise.resolve(observedArgs);
+            });
+            return callBackPromise;
+        };
+        dropDownBtnModel.beforeClose = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
+            let callBackPromise: Deferred = new Deferred();
+            this.trigger('beforeClose', args, (observedArgs: BeforeOpenCloseMenuEventArgs) => {
+                callBackPromise.resolve(observedArgs);
+            });
+            return callBackPromise;
         };
         this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
         this.secondaryBtnObj.createElement = this.createElement;
@@ -398,4 +400,32 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
 
 export interface ClickEventArgs extends BaseEventArgs {
     element: Element;
+}
+/**
+ * Deferred is used to handle asynchronous operation.
+ */
+export class Deferred {
+    /**
+     * Resolve a Deferred object and call doneCallbacks with the given args.
+     */
+    public resolve: Function;
+    /**
+     * Reject a Deferred object and call failCallbacks with the given args.
+     */
+    public reject: Function;
+    /**
+     * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future. 
+     */
+    public promise: Promise<Object> = new Promise((resolve: Function, reject: Function) => {
+        this.resolve = resolve;
+        this.reject = reject;
+    });
+    /**
+     * Defines the callback function triggers when the Deferred object is resolved.
+     */
+    public then: Function = this.promise.then.bind(this.promise);
+    /**
+     * Defines the callback function triggers when the Deferred object is rejected.
+     */
+    public catch: Function = this.promise.catch.bind(this.promise);
 }

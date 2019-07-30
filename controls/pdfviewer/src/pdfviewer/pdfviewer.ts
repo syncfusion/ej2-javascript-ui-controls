@@ -1097,6 +1097,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableStickyNotesAnnotation: boolean;
 
     /**
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * @default false
+     */
+    @Property(false)
+    public enableAnnotationToolbar: boolean;
+
+    /**
      * Sets the interaction mode of the PdfViewer
      * @default TextSelection
      */
@@ -1868,9 +1875,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
-    public fireAjaxRequestFailed(errorStatusCode: number, errorMessage: string): void {
+    public fireAjaxRequestFailed(errorStatusCode: number, errorMessage: string, action: string): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage };
+        let eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage, action: action };
         this.trigger('ajaxRequestFailed', eventArgs);
     }
 

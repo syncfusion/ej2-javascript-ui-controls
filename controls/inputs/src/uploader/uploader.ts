@@ -282,6 +282,77 @@ export interface UploadingEventArgs {
     currentRequest?: XMLHttpRequest;
 }
 
+export interface ProgressEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object;
+    /**
+     * Returns the details about upload file.
+     */
+    file?: FileInfo;
+    /**
+     * Returns the upload event operation.
+     */
+    operation?: string;
+}
+
+export interface UploadChangeEventArgs {
+    /**
+     * Returns the list of files that will be cleared from the FileList.
+     */
+    files?: FileInfo[];
+}
+/* tslint:disable */
+export interface FailureEventArgs extends SuccessEventArgs { }
+/* tslint:enable */
+export interface SuccessEventArgs {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object;
+    /**
+     * Returns the details about upload file.
+     */
+    file?: FileInfo;
+    /**
+     * Returns the upload status.
+     */
+    statusText?: string;
+    /**
+     * Returns the upload event operation.
+     */
+    operation: string;
+    /**
+     * Returns the upload event operation.
+     */
+    response?: ResponseEventArgs;
+    /**
+     * Returns the upload chunk index.
+     */
+    chunkIndex?: number;
+    /**
+     * Returns the upload chunk size.
+     */
+    chunkSize?: number;
+    /**
+     * Returns the total chunk size.
+     */
+    totalChunk?: number;
+    /**
+     * Returns the original event arguments.
+     */
+    event?: object;
+}
+
+interface ResponseEventArgs {
+    headers?: string;
+    readyState?: object;
+    statusCode?: object;
+    statusText?: string;
+    withCredentials?: boolean;
+}
+
 export interface CancelEventArgs {
     /**
      * Defines whether the current action can be prevented.
@@ -647,6 +718,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * 
      * @event
      * @blazorProperty 'Success'
+     * @blazorType SuccessEventArgs
      */
     @Event()
     public success: EmitType<Object>;
@@ -679,6 +751,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * 
      * @event
      * @blazorProperty 'OnFailured'
+     * @blazorType FailureEventArgs
      */
     @Event()
     public failure: EmitType<Object>;
@@ -723,6 +796,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * 
      * @event
      * @blazorProperty 'Progressing'
+     * @blazorType ProgressEventArgs
      */
     @Event()
     public progress: EmitType<Object>;
@@ -747,6 +821,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * 
      * @event
      * @blazorProperty 'ValueChange'
+     * @blazorType UploadChangeEventArgs
      */
     @Event()
     public change: EmitType<Object>;
@@ -779,6 +854,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * 
      * @event
      * @blazorProperty 'OnChunkSuccess'
+     * @blazorType SuccessEventArgs
      */
     @Event()
     public chunkSuccess: EmitType<Object>;
@@ -819,6 +895,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * 
      * @event
      * @blazorProperty 'OnChunkFailured'
+     * @blazorType FailureEventArgs
      */
     @Event()
     public chunkFailure: EmitType<Object>;
@@ -2804,7 +2881,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
                     this.removeProgressbar(liElement, 'failure');
                     liElement.querySelector('.e-icons').classList.remove(UPLOAD_INPROGRESS);
-                    let iconElement: Element = liElement.querySelector('.' + ABORT_ICON);
+                    let iconElement: Element = liElement.querySelector('.' + ABORT_ICON) ?
+                        liElement.querySelector('.' + ABORT_ICON) : liElement.querySelector('.' + REMOVE_ICON);
                     iconElement.classList.remove(ABORT_ICON);
                     if (!isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD))) {
                         detach(liElement.querySelector('.' + PAUSE_UPLOAD));

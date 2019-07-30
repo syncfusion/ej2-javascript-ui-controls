@@ -119,8 +119,7 @@ export class DateTimePicker extends DatePicker {
     /**     
      * Customizes the key actions in DateTimePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object 
+     * 
      * 
      * Input Navigation
      * <table> 
@@ -249,6 +248,9 @@ export class DateTimePicker extends DatePicker {
      * right<br/></td><td colSpan=1 rowSpan=1> 
      * rightarrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object 
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };

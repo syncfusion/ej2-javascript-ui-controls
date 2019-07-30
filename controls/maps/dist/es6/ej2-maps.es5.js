@@ -3703,7 +3703,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     LayerPanel.prototype.renderTileLayer = function (panel, layer, layerIndex, bing) {
         var center = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel <= 1) {
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel >= 1) {
             panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
                 panel.mapObject.tileTranslatePoint.x = 0;

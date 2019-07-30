@@ -27,12 +27,12 @@ export class PositionData extends ChildProperty<PositionData> {
 export interface CollisionAxis {
     /**
      * specify the collision handler for a X-Axis.
-     * @default : "none"
+     * @default "none"
      */
     X? : CollisionType;
     /**
      * specify the collision handler for a Y-Axis.
-     * @default : "none"
+     * @default "none"
      */
     Y? : CollisionType;
 }

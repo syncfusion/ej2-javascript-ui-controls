@@ -17,6 +17,7 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * Specifies the display value for input when original input value is empty.
      * @default null
+     * @isGenericType true
      */
     value?: string | number | Date | string[] | Date[] | number[];
 
@@ -137,6 +138,7 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * Specifies the model object configuration for the integrated components like AutoComplete, DatePicker,NumericTextBox, etc.
      * @default null
+     * @isGenericType true
      */
     model?: AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePickerModel | DateRangePickerModel | DateTimePickerModel | DropDownListModel | MaskedTextBoxModel | MultiSelectModel | NumericTextBoxModel | RichTextEditorModel | SliderModel | TextBoxModel | TimePickerModel;
 

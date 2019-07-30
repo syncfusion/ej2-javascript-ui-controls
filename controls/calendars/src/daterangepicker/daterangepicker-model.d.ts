@@ -32,7 +32,6 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Gets or sets the start and end date of the Calendar.
      * @default null
-     * @isGenericType true
      */
     value?: Date[] | DateRange;
 
@@ -231,8 +230,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Customizes the key actions in DateRangePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object 
+     * 
      * 
      * Input Navigation
      * <table> 
@@ -341,6 +339,9 @@ export interface DateRangePickerModel extends CalendarBaseModel{
      * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
      * alt+leftarrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object 
      */
     keyConfigs?: { [key: string]: string };
 

@@ -93,7 +93,7 @@ export class PagerDropDown {
             }
         }
         this.pagerModule.dataBind();
-        this.pagerModule.trigger('dropDownChanged', { pageSize: this.dropDownListObject.value });
+        this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value as string, 10) });
     }
 
     private beforeValueChange(prop: IPager): void {

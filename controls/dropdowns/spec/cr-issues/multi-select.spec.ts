@@ -1276,4 +1276,46 @@ describe('MultiSelect', () => {
             }, 200)
         });
     });
+    describe("EJ2-29373- Selected values are maintaining after deselecting it", () => {
+        let multiSelect: any;
+        let element: HTMLElement = createElement('input', { id: 'multiselect' });
+        let data: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'United States', Code: 'US' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            multiSelect = new MultiSelect({
+                dataSource: data,
+                fields: { text: 'Name', value: 'Code' },
+                value: ['AU'],
+                mode: 'CheckBox',
+                allowFiltering: false,
+            });
+            multiSelect.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it("Selection Testing", () => {
+            multiSelect.showPopup();
+            let target: HTMLElement = multiSelect.list.querySelector('.e-list-item');
+            mouseEventArgs.target = target;
+            mouseEventArgs.type = 'Click';
+            multiSelect.onMouseClick(mouseEventArgs);
+            mouseEventArgs.target = multiSelect.overAllWrapper;
+            multiSelect.onMouseClick(mouseEventArgs);
+            setTimeout(() => {
+                expect(multiSelect.isPopupOpen()).toBe(false);
+                if (!multiSelect.isPopupOpen()) {
+                    multiSelect.showPopup();
+                    expect(multiSelect.list.querySelectorAll('.e-active').length).toBe(0);
+                }
+            }, 200);
+        })
+    })
 });

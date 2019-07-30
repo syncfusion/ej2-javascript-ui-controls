@@ -32,8 +32,7 @@ export interface TimePickerModel extends ComponentModel{
     /**
      * Customizes the key actions in TimePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object 
+     * 
      * <table> 
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
@@ -84,6 +83,9 @@ export interface TimePickerModel extends ComponentModel{
      * close<br/></td><td colSpan=1 rowSpan=1> 
      * alt+uparrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object 
      */
     keyConfigs?: { [key: string]: string };
 

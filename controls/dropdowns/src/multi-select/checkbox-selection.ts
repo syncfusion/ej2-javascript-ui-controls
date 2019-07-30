@@ -375,6 +375,7 @@ export class CheckBoxSelection {
     }
     }
     protected onDocumentClick(e: MouseEvent): void {
+        if (!this.parent.element.classList.contains('e-listbox')) {
         let target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
             e.preventDefault();
@@ -400,6 +401,7 @@ export class CheckBoxSelection {
             }
         }
         if (this.filterInput === target) { this.filterInput.focus(); }
+        }
     }
     private getFocus(e: IUpdateListArgs): void {
         this.parent.overAllWrapper.classList.remove(FOCUS);

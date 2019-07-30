@@ -109,6 +109,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.selectedHeaders = { selectedHeader: [], values: [] };
         this.rawIndexObject = {};
         this.isEditing = false;
+        /** @hidden */
         this.data = [];
         this.frameHeaderObjectsCollection = false;
         this.headerObjectsCollection = {};
@@ -171,8 +172,11 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
         this.valueContent = [];
-        if (dataSource.dataSource && dataSource.dataSource[0]) {
-            this.fields = Object.keys(dataSource.dataSource[0]);
+        if (!(dataSource.dataSource instanceof DataManager)) {
+            this.data = dataSource.dataSource;
+        }
+        if (this.data && this.data[0]) {
+            this.fields = Object.keys(this.data[0]);
             var keys = this.fields;
             var report = {};
             report[0] = dataSource.rows;
@@ -199,8 +203,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             this.groups = dataSource.groupSettings ? dataSource.groupSettings : [];
             this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
-            fields = this.getGroupData(dataSource.dataSource);
-            this.data = dataSource.dataSource;
+            fields = this.getGroupData(this.data);
             this.validateFilters(dataSource);
             this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
             this.drilledMembers =
@@ -218,9 +221,9 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-            this.fillFieldMembers(dataSource.dataSource, this.indexMatrix);
+            this.fillFieldMembers(this.data, this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix(dataSource.dataSource);
+            this.valueMatrix = this.generateValueMatrix(this.data);
             this.filterMembers = [];
             var columnLength = this.columns.length - 1;
             this.columnKeys = {};
@@ -1421,7 +1424,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
     PivotEngine.prototype.generateGridData = function (dataSource, headerCollection) {
         var keys = this.fields;
         var columns = dataSource.columns ? dataSource.columns : [];
-        var data = dataSource.dataSource;
+        var data = this.data;
         var rows = dataSource.rows ? dataSource.rows : [];
         var filterSettings = dataSource.filterSettings;
         var values = dataSource.values ? dataSource.values : [];
@@ -5149,7 +5152,8 @@ var Render = /** @__PURE__ @class */ (function () {
         if (args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' ||
             args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' ||
             args.item.id === 'AggMax' || args.item.id === 'AggMoreOption') {
-            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
+            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].id;
+            this.fieldCaption = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
         }
         switch (selected$$1) {
             case 'pdf':
@@ -5224,7 +5228,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 break;
             case 'AggMoreOption':
                 ele.setAttribute('id', this.field);
-                ele.setAttribute('data-caption', this.field);
+                ele.setAttribute('data-caption', this.fieldCaption);
                 ele.setAttribute('data-field', this.field);
                 ele.setAttribute('data-type', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].aggregateType);
                 ele.setAttribute('data-basefield', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseField);
@@ -7779,7 +7783,7 @@ var DrillThroughDialog = /** @__PURE__ @class */ (function () {
                     }
                     count = 0;
                     var items = [];
-                    for (var _d = 0, _e = _this.parent.dataSourceSettings.dataSource; _d < _e.length; _d++) {
+                    for (var _d = 0, _e = _this.parent.engineModule.data; _d < _e.length; _d++) {
                         var item = _e[_d];
                         delete item['__index'];
                         if (_this.gridIndexObjects[count.toString()] === undefined) {
@@ -8041,7 +8045,7 @@ var DrillThrough = /** @__PURE__ @class */ (function () {
             var indexArray = Object.keys(pivotValue.indexObject);
             for (var _i = 0, indexArray_1 = indexArray; _i < indexArray_1.length; _i++) {
                 var index = indexArray_1[_i];
-                rawData.push(this.parent.dataSourceSettings.dataSource[Number(index)]);
+                rawData.push(this.parent.engineModule.data[Number(index)]);
             }
             var aggType = this.parent.engineModule.fieldList[pivotValue.actualText].aggregateType;
             var valuetText = aggType === 'CalculatedField' ? valueCaption.toString() :
@@ -11646,6 +11650,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 setTimeout(this.getData.bind(this), 100);
             }
             else if (this.dataSourceSettings.dataSource.length > 0) {
+                this.engineModule.data = this.dataSourceSettings.dataSource;
                 this.initEngine();
             }
             else {
@@ -11677,7 +11682,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         if (!this.element.querySelector('.e-spinner-pane')) {
             showSpinner(this.element);
         }
-        this.setProperties({ dataSourceSettings: { dataSource: e.result } }, true);
+        this.engineModule.data = e.result;
         this.initEngine();
     };
     PivotView.prototype.applyFormatting = function () {
@@ -15643,11 +15648,12 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
     PivotFieldList.prototype.generateData = function () {
         this.pivotFieldList = {};
         if (this.dataSourceSettings && this.dataSourceSettings.dataSource) {
-            if (this.dataSourceSettings.dataSource instanceof DataManager) {
-                setTimeout(this.getData.bind(this), 100);
-            }
-            else if (this.dataSourceSettings.dataSource.length > 0) {
+            if (this.dataSourceSettings.dataSource.length > 0) {
+                this.engineModule.data = this.dataSourceSettings.dataSource;
                 this.initEngine();
+            }
+            else if (this.dataSourceSettings.dataSource instanceof DataManager) {
+                setTimeout(this.getData.bind(this), 100);
             }
         }
         else {
@@ -15664,7 +15670,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
         this.dataSourceSettings.dataSource.executeQuery(new Query()).then(this.executeQuery.bind(this));
     };
     PivotFieldList.prototype.executeQuery = function (e) {
-        this.setProperties({ dataSourceSettings: { dataSource: e.result } }, true);
+        this.engineModule.data = e.result;
         this.initEngine();
     };
     PivotFieldList.prototype.fieldListRender = function () {

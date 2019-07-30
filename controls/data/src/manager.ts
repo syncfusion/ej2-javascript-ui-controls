@@ -16,6 +16,8 @@ export class DataManager {
     /** @hidden */
     public dateParse: boolean = true;
     /** @hidden */
+    public timeZoneHandling: boolean = true;
+    /** @hidden */
     public ready: Promise<Ajax>;
     private isDataAvailable: boolean;
     private requests: Ajax[] = [];
@@ -32,6 +34,9 @@ export class DataManager {
             dataSource = [];
         }
         adaptor = adaptor || (dataSource as DataOptions).adaptor;
+        if (dataSource && (dataSource as DataOptions).timeZoneHandling === false) {
+            this.timeZoneHandling = (dataSource as DataOptions).timeZoneHandling;
+        }
         let data: DataOptions;
         if (dataSource instanceof Array) {
             data = {
@@ -571,6 +576,7 @@ export interface DataOptions {
     dataType?: string;
     offline?: boolean;
     requiresFormat?: boolean;
+    timeZoneHandling?: boolean;
 }
 
 /**

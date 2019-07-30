@@ -84,8 +84,7 @@ export interface DatePickerModel extends CalendarModel{
     /**
      * Customizes the key actions in DatePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object 
+     * 
      * 
      * Input Navigation
      * <table> 
@@ -190,6 +189,9 @@ export interface DatePickerModel extends CalendarModel{
      * altLeftArrow<br/></td><td colSpan=1 rowSpan=1> 
      * alt+leftarrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object 
      */
     keyConfigs?: { [key: string]: string };
 

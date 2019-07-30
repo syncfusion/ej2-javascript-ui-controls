@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.2.36 (2019-07-24)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#242377` - The issue, "alignment is not working while pasting content from notepad" has been resolved.
+
+- `#F146057` - The issue, "formatting(strong and alignment) is not maintained on pasting web content" has been resolved.
+
 ## 17.2.35 (2019-07-17)
 
 ### RichTextEditor

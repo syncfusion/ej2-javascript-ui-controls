@@ -439,11 +439,10 @@ let Splitter = class Splitter extends Component {
             this.allPanes[index].classList.add(isVertical ? SPLIT_V_PANE : SPLIT_H_PANE);
         }
         for (let index = 0; index < this.allBars.length; index++) {
-            this.allBars[index].removeAttribute('aria-orientation');
-            this.allBars[index].setAttribute('aria-orientation', orientation.toLowerCase());
-            this.allBars[index].classList.remove(isVertical ? SPLIT_H_BAR : SPLIT_V_BAR);
-            this.allBars[index].classList.add(isVertical ? SPLIT_V_BAR : SPLIT_H_BAR);
+            detach(this.allBars[index]);
         }
+        this.allBars = [];
+        this.addSeparator(this.element);
     }
     checkSplitPane(currentBar, elementIndex) {
         let paneEle = currentBar.parentElement.children[elementIndex];

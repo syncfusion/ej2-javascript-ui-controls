@@ -34,6 +34,7 @@ export class Render {
     private resColWidth: number;
     private aggMenu: AggregateMenu;
     private field: string;
+    private fieldCaption: string;
     /* tslint:disable-next-line */
     private timeOutObj: any;
     /** Constructor for render module */
@@ -456,7 +457,8 @@ export class Render {
         if (args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' ||
             args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' ||
             args.item.id === 'AggMax' || args.item.id === 'AggMoreOption') {
-            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
+            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].id;
+            this.fieldCaption =  this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
         }
         switch (selected) {
             case 'pdf':
@@ -531,7 +533,7 @@ export class Render {
                 break;
             case 'AggMoreOption':
                 ele.setAttribute('id', this.field);
-                ele.setAttribute('data-caption', this.field);
+                ele.setAttribute('data-caption', this.fieldCaption);
                 ele.setAttribute('data-field', this.field);
                 ele.setAttribute('data-type', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].aggregateType);
                 ele.setAttribute('data-basefield', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseField);

@@ -214,6 +214,7 @@ export interface ToastModel extends ComponentModel{
      * The default value is null, which refers the `document.body` element.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     target?: HTMLElement | Element | string;
 

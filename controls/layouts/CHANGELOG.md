@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.39 (2019-07-30)
+
+### Splitter
+
+#### Bug Fixes
+
+- #242579 - Resolved the issue with "Split-bar rendering while change orientation dynamically"
+
 ## 17.2.36 (2019-07-24)
 
 ### Dashboard Layout

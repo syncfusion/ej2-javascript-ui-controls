@@ -6910,6 +6910,7 @@ var CALL_FUNCTION = new RegExp('\\((.*)\\)', '');
 var NOT_NUMBER = new RegExp('^[0-9]+$', 'g');
 var WORD = new RegExp('[\\w"\'.\\s+]+', 'g');
 var DBL_QUOTED_STR = new RegExp('"(.*?)"', 'g');
+var SPECIAL_CHAR = /\@|\#|\$/g;
 var exp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
 /**
@@ -7017,6 +7018,10 @@ function evalExp(str, nameSpace, helper) {
             // close condition 
             cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
         }
+        else if (SPECIAL_CHAR.test(cnt)) {
+            // evaluate normal expression with special character
+            cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
+        }
         else {
             // evaluate normal expression
             cnt = '"+' + addNameSpace(cnt.replace(/\,/gi, '+' + nameSpace + '.'), (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
@@ -7031,6 +7036,9 @@ function addNameSpace(str, addNS, nameSpace, ignoreList) {
 // function hashCode(str: string): string {
 //     return str.split('').reduce((a: number, b: string) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0).toString();
 // }
+function NameSpaceForspecialChar(str, addNS, nameSpace, ignoreList) {
+    return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '["' + str : str);
+}
 
 /**
  * Template Engine Bridge

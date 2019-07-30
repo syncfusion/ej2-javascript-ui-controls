@@ -432,7 +432,7 @@ export class UndoRedo {
         let parentNode: NodeModel = diagram.nameTable[(entryObject as Node).parentId];
         let actualObject: Node = diagram.nameTable[(entryObject as Node).id];
         if (parentNode) {
-            addChildToContainer(diagram, parentNode, actualObject, !isRedo);
+            addChildToContainer(diagram, parentNode, actualObject, !isRedo, entry.historyAction === 'AddNodeToLane');
         } else {
             if (actualObject.parentId) {
                 parentNode = diagram.nameTable[actualObject.parentId];

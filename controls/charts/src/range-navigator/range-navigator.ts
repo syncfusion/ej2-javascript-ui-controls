@@ -708,6 +708,10 @@ export class RangeNavigator extends Component<HTMLElement> {
      * @private
      */
     public rangeResize(e: Event): boolean {
+        // To avoid resize console error
+        if (!document.getElementById(this.element.id)) {
+            return false;
+        }
         this.animateSeries = false;
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);

@@ -29,6 +29,7 @@ export interface SparklineModel extends ComponentModel{
 
     /**
      * To configure sparkline data source.
+     * @isGenericType true
      * @default null
      */
     dataSource?: Object[] | DataManager;

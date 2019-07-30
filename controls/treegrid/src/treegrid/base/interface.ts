@@ -67,13 +67,19 @@ export interface ITreeGridCellFormatter {
     getValue(column: Column, data: Object): Object;
 }
 export interface RowExpandedEventArgs {
-    /** Defines the parent row data. */
+    /**
+     * Defines the parent row data.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the parent row element. */
     row?: HTMLTableRowElement;
 }
 export interface RowExpandingEventArgs {
-    /** Defines the parent row data. */
+    /**
+     * Defines the parent row data.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the parent row element. */
     row?: HTMLTableRowElement;
@@ -81,13 +87,19 @@ export interface RowExpandingEventArgs {
     cancel?: boolean;
 }
 export interface RowCollapsedEventArgs {
-    /** Defines the parent row data. */
+    /**
+     * Defines the parent row data.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the parent row element. */
     row?: HTMLTableRowElement;
 }
 export interface RowCollapsingEventArgs {
-    /** Defines the parent row data. */
+    /**
+     * Defines the parent row data.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the parent row element. */
     row?: HTMLTableRowElement;

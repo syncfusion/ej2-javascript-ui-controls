@@ -131,8 +131,6 @@ export interface CalendarBaseModel extends ComponentModel{
     /**
      * Customizes the key actions in Calendar.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object
      * 
      * <table> 
      * <tr> 
@@ -216,6 +214,9 @@ export interface CalendarBaseModel extends ComponentModel{
      * moveRight<br/></td><td colSpan=1 rowSpan=1> 
      * rightarrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object
      */
     keyConfigs?: { [key: string]: string };
 

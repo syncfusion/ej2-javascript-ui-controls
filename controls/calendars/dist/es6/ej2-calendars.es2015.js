@@ -320,6 +320,7 @@ let CalendarBase = class CalendarBase extends Component {
     }
     updateFooter() {
         this.todayElement.textContent = this.l10.getConstant('today');
+        this.todayElement.setAttribute('aria-label', this.l10.getConstant('today'));
     }
     createContentFooter() {
         if (this.showTodayButton) {
@@ -328,7 +329,7 @@ let CalendarBase = class CalendarBase extends Component {
             let l10nLocale = { today: 'Today' };
             this.globalize = new Internationalization(this.locale);
             this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
-            this.todayElement = this.createElement('button');
+            this.todayElement = this.createElement('button', { attrs: { role: 'button' } });
             rippleEffect(this.todayElement);
             this.updateFooter();
             addClass([this.todayElement], [BTN, TODAY, FLAT, PRIMARY, CSS]);

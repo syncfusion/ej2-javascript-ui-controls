@@ -132,7 +132,8 @@ export class PivotEngine {
     private selectedHeaders: AggregateCollection = { selectedHeader: [], values: [] };
     private rawIndexObject: INumberIndex = {};
     private isEditing: Boolean = false;
-    private data: IDataSet[] = [];
+    /** @hidden */
+    public data: IDataSet[] = [];
     private frameHeaderObjectsCollection: boolean = false;
     private headerObjectsCollection: { [key: string]: IAxisSet[] } = {};
     private localeObj: L10n;
@@ -194,8 +195,11 @@ export class PivotEngine {
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
         this.valueContent = [];
-        if (dataSource.dataSource && (dataSource.dataSource as IDataSet[])[0]) {
-            this.fields = Object.keys((dataSource.dataSource as IDataSet[])[0]);
+        if(!(dataSource.dataSource instanceof DataManager)) {
+            this.data = dataSource.dataSource;
+        }
+        if (this.data && (this.data as IDataSet[])[0]) {
+            this.fields = Object.keys((this.data as IDataSet[])[0]);
             let keys: string[] = this.fields;
             let report: { [key: number]: IFieldOptions[] } = {};
             report[0] = dataSource.rows;
@@ -222,8 +226,7 @@ export class PivotEngine {
             this.groups = dataSource.groupSettings ? dataSource.groupSettings : [];
             this.calculatedFieldSettings = dataSource.calculatedFieldSettings ? dataSource.calculatedFieldSettings : [];
             this.enableSort = dataSource.enableSorting === undefined ? true : dataSource.enableSorting;
-            fields = this.getGroupData(dataSource.dataSource as IDataSet[]);
-            this.data = dataSource.dataSource as IDataSet[];
+            fields = this.getGroupData(this.data as IDataSet[]);
             this.validateFilters(dataSource);
             this.isExpandAll = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? true : dataSource.expandAll;
             this.drilledMembers =
@@ -241,9 +244,9 @@ export class PivotEngine {
             this.savedFieldList = customProperties ? customProperties.savedFieldList : undefined;
             this.isDrillThrough = customProperties ? (customProperties.isDrillThrough ? customProperties.isDrillThrough : false) : false;
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-            this.fillFieldMembers(dataSource.dataSource as IDataSet[], this.indexMatrix);
+            this.fillFieldMembers(this.data as IDataSet[], this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix(dataSource.dataSource as IDataSet[]);
+            this.valueMatrix = this.generateValueMatrix(this.data as IDataSet[]);
             this.filterMembers = [];
             let columnLength: number = this.columns.length - 1;
             this.columnKeys = {};
@@ -1380,7 +1383,7 @@ export class PivotEngine {
     public generateGridData(dataSource: IDataOptions, headerCollection?: HeaderCollection): void {
         let keys: string[] = this.fields;
         let columns: IFieldOptions[] = dataSource.columns ? dataSource.columns : [];
-        let data: IDataSet[] = dataSource.dataSource as IDataSet[];
+        let data: IDataSet[] = this.data;
         let rows: IFieldOptions[] = dataSource.rows ? dataSource.rows : [];
         let filterSettings: IFilter[] = dataSource.filterSettings;
         let values: IFieldOptions[] = dataSource.values ? dataSource.values : [];

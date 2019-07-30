@@ -2383,14 +2383,15 @@ describe('Calendar', () => {
 
         describe('Keyboard interaction ', () => {
             let calendar: any;
-            let keyEventArgs: any = {
+            let keyEventArgs: any;
+            beforeEach(() => {
+                let ele: HTMLElement = createElement('div', { id: 'calendar' });
+                document.body.appendChild(ele);                
+                keyEventArgs = {
                 preventDefault: (): void => { /** NO Code */ },
                 target: null,
                 action: 'controlUp'
-            };
-            beforeEach(() => {
-                let ele: HTMLElement = createElement('div', { id: 'calendar' });
-                document.body.appendChild(ele);
+                };
             });
             afterEach(() => {
                 if (calendar) {
@@ -2420,6 +2421,50 @@ describe('Calendar', () => {
                 calendar.keyActionHandle(keyEventArgs);
                 expect(calendar.currentView()).toBe("Decade");
                 expect(document.querySelector('.e-title').textContent).toBe('2010 - 2019');
+            });
+            it('keyConfigs as null test case', () => {
+                calendar = new Calendar({ value: new Date('3/3/2017'), keyConfigs:null });
+                calendar.appendTo('#calendar');
+                expect(document.querySelector('.e-title').textContent).toBe('March 2017');
+                calendar.keyActionHandle(keyEventArgs);
+                expect(calendar.currentView()).toBe("Year");
+                keyEventArgs.action = 'home';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('Jan');
+                keyEventArgs.action = 'end';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('Dec');
+                keyEventArgs.action = 'controlUp';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(calendar.currentView()).toBe("Decade");
+                keyEventArgs.action = 'home';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('2010');
+                keyEventArgs.action = 'end';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('2019');
+            });
+            it('keyConfigs as undefined test case', () => {
+                calendar = new Calendar({ value: new Date('3/3/2017'), keyConfigs:undefined });
+                calendar.appendTo('#calendar');
+                expect(document.querySelector('.e-title').textContent).toBe('March 2017');
+                calendar.keyActionHandle(keyEventArgs);
+                expect(calendar.currentView()).toBe("Year");
+                keyEventArgs.action = 'home';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('Jan');
+                keyEventArgs.action = 'end';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('Dec');
+                keyEventArgs.action = 'controlUp';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(calendar.currentView()).toBe("Decade");
+                keyEventArgs.action = 'home';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('2010');
+                keyEventArgs.action = 'end';
+                calendar.keyActionHandle(keyEventArgs);
+                expect(document.querySelector('.e-focused-date').textContent).toBe('2019');
             });
             it(' home and end button testing on year and decade view ', () => {
                 calendar = new Calendar({ value: new Date('3/3/2017') });

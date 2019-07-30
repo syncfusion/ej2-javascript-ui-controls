@@ -41,15 +41,16 @@ export class CellEdit {
         if (data.hasChildRecords && (field === taskSettings.endDate || field === taskSettings.duration
             || field === taskSettings.dependency || field === taskSettings.progress)) {
             args.cancel = true;
-        }
-        if (!args.cancel) {
-            this.isCellEdit = true;
+        } else {
             this.parent.trigger('cellEdit', args);
             if (!isNOU(this.parent.toolbarModule) && !args.cancel) {
+                this.isCellEdit = true;
                 this.parent.toolbarModule.refreshToolbarItems();
+                if (args.columnName === 'Notes') {
+                    this.openNotesEditor(args);
+                }
             }
         }
-        this.openNotesEditor(args);
     }
     /**
      * To render edit dialog and to focus on notes tab

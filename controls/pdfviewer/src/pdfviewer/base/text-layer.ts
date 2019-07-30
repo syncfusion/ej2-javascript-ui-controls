@@ -11,6 +11,7 @@ export class TextLayer {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private notifyDialog: Dialog;
+    private isMessageBoxOpen: boolean;
     // tslint:disable-next-line
     private textBoundsArray: any[] = [];
     /** 
@@ -434,28 +435,32 @@ export class TextLayer {
      * @private
      */
     public createNotificationPopup(text: string): void {
-        // tslint:disable-next-line:max-line-length
-        let popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_notify', className: 'e-pv-notification-popup' });
-        this.pdfViewerBase.viewerContainer.appendChild(popupElement);
-        this.notifyDialog = new Dialog({
-            showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('PdfViewer'),
-            buttons: [{
-                buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
-                click: this.closeNotification.bind(this)
-            }],
-            content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
-            beforeClose: (): void => {
-                this.notifyDialog.destroy();
-                this.pdfViewer.element.removeChild(popupElement);
-                if (this.pdfViewer.textSearchModule) {
-                    this.pdfViewer.textSearch.isMessagePopupOpened = false;
+        if (!this.isMessageBoxOpen) {
+            // tslint:disable-next-line:max-line-length
+            let popupElement: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_notify', className: 'e-pv-notification-popup' });
+            this.pdfViewerBase.viewerContainer.appendChild(popupElement);
+            this.notifyDialog = new Dialog({
+                showCloseIcon: true, closeOnEscape: false, isModal: true, header: this.pdfViewer.localeObj.getConstant('PdfViewer'),
+                buttons: [{
+                    buttonModel: { content: this.pdfViewer.localeObj.getConstant('OK'), isPrimary: true },
+                    click: this.closeNotification.bind(this)
+                }],
+                content: '<div class="e-pv-notification-popup-content" tabindex = "0">' + text + '</div>', target: this.pdfViewer.element,
+                beforeClose: (): void => {
+                    this.notifyDialog.destroy();
+                    this.pdfViewer.element.removeChild(popupElement);
+                    if (this.pdfViewer.textSearchModule) {
+                        this.pdfViewer.textSearch.isMessagePopupOpened = false;
+                    }
+                    this.isMessageBoxOpen = false;
                 }
+            });
+            if (this.pdfViewer.enableRtl) {
+                this.notifyDialog.enableRtl = true;
             }
-        });
-        if (this.pdfViewer.enableRtl) {
-            this.notifyDialog.enableRtl = true;
+            this.notifyDialog.appendTo(popupElement);
+            this.isMessageBoxOpen = true;
         }
-        this.notifyDialog.appendTo(popupElement);
     }
 
     private closeNotification = (): void => {

@@ -727,6 +727,18 @@ describe('Recurrence Date Generator Specs', () => {
                         new Date('Thu Jun 12 2014 ').getTime(), new Date('Fri Jun 13 2014 ').getTime(),
                         new Date('Thu Jul 10 2014 ').getTime(), new Date('Fri Jul 11 2014 ').getTime(),
                         new Date('Mon Jul 14 2014 ').getTime(), new Date('Tue Jul 15 2014 ').getTime()]));
+        });        
+        it('Monthly FREQ with BYMONTHDAY and BYDAY properties', () => {
+            expect(
+                JSON.stringify(generate(new Date('Fri Jul 06 2019'),
+                    'FREQ=MONTHLY;BYMONTHDAY=5,6,7;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1;COUNT=10', null, 0)))
+                .toBe(
+                    JSON.stringify([
+                        new Date('Mon Aug 05 2019 ').getTime(), new Date('Thu Sep 05 2019 ').getTime(),
+                        new Date('Mon Oct 07 2019 ').getTime(), new Date('Tue Nov 05 2019 ').getTime(),
+                        new Date('Thu Dec 05 2019 ').getTime(), new Date('Mon Jan 06 2020 ').getTime(),
+                        new Date('Wed Feb 05 2020 ').getTime(), new Date('Thu Mar 05 2020 ').getTime(),
+                        new Date('Mon Apr 06 2020 ').getTime(), new Date('Tue May 05 2020 ').getTime()]));
         });
         it('Default - ByDay Single Day', () => {
             expect(

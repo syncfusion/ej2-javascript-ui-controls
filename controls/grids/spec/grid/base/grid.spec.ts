@@ -1,7 +1,7 @@
 /**
  * Grid base spec 
  */
-import { L10n, EmitType } from '@syncfusion/ej2-base';
+import { L10n, EmitType,EventHandler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
@@ -13,6 +13,7 @@ import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
+import { keyPressed, KeyboardEventArgs } from '../../../src';
 Grid.Inject(Page);
 
 describe('Grid base module', () => {
@@ -771,6 +772,176 @@ describe('Grid base module', () => {
         });
     });
 
+    describe('update cell and row method testing => ', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowFiltering: true,
+                    allowGrouping: true,
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: false,
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'EmployeeID', type: 'number', allowEditing: false },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity' },
+                        { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
+                        { field: 'ShipName', isIdentity: true },
+                        { field: 'ShipCountry', type: 'string', editType: 'dropdownedit' },
+                        { field: 'ShipRegion', type: 'string' },
+                        { field: 'ShipAddress', allowFiltering: true, visible: false },
+                        { field: 'OrderDate', format: { skeleton: 'yMd', type: 'date' }, type: 'date', editType: 'datepickeredit' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('update cell', () => {
+            gridObj.updateCell(0, 'CustomerID', 'updated');
+            expect(gridObj.element.querySelectorAll('.e-updatedtd').length).toBe(1);
+            expect((gridObj as any).contentModule.getRows()[0].changes.CustomerID).toBe('updated');
+        });
+
+        it('update row', () => {
+            gridObj.updateRow(1, { CustomerID: 'updatedrow' });
+            expect(gridObj.element.querySelectorAll('.e-updatedtd').length).toBe(2);
+            expect((gridObj as any).contentModule.getRows()[1].changes.CustomerID).toBe('updatedrow');
+        });
+
+        it('add record by method', () => {
+            gridObj.addRecord({ OrderID: 10247, CustomerID: 'updated' });
+            expect(gridObj.element.querySelectorAll('.e-updatedtd').length).toBeGreaterThan(2);
+            expect((gridObj as any).contentModule.getRows()[0].changes.OrderID).toBe(10247);
+        });
+
+        it('delete record by method', () => {
+            gridObj.deleteRecord('OrderID', gridObj.currentViewData[2]);
+            expect(gridObj.getContent().querySelectorAll('.e-row')[3].classList.contains('e-hiddenrow')).toBeTruthy();
+        });
+
+        it('getBatch changes method test', () => {
+            let batch: any = gridObj.getBatchChanges();
+            expect(batch.changedRecords[0].CustomerID).toBe('updated');
+            expect(batch.changedRecords[1].CustomerID).toBe('updatedrow');
+            expect(batch.addedRecords[0].OrderID).toBe(10247);
+            expect(batch.deletedRecords[0].OrderID).toBe(10250);
+        });
+
+        it('add record by method', () => {
+            gridObj.addRecord({ OrderID: 10246, CustomerID: 'updated' });
+            expect(gridObj.element.querySelectorAll('.e-updatedtd').length).toBeGreaterThan(0);
+            expect((gridObj as any).contentModule.getRows()[0].changes.OrderID).toBe(10246);
+        });
+
+        it('delete record by method', () => {
+            gridObj.clearSelection();
+            gridObj.selectRow(0, true);
+            gridObj.deleteRecord();
+            expect(gridObj.getContent().querySelectorAll('.e-row')[0].classList.contains('e-hiddenrow')).toBeFalsy();
+        });       
+
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
+        });
+
+        describe('Toolbar functionalities', () => {
+            let gridObj: Grid;
+            let actionBegin: (e?: Object) => void;
+            let actionComplete: (e?: Object) => void;
+        
+            beforeAll((done: Function) => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                    if (!isDef(window.performance)) {
+                        console.log("Unsupported environment, window.performance.memory is unavailable");
+                        this.skip(); //Skips test (in Chai)
+                    }
+                gridObj = createGrid(
+                    {
+                        dataSource: data,
+                        allowGrouping: true,
+                        width: "400px",
+                        columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                        { field: 'ShipCity' }],
+                        toolbar: ['Print', 'Edit', { text: 'hello', id: 'hello' }, 'expand'] as any,
+                        actionBegin: actionBegin,
+                        actionComplete: actionComplete,
+                    }, done);
+            });
+            
+            it('Enable Toolbar items', () => {
+                gridObj.enableToolbarItems(['Grid_update'], true);
+                gridObj.dataBind();
+                expect(gridObj.element.getAttribute('aria-disabled')).toBeFalsy;
+            });
+
+            it('Disable Toolbar items', () => {
+                gridObj.enableToolbarItems(['Grid_update'], false);
+                gridObj.dataBind();
+                expect(gridObj.element.getAttribute('aria-disabled')).toBeTruthy;
+            });
+        });
+    });
+
 
 });
+    describe('Capturing keypress events', () => {
+        let gridObj: Grid;
+        let preventDefault: Function = new Function();
+        let actionComplete: (e: KeyboardEventArgs) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    height: 500,
+                    columns: [
+                        { headerText: 'Order ID', field: 'OrderID' },
+                        { headerText: 'Customer ID', field: 'CustomerID' },
+                        { headerText: 'Freight', field: 'Freight' },
+                        { headerText: 'Order Date', field: 'OrderDate' },
+                    ],
+                    allowSelection: true,
+                }, done);
+        });
+        it('pressing keycode for "a" and ctrlkey as true', (done: Function) => {
+            let keyPressed = (args?: any): void => {
+                expect(args.keyCode).toEqual(65);        
+                done();
+            };
+            gridObj.keyPressed = keyPressed;
+            EventHandler.trigger(gridObj.element, "keydown", { keyCode: 65, ctrlKey: true });
+      
+        });
+        it('pressing keycode for "space" and ctrlkey as false , shiftkey as true', (done: Function) => {
+            let keyPressed = (args?: any): void => {
+                expect(args.keyCode).toEqual(32);        
+                done();
+            };
+            gridObj.keyPressed = keyPressed;
+            EventHandler.trigger(gridObj.element, "keydown", { keyCode: 32, ctrlKey: false, shiftKey: true });
+      
+        });
+        it('pressing keycode for "ctrl" and shiftkey  as true', (done: Function) => {
+            let keyPressed = (args?: any): void => {
+                expect(args.keyCode).toEqual(17);        
+                done();
+            };
+            gridObj.keyPressed = keyPressed;
+            EventHandler.trigger(gridObj.element, "keydown", { keyCode: 17, shiftKey: true });
+      
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
+
 

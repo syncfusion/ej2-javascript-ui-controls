@@ -137,6 +137,13 @@ export class Page implements IAction {
     }
 
     /**
+     * @hidden
+     */
+    public setPageSize(pageSize: number): void {
+        this.pagerObj.setPageSize(pageSize);
+    }
+
+    /**
      * The function used to update pageSettings model
      * @return {void}
      * @hidden
@@ -172,13 +179,21 @@ export class Page implements IAction {
         this.pagerObj.dataBind();
     }
 
-    private clickHandler(e: { currentPage: number, cancel: boolean }): void {
+    private clickHandler(e: { currentPage: number, newProp: PagerModel, oldProp: PagerModel, cancel: boolean }): void {
         let gObj: IGrid = this.parent;
         if (this.isForceCancel || isActionPrevent(gObj) && !gObj.prevPageMoving) {
             if (!this.isForceCancel) {
-                gObj.notify(events.preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
+                if (!isNullOrUndefined(e.newProp) && !isNullOrUndefined(e.newProp.pageSize)) {
+                    gObj.notify(events.preventBatch, { instance: this, handler: this.setPageSize, arg1: e.newProp.pageSize });
+                    this.pagerObj.pageSize = e.oldProp.pageSize;
+                    gObj.pageSettings.pageSize = e.newProp.pageSize;
+                } else if (e.currentPage) {
+                    gObj.notify(events.preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
+                    this.pagerObj.currentPage = gObj.pageSettings.currentPage === this.pagerObj.currentPage ?
+                        this.pagerObj.previousPageNo : gObj.pageSettings.currentPage;
+                }
                 this.isForceCancel = true;
-                this.pagerObj.currentPage = gObj.pageSettings.currentPage;
+
                 this.pagerObj.dataBind();
             } else {
                 this.isForceCancel = false;
@@ -186,6 +201,7 @@ export class Page implements IAction {
             e.cancel = true;
             return;
         }
+        gObj.pageSettings.pageSize = this.pagerObj.pageSize;
         gObj.prevPageMoving = false;
         let prevPage: number = this.pageSettings.currentPage;
         this.pageSettings.currentPage = e.currentPage;

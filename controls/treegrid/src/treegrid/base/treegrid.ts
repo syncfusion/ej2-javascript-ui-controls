@@ -1,5 +1,5 @@
 import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend} from '@syncfusion/ej2-base';
-import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
@@ -208,6 +208,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   /**
    * It is used to render TreeGrid table rows.
    * @default []
+   * @isGenericType true
    * @isDataSource true
    */
   @Property([])
@@ -1471,6 +1472,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.detailTemplate = getActualProperties(this.detailTemplate);
     let templateInstance: string = 'templateDotnetInstance';
     this.grid[templateInstance] = this[templateInstance];
+    let isJsComponent: string = 'isJsComponent';
+    this.grid[isJsComponent] = true;
   }
   private triggerEvents(args?: Object): void {
     this.trigger(getObject('name', args), args);
@@ -1667,7 +1670,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let key: string = 'key';
     this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
       this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
-    if (isBlazor()) {
+    if (isBlazor() && this.dataSource instanceof DataManager) {
       this.grid.dataSource[adaptorName] = this.dataSource[adaptorName];
       this.grid.dataSource[dotnetInstance] = this.dataSource[dotnetInstance];
       this.grid.dataSource[key] = this.dataSource[key];
@@ -2450,7 +2453,7 @@ private getGridEditSettings(): GridEditModel {
     /** 
      * Get current visible data of TreeGrid.
      * @return {Object[]}
-     * @hidden
+     * @isGenericType true
      */
     public getCurrentViewRecords(): Object[] {
       return this.grid.currentViewData;
@@ -2535,7 +2538,7 @@ private getGridEditSettings(): GridEditModel {
   /** 
    * Get the records of checked rows.
    * @return {Object[]}
-   * @hidden
+   * @isGenericType true
    */
 
     public getCheckedRecords(): Object[] {
@@ -2607,7 +2610,6 @@ private getGridEditSettings(): GridEditModel {
     let args: RowExpandingEventArgs = {data: record, row: row, cancel: false};
     this.trigger(events.expanding, args, (expandingArgs: RowExpandingEventArgs) => {
       if (!expandingArgs.cancel) {
-        this.resetTemplates();
         this.expandCollapse('expand', row, record);
         if (!(isRemoteData(this) && !isOffline(this))) {
         let collapseArgs: RowExpandedEventArgs = {data: record, row: row};
@@ -2635,7 +2637,6 @@ private getGridEditSettings(): GridEditModel {
     let args: RowCollapsingEventArgs = {data: record, row: row, cancel: false};
     this.trigger(events.collapsing, args, (collapsingArgs: RowCollapsingEventArgs) => {
       if (!collapsingArgs.cancel) {
-        this.resetTemplates();
         this.expandCollapse('collapse', row, record);
         let collapseArgs: RowCollapsedEventArgs = {data: record, row: row};
         this.trigger(events.collapsed, collapseArgs);
@@ -2643,16 +2644,6 @@ private getGridEditSettings(): GridEditModel {
     });
   }
 
-  private resetTemplates(): void {
-    for (let i: number = 0; i < this.columns.length; i++) {
-      if ((this.columns[i] as Column).template) {
-        resetBlazorTemplate(this.grid.element.id + (this.columns[i] as Column).uid, 'Template');
-      }
-      if ((this.columns[i] as Column).headerTemplate) {
-        resetBlazorTemplate(this.grid.element.id + (this.columns[i] as Column).uid + 'headerTemplate', 'HeaderTemplate');
-      }
-    }
-  }
   /**
    * Expands the records at specific hierarchical level
    * @return {void}
@@ -3010,6 +3001,7 @@ private getGridEditSettings(): GridEditModel {
 
   /**
    * Gets the collection of selected records.
+   * @isGenericType true
    * @return {Object[]}
    */
   public getSelectedRecords(): Object[] {

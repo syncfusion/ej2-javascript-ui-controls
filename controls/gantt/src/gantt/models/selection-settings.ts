@@ -8,8 +8,6 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     /**
      * Gantt supports row, cell, and both (row and cell) selection mode. 
      * @default Syncfusion.EJ2.Grids.SelectionMode.Row
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionMode
      * @blazorType Syncfusion.EJ2.Blazor.Grids.SelectionMode

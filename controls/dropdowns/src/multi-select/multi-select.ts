@@ -1925,7 +1925,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private updateMainList(state: boolean, value: string): void {
-        if (this.allowFiltering) {
+        if (this.allowFiltering || this.mode === 'CheckBox') {
             let element2: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', value);
             if (element2) {
                 if (state) {

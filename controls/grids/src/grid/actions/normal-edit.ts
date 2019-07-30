@@ -103,7 +103,7 @@ export class NormalEdit {
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
             foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.row = tr;
         }
         gObj.trigger(events.beginEdit, args, (begineditargs: EditEventArgs) => {

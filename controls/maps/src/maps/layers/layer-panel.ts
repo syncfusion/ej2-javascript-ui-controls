@@ -77,7 +77,7 @@ export class LayerPanel {
     protected renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
         let center: Point = new Point(panel.mapObject.centerPosition.longitude, panel.mapObject.centerPosition.latitude);
         panel.currentFactor = panel.calculateFactor(layer);
-        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel <= 1) {
+        if (isNullOrUndefined(panel.mapObject.tileZoomLevel) || panel.mapObject.tileZoomLevel >= 1) {
             panel.mapObject.tileZoomLevel = panel.mapObject.zoomSettings.zoomFactor;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint)) {
                 panel.mapObject.tileTranslatePoint.x = 0;

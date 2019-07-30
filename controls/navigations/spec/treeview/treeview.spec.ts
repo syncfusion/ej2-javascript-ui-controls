@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8 } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8, checkData } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
@@ -556,6 +556,55 @@ describe('TreeView control', () => {
                         treeObj.uncheckAll(['01-01', '03-03'])
                         treeObj.dataBind();
                         expect(treeObj.getAllCheckedNodes().length).toBe(4);
+                        done();
+                    }, 100);
+                });
+                it('CheckedNodes property testing with loadOnDemand enabled by UI', (done: Function) => {
+                    treeObj = new TreeView({
+                        fields: { dataSource: checkData, id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild', },
+                        showCheckBox: true,
+                        autoCheck: true
+                    }, '#tree1');
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function () {
+                        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                        expect(checkEle.length).toBeGreaterThan(0);
+                        expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                        expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                        var checknodes = treeObj.getAllCheckedNodes();
+                        expect(checknodes.length).toBe(9);
+                        expect(treeObj.checkedNodes.length).toBe(9);
+                        done();
+                    }, 100);
+                });
+                it('CheckedNodes property testing with loadOnDemand disabled by UI', (done: Function) => {
+                    treeObj = new TreeView({
+                        fields: { dataSource: checkData, id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild', },
+                        showCheckBox: true,
+                        autoCheck: true,
+                        loadOnDemand: false
+                    }, '#tree1');
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function () {
+                        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                        expect(checkEle.length).toBeGreaterThan(0);
+                        expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                        checkEle[0].querySelector('.e-frame').dispatchEvent(e);
+                        expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
+                        var checknodes = treeObj.getAllCheckedNodes();
+                        expect(checknodes.length).toBe(9);
+                        expect(treeObj.checkedNodes.length).toBe(9);
                         done();
                     }, 100);
                 });

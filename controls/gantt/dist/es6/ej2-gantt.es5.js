@@ -2620,11 +2620,19 @@ var GanttChart = /** @__PURE__ @class */ (function () {
      * @private
      */
     GanttChart.prototype.collapseGanttRow = function (args) {
-        var record = getValue('data', args);
         this.parent.trigger('collapsing', args);
-        if (getValue('cancel', args)) {
-            return;
+        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+            this.collapsedGanttRow(args);
         }
+        this.isExpandCollapseFromChart = false;
+    };
+    /**
+     * @return {void}
+     * @param args
+     * @private
+     */
+    GanttChart.prototype.collapsedGanttRow = function (args) {
+        var record = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
             this.parent.treeGrid.collapseRow(getValue('gridRow', args), record);
@@ -2646,11 +2654,19 @@ var GanttChart = /** @__PURE__ @class */ (function () {
      * @private
      */
     GanttChart.prototype.expandGanttRow = function (args) {
-        var record = getValue('data', args);
         this.parent.trigger('expanding', args);
-        if (getValue('cancel', args)) {
-            return;
+        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+            this.expandedGanttRow(args);
         }
+        this.isExpandCollapseFromChart = false;
+    };
+    /**
+     * @return {void}
+     * @param args
+     * @private
+     */
+    GanttChart.prototype.expandedGanttRow = function (args) {
+        var record = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
             this.parent.treeGrid.expandRow(getValue('gridRow', args), record);
@@ -4174,20 +4190,30 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
     };
     GanttTreeGrid.prototype.collapsing = function (args) {
         // Collapsing event
-    };
-    GanttTreeGrid.prototype.expanding = function (args) {
-        // Collapsing event
-    };
-    GanttTreeGrid.prototype.collapsed = function (args) {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             var collapsingArgs = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
+            setValue('cancel', getValue('cancel', collapsingArgs), args);
+        }
+    };
+    GanttTreeGrid.prototype.expanding = function (args) {
+        // Expanding event
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            var expandingArgs = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+            setValue('cancel', getValue('cancel', expandingArgs), args);
+        }
+    };
+    GanttTreeGrid.prototype.collapsed = function (args) {
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            var collapsedArgs = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     };
     GanttTreeGrid.prototype.expanded = function (args) {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            var expandingArgs = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+            var expandedArgs = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
         }
     };
     GanttTreeGrid.prototype.actionBegin = function (args) {
@@ -11483,14 +11509,16 @@ var CellEdit = /** @__PURE__ @class */ (function () {
             || field === taskSettings.dependency || field === taskSettings.progress)) {
             args.cancel = true;
         }
-        if (!args.cancel) {
-            this.isCellEdit = true;
+        else {
             this.parent.trigger('cellEdit', args);
             if (!isNullOrUndefined(this.parent.toolbarModule) && !args.cancel) {
+                this.isCellEdit = true;
                 this.parent.toolbarModule.refreshToolbarItems();
+                if (args.columnName === 'Notes') {
+                    this.openNotesEditor(args);
+                }
             }
         }
-        this.openNotesEditor(args);
     };
     /**
      * To render edit dialog and to focus on notes tab
@@ -12631,6 +12659,8 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         var item = this.taskBarEditRecord.ganttProperties;
         var left;
         var projectStartDate;
+        var endDate;
+        var startDate;
         switch (this.taskBarEditAction) {
             case 'ProgressResizing':
                 this.parent.setRecordValue('progress', this.getProgressPercent(item.width, item.progressWidth), item, true);
@@ -12639,10 +12669,10 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
                 projectStartDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.endDate)) {
-                    var endDate_1 = this.parent.dateValidationModule.getValidEndDate(item);
-                    this.parent.setRecordValue('endDate', endDate_1, item, true);
+                    endDate = this.parent.dateValidationModule.getValidEndDate(item);
+                    this.parent.setRecordValue('endDate', endDate, item, true);
                 }
-                var startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
                 this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
                 if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
                     && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
@@ -12657,7 +12687,7 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
                     startDate = this.parent.dateValidationModule.getValidStartDate(item);
                     this.parent.setRecordValue('startDate', startDate, item, true);
                 }
-                var endDate = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                endDate = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 break;
@@ -15902,6 +15932,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var currentViewData = this.parent.currentViewData;
         var ids = this.parent.ids;
         var currentItemIndex;
+        var recordIndex;
+        var updatedCollectionIndex;
+        var childIndex;
         switch (rowPosition) {
             case 'Top':
                 flatRecords.splice(0, 0, record);
@@ -15914,10 +15947,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 ids.push(record.ganttProperties.taskId.toString()); // need to check NAN
                 break;
             case 'Above':
-                var childIndex = void 0;
                 /*Record Updates*/
-                var recordIndex = flatRecords.indexOf(this.addRowSelectedItem);
-                var updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem);
+                recordIndex = flatRecords.indexOf(this.addRowSelectedItem);
+                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem);
                 this.recordCollectionUpdate(childIndex, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
             case 'Below':

@@ -110,7 +110,7 @@ export class Editor {
     public copiedContent: any = '';
     /* tslint:enable:no-any */
     private copiedTextContent: string = '';
-    private currentPasteOptions: PasteOptions = 'KeepSourceFormatting';
+    private currentPasteOptions: PasteOptions;
     private pasteTextPosition: PositionInfo = undefined;
     public isSkipHistory: boolean = false;
     public isPaste: boolean = false;
@@ -1995,11 +1995,14 @@ export class Editor {
      */
     /* tslint:disable:no-any */
     public pasteInternal(event: ClipboardEvent, pasteWindow?: any): void {
-        this.currentPasteOptions = 'KeepSourceFormatting';
+        this.currentPasteOptions = this.owner.defaultPasteOption;
         if (this.viewer.owner.enableLocalPaste) {
             this.paste();
         } else {
             this.selection.isViewPasteOptions = true;
+            if (this.selection.pasteElement) {
+                this.selection.pasteElement.style.display = 'none';
+            }
             if (isNullOrUndefined(pasteWindow)) {
                 pasteWindow = window;
             }
@@ -2022,6 +2025,7 @@ export class Editor {
                 this.pasteAjax(result, '.html');
             } else if (textContent !== '') {
                 this.pasteContents(textContent);
+                this.applyPasteOptions(this.currentPasteOptions);
                 this.viewer.editableDiv.innerHTML = '';
             }
             // if (textContent !== '') {
@@ -2055,6 +2059,7 @@ export class Editor {
 
     private pasteFormattedContent(result: any): void {
         this.pasteContents(result.data);
+        this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
     }
     private onPasteFailure(result: any): void {
@@ -2066,14 +2071,18 @@ export class Editor {
      * Pastes provided sfdt content or the data present in local clipboard if any .
      * @param {string} sfdt? insert the specified sfdt content at current position 
      */
-    public paste(sfdt?: string): void {
+    public paste(sfdt?: string, defaultPasteOption?: PasteOptions): void {
         if (isNullOrUndefined(sfdt)) {
             sfdt = this.owner.enableLocalPaste ? this.copiedData : undefined;
+        }
+        if (!isNullOrUndefined(defaultPasteOption)) {
+            this.currentPasteOptions = defaultPasteOption;
         }
         /* tslint:disable:no-any */
         if (sfdt) {
             let document: any = JSON.parse(sfdt);
-            this.pasteContents(document);
+                this.pasteContents(document);
+                this.applyPasteOptions(this.currentPasteOptions);
         }
     }
     private getBlocks(pasteContent: any): BlockWidget[] {
@@ -2173,8 +2182,7 @@ export class Editor {
         }
     }
     public applyPasteOptions(options: PasteOptions): void {
-        if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === ''
-            || this.currentPasteOptions === options) {
+        if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === '') {
             return;
         }
         this.isSkipHistory = true;

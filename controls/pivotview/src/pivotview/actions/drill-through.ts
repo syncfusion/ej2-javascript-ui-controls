@@ -76,7 +76,7 @@ export class DrillThrough {
         if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && pivotValue.value !== undefined) {
             let indexArray: string[] = Object.keys(pivotValue.indexObject);
             for (let index of indexArray) {
-                rawData.push((this.parent.dataSourceSettings.dataSource as IDataSet[])[Number(index)]);
+                rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
             }
             let aggType: string = this.parent.engineModule.fieldList[pivotValue.actualText].aggregateType;
             let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() :

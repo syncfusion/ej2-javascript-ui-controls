@@ -207,17 +207,23 @@ export class TextMarkupAnnotation {
                 case 'Highlight':
                     // tslint:disable-next-line:max-line-length
                     annotation = this.getAddedAnnotation(type, this.highlightColor, this.highlightOpacity, bounds, this.pdfViewer.highlightSettings.author, this.pdfViewer.highlightSettings.subject, this.pdfViewer.highlightSettings.modifiedDate, '', rect, pageNumber);
-                    this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
+                    if (annotation) {
+                        this.renderHighlightAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
+                    }
                     break;
                 case 'Strikethrough':
                     // tslint:disable-next-line:max-line-length
                     annotation = this.getAddedAnnotation(type, this.strikethroughColor, this.strikethroughOpacity, bounds, this.pdfViewer.strikethroughSettings.author, this.pdfViewer.strikethroughSettings.subject, this.pdfViewer.strikethroughSettings.modifiedDate, '', rect, pageNumber);
+                    if (annotation) {
                     this.renderStrikeoutAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
+                    }
                     break;
                 case 'Underline':
                     // tslint:disable-next-line:max-line-length
                     annotation = this.getAddedAnnotation(type, this.underlineColor, this.underlineOpacity, bounds, this.pdfViewer.underlineSettings.author, this.pdfViewer.underlineSettings.subject, this.pdfViewer.underlineSettings.modifiedDate, '', rect, pageNumber);
+                    if (annotation) {
                     this.renderUnderlineAnnotation(annotation.bounds, annotation.opacity, annotation.color, context, factor);
+                    }
                     break;
             }
             this.pdfViewerBase.isDocumentEdited = true;
@@ -455,6 +461,7 @@ export class TextMarkupAnnotation {
                         this.pdfViewer.annotationModule.addAction(this.selectTextMarkupCurrentPage, i, this.currentTextMarkupAnnotation, 'Text Markup Property modified', property);
                     }
                     this.currentTextMarkupAnnotation = pageAnnotations[i];
+                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(pageAnnotations[i]);
                 }
             }
         }
@@ -495,7 +502,7 @@ export class TextMarkupAnnotation {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public undoRedoPropertyChange(annotation: ITextMarkupAnnotation, pageNumber: number, index: number, property: string): ITextMarkupAnnotation {
+    public undoRedoPropertyChange(annotation: ITextMarkupAnnotation, pageNumber: number, index: number, property: string, isUndoAction?: boolean): ITextMarkupAnnotation {
         let pageAnnotations: ITextMarkupAnnotation[] = this.getAnnotations(pageNumber, null);
         if (pageAnnotations) {
             if (property === 'Color') {
@@ -506,6 +513,10 @@ export class TextMarkupAnnotation {
                 let tempOpacity: number = pageAnnotations[index].opacity;
                 pageAnnotations[index].opacity = annotation.opacity;
                 annotation.opacity = tempOpacity;
+            }
+            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotation, null, true);
+            if (isUndoAction) {
+                annotation.modifiedDate = new Date().toLocaleString();
             }
         }
         this.clearCurrentAnnotation();
@@ -777,7 +788,8 @@ export class TextMarkupAnnotation {
                 this.currentTextMarkupAnnotation = currentAnnot;
                 this.selectTextMarkupCurrentPage = pageNumber;
                 this.enableAnnotationPropertiesTool(true);
-                if (document.getElementById(this.pdfViewer.element.id + '_commantPanel').style.display === 'block') {
+                let commentPanelDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+                if (commentPanelDiv && commentPanelDiv.style.display === 'block') {
                     // tslint:disable-next-line
                     let accordionExpand: any = document.getElementById(this.pdfViewer.element.id + '_accordionContainer' + (pageNumber + 1));
                     if (accordionExpand) {
@@ -1121,13 +1133,17 @@ export class TextMarkupAnnotation {
         let modifiedDate: string = predefinedDate ? predefinedDate : date.toLocaleString();
         let annotationName: string = this.pdfViewer.annotation.createGUID();
         let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('textMarkup', pageNumber + 1, type);
-        document.getElementById(commentsDivid).id = annotationName;
+        if (commentsDivid) {
+            document.getElementById(commentsDivid).id = annotationName;
+        }
         let annotation: ITextMarkupAnnotation = {
             // tslint:disable-next-line:max-line-length
             textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect,
             annotName: annotationName, comments: [], review: {state: '', stateModel: '', author: 'Author', modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup'
         };
-        document.getElementById(annotationName).addEventListener('mouseup', this.annotationDivSelect(annotation, pageNumber));
+        if (document.getElementById(annotationName)) {
+            document.getElementById(annotationName).addEventListener('mouseup', this.annotationDivSelect(annotation, pageNumber));
+        }
         let storedIndex: number = this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotation, '_annotations_textMarkup');
         this.pdfViewer.annotationModule.addAction(pageNumber, storedIndex, annotation, 'Text Markup Added', null);
         return annotation;

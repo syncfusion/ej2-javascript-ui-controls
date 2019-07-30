@@ -50,6 +50,7 @@ export interface TreeMapModel extends ComponentModel{
 
     /**
      * Specifies the dataSource.
+     * @isGenericType true
      * @default null
      */
     dataSource?: DataManager | TreeMapAjax | Object[];

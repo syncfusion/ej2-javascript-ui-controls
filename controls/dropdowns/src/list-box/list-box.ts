@@ -1,9 +1,11 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
+import { Input, InputObject } from '@syncfusion/ej2-inputs';
 import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
 import { getUniqueID, Browser, formatUnit, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { prepend, append } from '@syncfusion/ej2-base';
 import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -15,6 +17,8 @@ const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
 export type SelectionMode = 'Multiple' | 'Single';
 
 export type ToolBarPosition = 'Left' | 'Right';
+
+export type CheckBoxPosition = 'Left' | 'Right';
 
 type dataType = { [key: string]: object } | string | boolean | number;
 type obj = { [key: string]: object };
@@ -48,7 +52,7 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      * @default 'Left'
      */
     @Property('Left')
-    public checkboxPosition: 'Left' | 'Right';
+    public checkboxPosition: CheckBoxPosition;
 }
 
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
@@ -125,7 +129,7 @@ export class ListBox extends DropDownBase {
      * Sets the specified item to the selected state or gets the selected item in the ListBox.
      * @default []
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     @Property([])
     public value: string[] | number[] | boolean[];
@@ -185,6 +189,20 @@ export class ListBox extends DropDownBase {
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
+
+    /**
+     * Adds a new item to the popup list. By default, new item appends to the list as the last item,
+     * but you can insert based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to place the newly added item in the popup list.
+     * @return {void}.
+     * @private
+     */
+    public addItem(
+        items: { [key: string]: Object }[] | { [key: string]: Object } | string | boolean | number | string[] | boolean[] | number[],
+        itemIndex?: number): void {
+        super.addItem(items, itemIndex);
+    }
 
     /**
      * Triggers while select / unselect the list item.
@@ -333,9 +351,11 @@ export class ListBox extends DropDownBase {
         this.list.setAttribute('role', 'listbox');
         attributes(this.list, { 'role': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
         if (this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll && this.liCollections.length) {
+            let l10nSelect: L10n = new L10n(
+                this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
             this.showSelectAll = true;
-            this.selectAllText = 'Select All';
-            this.unSelectAllText = 'Unselect All';
+            this.selectAllText = l10nSelect.getConstant('selectAllText');
+            this.unSelectAllText = l10nSelect.getConstant('unSelectAllText');
             this.popupWrapper = this.list;
             this.checkBoxSelectionModule.checkAllParent = null;
             this.notify('selectAll', {});
@@ -503,7 +523,6 @@ export class ListBox extends DropDownBase {
             }
             if (this.allowFiltering) {
                 this.setFiltering();
-                this.checkBoxSelectionModule.clearIconElement.style.display = 'none';
             }
         }
         this.initLoad = false;
@@ -728,7 +747,7 @@ export class ListBox extends DropDownBase {
             }
         });
         this.updateSelectedOptions();
-        if (this.allowFiltering) {
+        if (this.allowFiltering && this.selectionSettings.showCheckbox) {
             let liEle: HTMLCollectionOf<HTMLLIElement> = this.list.getElementsByTagName('li') as HTMLCollectionOf<HTMLLIElement>;
             let index: number = 0;
             if (state) {
@@ -745,26 +764,38 @@ export class ListBox extends DropDownBase {
                 }
 
             }
-            this.updateMainList();
+            if (document.querySelectorAll('ul').length < 2) {
+                this.updateMainList();
+            }
         }
         this.triggerChange(this.getSelectedItems(), event);
     }
 
     private updateMainList(): void {
-        let listindex: number = 0;
-        let valueindex: number = 0;
-        let count: number = 0;
-        for (listindex; listindex < this.mainList.childElementCount; listindex++) {
-            for (valueindex; valueindex < this.value.length; valueindex++) {
-                if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
-                    count++;
+        let mainCount: number = this.mainList.childElementCount;
+        let ulEleCount: number = this.ulElement.childElementCount;
+        if (this.selectionSettings.showCheckbox || (document.querySelectorAll('ul').length > 1 || mainCount !== ulEleCount)) {
+            let listindex: number = 0;
+            let valueindex: number = 0;
+            let count: number = 0;
+            for (listindex; listindex < this.mainList.childElementCount; ) {
+                for (valueindex; valueindex < this.value.length; valueindex++) {
+                    if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                        count++;
+                    }
                 }
+                if (!count && this.selectionSettings.showCheckbox) {
+                    this.mainList.getElementsByTagName('li')[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
+                }
+                if (document.querySelectorAll('ul').length > 1 && count && mainCount !== ulEleCount) {
+                    this.mainList.removeChild(this.mainList.getElementsByTagName('li')[listindex]);
+                    listindex = 0;
+                } else {
+                    listindex++;
+                }
+                count = 0;
+                valueindex = 0;
             }
-            if (!count) {
-                this.mainList.getElementsByTagName('li')[listindex].getElementsByClassName('e-frame')[0].classList.remove('e-check');
-            }
-            count = 0;
-            valueindex = 0;
         }
     }
 
@@ -818,16 +849,39 @@ export class ListBox extends DropDownBase {
         }
     }
 
-    private setFiltering(): void {
-        let args: { [key: string]: Object | string } = {
-            module: 'CheckBoxSelection',
-            enable: this.showCheckbox,
-            popupElement: this.popupWrapper
-        };
-        if (this.allowFiltering) {
-            this.notify('searchBox', args);
+    private setFiltering(): InputObject | void {
+        if (isNullOrUndefined(this.filterParent)) {
+            this.filterParent = this.createElement('span', {
+                className: 'e-filter-parent'
+            });
+            let filterInput: HTMLInputElement = <HTMLInputElement>this.createElement('input', {
+                attrs: { type: 'text' },
+                className: 'e-input-filter'
+            });
+            this.element.parentNode.insertBefore(filterInput, this.element);
+            let filterInputObj: InputObject = Input.createInput(
+                {
+                    element: filterInput
+                },
+                this.createElement
+            );
+            append([filterInputObj.container], this.filterParent);
+            prepend([this.filterParent], this.list);
+            attributes(filterInput, {
+                'aria-disabled': 'false',
+                'aria-owns': this.element.id + '_options',
+                'role': 'listbox',
+                'aria-activedescendant': null,
+                'autocomplete': 'off',
+                'autocorrect': 'off',
+                'autocapitalize': 'off',
+                'spellcheck': 'false'
+            });
+            EventHandler.add(filterInput, 'input', this.onInput, this);
+            EventHandler.add(filterInput, 'keyup', this.KeyUp, this);
+            EventHandler.add(filterInput, 'keydown', this.onKeyDown, this);
+            return filterInputObj;
         }
-
     }
 
     private selectHandler(e: MouseEvent | { target: EventTarget, ctrlKey?: boolean, shiftKey?: boolean }, isKey?: boolean): void {
@@ -870,7 +924,6 @@ export class ListBox extends DropDownBase {
             if (!isKey) {
                 this.notify('updatelist', { li: li, e: e });
             }
-            this.updateSelectedOptions();
             if (this.allowFiltering && !isKey) {
                 let liDataValue: string = this.getFormattedValue(li.getAttribute('data-value')) as string;
                 if (!isSelect) {
@@ -879,8 +932,11 @@ export class ListBox extends DropDownBase {
                 } else {
                     (this.value as string[]).push(liDataValue);
                 }
-                this.updateMainList();
+                if (document.querySelectorAll('ul').length < 2) {
+                    this.updateMainList();
+                }
             }
+            this.updateSelectedOptions();
             this.triggerChange(this.getSelectedItems(), e as MouseEvent);
         }
     }
@@ -949,7 +1005,14 @@ export class ListBox extends DropDownBase {
         this.moveData(this.getScopedListBox(), this);
     }
 
+    /**
+     * Called internally if any of the property value changed.
+     * @returns void
+     * @private
+     */
+    // tslint:disable-next-line:max-func-body-length
     private moveData(fListBox: ListBox, tListBox: ListBox, isKey?: boolean): void {
+        let count: number = 0;
         let idx: number[] = [];
         let dataIdx: number[] = [];
         let listData: dataType[] = [].slice.call(fListBox.listData);
@@ -958,8 +1021,20 @@ export class ListBox extends DropDownBase {
         let elems: Element[] = fListBox.getSelectedItems();
         let isRefresh: boolean | string = tListBox.sortOrder !== 'None' ||
             (tListBox.selectionSettings.showCheckbox !== fListBox.selectionSettings.showCheckbox) || tListBox.fields.groupBy;
+        if (fListBox.getSelectedItems().length !== fListBox.value.length) {
+            let index: number = 0;
+            fListBox.value = [];
+            for (index; index < fListBox.getSelectedItems().length; index++) {
+                fListBox.value[index] = fListBox.getSelectedItems()[index].getAttribute('data-value');
+            }
+        }
         if (elems.length) {
             this.removeSelected(fListBox, elems);
+            if (fListBox.allowFiltering) {
+                (fListBox.sortedData as string[] | boolean[] | number[] | {
+                    [key: string]: Object;
+                }[] | DataManager) = fListBox.dataSource;
+            }
             elems.forEach((ele: Element, i: number) => {
                 idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele));
                 dataIdx.push(Array.prototype.indexOf.call(listData, fListBox.sortedData[idx[i]]));
@@ -971,8 +1046,35 @@ export class ListBox extends DropDownBase {
                 listData.splice(i, 1)[0];
             });
             idx.slice().reverse().forEach((i: number) => {
-                data.push(fListBox.sortedData.splice(i, 1)[0]);
+                if (fListBox.mainList.childElementCount === fListBox.ulElement.childElementCount) {
+                    data.push(fListBox.sortedData.splice(i, 1)[0]);
+                } else {
+                    fListBox.sortedData = (fListBox.sortedData as { [key: string]: Object }[]
+                    ).filter((value1: { [key: string]: Object; }) =>
+                        !(value1.Country === fListBox.ulElement.getElementsByTagName('li')[i].getAttribute('data-value')));
+                    if (count === 0) {
+                        let i: number;
+                        let j: number;
+                        for (i = 0; i < fListBox.sortedData.length; i++) {
+                            for (j = 0; j < fListBox.value.length; j++) {
+                                if (fListBox.sortedData[i].text === fListBox.value[j]) {
+                                    (tListBox.dataSource as { [key: string]: object; }[]).push(fListBox.sortedData[i]);
+                                    fListBox.sortedData = (fListBox.sortedData as { [key: string]: Object }[]
+                                    ).filter((value1: { [key: string]: Object; }) =>
+                                        !(value1.text === fListBox.value[j]));
+
+                                }
+                            }
+                        }
+                        count++;
+                    }
+                }
+                fListBox.setProperties({ dataSource: fListBox.sortedData }, true);
             });
+            if (tListBox.sortedData.length !== (tListBox.dataSource as string[]).length) {
+                tListBox.setProperties({ sortedData: tListBox.dataSource }, true);
+                tListData = tListBox.dataSource as string[];
+            }
             if (isRefresh) {
                 if (fListBox.fields.groupBy) {
                     fListBox.ulElement.innerHTML = fListBox.renderItems(listData as obj[], fListBox.fields).innerHTML;
@@ -982,6 +1084,10 @@ export class ListBox extends DropDownBase {
             } else {
                 moveTo(fListBox.ulElement, tListBox.ulElement, idx);
             }
+            if (tListBox.mainList.childElementCount !== (tListBox.dataSource as string[]).length) {
+                tListBox.mainList = tListBox.ulElement;
+            }
+            fListBox.updateMainList();
             let childCnt: number = fListBox.ulElement.childElementCount;
             let ele: Element;
             let liIdx: number;
@@ -994,6 +1100,7 @@ export class ListBox extends DropDownBase {
             if (isKey) {
                 this.list.focus();
             }
+            listData = fListBox.dataSource as dataType[];
             (fListBox.listData as dataType[]) = listData;
             fListBox.setProperties({ dataSource: listData }, true);
             tListData = tListData.concat(data.reverse());
@@ -1009,6 +1116,9 @@ export class ListBox extends DropDownBase {
             if (fListBox.listData.length === 0) {
                 fListBox.l10nUpdate();
             }
+        }
+        if (fListBox.value.length === 1 && fListBox.getSelectedItems().length) {
+            fListBox.value[0] = fListBox.getSelectedItems()[0].innerHTML;
         }
     }
 
@@ -1161,12 +1271,10 @@ export class ListBox extends DropDownBase {
     }
 
     private KeyUp(e: KeyboardEvent): void {
-        if (this.selectionSettings.showCheckbox) {
-            let char: string = String.fromCharCode(e.keyCode);
-            let isWordCharacter: Object = char.match(/\w/);
-            if (!isNullOrUndefined(isWordCharacter)) {
-                this.isValidKey = true;
-            }
+        let char: string = String.fromCharCode(e.keyCode);
+        let isWordCharacter: Object = char.match(/\w/);
+        if (!isNullOrUndefined(isWordCharacter)) {
+            this.isValidKey = true;
         }
         this.isValidKey = (e.keyCode === 8) || this.isValidKey;
         if (this.isValidKey) {
@@ -1197,7 +1305,6 @@ export class ListBox extends DropDownBase {
                             this.dataUpdater(this.dataSource, null, this.fields);
                         }
                         (this.list.getElementsByClassName('e-input-filter')[0] as HTMLElement).focus();
-                        this.checkBoxSelectionModule.clearIconElement.style.display = 'none';
                     }
             }
         }
@@ -1205,9 +1312,6 @@ export class ListBox extends DropDownBase {
 
     protected targetElement(): string {
         this.targetInputElement = this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement;
-        if (this.selectionSettings.showCheckbox && this.allowFiltering) {
-            this.notify('targetElement', { module: 'CheckBoxSelection', enable: this.selectionSettings.showCheckbox });
-        }
         return this.targetInputElement.value;
     }
 
@@ -1373,26 +1477,43 @@ export class ListBox extends DropDownBase {
         let liColl: NodeListOf<Element> = this.list.lastElementChild.querySelectorAll('li');
         let liCollLen: number = this.list.lastElementChild.getElementsByClassName('e-list-item').length;
         if (showCheckbox) {
+            this.ulElement = this.renderItems(this.listData as obj[], this.fields);
+            this.mainList = this.ulElement;
+            this.list.removeChild(this.list.getElementsByTagName('ul')[0]);
+            this.list.appendChild(this.ulElement);
+
             if (this.selectionSettings.showSelectAll) {
+                let l10nShow: L10n = new L10n(
+                    this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
+                this.showSelectAll = true;
+                this.selectAllText = l10nShow.getConstant('selectAllText');
+                this.unSelectAllText = l10nShow.getConstant('unSelectAllText');
+                this.popupWrapper = this.list;
+                this.checkBoxSelectionModule.checkAllParent = null;
                 this.notify('selectAll', {});
                 this.checkSelectAll();
             }
-            for (index; index < liCollLen; index++) {
-                liColl[index].firstElementChild.classList.add('e-checkbox-wrapper');
-            }
-
         } else {
             if (this.selectionSettings.showSelectAll) {
                 this.list.removeChild(this.list.getElementsByClassName('e-selectall-parent')[0]);
             }
             for (index; index < liCollLen; index++) {
-                liColl[index].firstElementChild.classList.remove('e-checkbox-wrapper');
+                liColl[index].removeChild(liColl[index].getElementsByClassName('e-checkbox-wrapper')[0]);
+                if (liColl[index].hasAttribute('aria-selected')) {
+                    liColl[index].removeAttribute('aria-selected');
+                }
             }
+            this.mainList = this.ulElement;
         }
+        this.value = [];
     }
 
     private isSelected(ele: Element): boolean {
-        return ele.classList.contains(cssClass.selected) || ele.querySelector('.e-check') !== null;
+        if (!isNullOrUndefined(ele)) {
+            return ele.classList.contains(cssClass.selected) || ele.querySelector('.e-check') !== null;
+        } else {
+            return false;
+        }
     }
 
     private getSelectTag(): Element {
@@ -1538,7 +1659,13 @@ export class ListBox extends DropDownBase {
                     if (!isNullOrUndefined(showSelectAll)) {
                         this.showSelectAll = showSelectAll;
                         if (this.showSelectAll) {
+                            let l10nSel: L10n = new L10n(
+                                this.getModuleName(), { selectAllText: 'Select All', unSelectAllText: 'Unselect All' }, this.locale);
                             this.checkBoxSelectionModule.checkAllParent = null;
+                            this.showSelectAll = true;
+                            this.selectAllText = l10nSel.getConstant('selectAllText');
+                            this.unSelectAllText = l10nSel.getConstant('selectAllText');
+                            this.popupWrapper = this.list;
                         }
                         this.notify('selectAll', {});
                         this.checkSelectAll();
@@ -1576,6 +1703,9 @@ export interface BeforeItemRenderEventArgs extends BaseEventArgs {
  */
 export interface DragEventArgs {
     elements: Element[];
+/**
+ * @isGenericType true
+ */
     items: Object[];
     target?: Element;
     dragSelected?: boolean;
@@ -1586,7 +1716,13 @@ export interface DragEventArgs {
  */
 export interface ListBoxChangeEventArgs extends BaseEventArgs {
     elements: Element[];
+/**
+ * @isGenericType true
+ */
     items: Object[];
+/**
+ * @isGenericType true
+ */
     value: number | string | boolean;
     event: Event;
 }

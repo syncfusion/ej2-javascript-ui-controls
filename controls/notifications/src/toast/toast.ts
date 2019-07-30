@@ -348,6 +348,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * The default value is null, which refers the `document.body` element.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     @Property(null)
     public target: HTMLElement | Element | string;

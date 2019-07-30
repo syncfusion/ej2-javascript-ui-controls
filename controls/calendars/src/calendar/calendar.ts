@@ -240,8 +240,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**     
      * Customizes the key actions in Calendar.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object
      * 
      * <table> 
      * <tr> 
@@ -325,6 +323,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * moveRight<br/></td><td colSpan=1 rowSpan=1> 
      * rightarrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };
@@ -597,6 +598,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected updateFooter(): void {
         this.todayElement.textContent = this.l10.getConstant('today');
+        this.todayElement.setAttribute('aria-label', this.l10.getConstant('today'));
     }
     protected createContentFooter(): void {
         if (this.showTodayButton) {
@@ -605,7 +607,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let l10nLocale: object = { today: 'Today' };
             this.globalize = new Internationalization(this.locale);
             this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
-            this.todayElement = this.createElement('button');
+            this.todayElement = this.createElement('button', { attrs: { role: 'button' } });
             rippleEffect(this.todayElement);
             this.updateFooter();
             addClass([this.todayElement], [BTN, TODAY, FLAT, PRIMARY, CSS]);

@@ -951,6 +951,36 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+  
+  describe('Checking template position', () => {
+    let gridObj: TreeGrid;
+    let rows: HTMLTableRowElement[];
+    let dataBound: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', width: 60, textAlign: 'Right' },
+            {
+                headerText: 'Template', textAlign: 'Center',
+                template: '<button id="button">Button</button>', width: 90
+            }
+            ],
+        },
+        done
+      );
+    });
+    it('Checking template position when the template column is marked as treeColumnIndex ', () => {
+      let cell = document.getElementsByClassName("e-templatecell")[0];
+      expect((cell.getElementsByClassName('e-treecell')[0] as any).innerText == "Button").toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
   it('memory leak', () => {
     profile.sample();

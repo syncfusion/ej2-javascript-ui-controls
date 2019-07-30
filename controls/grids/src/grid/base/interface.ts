@@ -393,6 +393,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     isEdit?: boolean;
 
+    isJsComponent?: boolean;
+
     commonQuery?: Query;
 
     scrollPosition: ScrollPositionType;
@@ -898,7 +900,9 @@ export interface PrintEventArgs extends GridActionEventArgs {
 export interface DetailDataBoundEventArgs {
     /** Defines the details row element. */
     detailElement?: Element;
-    /** Defines the selected row data. */
+    /** Defines the selected row data. 
+     * @isGenericType true
+     */
     data?: Object;
 }
 
@@ -914,7 +918,9 @@ export interface ColumnChooserEventArgs {
 }
 
 export interface RowDeselectEventArgs {
-    /** Defines the current selected/deselected row data. */
+    /** Defines the current selected/deselected row data. 
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the selected/deselected row index. */
     rowIndex?: number;
@@ -954,7 +960,9 @@ export interface RecordDoubleClickEventArgs {
     name?: string;
     /** Defines the row element. */
     row?: Element;
-    /** Defines the current row data. */
+    /** Defines the current row data.
+     * @isGenericType true
+     */
     rowData?: Object;
     /** Defines the row index. */
     rowIndex?: number;
@@ -970,7 +978,9 @@ export interface RowSelectingEventArgs extends RowSelectEventArgs {
 }
 
 export interface CellDeselectEventArgs {
-    /** Defines the currently selected/deselected row data. */
+    /** Defines the currently selected/deselected row data. 
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the indexes of the current selected/deselected cells. */
     cellIndexes?: ISelectedCell[];
@@ -1008,7 +1018,9 @@ export interface ColumnDragEventArgs {
 }
 
 export interface RowDataBoundEventArgs {
-    /** Defines the current row data. */
+    /** Defines the current row data.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the row element. */
     row?: Element;
@@ -1024,7 +1036,9 @@ export interface HeaderCellInfoEventArgs {
 }
 
 export interface QueryCellInfoEventArgs {
-    /** Defines the row data associated with this cell. */
+    /** Defines the row data associated with this cell.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the cell element. */
     cell?: Element;
@@ -1050,7 +1064,9 @@ export interface PdfQueryCellInfoEventArgs {
     value?: Date | string | number | boolean;
     /** Defines the no. of columns to be spanned */
     colSpan?: number;
-    /** Defines the data of the cell */
+    /** Defines the data of the cell
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the current PDF cell */
     cell?: PdfGridCell;
@@ -1078,7 +1094,9 @@ export interface PdfHeaderQueryCellInfoEventArgs {
 }
 
 export interface ExcelQueryCellInfoEventArgs {
-    /** Defines the row data associated with this cell. */
+    /** Defines the row data associated with this cell.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the column of the current cell. */
     column: Column;
@@ -1280,7 +1298,9 @@ export interface RowDragEventArgs {
      * @hidden
      */
     draggableType?: string;
-    /** Defines the selected row data. */
+    /** Defines the selected row data.
+     * @isGenericType true
+     */
     data?: Object[];
     /** Defines the drag element from index. */
     fromIndex?: number;
@@ -1372,7 +1392,9 @@ export interface IPrimaryKey {
 }
 
 export interface BeforeBatchAddArgs extends ICancel, IPrimaryKey {
-    /** Defines the default data object. */
+    /** Defines the default data object. 
+     * @isGenericType true
+     */
     defaultData?: Object;
 
 }
@@ -1391,7 +1413,9 @@ export interface BatchCancelArgs {
  * @hidden
  */
 export interface BatchDeleteArgs extends IPrimaryKey {
-    /** Defines the deleted data. */
+    /** Defines the deleted data. 
+     * @isGenericType true
+     */
     rowData?: Object;
     /** Defines the row index. */
     rowIndex?: number;
@@ -1421,7 +1445,9 @@ export interface ResizeArgs extends ICancel {
  * @hidden
  */
 export interface BatchAddArgs extends ICancel, IPrimaryKey {
-    /** Defines the added data. */
+    /** Defines the added data.
+     * @isGenericType true
+     */
     defaultData?: Object;
     /** Defines the column index. */
     columnIndex?: number;
@@ -1434,7 +1460,9 @@ export interface BatchAddArgs extends ICancel, IPrimaryKey {
 }
 
 export interface BeginEditArgs extends ICancel, IPrimaryKey {
-    /** Defines the edited data. */
+    /** Defines the edited data. 
+     * @isGenericType true
+     */
     rowData?: Object;
     /** Defines the edited row index. */
     rowIndex?: number;
@@ -1453,7 +1481,9 @@ export interface DeleteEventArgs {
     requestType?: string;
     /** Defines the foreign key record object (JSON). @hidden */
     foreignKeyData?: Object;
-    /** Defines the record objects. */
+    /** Defines the record objects.
+     * @isGenericType true
+     */
     data?: Object[];
     /** Defines the selected rows for delete. */
     tr?: Element[];
@@ -1470,7 +1500,9 @@ export interface AddEventArgs {
      * @hidden 
      */
     foreignKeyData?: Object;
-    /** Defines the record objects. */
+    /** Defines the record objects.
+     * @isGenericType true
+     */
     data?: Object;
     /** Defines the event name. */
     type?: string;
@@ -1490,7 +1522,9 @@ export interface AddEventArgs {
 }
 
 export interface SaveEventArgs extends AddEventArgs {
-    /** Defines the previous data. */
+    /** Defines the previous data.
+     * @isGenericType true
+     */
     previousData?: Object;
     /** Defines the selected row index. */
     selectedRow?: number;
@@ -1526,7 +1560,9 @@ export interface DialogEditEventArgs extends EditEventArgs {
  * @hidden
  */
 export interface CellEditSameArgs extends ICancel {
-    /** Defines the row data object. */
+    /** Defines the row data object.
+     * @isGenericType true
+     */
     rowData?: Object;
     /** Defines the column name. */
     columnName?: string;
@@ -1559,7 +1595,9 @@ export interface CommandClickEventArgs {
     cancel?: boolean;
     /** Defines the current command column . */
     commandColumn?: CommandModel;
-    /** returns particular row data */
+    /** returns particular row data 
+     * @isGenericType true
+     */
     rowData?: Object;
 }
 
@@ -1577,7 +1615,9 @@ export interface CellSaveArgs extends CellEditSameArgs {
 }
 
 export interface BeforeDataBoundArgs {
-    /** Defines the data. */
+    /** Defines the data.
+     * @isGenericType true
+     */
     result?: Object[];
     /** Defines the data count. */
     count?: number;
@@ -1738,7 +1778,9 @@ export interface DataSourceChangedEventArgs {
     key?: string | string[];
     /** Defines the state of the performed action */
     state?: DataStateChangeEventArgs;
-    /** Defines the selected row data. */
+    /** Defines the selected row data. 
+     * @isGenericType true
+     */
     data?: Object | Object[];
     /** Defines the primary key value */
     primaryKeyValues?: Object[];
@@ -1841,6 +1883,14 @@ export interface SwapInfo {
     toFrozen?: boolean;
     current?: number[];
 }
+
+/**
+ * @hidden
+ */
+export interface KeyboardEventArgs extends KeyboardEvent {
+    cancel?: boolean;
+}
+
 /**
  * @hidden
  */
@@ -1864,6 +1914,7 @@ export interface IFilter {
     hideSearchbox?: boolean;
     itemTemplate?: string;
     ui?: IFilterMUI;
+    operator?: string;
     params?: DatePickerModel | NumericTextBoxModel | DropDownListModel | AutoCompleteModel | DateTimePickerModel;
 }
 
@@ -2099,4 +2150,39 @@ export interface DataResult {
 
 export interface RowDropEventArgs extends RowDragEventArgs {
     cancel?: boolean;
+}
+
+export interface AggregateTemplateContext {
+    /** Gets sum aggregate value */
+    sum: string;
+    /** Gets average aggregate value */
+    average: string;
+    /** Gets maximum aggregate value */
+    max: string;
+    /** Gets minimum aggregate value */
+    min: string;
+    /** Gets count aggregate value */
+    count: string;
+    /** Gets true count aggregate value */
+    trueCount: string;
+    /** Specifies false count aggregate value */
+    falseCount: string;
+    /** Gets custom aggregate value */
+    custom: string;
+}
+
+export interface CaptionTemplateContext {
+    GroupGuid?: string;
+    /** Gets the current group field name */
+    field?: string;
+    /** Gets depth or level in which the group caption is present. */
+    level?: number;
+    /** Gets grouped data key value */
+    key?: string;
+    /** Gets corresponding grouped foreign key value */
+    foreignKey?: string;
+    /** Gets count value which specified the number of records in the group */
+    count?: number;
+    /** Gets header text of the grouped column */
+    headerText?: string;
 }

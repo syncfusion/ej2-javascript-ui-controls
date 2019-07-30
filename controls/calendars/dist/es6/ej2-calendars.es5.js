@@ -336,6 +336,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     CalendarBase.prototype.updateFooter = function () {
         this.todayElement.textContent = this.l10.getConstant('today');
+        this.todayElement.setAttribute('aria-label', this.l10.getConstant('today'));
     };
     CalendarBase.prototype.createContentFooter = function () {
         if (this.showTodayButton) {
@@ -344,7 +345,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var l10nLocale = { today: 'Today' };
             this.globalize = new Internationalization(this.locale);
             this.l10 = new L10n(this.getModuleName(), l10nLocale, this.locale);
-            this.todayElement = this.createElement('button');
+            this.todayElement = this.createElement('button', { attrs: { role: 'button' } });
             rippleEffect(this.todayElement);
             this.updateFooter();
             addClass([this.todayElement], [BTN, TODAY, FLAT, PRIMARY, CSS]);

@@ -1092,6 +1092,11 @@ var DataUtil = /** @__PURE__ @class */ (function () {
      */
     DataUtil.serverTimezoneOffset = null;
     /**
+     * Species whether are not to be parsed with serverTimezoneOffset value.
+     * @hidden
+     */
+    DataUtil.timeZoneHandling = true;
+    /**
      * Throw error with the given string as message.
      * @param  {string} er
      */
@@ -2328,13 +2333,14 @@ var DataUtil = /** @__PURE__ @class */ (function () {
             var dupValue = value;
             if (typeof value === 'string') {
                 var ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
+                var offSet = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
                 if (ms) {
-                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
+                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
                 }
                 else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
                     var arr = dupValue.split(/[^0-9]/);
                     value = DataUtil.dateParse
-                        .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), DataUtil.serverTimezoneOffset, true);
+                        .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), offSet, true);
                 }
             }
             return value;
@@ -2995,7 +3001,12 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
     UrlAdaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes) {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            var handleTimeZone = DataUtil.timeZoneHandling;
+            if (ds && !ds.timeZoneHandling) {
+                DataUtil.timeZoneHandling = false;
+            }
             data = DataUtil.parse.parseJson(data);
+            DataUtil.timeZoneHandling = handleTimeZone;
         }
         var requests = request;
         var pvt = requests.pvtData || {};
@@ -3654,7 +3665,19 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
         var req = '';
         var stat = {
             'method': 'DELETE ',
-            'url': function (data, i, key) { return '(' + data[i][key] + ')'; },
+            'url': function (data, i, key) {
+                var url = DataUtil.getObject(key, data[i]);
+                if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                    return '(' + url + ')';
+                }
+                else if (url instanceof Date) {
+                    var dateTime = data[i][key];
+                    return '(' + dateTime.toJSON() + ')';
+                }
+                else {
+                    return "('" + url + "')";
+                }
+            },
             'data': function (data, i) { return ''; }
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3694,7 +3717,18 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
         arr.forEach(function (change) { return change = _this.compareAndRemove(change, org.filter(function (o) { return DataUtil.getObject(e.key, o) === DataUtil.getObject(e.key, change); })[0], e.key); });
         var stat = {
             'method': this.options.updateType + ' ',
-            'url': function (data, i, key) { return '(' + data[i][key] + ')'; },
+            'url': function (data, i, key) {
+                if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
+                    return '(' + data[i][key] + ')';
+                }
+                else if (data[i][key] instanceof Date) {
+                    var date = data[i][key];
+                    return '(' + date.toJSON() + ')';
+                }
+                else {
+                    return "('" + data[i][key] + "')";
+                }
+            },
             'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -4443,11 +4477,16 @@ var DataManager = /** @__PURE__ @class */ (function () {
         var _this = this;
         /** @hidden */
         this.dateParse = true;
+        /** @hidden */
+        this.timeZoneHandling = true;
         this.requests = [];
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
         adaptor = adaptor || dataSource.adaptor;
+        if (dataSource && dataSource.timeZoneHandling === false) {
+            this.timeZoneHandling = dataSource.timeZoneHandling;
+        }
         var data;
         if (dataSource instanceof Array) {
             data = {

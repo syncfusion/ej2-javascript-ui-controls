@@ -14,7 +14,7 @@ export interface KeyboardEventsModel {
 
     /**
      * Specifies on which event keyboardEvents class should listen for key press. For ex., `keyup`, `keydown` or `keypress`
-     * @default keyup
+     * @default 'keyup'
      */
     eventName?: string;
 

@@ -13210,6 +13210,9 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
 };
 __decorate([
+    Property('KeepSourceFormatting')
+], DocumentEditor.prototype, "defaultPasteOption", void 0);
+__decorate([
     Property('')
 ], DocumentEditor.prototype, "currentUser", void 0);
 __decorate([
@@ -18816,7 +18819,8 @@ class Layout {
             let fieldBegin = this.viewer.fields[i];
             if (!isNullOrUndefined(this.viewer.selection)) {
                 let fieldCode = this.viewer.selection.getFieldCode(fieldBegin);
-                if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages')) {
+                // tslint:disable-next-line:max-line-length
+                if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages') && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
                     let textElement = fieldBegin.fieldSeparator.nextNode;
                     if (!isNullOrUndefined(textElement)) {
                         let prevPageNum = textElement.text;
@@ -19618,7 +19622,9 @@ class Renderer {
      * @param {HeaderFooterWidget} headFootWidget
      */
     renderHFWidgets(page, widget, width, isHeader) {
-        this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 1 : 0.65;
+        if (!this.isPrinting) {
+            this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 1 : 0.65;
+        }
         let cliped = false;
         if (isHeader) {
             let topMargin = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
@@ -19639,7 +19645,9 @@ class Renderer {
         if (cliped) {
             this.pageContext.restore();
         }
-        this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 0.65 : 1;
+        if (!this.isPrinting) {
+            this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 0.65 : 1;
+        }
     }
     renderHeaderSeparator(page, left, top, widget) {
         //Header Widget
@@ -41900,7 +41908,6 @@ class Editor {
         this.copiedContent = '';
         /* tslint:enable:no-any */
         this.copiedTextContent = '';
-        this.currentPasteOptions = 'KeepSourceFormatting';
         this.pasteTextPosition = undefined;
         this.isSkipHistory = false;
         this.isPaste = false;
@@ -43842,12 +43849,15 @@ class Editor {
      */
     /* tslint:disable:no-any */
     pasteInternal(event, pasteWindow) {
-        this.currentPasteOptions = 'KeepSourceFormatting';
+        this.currentPasteOptions = this.owner.defaultPasteOption;
         if (this.viewer.owner.enableLocalPaste) {
             this.paste();
         }
         else {
             this.selection.isViewPasteOptions = true;
+            if (this.selection.pasteElement) {
+                this.selection.pasteElement.style.display = 'none';
+            }
             if (isNullOrUndefined(pasteWindow)) {
                 pasteWindow = window;
             }
@@ -43871,6 +43881,7 @@ class Editor {
             }
             else if (textContent !== '') {
                 this.pasteContents(textContent);
+                this.applyPasteOptions(this.currentPasteOptions);
                 this.viewer.editableDiv.innerHTML = '';
             }
             // if (textContent !== '') {
@@ -43902,6 +43913,7 @@ class Editor {
     }
     pasteFormattedContent(result) {
         this.pasteContents(result.data);
+        this.applyPasteOptions(this.currentPasteOptions);
         hideSpinner(this.owner.element);
     }
     onPasteFailure(result) {
@@ -43912,14 +43924,18 @@ class Editor {
      * Pastes provided sfdt content or the data present in local clipboard if any .
      * @param {string} sfdt? insert the specified sfdt content at current position
      */
-    paste(sfdt) {
+    paste(sfdt, defaultPasteOption) {
         if (isNullOrUndefined(sfdt)) {
             sfdt = this.owner.enableLocalPaste ? this.copiedData : undefined;
+        }
+        if (!isNullOrUndefined(defaultPasteOption)) {
+            this.currentPasteOptions = defaultPasteOption;
         }
         /* tslint:disable:no-any */
         if (sfdt) {
             let document = JSON.parse(sfdt);
             this.pasteContents(document);
+            this.applyPasteOptions(this.currentPasteOptions);
         }
     }
     getBlocks(pasteContent) {
@@ -44019,8 +44035,7 @@ class Editor {
         }
     }
     applyPasteOptions(options) {
-        if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === ''
-            || this.currentPasteOptions === options) {
+        if (isNullOrUndefined(this.copiedContent) || this.copiedTextContent === '') {
             return;
         }
         this.isSkipHistory = true;

@@ -23,7 +23,8 @@ export class EventSettings extends ChildProperty<EventSettings> {
      * in case of processing remote data and can be assigned to the `dataSource` property. 
      * With the remote data assigned to dataSource, check the available
      *  [adaptors](http://ej2.syncfusion.com/documentation/data/adaptors.html) to customize the data processing. 
-     * @default []    
+     * @default []
+     * @isGenericType true
      */
     @Property([])
     public dataSource: Object[] | DataManager;

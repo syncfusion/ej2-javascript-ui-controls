@@ -50,6 +50,10 @@ describe('Paste Validation without history with multiple options', () => {
         editor.editor.applyPasteOptions('MergeWithExistingFormatting');
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
+    it('paste with default formatting options', () => {
+        editor.editor.applyPasteOptions(editor.defaultPasteOption);
+        expect(editor.selection.characterFormat.bold).toBe(true);
+    });
 
 });
 

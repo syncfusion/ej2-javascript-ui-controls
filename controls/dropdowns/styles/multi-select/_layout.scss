@@ -58,6 +58,11 @@
   }
 }
 
+.e-multiselect.e-input-group,
+.e-multiselect.e-float-input {
+  word-wrap: initial;
+}
+
 .e-bigger .e-multi-select-wrapper {
   min-height: $ddl-control-bigger-height;
 }

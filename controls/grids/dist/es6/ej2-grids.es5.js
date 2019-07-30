@@ -4262,7 +4262,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         if (frzCols && idx === 0) {
             this.getPanel().firstChild.style.overflowY = 'hidden';
         }
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.rows = this.rows.slice(0);
         }
         args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
@@ -4382,6 +4382,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
      * @returns {Element}
      */
     ContentRender.prototype.setColGroup = function (colGroup) {
+        if (!isNullOrUndefined(colGroup)) {
+            colGroup.id = 'content-' + colGroup.id;
+        }
         return this.colgroup = colGroup;
     };
     /**
@@ -5179,7 +5182,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         var result;
         if (cell.column.template) {
             var literals = ['index'];
-            var dummyData = extendObjWithFn({}, data, (_a = {}, _a[foreignKeyData] = fData, _a));
+            var dummyData = extendObjWithFn({}, data, (_a = {}, _a[foreignKeyData] = fData, _a.column = cell.column, _a));
             var templateID = this.parent.element.id + cell.column.uid;
             var str = 'isStringTemplate';
             var index = 'index';
@@ -5187,7 +5190,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
                 result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], parseInt(attributes$$1[index], 10));
             }
             else {
-                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID);
+                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
             }
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
@@ -8456,14 +8459,16 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (!isToggle) {
             args = {
                 data: selectedData, cellIndex: cellIndex,
-                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
                 previousRowCell: this.prevECIdxs ?
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
-            if (!isBlazor()) {
+            if (!isBlazor() || this.parent.isJsComponent) {
                 var currentCell = 'currentCell';
                 args[currentCell] = selectedCell;
+                var previousRowCellIndex = 'previousRowCellIndex';
+                args[previousRowCellIndex] = this.prevECIdxs;
             }
             this.parent.trigger(cellSelecting, this.fDataUpdate(args), this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
         }
@@ -8488,12 +8493,17 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             _this.updateCellProps(cellIndex, cellIndex);
             if (!isToggle) {
-                _this.onActionComplete({
+                var args = {
                     data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
-                    previousRowCellIndex: _this.prevECIdxs, selectedRowCellIndex: _this.selectedRowCellIndexes,
+                    selectedRowCellIndex: _this.selectedRowCellIndexes,
                     previousRowCell: _this.prevECIdxs ?
                         _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
-                }, cellSelected);
+                };
+                if (!isBlazor()) {
+                    var previousRowCellIndex = 'previousRowCellIndex';
+                    args[previousRowCellIndex] = _this.prevECIdxs;
+                }
+                _this.onActionComplete(args, cellSelected);
             }
         };
     };
@@ -8531,9 +8541,13 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         var args = {
             data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
         };
+        if (!isBlazor()) {
+            var previousRowCellIndex = 'previousRowCellIndex';
+            args[previousRowCellIndex] = this.prevECIdxs;
+        }
         this.parent.trigger(cellSelecting, this.fDataUpdate(args), function (cellSelectingArgs) {
             if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
                 return;
@@ -8576,11 +8590,16 @@ var Selection = /** @__PURE__ @class */ (function () {
                 _this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
             _this.updateCellProps(stIndex, edIndex);
-            _this.onActionComplete({
+            var cellSelectedArgs = {
                 data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-                previousRowCellIndex: _this.prevECIdxs, selectedRowCellIndex: _this.selectedRowCellIndexes,
+                selectedRowCellIndex: _this.selectedRowCellIndexes,
                 previousRowCell: _this.prevECIdxs ? _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
-            }, cellSelected);
+            };
+            if (!isBlazor()) {
+                var previousRowCellIndex = 'previousRowCellIndex';
+                cellSelectedArgs[previousRowCellIndex] = _this.prevECIdxs;
+            }
+            _this.onActionComplete(cellSelectedArgs, cellSelected);
         });
     };
     /**
@@ -8603,12 +8622,17 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
-        this.onActionBegin({
+        var cellSelectArgs = {
             data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
             currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
-            isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+            isShiftPressed: this.isMultiShiftRequest,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        }, cellSelecting);
+        };
+        if (!isBlazor()) {
+            var previousRowCellIndex = 'previousRowCellIndex';
+            cellSelectArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        this.onActionBegin(cellSelectArgs, cellSelecting);
         for (var i = 0, len = rowCellIndexes.length; i < len; i++) {
             for (var j = 0, cellLen = rowCellIndexes[i].cellIndexes.length; j < cellLen; j++) {
                 if (frzCols) {
@@ -8631,12 +8655,16 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         }
         this.updateCellProps({ rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] }, { rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] });
-        this.onActionComplete({
+        var cellSelectedArgs = {
             data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-            currentCell: selectedCell,
-            previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
+            currentCell: selectedCell, selectedRowCellIndex: this.selectedRowCellIndexes,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        }, cellSelected);
+        };
+        if (!isBlazor()) {
+            var previousRowCellIndex = 'previousRowCellIndex';
+            cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        this.onActionComplete(cellSelectedArgs, cellSelected);
     };
     /**
      * Select cells with existing cell selection by passing row and column index.
@@ -8682,11 +8710,15 @@ var Selection = /** @__PURE__ @class */ (function () {
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
             var args = {
                 data: selectedData, cellIndex: cellIndexes[0],
-                isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+                isShiftPressed: this.isMultiShiftRequest,
                 currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
                 previousRowCell: this.prevECIdxs ?
                     gObj.getCellFromIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
             };
+            if (!isBlazor()) {
+                var previousRowCellIndex = 'previousRowCellIndex';
+                args[previousRowCellIndex] = this.prevECIdxs;
+            }
             var isUnSelected = index > -1;
             if (isUnSelected) {
                 var selectedCellIdx = this.selectedRowCellIndexes[index].cellIndexes;
@@ -8714,11 +8746,16 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             this.updateCellProps(cellIndex, cellIndex);
             if (!isUnSelected) {
-                this.onActionComplete({
+                var cellSelectedArgs = {
                     data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
                     previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
-                        undefined, previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes
-                }, cellSelected);
+                        undefined, selectedRowCellIndex: this.selectedRowCellIndexes
+                };
+                if (!isBlazor()) {
+                    var previousRowCellIndex = 'previousRowCellIndex';
+                    cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+                }
+                this.onActionComplete(cellSelectedArgs, cellSelected);
             }
         }
     };
@@ -12100,7 +12137,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                         break;
                     }
                     this.notify(inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
-                    if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
+                    if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.pageSize)
+                        && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
                         || !isNullOrUndefined(oldProp.pageSettings) &&
                             ((newProp.pageSettings.currentPage !== oldProp.pageSettings.currentPage)
                                 && !this.enableColumnVirtualization && !this.enableVirtualization
@@ -13066,6 +13104,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Gets the collection of selected records.
      * @return {Object[]}
+     * @isGenericType true
      */
     Grid.prototype.getSelectedRecords = function () {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -13365,6 +13404,66 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.deleteRow = function (tr) {
         if (this.editModule) {
             this.editModule.deleteRow(tr);
+        }
+    };
+    /**
+     * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
+     * @param {number} index - Defines row index to edit a particular cell.
+     * @param {string} field - Defines the field name of the column to perform batch edit.
+     */
+    Grid.prototype.editCell = function (index, field) {
+        if (this.editModule) {
+            this.editModule.editCell(index, field);
+        }
+    };
+    /**
+     * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     */
+    Grid.prototype.saveCell = function () {
+        if (this.editModule) {
+            this.editModule.saveCell();
+        }
+    };
+    /**
+     * To update the specified cell by given value without changing into edited state.
+     * @param {number} rowIndex Defines the row index.
+     * @param {string} field Defines the column field.
+     * @param {string | number | boolean | Date} value - Defines the value to be changed.
+     */
+    Grid.prototype.updateCell = function (rowIndex, field, value) {
+        if (this.editModule) {
+            this.editModule.updateCell(rowIndex, field, value);
+        }
+    };
+    /**
+     * To update the specified row by given values without changing into edited state.
+     * @param {number} index Defines the row index.
+     * @param {Object} data Defines the data object to be updated.
+     */
+    Grid.prototype.updateRow = function (index, data) {
+        if (this.editModule) {
+            this.editModule.updateRow(index, data);
+        }
+    };
+    /**
+     * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
+     * @return {Object}
+     */
+    Grid.prototype.getBatchChanges = function () {
+        if (this.editModule) {
+            return this.editModule.getBatchChanges();
+        }
+        return {};
+    };
+    /**
+     * Enables or disables ToolBar items.
+     * @param {string[]} items - Defines the collection of itemID of ToolBar items.
+     * @param {boolean} isEnable - Defines the items to be enabled or disabled.
+     * @return {void}
+     */
+    Grid.prototype.enableToolbarItems = function (items, isEnable) {
+        if (this.toolbarModule) {
+            this.toolbarModule.enableItems(items, isEnable);
         }
     };
     /**
@@ -13806,7 +13905,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         document.body.appendChild(myTableDiv);
         return myTableDiv;
     };
-    Grid.prototype.keyPressed = function (e) {
+    Grid.prototype.onKeyPressed = function (e) {
         if (e.action === 'tab' || e.action === 'shiftTab') {
             this.toolTipObj.close();
         }
@@ -13820,6 +13919,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         EventHandler.add(this.getContent(), 'dblclick', this.dblClickHandler, this);
+        EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
         }
@@ -13843,6 +13943,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
+        EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
     };
     /**
      * @hidden
@@ -13856,7 +13957,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.on(headerRefreshed, this.recalcIndentWidth, this);
         this.dataBoundFunction = this.refreshMediaCol.bind(this);
         this.addEventListener(dataBound, this.dataBoundFunction);
-        this.on(keyPressed, this.keyPressed, this);
+        this.on(keyPressed, this.onKeyPressed, this);
         this.on(contentReady, this.blazorTemplate, this);
     };
     /**
@@ -13870,7 +13971,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.off(contentReady, this.recalcIndentWidth);
         this.off(headerRefreshed, this.recalcIndentWidth);
         this.removeEventListener(dataBound, this.dataBoundFunction);
-        this.off(keyPressed, this.keyPressed);
+        this.off(keyPressed, this.onKeyPressed);
     };
     Grid.prototype.blazorTemplate = function () {
         if (isBlazor()) {
@@ -13879,7 +13980,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i], false);
                 }
                 if (this.columnModel[i].headerTemplate) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i], false);
                 }
                 if (this.filterSettings.type == 'FilterBar' && this.columnModel[i].filterTemplate) {
                     var fieldName = this.columnModel[i].field;
@@ -13919,6 +14020,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * Get current visible data of grid.
      * @return {Object[]}
      * @hidden
+     * @isGenericType true
      */
     Grid.prototype.getCurrentViewRecords = function () {
         if (isGroupAdaptive(this)) {
@@ -14064,6 +14166,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             }
             return !!(col.dataSource && col.foreignKeyValue);
         });
+    };
+    Grid.prototype.keyPressHandler = function (e) {
+        var presskey = extend(e, { cancel: false, });
+        this.trigger("keyPressed", presskey);
+        if (presskey.cancel === true) {
+            e.stopImmediatePropagation();
+        }
     };
     Grid.prototype.keyActionHandler = function (e) {
         this.keyPress = e.action !== 'space';
@@ -14576,6 +14685,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Grid.prototype, "resizeStop", void 0);
+    __decorate([
+        Event()
+    ], Grid.prototype, "keyPressed", void 0);
     __decorate([
         Event()
     ], Grid.prototype, "beforeDataBound", void 0);
@@ -15587,7 +15699,7 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'currentPage':
                     if (this.checkGoToPage(newProp.currentPage, oldProp.currentPage)) {
-                        this.currentPageChanged();
+                        this.currentPageChanged(newProp, oldProp);
                     }
                     break;
                 case 'pageSize':
@@ -15596,7 +15708,13 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
                     if (this.checkpagesizes() && this.pagerdropdownModule) {
                         this.pagerdropdownModule.setDropDownValue('value', this.pageSize);
                     }
-                    this.refresh();
+                    if (newProp.pageSize !== oldProp.pageSize) {
+                        this.pageSize = newProp.pageSize;
+                        this.currentPageChanged(newProp, oldProp);
+                    }
+                    else {
+                        this.refresh();
+                    }
                     break;
                 case 'pageSizes':
                     if (this.checkpagesizes() && this.pagerdropdownModule) {
@@ -15656,6 +15774,13 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
             this.dataBind();
         }
     };
+    /**
+     * @hidden
+     */
+    Pager.prototype.setPageSize = function (pageSize) {
+        this.pageSize = pageSize;
+        this.dataBind();
+    };
     Pager.prototype.checkpagesizes = function () {
         if (this.pageSizes === true || this.pageSizes.length) {
             return true;
@@ -15674,14 +15799,19 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
         }
         return false;
     };
-    Pager.prototype.currentPageChanged = function () {
+    Pager.prototype.currentPageChanged = function (newProp, oldProp) {
         if (this.enableQueryString) {
             this.updateQueryString(this.currentPage);
         }
-        var args = { currentPage: this.currentPage, cancel: false };
-        this.trigger('click', args);
-        if (!args.cancel) {
-            this.refresh();
+        if (newProp.currentPage !== oldProp.currentPage || newProp.pageSize !== oldProp.pageSize) {
+            var args = {
+                currentPage: this.currentPage,
+                newProp: newProp, oldProp: oldProp, cancel: false
+            };
+            this.trigger('click', args);
+            if (!args.cancel) {
+                this.refresh();
+            }
         }
     };
     Pager.prototype.pagerTemplate = function () {
@@ -15920,7 +16050,7 @@ var PagerDropDown = /** @__PURE__ @class */ (function () {
             }
         }
         this.pagerModule.dataBind();
-        this.pagerModule.trigger('dropDownChanged', { pageSize: this.dropDownListObject.value });
+        this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value, 10) });
     };
     PagerDropDown.prototype.beforeValueChange = function (prop) {
         if (typeof prop.newProp.value === 'number') {
@@ -16126,6 +16256,12 @@ var Page = /** @__PURE__ @class */ (function () {
         this.pagerObj.goToPage(pageNo);
     };
     /**
+     * @hidden
+     */
+    Page.prototype.setPageSize = function (pageSize) {
+        this.pagerObj.setPageSize(pageSize);
+    };
+    /**
      * The function used to update pageSettings model
      * @return {void}
      * @hidden
@@ -16163,9 +16299,17 @@ var Page = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         if (this.isForceCancel || isActionPrevent(gObj) && !gObj.prevPageMoving) {
             if (!this.isForceCancel) {
-                gObj.notify(preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
+                if (!isNullOrUndefined(e.newProp) && !isNullOrUndefined(e.newProp.pageSize)) {
+                    gObj.notify(preventBatch, { instance: this, handler: this.setPageSize, arg1: e.newProp.pageSize });
+                    this.pagerObj.pageSize = e.oldProp.pageSize;
+                    gObj.pageSettings.pageSize = e.newProp.pageSize;
+                }
+                else if (e.currentPage) {
+                    gObj.notify(preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
+                    this.pagerObj.currentPage = gObj.pageSettings.currentPage === this.pagerObj.currentPage ?
+                        this.pagerObj.previousPageNo : gObj.pageSettings.currentPage;
+                }
                 this.isForceCancel = true;
-                this.pagerObj.currentPage = gObj.pageSettings.currentPage;
                 this.pagerObj.dataBind();
             }
             else {
@@ -16174,6 +16318,7 @@ var Page = /** @__PURE__ @class */ (function () {
             e.cancel = true;
             return;
         }
+        gObj.pageSettings.pageSize = this.pagerObj.pageSize;
         gObj.prevPageMoving = false;
         var prevPage = this.pageSettings.currentPage;
         this.pageSettings.currentPage = e.currentPage;
@@ -16481,7 +16626,17 @@ var FlMenuOptrUI = /** @__PURE__ @class */ (function () {
             }
         }
         if (selValue === '') { // rewuired or not
-            selValue = this.optrData[0].text;
+            if (col.filter.operator) {
+                var optrLen = Object.keys(this.optrData).length;
+                for (var i = 0; i < optrLen; i++) {
+                    if (this.optrData[i].value === col.filter.operator) {
+                        selValue = this.optrData[i].text;
+                    }
+                }
+            }
+            else {
+                selValue = this.optrData[0].text;
+            }
         }
         return selValue;
     };
@@ -17359,7 +17514,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
         var optr = this.options.type + 'Operator';
         var dropDatasource = this.customFilterOperators[optr];
         this.optrData = dropDatasource;
-        var selectedValue = this.dropSelectedVal(column, predicates, isFirst);
+        var selectedValue = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
         //Trailing three dots are sliced.
         var menuText = '';
         if (this.menuItem) {
@@ -17398,7 +17553,7 @@ var ExcelFilter = /** @__PURE__ @class */ (function (_super) {
                 (isFirst ? predicates[0].operator : undefined);
         }
         else {
-            operator = isFirst ? 'equal' : undefined;
+            operator = isFirst ? col.filter.operator || 'equal' : undefined;
         }
         return this.getSelectedText(operator);
     };
@@ -18350,7 +18505,12 @@ var Filter = /** @__PURE__ @class */ (function () {
         this.matchCase = this.filterSettings.enableCaseSensitivity;
         switch (this.column.type) {
             case 'number':
-                this.operator = this.filterOperators.equal;
+                if (this.column.filter.operator) {
+                    this.operator = this.column.filter.operator;
+                }
+                else {
+                    this.operator = this.filterOperators.equal;
+                }
                 skipInput = ['>', '<', '=', '!'];
                 for (var i = 0; i < value.length; i++) {
                     if (skipInput.indexOf(value[i]) > -1) {
@@ -23854,7 +24014,7 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
             foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.row = tr;
         }
         gObj.trigger(beginEdit, args, function (begineditargs) {
@@ -24637,7 +24797,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             rowData: data ? data : gObj.getSelectedRecords()[0],
             cancel: false
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.row = data ? gObj.getRows()[index] : selectedRows[0];
             if (!args.row) {
                 return;
@@ -24931,7 +25091,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 type: !isAdd ? 'edit' : 'add', cancel: false,
                 foreignKeyData: rowObj && rowObj.foreignKeyData
             };
-            if (!isBlazor()) {
+            if (!isBlazor() || this.parent.isJsComponent) {
                 args.cell = cells_1[this.getColIndex(cells_1, this.getCellIdx(col.uid))];
                 args.row = row_1;
                 if (!args.cell) {
@@ -25088,7 +25248,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             columnObject: column,
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.cell = this.form.parentElement;
         }
         if (!isForceSave) {
@@ -30370,6 +30530,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     };
     ColumnMenu.prototype.columnMenuHandlerClick = function (e) {
         if (e.target.classList.contains('e-columnmenu')) {
+            this.columnMenu.items = this.getItems();
             if ((this.isOpen && this.headerCell !== this.getHeaderCell(e)) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
                 this.columnMenu.close();
                 this.openColumnMenu(e);

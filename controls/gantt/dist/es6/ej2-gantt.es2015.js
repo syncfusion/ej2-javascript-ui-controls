@@ -2596,11 +2596,19 @@ class GanttChart {
      * @private
      */
     collapseGanttRow(args) {
-        let record = getValue('data', args);
         this.parent.trigger('collapsing', args);
-        if (getValue('cancel', args)) {
-            return;
+        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+            this.collapsedGanttRow(args);
         }
+        this.isExpandCollapseFromChart = false;
+    }
+    /**
+     * @return {void}
+     * @param args
+     * @private
+     */
+    collapsedGanttRow(args) {
+        let record = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
             this.parent.treeGrid.collapseRow(getValue('gridRow', args), record);
@@ -2622,11 +2630,19 @@ class GanttChart {
      * @private
      */
     expandGanttRow(args) {
-        let record = getValue('data', args);
         this.parent.trigger('expanding', args);
-        if (getValue('cancel', args)) {
-            return;
+        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+            this.expandedGanttRow(args);
         }
+        this.isExpandCollapseFromChart = false;
+    }
+    /**
+     * @return {void}
+     * @param args
+     * @private
+     */
+    expandedGanttRow(args) {
+        let record = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
             this.parent.treeGrid.expandRow(getValue('gridRow', args), record);
@@ -4127,20 +4143,30 @@ class GanttTreeGrid {
     }
     collapsing(args) {
         // Collapsing event
-    }
-    expanding(args) {
-        // Collapsing event
-    }
-    collapsed(args) {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             let collapsingArgs = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
+            setValue('cancel', getValue('cancel', collapsingArgs), args);
+        }
+    }
+    expanding(args) {
+        // Expanding event
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            let expandingArgs = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+            setValue('cancel', getValue('cancel', expandingArgs), args);
+        }
+    }
+    collapsed(args) {
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            let collapsedArgs = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     }
     expanded(args) {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            let expandingArgs = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+            let expandedArgs = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
         }
     }
     actionBegin(args) {
@@ -11093,14 +11119,16 @@ class CellEdit {
             || field === taskSettings.dependency || field === taskSettings.progress)) {
             args.cancel = true;
         }
-        if (!args.cancel) {
-            this.isCellEdit = true;
+        else {
             this.parent.trigger('cellEdit', args);
             if (!isNullOrUndefined(this.parent.toolbarModule) && !args.cancel) {
+                this.isCellEdit = true;
                 this.parent.toolbarModule.refreshToolbarItems();
+                if (args.columnName === 'Notes') {
+                    this.openNotesEditor(args);
+                }
             }
         }
-        this.openNotesEditor(args);
     }
     /**
      * To render edit dialog and to focus on notes tab
@@ -12237,6 +12265,8 @@ class TaskbarEdit {
         let item = this.taskBarEditRecord.ganttProperties;
         let left;
         let projectStartDate;
+        let endDate;
+        let startDate;
         switch (this.taskBarEditAction) {
             case 'ProgressResizing':
                 this.parent.setRecordValue('progress', this.getProgressPercent(item.width, item.progressWidth), item, true);
@@ -12245,10 +12275,10 @@ class TaskbarEdit {
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
                 projectStartDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.endDate)) {
-                    let endDate = this.parent.dateValidationModule.getValidEndDate(item);
+                    endDate = this.parent.dateValidationModule.getValidEndDate(item);
                     this.parent.setRecordValue('endDate', endDate, item, true);
                 }
-                let startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
                 this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
                 if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
                     && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
@@ -12263,7 +12293,7 @@ class TaskbarEdit {
                     startDate = this.parent.dateValidationModule.getValidStartDate(item);
                     this.parent.setRecordValue('startDate', startDate, item, true);
                 }
-                let endDate = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                endDate = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 break;
@@ -15496,6 +15526,9 @@ class Edit$2 {
         let currentViewData = this.parent.currentViewData;
         let ids = this.parent.ids;
         let currentItemIndex;
+        let recordIndex;
+        let updatedCollectionIndex;
+        let childIndex;
         switch (rowPosition) {
             case 'Top':
                 flatRecords.splice(0, 0, record);
@@ -15508,10 +15541,9 @@ class Edit$2 {
                 ids.push(record.ganttProperties.taskId.toString()); // need to check NAN
                 break;
             case 'Above':
-                let childIndex;
                 /*Record Updates*/
-                let recordIndex = flatRecords.indexOf(this.addRowSelectedItem);
-                let updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem);
+                recordIndex = flatRecords.indexOf(this.addRowSelectedItem);
+                updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem);
                 this.recordCollectionUpdate(childIndex, recordIndex, updatedCollectionIndex, record, parentItem);
                 break;
             case 'Below':

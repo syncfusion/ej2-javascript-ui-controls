@@ -61,6 +61,10 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
      * Document name to be loaded into PdfViewer
      */
     errorMessage: string;
+    /**
+     * Action name in which the failure is thrown.
+     */
+    action: string;
 }
 
 /** 

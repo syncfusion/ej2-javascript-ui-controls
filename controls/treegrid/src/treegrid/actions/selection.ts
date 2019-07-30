@@ -2,7 +2,7 @@ import { TreeGrid } from '../base/treegrid';
 import { ColumnModel } from '../models/column';
 import { isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { QueryCellInfoEventArgs, parentsUntil, CheckBoxChangeEventArgs, getObject } from '@syncfusion/ej2-grids';
+import { QueryCellInfoEventArgs, parentsUntil, getObject } from '@syncfusion/ej2-grids';
 import { CellSaveEventArgs } from '../base/interface';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
@@ -66,25 +66,26 @@ export class Selection {
     let checkBox: HTMLInputElement;
     if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
       checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      let rowIndex: number[]; rowIndex = [];
+      rowIndex.push(target.closest('tr').rowIndex);
+      this.selectCheckboxes(rowIndex);
       this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
     } else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
       let checkBoxvalue: boolean = !checkWrap.querySelector('.e-frame').classList.contains('e-check')
         && !checkWrap.querySelector('.e-frame').classList.contains('e-stop');
       this.headerSelection(checkBoxvalue);
+      checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
+      this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
+
     }
   }
 
   private triggerChkChangeEvent(checkBox: HTMLInputElement, checkState: boolean, rowElement: HTMLTableRowElement): void {
-    let rowIndex: number[]; rowIndex = [];
-    rowIndex.push(rowElement.rowIndex);
     let data: ITreeData = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
-    let args: Object = { checked: checkState, target: checkBox, cancel: false, rowElement: rowElement,
-      rowData: data };
-    this.parent.trigger(events.checkboxChange, args, (checkBoxArgs: CheckBoxChangeEventArgs) => {
-      if (!checkBoxArgs.cancel) {
-        this.selectCheckboxes(rowIndex);
-      }
-    });
+    let args: Object = { checked: checkState, target: checkBox, rowElement: rowElement,
+      rowData: checkBox.classList.contains('e-treeselectall')
+      ? this.parent.getCheckedRecords() : data };
+    this.parent.trigger(events.checkboxChange, args);
   }
 
   private getCheckboxcolumnIndex(): number {

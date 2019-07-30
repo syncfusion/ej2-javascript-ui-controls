@@ -16,6 +16,10 @@ import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 
 export type ViewType = 'LargeIcons' | 'Details';
 export type SortOrder = 'Ascending' | 'Descending';
+export type ToolBarItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download'
+    | 'Rename' | 'SortBy' | 'Refresh' | 'Selection' | 'View' | 'Details';
+export type MenuItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download'
+    | 'Rename' | 'SortBy' | 'Refresh' | 'SelectAll' | 'View' | 'Details' | 'Open';
 
 /**
  * Interfaces for File Manager

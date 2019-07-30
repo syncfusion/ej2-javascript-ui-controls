@@ -73,7 +73,7 @@ export class DrillThroughDialog {
                     }
                     count = 0;
                     let items: IDataSet[] = [];
-                    for (let item of this.parent.dataSourceSettings.dataSource as IDataSet[]) {
+                    for (let item of this.parent.engineModule.data as IDataSet[]) {
                         delete item['__index'];
                         if (this.gridIndexObjects[count.toString()] === undefined) {
                             items.push(item);

@@ -66,7 +66,7 @@ export class Print {
         };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
-            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+            (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
         proxy.printRequestHandler = new AjaxHandler(proxy.pdfViewer);
         proxy.printRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.print;
@@ -78,8 +78,18 @@ export class Print {
             // tslint:disable-next-line
             let printImage: any = result.data;
             if (typeof printImage !== 'object') {
-                printImage = JSON.parse(printImage);
+                try {
+                    printImage = JSON.parse(printImage);
+                    if (typeof printImage !== 'object') {
+                        proxy.pdfViewerBase.onControlError(500, printImage, proxy.pdfViewer.serverActionSettings.print);
+                        printImage = null;
+                    }
+                } catch (error) {
+                    proxy.pdfViewerBase.onControlError(500, printImage, proxy.pdfViewer.serverActionSettings.print);
+                    printImage = null;
+                }
             }
+            if (printImage) {
             let annotationSource: string = '';
             if (printImage.textMarkupAnnotation && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
                 // tslint:disable-next-line
@@ -124,15 +134,16 @@ export class Print {
             pageImage.src = printImage.image;
             annotationImage.src = annotationSource;
             proxy.printViewerContainer.appendChild(proxy.printCanvas);
+        }
         };
         // tslint:disable-next-line
         this.printRequestHandler.onFailure = function (result: any) {
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.print);
         };
         // tslint:disable-next-line
         this.printRequestHandler.onError = function (result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.print);
         };
     }
 

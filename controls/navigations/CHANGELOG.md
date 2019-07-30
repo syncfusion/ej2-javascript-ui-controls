@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.39 (2019-07-30)
+
+### TreeView
+
+#### Bug Fixes
+
+- #242589 - Issue with getting checked nodes value using `checkedNodes` property has been fixed.
+
 ## 17.2.36 (2019-07-24)
 
 ### Menu

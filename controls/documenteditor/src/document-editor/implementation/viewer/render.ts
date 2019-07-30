@@ -161,7 +161,9 @@ export class Renderer {
      * @param {HeaderFooterWidget} headFootWidget 
      */
     private renderHFWidgets(page: Page, widget: HeaderFooterWidget, width: number, isHeader: boolean): void {
-        this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 1 : 0.65;
+        if (!this.isPrinting) {
+            this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 1 : 0.65;
+        }
         let cliped: boolean = false;
         if (isHeader) {
             let topMargin: number = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin);
@@ -182,7 +184,9 @@ export class Renderer {
         if (cliped) {
             this.pageContext.restore();
         }
-        this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 0.65 : 1;
+        if (!this.isPrinting) {
+            this.pageContext.globalAlpha = this.viewer.owner.enableHeaderAndFooter ? 0.65 : 1;
+        }
     }
     private renderHeaderSeparator(page: Page, left: number, top: number, widget: HeaderFooterWidget): void {
         //Header Widget

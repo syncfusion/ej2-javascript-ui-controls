@@ -179,6 +179,15 @@ describe('Schedule Timeline Month view', () => {
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
         });
+        it('EJ2-29887 - Checking Calendar format', () => {
+            (schObj.element.querySelector('.e-toolbar-item.e-date-range') as HTMLElement).click();
+            let calendarCells: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-cell'));
+            expect(calendarCells.length).toEqual(12);
+            expect((calendarCells[0]).innerHTML).toEqual('<span class="e-day">Jan</span>');
+            expect((calendarCells[1]).innerHTML).toEqual('<span class="e-day">Feb</span>');
+            expect((calendarCells[10]).innerHTML).toEqual('<span class="e-day">Nov</span>');
+            expect((calendarCells[11]).innerHTML).toEqual('<span class="e-day">Dec</span>');
+        });
     });
 
     describe('Work hour highlight', () => {
@@ -3669,6 +3678,53 @@ describe('Schedule Timeline Month view', () => {
             expect(schObj.currentView).toEqual('TimelineMonth');
             expect(viewDate).toBeUndefined();
             util.triggerMouseEvent(dateHeader, 'click');
+        });
+    });
+
+    describe('Testing start and end time of longer event in timeline month view', () => {
+        let testData: Object[] = [{
+            Id: 1,
+            Subject: 'Event one',
+            StartTime: new Date(2017, 9, 1),
+            EndTime: new Date(2017, 11, 1),
+            IsAllDay: true
+        }, {
+            Id: 2,
+            Subject: 'Event two',
+            StartTime: new Date(2017, 9, 12),
+            EndTime: new Date(2017, 10, 12),
+            IsAllDay: true
+        }, {
+            Id: 3,
+            Subject: 'Event three',
+            StartTime: new Date(2017, 10, 12),
+            EndTime: new Date(2017, 11, 12),
+            IsAllDay: true
+        }];
+        let eventTemplate: string = '<div class="time">(Start date : ${data.StartTime.getDate()}.${(data.StartTime.getMonth() + 1)})'
+            + ' - (End date : ${data.EndTime.getDate()}.${(data.EndTime.getMonth() + 1)})</div>';
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                width: '500px', height: '500px', currentView: 'TimelineMonth',
+                views: ['TimelineMonth'],
+                selectedDate: new Date(2017, 10, 2),
+                eventSettings: { template: eventTemplate }
+            };
+            schObj = util.createSchedule(schOptions, testData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking template start and end time', () => {
+            let event: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(event.length).toEqual(3);
+            expect(event[0].getAttribute('data-id')).toEqual('Appointment_1');
+            expect(event[0].children[0].children[1].innerHTML).toEqual('(Start date : 1.10) - (End date : 1.12)');
+            expect(event[1].getAttribute('data-id')).toEqual('Appointment_2');
+            expect(event[1].children[0].children[1].innerHTML).toEqual('(Start date : 12.10) - (End date : 12.11)');
+            expect(event[2].getAttribute('data-id')).toEqual('Appointment_3');
+            expect(event[2].children[1].children[0].innerHTML).toEqual('(Start date : 12.11) - (End date : 12.12)');
         });
     });
 

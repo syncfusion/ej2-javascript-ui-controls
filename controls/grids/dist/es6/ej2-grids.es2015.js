@@ -4149,7 +4149,7 @@ class ContentRender {
         if (frzCols && idx === 0) {
             this.getPanel().firstChild.style.overflowY = 'hidden';
         }
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.rows = this.rows.slice(0);
         }
         args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
@@ -4269,6 +4269,9 @@ class ContentRender {
      * @returns {Element}
      */
     setColGroup(colGroup) {
+        if (!isNullOrUndefined(colGroup)) {
+            colGroup.id = 'content-' + colGroup.id;
+        }
         return this.colgroup = colGroup;
     }
     /**
@@ -5061,7 +5064,7 @@ class CellRenderer {
         let result;
         if (cell.column.template) {
             let literals = ['index'];
-            let dummyData = extendObjWithFn({}, data, { [foreignKeyData]: fData });
+            let dummyData = extendObjWithFn({}, data, { [foreignKeyData]: fData, column: cell.column });
             let templateID = this.parent.element.id + cell.column.uid;
             let str = 'isStringTemplate';
             let index = 'index';
@@ -5069,7 +5072,7 @@ class CellRenderer {
                 result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], parseInt(attributes$$1[index], 10));
             }
             else {
-                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID);
+                result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
             }
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
@@ -8061,14 +8064,16 @@ class Selection {
         if (!isToggle) {
             args = {
                 data: selectedData, cellIndex: cellIndex,
-                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
                 previousRowCell: this.prevECIdxs ?
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
-            if (!isBlazor()) {
+            if (!isBlazor() || this.parent.isJsComponent) {
                 let currentCell = 'currentCell';
                 args[currentCell] = selectedCell;
+                let previousRowCellIndex = 'previousRowCellIndex';
+                args[previousRowCellIndex] = this.prevECIdxs;
             }
             this.parent.trigger(cellSelecting, this.fDataUpdate(args), this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
         }
@@ -8092,12 +8097,17 @@ class Selection {
             }
             this.updateCellProps(cellIndex, cellIndex);
             if (!isToggle) {
-                this.onActionComplete({
+                let args = {
                     data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
-                    previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
+                    selectedRowCellIndex: this.selectedRowCellIndexes,
                     previousRowCell: this.prevECIdxs ?
                         this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-                }, cellSelected);
+                };
+                if (!isBlazor()) {
+                    let previousRowCellIndex = 'previousRowCellIndex';
+                    args[previousRowCellIndex] = this.prevECIdxs;
+                }
+                this.onActionComplete(args, cellSelected);
             }
         };
     }
@@ -8134,9 +8144,13 @@ class Selection {
         }
         let args = {
             data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
         };
+        if (!isBlazor()) {
+            let previousRowCellIndex = 'previousRowCellIndex';
+            args[previousRowCellIndex] = this.prevECIdxs;
+        }
         this.parent.trigger(cellSelecting, this.fDataUpdate(args), (cellSelectingArgs) => {
             if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
                 return;
@@ -8179,11 +8193,16 @@ class Selection {
                 this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
             this.updateCellProps(stIndex, edIndex);
-            this.onActionComplete({
+            let cellSelectedArgs = {
                 data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-                previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
+                selectedRowCellIndex: this.selectedRowCellIndexes,
                 previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-            }, cellSelected);
+            };
+            if (!isBlazor()) {
+                let previousRowCellIndex = 'previousRowCellIndex';
+                cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+            }
+            this.onActionComplete(cellSelectedArgs, cellSelected);
         });
     }
     /**
@@ -8206,12 +8225,17 @@ class Selection {
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
-        this.onActionBegin({
+        let cellSelectArgs = {
             data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
             currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
-            isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+            isShiftPressed: this.isMultiShiftRequest,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        }, cellSelecting);
+        };
+        if (!isBlazor()) {
+            let previousRowCellIndex = 'previousRowCellIndex';
+            cellSelectArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        this.onActionBegin(cellSelectArgs, cellSelecting);
         for (let i = 0, len = rowCellIndexes.length; i < len; i++) {
             for (let j = 0, cellLen = rowCellIndexes[i].cellIndexes.length; j < cellLen; j++) {
                 if (frzCols) {
@@ -8234,12 +8258,16 @@ class Selection {
             }
         }
         this.updateCellProps({ rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] }, { rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] });
-        this.onActionComplete({
+        let cellSelectedArgs = {
             data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-            currentCell: selectedCell,
-            previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
+            currentCell: selectedCell, selectedRowCellIndex: this.selectedRowCellIndexes,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        }, cellSelected);
+        };
+        if (!isBlazor()) {
+            let previousRowCellIndex = 'previousRowCellIndex';
+            cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        this.onActionComplete(cellSelectedArgs, cellSelected);
     }
     /**
      * Select cells with existing cell selection by passing row and column index.
@@ -8284,11 +8312,15 @@ class Selection {
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
             let args = {
                 data: selectedData, cellIndex: cellIndexes[0],
-                isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+                isShiftPressed: this.isMultiShiftRequest,
                 currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
                 previousRowCell: this.prevECIdxs ?
                     gObj.getCellFromIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
             };
+            if (!isBlazor()) {
+                let previousRowCellIndex = 'previousRowCellIndex';
+                args[previousRowCellIndex] = this.prevECIdxs;
+            }
             let isUnSelected = index > -1;
             if (isUnSelected) {
                 let selectedCellIdx = this.selectedRowCellIndexes[index].cellIndexes;
@@ -8316,11 +8348,16 @@ class Selection {
             }
             this.updateCellProps(cellIndex, cellIndex);
             if (!isUnSelected) {
-                this.onActionComplete({
+                let cellSelectedArgs = {
                     data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
                     previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
-                        undefined, previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes
-                }, cellSelected);
+                        undefined, selectedRowCellIndex: this.selectedRowCellIndexes
+                };
+                if (!isBlazor()) {
+                    let previousRowCellIndex = 'previousRowCellIndex';
+                    cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+                }
+                this.onActionComplete(cellSelectedArgs, cellSelected);
             }
         }
     }
@@ -11589,7 +11626,8 @@ let Grid = Grid_1 = class Grid extends Component {
                         break;
                     }
                     this.notify(inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
-                    if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
+                    if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.pageSize)
+                        && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
                         || !isNullOrUndefined(oldProp.pageSettings) &&
                             ((newProp.pageSettings.currentPage !== oldProp.pageSettings.currentPage)
                                 && !this.enableColumnVirtualization && !this.enableVirtualization
@@ -12542,6 +12580,7 @@ let Grid = Grid_1 = class Grid extends Component {
     /**
      * Gets the collection of selected records.
      * @return {Object[]}
+     * @isGenericType true
      */
     getSelectedRecords() {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -12841,6 +12880,66 @@ let Grid = Grid_1 = class Grid extends Component {
     deleteRow(tr) {
         if (this.editModule) {
             this.editModule.deleteRow(tr);
+        }
+    }
+    /**
+     * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
+     * @param {number} index - Defines row index to edit a particular cell.
+     * @param {string} field - Defines the field name of the column to perform batch edit.
+     */
+    editCell(index, field) {
+        if (this.editModule) {
+            this.editModule.editCell(index, field);
+        }
+    }
+    /**
+     * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     */
+    saveCell() {
+        if (this.editModule) {
+            this.editModule.saveCell();
+        }
+    }
+    /**
+     * To update the specified cell by given value without changing into edited state.
+     * @param {number} rowIndex Defines the row index.
+     * @param {string} field Defines the column field.
+     * @param {string | number | boolean | Date} value - Defines the value to be changed.
+     */
+    updateCell(rowIndex, field, value) {
+        if (this.editModule) {
+            this.editModule.updateCell(rowIndex, field, value);
+        }
+    }
+    /**
+     * To update the specified row by given values without changing into edited state.
+     * @param {number} index Defines the row index.
+     * @param {Object} data Defines the data object to be updated.
+     */
+    updateRow(index, data) {
+        if (this.editModule) {
+            this.editModule.updateRow(index, data);
+        }
+    }
+    /**
+     * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
+     * @return {Object}
+     */
+    getBatchChanges() {
+        if (this.editModule) {
+            return this.editModule.getBatchChanges();
+        }
+        return {};
+    }
+    /**
+     * Enables or disables ToolBar items.
+     * @param {string[]} items - Defines the collection of itemID of ToolBar items.
+     * @param {boolean} isEnable - Defines the items to be enabled or disabled.
+     * @return {void}
+     */
+    enableToolbarItems(items, isEnable) {
+        if (this.toolbarModule) {
+            this.toolbarModule.enableItems(items, isEnable);
         }
     }
     /**
@@ -13277,7 +13376,7 @@ let Grid = Grid_1 = class Grid extends Component {
         document.body.appendChild(myTableDiv);
         return myTableDiv;
     }
-    keyPressed(e) {
+    onKeyPressed(e) {
         if (e.action === 'tab' || e.action === 'shiftTab') {
             this.toolTipObj.close();
         }
@@ -13291,6 +13390,7 @@ let Grid = Grid_1 = class Grid extends Component {
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         EventHandler.add(this.getContent(), 'dblclick', this.dblClickHandler, this);
+        EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
         }
@@ -13314,6 +13414,7 @@ let Grid = Grid_1 = class Grid extends Component {
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
+        EventHandler.remove(this.element, 'keydown', this.keyPressHandler);
     }
     /**
      * @hidden
@@ -13327,7 +13428,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.on(headerRefreshed, this.recalcIndentWidth, this);
         this.dataBoundFunction = this.refreshMediaCol.bind(this);
         this.addEventListener(dataBound, this.dataBoundFunction);
-        this.on(keyPressed, this.keyPressed, this);
+        this.on(keyPressed, this.onKeyPressed, this);
         this.on(contentReady, this.blazorTemplate, this);
     }
     /**
@@ -13341,7 +13442,7 @@ let Grid = Grid_1 = class Grid extends Component {
         this.off(contentReady, this.recalcIndentWidth);
         this.off(headerRefreshed, this.recalcIndentWidth);
         this.removeEventListener(dataBound, this.dataBoundFunction);
-        this.off(keyPressed, this.keyPressed);
+        this.off(keyPressed, this.onKeyPressed);
     }
     blazorTemplate() {
         if (isBlazor()) {
@@ -13350,7 +13451,7 @@ let Grid = Grid_1 = class Grid extends Component {
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i], false);
                 }
                 if (this.columnModel[i].headerTemplate) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i], false);
                 }
                 if (this.filterSettings.type == 'FilterBar' && this.columnModel[i].filterTemplate) {
                     let fieldName = this.columnModel[i].field;
@@ -13390,6 +13491,7 @@ let Grid = Grid_1 = class Grid extends Component {
      * Get current visible data of grid.
      * @return {Object[]}
      * @hidden
+     * @isGenericType true
      */
     getCurrentViewRecords() {
         if (isGroupAdaptive(this)) {
@@ -13531,6 +13633,13 @@ let Grid = Grid_1 = class Grid extends Component {
             }
             return !!(col.dataSource && col.foreignKeyValue);
         });
+    }
+    keyPressHandler(e) {
+        let presskey = extend(e, { cancel: false, });
+        this.trigger("keyPressed", presskey);
+        if (presskey.cancel === true) {
+            e.stopImmediatePropagation();
+        }
     }
     keyActionHandler(e) {
         this.keyPress = e.action !== 'space';
@@ -14043,6 +14152,9 @@ __decorate([
 __decorate([
     Event()
 ], Grid.prototype, "resizeStop", void 0);
+__decorate([
+    Event()
+], Grid.prototype, "keyPressed", void 0);
 __decorate([
     Event()
 ], Grid.prototype, "beforeDataBound", void 0);
@@ -15030,7 +15142,7 @@ let Pager = class Pager extends Component {
             switch (prop) {
                 case 'currentPage':
                     if (this.checkGoToPage(newProp.currentPage, oldProp.currentPage)) {
-                        this.currentPageChanged();
+                        this.currentPageChanged(newProp, oldProp);
                     }
                     break;
                 case 'pageSize':
@@ -15039,7 +15151,13 @@ let Pager = class Pager extends Component {
                     if (this.checkpagesizes() && this.pagerdropdownModule) {
                         this.pagerdropdownModule.setDropDownValue('value', this.pageSize);
                     }
-                    this.refresh();
+                    if (newProp.pageSize !== oldProp.pageSize) {
+                        this.pageSize = newProp.pageSize;
+                        this.currentPageChanged(newProp, oldProp);
+                    }
+                    else {
+                        this.refresh();
+                    }
                     break;
                 case 'pageSizes':
                     if (this.checkpagesizes() && this.pagerdropdownModule) {
@@ -15099,6 +15217,13 @@ let Pager = class Pager extends Component {
             this.dataBind();
         }
     }
+    /**
+     * @hidden
+     */
+    setPageSize(pageSize) {
+        this.pageSize = pageSize;
+        this.dataBind();
+    }
     checkpagesizes() {
         if (this.pageSizes === true || this.pageSizes.length) {
             return true;
@@ -15117,14 +15242,19 @@ let Pager = class Pager extends Component {
         }
         return false;
     }
-    currentPageChanged() {
+    currentPageChanged(newProp, oldProp) {
         if (this.enableQueryString) {
             this.updateQueryString(this.currentPage);
         }
-        let args = { currentPage: this.currentPage, cancel: false };
-        this.trigger('click', args);
-        if (!args.cancel) {
-            this.refresh();
+        if (newProp.currentPage !== oldProp.currentPage || newProp.pageSize !== oldProp.pageSize) {
+            let args = {
+                currentPage: this.currentPage,
+                newProp: newProp, oldProp: oldProp, cancel: false
+            };
+            this.trigger('click', args);
+            if (!args.cancel) {
+                this.refresh();
+            }
         }
     }
     pagerTemplate() {
@@ -15361,7 +15491,7 @@ class PagerDropDown {
             }
         }
         this.pagerModule.dataBind();
-        this.pagerModule.trigger('dropDownChanged', { pageSize: this.dropDownListObject.value });
+        this.pagerModule.trigger('dropDownChanged', { pageSize: parseInt(this.dropDownListObject.value, 10) });
     }
     beforeValueChange(prop) {
         if (typeof prop.newProp.value === 'number') {
@@ -15564,6 +15694,12 @@ class Page {
         this.pagerObj.goToPage(pageNo);
     }
     /**
+     * @hidden
+     */
+    setPageSize(pageSize) {
+        this.pagerObj.setPageSize(pageSize);
+    }
+    /**
      * The function used to update pageSettings model
      * @return {void}
      * @hidden
@@ -15600,9 +15736,17 @@ class Page {
         let gObj = this.parent;
         if (this.isForceCancel || isActionPrevent(gObj) && !gObj.prevPageMoving) {
             if (!this.isForceCancel) {
-                gObj.notify(preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
+                if (!isNullOrUndefined(e.newProp) && !isNullOrUndefined(e.newProp.pageSize)) {
+                    gObj.notify(preventBatch, { instance: this, handler: this.setPageSize, arg1: e.newProp.pageSize });
+                    this.pagerObj.pageSize = e.oldProp.pageSize;
+                    gObj.pageSettings.pageSize = e.newProp.pageSize;
+                }
+                else if (e.currentPage) {
+                    gObj.notify(preventBatch, { instance: this, handler: this.goToPage, arg1: e.currentPage });
+                    this.pagerObj.currentPage = gObj.pageSettings.currentPage === this.pagerObj.currentPage ?
+                        this.pagerObj.previousPageNo : gObj.pageSettings.currentPage;
+                }
                 this.isForceCancel = true;
-                this.pagerObj.currentPage = gObj.pageSettings.currentPage;
                 this.pagerObj.dataBind();
             }
             else {
@@ -15611,6 +15755,7 @@ class Page {
             e.cancel = true;
             return;
         }
+        gObj.pageSettings.pageSize = this.pagerObj.pageSize;
         gObj.prevPageMoving = false;
         let prevPage = this.pageSettings.currentPage;
         this.pageSettings.currentPage = e.currentPage;
@@ -15900,7 +16045,17 @@ class FlMenuOptrUI {
             }
         }
         if (selValue === '') { // rewuired or not
-            selValue = this.optrData[0].text;
+            if (col.filter.operator) {
+                let optrLen = Object.keys(this.optrData).length;
+                for (let i = 0; i < optrLen; i++) {
+                    if (this.optrData[i].value === col.filter.operator) {
+                        selValue = this.optrData[i].text;
+                    }
+                }
+            }
+            else {
+                selValue = this.optrData[0].text;
+            }
         }
         return selValue;
     }
@@ -16753,7 +16908,7 @@ class ExcelFilter extends CheckBoxFilter {
         let optr = this.options.type + 'Operator';
         let dropDatasource = this.customFilterOperators[optr];
         this.optrData = dropDatasource;
-        let selectedValue = this.dropSelectedVal(column, predicates, isFirst);
+        let selectedValue = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
         //Trailing three dots are sliced.
         let menuText = '';
         if (this.menuItem) {
@@ -16792,7 +16947,7 @@ class ExcelFilter extends CheckBoxFilter {
                 (isFirst ? predicates[0].operator : undefined);
         }
         else {
-            operator = isFirst ? 'equal' : undefined;
+            operator = isFirst ? col.filter.operator || 'equal' : undefined;
         }
         return this.getSelectedText(operator);
     }
@@ -17734,7 +17889,12 @@ class Filter {
         this.matchCase = this.filterSettings.enableCaseSensitivity;
         switch (this.column.type) {
             case 'number':
-                this.operator = this.filterOperators.equal;
+                if (this.column.filter.operator) {
+                    this.operator = this.column.filter.operator;
+                }
+                else {
+                    this.operator = this.filterOperators.equal;
+                }
                 skipInput = ['>', '<', '=', '!'];
                 for (let i = 0; i < value.length; i++) {
                     if (skipInput.indexOf(value[i]) > -1) {
@@ -23104,7 +23264,7 @@ class NormalEdit {
             rowData: this.previousData, rowIndex: this.rowIndex, type: 'edit', cancel: false,
             foreignKeyData: rowObj && rowObj.foreignKeyData, target: undefined
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.row = tr;
         }
         gObj.trigger(beginEdit, args, (begineditargs) => {
@@ -23860,7 +24020,7 @@ class BatchEdit {
             rowData: data ? data : gObj.getSelectedRecords()[0],
             cancel: false
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.row = data ? gObj.getRows()[index] : selectedRows[0];
             if (!args.row) {
                 return;
@@ -24151,7 +24311,7 @@ class BatchEdit {
                 type: !isAdd ? 'edit' : 'add', cancel: false,
                 foreignKeyData: rowObj && rowObj.foreignKeyData
             };
-            if (!isBlazor()) {
+            if (!isBlazor() || this.parent.isJsComponent) {
                 args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
                 args.row = row;
                 if (!args.cell) {
@@ -24307,7 +24467,7 @@ class BatchEdit {
             columnObject: column,
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.cell = this.form.parentElement;
         }
         if (!isForceSave) {
@@ -29481,6 +29641,7 @@ class ColumnMenu {
     }
     columnMenuHandlerClick(e) {
         if (e.target.classList.contains('e-columnmenu')) {
+            this.columnMenu.items = this.getItems();
             if ((this.isOpen && this.headerCell !== this.getHeaderCell(e)) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
                 this.columnMenu.close();
                 this.openColumnMenu(e);

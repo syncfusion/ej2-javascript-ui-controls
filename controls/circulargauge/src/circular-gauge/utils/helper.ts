@@ -402,11 +402,10 @@ export function getTemplateFunction(template: string): Function {
     let templateFn: Function = null;
     let e: Object;
     try {
-        let templateChange: string = template.charAt(0) === '#' ? template.substr(1) : template;
-        if (document.getElementById(templateChange)) {
-            templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
-        } else {
-            templateFn = templateComplier(template);
+        if (document.querySelectorAll(template).length) {
+            if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
+                templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+            }
         }
     } catch (e) {
         templateFn = templateComplier(template);
@@ -462,9 +461,9 @@ export function getElementSize(template: string, gauge: CircularGauge, parent: H
 
 /**
  * Function to get the mouse position
- * @param pageX 
- * @param pageY 
- * @param element 
+ * @param pageX
+ * @param pageY
+ * @param element
  */
 export function getMousePosition(pageX: number, pageY: number, element: Element): GaugeLocation {
     let elementRect: ClientRect = element.getBoundingClientRect();

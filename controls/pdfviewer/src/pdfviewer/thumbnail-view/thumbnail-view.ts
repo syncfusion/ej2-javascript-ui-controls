@@ -91,34 +91,41 @@ export class ThumbnailView {
         let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages' };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
-            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+            (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
         this.thumbnailRequestHandler = new AjaxHandler(this.pdfViewer);
         this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
         this.thumbnailRequestHandler.responseType = 'json';
         this.thumbnailRequestHandler.send(jsonObject);
         // tslint:disable-next-line
-        this.thumbnailRequestHandler.onSuccess = function(result: any) {
+        this.thumbnailRequestHandler.onSuccess = function (result: any) {
             // tslint:disable-next-line    
             let data: any = result.data;
             if (typeof data !== 'object') {
-                data = JSON.parse(data);
+                try {
+                    data = JSON.parse(data);
+                } catch (error) {
+                    proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+                    data = null;
+                }
             }
-            proxy.renderThumbnailImage(data);
-            if (!proxy.isThumbnailCompleted) {
-                let index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;
-                proxy.startIndex = index;
-                proxy.isThumbnailCompleted = true;
+            if (data) {
+                proxy.renderThumbnailImage(data);
+                if (!proxy.isThumbnailCompleted) {
+                    let index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;
+                    proxy.startIndex = index;
+                    proxy.isThumbnailCompleted = true;
+                }
             }
         };
         // tslint:disable-next-line
-        this.thumbnailRequestHandler.onFailure = function(result: any) {
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+        this.thumbnailRequestHandler.onFailure = function (result: any) {
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
         };
         // tslint:disable-next-line
-        this.thumbnailRequestHandler.onError = function(result: any) {
+        this.thumbnailRequestHandler.onError = function (result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.renderThumbnail);
         };
     }
 

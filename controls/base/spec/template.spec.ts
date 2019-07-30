@@ -4,6 +4,7 @@ import {  createElement} from '../src/dom';
  * Template Engine Spec
  */
 
+ let specialCharValue = [{'@ShipCountry': 'France'}];
 let dsJSONArray: any = [{ name: 'one', info: { id: '01' } }, { name: 'two', info: { id: '02' } }];
 let dsSubArray: any = [{ name: 'one', items: ['AR Item1', 'AR Item2'] }, { name: 'two', items: ['AR Item1', 'AR Item2'] }];
 let dsJSONSubArray: any = [{ name: 'one', info: { id: '01', items: ['AR Item1', 'AR Item2'] } }, { name: 'two', info: { id: '02', items: ['AR Item1', 'AR Item2'] } }];
@@ -40,6 +41,13 @@ describe('Template', () => {
         result.push(createElement('div', { innerHTML: 'one' }));
         result.push(createElement('div', { innerHTML: 'two' }));
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
+    });
+
+    it('JSON Array Input With Template Stringn which has special charactor', () => {
+        let templateStr: string = '<div>${@ShipCountry}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'France' }));
+        expect(outDOM(template.compile(templateStr), specialCharValue)).toEqual(result);
     });
 
     it('JSON Array Input With two space between class Names', () => {

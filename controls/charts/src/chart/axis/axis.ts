@@ -707,12 +707,16 @@ export class Axis extends ChildProperty<Axis> {
     public lineStyle: AxisLineModel;
 
     /**
-     * Specifies the actions like `Hide`, `Rotate45`, and `Rotate90` when the axis labels intersect with each other.They are,
+     * Specifies the actions like `None`, `Hide`, `Trim`, `Wrap`, `MultipleRows`, `Rotate45`, and `Rotate90`
+     * when the axis labels intersect with each other.They are,
      * * None: Shows all the labels.
      * * Hide: Hides the label when it intersects.
+     * * Trim: Trim the label when it intersects.
+     * * Wrap: Wrap the label when it intersects.
+     * * MultipleRows: Shows the label in MultipleRows when it intersects.
      * * Rotate45: Rotates the label to 45 degree when it intersects.
      * * Rotate90: Rotates the label to 90 degree when it intersects.
-     * @default Hide
+     * @default Trim
      */
 
     @Property('Trim')

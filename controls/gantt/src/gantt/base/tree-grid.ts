@@ -1,6 +1,6 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
-import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, setValue } from '@syncfusion/ej2-base';
 import { FilterEventArgs, SortEventArgs, FailureEventArgs, IEditCell, EJ2Intance, IFilterMUI } from '@syncfusion/ej2-grids';
 import { DataManager } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
@@ -107,20 +107,30 @@ export class GanttTreeGrid {
     }
     private collapsing(args: object): void {
         // Collapsing event
-    }
-    private expanding(args: object): void {
-        // Collapsing event
-    }
-    private collapsed(args: object): void {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             let collapsingArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
+            setValue('cancel', getValue('cancel', collapsingArgs), args);
+        }
+    }
+    private expanding(args: object): void {
+        // Expanding event
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            let expandingArgs: object = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+            setValue('cancel', getValue('cancel', expandingArgs), args);
+        }
+    }
+    private collapsed(args: object): void {
+        if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            let collapsedArgs: object = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     }
     private expanded(args: object): void {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            let expandingArgs: object = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.expandGanttRow(expandingArgs);
+            let expandedArgs: object = this.createExpandCollapseArgs(args);
+            this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
         }
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {

@@ -465,7 +465,7 @@ export class ExcelFilter extends CheckBoxFilter {
         let optr: string = this.options.type + 'Operator';
         let dropDatasource: { [key: string]: Object }[] = this.customFilterOperators[optr];
         this.optrData = dropDatasource;
-        let selectedValue: string = this.dropSelectedVal(column, predicates, isFirst);
+        let selectedValue: string = this.dropSelectedVal(this.parent.getColumnByField(column), predicates, isFirst);
 
         //Trailing three dots are sliced.
         let menuText: string = '';
@@ -500,14 +500,15 @@ export class ExcelFilter extends CheckBoxFilter {
             new Query().where('text', 'equal', text));
         return !isNullOrUndefined(selectedField[0]) ? selectedField[0].value : '';
     }
-    private dropSelectedVal(col: string, predicates: PredicateModel[], isFirst?: boolean): string {
+    private dropSelectedVal(col: Column, predicates: PredicateModel[], isFirst?: boolean): string {
         let operator: string;
         if (predicates && predicates.length > 0) {
             operator = predicates.length === 2 ?
                 (isFirst ? predicates[0].operator : predicates[1].operator) :
                 (isFirst ? predicates[0].operator : undefined);
         } else {
-            operator = isFirst ? 'equal' : undefined;
+
+            operator = isFirst ? col.filter.operator || 'equal' : undefined;
         }
         return this.getSelectedText(operator);
     }
@@ -763,12 +764,12 @@ export class ExcelFilter extends CheckBoxFilter {
                     (inputValue.id === (columnvalue + '-xlfl-frstvalue') ?
                         '-xlfl-frstoptr' :
                         '-xlfl-secndoptr')
-                )).ej2_instances[0] as DropDownList).value as 'StartsWith' | 'Contains' | 'EndsWith';
+                        )).ej2_instances[0] as DropDownList).value as 'Contains';
                 actObj.ignoreCase = options.type === 'string' ?
                     !((<EJ2Intance>this.dlgDiv.querySelector('#' + columnvalue + '-xlflmtcase')).ej2_instances[0] as CheckBox).checked :
                     true;
                 actObj.filterType = !isNullOrUndefined(actObj.filterType) ? actObj.filterType :
-                    'equal' as 'StartsWith' | 'Contains' | 'EndsWith';
+                'equal' as 'StartsWith' | 'Contains' | 'EndsWith';
             },
             placeholder: this.getLocalizedLabel('CustomFilterPlaceHolder'),
             enableRtl: isRtl,

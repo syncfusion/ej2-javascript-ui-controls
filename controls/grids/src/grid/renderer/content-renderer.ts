@@ -302,7 +302,7 @@ export class ContentRender implements IRenderer {
         if (frzCols && idx === 0) {
             (this.getPanel().firstChild as HTMLElement).style.overflowY = 'hidden';
         }
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.rows = this.rows.slice(0);
         }
         args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
@@ -433,6 +433,9 @@ export class ContentRender implements IRenderer {
      * @returns {Element}
      */
     public setColGroup(colGroup: Element): Element {
+        if (!isNullOrUndefined(colGroup)) {
+            colGroup.id = 'content-' + colGroup.id;
+        }
         return this.colgroup = colGroup;
     }
     /**

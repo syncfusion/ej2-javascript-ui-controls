@@ -517,7 +517,12 @@ export class UrlAdaptor extends Adaptor {
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Object, changes?: CrudOptions): DataResult {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            let handleTimeZone: boolean = DataUtil.timeZoneHandling;
+            if (ds && !ds.timeZoneHandling) {
+                DataUtil.timeZoneHandling = false;
+            }
             data = DataUtil.parse.parseJson(data);
+            DataUtil.timeZoneHandling = handleTimeZone;
         }
         let requests: { pvtData?: Object, data?: string } = request;
         let pvt: PvtOptions = requests.pvtData || {};
@@ -1223,7 +1228,17 @@ export class ODataAdaptor extends UrlAdaptor {
 
         let stat: { method: string, url: Function, data: Function } = {
             'method': 'DELETE ',
-            'url': (data: Object[], i: number, key: string): string => '(' + data[i][key] as string + ')',
+            'url': (data: Object[], i: number, key: string): string => {
+                let url: object = DataUtil.getObject(key, data[i]);
+                if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                    return '(' + url as string + ')';
+                } else if (url instanceof Date) {
+                    let dateTime: Date = data[i][key];
+                    return '(' + dateTime.toJSON() + ')';
+                } else {
+                    return `('${url}')`;
+                }
+            },
             'data': (data: Object[], i: number): string => ''
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -1266,7 +1281,16 @@ export class ODataAdaptor extends UrlAdaptor {
         );
         let stat: { method: string, url: Function, data: Function } = {
             'method': this.options.updateType + ' ',
-            'url': (data: Object[], i: number, key: string): string => '(' + data[i][key] as string + ')',
+            'url': (data: Object[], i: number, key: string): string => {
+                if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
+                    return '(' + data[i][key] as string + ')';
+                } else if (data[i][key] instanceof Date) {
+                    let date: Date = data[i][key];
+                    return '(' + date.toJSON() + ')';
+                } else {
+                    return `('${data[i][key]}')`;
+                }
+            },
             'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
         };
         req = this.generateBodyContent(arr, e, stat, dm);

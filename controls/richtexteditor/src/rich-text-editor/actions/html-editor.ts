@@ -132,45 +132,48 @@ export class HtmlEditor {
             let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let saveSelection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
                 range, this.parent.contentModule.getDocument());
-            let firstElement: HTMLElement = this.parent.createElement('span');
             let httpRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
             let wwwRegex: RegExp = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
-            let httpText: string = '';
-            if (e.text.match(httpRegex)) {
-                firstElement.innerHTML = e.text.split('http')[0];
-                httpText = 'http' + e.text.split('http')[1];
-            } else if (e.text.match(wwwRegex)) {
-                firstElement.innerHTML = e.text.split('www')[0];
-                httpText = 'www' + e.text.split('www')[1];
-            }
-            let httpSplitText: string[] = httpText.split(' ');
-            let splittedText: string = '';
-            for (let i: number = 1; i < httpSplitText.length; i++) {
-                splittedText = splittedText + ' ' + httpSplitText[i];
-            }
-            let lastElement: HTMLElement = this.parent.createElement('span');
-            lastElement.innerHTML = splittedText;
-            let anchor: HTMLElement = this.parent.createElement('a', {
-                className: 'e-rte-anchor', attrs: {
-                    href: httpSplitText[0],
-                    title: httpSplitText[0]
+            let enterSplitText: string[] = e.text.split('\n');
+            let contentInnerElem: string = '';
+            for (let i: number = 0; i < enterSplitText.length; i++) {
+                if (enterSplitText[i].trim() === '') {
+                  contentInnerElem += '<p><br></p>';
+                } else {
+                  let contentWithSpace: string = '';
+                  let spaceBetweenContent: boolean = true;
+                  let spaceSplit: string[] = enterSplitText[i].split(' ');
+                  for (let j: number = 0; j < spaceSplit.length; j++) {
+                    if (spaceSplit[j].trim() === '') {
+                      contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+                    } else {
+                      spaceBetweenContent = false;
+                      contentWithSpace += spaceSplit[j] + ' ';
+                    }
+                  }
+                  contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
                 }
-            });
-            anchor.innerHTML = httpSplitText[0];
-            let resultElement: HTMLElement = this.parent.createElement('span');
-            if (firstElement.innerHTML !== '') {
-                resultElement.appendChild(firstElement);
             }
-            if (anchor.innerHTML !== '') {
-                resultElement.appendChild(anchor);
-            }
-            if (lastElement.innerHTML !== '') {
-                resultElement.appendChild(lastElement);
+            let divElement: HTMLElement = this.parent.createElement('div');
+            divElement.innerHTML = contentInnerElem;
+            let paraElem: NodeListOf<HTMLParagraphElement> = divElement.querySelectorAll('p');
+            for (let i: number = 0; i < paraElem.length ; i++) {
+                let splitTextContent: string[] = paraElem[i].innerHTML.split(' ');
+                let resultSplitContent: string = '';
+                for (let j: number = 0 ; j < splitTextContent.length; j++) {
+                    if (splitTextContent[j].match(httpRegex) || splitTextContent[j].match(wwwRegex)) {
+                        resultSplitContent += '<a className="e-rte-anchor" href="' + splitTextContent[j] +
+                        '" title="' + splitTextContent[j] + '">' + splitTextContent[j] + ' </a>';
+                    } else {
+                        resultSplitContent += splitTextContent[j] + ' ';
+                    }
+                }
+                paraElem[i].innerHTML = resultSplitContent.trim();
             }
             if (!isNullOrUndefined(this.parent.pasteCleanupModule)) {
-                e.callBack(resultElement.innerHTML);
+                e.callBack(divElement.innerHTML);
             } else {
-                this.parent.executeCommand('insertHTML', resultElement);
+                this.parent.executeCommand('insertHTML', divElement);
             }
         }
     }

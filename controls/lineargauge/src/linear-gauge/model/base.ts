@@ -40,6 +40,7 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * Opacity for text.
+     * @blazorDefaultValue 1
      */
     @Property(1)
     public opacity: number;

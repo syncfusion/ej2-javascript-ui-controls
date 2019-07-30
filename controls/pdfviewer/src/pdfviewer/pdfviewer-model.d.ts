@@ -899,6 +899,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableStickyNotesAnnotation?: boolean;
 
     /**
+     * Opens the annotation toolbar when the PDF document is loaded in the PDF Viewer control initially.
+     * @default false
+     */
+    enableAnnotationToolbar?: boolean;
+
+    /**
      * Sets the interaction mode of the PdfViewer
      * @default TextSelection
      */

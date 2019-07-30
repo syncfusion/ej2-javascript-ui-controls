@@ -110,7 +110,8 @@ export class HeaderRenderer {
         }
     }
     public getCalendarView(): CalendarView {
-        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda') {
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' ||
+            this.parent.currentView === 'TimelineMonth') {
             return 'Year';
         }
         return 'Month';

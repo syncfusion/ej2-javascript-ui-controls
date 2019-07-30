@@ -70,7 +70,17 @@ export class FlMenuOptrUI {
             }
         }
         if (selValue === '') {// rewuired or not
-            selValue = this.optrData[0].text;
+            if (col.filter.operator) {
+                let optrLen: number = Object.keys(this.optrData).length;
+                for (let i: number = 0; i < optrLen; i++) {
+                    if (this.optrData[i].value === col.filter.operator) {
+                        selValue = this.optrData[i].text;
+                    }
+                }
+            } else {
+                selValue = this.optrData[0].text;
+            }
+
         }
 
         return selValue;

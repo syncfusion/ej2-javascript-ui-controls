@@ -5,6 +5,7 @@ import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
+import {  isBlazor, getElement } from '@syncfusion/ej2-base';
 import { DataManager, Deferred } from '@syncfusion/ej2-data';
 import { findChildrenRecords } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
@@ -136,9 +137,9 @@ export class Edit {
       let column: Column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
       if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
         column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
-                 target.classList.contains('e-treegridcollapse'))) {
+          target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
         this.isOnBatch = true;
-        this.parent.grid.setProperties({selectedRowIndex: args.rowIndex}, true);
+        this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
         this.updateGridEditMode('Batch');
       }
     }
@@ -236,6 +237,9 @@ export class Edit {
   }
     private cellSave(args: CellSaveArgs): void {
       if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
+          if (isBlazor()) {
+           args.cell = getElement(args.cell);
+          }
           args.cancel = true;
           setValue('isEdit', false, this.parent.grid);
           args.rowData[args.columnName] = args.value;

@@ -692,8 +692,10 @@ export class ResourceBase {
                     for (let resTd of resGroup[k]) {
                         resTd.date = headerDate.date;
                         resTd.workDays = headerDate.workDays;
-                        resTd.startHour = headerDate.startHour;
-                        resTd.endHour = headerDate.endHour;
+                        resTd.startHour = this.parent.getStartEndTime((resTd.resourceData[resTd.resource.startHourField] as string)) ||
+                            headerDate.startHour;
+                        resTd.endHour = this.parent.getStartEndTime((resTd.resourceData[resTd.resource.endHourField] as string)) ||
+                            headerDate.endHour;
                     }
                 }
                 if (!dateHeaderLevels[k]) {

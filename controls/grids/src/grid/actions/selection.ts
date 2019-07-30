@@ -709,14 +709,16 @@ export class Selection implements IAction {
         if (!isToggle) {
             args = {
                 data: selectedData, cellIndex: cellIndex,
-                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
                 previousRowCell: this.prevECIdxs ?
                     this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
                 cancel: false
             };
-            if (!isBlazor()) {
+            if (!isBlazor() || this.parent.isJsComponent) {
                 let currentCell: string = 'currentCell';
                 args[currentCell] = selectedCell;
+                let previousRowCellIndex: string = 'previousRowCellIndex';
+                args[previousRowCellIndex] = this.prevECIdxs;
             }
             this.parent.trigger(events.cellSelecting, this.fDataUpdate(args),
                                 this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
@@ -742,14 +744,17 @@ export class Selection implements IAction {
         }
         this.updateCellProps(cellIndex, cellIndex);
         if (!isToggle) {
-            this.onActionComplete(
-                {
-                    data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
-                    previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-                    previousRowCell: this.prevECIdxs ?
-                        this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-                },
-                events.cellSelected);
+            let args: Object = {
+                data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
+                selectedRowCellIndex: this.selectedRowCellIndexes,
+                previousRowCell: this.prevECIdxs ?
+                    this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+            };
+            if (!isBlazor()) {
+                let previousRowCellIndex: string = 'previousRowCellIndex';
+                args[previousRowCellIndex] = this.prevECIdxs;
+            }
+            this.onActionComplete(args , events.cellSelected);
         }
     };
 }
@@ -786,9 +791,13 @@ export class Selection implements IAction {
         }
         let args: Object = {
             data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
             previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
         };
+        if (!isBlazor()) {
+            let previousRowCellIndex: string = 'previousRowCellIndex';
+            args[previousRowCellIndex] = this.prevECIdxs;
+        }
         this.parent.trigger(events.cellSelecting, this.fDataUpdate(args), (cellSelectingArgs: Object) => {
             if (!isNullOrUndefined(cellSelectingArgs) && cellSelectingArgs[cncl] === true) {
                 return;
@@ -828,13 +837,16 @@ export class Selection implements IAction {
                 this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
             this.updateCellProps(stIndex, edIndex);
-            this.onActionComplete(
-                {
-                    data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
-                    previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-                    previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-                },
-                events.cellSelected);
+            let cellSelectedArgs: Object = {
+                data: selectedData, cellIndex: startIndex, currentCell: selectedCell,
+                selectedRowCellIndex: this.selectedRowCellIndexes,
+                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+            };
+            if (!isBlazor()) {
+                let previousRowCellIndex: string = 'previousRowCellIndex';
+                cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+            }
+            this.onActionComplete(cellSelectedArgs, events.cellSelected);
         });
     }
 
@@ -856,14 +868,17 @@ export class Selection implements IAction {
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
-        this.onActionBegin(
-            {
-                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-                currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
-                isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
-                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-            },
-            events.cellSelecting);
+        let cellSelectArgs: Object = {
+            data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+            currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
+            isShiftPressed: this.isMultiShiftRequest,
+            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+        };
+        if (!isBlazor()) {
+            let previousRowCellIndex: string = 'previousRowCellIndex';
+            cellSelectArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        this.onActionBegin(cellSelectArgs, events.cellSelecting);
         for (let i: number = 0, len: number = rowCellIndexes.length; i < len; i++) {
             for (let j: number = 0, cellLen: number = rowCellIndexes[i].cellIndexes.length; j < cellLen; j++) {
                 if (frzCols) {
@@ -886,14 +901,16 @@ export class Selection implements IAction {
         this.updateCellProps(
             { rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] },
             { rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] });
-        this.onActionComplete(
-            {
-                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-                currentCell: selectedCell,
-                previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes,
-                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-            },
-            events.cellSelected);
+        let cellSelectedArgs: Object = {
+            data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+            currentCell: selectedCell, selectedRowCellIndex: this.selectedRowCellIndexes,
+            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+        };
+        if (!isBlazor()) {
+            let previousRowCellIndex: string = 'previousRowCellIndex';
+            cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        this.onActionComplete(cellSelectedArgs, events.cellSelected);
     }
 
     /**
@@ -939,11 +956,15 @@ export class Selection implements IAction {
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
             let args: Object = {
                 data: selectedData, cellIndex: cellIndexes[0],
-                isShiftPressed: this.isMultiShiftRequest, previousRowCellIndex: this.prevECIdxs,
+                isShiftPressed: this.isMultiShiftRequest,
                 currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
                 previousRowCell: this.prevECIdxs ?
                     gObj.getCellFromIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
             };
+            if (!isBlazor()) {
+                let previousRowCellIndex: string = 'previousRowCellIndex';
+                args[previousRowCellIndex] = this.prevECIdxs;
+            }
             let isUnSelected: boolean = index > -1;
             if (isUnSelected) {
                 let selectedCellIdx: number[] = this.selectedRowCellIndexes[index].cellIndexes;
@@ -973,13 +994,16 @@ export class Selection implements IAction {
             }
             this.updateCellProps(cellIndex, cellIndex);
             if (!isUnSelected) {
-                this.onActionComplete(
-                    {
-                        data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
-                        previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
-                            undefined, previousRowCellIndex: this.prevECIdxs, selectedRowCellIndex: this.selectedRowCellIndexes
-                    },
-                    events.cellSelected);
+                let cellSelectedArgs: Object = {
+                    data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
+                    previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
+                        undefined, selectedRowCellIndex: this.selectedRowCellIndexes
+                };
+                if (!isBlazor()) {
+                    let previousRowCellIndex: string = 'previousRowCellIndex';
+                    cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+                }
+                this.onActionComplete(cellSelectedArgs, events.cellSelected);
             }
         }
     }

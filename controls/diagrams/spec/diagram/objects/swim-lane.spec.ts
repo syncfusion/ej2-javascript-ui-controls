@@ -2205,7 +2205,7 @@ describe('Diagram Control', () => {
                 let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
                 let startPointX = bounds.x + bounds.width / 2 + ele.offsetLeft;
                 let startPointY = bounds.y + bounds.height / 2 + ele.offsetTop;
-                diagram.select([diagram.nodes[diagram.nodes.length-1]]);
+                diagram.select([diagram.nodes[diagram.nodes.length - 1]]);
                 events.mouseDownEvent(palette.element, 75, 100, false, false);
                 events.mouseMoveEvent(palette.element, 100, 100, false, false);
                 events.mouseMoveEvent(palette.element, 200, 200, false, false);
@@ -2816,7 +2816,7 @@ describe('Diagram Control', () => {
                 console.log("node.wrapper.offsetY" + node.wrapper.offsetY);
                 expect(node.wrapper.offsetX == 510 && node.wrapper.offsetY == 400).toBe(true);
                 let lane = Number(document.getElementById('swimlanestackCanvas20').getAttribute('height'));
-                console.log(lane);                
+                console.log(lane);
                 done();
             });
 
@@ -5578,7 +5578,7 @@ describe('Diagram Control', () => {
                                         }
                                     ],
                                 },
-                                {                                    
+                                {
                                     header: {
                                         annotation: { content: 'DELIVERY' }, height: 25,
                                         style: { fill: darkColor, fontSize: 11 }
@@ -5698,6 +5698,158 @@ describe('Diagram Control', () => {
                 expect(phase === '110').toBe(true);
                 done();
             });
+        });
+
+    });
+    describe('Vertical Swimlane add node at runtime', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlane2' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 700, height: 400, offsetX: 600, offsetY: 250,
+                    shape: {
+                        type: 'SwimLane', orientation: 'Vertical',
+                        header: { annotation: { content: 'Header' }, style: { fill: 'gray' } },
+                        phases: [{ header: { annotation: { content: 'phase1' } }, style: { fill: 'blue', opacity: .5 }, width: 300, offset: 300 },
+                        { header: { content: { annotation: 'phase2' } }, style: { fill: 'blue', opacity: .5 }, width: 300, offset: 100 }],
+                        lanes: [
+                            {
+                                id: 'lane1',
+                                children: [{
+                                    id: 'node111',
+                                    width: 50, height: 50,
+                                    margin: { left: 30, top: 50 }
+                                }, {
+                                    id: 'node113rr',
+                                    width: 50, height: 50,
+                                    margin: { left: 50, top: 150 }
+                                }],
+                                style: { fill: 'red', opacity: .4 }, height: 100, header: { annotation: { content: 'lane1' } }
+                            },
+                            {
+                                id: 'lane2', height: 100,
+                                children: [{
+                                    id: 'abc',
+                                    width: 50, height: 50,
+                                    margin: { left: 30, top: 50 }
+                                }, {
+                                    id: 'efg',
+                                    width: 50, height: 50,
+                                    margin: { left: 50, top: 150 }
+                                }],
+                                style: { fill: 'red', opacity: .4 }, headers: [{ content: 'lane1', style: { fill: 'red' } }]
+                            }]
+                    }
+                },
+            ];
+
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, created: created });
+            diagram.appendTo('#diagramSwimlane2');
+            function created() {
+                let nodef: NodeModel = {
+                    id: 'Processwww', width: 50, height: 60, shape: { type: 'Flow', shape: 'Process' },
+                    style: { strokeWidth: 1, fill: 'red' }, margin: { left: 300, top: 200 }
+                }
+                diagram.addNodeToLane(nodef, "node1", "lane1");
+                let nodeff: NodeModel = {
+                    id: 'Processwwww', width: 50, height: 60, shape: { type: 'Flow', shape: 'Process' },
+                    style: { strokeWidth: 1, fill: 'red' }, margin: { left: 800, top: 800 }
+                }
+                diagram.addNodeToLane(nodeff, "node1", "lane2");
+            }
+
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking vertical add node at runtime', (done: Function) => {
+            expect(diagram.nodes[0].offsetX == 870 && diagram.nodes[0].offsetY == 515).toBe(true);
+            done();
+        });
+
+    });
+    describe('Horizontal Swimlane add node at runtime', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramSwimlane1' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', offsetX: 600, offsetY: 250, width: 700, height: 400,
+                    shape: {
+                        type: 'SwimLane', orientation: 'Horizontal',
+                        header: {
+                            annotation: { content: 'Header', style: { fill: 'gray' } },
+                            phases:
+                                [
+                                    { header: { annotation: { content: 'phase1' } }, style: { fill: 'blue', opacity: .5 }, offset: 300 },
+                                    { header: { annotation: { content: 'phase1' } }, style: { fill: 'blue', opacity: .5 }, width: 300 }
+                                ],
+                            lanes: [
+                                {
+                                    id: 'lane1',
+                                    children: [{
+                                        id: 'node111',
+                                        width: 50, height: 50,
+                                        margin: { left: 520, top: 20 }
+                                    }
+                                        , {
+                                        id: 'nodeabh',
+                                        width: 50, height: 50,
+                                        margin: { left: 50, top: 20 }
+                                    }],
+                                    style: { fill: 'red', opacity: .4 }, height: 100, header: { annotation: { content: 'lane1' } }
+                                },
+                                {
+                                    id: 'lane2', height: 100,
+                                    children: [{
+                                        id: 'node11d1',
+                                        width: 50, height: 50,
+                                        margin: { left: 520, top: 20 }
+                                    }
+                                        , {
+                                        id: 'nodeadbh',
+                                        width: 50, height: 50,
+                                        margin: { left: 50, top: 20 }
+                                    }
+                                    ],
+                                    style: { fill: 'red', opacity: .4 }, header: { annotation: { content: 'lane1', style: { fill: 'red' } } }
+                                }
+                            ]
+                        }
+                    }
+                }
+            ];
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes, created: created });
+            diagram.appendTo('#diagramSwimlane1');
+            function created() {
+                let nodef: NodeModel = {
+                    id: 'Processwww', width: 50, height: 60, shape: { type: 'Flow', shape: 'Process' },
+                    style: { strokeWidth: 1, fill: 'red' }, margin: { left: 300, top: 200 }
+                }
+                diagram.addNodeToLane(nodef, "node1", "lane1");
+                let nodeff: NodeModel = {
+                    id: 'Processwwwq', width: 50, height: 60, shape: { type: 'Flow', shape: 'Process' },
+                    style: { strokeWidth: 1, fill: 'red' }, margin: { left: 800, top: 800 }
+                }
+                diagram.addNodeToLane(nodeff, "node1", "lane2");
+            }
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Horizontal add node at runtime', (done: Function) => {
+
+            expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
+            done();
         });
 
     });

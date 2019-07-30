@@ -13,43 +13,44 @@ export interface FormValidatorModel {
 
     /**
      * Ignores input fields based on the class name
-     * @default 'e-hidden';
+     * @default 'e-hidden'
      */
     ignore?: string;
 
     /**
      * Maps the input fields with validation rules
-     * @default {};
+     * @default {}
      */
     rules?: { [name: string]: { [rule: string]: Object } };
 
     /**
      * Sets the defined css class to error fields 
-     * @default 'e-error';
+     * @default 'e-error'
      */
     errorClass?: string;
 
     /**
      * Sets the defined css class to valid fields 
-     * @default : 'e-valid';
+     * @default 'e-valid'
      */
     validClass?: string;
 
     /**
      * Specify HTML element for error
-     * @default : 'label';
+     * @default 'label'
      */
     errorElement?: string;
 
     /**
      * Specify HTML element for error container 
-     * @default : 'div';
+     * @default 'div'
      */
     errorContainer?: string;
 
     /**
      * Option to display the error
-     * @default : ErrorOption.Label;
+     * @default ErrorOption.Label
+     * @deprecated
      */
     errorOption?: ErrorOption;
 

@@ -5,7 +5,349 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Print } from '../../src/document-editor/implementation/print';
 import { TestHelper } from '../test-helper.spec';
 import { EditorHistory } from '../../src/index';
-
+let json: any = {
+    "sections": [
+        {
+            "sectionFormat": {
+                "pageWidth": 612,
+                "pageHeight": 792,
+                "leftMargin": 72,
+                "rightMargin": 72,
+                "topMargin": 72,
+                "bottomMargin": 72,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "headerDistance": 36,
+                "footerDistance": 36,
+                "bidi": false
+            },
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal",
+                        "listFormat": {
+                        }
+                    },
+                    "characterFormat": {
+                    },
+                    "inlines": [
+                        {
+                            "characterFormat": {
+                                "bidi": false
+                            },
+                            "text": "Normal Content"
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {
+                "header": {
+                    "blocks": [
+                        {
+                            "paragraphFormat": {
+                                "listFormat": {
+                                }
+                            },
+                            "characterFormat": {
+                            },
+                            "inlines": [
+                                {
+                                    "characterFormat": {
+                                        "bidi": false
+                                    },
+                                    "text": "Header Footer"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "footer": {
+                    "blocks": [
+                        {
+                            "paragraphFormat": {
+                                "listFormat": {
+                                }
+                            },
+                            "characterFormat": {
+                            },
+                            "inlines": [
+                            ]
+                        }
+                    ]
+                },
+                "evenHeader": {
+                },
+                "evenFooter": {
+                },
+                "firstPageHeader": {
+                },
+                "firstPageFooter": {
+                }
+            }
+        }
+    ],
+    "characterFormat": {
+        "bold": false,
+        "italic": false,
+        "fontSize": 11,
+        "fontFamily": "Calibri",
+        "underline": "None",
+        "strikethrough": "None",
+        "baselineAlignment": "Normal",
+        "highlightColor": "NoColor",
+        "fontColor": "#000000",
+        "fontSizeBidi": 11,
+        "fontFamilyBidi": "Calibri"
+    },
+    "paragraphFormat": {
+        "leftIndent": 0,
+        "rightIndent": 0,
+        "firstLineIndent": 0,
+        "textAlignment": "Left",
+        "beforeSpacing": 0,
+        "afterSpacing": 0,
+        "lineSpacing": 1,
+        "lineSpacingType": "Multiple",
+        "listFormat": {
+        },
+        "bidi": false
+    },
+    "defaultTabWidth": 36,
+    "enforcement": false,
+    "hashValue": "",
+    "saltValue": "",
+    "formatting": false,
+    "protectionType": "NoProtection",
+    "styles": [
+        {
+            "name": "Normal",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+            },
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 1",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 12,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level1",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontSize": 16,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 1 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 1 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontSize": 16,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Default Paragraph Font",
+            "type": "Character",
+            "characterFormat": {
+            }
+        },
+        {
+            "name": "Heading 2",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level2",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontSize": 13,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 2 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 2 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontSize": 13,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 3",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level3",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontSize": 12,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 3 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 3 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontSize": 12,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 4",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level4",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "italic": true,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 4 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 4 Char",
+            "type": "Character",
+            "characterFormat": {
+                "italic": true,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 5",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level5",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 5 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 5 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 6",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level6",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 6 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 6 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Default Paragraph Font"
+        }
+    ],
+    "lists": [
+    ],
+    "abstractLists": [
+    ]
+};
 /**
  * Print Module testing
  */
@@ -87,5 +429,42 @@ describe('Print testing', () => {
             close: () => { }, print: () => { }, focus: () => { }
         };
         expect(() => { editor.printModule.print(editor.viewer as PageLayoutViewer, win) }).not.toThrowError();
+    });
+});
+
+describe('Print testing 2', () => {
+    let editor: DocumentEditor;
+    let viewer: PageLayoutViewer;
+    let print: Print;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enablePrint: true });
+        DocumentEditor.Inject(Print);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        viewer = editor.viewer as PageLayoutViewer;
+        print = new Print();
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        viewer = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Test print canvas alpha after enabling HF', () => {
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+        editor.open(JSON.stringify(json));        
+        let page: Page = viewer.pages[0];
+        viewer.owner.enableHeaderAndFooter = true;
+        let element: HTMLDivElement = document.createElement('div');
+        print.generatePrintContent(viewer, element);
+        expect((viewer.render as any).pageContext.globalAlpha).toBe(1);
     });
 });

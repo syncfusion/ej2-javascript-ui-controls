@@ -220,6 +220,10 @@ export class EventWindow {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
                 this.resetEditorTemplate();
+                if (this.recurrenceEditor) {
+                    this.recurrenceEditor.destroy();
+                    this.recurrenceEditor = null;
+                }
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
             }

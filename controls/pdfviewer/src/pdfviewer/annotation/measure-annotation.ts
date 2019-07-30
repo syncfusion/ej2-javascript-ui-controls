@@ -394,7 +394,9 @@ export class MeasureAnnotation {
         let annotationName: string = this.pdfViewer.annotation.createGUID();
         // tslint:disable-next-line:max-line-length
         let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('shape_measure', (annotationModel.pageIndex + 1), annotationModel.measureType);
-        document.getElementById(commentsDivid).id = annotationName;
+        if (commentsDivid) {
+            document.getElementById(commentsDivid).id = annotationName;
+        }
         annotationModel.annotName = annotationName;
         this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);
         if (annotationModel.wrapper.bounds) {
@@ -736,6 +738,7 @@ export class MeasureAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[i].id) {
                     if (property === 'bounds') {
+                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
                         if (pageAnnotations[i].shapeAnnotationType === 'Line' || pageAnnotations[i].shapeAnnotationType === 'Polyline') {
                             pageAnnotations[i].vertexPoints = annotationBase.vertexPoints;
                         } else if (pageAnnotations[i].shapeAnnotationType === 'Polygon') {

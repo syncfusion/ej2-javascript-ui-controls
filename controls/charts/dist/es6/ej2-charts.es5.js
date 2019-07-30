@@ -7410,14 +7410,11 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
             }
         }
         else if (Browser.info.name === 'msie') {
-            var canvas = void 0;
+            var canvas = element;
             if (!isCanvas) {
                 canvas = this.createCanvas();
-                image = canvas.toDataURL();
             }
-            else {
-                image = element.toDataURL();
-            }
+            image = canvas.toDataURL();
             if (type === 'PDF') {
                 this.exportPdf(canvas, orientation, width, height, isDownload, fileName);
             }
@@ -29434,6 +29431,10 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
      */
     RangeNavigator.prototype.rangeResize = function (e) {
         var _this = this;
+        // To avoid resize console error
+        if (!document.getElementById(this.element.id)) {
+            return false;
+        }
         this.animateSeries = false;
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -32482,6 +32483,10 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      */
     StockChart.prototype.stockChartResize = function (e) {
         var _this = this;
+        // To avoid resize console error
+        if (!document.getElementById(this.element.id)) {
+            return false;
+        }
         this.animateSeries = false;
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -37617,9 +37622,13 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             queryModule = this.sparkline.query instanceof Query ? this.sparkline.query : new Query();
             var dataManager = dataModule.executeQuery(queryModule);
             dataManager.then(function (e) {
-                _this.sparkline.dataSource = e['result'];
+                _this.sparkline.setProperties({ dataSource: e['result'] }, true);
                 _this.sparkline.sparklineData = _this.sparkline.dataSource;
+                _this.sparkline.processSparklineData();
             });
+        }
+        else {
+            this.sparkline.processSparklineData();
         }
     };
     /**
@@ -38473,6 +38482,11 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
     Sparkline.prototype.render = function () {
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
+    };
+    /**
+     * @private
+     */
+    Sparkline.prototype.processSparklineData = function () {
         this.sparklineRenderer.processData();
         this.renderSparkline();
         this.element.appendChild(this.svgObject);

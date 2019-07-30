@@ -70,49 +70,50 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Ignores input fields based on the class name
-     * @default 'e-hidden';
+     * @default 'e-hidden'
      */
     @Property('e-hidden')
     public ignore: string;
 
     /**
      * Maps the input fields with validation rules
-     * @default {};
+     * @default {}
      */
     @Property()
     public rules: { [name: string]: { [rule: string]: Object } };
 
     /**
      * Sets the defined css class to error fields 
-     * @default 'e-error';
+     * @default 'e-error'
      */
     @Property('e-error')
     public errorClass: string;
 
     /**
      * Sets the defined css class to valid fields 
-     * @default : 'e-valid';
+     * @default 'e-valid'
      */
     @Property('e-valid')
     public validClass: string;
 
     /**
      * Specify HTML element for error
-     * @default : 'label';
+     * @default 'label'
      */
     @Property('label')
     public errorElement: string;
 
     /**
      * Specify HTML element for error container 
-     * @default : 'div';
+     * @default 'div'
      */
     @Property('div')
     public errorContainer: string;
 
     /**
      * Option to display the error
-     * @default : ErrorOption.Label;
+     * @default ErrorOption.Label
+     * @deprecated
      */
     @Property(ErrorOption.Label)
     public errorOption: ErrorOption;
@@ -273,7 +274,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     /**
      * Specifies the default messages for validation rules.
-     * @default : { List of validation message };
+     * @default { List of validation message }
      */
     public defaultMessages: { [rule: string]: string } = {
         required: 'This field is required.',

@@ -73,6 +73,7 @@ export * from './interaction/command-manager';
 export * from './interaction/actions';
 export * from './interaction/connector-editing';
 export * from './interaction/container-interaction';
+export * from './interaction/line-routing';
 
 export * from './diagram/data-source';
 export * from './diagram/grid-lines';

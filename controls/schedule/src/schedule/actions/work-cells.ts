@@ -1,4 +1,4 @@
-import { extend, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { extend, closest, isNullOrUndefined, getElement } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { CellClickEventArgs } from '../base/interface';
 import * as event from '../base/constant';
@@ -58,6 +58,11 @@ export class WorkCellInteraction {
             let args: CellClickEventArgs =
                 <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
             this.parent.trigger(event.cellClick, args, (clickArgs: CellClickEventArgs) => {
+                clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
+                clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
+                if (clickArgs.element) {
+                    clickArgs.element = getElement(clickArgs.element);
+                }
                 if (!clickArgs.cancel) {
                     if (isWorkCell) {
                         this.parent.selectCell(target);

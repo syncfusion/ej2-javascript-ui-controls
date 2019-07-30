@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.2.39 (2019-07-30)
+
+### PDF Viewer
+
+#### New Features
+
+- #240440 - More details have been provided in the ajaxRequestfailure event.
+- #242375 – Now, the annotation edit toolbar is enabled by default using the enableAnnotationToolbar property.
+- #241715 - Support has been provided to render the annotation modified date and time in the comment panel.
+
+#### Bug Fixes
+
+- #242803 - The request handling has been optimized for retrieving the comments details from the PDF document.
+
 ## 17.2.36 (2019-07-24)
 
 ### PDF Viewer

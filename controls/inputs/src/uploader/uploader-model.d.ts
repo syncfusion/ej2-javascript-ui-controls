@@ -305,6 +305,7 @@ export interface UploaderModel extends ComponentModel{
      * 
      * @event
      * @blazorProperty 'Success'
+     * @blazorType SuccessEventArgs
      */
     success?: EmitType<Object>;
 
@@ -336,6 +337,7 @@ export interface UploaderModel extends ComponentModel{
      * 
      * @event
      * @blazorProperty 'OnFailured'
+     * @blazorType FailureEventArgs
      */
     failure?: EmitType<Object>;
 
@@ -377,6 +379,7 @@ export interface UploaderModel extends ComponentModel{
      * 
      * @event
      * @blazorProperty 'Progressing'
+     * @blazorType ProgressEventArgs
      */
     progress?: EmitType<Object>;
 
@@ -400,6 +403,7 @@ export interface UploaderModel extends ComponentModel{
      * 
      * @event
      * @blazorProperty 'ValueChange'
+     * @blazorType UploadChangeEventArgs
      */
     change?: EmitType<Object>;
 
@@ -431,6 +435,7 @@ export interface UploaderModel extends ComponentModel{
      * 
      * @event
      * @blazorProperty 'OnChunkSuccess'
+     * @blazorType SuccessEventArgs
      */
     chunkSuccess?: EmitType<Object>;
 
@@ -470,6 +475,7 @@ export interface UploaderModel extends ComponentModel{
      * 
      * @event
      * @blazorProperty 'OnChunkFailured'
+     * @blazorType FailureEventArgs
      */
     chunkFailure?: EmitType<Object>;
 

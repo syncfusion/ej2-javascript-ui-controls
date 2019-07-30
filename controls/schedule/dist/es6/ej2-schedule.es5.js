@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getElement, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -737,7 +737,8 @@ var HeaderRenderer = /** @__PURE__ @class */ (function () {
         }
     };
     HeaderRenderer.prototype.getCalendarView = function () {
-        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda') {
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' ||
+            this.parent.currentView === 'TimelineMonth') {
             return 'Year';
         }
         return 'Month';
@@ -3537,13 +3538,15 @@ function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, 
 }
 // To insert datas into existing collection which is processed from previous loop.
 function insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index) {
-    index = !isNullOrUndefined(index) ? index :
-        ((ruleObject.setPosition < 1)
-            ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-    monthCollection[index].sort();
-    for (var week = 0; week < monthCollection[index].length; week++) {
-        var dayData = monthCollection[index][week];
-        insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
+    if (monthCollection.length > 0) {
+        index = !isNullOrUndefined(index) ? index :
+            ((ruleObject.setPosition < 1)
+                ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+        monthCollection[index].sort();
+        for (var week = 0; week < monthCollection[index].length; week++) {
+            var dayData = monthCollection[index][week];
+            insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
+        }
     }
 }
 function compareDates(startDate, endDate) {
@@ -7881,6 +7884,10 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
                 this.resetEditorTemplate();
+                if (this.recurrenceEditor) {
+                    this.recurrenceEditor.destroy();
+                    this.recurrenceEditor = null;
+                }
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach(function (node) { return remove(node); });
             }
@@ -10708,8 +10715,10 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
                         var resTd = _k[_j];
                         resTd.date = headerDate.date;
                         resTd.workDays = headerDate.workDays;
-                        resTd.startHour = headerDate.startHour;
-                        resTd.endHour = headerDate.endHour;
+                        resTd.startHour = this.parent.getStartEndTime(resTd.resourceData[resTd.resource.startHourField]) ||
+                            headerDate.startHour;
+                        resTd.endHour = this.parent.getStartEndTime(resTd.resourceData[resTd.resource.endHourField]) ||
+                            headerDate.endHour;
                     }
                 }
                 if (!dateHeaderLevels[k]) {
@@ -11252,6 +11261,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     Schedule.prototype.getTimeString = function (date) {
         return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
     };
+    Schedule.prototype.getDateTime = function (date) {
+        return date instanceof Date ? new Date(date.getTime()) : new Date(date);
+    };
     Schedule.prototype.setCalendarMode = function () {
         if (this.calendarMode === 'Islamic') {
             this.calendarUtil = new Islamic();
@@ -11543,7 +11555,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             || td.classList.contains(HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }
-        if (this.activeViewOptions.headerRows.length > 0 && this.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
+        if (this.activeView.isTimelineView() && this.activeViewOptions.headerRows.length > 0 &&
+            this.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return true;
         }
         return false;
@@ -12031,6 +12044,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         var cells = [];
         for (var _i = 0, dates_1 = dates; _i < dates_1.length; _i++) {
             var date = dates_1[_i];
+            date = this.getDateTime(date);
             resetTime(date);
             var renderDates = this.activeView.renderDates;
             if (!isNullOrUndefined(groupIndex) && this.resourceBase && !this.activeView.isTimelineView()) {
@@ -12071,8 +12085,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      */
     Schedule.prototype.getCellDetails = function (tdCol) {
         var td = (tdCol instanceof Array) ? tdCol : [tdCol];
-        var firstTd = td[0];
-        var lastTd = td.slice(-1)[0];
+        var firstTd = getElement(td[0]);
+        var lastTd = getElement(td.slice(-1)[0]);
         var startTime = this.getDateFromElement(firstTd);
         var endTime = this.getDateFromElement(lastTd);
         if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
@@ -12104,6 +12118,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * Retrieves the resource details based on the provided resource index.
      * @param {number} index index of the resources at the last level.
      * @returns {ResourceDetails} Object An object holding the details of resource and resourceData.
+     * @isGenericType true
      */
     Schedule.prototype.getResourcesByIndex = function (index) {
         if (this.resourceBase && this.resourceBase.lastResourceLevel) {
@@ -12228,6 +12243,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * Retrieves the entire collection of events bound to the Schedule.
      * @method getEvents
      * @returns {Object[]} Returns the collection of event objects from the Schedule.
+     * @isGenericType true
      */
     Schedule.prototype.getEvents = function (startDate, endDate, includeOccurrences) {
         var eventCollections = [];
@@ -12237,6 +12253,12 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         else {
             eventCollections = this.eventsData;
         }
+        if (startDate) {
+            startDate = this.getDateTime(startDate);
+        }
+        if (endDate) {
+            endDate = this.getDateTime(endDate);
+        }
         eventCollections = this.eventBase.filterEventsByRange(eventCollections, startDate, endDate);
         return eventCollections;
     };
@@ -12245,6 +12267,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @method getOccurrencesByID
      * @param {number} eventID ID of the parent recurrence data from which the occurrences are fetched.
      * @returns {Object[]} Returns the collection of occurrence event objects.
+     * @isGenericType true
      */
     Schedule.prototype.getOccurrencesByID = function (eventID) {
         return this.eventBase.getOccurrencesByID(eventID);
@@ -12255,8 +12278,11 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @param {Date} startTime Denotes the start time range.
      * @param {Date} endTime Denotes the end time range.
      * @returns {Object[]} Returns the collection of occurrence event objects that lies between the provided start and end time.
+     * @isGenericType true
      */
     Schedule.prototype.getOccurrencesByRange = function (startTime, endTime) {
+        startTime = this.getDateTime(startTime);
+        endTime = this.getDateTime(endTime);
         return this.eventBase.getOccurrencesByRange(startTime, endTime);
     };
     /**
@@ -12271,6 +12297,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
+     * @isGenericType true
      */
     Schedule.prototype.getCurrentViewEvents = function () {
         return this.eventsProcessed;
@@ -12288,8 +12315,10 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @method getEventDetails
      * @param {Element} element Denotes the event UI element on the Schedule.
      * @returns {Object} Returns the event details.
+     * @isGenericType true
      */
     Schedule.prototype.getEventDetails = function (element) {
+        element = getElement(element);
         var guid = element.getAttribute('data-guid');
         if (guid) {
             return this.eventBase.getEventByGuid(guid);
@@ -12309,7 +12338,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         var eventStart;
         var eventEnd;
         var eventObj = this.activeEventData.event;
-        if (startTime instanceof Date) {
+        if (startTime instanceof Date || typeof (startTime) === 'string') {
             eventStart = startTime;
             eventEnd = endTime;
         }
@@ -12324,6 +12353,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(eventStart) || isNullOrUndefined(eventEnd)) {
             return true;
         }
+        eventStart = this.getDateTime(eventStart);
+        eventEnd = this.getDateTime(eventEnd);
         var eventCollection = this.eventBase.filterEvents(eventStart, eventEnd);
         if (!isNullOrUndefined(groupIndex) && this.resourceBase && this.resourceBase.lastResourceLevel.length > 0) {
             eventCollection = this.eventBase.filterEventsByResource(this.resourceBase.lastResourceLevel[groupIndex], eventCollection);
@@ -12353,6 +12384,17 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @returns {void}
      */
     Schedule.prototype.openEditor = function (data, action, isEventData, repeatType) {
+        if (action === 'Add' && !isEventData) {
+            data.startTime = this.getDateTime(data.startTime);
+            data.endTime = this.getDateTime(data.endTime);
+            data.element = getElement(data.element);
+        }
+        else {
+            data[this.eventFields.startTime] =
+                this.getDateTime(data[this.eventFields.startTime]);
+            data[this.eventFields.endTime] =
+                this.getDateTime(data[this.eventFields.endTime]);
+        }
         this.currentAction = action;
         if (action !== 'Add') {
             this.activeEventData.event = data;
@@ -13978,8 +14020,8 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
             for (var _a = 0, appointments_2 = appointments; _a < appointments_2.length; _a++) {
                 var app = appointments_2[_a];
                 var eventData = app.data;
-                if (eventData[this.fields.startTime].getTime() <= date.getTime() &&
-                    eventData[this.fields.endTime].getTime() > date.getTime()) {
+                if (eventData.trimStartTime.getTime() <= date.getTime() &&
+                    eventData.trimEndTime.getTime() > date.getTime()) {
                     appointmentsList.push(app);
                 }
             }
@@ -14127,9 +14169,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
             startTime = eventData[this.fields.startTime];
         }
         // To overcome the overflow
-        if (event[this.fields.isAllDay]) {
-            eventData[this.fields.startTime] = schedule.startHour;
-        }
+        eventData.trimStartTime = (event[this.fields.isAllDay]) ? schedule.startHour : eventData[this.fields.startTime];
         return startTime;
     };
     TimelineEvent.prototype.getNextDay = function (startTime, eventData) {
@@ -14153,9 +14193,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
             endTime = eventData[this.fields.endTime];
         }
         // To overcome the overflow
-        if (event[this.fields.isAllDay]) {
-            eventData[this.fields.endTime] = schedule.endHour;
-        }
+        eventData.trimEndTime = (event[this.fields.isAllDay]) ? schedule.endHour : eventData[this.fields.endTime];
         return endTime;
     };
     TimelineEvent.prototype.getEventWidth = function (startDate, endDate, isAllDay, count) {
@@ -15589,6 +15627,11 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
             this.parent.activeCellsData = this.parent.getCellDetails(target);
             var args = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
             this.parent.trigger(cellClick, args, function (clickArgs) {
+                clickArgs.startTime = _this.parent.getDateTime(clickArgs.startTime);
+                clickArgs.endTime = _this.parent.getDateTime(clickArgs.endTime);
+                if (clickArgs.element) {
+                    clickArgs.element = getElement(clickArgs.element);
+                }
                 if (!clickArgs.cancel) {
                     if (isWorkCell_1) {
                         _this.parent.selectCell(target);

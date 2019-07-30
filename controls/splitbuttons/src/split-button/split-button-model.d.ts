@@ -64,7 +64,6 @@ export interface SplitButtonModel extends DropDownButtonModel{
      * Triggers before opening the SplitButton popup.
      * @event
      * @blazorProperty 'OnOpen'
-     * @deprecated
      */
     beforeOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -72,7 +71,6 @@ export interface SplitButtonModel extends DropDownButtonModel{
      * Triggers before closing the SplitButton popup.
      * @event
      * @blazorProperty 'OnClose'
-     * @deprecated
      */
     beforeClose?: EmitType<BeforeOpenCloseMenuEventArgs>;
 
@@ -110,5 +108,12 @@ export interface SplitButtonModel extends DropDownButtonModel{
      * @blazorProperty 'Created'
      */
     created?: EmitType<Event>;
+
+}
+
+/**
+ * Interface for a class Deferred
+ */
+export interface DeferredModel {
 
 }

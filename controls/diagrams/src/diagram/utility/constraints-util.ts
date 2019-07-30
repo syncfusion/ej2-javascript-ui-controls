@@ -85,6 +85,17 @@ export function canBridge(connector: Connector, diagram: Diagram): number {
 }
 
 /** @private */
+export function canEnableRouting(connector: Connector, diagram: Diagram): number {
+    let state: number = 0;
+    if (connector.constraints & ConnectorConstraints.LineRouting) {
+        state = connector.constraints & ConnectorConstraints.LineRouting;
+    } else if (connector.constraints & ConnectorConstraints.InheritLineRouting) {
+        state = diagram.constraints & DiagramConstraints.LineRouting;
+    }
+    return state;
+}
+
+/** @private */
 export function canDragSourceEnd(connector: Connector): number {
     return connector.constraints & ConnectorConstraints.DragSourceEnd;
 }

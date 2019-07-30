@@ -724,16 +724,6 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
             beforeItemRender: function (args) {
                 _this.trigger('beforeItemRender', args);
             },
-            beforeOpen: function (args) {
-                _this.trigger('beforeOpen', args, function (observedArgs) {
-                    args = observedArgs;
-                });
-            },
-            beforeClose: function (args) {
-                _this.trigger('beforeClose', args, function (observedArgs) {
-                    args = observedArgs;
-                });
-            },
             open: function (args) {
                 _this.trigger('open', args);
             },
@@ -743,6 +733,20 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
             select: function (args) {
                 _this.trigger('select', args);
             }
+        };
+        dropDownBtnModel.beforeOpen = function (args) {
+            var callBackPromise = new Deferred();
+            _this.trigger('beforeOpen', args, function (observedArgs) {
+                callBackPromise.resolve(observedArgs);
+            });
+            return callBackPromise;
+        };
+        dropDownBtnModel.beforeClose = function (args) {
+            var callBackPromise = new Deferred();
+            _this.trigger('beforeClose', args, function (observedArgs) {
+                callBackPromise.resolve(observedArgs);
+            });
+            return callBackPromise;
         };
         this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
         this.secondaryBtnObj.createElement = this.createElement;
@@ -919,6 +923,30 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
     ], SplitButton);
     return SplitButton;
 }(DropDownButton));
+/**
+ * Deferred is used to handle asynchronous operation.
+ */
+var Deferred = /** @__PURE__ @class */ (function () {
+    function Deferred() {
+        var _this = this;
+        /**
+         * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future.
+         */
+        this.promise = new Promise(function (resolve, reject) {
+            _this.resolve = resolve;
+            _this.reject = reject;
+        });
+        /**
+         * Defines the callback function triggers when the Deferred object is resolved.
+         */
+        this.then = this.promise.then.bind(this.promise);
+        /**
+         * Defines the callback function triggers when the Deferred object is rejected.
+         */
+        this.catch = this.promise.catch.bind(this.promise);
+    }
+    return Deferred;
+}());
 
 /**
  * Split Button modules
@@ -1488,5 +1516,5 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
  * SplitButton all module
  */
 
-export { getModel, Item, DropDownButton, SplitButton, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
+export { getModel, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es5.js.map

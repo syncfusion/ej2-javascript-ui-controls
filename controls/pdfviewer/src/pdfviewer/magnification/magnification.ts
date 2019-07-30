@@ -352,7 +352,9 @@ export class Magnification {
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.maintainSelectionOnZoom(false, true);
         }
-        this.isMagnified = true;
+        if (!this.isInitialLoading) {
+            this.isMagnified = true;
+        }
         this.updatePageLocation();
         this.resizeCanvas(this.reRenderPageNumber);
         if (this.pdfViewer.textSelectionModule) {
@@ -429,7 +431,7 @@ export class Magnification {
     }
 
     private rerenderMagnifiedPages(): void {
-        if (this.pdfViewerBase.isInitialLoaded) {
+        if (this.pdfViewerBase.isInitialLoaded || this.pdfViewerBase.isDocumentLoaded) {
             this.renderInSeparateThread(this.reRenderPageNumber);
             this.isPagesZoomed = false;
         }
@@ -830,7 +832,9 @@ export class Magnification {
      * @private
      */
     public onDoubleTapMagnification(): void {
-        this.pdfViewer.toolbarModule.showToolbar(false);
+        if (this.pdfViewer.toolbarModule) {
+            this.pdfViewer.toolbarModule.showToolbar(false);
+        }
         let scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
         if (!this.isTapToFitZoom) {
             if (this.zoomFactor < 2) {

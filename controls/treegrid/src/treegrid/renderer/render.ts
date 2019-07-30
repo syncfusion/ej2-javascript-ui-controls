@@ -144,16 +144,8 @@ export class Render {
             if (this.parent.allowTextWrap) {
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
-            let textContent: string = args.cell.querySelector('.e-treecell') != null ?
-            args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
-            cellElement.innerHTML = textContent;
-            if ( typeof(args.column.template) === 'object' && this.templateResult ) {
-                cellElement.innerHTML = '';
-                appendChildren(cellElement , this.templateResult);
-                this.templateResult = null;
-            }
+            this.updateTreeCell(args, cellElement, container);
             container.appendChild(cellElement);
-            args.cell.innerHTML = '';
             args.cell.appendChild(container);
         }
         if (!isNullOrUndefined(column) && column.showCheckbox) {
@@ -174,6 +166,22 @@ export class Render {
         if (isNullOrUndefined(this.parent.rowTemplate)) {
             this.parent.trigger(events.queryCellInfo, args);
             }
+    }
+    private updateTreeCell(args: QueryCellInfoEventArgs, cellElement: HTMLElement, container: Element): void {
+        let textContent: string = args.cell.querySelector('.e-treecell') != null ?
+        args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
+        if ( typeof(args.column.template) === 'object' && this.templateResult ) {
+            appendChildren(cellElement , this.templateResult);
+            this.templateResult = null;
+            args.cell.innerHTML = '';
+        } else if (args.cell.classList.contains('e-templatecell')) {
+            for ( let i: number = 0; i < args.cell.children.length; i++ ) {
+                cellElement.appendChild(args.cell.children[i]);
+            }
+        } else {
+            cellElement.innerHTML = textContent;
+            args.cell.innerHTML = '';
+        }
     }
 
     private columnTemplateResult(args: {template : NodeList, name: string}): void {

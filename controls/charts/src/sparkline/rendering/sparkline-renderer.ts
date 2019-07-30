@@ -90,9 +90,12 @@ export class SparklineRenderer {
             queryModule = this.sparkline.query instanceof Query ? this.sparkline.query : new Query();
             let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
             dataManager.then((e: Object) => {
-                this.sparkline.dataSource = e['result'];
+                this.sparkline.setProperties({ dataSource: e['result'] }, true);
                 this.sparkline.sparklineData = this.sparkline.dataSource;
+                this.sparkline.processSparklineData();
             });
+        } else {
+            this.sparkline.processSparklineData();
         }
     }
     /**

@@ -1,5 +1,5 @@
-import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
-import {SelectionMode,ToolBarPosition,BeforeItemRenderEventArgs,ListBoxChangeEventArgs,DragEventArgs} from "./list-box";
+import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { prepend, append } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
+import {SelectionMode,CheckBoxPosition,ToolBarPosition,BeforeItemRenderEventArgs,ListBoxChangeEventArgs,DragEventArgs} from "./list-box";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
 /**
@@ -31,7 +31,7 @@ export interface SelectionSettingsModel {
      * Set the position of the checkbox.
      * @default 'Left'
      */
-    checkboxPosition?: 'Left' | 'Right';
+    checkboxPosition?: CheckBoxPosition;
 
 }
 
@@ -74,7 +74,7 @@ export interface ListBoxModel extends DropDownBaseModel{
      * Sets the specified item to the selected state or gets the selected item in the ListBox.
      * @default []
      * @aspType object
-     * @blazorType object
+     * @isGenericType true
      */
     value?: string[] | number[] | boolean[];
 

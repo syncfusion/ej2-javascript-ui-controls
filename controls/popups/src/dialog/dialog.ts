@@ -23,6 +23,7 @@ export class ButtonProps extends ChildProperty<ButtonProps> {
      * Possible values are Button, Submit and Reset.
      * @default 'Button'
      * @aspType string
+     * @blazorType string
      */
     @Property('Button')
     public type: ButtonType | string;
@@ -134,6 +135,7 @@ export interface BeforeOpenEventArgs {
     /**
      * Returns the target element of the dialog.
      * @aspType string
+     * @blazorType string
      */
     target: HTMLElement | String;
 }
@@ -162,6 +164,7 @@ export interface BeforeCloseEventArgs {
     /**
      * Returns the target element of the dialog.
      * @aspType string
+     * @blazorType string
      */
     target: HTMLElement | String;
     /**

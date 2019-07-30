@@ -13,7 +13,10 @@ export interface ActionEventArgs extends BaseEventArgs {
     event?: Event;
     /** Defines the cancel option for the action taking place. */
     cancel: boolean;
-    /** Returns the appropriate data based on the action. */
+    /* 
+    * Returns the appropriate data based on the action.
+    * @isGenericType true
+    */
     data?: Object;
     /** Returns the clicked resource row index. */
     groupIndex?: number;
@@ -54,7 +57,10 @@ export interface SelectEventArgs extends BaseEventArgs {
     showQuickPopup?: boolean;
     /** Determines whether to select multiple row. */
     allowMultipleRow?: boolean;
-    /** Return the appropriate cell or event data based on the action. */
+    /*
+    * Return the appropriate cell or event data based on the action.
+    * @isGenericType true
+    */
     data?: { [key: string]: Object } | { [key: string]: Object }[];
     /** Returns the clicked resource row index. */
     groupIndex?: number;
@@ -63,7 +69,10 @@ export interface SelectEventArgs extends BaseEventArgs {
 export interface EventClickArgs extends BaseEventArgs {
     /** Returns the date of the event. */
     date?: Date;
-    /** Returns a single or collection of selected or clicked events. */
+    /*
+    * Returns a single or collection of selected or clicked events.
+    * @isGenericType true
+    */
     event: { [key: string]: Object } | { [key: string]: Object }[];
     /** Returns the single or collection of HTML element(s). */
     element: HTMLElement | HTMLElement[];
@@ -72,7 +81,10 @@ export interface EventClickArgs extends BaseEventArgs {
 }
 
 export interface EventRenderedArgs extends BaseEventArgs {
-    /** Returns the event data. */
+    /*
+    * Returns the event data.
+    * @isGenericType true
+    */
     data: { [key: string]: Object };
     /** Returns the event element which is currently being rendered on the UI. */
     element: HTMLElement;
@@ -85,7 +97,10 @@ export interface EventRenderedArgs extends BaseEventArgs {
 export interface PopupOpenEventArgs extends BaseEventArgs {
     /** Returns the type of the popup which is currently being opted to open. */
     type: PopupType;
-    /** Returns the cell or event data. */
+    /*
+    * Returns the cell or event data.
+    * @isGenericType true
+    */
     data: Object;
     /** Returns the target element on which the popup is getting opened. */
     target?: Element;
@@ -129,7 +144,10 @@ export interface RenderCellEventArgs extends BaseEventArgs {
 export interface ResizeEventArgs extends BaseEventArgs {
     /** Returns the resize element. */
     element: HTMLElement;
-    /** Returns the resize event data. */
+    /*
+    * Returns the resize event data.
+    * @isGenericType true
+    */
     data: { [key: string]: Object };
     /** Returns the mouse event. */
     event: MouseEvent;
@@ -150,7 +168,10 @@ export interface ResizeEventArgs extends BaseEventArgs {
 export interface DragEventArgs extends BaseEventArgs {
     /** Returns the drag element. */
     element: HTMLElement;
-    /** Returns the dragged event data. */
+    /*
+    * Returns the dragged event data.
+    * @isGenericType true
+    */
     data: { [key: string]: Object };
     /** Returns the mouse event. */
     event: MouseEvent;
@@ -235,7 +256,10 @@ export interface CellTemplateArgs {
 export interface ResourceDetails {
     /** Returns the resource model data such as the field mapping options used within it. */
     resource: ResourcesModel;
-    /** Returns the child resource data. */
+    /*
+    * Returns the child resource data.
+    * @isGenericType true
+    */
     resourceData: { [key: string]: Object };
     /** Returns the respective resource fields data. */
     groupData?: { [key: string]: Object };

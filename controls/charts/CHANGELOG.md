@@ -4,6 +4,18 @@
 
 ## 17.2.36 (2019-07-24)
 
+### Stock Chart
+
+#### Bug Fixes
+
+The `querySelector of null` console error issue has been fixed.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+The `appendChild of null` console error issue has been fixed.
+
 ### Chart
 
 #### Bug Fixes

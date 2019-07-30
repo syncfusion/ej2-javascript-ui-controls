@@ -318,11 +318,20 @@ export class GanttChart {
      * @private
      */
     public collapseGanttRow(args: object): void {
-        let record: IGanttData = getValue('data', args);
         this.parent.trigger('collapsing', args);
-        if (getValue('cancel', args)) {
-            return;
+        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+            this.collapsedGanttRow(args);
         }
+        this.isExpandCollapseFromChart = false;
+    }
+
+    /**
+     * @return {void}
+     * @param args
+     * @private
+     */
+    public collapsedGanttRow(args: object): void {
+        let record: IGanttData = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('collapse', getValue('chartRow', args), record, null);
             this.parent.treeGrid.collapseRow(getValue('gridRow', args), record);
@@ -344,11 +353,20 @@ export class GanttChart {
      * @private
      */
     public expandGanttRow(args: object): void {
-        let record: IGanttData = getValue('data', args);
         this.parent.trigger('expanding', args);
-        if (getValue('cancel', args)) {
-            return;
+        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+            this.expandedGanttRow(args);
         }
+        this.isExpandCollapseFromChart = false;
+    }
+
+    /**
+     * @return {void}
+     * @param args
+     * @private
+     */
+    public expandedGanttRow(args: object): void {
+        let record: IGanttData = getValue('data', args);
         if (this.isExpandCollapseFromChart) {
             this.expandCollapseChartRows('expand', getValue('chartRow', args), record, null);
             this.parent.treeGrid.expandRow(getValue('gridRow', args), record);

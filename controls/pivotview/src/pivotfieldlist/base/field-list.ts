@@ -525,10 +525,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private generateData(): void {
         this.pivotFieldList = {};
         if (this.dataSourceSettings && this.dataSourceSettings.dataSource) {
-            if (this.dataSourceSettings.dataSource instanceof DataManager) {
-                setTimeout(this.getData.bind(this), 100);
-            } else if ((this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
+            if ((this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
+                this.engineModule.data = this.dataSourceSettings.dataSource as IDataSet[];
                 this.initEngine();
+            } else if (this.dataSourceSettings.dataSource instanceof DataManager) {
+                setTimeout(this.getData.bind(this), 100);
             }
         } else {
             this.notify(events.dataReady, {});
@@ -547,7 +548,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     }
 
     private executeQuery(e: ReturnOption): void {
-        this.setProperties({ dataSourceSettings: { dataSource: e.result as IDataSet[] } }, true);
+        this.engineModule.data = (e.result as IDataSet[]);
         this.initEngine();
     }
 

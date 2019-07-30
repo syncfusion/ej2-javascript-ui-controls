@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, cldrData, closest, compile, createElement, extend, formatUnit, getDefaultDateObject, getElement, getValue, isBlazor, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, uniqueID, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -737,7 +737,8 @@ class HeaderRenderer {
         }
     }
     getCalendarView() {
-        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda') {
+        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' ||
+            this.parent.currentView === 'TimelineMonth') {
             return 'Year';
         }
         return 'Month';
@@ -3510,13 +3511,15 @@ function insertDateCollectionBasedonBySetPos(monthCollection, state, startDate, 
 }
 // To insert datas into existing collection which is processed from previous loop.
 function insertDatasIntoExistingCollection(monthCollection, state, startDate, endDate, data, ruleObject, index) {
-    index = !isNullOrUndefined(index) ? index :
-        ((ruleObject.setPosition < 1)
-            ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-    monthCollection[index].sort();
-    for (let week = 0; week < monthCollection[index].length; week++) {
-        let dayData = monthCollection[index][week];
-        insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
+    if (monthCollection.length > 0) {
+        index = !isNullOrUndefined(index) ? index :
+            ((ruleObject.setPosition < 1)
+                ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+        monthCollection[index].sort();
+        for (let week = 0; week < monthCollection[index].length; week++) {
+            let dayData = monthCollection[index][week];
+            insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
+        }
     }
 }
 function compareDates(startDate, endDate) {
@@ -7763,6 +7766,10 @@ class EventWindow {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
                 this.resetEditorTemplate();
+                if (this.recurrenceEditor) {
+                    this.recurrenceEditor.destroy();
+                    this.recurrenceEditor = null;
+                }
                 this.destroyComponents();
                 [].slice.call(form.childNodes).forEach((node) => remove(node));
             }
@@ -10386,8 +10393,10 @@ class ResourceBase {
                     for (let resTd of resGroup[k]) {
                         resTd.date = headerDate.date;
                         resTd.workDays = headerDate.workDays;
-                        resTd.startHour = headerDate.startHour;
-                        resTd.endHour = headerDate.endHour;
+                        resTd.startHour = this.parent.getStartEndTime(resTd.resourceData[resTd.resource.startHourField]) ||
+                            headerDate.startHour;
+                        resTd.endHour = this.parent.getStartEndTime(resTd.resourceData[resTd.resource.endHourField]) ||
+                            headerDate.endHour;
                     }
                 }
                 if (!dateHeaderLevels[k]) {
@@ -10892,6 +10901,9 @@ let Schedule = class Schedule extends Component {
     getTimeString(date) {
         return this.globalize.formatDate(date, { format: this.timeFormat, type: 'time', calendar: this.getCalendarMode() });
     }
+    getDateTime(date) {
+        return date instanceof Date ? new Date(date.getTime()) : new Date(date);
+    }
     setCalendarMode() {
         if (this.calendarMode === 'Islamic') {
             this.calendarUtil = new Islamic();
@@ -11178,7 +11190,8 @@ let Schedule = class Schedule extends Component {
             || td.classList.contains(HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }
-        if (this.activeViewOptions.headerRows.length > 0 && this.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
+        if (this.activeView.isTimelineView() && this.activeViewOptions.headerRows.length > 0 &&
+            this.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return true;
         }
         return false;
@@ -11661,6 +11674,7 @@ let Schedule = class Schedule extends Component {
         let tempEndIndex = endIndex;
         let cells = [];
         for (let date of dates) {
+            date = this.getDateTime(date);
             resetTime(date);
             let renderDates = this.activeView.renderDates;
             if (!isNullOrUndefined(groupIndex) && this.resourceBase && !this.activeView.isTimelineView()) {
@@ -11701,8 +11715,8 @@ let Schedule = class Schedule extends Component {
      */
     getCellDetails(tdCol) {
         let td = (tdCol instanceof Array) ? tdCol : [tdCol];
-        let firstTd = td[0];
-        let lastTd = td.slice(-1)[0];
+        let firstTd = getElement(td[0]);
+        let lastTd = getElement(td.slice(-1)[0]);
         let startTime = this.getDateFromElement(firstTd);
         let endTime = this.getDateFromElement(lastTd);
         if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
@@ -11734,6 +11748,7 @@ let Schedule = class Schedule extends Component {
      * Retrieves the resource details based on the provided resource index.
      * @param {number} index index of the resources at the last level.
      * @returns {ResourceDetails} Object An object holding the details of resource and resourceData.
+     * @isGenericType true
      */
     getResourcesByIndex(index) {
         if (this.resourceBase && this.resourceBase.lastResourceLevel) {
@@ -11858,6 +11873,7 @@ let Schedule = class Schedule extends Component {
      * Retrieves the entire collection of events bound to the Schedule.
      * @method getEvents
      * @returns {Object[]} Returns the collection of event objects from the Schedule.
+     * @isGenericType true
      */
     getEvents(startDate, endDate, includeOccurrences) {
         let eventCollections = [];
@@ -11867,6 +11883,12 @@ let Schedule = class Schedule extends Component {
         else {
             eventCollections = this.eventsData;
         }
+        if (startDate) {
+            startDate = this.getDateTime(startDate);
+        }
+        if (endDate) {
+            endDate = this.getDateTime(endDate);
+        }
         eventCollections = this.eventBase.filterEventsByRange(eventCollections, startDate, endDate);
         return eventCollections;
     }
@@ -11875,6 +11897,7 @@ let Schedule = class Schedule extends Component {
      * @method getOccurrencesByID
      * @param {number} eventID ID of the parent recurrence data from which the occurrences are fetched.
      * @returns {Object[]} Returns the collection of occurrence event objects.
+     * @isGenericType true
      */
     getOccurrencesByID(eventID) {
         return this.eventBase.getOccurrencesByID(eventID);
@@ -11885,8 +11908,11 @@ let Schedule = class Schedule extends Component {
      * @param {Date} startTime Denotes the start time range.
      * @param {Date} endTime Denotes the end time range.
      * @returns {Object[]} Returns the collection of occurrence event objects that lies between the provided start and end time.
+     * @isGenericType true
      */
     getOccurrencesByRange(startTime, endTime) {
+        startTime = this.getDateTime(startTime);
+        endTime = this.getDateTime(endTime);
         return this.eventBase.getOccurrencesByRange(startTime, endTime);
     }
     /**
@@ -11901,6 +11927,7 @@ let Schedule = class Schedule extends Component {
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
+     * @isGenericType true
      */
     getCurrentViewEvents() {
         return this.eventsProcessed;
@@ -11918,8 +11945,10 @@ let Schedule = class Schedule extends Component {
      * @method getEventDetails
      * @param {Element} element Denotes the event UI element on the Schedule.
      * @returns {Object} Returns the event details.
+     * @isGenericType true
      */
     getEventDetails(element) {
+        element = getElement(element);
         let guid = element.getAttribute('data-guid');
         if (guid) {
             return this.eventBase.getEventByGuid(guid);
@@ -11938,7 +11967,7 @@ let Schedule = class Schedule extends Component {
         let eventStart;
         let eventEnd;
         let eventObj = this.activeEventData.event;
-        if (startTime instanceof Date) {
+        if (startTime instanceof Date || typeof (startTime) === 'string') {
             eventStart = startTime;
             eventEnd = endTime;
         }
@@ -11953,6 +11982,8 @@ let Schedule = class Schedule extends Component {
         if (isNullOrUndefined(eventStart) || isNullOrUndefined(eventEnd)) {
             return true;
         }
+        eventStart = this.getDateTime(eventStart);
+        eventEnd = this.getDateTime(eventEnd);
         let eventCollection = this.eventBase.filterEvents(eventStart, eventEnd);
         if (!isNullOrUndefined(groupIndex) && this.resourceBase && this.resourceBase.lastResourceLevel.length > 0) {
             eventCollection = this.eventBase.filterEventsByResource(this.resourceBase.lastResourceLevel[groupIndex], eventCollection);
@@ -11980,6 +12011,17 @@ let Schedule = class Schedule extends Component {
      * @returns {void}
      */
     openEditor(data, action, isEventData, repeatType) {
+        if (action === 'Add' && !isEventData) {
+            data.startTime = this.getDateTime(data.startTime);
+            data.endTime = this.getDateTime(data.endTime);
+            data.element = getElement(data.element);
+        }
+        else {
+            data[this.eventFields.startTime] =
+                this.getDateTime(data[this.eventFields.startTime]);
+            data[this.eventFields.endTime] =
+                this.getDateTime(data[this.eventFields.endTime]);
+        }
         this.currentAction = action;
         if (action !== 'Add') {
             this.activeEventData.event = data;
@@ -13525,8 +13567,8 @@ class TimelineEvent extends MonthEvent {
         else {
             for (let app of appointments) {
                 let eventData = app.data;
-                if (eventData[this.fields.startTime].getTime() <= date.getTime() &&
-                    eventData[this.fields.endTime].getTime() > date.getTime()) {
+                if (eventData.trimStartTime.getTime() <= date.getTime() &&
+                    eventData.trimEndTime.getTime() > date.getTime()) {
                     appointmentsList.push(app);
                 }
             }
@@ -13672,9 +13714,7 @@ class TimelineEvent extends MonthEvent {
             startTime = eventData[this.fields.startTime];
         }
         // To overcome the overflow
-        if (event[this.fields.isAllDay]) {
-            eventData[this.fields.startTime] = schedule.startHour;
-        }
+        eventData.trimStartTime = (event[this.fields.isAllDay]) ? schedule.startHour : eventData[this.fields.startTime];
         return startTime;
     }
     getNextDay(startTime, eventData) {
@@ -13698,9 +13738,7 @@ class TimelineEvent extends MonthEvent {
             endTime = eventData[this.fields.endTime];
         }
         // To overcome the overflow
-        if (event[this.fields.isAllDay]) {
-            eventData[this.fields.endTime] = schedule.endHour;
-        }
+        eventData.trimEndTime = (event[this.fields.isAllDay]) ? schedule.endHour : eventData[this.fields.endTime];
         return endTime;
     }
     getEventWidth(startDate, endDate, isAllDay, count) {
@@ -15109,6 +15147,11 @@ class WorkCellInteraction {
             this.parent.activeCellsData = this.parent.getCellDetails(target);
             let args = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
             this.parent.trigger(cellClick, args, (clickArgs) => {
+                clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
+                clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
+                if (clickArgs.element) {
+                    clickArgs.element = getElement(clickArgs.element);
+                }
                 if (!clickArgs.cancel) {
                     if (isWorkCell) {
                         this.parent.selectCell(target);

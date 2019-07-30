@@ -413,6 +413,7 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
 
     /**
      * It allows to set the data source.
+     * @isGenericType true
      */
     @Property()
     public dataSource: IDataSet[] | DataManager;

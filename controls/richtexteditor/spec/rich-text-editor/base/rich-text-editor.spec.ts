@@ -2553,6 +2553,37 @@ describe('RTE Placeholder DIV', () => {
     });
 });
 
+describe('RTE Update Value', () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    beforeAll((done: Function) => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['SourceCode']
+            },
+            value: `<div><p class='first-p'>First p node-0</p><p class='second-p'>First p node-1</p></div>`,
+            placeholder: 'Type something'
+        });
+        rteEle = rteObj.element;
+        done();
+    });
+    it("RTE Update Value testing", () => {
+        expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+        rteObj.value = ``;
+        rteObj.updateValue(rteObj.value);
+        rteObj.dataBind();
+        let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        trgEle.click();
+        expect((rteObj as any).placeHolderWrapper.style.display).toBe('none');
+        trgEle = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0];
+        trgEle.click();
+        expect((rteObj as any).placeHolderWrapper.style.display).toBe('block');
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
 describe('RTE Form reset', () => {
     let rteObj: RichTextEditor;
     let rteEle: HTMLElement;
@@ -2927,8 +2958,12 @@ describe(' Paste url', () => {
         selectNode = (rteObj as any).inputElement.querySelector('.first-p');
         setCursorPoint(curDocument, selectNode, 0);
         keyBoardEvent.clipboardData = {
-            getData: () => {
+            getData: (e: any) => {
+              if (e === "text/plain") {
                 return 'https://ej2.syncfusion.com';
+              } else {
+                return '';
+              }
             },
             items: []
         };

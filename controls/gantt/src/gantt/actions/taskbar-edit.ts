@@ -710,6 +710,8 @@ export class TaskbarEdit {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
         let left: number;
         let projectStartDate: Date;
+        let endDate: Date;
+        let startDate: Date;
         switch (this.taskBarEditAction) {
             case 'ProgressResizing':
                 this.parent.setRecordValue(
@@ -722,10 +724,10 @@ export class TaskbarEdit {
                 left = this.getRoundOffStartLeft(item, this.roundOffDuration);
                 projectStartDate = this.getDateByLeft(left);
                 if (isNullOrUndefined(item.endDate)) {
-                    let endDate: Date = this.parent.dateValidationModule.getValidEndDate(item);
+                    endDate = this.parent.dateValidationModule.getValidEndDate(item);
                     this.parent.setRecordValue('endDate', endDate, item, true);
                 }
-                let startDate: Date = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
+                startDate = this.parent.dateValidationModule.checkStartDate(projectStartDate, item, null);
                 this.parent.setRecordValue('startDate', new Date(startDate.getTime()), item, true);
                 if (this.parent.dateValidationModule.compareDates(item.startDate, item.endDate) === 0
                     && isNullOrUndefined(item.isMilestone) && item.isMilestone === false && item.duration === 0) {
@@ -740,7 +742,7 @@ export class TaskbarEdit {
                     startDate = this.parent.dateValidationModule.getValidStartDate(item);
                     this.parent.setRecordValue('startDate', startDate, item, true);
                 }
-                let endDate: Date = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                endDate = this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 break;

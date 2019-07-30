@@ -11520,47 +11520,52 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
             e.args.preventDefault();
             var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             var saveSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
-            var firstElement = this.parent.createElement('span');
             var httpRegex = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
             var wwwRegex = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
-            var httpText = '';
-            if (e.text.match(httpRegex)) {
-                firstElement.innerHTML = e.text.split('http')[0];
-                httpText = 'http' + e.text.split('http')[1];
-            }
-            else if (e.text.match(wwwRegex)) {
-                firstElement.innerHTML = e.text.split('www')[0];
-                httpText = 'www' + e.text.split('www')[1];
-            }
-            var httpSplitText = httpText.split(' ');
-            var splittedText = '';
-            for (var i = 1; i < httpSplitText.length; i++) {
-                splittedText = splittedText + ' ' + httpSplitText[i];
-            }
-            var lastElement = this.parent.createElement('span');
-            lastElement.innerHTML = splittedText;
-            var anchor = this.parent.createElement('a', {
-                className: 'e-rte-anchor', attrs: {
-                    href: httpSplitText[0],
-                    title: httpSplitText[0]
+            var enterSplitText = e.text.split('\n');
+            var contentInnerElem = '';
+            for (var i = 0; i < enterSplitText.length; i++) {
+                if (enterSplitText[i].trim() === '') {
+                    contentInnerElem += '<p><br></p>';
                 }
-            });
-            anchor.innerHTML = httpSplitText[0];
-            var resultElement = this.parent.createElement('span');
-            if (firstElement.innerHTML !== '') {
-                resultElement.appendChild(firstElement);
+                else {
+                    var contentWithSpace = '';
+                    var spaceBetweenContent = true;
+                    var spaceSplit = enterSplitText[i].split(' ');
+                    for (var j = 0; j < spaceSplit.length; j++) {
+                        if (spaceSplit[j].trim() === '') {
+                            contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+                        }
+                        else {
+                            spaceBetweenContent = false;
+                            contentWithSpace += spaceSplit[j] + ' ';
+                        }
+                    }
+                    contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                }
             }
-            if (anchor.innerHTML !== '') {
-                resultElement.appendChild(anchor);
-            }
-            if (lastElement.innerHTML !== '') {
-                resultElement.appendChild(lastElement);
+            var divElement = this.parent.createElement('div');
+            divElement.innerHTML = contentInnerElem;
+            var paraElem = divElement.querySelectorAll('p');
+            for (var i = 0; i < paraElem.length; i++) {
+                var splitTextContent = paraElem[i].innerHTML.split(' ');
+                var resultSplitContent = '';
+                for (var j = 0; j < splitTextContent.length; j++) {
+                    if (splitTextContent[j].match(httpRegex) || splitTextContent[j].match(wwwRegex)) {
+                        resultSplitContent += '<a className="e-rte-anchor" href="' + splitTextContent[j] +
+                            '" title="' + splitTextContent[j] + '">' + splitTextContent[j] + ' </a>';
+                    }
+                    else {
+                        resultSplitContent += splitTextContent[j] + ' ';
+                    }
+                }
+                paraElem[i].innerHTML = resultSplitContent.trim();
             }
             if (!isNullOrUndefined(this.parent.pasteCleanupModule)) {
-                e.callBack(resultElement.innerHTML);
+                e.callBack(divElement.innerHTML);
             }
             else {
-                this.parent.executeCommand('insertHTML', resultElement);
+                this.parent.executeCommand('insertHTML', divElement);
             }
         }
     };
@@ -11818,8 +11823,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             value = e.args.clipboardData.getData('text/html');
         }
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
-            var regex = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
-            if (value.length === 0 || value.match(regex)) {
+            if (value.length === 0) {
                 value = e.args.clipboardData.getData('text/plain');
                 var file = e && e.args.clipboardData &&
                     e.args.clipboardData.items.length > 0 ?
@@ -11838,6 +11842,34 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                         }
                     }
                 });
+                var htmlRegex = new RegExp(/<\/[a-z][\s\S]*>/i);
+                if (!htmlRegex.test(value)) {
+                    var enterSplitText = value.split('\n');
+                    var contentInnerElem = '';
+                    for (var i = 0; i < enterSplitText.length; i++) {
+                        if (enterSplitText[i].trim() === '') {
+                            contentInnerElem += '<p><br></p>';
+                        }
+                        else {
+                            var contentWithSpace = '';
+                            var spaceBetweenContent = true;
+                            var spaceSplit = enterSplitText[i].split(' ');
+                            for (var j = 0; j < spaceSplit.length; j++) {
+                                if (spaceSplit[j].trim() === '') {
+                                    contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+                                }
+                                else {
+                                    spaceBetweenContent = false;
+                                    contentWithSpace += spaceSplit[j] + ' ';
+                                }
+                            }
+                            contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                        }
+                    }
+                    var divElement = this.parent.createElement('div');
+                    divElement.innerHTML = contentInnerElem;
+                    value = divElement.innerHTML;
+                }
             }
             else if (value.length > 0) {
                 this.parent.formatter.editorManager.observer.notify(MS_WORD_CLEANUP, {
@@ -12047,7 +12079,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                 else if (element.nextElementSibling) {
                     element = element.nextElementSibling;
                 }
-                else if (element.parentElement.nextElementSibling) {
+                else if (!isNullOrUndefined(element.parentElement) && element.parentElement.nextElementSibling) {
                     element = element.parentElement.nextElementSibling;
                 }
                 else {
@@ -16652,9 +16684,13 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
             else {
-                this.valueContainer.value = '';
+                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
             }
             this.element = this.valueContainer;
+            for (var i = 0; i < this.originalElement.classList.length; i++) {
+                addClass([this.element], this.originalElement.classList[i]);
+            }
+            removeClass([this.element], CLS_RTE_HIDDEN);
         }
         else {
             if (this.originalElement.innerHTML.trim() !== '') {

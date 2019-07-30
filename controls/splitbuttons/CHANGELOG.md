@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.39 (2019-07-30)
+
+### SplitButton
+
+#### Bug Fixes
+
+- Provided support for 'OnOpen' and 'OnClose' events in Blazor.
+
 ## 17.1.50 (2019-06-04)
 
 ### ProgressButton

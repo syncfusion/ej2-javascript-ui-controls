@@ -79,8 +79,39 @@ describe('Template render module', () => {
             gridObj = null;
         });
 
-    });
+        describe('column template element with column object', () => {
+            let gObj: Grid;
+            beforeAll((done: Function) => {
+                let template: Element = createElement('div', { id: 'templateObj' });
+                template.innerHTML = '${column.headerText}';
+                document.body.appendChild(template);
+                gObj = createGrid(
+                    {
+                        dataSource: data, allowPaging: false,
+                        columns: [
+                            { template: '#templateObj', headerText: 'Template column' },
+                                { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                                { field: 'CustomerID', headerText: 'Customer ID', width: 150 },
+                                { field: 'ShipCity', headerText: 'Ship City', width: 150 },
+                                { field: 'ShipName', headerText: 'Ship Name', width: 150, }
+                        ]
+                    }, done);
+            });
+        
+            it('cell value testing with colum object', () => {
+                let trs = gObj.getContent().querySelectorAll('tr');
+                expect(trs[0].querySelectorAll('td')[0].innerHTML).toBe('Template column');
+            });
+        
+            afterAll(() => {
+                destroy(gObj);
+                document.getElementById('template').remove();
+                gObj = null;
+            });
+        
+        });
 
+});
 
     describe('row template render', () => {
         let gridObj: Grid;

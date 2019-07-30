@@ -4326,7 +4326,8 @@ export class Layout {
             let fieldBegin: FieldElementBox = this.viewer.fields[i];
             if (!isNullOrUndefined(this.viewer.selection)) {
                 let fieldCode: string = this.viewer.selection.getFieldCode(fieldBegin);
-                if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages')) {
+                // tslint:disable-next-line:max-line-length
+                if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages') && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
                     let textElement: FieldTextElementBox = fieldBegin.fieldSeparator.nextNode as FieldTextElementBox;
                     if (!isNullOrUndefined(textElement)) {
                         let prevPageNum: string = textElement.text;

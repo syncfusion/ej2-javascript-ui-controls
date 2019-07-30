@@ -423,7 +423,7 @@ export class BatchEdit {
             rowData: data ? data : gObj.getSelectedRecords()[0],
             cancel: false
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.row = data ? gObj.getRows()[index] : selectedRows[0];
             if (!args.row) {
                 return;
@@ -715,7 +715,7 @@ export class BatchEdit {
                 type: !isAdd ? 'edit' : 'add', cancel: false,
                 foreignKeyData: rowObj && rowObj.foreignKeyData
             };
-            if (!isBlazor()) {
+            if (!isBlazor() || this.parent.isJsComponent) {
                 args.cell = cells[this.getColIndex(cells, this.getCellIdx(col.uid))];
                 args.row = row;
                 if (!args.cell) { return; }
@@ -877,7 +877,7 @@ export class BatchEdit {
             columnObject: column,
             isForeignKey: this.cellDetails.isForeignKey, cancel: false
         };
-        if (!isBlazor()) {
+        if (!isBlazor() || this.parent.isJsComponent) {
             args.cell = this.form.parentElement;
         }
         if (!isForceSave) {

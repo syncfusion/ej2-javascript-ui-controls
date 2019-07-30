@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 17.2.39 (2019-07-30)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- #145979 - `checkboxChange` event will trigger for header cell check.
+- #240702 - `allowEditOnDblClick` works fine in Cell Edit mode.
+
+#### Breaking Changes
+
+- `checkboxChange` event will trigger after the cell checked.
+
 ## 17.2.35 (2019-07-17)
 
 ### TreeGrid

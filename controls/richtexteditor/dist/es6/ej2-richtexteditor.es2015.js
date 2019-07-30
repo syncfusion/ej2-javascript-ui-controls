@@ -11429,47 +11429,52 @@ class HtmlEditor {
             e.args.preventDefault();
             let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let saveSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
-            let firstElement = this.parent.createElement('span');
             let httpRegex = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
             let wwwRegex = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
-            let httpText = '';
-            if (e.text.match(httpRegex)) {
-                firstElement.innerHTML = e.text.split('http')[0];
-                httpText = 'http' + e.text.split('http')[1];
-            }
-            else if (e.text.match(wwwRegex)) {
-                firstElement.innerHTML = e.text.split('www')[0];
-                httpText = 'www' + e.text.split('www')[1];
-            }
-            let httpSplitText = httpText.split(' ');
-            let splittedText = '';
-            for (let i = 1; i < httpSplitText.length; i++) {
-                splittedText = splittedText + ' ' + httpSplitText[i];
-            }
-            let lastElement = this.parent.createElement('span');
-            lastElement.innerHTML = splittedText;
-            let anchor = this.parent.createElement('a', {
-                className: 'e-rte-anchor', attrs: {
-                    href: httpSplitText[0],
-                    title: httpSplitText[0]
+            let enterSplitText = e.text.split('\n');
+            let contentInnerElem = '';
+            for (let i = 0; i < enterSplitText.length; i++) {
+                if (enterSplitText[i].trim() === '') {
+                    contentInnerElem += '<p><br></p>';
                 }
-            });
-            anchor.innerHTML = httpSplitText[0];
-            let resultElement = this.parent.createElement('span');
-            if (firstElement.innerHTML !== '') {
-                resultElement.appendChild(firstElement);
+                else {
+                    let contentWithSpace = '';
+                    let spaceBetweenContent = true;
+                    let spaceSplit = enterSplitText[i].split(' ');
+                    for (let j = 0; j < spaceSplit.length; j++) {
+                        if (spaceSplit[j].trim() === '') {
+                            contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+                        }
+                        else {
+                            spaceBetweenContent = false;
+                            contentWithSpace += spaceSplit[j] + ' ';
+                        }
+                    }
+                    contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                }
             }
-            if (anchor.innerHTML !== '') {
-                resultElement.appendChild(anchor);
-            }
-            if (lastElement.innerHTML !== '') {
-                resultElement.appendChild(lastElement);
+            let divElement = this.parent.createElement('div');
+            divElement.innerHTML = contentInnerElem;
+            let paraElem = divElement.querySelectorAll('p');
+            for (let i = 0; i < paraElem.length; i++) {
+                let splitTextContent = paraElem[i].innerHTML.split(' ');
+                let resultSplitContent = '';
+                for (let j = 0; j < splitTextContent.length; j++) {
+                    if (splitTextContent[j].match(httpRegex) || splitTextContent[j].match(wwwRegex)) {
+                        resultSplitContent += '<a className="e-rte-anchor" href="' + splitTextContent[j] +
+                            '" title="' + splitTextContent[j] + '">' + splitTextContent[j] + ' </a>';
+                    }
+                    else {
+                        resultSplitContent += splitTextContent[j] + ' ';
+                    }
+                }
+                paraElem[i].innerHTML = resultSplitContent.trim();
             }
             if (!isNullOrUndefined(this.parent.pasteCleanupModule)) {
-                e.callBack(resultElement.innerHTML);
+                e.callBack(divElement.innerHTML);
             }
             else {
-                this.parent.executeCommand('insertHTML', resultElement);
+                this.parent.executeCommand('insertHTML', divElement);
             }
         }
     }
@@ -11725,8 +11730,7 @@ class PasteCleanup {
             value = e.args.clipboardData.getData('text/html');
         }
         if (e.args && value !== null && this.parent.editorMode === 'HTML') {
-            let regex = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
-            if (value.length === 0 || value.match(regex)) {
+            if (value.length === 0) {
                 value = e.args.clipboardData.getData('text/plain');
                 let file = e && e.args.clipboardData &&
                     e.args.clipboardData.items.length > 0 ?
@@ -11745,6 +11749,34 @@ class PasteCleanup {
                         }
                     }
                 });
+                let htmlRegex = new RegExp(/<\/[a-z][\s\S]*>/i);
+                if (!htmlRegex.test(value)) {
+                    let enterSplitText = value.split('\n');
+                    let contentInnerElem = '';
+                    for (let i = 0; i < enterSplitText.length; i++) {
+                        if (enterSplitText[i].trim() === '') {
+                            contentInnerElem += '<p><br></p>';
+                        }
+                        else {
+                            let contentWithSpace = '';
+                            let spaceBetweenContent = true;
+                            let spaceSplit = enterSplitText[i].split(' ');
+                            for (let j = 0; j < spaceSplit.length; j++) {
+                                if (spaceSplit[j].trim() === '') {
+                                    contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+                                }
+                                else {
+                                    spaceBetweenContent = false;
+                                    contentWithSpace += spaceSplit[j] + ' ';
+                                }
+                            }
+                            contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+                        }
+                    }
+                    let divElement = this.parent.createElement('div');
+                    divElement.innerHTML = contentInnerElem;
+                    value = divElement.innerHTML;
+                }
             }
             else if (value.length > 0) {
                 this.parent.formatter.editorManager.observer.notify(MS_WORD_CLEANUP, {
@@ -11953,7 +11985,7 @@ class PasteCleanup {
                 else if (element.nextElementSibling) {
                     element = element.nextElementSibling;
                 }
-                else if (element.parentElement.nextElementSibling) {
+                else if (!isNullOrUndefined(element.parentElement) && element.parentElement.nextElementSibling) {
                     element = element.parentElement.nextElementSibling;
                 }
                 else {
@@ -16406,9 +16438,13 @@ let RichTextEditor = class RichTextEditor extends Component {
                 this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
             else {
-                this.valueContainer.value = '';
+                this.valueContainer.value = !this.isBlazor() ? this.valueContainer.defaultValue : this.defaultResetValue;
             }
             this.element = this.valueContainer;
+            for (let i = 0; i < this.originalElement.classList.length; i++) {
+                addClass([this.element], this.originalElement.classList[i]);
+            }
+            removeClass([this.element], CLS_RTE_HIDDEN);
         }
         else {
             if (this.originalElement.innerHTML.trim() !== '') {

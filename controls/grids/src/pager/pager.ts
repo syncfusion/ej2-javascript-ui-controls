@@ -283,7 +283,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             switch (prop) {
                 case 'currentPage':
                     if (this.checkGoToPage(newProp.currentPage, oldProp.currentPage)) {
-                        this.currentPageChanged();
+                        this.currentPageChanged(newProp, oldProp);
                     }
                     break;
                 case 'pageSize':
@@ -292,7 +292,12 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
                     if (this.checkpagesizes() && this.pagerdropdownModule) {
                         this.pagerdropdownModule.setDropDownValue('value', this.pageSize);
                     }
-                    this.refresh();
+                    if (newProp.pageSize !== oldProp.pageSize) {
+                        this.pageSize = newProp.pageSize;
+                        this.currentPageChanged(newProp, oldProp);
+                    } else {
+                        this.refresh();
+                    }
                     break;
                 case 'pageSizes':
                     if (this.checkpagesizes() && this.pagerdropdownModule) {
@@ -354,6 +359,14 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
 
+    /**
+     * @hidden
+     */
+    public setPageSize(pageSize: number): void {
+        this.pageSize = pageSize;
+        this.dataBind();
+    }
+
     private checkpagesizes(): Boolean {
         if (this.pageSizes === true || (<number[]>this.pageSizes).length) {
             return true;
@@ -374,14 +387,19 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         return false;
     }
 
-    private currentPageChanged(): void {
+    private currentPageChanged(newProp: PagerModel, oldProp: PagerModel): void {
         if (this.enableQueryString) {
             this.updateQueryString(this.currentPage);
         }
-        let args: { currentPage: number, cancel: boolean } = { currentPage: this.currentPage, cancel: false };
-        this.trigger('click', args);
-        if (!args.cancel) {
-            this.refresh();
+        if (newProp.currentPage !== oldProp.currentPage || newProp.pageSize !== oldProp.pageSize) {
+            let args: { currentPage: number, newProp: PagerModel, oldProp: PagerModel, cancel: boolean } = {
+                currentPage: this.currentPage,
+                newProp: newProp, oldProp: oldProp, cancel: false
+            };
+            this.trigger('click', args);
+            if (!args.cancel) {
+                this.refresh();
+            }
         }
     }
 

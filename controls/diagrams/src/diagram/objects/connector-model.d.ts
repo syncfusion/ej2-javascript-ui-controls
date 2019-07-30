@@ -460,6 +460,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * Defines the segments
      * @default []
      * @aspType object
+     * @blazorType object
      */
     segments?: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
 
@@ -488,6 +489,8 @@ export interface ConnectorModel extends NodeBaseModel{
      * * Bezier - Sets the segment type as Bezier
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
+     * @blazorDefaultValueIgnore
+     * @blazorDefaultValue  Syncfusion.EJ2.Blazor.Diagrams.Segments.Straight
      */
     type?: Segments;
 

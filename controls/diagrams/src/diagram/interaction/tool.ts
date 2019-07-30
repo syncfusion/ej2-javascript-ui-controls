@@ -389,6 +389,7 @@ export class ConnectTool extends ToolBase {
 
     /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
+        this.commandHandler.updateSelectedNodeProperties(args.source);
         this.checkPropertyValue();
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
@@ -627,6 +628,7 @@ export class MoveTool extends ToolBase {
         this.checkPropertyValue();
         let obj: SelectorModel; let historyAdded: boolean = false; let object: SelectorModel | Node;
         let redoObject: SelectorModel = { nodes: [], connectors: [] };
+        this.commandHandler.updateSelectedNodeProperties(args.source);
         if (this.objectType !== 'Port') {
             if (args.source instanceof Node || args.source instanceof Connector) {
                 if (args.source instanceof Node) {
@@ -869,6 +871,7 @@ export class RotateTool extends ToolBase {
     public mouseUp(args: MouseEventArgs): void {
         this.checkPropertyValue();
         let object: NodeModel | SelectorModel;
+        this.commandHandler.updateSelectedNodeProperties(args.source);
         object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
             let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
@@ -994,6 +997,8 @@ export class ResizeTool extends ToolBase {
         this.checkPropertyValue();
         this.commandHandler.removeSnap();
         let object: NodeModel | SelectorModel;
+        this.commandHandler.updateSelectedNodeProperties(args.source);
+        this.commandHandler.updateSelector();
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
         if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
             let deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);

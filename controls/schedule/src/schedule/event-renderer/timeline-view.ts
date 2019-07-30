@@ -58,8 +58,8 @@ export class TimelineEvent extends MonthEvent {
         } else {
             for (let app of appointments) {
                 let eventData: { [key: string]: Object } = app.data as { [key: string]: Object };
-                if ((<Date>eventData[this.fields.startTime]).getTime() <= date.getTime() &&
-                    (<Date>eventData[this.fields.endTime]).getTime() > date.getTime()) {
+                if ((<Date>eventData.trimStartTime).getTime() <= date.getTime() &&
+                    (<Date>eventData.trimEndTime).getTime() > date.getTime()) {
                     appointmentsList.push(app);
                 }
             }
@@ -209,9 +209,7 @@ export class TimelineEvent extends MonthEvent {
             startTime = eventData[this.fields.startTime] as Date;
         }
         // To overcome the overflow
-        if (event[this.fields.isAllDay]) {
-            eventData[this.fields.startTime] = schedule.startHour;
-        }
+        eventData.trimStartTime = (event[this.fields.isAllDay]) ? schedule.startHour : eventData[this.fields.startTime];
         return startTime;
     }
 
@@ -236,9 +234,7 @@ export class TimelineEvent extends MonthEvent {
             endTime = eventData[this.fields.endTime] as Date;
         }
         // To overcome the overflow
-        if (event[this.fields.isAllDay]) {
-            eventData[this.fields.endTime] = schedule.endHour;
-        }
+        eventData.trimEndTime = (event[this.fields.isAllDay]) ? schedule.endHour : eventData[this.fields.endTime];
         return endTime;
     }
 

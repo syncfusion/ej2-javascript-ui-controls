@@ -108,6 +108,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public layoutType: LayoutMode;
     /**
      * Specifies the dataSource.
+     * @isGenericType true
      * @default null
      */
     @Property(null)

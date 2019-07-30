@@ -1699,6 +1699,15 @@ describe('Splitter Control', () => {
                 expect(splitterObj.element.style.width === '350px').toEqual(true);
                 expect(splitterObj.element.classList.contains('e-splitter-vertical')).toBe(true);
             });
+            it('dynamic update', () => {
+                splitterObj.orientation = 'Vertical';
+                splitterObj.dataBind();
+                expect(splitterObj.element.classList.contains('e-splitter-vertical')).toBe(true);
+                expect(splitterObj.allPanes[0].classList.contains('e-pane-vertical')).toBe(true);
+                expect(splitterObj.allPanes[1].classList.contains('e-pane-vertical')).toBe(true);
+                expect(splitterObj.allBars[0].classList.contains('e-split-bar-vertical')).toBe(true);
+                expect(splitterObj.allBars[0].style.height).toBe('1px');
+            });
         });
 
         describe('Orientation change from vertical', () => {
@@ -1724,6 +1733,15 @@ describe('Splitter Control', () => {
                 expect(splitterObj.element.style.height === '250px').toEqual(true);
                 expect(splitterObj.element.style.width === '350px').toEqual(true);
                 expect(splitterObj.element.classList.contains('e-splitter-horizontal')).toBe(true);
+            });
+            it('dynamic update', () => {
+                splitterObj.orientation = 'Horizontal';
+                splitterObj.dataBind();
+                expect(splitterObj.element.classList.contains('e-splitter-horizontal')).toBe(true);
+                expect(splitterObj.allPanes[0].classList.contains('e-pane-horizontal')).toBe(true);
+                expect(splitterObj.allPanes[1].classList.contains('e-pane-horizontal')).toBe(true);
+                expect(splitterObj.allBars[0].classList.contains('e-split-bar-horizontal')).toBe(true);
+                expect(splitterObj.allBars[0].style.width).toBe('1px');
             });
         });
 

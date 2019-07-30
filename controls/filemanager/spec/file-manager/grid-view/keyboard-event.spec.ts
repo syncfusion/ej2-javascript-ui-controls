@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, data4, data5, data12, UploadData  } from '../data';
+import { data1, data4, data5, data12, UploadData, data24, data25  } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -146,9 +146,89 @@ describe('FileManager control Grid view', () => {
             }, 500);
         });      
     });
-
-    // +++++++++
-
+    describe('keyboard event testing', () => {
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        let mouseEventArgs: any, tapEvent: any, keyboardEventArgs: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => { },
+            };
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('key pressed for rename with exsisting file name testing', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data24)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeLi.length).toEqual(6);
+                expect(gridLi.length).toEqual(7);
+                feObj.detailsviewModule.gridObj.selectRows([6]);
+                keyboardEventArgs.action = 'f2';
+                keyboardEventArgs.target = gridLi[6];
+                feObj.detailsviewModule.keyupHandler(keyboardEventArgs);
+                let val: any = document.getElementById('file_dialog').querySelector('#rename');
+                expect((val as any).value).toEqual("File1.txt");
+                val.value = 'File.png';
+                (document.getElementById('file_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).click();
+                keyboardEventArgs.keyCode = 13;
+                (document.getElementById('file_extn_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).onkeydown(keyboardEventArgs);
+                (document.getElementById('file_extn_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).onkeyup(keyboardEventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data25)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementsByClassName('e-fe-error')[0].textContent).toEqual('Cannot rename "File1.txt" to "File.png": destination already exists.');
+                    done();
+                }, 500);
+            }, 500);
+        });
+    });
     describe('for details View', () => {
         let keyboardEventArgs: any;
         let feObj: any;

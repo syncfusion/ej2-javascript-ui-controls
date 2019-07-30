@@ -5,6 +5,7 @@ import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNu
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';
+import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { MenuItemModel, MenuBaseModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';
 import { HScroll } from '../common/h-scroll';
@@ -418,6 +419,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected render(): void {
         this.initialize();
         this.renderItems();
+        if (this.isMenu && this.template) {
+            let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
+            resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            setTimeout(
+                () => {
+                    updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+                },
+                500);
+        }
         this.wireEvents();
     }
 

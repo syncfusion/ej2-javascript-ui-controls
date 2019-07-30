@@ -1634,4 +1634,77 @@ describe('Filtering module => ', () => {
             actionComplete = null;
         });
     });
+    describe('Filter Menu Opertor test case', ()=>{
+            let gridObj: Grid;
+            let actionComplete: (args: any) => void;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: normalData,
+                        allowFiltering: true,
+                        filterSettings: { type: 'Menu' },
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', width: 120,filter:{operator:"equal" } },
+                            { field: 'CustomerID',  headerText: 'Customer ID', width: 120,filter:{operator:"endswith" } },
+                            { field: 'Freight',  headerText: 'Freight', width: 120,filter:{operator:"equal" }},
+                            { field: 'ShipCountry',  headerText: 'Ship Country', width: 120,filter:{operator:"contains" } }
+                        ],
+                        actionComplete: actionComplete
+                    }, done);
+            });
+            
+            it('field and foreignkeyvalue as same- multiple filtering', (done: Function) => {
+                actionComplete = (e:any) => {
+                    expect(e.filterModel.flMuiObj.dropOptr.value).toBe((gridObj.columns[1] as any).filter.operator);
+                    done();
+                };
+                gridObj.actionComplete = actionComplete;
+                (gridObj.element.querySelectorAll(".e-filtermenudiv")[1] as HTMLElement).click();
+            });
+            
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = null;
+                actionComplete = null;
+            });
+        });
+    describe('Filter bar test case => ', () => {
+            let gridObj: Grid;
+            //let drpdwn: string ='<input id="dropdown" value="1" >'; 
+            let actionComplete: (args: any) => void;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: filterData,
+                        allowFiltering: true,
+                        allowPaging: false,
+                        pageSettings: { currentPage: 1 },
+                        
+                        columns: [
+                            { field: 'OrderID', visible: true,filter:{operator:"equal" } },
+                            { field: 'CustomerID', headerText: 'CustomerID', filter:{operator:"startswith" }},
+                            { field:'Fright',headerText:'Frieght', width:130 , filter:{operator:"equal" }},
+                            { field: 'ShipCountry',  headerText: 'Ship Country', width: 120,filter:{operator:"startswith" } }
+                        ],
+                        actionComplete : actionComplete
+                    }, done);
+            });
+    
+            it('action complete', (done: Function) => {
+                let flag: boolean = true;
+                actionComplete = (args: any) => {
+                    expect(args.currentFilterObject.operator).toBe((gridObj.columns[1] as any).filter.operator)
+                    done();
+                };
+                gridObj.actionComplete = actionComplete;
+                filterColumn(gridObj, 'CustomerID', 'r');
+            });
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = actionComplete  = null;
+                actionComplete = null;
+            });
+    
+
+    });
 });

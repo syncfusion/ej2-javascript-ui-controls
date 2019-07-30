@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.39 (2019-07-30)
+
+### Common
+
+#### Bug Fixes
+
+- `#I242062` - Resolved Special characters `(@)` are not working for template Engine support.
+
 ## 17.1.49 (2019-05-29)
 
 ### Common

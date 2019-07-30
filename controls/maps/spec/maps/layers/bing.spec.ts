@@ -129,7 +129,7 @@ describe('Map layer testing', () => {
         it('Bing Map Zoom level 3 testing spec', (done: Function) => {
             bingmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(16);
+                expect(spec.childNodes.length).toBe(64);
                 done();
             };
             bingmap.load = (args: ILoadEventArgs) =>{
@@ -145,7 +145,7 @@ describe('Map layer testing', () => {
         it('Bing Map sublayer testing spec', (done: Function) => {
             bingmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(0);
+                expect(spec.childNodes.length).toBe(8);
                 done();
             };
             bingmap.load = (args: ILoadEventArgs) =>{
@@ -217,7 +217,7 @@ describe('Map layer testing', () => {
         it('OSM Map sublayer testing spec', (done: Function) => {
             osm.loaded = (args: ILoadedEventArgs) => {
                 spec = getElementByID(id + '_tile_parent');
-                expect(spec.childNodes.length).toBe(12);
+                expect(spec.childNodes.length).toBe(8);
                 done();
             };
             osm.zoomSettings.zoomFactor = 1;

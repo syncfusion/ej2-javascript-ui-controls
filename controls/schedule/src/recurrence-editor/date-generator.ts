@@ -897,13 +897,15 @@ function insertDateCollectionBasedonBySetPos
 function insertDatasIntoExistingCollection
     (monthCollection: number[][], state: boolean, startDate: Date, endDate: Date, data: number[], ruleObject: RecRule, index?: number)
     : void {
-    index = !isNullOrUndefined(index) ? index :
-        ((ruleObject.setPosition < 1)
-            ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
-    monthCollection[index].sort();
-    for (let week: number = 0; week < monthCollection[index].length; week++) {
-        let dayData: number = monthCollection[index][week];
-        insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
+    if (monthCollection.length > 0) {
+        index = !isNullOrUndefined(index) ? index :
+            ((ruleObject.setPosition < 1)
+                ? (monthCollection.length + ruleObject.setPosition) : ruleObject.setPosition - 1);
+        monthCollection[index].sort();
+        for (let week: number = 0; week < monthCollection[index].length; week++) {
+            let dayData: number = monthCollection[index][week];
+            insertDateCollection(state, startDate, endDate, data, ruleObject, dayData);
+        }
     }
 }
 function compareDates(startDate: Date, endDate: Date): boolean {

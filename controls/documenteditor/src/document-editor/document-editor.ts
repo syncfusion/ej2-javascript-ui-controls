@@ -31,6 +31,7 @@ import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
 import { DocumentEditorModel, ServerActionSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties } from './implementation';
+import { PasteOptions } from './index';
 
 /**
  * The Document editor component is used to draft, save or print rich text contents as page by page.
@@ -176,6 +177,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public searchModule: Search;
+
+    /**
+     * Default Paste Formatting Options
+     */
+    @Property('KeepSourceFormatting')
+    public defaultPasteOption: PasteOptions;
 
     /**
      * Current User

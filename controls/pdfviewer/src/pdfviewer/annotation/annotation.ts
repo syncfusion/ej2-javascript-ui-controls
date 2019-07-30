@@ -100,6 +100,8 @@ export class Annotation {
     private isPopupMenuMoved: boolean;
     private selectedLineStyle: string;
     private selectedLineDashArray: string;
+    private isUndoRedoAction: boolean = false;
+    private isUndoAction: boolean = false;
     /**
      * @private
      */
@@ -358,6 +360,8 @@ export class Annotation {
         if (actionObject) {
             // tslint:disable-next-line
             let shapeType: any = actionObject.annotation.shapeAnnotationType;
+            this.isUndoRedoAction = true;
+            this.isUndoAction = true;
             switch (actionObject.action) {
                 case 'Text Markup Added':
                 case 'Text Markup Deleted':
@@ -369,7 +373,7 @@ export class Annotation {
                 case 'Text Markup Property modified':
                     if (this.textMarkupAnnotationModule) {
                         // tslint:disable-next-line:max-line-length
-                        actionObject.annotation = this.textMarkupAnnotationModule.undoRedoPropertyChange(actionObject.annotation, actionObject.pageIndex, actionObject.index, actionObject.modifiedProperty);
+                        actionObject.annotation = this.textMarkupAnnotationModule.undoRedoPropertyChange(actionObject.annotation, actionObject.pageIndex, actionObject.index, actionObject.modifiedProperty, true);
                     }
                     break;
                 case 'Drag':
@@ -451,6 +455,8 @@ export class Annotation {
                     break;
                 case 'stampOpacity':
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.undoElement.opacity });
+                    this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
+                    actionObject.annotation.modifiedDate = new Date().toLocaleString();
                     break;
                 case 'Shape Stroke':
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { strokeColor: actionObject.undoElement.strokeColor });
@@ -466,6 +472,8 @@ export class Annotation {
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.undoElement.opacity });
                     if (actionObject.annotation.shapeAnnotationType === 'StickyNotes') {
                         this.stickyNotesAnnotationModule.updateOpacityValue(actionObject.annotation);
+                        this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
+                        actionObject.annotation.modifiedDate = new Date().toLocaleString();
                     } else {
                         this.modifyInCollections(actionObject.annotation, 'opacity');
                     }
@@ -490,6 +498,8 @@ export class Annotation {
                 case 'Text Property Added':
                     // tslint:disable-next-line:max-line-length
                     actionObject.annotation = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.undoAction(actionObject.annotation, actionObject.action, actionObject.undoElement);
+                    this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
+                    actionObject.annotation.modifiedDate = new Date().toLocaleString();
                     break;
                 case 'Comments Property Added':
                     // tslint:disable-next-line:max-line-length
@@ -506,6 +516,8 @@ export class Annotation {
             }
             this.redoCollection.push(actionObject);
             this.updateToolbar();
+            this.isUndoRedoAction = false;
+            this.isUndoAction = false;
         }
     }
 
@@ -517,6 +529,7 @@ export class Annotation {
         if (actionObject) {
             // tslint:disable-next-line
             let shapeType: any = actionObject.annotation.shapeAnnotationType;
+            this.isUndoRedoAction = true;
             switch (actionObject.action) {
                 case 'Text Markup Property modified':
                     if (this.textMarkupAnnotationModule) {
@@ -614,6 +627,7 @@ export class Annotation {
                     break;
                 case 'stampOpacity':
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.redoElement.opacity });
+                    this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
                     break;
                 case 'Shape Stroke':
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { strokeColor: actionObject.redoElement.strokeColor });
@@ -629,6 +643,7 @@ export class Annotation {
                     this.pdfViewer.nodePropertyChange(actionObject.annotation, { opacity: actionObject.redoElement.opacity });
                     if (actionObject.annotation.shapeAnnotationType === 'StickyNotes') {
                         this.stickyNotesAnnotationModule.updateOpacityValue(actionObject.annotation);
+                        this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
                     } else {
                         this.modifyInCollections(actionObject.annotation, 'opacity');
                     }
@@ -652,6 +667,7 @@ export class Annotation {
                 case 'Text Property Added':
                     // tslint:disable-next-line:max-line-length
                     actionObject.annotation = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.redoAction(actionObject.annotation, actionObject.action, actionObject.undoElement);
+                    this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(actionObject.annotation, null, true);
                     break;
                 case 'Comments Property Added':
                     // tslint:disable-next-line:max-line-length
@@ -666,8 +682,12 @@ export class Annotation {
                     actionObject.annotation = this.pdfViewer.annotationModule.stickyNotesAnnotationModule.redoAction(actionObject.annotation, actionObject.action);
                     break;
             }
+            if (actionObject.redoElement && actionObject.redoElement.modifiedDate !== undefined) {
+                actionObject.annotation.modifiedDate = actionObject.redoElement.modifiedDate;
+            }
             this.actionCollection.push(actionObject);
             this.updateToolbar();
+            this.isUndoRedoAction = false;
         }
     }
 
@@ -950,6 +970,16 @@ export class Annotation {
         } else if (annotationBase.measureType === 'Distance' || annotationBase.measureType === 'Perimeter' ||
             annotationBase.measureType === 'Radius' || annotationBase.measureType === 'Area' || annotationBase.measureType === 'Volume') {
             returnObj = this.measureAnnotationModule.modifyInCollection(property, annotationBase.pageIndex, annotationBase);
+        }
+        if (this.isUndoRedoAction) {
+            this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, null, true);
+            if (this.isUndoAction) {
+                annotationBase.modifiedDate = new Date().toLocaleString();
+            }
+        } else {
+            if (property !== 'bounds') {
+                this.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase);
+            }
         }
         return returnObj;
     }

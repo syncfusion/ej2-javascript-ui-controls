@@ -336,12 +336,10 @@ function getElement(id) {
 function getTemplateFunction(template) {
     var templateFn = null;
     try {
-        var templateChange = template.charAt(0) === '#' ? template.substr(1) : template;
-        if (document.getElementById(templateChange)) {
-            templateFn = compile(document.querySelector(template).innerHTML.trim());
-        }
-        else {
-            templateFn = compile(template);
+        if (document.querySelectorAll(template).length) {
+            if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
+                templateFn = compile(document.querySelector(template).innerHTML.trim());
+            }
         }
     }
     catch (e) {

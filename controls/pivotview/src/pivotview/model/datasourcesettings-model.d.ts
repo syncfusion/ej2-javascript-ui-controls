@@ -366,6 +366,7 @@ export interface DataSourceSettingsModel {
 
     /**
      * It allows to set the data source.
+     * @isGenericType true
      */
     dataSource?: IDataSet[] | DataManager;
 

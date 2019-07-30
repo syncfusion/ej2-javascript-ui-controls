@@ -808,7 +808,7 @@ export class TextSearch {
         jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), action: 'RenderPdfPages' };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
-            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+            (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
         this.searchRequestHandler = new AjaxHandler(this.pdfViewer);
         this.searchRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderPages;
@@ -819,7 +819,12 @@ export class TextSearch {
             // tslint:disable-next-line
             let data: any = result.data;
             if (typeof data !== 'object') {
-                data = JSON.parse(data);
+                try {
+                    data = JSON.parse(data);
+                } catch (error) {
+                    proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderPages);
+                    data = null;
+                }
             }
             if (data) {
                 if (data.pageText) {
@@ -830,12 +835,12 @@ export class TextSearch {
         };
         // tslint:disable-next-line
         this.searchRequestHandler.onFailure = function(result: any) {
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderPages);
         };
         // tslint:disable-next-line
         this.searchRequestHandler.onError = function(result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderPages);
         };
     }
 

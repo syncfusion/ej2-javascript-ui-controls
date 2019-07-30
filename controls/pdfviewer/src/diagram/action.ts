@@ -37,8 +37,8 @@ export function findObjectUnderMouse(
     objects: (PdfAnnotationBaseModel)[], event: any, pdfBase: PdfViewerBase
 ): IElement {
     let actualTarget: PdfAnnotationBaseModel = null;
-    let offsetX: number = !isNaN(event.offsetX) ? event.offsetX : event.position.x;
-    let offsetY: number = !isNaN(event.offsetY) ? event.offsetY : event.position.y;
+    let offsetX: number = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);
+    let offsetY: number = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
     let offsetForSelector: number = 5;
     for (let i: number = 0; i < objects.length; i++) {
         // tslint:disable-next-line:max-line-length

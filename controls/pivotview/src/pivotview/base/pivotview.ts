@@ -2755,6 +2755,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.dataSourceSettings.dataSource instanceof DataManager) {
                 setTimeout(this.getData.bind(this), 100);
             } else if ((this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
+                this.engineModule.data = this.dataSourceSettings.dataSource;
                 this.initEngine();
             } else {
                 hideSpinner(this.element);
@@ -2788,7 +2789,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (!this.element.querySelector('.e-spinner-pane')) {
             showSpinner(this.element);
         }
-        this.setProperties({ dataSourceSettings: { dataSource: e.result as IDataSet[] } }, true);
+        this.engineModule.data = (e.result as IDataSet[]);
         this.initEngine();
     }
 

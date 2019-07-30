@@ -17,6 +17,7 @@ export interface ButtonPropsModel {
      * Possible values are Button, Submit and Reset.
      * @default 'Button'
      * @aspType string
+     * @blazorType string
      */
     type?: ButtonType | string;
 

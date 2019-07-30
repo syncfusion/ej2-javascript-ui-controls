@@ -115,13 +115,11 @@ export class ExportUtils {
                 this.triggerDownload(fileName, type, url, isDownload);
             }
         } else if (Browser.info.name === 'msie') {
-            let canvas: HTMLCanvasElement;
+            let canvas: HTMLCanvasElement = element;
             if (!isCanvas) {
                 canvas = this.createCanvas();
-                image = canvas.toDataURL();
-            } else {
-                image = element.toDataURL();
             }
+            image = canvas.toDataURL();
             if (type === 'PDF') {
                 this.exportPdf(canvas, orientation, width, height, isDownload, fileName);
             } else {

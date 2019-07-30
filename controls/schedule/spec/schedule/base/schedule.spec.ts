@@ -4,7 +4,7 @@
 import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews, Timezone } from '../../../src/schedule/index';
 import * as util from '../util.spec';
 import { triggerScrollEvent, loadCultureFiles, createSchedule, destroy } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
@@ -1031,6 +1031,74 @@ describe('Schedule base module', () => {
             expect(schObj.quickPopup.quickPopup.element.querySelector('.e-delete').getAttribute('disabled')).toBe('');
             expect(schObj.quickPopup.quickPopup.element.querySelector('.e-close').getAttribute('disabled')).toBe(null);
             (<HTMLElement>schObj.quickPopup.quickPopup.element.querySelector('.e-close')).click();
+        });
+    });
+    describe('CR Issue EJ2-28683 recurrence appoinments', () => {
+        let schObj: Schedule;
+        // tslint:disable-next-line:no-any
+        let keyModule: any;
+        let timeZone: Timezone = new  Timezone();
+        let data: Object[] = [
+            {
+                Id: 1,
+                Subject: 'Paris',
+                StartTime: timeZone.removeLocalOffset(new Date('2019-02-06T04:30:00.000Z')),
+                EndTime: timeZone.removeLocalOffset(new Date('2019-02-06T06:00:00.000Z')),
+                IsAllDay: false,
+                RecurrenceRule: 'FREQ=MONTHLY;BYMONTHDAY=5,6,7;BYDAY=MO,TU,WE,TH,FR;BYSETPOS=1'
+            }
+        ];
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = { height: '500px', width: '500px', selectedDate: new Date(2019, 6, 5), currentView: 'Month', views: ['Week', 'WorkWeek', 'Month'] };
+            schObj = createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('Check Aug 2019 Appointment', (done) => {
+            schObj.dataBound = () => {
+                let appointmentInfo: HTMLElement = schObj.element.querySelector('.e-work-cells[data-date="1564963200000"] .e-appointment');
+                expect(appointmentInfo).not.toBeNull();
+                done();
+            };
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-icon-next')[0] as HTMLElement).click();
+            schObj.dataBind();
+        });
+        it('Check September 2019 Appointment', (done) => {
+            schObj.dataBound = () => {
+                let appointmentInfo: HTMLElement = schObj.element.querySelector('.e-work-cells[data-date="1567641600000"] .e-appointment');
+                expect(appointmentInfo).not.toBeNull();
+                done();
+            };
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-icon-next')[0] as HTMLElement).click();
+            schObj.dataBind();
+        });
+        it('Check October 2019 Appointment', (done) => {
+            schObj.dataBound = () => {
+                let appointmentInfo: HTMLElement = schObj.element.querySelector('.e-work-cells[data-date="1570406400000"] .e-appointment');
+                expect(appointmentInfo).not.toBeNull();
+                done();
+            };
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-icon-next')[0] as HTMLElement).click();
+            schObj.dataBind();
+        });
+        it('Check November 2019 Appointment', (done) => {
+            schObj.dataBound = () => {
+                let appointmentInfo: HTMLElement = schObj.element.querySelector('.e-work-cells[data-date="1572912000000"] .e-appointment');
+                expect(appointmentInfo).not.toBeNull();
+                done();
+            };
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-icon-next')[0] as HTMLElement).click();
+            schObj.dataBind();
+        });
+        it('Check December 2019 Appointment', (done) => {
+            schObj.dataBound = () => {
+                let appointmentInfo: HTMLElement = schObj.element.querySelector('.e-work-cells[data-date="1575504000000"] .e-appointment');
+                expect(appointmentInfo).not.toBeNull();
+                done();
+            };
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-icon-next')[0] as HTMLElement).click();
+            schObj.dataBind();
         });
     });
 

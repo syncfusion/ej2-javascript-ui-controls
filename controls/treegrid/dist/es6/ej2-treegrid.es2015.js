@@ -1,4 +1,4 @@
-import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, resetBlazorTemplate, setValue } from '@syncfusion/ej2-base';
+import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue } from '@syncfusion/ej2-base';
 import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Grid, InterSectionObserver, Page, PdfExport, Predicate, Print, RenderType, Reorder, Resize, Sort, TextWrapSettings, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
@@ -376,26 +376,26 @@ class Selection {
         let checkBox;
         if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
+            let rowIndex;
+            rowIndex = [];
+            rowIndex.push(target.closest('tr').rowIndex);
+            this.selectCheckboxes(rowIndex);
             this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
         }
         else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
             let checkBoxvalue = !checkWrap.querySelector('.e-frame').classList.contains('e-check')
                 && !checkWrap.querySelector('.e-frame').classList.contains('e-stop');
             this.headerSelection(checkBoxvalue);
+            checkBox = checkWrap.querySelector('input[type="checkbox"]');
+            this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
         }
     }
     triggerChkChangeEvent(checkBox, checkState, rowElement) {
-        let rowIndex;
-        rowIndex = [];
-        rowIndex.push(rowElement.rowIndex);
         let data = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
-        let args = { checked: checkState, target: checkBox, cancel: false, rowElement: rowElement,
-            rowData: data };
-        this.parent.trigger(checkboxChange, args, (checkBoxArgs) => {
-            if (!checkBoxArgs.cancel) {
-                this.selectCheckboxes(rowIndex);
-            }
-        });
+        let args = { checked: checkState, target: checkBox, rowElement: rowElement,
+            rowData: checkBox.classList.contains('e-treeselectall')
+                ? this.parent.getCheckedRecords() : data };
+        this.parent.trigger(checkboxChange, args);
     }
     getCheckboxcolumnIndex() {
         let mappingUid;
@@ -974,16 +974,8 @@ class Render {
             if (this.parent.allowTextWrap) {
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
-            let textContent = args.cell.querySelector('.e-treecell') != null ?
-                args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
-            cellElement.innerHTML = textContent;
-            if (typeof (args.column.template) === 'object' && this.templateResult) {
-                cellElement.innerHTML = '';
-                appendChildren(cellElement, this.templateResult);
-                this.templateResult = null;
-            }
+            this.updateTreeCell(args, cellElement, container);
             container.appendChild(cellElement);
-            args.cell.innerHTML = '';
             args.cell.appendChild(container);
         }
         if (!isNullOrUndefined(column) && column.showCheckbox) {
@@ -1003,6 +995,24 @@ class Render {
         }
         if (isNullOrUndefined(this.parent.rowTemplate)) {
             this.parent.trigger(queryCellInfo, args);
+        }
+    }
+    updateTreeCell(args, cellElement, container) {
+        let textContent = args.cell.querySelector('.e-treecell') != null ?
+            args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
+        if (typeof (args.column.template) === 'object' && this.templateResult) {
+            appendChildren(cellElement, this.templateResult);
+            this.templateResult = null;
+            args.cell.innerHTML = '';
+        }
+        else if (args.cell.classList.contains('e-templatecell')) {
+            for (let i = 0; i < args.cell.children.length; i++) {
+                cellElement.appendChild(args.cell.children[i]);
+            }
+        }
+        else {
+            cellElement.innerHTML = textContent;
+            args.cell.innerHTML = '';
         }
     }
     columnTemplateResult(args) {
@@ -2278,6 +2288,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.detailTemplate = getActualProperties(this.detailTemplate);
         let templateInstance = 'templateDotnetInstance';
         this.grid[templateInstance] = this[templateInstance];
+        let isJsComponent = 'isJsComponent';
+        this.grid[isJsComponent] = true;
     }
     triggerEvents(args) {
         this.trigger(getObject('name', args), args);
@@ -2469,7 +2481,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let key = 'key';
         this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
             this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
-        if (isBlazor()) {
+        if (isBlazor() && this.dataSource instanceof DataManager) {
             this.grid.dataSource[adaptorName] = this.dataSource[adaptorName];
             this.grid.dataSource[dotnetInstance] = this.dataSource[dotnetInstance];
             this.grid.dataSource[key] = this.dataSource[key];
@@ -3249,7 +3261,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Get current visible data of TreeGrid.
      * @return {Object[]}
-     * @hidden
+     * @isGenericType true
      */
     getCurrentViewRecords() {
         return this.grid.currentViewData;
@@ -3326,7 +3338,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Get the records of checked rows.
      * @return {Object[]}
-     * @hidden
+     * @isGenericType true
      */
     getCheckedRecords() {
         return this.selectionModule.getCheckedrecords();
@@ -3393,7 +3405,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let args = { data: record, row: row, cancel: false };
         this.trigger(expanding, args, (expandingArgs) => {
             if (!expandingArgs.cancel) {
-                this.resetTemplates();
                 this.expandCollapse('expand', row, record);
                 if (!(isRemoteData(this) && !isOffline(this))) {
                     let collapseArgs = { data: record, row: row };
@@ -3422,22 +3433,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let args = { data: record, row: row, cancel: false };
         this.trigger(collapsing, args, (collapsingArgs) => {
             if (!collapsingArgs.cancel) {
-                this.resetTemplates();
                 this.expandCollapse('collapse', row, record);
                 let collapseArgs = { data: record, row: row };
                 this.trigger(collapsed, collapseArgs);
             }
         });
-    }
-    resetTemplates() {
-        for (let i = 0; i < this.columns.length; i++) {
-            if (this.columns[i].template) {
-                resetBlazorTemplate(this.grid.element.id + this.columns[i].uid, 'Template');
-            }
-            if (this.columns[i].headerTemplate) {
-                resetBlazorTemplate(this.grid.element.id + this.columns[i].uid + 'headerTemplate', 'HeaderTemplate');
-            }
-        }
     }
     /**
      * Expands the records at specific hierarchical level
@@ -3777,6 +3777,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     /**
      * Gets the collection of selected records.
+     * @isGenericType true
      * @return {Object[]}
      */
     getSelectedRecords() {
@@ -5518,7 +5519,7 @@ class Edit$1 {
         let column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
             column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
-            target.classList.contains('e-treegridcollapse'))) {
+            target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
             this.updateGridEditMode('Batch');
@@ -5616,6 +5617,9 @@ class Edit$1 {
     }
     cellSave(args) {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
+            if (isBlazor()) {
+                args.cell = getElement(args.cell);
+            }
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
             args.rowData[args.columnName] = args.value;

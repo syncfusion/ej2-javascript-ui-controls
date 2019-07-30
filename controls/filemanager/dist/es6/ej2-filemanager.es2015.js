@@ -1714,6 +1714,7 @@ function createExtDialog(parent, text, replaceItems, newPath) {
     parent.isApplySame = false;
     if (isNullOrUndefined(parent.extDialogObj)) {
         parent.extDialogObj = new Dialog({
+            beforeOpen: beforeExtOpen.bind(this, parent),
             content: extOptions.content,
             header: extOptions.header,
             closeOnEscape: true,
@@ -2136,14 +2137,19 @@ function getOptions(parent, text, e, details, replaceItems) {
 }
 function keydownAction(parent) {
     let btnElement = selectAll('.e-btn', parent.dialogObj.element);
+    preventKeydown(btnElement);
+}
+function beforeExtOpen(parent) {
+    let btnElement = selectAll('.e-btn', parent.extDialogObj.element);
+    preventKeydown(btnElement);
+}
+function preventKeydown(btnElement) {
     for (let btnCount = 0; btnCount < btnElement.length; btnCount++) {
-        /* istanbul ignore next */
         btnElement[btnCount].onkeydown = (e) => {
             if (e.keyCode === 13) {
                 e.preventDefault();
             }
         };
-        /* istanbul ignore next */
         btnElement[btnCount].onkeyup = (e) => {
             if (e.keyCode === 13) {
                 btnElement[btnCount].click();

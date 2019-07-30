@@ -1,4 +1,4 @@
-import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';
 import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { SidebarModel } from './sidebar-model';
@@ -370,6 +370,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
+        if (isBlazor()) {
+            delete closeArguments.model;
+        }
         this.trigger('close', closeArguments, (observedcloseArgs: EventArgs) => {
             if (!observedcloseArgs.cancel) {
                 if (this.element.classList.contains(CLOSE)) {
@@ -436,6 +439,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
+        if (isBlazor()) {
+            delete openArguments.model;
+        }
         this.trigger('open', openArguments, (observedopenArgs: EventArgs) => {
             if (!observedopenArgs.cancel) {
                 removeClass([this.element], VISIBILITY);
@@ -485,7 +491,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private createBackDrop(): void {
-        if (this.target && this.showBackdrop) {
+        if (this.target && this.showBackdrop && this.getState()) {
             let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
                 (<HTMLElement>this.element.nextElementSibling);
             addClass([sibling], CONTEXTBACKDROP);

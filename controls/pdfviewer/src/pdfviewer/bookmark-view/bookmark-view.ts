@@ -44,7 +44,7 @@ export class BookmarkView {
         let jsonObject: object = { hashId: this.pdfViewerBase.hashId, action: 'Bookmarks' };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
-            (jsonObject as any).document = this.pdfViewerBase.jsonDocumentId;
+            (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
         }
         this.bookmarkRequestHandler = new AjaxHandler(this.pdfViewer);
         this.bookmarkRequestHandler.url = proxy.pdfViewer.serviceUrl + '/Bookmarks';
@@ -59,10 +59,17 @@ export class BookmarkView {
             let data: any = result.data;
             if (data) {
                 if (typeof data !== 'object') {
+                    try {
                     data = JSON.parse(data);
+                    } catch (error) {
+                        proxy.pdfViewerBase.onControlError(500, data, 'Bookmarks');
+                        data = null;
+                    }
                 }
-                proxy.bookmarks = { bookMark: data.Bookmarks };
-                proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
+                if (data) {
+                    proxy.bookmarks = { bookMark: data.Bookmarks };
+                    proxy.bookmarksDestination = { bookMarkDestination: data.BookmarksDestination };
+                }
             }
             if (proxy.pdfViewerBase.navigationPane) {
                 if (proxy.bookmarks == null) {
@@ -75,12 +82,12 @@ export class BookmarkView {
         };
         // tslint:disable-next-line
         this.bookmarkRequestHandler.onFailure = function (result: any) {
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, 'Bookmarks');
         };
         // tslint:disable-next-line
         this.bookmarkRequestHandler.onError = function (result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, 'Bookmarks');
         };
     }
     /**

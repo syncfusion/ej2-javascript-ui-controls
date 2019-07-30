@@ -211,8 +211,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     /**     
      * Customizes the key actions in TimePicker.
      * For example, when using German keyboard, the key actions can be customized using these shortcuts.
-     * @default null
-     * @blazorType object 
+     * 
      * <table> 
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
@@ -263,6 +262,9 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * close<br/></td><td colSpan=1 rowSpan=1> 
      * alt+uparrow<br/></td></tr> 
      * </table>
+     * 
+     * @default null
+     * @blazorType object 
      */
     @Property(null)
     public keyConfigs: { [key: string]: string };

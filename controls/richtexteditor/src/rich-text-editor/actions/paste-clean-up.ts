@@ -66,8 +66,7 @@ export class PasteCleanup {
       value = (e.args as ClipboardEvent).clipboardData.getData('text/html');
     }
     if (e.args && value !== null && this.parent.editorMode === 'HTML') {
-      let regex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)|(www\.))(\S+))/gi);
-      if (value.length === 0 || value.match(regex)) {
+      if (value.length === 0) {
         value = (e.args as ClipboardEvent).clipboardData.getData('text/plain');
         let file: File = e && (e.args as ClipboardEvent).clipboardData &&
           (e.args as ClipboardEvent).clipboardData.items.length > 0 ?
@@ -92,6 +91,32 @@ export class PasteCleanup {
             }
           }
         });
+        let htmlRegex: RegExp = new RegExp(/<\/[a-z][\s\S]*>/i);
+        if (!htmlRegex.test(value)) {
+          let enterSplitText: string[] = value.split('\n');
+          let contentInnerElem: string = '';
+          for (let i: number = 0; i < enterSplitText.length; i++) {
+              if (enterSplitText[i].trim() === '') {
+                contentInnerElem += '<p><br></p>';
+              } else {
+                let contentWithSpace: string = '';
+                let spaceBetweenContent: boolean = true;
+                let spaceSplit: string[] = enterSplitText[i].split(' ');
+                for (let j: number = 0; j < spaceSplit.length; j++) {
+                  if (spaceSplit[j].trim() === '') {
+                    contentWithSpace += spaceBetweenContent ? '&nbsp;' : ' ';
+                  } else {
+                    spaceBetweenContent = false;
+                    contentWithSpace += spaceSplit[j] + ' ';
+                  }
+                }
+                contentInnerElem += '<p>' + contentWithSpace.trim() + '</p>';
+              }
+          }
+          let divElement: HTMLElement = this.parent.createElement('div');
+          divElement.innerHTML = contentInnerElem;
+          value = divElement.innerHTML;
+        }
       } else if (value.length > 0) {
         this.parent.formatter.editorManager.observer.notify(EVENTS.MS_WORD_CLEANUP, {
           args: e.args,
@@ -296,7 +321,7 @@ export class PasteCleanup {
           element = element.firstElementChild as HTMLElement;
         } else if (element.nextElementSibling) {
           element = element.nextElementSibling as HTMLElement;
-        } else if (element.parentElement.nextElementSibling) {
+        } else if (!isNOU(element.parentElement) && element.parentElement.nextElementSibling) {
           element = element.parentElement.nextElementSibling as HTMLElement;
         } else {
           element = null;

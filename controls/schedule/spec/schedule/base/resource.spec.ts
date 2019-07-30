@@ -250,6 +250,51 @@ describe('Schedule Resources', () => {
         });
     });
 
+    describe('Multiple resource group with custom workdays and hours', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                selectedDate: new Date(2018, 3, 1),
+                group: {
+                    allowGroupEdit: true,
+                    byDate: true,
+                    resources: ['Owners']
+                },
+                resources: [{
+                    field: 'TaskId', title: 'Assignee',
+                    name: 'Owners', allowMultiple: true,
+                    dataSource: [
+                        { text: 'Alice', id: 1, color: '#df5286', workDays: [1, 2, 4, 5], startHour: '08:00', endHour: '15:00' },
+                        { text: 'Smith', id: 2, color: '#7fa900', workDays: [1, 3, 5], startHour: '08:00', endHour: '17:00' }
+                    ],
+                    textField: 'text', idField: 'id', colorField: 'color', workDaysField: 'workDays', startHourField: 'startHour',
+                    endHourField: 'endHour'
+                }],
+                views: ['Day', 'WorkWeek', 'Month', 'Agenda'],
+                currentView: 'WorkWeek',
+                eventSettings: {
+                    dataSource: resourceData,
+                    fields: {
+                        subject: { title: 'Task', name: 'Subject' },
+                        location: { title: 'Project Name', name: 'Location' },
+                        description: { title: 'Comments', name: 'Description' }
+                    }
+                }
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('setmodel - byDate testing', () => {
+            expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual((14 * 5) + (18 * 5));
+            expect(schObj.element.querySelectorAll('.e-work-cells:not(.e-work-hours)').length).toEqual((34 * 5) + (30 * 5));
+        });
+    });
+
     describe('Multiple resource without group rendering in setmodel', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {

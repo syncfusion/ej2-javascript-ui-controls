@@ -1,4 +1,4 @@
-import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, resetBlazorTemplate, setValue } from '@syncfusion/ej2-base';
+import { ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue } from '@syncfusion/ej2-base';
 import { Aggregate, CellType, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Grid, InterSectionObserver, Page, PdfExport, Predicate, Print, RenderType, Reorder, Resize, Sort, TextWrapSettings, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate as Predicate$1, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
@@ -395,27 +395,26 @@ var Selection = /** @__PURE__ @class */ (function () {
         var checkBox;
         if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
+            var rowIndex = void 0;
+            rowIndex = [];
+            rowIndex.push(target.closest('tr').rowIndex);
+            this.selectCheckboxes(rowIndex);
             this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
         }
         else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
             var checkBoxvalue = !checkWrap.querySelector('.e-frame').classList.contains('e-check')
                 && !checkWrap.querySelector('.e-frame').classList.contains('e-stop');
             this.headerSelection(checkBoxvalue);
+            checkBox = checkWrap.querySelector('input[type="checkbox"]');
+            this.triggerChkChangeEvent(checkBox, checkBoxvalue, target.closest('tr'));
         }
     };
     Selection.prototype.triggerChkChangeEvent = function (checkBox, checkState, rowElement) {
-        var _this = this;
-        var rowIndex;
-        rowIndex = [];
-        rowIndex.push(rowElement.rowIndex);
         var data = this.parent.getCurrentViewRecords()[rowElement.rowIndex];
-        var args = { checked: checkState, target: checkBox, cancel: false, rowElement: rowElement,
-            rowData: data };
-        this.parent.trigger(checkboxChange, args, function (checkBoxArgs) {
-            if (!checkBoxArgs.cancel) {
-                _this.selectCheckboxes(rowIndex);
-            }
-        });
+        var args = { checked: checkState, target: checkBox, rowElement: rowElement,
+            rowData: checkBox.classList.contains('e-treeselectall')
+                ? this.parent.getCheckedRecords() : data };
+        this.parent.trigger(checkboxChange, args);
     };
     Selection.prototype.getCheckboxcolumnIndex = function () {
         var mappingUid;
@@ -1035,16 +1034,8 @@ var Render = /** @__PURE__ @class */ (function () {
             if (this.parent.allowTextWrap) {
                 cellElement.style.width = 'Calc(100% - ' + totalIconsWidth + 'px)';
             }
-            var textContent = args.cell.querySelector('.e-treecell') != null ?
-                args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
-            cellElement.innerHTML = textContent;
-            if (typeof (args.column.template) === 'object' && this.templateResult) {
-                cellElement.innerHTML = '';
-                appendChildren(cellElement, this.templateResult);
-                this.templateResult = null;
-            }
+            this.updateTreeCell(args, cellElement, container);
             container.appendChild(cellElement);
-            args.cell.innerHTML = '';
             args.cell.appendChild(container);
         }
         if (!isNullOrUndefined(column) && column.showCheckbox) {
@@ -1064,6 +1055,24 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         if (isNullOrUndefined(this.parent.rowTemplate)) {
             this.parent.trigger(queryCellInfo, args);
+        }
+    };
+    Render.prototype.updateTreeCell = function (args, cellElement, container) {
+        var textContent = args.cell.querySelector('.e-treecell') != null ?
+            args.cell.querySelector('.e-treecell').innerHTML : args.cell.innerHTML;
+        if (typeof (args.column.template) === 'object' && this.templateResult) {
+            appendChildren(cellElement, this.templateResult);
+            this.templateResult = null;
+            args.cell.innerHTML = '';
+        }
+        else if (args.cell.classList.contains('e-templatecell')) {
+            for (var i = 0; i < args.cell.children.length; i++) {
+                cellElement.appendChild(args.cell.children[i]);
+            }
+        }
+        else {
+            cellElement.innerHTML = textContent;
+            args.cell.innerHTML = '';
         }
     };
     Render.prototype.columnTemplateResult = function (args) {
@@ -2442,6 +2451,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.detailTemplate = getActualProperties(this.detailTemplate);
         var templateInstance = 'templateDotnetInstance';
         this.grid[templateInstance] = this[templateInstance];
+        var isJsComponent = 'isJsComponent';
+        this.grid[isJsComponent] = true;
     };
     TreeGrid.prototype.triggerEvents = function (args) {
         this.trigger(getObject('name', args), args);
@@ -2637,7 +2648,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         var key = 'key';
         this.grid.dataSource = !(this.dataSource instanceof DataManager) ?
             this.flatData : new DataManager(this.dataSource.dataSource, this.dataSource.defaultQuery, this.dataSource.adaptor);
-        if (isBlazor()) {
+        if (isBlazor() && this.dataSource instanceof DataManager) {
             this.grid.dataSource[adaptorName] = this.dataSource[adaptorName];
             this.grid.dataSource[dotnetInstance] = this.dataSource[dotnetInstance];
             this.grid.dataSource[key] = this.dataSource[key];
@@ -3424,7 +3435,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get current visible data of TreeGrid.
      * @return {Object[]}
-     * @hidden
+     * @isGenericType true
      */
     TreeGrid.prototype.getCurrentViewRecords = function () {
         return this.grid.currentViewData;
@@ -3502,7 +3513,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the records of checked rows.
      * @return {Object[]}
-     * @hidden
+     * @isGenericType true
      */
     TreeGrid.prototype.getCheckedRecords = function () {
         return this.selectionModule.getCheckedrecords();
@@ -3570,7 +3581,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         var args = { data: record, row: row, cancel: false };
         this.trigger(expanding, args, function (expandingArgs) {
             if (!expandingArgs.cancel) {
-                _this.resetTemplates();
                 _this.expandCollapse('expand', row, record);
                 if (!(isRemoteData(_this) && !isOffline(_this))) {
                     var collapseArgs = { data: record, row: row };
@@ -3600,22 +3610,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         var args = { data: record, row: row, cancel: false };
         this.trigger(collapsing, args, function (collapsingArgs) {
             if (!collapsingArgs.cancel) {
-                _this.resetTemplates();
                 _this.expandCollapse('collapse', row, record);
                 var collapseArgs = { data: record, row: row };
                 _this.trigger(collapsed, collapseArgs);
             }
         });
-    };
-    TreeGrid.prototype.resetTemplates = function () {
-        for (var i = 0; i < this.columns.length; i++) {
-            if (this.columns[i].template) {
-                resetBlazorTemplate(this.grid.element.id + this.columns[i].uid, 'Template');
-            }
-            if (this.columns[i].headerTemplate) {
-                resetBlazorTemplate(this.grid.element.id + this.columns[i].uid + 'headerTemplate', 'HeaderTemplate');
-            }
-        }
     };
     /**
      * Expands the records at specific hierarchical level
@@ -3963,6 +3962,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Gets the collection of selected records.
+     * @isGenericType true
      * @return {Object[]}
      */
     TreeGrid.prototype.getSelectedRecords = function () {
@@ -5751,7 +5751,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         var column = this.parent.grid.getColumnByIndex(+target.closest('td.e-rowcell').getAttribute('aria-colindex'));
         if (this.parent.editSettings.mode === 'Cell' && !this.isOnBatch && column && !column.isPrimaryKey &&
             column.allowEditing && !(target.classList.contains('e-treegridexpand') ||
-            target.classList.contains('e-treegridcollapse'))) {
+            target.classList.contains('e-treegridcollapse')) && this.parent.editSettings.allowEditOnDblClick) {
             this.isOnBatch = true;
             this.parent.grid.setProperties({ selectedRowIndex: args.rowIndex }, true);
             this.updateGridEditMode('Batch');
@@ -5850,6 +5850,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     };
     Edit$$1.prototype.cellSave = function (args) {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
+            if (isBlazor()) {
+                args.cell = getElement(args.cell);
+            }
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
             args.rowData[args.columnName] = args.value;

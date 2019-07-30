@@ -737,6 +737,7 @@ export class Connector extends NodeBase implements IElement {
      * Defines the segments
      * @default []
      * @aspType object
+     * @blazorType object
      */
     @CollectionFactory(getSegmentType)
     public segments: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
@@ -770,6 +771,8 @@ export class Connector extends NodeBase implements IElement {
      * * Bezier - Sets the segment type as Bezier
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
+     * @blazorDefaultValueIgnore
+     * @blazorDefaultValue  Syncfusion.EJ2.Blazor.Diagrams.Segments.Straight
      */
     @Property('Straight')
     public type: Segments;

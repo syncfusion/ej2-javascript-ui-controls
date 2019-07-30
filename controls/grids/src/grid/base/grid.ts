@@ -2,7 +2,7 @@ import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend }
 import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
 import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
-import { EventHandler, KeyboardEvents, KeyboardEventArgs, EmitType } from '@syncfusion/ej2-base';
+import { EventHandler, KeyboardEvents, KeyboardEventArgs as KeyArg, EmitType } from '@syncfusion/ej2-base';
 import { Query, DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
@@ -17,7 +17,7 @@ import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, Par
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelHeaderQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs } from './interface';
 import { ColumnMenuOpenEventArgs, BatchCancelArgs, RecordDoubleClickEventArgs, DataResult, PendingState } from './interface';
-import { HeaderCellInfoEventArgs } from './interface';
+import { HeaderCellInfoEventArgs, KeyboardEventArgs} from './interface';
 import { FailureEventArgs, FilterEventArgs, ColumnDragEventArgs, GroupEventArgs, PrintEventArgs, ICustomOptr } from './interface';
 import { RowDeselectEventArgs, RowSelectEventArgs, RowSelectingEventArgs, PageEventArgs, RowDragEventArgs } from './interface';
 import { BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs, ResizeArgs, ColumnMenuItemModel, NotifyArgs } from './interface';
@@ -1247,6 +1247,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * 
      * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
      * @default []    
+     * @isGenericType true
      */
     @Property([])
     public dataSource: Object | DataManager | DataResult;
@@ -1820,6 +1821,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
+
+    /** 
+     * Triggers when any keyboard keys are pressed inside the grid.
+     * @event
+     * @deprecated
+     */
+    @Event()
+    public keyPressed: EmitType<KeyboardEventArgs>;
 
     /** 
      * Triggers before data is bound to Grid.
@@ -2444,7 +2453,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                         break;
                     }
                     this.notify(events.inBoundModelChanged, { module: 'pager', properties: newProp.pageSettings });
-                    if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
+                    if (isNullOrUndefined(newProp.pageSettings.currentPage) && isNullOrUndefined(newProp.pageSettings.pageSize)
+                        && isNullOrUndefined(newProp.pageSettings.totalRecordsCount)
                         || !isNullOrUndefined(oldProp.pageSettings) &&
                         ((newProp.pageSettings.currentPage !== oldProp.pageSettings.currentPage)
                             && !this.enableColumnVirtualization && !this.enableVirtualization
@@ -3441,6 +3451,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the collection of selected records. 
      * @return {Object[]}
+     * @isGenericType true
      */
     public getSelectedRecords(): Object[] {
         return this.selectionModule ? this.selectionModule.getSelectedRecords() : [];
@@ -3772,6 +3783,72 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public deleteRow(tr: HTMLTableRowElement): void {
         if (this.editModule) {
             this.editModule.deleteRow(tr);
+        }
+    }
+
+    /**
+     * Changes a particular cell into edited state based on the row index and field name provided in the `batch` mode.
+     * @param {number} index - Defines row index to edit a particular cell.
+     * @param {string} field - Defines the field name of the column to perform batch edit.
+     */
+    public editCell(index: number, field: string): void {
+        if (this.editModule) {
+            this.editModule.editCell(index, field);
+        }
+    }
+
+    /**
+     * Saves the cell that is currently edited. It does not save the value to the DataSource.
+     */
+    public saveCell(): void {
+        if (this.editModule) {
+            this.editModule.saveCell();
+        }
+    }
+
+    /**
+     * To update the specified cell by given value without changing into edited state. 
+     * @param {number} rowIndex Defines the row index.
+     * @param {string} field Defines the column field.
+     * @param {string | number | boolean | Date} value - Defines the value to be changed.
+     */
+    public updateCell(rowIndex: number, field: string, value: string | number | boolean | Date): void {
+        if (this.editModule) {
+            this.editModule.updateCell(rowIndex, field, value);
+        }
+    }
+
+    /**
+     * To update the specified row by given values without changing into edited state.
+     * @param {number} index Defines the row index.
+     * @param {Object} data Defines the data object to be updated.
+     */
+    public updateRow(index: number, data: Object): void {
+        if (this.editModule) {
+            this.editModule.updateRow(index, data);
+        }
+    }
+
+    /**
+     * Gets the added, edited,and deleted data before bulk save to the DataSource in batch mode.
+     * @return {Object}
+     */
+    public getBatchChanges(): Object {
+        if (this.editModule) {
+            return this.editModule.getBatchChanges();
+        }
+        return {};
+    }
+
+    /**
+     * Enables or disables ToolBar items.
+     * @param {string[]} items - Defines the collection of itemID of ToolBar items.
+     * @param {boolean} isEnable - Defines the items to be enabled or disabled.
+     * @return {void}
+     */
+    public enableToolbarItems(items: string[], isEnable: boolean): void {
+        if (this.toolbarModule) {
+            this.toolbarModule.enableItems(items, isEnable);
         }
     }
 
@@ -4231,7 +4308,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         return myTableDiv;
     }
 
-    private keyPressed(e: KeyboardEventArgs): void {
+    private onKeyPressed(e: KeyArg): void {
         if (e.action === 'tab' || e.action === 'shiftTab') {
             this.toolTipObj.close();
         }
@@ -4246,6 +4323,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         EventHandler.add(this.getContent(), 'dblclick', this.dblClickHandler, this);
+        EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
         }
@@ -4272,6 +4350,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
+        EventHandler.remove(this.element,'keydown',this.keyPressHandler);
     }
     /**
      * @hidden
@@ -4283,7 +4362,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.on(events.headerRefreshed, this.recalcIndentWidth, this);
         this.dataBoundFunction = this.refreshMediaCol.bind(this);
         this.addEventListener(events.dataBound, this.dataBoundFunction);
-        this.on(events.keyPressed, this.keyPressed, this);
+        this.on(events.keyPressed, this.onKeyPressed, this);
         this.on(events.contentReady, this.blazorTemplate, this);
     }
     /**
@@ -4295,7 +4374,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.off(events.contentReady, this.recalcIndentWidth);
         this.off(events.headerRefreshed, this.recalcIndentWidth);
         this.removeEventListener(events.dataBound, this.dataBoundFunction);
-        this.off(events.keyPressed, this.keyPressed);
+        this.off(events.keyPressed, this.onKeyPressed);
     }
 
 
@@ -4307,7 +4386,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     updateBlazorTemplate(this.element.id + this.columnModel[i].uid, 'Template', this.columnModel[i], false);
                 }
                 if (this.columnModel[i].headerTemplate) {
-                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i]);
+                    updateBlazorTemplate(this.element.id + this.columnModel[i].uid + 'headerTemplate', 'HeaderTemplate', this.columnModel[i], false);
                 }
                 if (this.filterSettings.type == 'FilterBar' && this.columnModel[i].filterTemplate) {
                     let fieldName: string = this.columnModel[i].field;
@@ -4349,6 +4428,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Get current visible data of grid.
      * @return {Object[]}
      * @hidden
+     * @isGenericType true
      */
     public getCurrentViewRecords(): Object[] {
         if (isGroupAdaptive(this)) {
@@ -4499,7 +4579,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         });
     }
 
-    private keyActionHandler(e: KeyboardEventArgs): void {
+    private keyPressHandler(e: KeyboardEventArgs): void {
+        let presskey: KeyboardEventArgs = <KeyboardEventArgs>extend(e, { cancel: false, });
+        this.trigger("keyPressed", presskey);
+        if (presskey.cancel === true) {
+            e.stopImmediatePropagation();
+        }
+    }
+     
+    private keyActionHandler(e: KeyArg): void {
         this.keyPress = e.action !== 'space';
         if (this.isChildGrid(e) ||
             (this.isEdit && e.action !== 'escape' && e.action !== 'enter' && e.action !== 'shiftEnter'

@@ -62,6 +62,7 @@ describe("paste cleanup testing", () => {
       beforeDialogOpen: beforeDialogOpen
     });
     rteEle = rteObj.element;
+    editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
     function beforeDialogOpen(args: any): void {
       beforeDialogOpenEvent = true;
     }
@@ -508,10 +509,48 @@ describe("paste cleanup testing", () => {
     }, 100);
   });
 
-  it("Paste URL", (done) => {
+  it("EJ2-29670 - Web content with link and strong tag", (done) => {
+    let localElem: string = `<div style="box-sizing: border-box; color: rgb(91, 91, 91); font-family: proxima-nova, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: start; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;">"<strong style="box-sizing: border-box; font-weight: 700;"><font color="#000000" style="box-sizing: border-box;"><font face="Open Sans, Arial, sans-serif" style="box-sizing: border-box;"><font style="box-sizing: border-box; font-size: 10pt;">Lorem Ipsum</font></font></font></strong><font color="#000000" style="box-sizing: border-box;"><b style="box-sizing: border-box; font-weight: 700;"> </b></font><font color="#000000" style="box-sizing: border-box;"><font face="Open Sans, Arial, sans-serif" style="box-sizing: border-box;"><font style="box-sizing: border-box; font-size: 10pt;">is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</font></font></font></div><p align="CENTER" style="box-sizing: border-box; margin: 0px 0px 0in; line-height: 25px; color: rgb(91, 91, 91); font-family: proxima-nova, sans-serif; font-size: 16px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;"><b style="box-sizing: border-box; font-weight: 700;">For more information on what F.A.S.T. Complex/The Zone has to offer please go to our website at www.clickitonceabcd.com"</b></p>`;
     keyBoardEvent.clipboardData = {
       getData: () => {
-        return 'https://ej2.syncfusion.com';
+        return localElem;
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = true;
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      let expected: boolean = true;
+      let expectedElem: string = `<p>is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p>For more information on what F.A.S.T. Complex/The Zone has to offer please go to our website at www.clickitonceabcd.com"</p>`;
+      if (allElem.innerHTML !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("Paste URL", (done) => {
+    keyBoardEvent.clipboardData = {
+      getData: (e: any) => {
+        if (e === "text/plain") {
+          return 'https://ej2.syncfusion.com';
+        } else {
+          return '';
+        }
       },
       items: []
     };
@@ -524,16 +563,20 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let allElem: any =(rteObj as any).inputElement.firstElementChild;
-      expect(allElem.children[0].tagName.toLowerCase() === 'a').toBe(true);
-      expect(allElem.children[0].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      expect(allElem.children[0].children[0].tagName.toLowerCase() === 'a').toBe(true);
+      expect(allElem.children[0].children[0].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       done();
     }, 100);
   });
 
   it("Paste URL with 'www'", (done) => {
     keyBoardEvent.clipboardData = {
-      getData: () => {
-        return 'www.ej2.syncfusion.com';
+      getData: (e: any) => {
+        if (e === "text/plain") {
+          return 'www.ej2.syncfusion.com';
+        } else {
+          return '';
+        }
       },
       items: []
     };
@@ -546,16 +589,20 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
-      expect(allElem.children[0].tagName.toLowerCase() === 'a').toBe(true);
-      expect(allElem.children[0].getAttribute('href') === 'www.ej2.syncfusion.com').toBe(true);
+      expect(allElem.children[0].children[0].tagName.toLowerCase() === 'a').toBe(true);
+      expect(allElem.children[0].children[0].getAttribute('href') === 'www.ej2.syncfusion.com').toBe(true);
       done();
     }, 100);
   });
 
   it("Paste URL with other contents", (done) => {
     keyBoardEvent.clipboardData = {
-      getData: () => {
-        return 'Hi syncfusion website https://ej2.syncfusion.com is here';
+      getData: (e: any) => {
+        if (e === "text/plain") {
+          return 'Hi syncfusion website https://ej2.syncfusion.com is here';
+        } else {
+          return '';
+        }
       },
       items: []
     };
@@ -568,14 +615,122 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
-      expect(allElem.children[1].tagName.toLowerCase() === 'a').toBe(true);
-      expect(allElem.children[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      expect(allElem.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
+      expect(allElem.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<span>Hi syncfusion website </span><a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com</a><span> is here</span>`;
+      let expectedElem: string = `<p>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here</p>`;
       if (allElem.innerHTML === expectedElem) {
         expected = true;
       }
       expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("Paste two URLs with other contents", (done) => {
+    keyBoardEvent.clipboardData = {
+      getData: (e: any) => {
+        if (e === "text/plain") {
+          return 'Hi syncfusion website https://ej2.syncfusion.com is here with another URL https://ej2.syncfusion.com text after second URL';
+        } else {
+          return '';
+        }
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = false;
+    rteObj.pasteCleanupSettings.plainText = false;
+    rteObj.pasteCleanupSettings.keepFormat = true;
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      expect(allElem.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
+      expect(allElem.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      let expected: boolean = false;
+      let expectedElem: string = `<p>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</p>`;
+      if (allElem.innerHTML === expectedElem) {
+        expected = true;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("Paste notepad contents with space and enter with link", (done) => {
+    keyBoardEvent.clipboardData = {
+      getData: (e: any) => {
+        if (e === "text/plain") {
+          return `first line
+        Second line with space https://ej2.syncfusion.com
+   
+   
+third line`;
+        } else {
+          return '';
+        }
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = false;
+    rteObj.pasteCleanupSettings.plainText = false;
+    rteObj.pasteCleanupSettings.keepFormat = true;
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      let expected: boolean = false;
+      let expectedElem: string = `<p>first line</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a></p><p><br></p><p><br></p><p>third line</p>`;
+      if (allElem.innerHTML === expectedElem) {
+        expected = true;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("Paste notepad contents with space and enter", (done) => {
+    keyBoardEvent.clipboardData = {
+      getData: (e: any) => {
+        if (e === "text/plain") {
+          return `first line
+        Second line with space
+   
+   
+third line`;
+        } else {
+          return '';
+        }
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = false;
+    rteObj.pasteCleanupSettings.plainText = false;
+    rteObj.pasteCleanupSettings.keepFormat = true;
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      let expected: boolean = false;
+      let expectedElem: string = `<p>first line</p><p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Second line with space</p><p><br></p><p><br></p><p>third line</p>`;
+      if (allElem.innerHTML === expectedElem) {
+        expected = true;
+      }
+      expect(expected).toBe(true);
+      let elem: HTMLElement = editorObj.editableElement as HTMLElement;
+      let start: HTMLElement = elem.querySelector('p');
+      let end: HTMLElement = start;
+      editorObj.nodeSelection.setSelectionText(document, start.childNodes[0], end, 0, 0);
+      editorObj.execCommand("Alignments", 'JustifyRight', null);
+      expect(start.style.textAlign === 'right').toBe(true);
+      start.style.textAlign = '';
+      editorObj.nodeSelection.Clear(document);
       done();
     }, 100);
   });

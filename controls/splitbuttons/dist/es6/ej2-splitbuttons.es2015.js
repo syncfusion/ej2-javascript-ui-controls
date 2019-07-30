@@ -670,16 +670,6 @@ let SplitButton = class SplitButton extends DropDownButton {
             beforeItemRender: (args) => {
                 this.trigger('beforeItemRender', args);
             },
-            beforeOpen: (args) => {
-                this.trigger('beforeOpen', args, (observedArgs) => {
-                    args = observedArgs;
-                });
-            },
-            beforeClose: (args) => {
-                this.trigger('beforeClose', args, (observedArgs) => {
-                    args = observedArgs;
-                });
-            },
             open: (args) => {
                 this.trigger('open', args);
             },
@@ -689,6 +679,20 @@ let SplitButton = class SplitButton extends DropDownButton {
             select: (args) => {
                 this.trigger('select', args);
             }
+        };
+        dropDownBtnModel.beforeOpen = (args) => {
+            let callBackPromise = new Deferred();
+            this.trigger('beforeOpen', args, (observedArgs) => {
+                callBackPromise.resolve(observedArgs);
+            });
+            return callBackPromise;
+        };
+        dropDownBtnModel.beforeClose = (args) => {
+            let callBackPromise = new Deferred();
+            this.trigger('beforeClose', args, (observedArgs) => {
+                callBackPromise.resolve(observedArgs);
+            });
+            return callBackPromise;
         };
         this.secondaryBtnObj = new DropDownButton(dropDownBtnModel);
         this.secondaryBtnObj.createElement = this.createElement;
@@ -862,6 +866,28 @@ __decorate$2([
 SplitButton = __decorate$2([
     NotifyPropertyChanges
 ], SplitButton);
+/**
+ * Deferred is used to handle asynchronous operation.
+ */
+class Deferred {
+    constructor() {
+        /**
+         * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future.
+         */
+        this.promise = new Promise((resolve, reject) => {
+            this.resolve = resolve;
+            this.reject = reject;
+        });
+        /**
+         * Defines the callback function triggers when the Deferred object is resolved.
+         */
+        this.then = this.promise.then.bind(this.promise);
+        /**
+         * Defines the callback function triggers when the Deferred object is rejected.
+         */
+        this.catch = this.promise.catch.bind(this.promise);
+    }
+}
 
 /**
  * Split Button modules
@@ -1399,5 +1425,5 @@ ProgressButton = __decorate$3([
  * SplitButton all module
  */
 
-export { getModel, Item, DropDownButton, SplitButton, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
+export { getModel, Item, DropDownButton, SplitButton, Deferred, createButtonGroup, SpinSettings, AnimationSettings, ProgressButton };
 //# sourceMappingURL=ej2-splitbuttons.es2015.js.map

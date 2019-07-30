@@ -649,11 +649,10 @@ export class Splitter extends Component<HTMLElement> {
             this.allPanes[index].classList.add(isVertical ? SPLIT_V_PANE : SPLIT_H_PANE);
         }
         for (let index: number = 0; index < this.allBars.length; index++) {
-            this.allBars[index].removeAttribute('aria-orientation');
-            this.allBars[index].setAttribute('aria-orientation', orientation.toLowerCase());
-            this.allBars[index].classList.remove(isVertical ? SPLIT_H_BAR : SPLIT_V_BAR);
-            this.allBars[index].classList.add(isVertical ? SPLIT_V_BAR : SPLIT_H_BAR);
+            detach(this.allBars[index]);
         }
+        this.allBars = [];
+        this.addSeparator(this.element);
     }
 
     private checkSplitPane(currentBar: Element, elementIndex: number): HTMLElement {
