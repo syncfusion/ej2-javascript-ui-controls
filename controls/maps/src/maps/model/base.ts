@@ -1107,14 +1107,14 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
 
     /**
      * To customize the height of the marker.
-     * @default 1
+     * @default 10
      */
     @Property(10)
     public height: number;
 
     /**
      * To customize the width of the marker.
-     * @default 1
+     * @default 10
      */
     @Property(10)
     public width: number;

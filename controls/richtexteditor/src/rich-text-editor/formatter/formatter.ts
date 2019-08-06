@@ -2,7 +2,7 @@ import { extend, isNullOrUndefined, KeyboardEventArgs, Browser } from '@syncfusi
 import * as CONSTANT from '../base/constant';
 import { updateUndoRedoStatus, isIDevice } from '../base/util';
 import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs } from './../base/interface';
-import { IRichTextEditor, IEditorModel, NotifyArgs } from './../base/interface';
+import { IRichTextEditor, IEditorModel, IItemCollectionArgs } from './../base/interface';
 import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack } from './../../common/interface';
 import { KEY_DOWN, KEY_UP } from './../../common/constant';
 import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
@@ -18,9 +18,9 @@ export class Formatter {
      * @param  {IRichTextEditor} self
      * @param  {ActionBeginEventArgs} args
      * @param  {MouseEvent|KeyboardEvent} event
-     * @param  {NotifyArgs} value
+     * @param  {IItemCollectionArgs} value
      */
-    public process(self: IRichTextEditor, args: ActionBeginEventArgs, event: MouseEvent | KeyboardEvent, value: NotifyArgs): void {
+    public process(self: IRichTextEditor, args: ActionBeginEventArgs, event: MouseEvent | KeyboardEvent, value: IItemCollectionArgs): void {
         let selection: Selection = self.contentModule.getDocument().getSelection();
         let range: Range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
         if (!isNullOrUndefined(args)
@@ -157,14 +157,6 @@ export class Formatter {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
                 self.trigger(CONSTANT.toolbarStatusUpdate, status);
             }
-        }
-    }
-
-    public undoRedoRefresh(iRichTextEditor: IRichTextEditor): void {
-        if (this.editorManager.undoRedoManager.undoRedoStack.length) {
-            this.editorManager.undoRedoManager.undoRedoStack = [];
-            this.editorManager.undoRedoManager.steps = 0;
-            iRichTextEditor.disableToolbarItem(['Undo', 'Redo']);
         }
     }
 }

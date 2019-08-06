@@ -113,3 +113,5 @@ export const dropPath: string = 'drop-path';
 export const dragHelper: string = 'drag-helper';
 /** @hidden */
 export const dragging: string = 'dragging';
+/** @hidden */
+export const updateSelectionData: string = 'update-selection-data';

@@ -8,7 +8,7 @@ import { AutoCompleteModel } from '../auto-complete/auto-complete-model';
 import { highlightSearch } from '../common/highlight-search';
 import { Search } from '../common/incremental-search';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
-import { FieldSettings, FilteringEventArgs } from '../drop-down-base/drop-down-base';
+import { FieldSettings, FilteringEventArgs, FilterType } from '../drop-down-base/drop-down-base';
 
 /* tslint:disable */
 import { FloatLabelType, Input } from '@syncfusion/ej2-inputs';
@@ -19,7 +19,6 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 dropDownListClasses.root = 'e-autocomplete';
 dropDownListClasses.icon = 'e-input-group-icon e-ddl-icon e-search-icon';
 
-export type FilterType = 'Contains' | 'StartsWith' | 'EndsWith';
 
 /**
  * The AutoComplete component provides the matched suggestion list when type into the input,

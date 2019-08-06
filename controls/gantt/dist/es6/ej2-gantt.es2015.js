@@ -2116,8 +2116,10 @@ const timelineSingleHeaderCell = 'e-timeline-single-header-cell';
 const timelineSingleHeaderOuterDiv = 'e-timeline-single-header-outer-div';
 // Chart Rows-Class
 const leftLabelContainer = 'e-left-label-container';
+const leftLabelTempContainer = 'e-left-label-container e-left-label-temp-container';
 const leftLabelInnerDiv = 'e-left-label-inner-div';
 const rightLabelContainer = 'e-right-label-container';
+const rightLabelTempContainer = 'e-right-label-container e-right-label-temp-container';
 const rightLabelInnerDiv = 'e-right-label-inner-div';
 const taskBarMainContainer = 'e-taskbar-main-container';
 const parentTaskBarInnerDiv = 'e-gantt-parent-taskbar-inner-div';
@@ -5545,8 +5547,8 @@ class ChartRows {
         }
     }
     leftLabelContainer() {
-        let template = '<div class="' + leftLabelContainer + ' ' +
-            '" tabindex="-1" ' + this.generateTaskLabelAriaLabel('left') + '  style="height:' +
+        let template = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? leftLabelTempContainer :
+            leftLabelContainer) + ' ' + '" tabindex="-1" ' + this.generateTaskLabelAriaLabel('left') + '  style="height:' +
             (this.parent.rowHeight - 1) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
         return this.createDivElement(template);
     }
@@ -5563,8 +5565,8 @@ class ChartRows {
         return this.createDivElement(template);
     }
     rightLabelContainer() {
-        let template = '<div class="' + rightLabelContainer + '" ' +
-            ' tabindex="-1" ' + this.generateTaskLabelAriaLabel('right') +
+        let template = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? rightLabelTempContainer :
+            rightLabelContainer) + '" ' + ' tabindex="-1" ' + this.generateTaskLabelAriaLabel('right') +
             ' style="left:' + this.getRightLabelLeft(this.templateData) + 'px;height:'
             + (this.parent.rowHeight - 1) + 'px;"></div>';
         return this.createDivElement(template);
@@ -13646,7 +13648,7 @@ class DialogEdit {
                     this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
                 }
                 endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp);
-                if (endDate.getTime() > (ganttProp.startDate).getTime()) {
+                if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() > (ganttProp.startDate).getTime()) {
                     this.parent.setRecordValue('endDate', endDate, ganttProp, true);
                 }
             }
@@ -13872,7 +13874,12 @@ class DialogEdit {
                     change: (args) => {
                         let tr = closest(args.element, 'tr');
                         let idInput = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
-                        idInput.value = args.itemData.id;
+                        if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
+                            idInput.value = args.itemData.id;
+                        }
+                        else {
+                            idInput.value = '';
+                        }
                     },
                     autofill: true,
                 });
@@ -14912,6 +14919,7 @@ class Edit$2 {
             this.updateScheduleDatesOnEditing(args);
         }
         eventArgs.requestType = 'save';
+        eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
         setValue('action', args.action, eventArgs);

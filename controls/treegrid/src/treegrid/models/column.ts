@@ -111,9 +111,15 @@ export class Column {
      * It accepts either template string or HTML element ID.
      * @default null
      * @aspIgnore
-     * @blazorIgnore
      */
     public editTemplate: string;
+    /**
+     * Defines the filter template/UI that used as filter for a particular column.
+     * It accepts either template string or HTML element ID.
+     * @default null
+     * @aspIgnore
+     */
+    public filterTemplate: string;
     /**    
      * If `isIdentity` is set to true, then this column is considered as identity column.
      * @default false         
@@ -629,9 +635,15 @@ export interface ColumnModel {
      * Defines the cell edit template that used as editor for a particular column.
      * It accepts either template string or HTML element ID.
      * @aspIgnore
-     * @blazorIgnore
      */
     editTemplate?: string;
+
+    /**
+     * Defines the filter template/UI that is used as filter for a particular column.
+     * It accepts either template string or HTML element ID.
+     * @aspIgnore
+     */
+    filterTemplate?: string;
 
     /**    
      * If `isIdentity` is set to true, then this column is considered as identity column.

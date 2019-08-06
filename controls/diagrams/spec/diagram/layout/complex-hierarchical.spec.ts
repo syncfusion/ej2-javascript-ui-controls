@@ -741,8 +741,8 @@ describe('Diagram Control', () => {
             console.log('decorator isse')
             console.log(pathelement.children[2].children[1].children[0].getAttribute('d'))
             console.log(pathelement.children[2].children[3].children[0].getAttribute('d'))
-            expect((pathelement.children[2].children[1].children[0].getAttribute('d')==="M93.34,40 L93.34,59.4 Q93.34,64.4,88.34,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.34,0 Q43.34,0,43.34,5 L43.34,19.6 " ||
-            pathelement.children[2].children[1].children[0].getAttribute('d')=== "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,19.6 ")&&
+            expect((pathelement.children[2].children[1].children[0].getAttribute('d')=== "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,20.6 " ||
+            pathelement.children[2].children[1].children[0].getAttribute('d')=== "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,20.6 ")&&
             (pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z " || pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z ")).toBe(true)
             done();
         });

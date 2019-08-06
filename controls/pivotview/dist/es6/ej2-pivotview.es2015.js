@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, compile, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, compile, createElement, extend, formatUnit, getElement, getInstance, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, getObject, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
@@ -1373,8 +1373,8 @@ class PivotEngine {
             this.fieldList[field].formattedMembers = {};
             this.fieldList[field].dateMember = [];
         }
-        this.fillFieldMembers(dataSource.dataSource, this.indexMatrix);
-        this.valueMatrix = this.generateValueMatrix(dataSource.dataSource);
+        this.fillFieldMembers(this.data, this.indexMatrix);
+        this.valueMatrix = this.generateValueMatrix(this.data);
         this.filterMembers = [];
         this.cMembers = [];
         this.rMembers = [];
@@ -1489,11 +1489,11 @@ class PivotEngine {
             this.isEmptyDataAvail(rowFilteredData, columnFilteredData);
             let savedFieldList = extend({}, this.fieldList, null, true);
             this.indexMatrix = [];
-            let fields = dataSource.dataSource[0];
+            let fields = this.data[0];
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-            this.fillFieldMembers(dataSource.dataSource, this.indexMatrix);
+            this.fillFieldMembers(this.data, this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix(dataSource.dataSource);
+            this.valueMatrix = this.generateValueMatrix(this.data);
             this.filterMembers = [];
             this.updateFilterMembers(dataSource);
             this.rMembers = rows.length !== 0 ?
@@ -5552,6 +5552,7 @@ class Render {
         };
         this.parent.trigger(hyperlinkCellClick, args, (observedArgs) => {
             if (!observedArgs.cancel) {
+                args.currentCell = getElement(args.currentCell);
                 let url = args.currentCell.getAttribute('data-url') ? (args.currentCell).getAttribute('data-url') :
                     args.currentCell.querySelector('a').getAttribute('data-url');
                 window.open(url);
@@ -11231,7 +11232,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.trigger(enginePopulating, { dataSourceSettings: this.dataSourceSettings }, (observedArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                let dataSet = this.dataSourceSettings.dataSource;
+                let dataSet = this.engineModule.data;
                 this.clonedDataSet = this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(dataSet);
                 this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
                 this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true);
@@ -15179,7 +15180,7 @@ let PivotFieldList = class PivotFieldList extends Component {
         this.trigger(enginePopulating, { dataSourceSettings: this.dataSourceSettings }, (observedArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                let pivotDataSet = this.dataSourceSettings.dataSource;
+                let pivotDataSet = this.engineModule.data;
                 this.clonedDataSet = this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet);
                 this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
                 this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true);

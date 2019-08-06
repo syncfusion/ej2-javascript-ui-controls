@@ -220,6 +220,7 @@ export class QuickToolbar {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         if (this.linkQTBar) {

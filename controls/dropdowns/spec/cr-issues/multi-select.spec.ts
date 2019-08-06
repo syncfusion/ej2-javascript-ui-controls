@@ -1318,4 +1318,65 @@ describe('MultiSelect', () => {
             }, 200);
         })
     })
+    describe('EJ2-29649 - filtering with allowCustomValue ', () => {
+        let listObj: MultiSelect;
+        let originalTimeout: number;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: any[] =  [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' },
+            { Id: 'Game6', Game: 'Golf' },
+            { Id: 'Game7', Game: 'Hockey' },
+            { Id: 'Game8', Game: 'Rugby' },
+            { Id: 'Game9', Game: 'Snooker' },
+            { Id: 'Game10', Game: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+            if (element) {
+                element.remove();
+            }
+        });
+        it('EJ2-9767- CR_ISSUE allowCustomValue.- remote data with filter', (done) => {
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                popupHeight: "auto",
+                fields: { text: 'Game', value: 'Game' },
+                filtering: function (e: FilteringEventArgs) {
+                    var query = new Query();
+                    query = (e.text !== '') ? query.where('Game', 'startswith', e.text, true) : query;
+                    e.updateData(sportsData, query);
+                },
+                allowCustomValue: true,
+                allowFiltering: true
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            (<any>listObj).inputFocus = true;
+            (<any>listObj).inputElement.value = "a";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 65;
+            setTimeout(() => {
+                (<any>listObj).keyDownStatus = true;
+                (<any>listObj).onInput();
+                (<any>listObj).KeyUp(keyboardEventArgs);
+                expect((<any>listObj).liCollections.length).toBe(2);
+                expect((<any>listObj).value).toBe(null);
+                mouseEventArgs.target = (<any>listObj).liCollections[0];
+                mouseEventArgs.type = 'click';
+                (<any>listObj).onMouseClick(mouseEventArgs);
+                expect((<any>listObj).value && (<any>listObj).value.length).not.toBeNull();
+                done();
+            }, 800);
+        });
+    });
 });

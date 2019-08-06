@@ -11,7 +11,7 @@ import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
-import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs } from '../document-editor/base';
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 import { ContainerServerActionSettingsModel } from '../document-editor/document-editor-model';
 
@@ -86,6 +86,20 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public documentChange: EmitType<ContainerDocumentChangeEventArgs>;
+    /**
+     * Triggers while selecting the custom context-menu option.
+     * @event
+     * @blazorproperty 'ContextMenuItemSelected'
+     */
+    @Event()
+    public customContextMenuSelect: EmitType<CustomContentMenuEventArgs>;
+    /**
+     * Triggers before opening the custom context-menu option.
+     * @event
+     * @blazorproperty 'OnContextMenuOpen'
+     */
+    @Event()
+    public customContextMenuBeforeOpen: EmitType<BeforeOpenCloseCustomContentMenuEventArgs>;
 
     /**
      * Document editor container's toolbar module
@@ -384,6 +398,10 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.toolbarModule) {
             this.toolbarModule.initToolBar();
         }
+        if (this.element.getBoundingClientRect().height < 320) {
+            this.element.style.height = '320px';
+        }
+        this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
         this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
@@ -469,6 +487,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             zoomFactorChange: this.onZoomFactorChange.bind(this),
             requestNavigate: this.onRequestNavigate.bind(this),
             viewChange: this.onViewChange.bind(this),
+            customContextMenuSelect: this.onCustomContextMenuSelect.bind(this),
+            customContextMenuBeforeOpen: this.onCustomContextMenuBeforeOpen.bind(this),
             locale: this.locale,
             acceptTab: true,
             enableLocalPaste: this.enableLocalPaste,
@@ -558,6 +578,18 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageNumberOnViewChange(args);
         }
+    }
+    /**
+     * @private
+     */
+    private onCustomContextMenuSelect(args: CustomContentMenuEventArgs): void {
+        this.trigger('customContextMenuSelect', args);
+    }
+    /**
+     * @private
+     */
+    private onCustomContextMenuBeforeOpen(args: BeforeOpenCloseCustomContentMenuEventArgs): void {
+        this.trigger('customContextMenuBeforeOpen', args);
     }
     /**
      * @private

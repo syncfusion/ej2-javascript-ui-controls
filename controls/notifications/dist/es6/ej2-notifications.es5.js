@@ -165,7 +165,6 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     Toast.prototype.render = function () {
         this.progressObj = [];
         this.intervalId = [];
-        this.titleTemplate = null;
         this.contentTemplate = null;
         this.toastTemplate = null;
         if (this.isDevice && screen.width < 768) {
@@ -226,9 +225,6 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         if (!isUndefined(toastObj.content) && !isNullOrUndefined(this.contentTemplate) && this.content !== toastObj.content) {
             this.clearContentTemplate();
         }
-        if (!isUndefined(toastObj.title) && !isNullOrUndefined(this.titleTemplate) && this.title !== toastObj.title) {
-            this.clearTitleTemplate();
-        }
         if (!isUndefined(toastObj.template) && !isNullOrUndefined(this.toastTemplate) && this.template !== toastObj.template) {
             this.clearToastTemplate();
         }
@@ -280,18 +276,21 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         var templateFn;
         var tempVar;
         var tmpArray;
-        prob === 'title' ? tempVar = this.titleTemplate : prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
+        prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
         if (!isNullOrUndefined(tempVar)) {
             ele.appendChild(tempVar.cloneNode(true));
             return ele;
         }
         try {
             if (document.querySelectorAll(value).length > 0) {
-                var elem = document.querySelector(value);
-                ele.appendChild(elem);
-                elem.style.display = '';
-                var clo = elem.cloneNode(true);
-                prob === 'title' ? this.titleTemplate = clo : prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
+                var elem = null;
+                if (prob !== 'title') {
+                    elem = document.querySelector(value);
+                    ele.appendChild(elem);
+                    elem.style.display = '';
+                }
+                var clo = isNullOrUndefined(elem) ? tempVar : elem.cloneNode(true);
+                prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
             }
         }
         catch (e) {
@@ -344,20 +343,12 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             });
             this.toastContainer = null;
         }
-        if (!isNullOrUndefined(this.titleTemplate)) {
-            this.clearTitleTemplate();
-        }
         if (!isNullOrUndefined(this.contentTemplate)) {
             this.clearContentTemplate();
         }
         if (!isNullOrUndefined(this.toastTemplate)) {
             this.clearToastTemplate();
         }
-    };
-    Toast.prototype.clearTitleTemplate = function () {
-        this.titleTemplate.style.display = 'none';
-        document.body.appendChild(this.titleTemplate);
-        this.titleTemplate = null;
     };
     Toast.prototype.clearContentTemplate = function () {
         this.contentTemplate.style.display = 'none';
@@ -403,7 +394,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         attributes(this.toastEle, { 'role': 'alert' });
     };
     Toast.prototype.setPositioning = function (pos) {
-        if (typeof (pos.X) === 'number' || typeof (pos.Y) === 'number' || pos.X.indexOf('%') !== -1 || pos.Y.indexOf('%') !== -1) {
+        if (!isNaN(parseFloat(pos.X)) || !isNaN(parseFloat(pos.Y))) {
             setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
             this.customPosition = true;
         }

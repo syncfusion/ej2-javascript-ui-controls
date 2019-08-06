@@ -1906,11 +1906,11 @@ let Dialog = class Dialog extends Component {
     }
     positionChange() {
         if (this.isModal) {
-            if (typeof (this.position.X) === 'number' && typeof (this.position.Y) === 'number') {
+            if (!isNaN(parseFloat(this.position.X)) && !isNaN(parseFloat(this.position.Y))) {
                 this.setPopupPosition();
             }
-            else if ((typeof this.position.X === 'string' && typeof this.position.Y === 'number') ||
-                (typeof this.position.X === 'number' && typeof this.position.Y === 'string')) {
+            else if ((!isNaN(parseFloat(this.position.X)) && isNaN(parseFloat(this.position.Y)))
+                || (isNaN(parseFloat(this.position.X)) && !isNaN(parseFloat(this.position.Y)))) {
                 this.setPopupPosition();
             }
             else {

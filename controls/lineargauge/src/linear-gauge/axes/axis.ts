@@ -19,6 +19,7 @@ export class Line extends ChildProperty<Line> {
     /**
      * Height of the axis line.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     @Property(null)
     public height: number;
@@ -38,6 +39,7 @@ export class Line extends ChildProperty<Line> {
 
     /**
      * Specifies to move the axis line.
+     * @default 0
      */
     @Property(0)
     public offset: number;

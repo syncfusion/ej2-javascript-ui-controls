@@ -19,7 +19,6 @@ export interface AggregateColumnModel {
    * * custom  
    * > Specify the `type` value as `custom` to use custom aggregation.
    * @aspType string
-   * @blazorType string
    * @default null
    */
     type?: AggregateType | AggregateType[] | string;

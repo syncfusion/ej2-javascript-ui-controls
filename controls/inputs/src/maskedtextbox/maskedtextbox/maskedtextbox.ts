@@ -106,6 +106,13 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     public enabled: boolean;
 
     /**
+     * Specifies the boolean value whether the Masked TextBox allows the user to change the text.
+     * @default false
+     */
+    @Property(false)
+    public readonly: boolean;
+
+    /**
      * Specifies whether to show or hide the clear icon.
      * @default false
      */
@@ -383,7 +390,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         }
     }
     private checkHtmlAttributes(isDynamic: boolean): void {
-        let attributes: string[] = ['placeholder', 'disabled', 'value'];
+        let attributes: string[] = ['placeholder', 'disabled', 'value', 'readonly'];
         for (let key of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
@@ -407,6 +414,14 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                             this.setProperties({value: this.element.value}, isDynamic);
                         }
                         break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || !isDynamic) {
+                            let readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({readonly: readonly}, isDynamic);
+                        }
+                        break;
                 }
             }
         }
@@ -421,6 +436,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     enableRtl: this.enableRtl,
                     cssClass: this.cssClass,
                     enabled: this.enabled,
+                    readonly: this.readonly,
                     placeholder: this.placeholder,
                     showClearButton: this.showClearButton
                 }
@@ -453,6 +469,9 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
+                    break;
+                case 'readonly':
+                    Input.setReadonly(newProp.readonly, this.element);
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);

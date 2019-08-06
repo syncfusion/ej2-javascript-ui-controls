@@ -99,9 +99,8 @@ export class NavigationLine {
                         offSet = (isNullOrUndefined(offSet)) ? 0 : offSet;
                         let triId: string = this.maps.element.id + '_triangle';
                         let defElement: Element = this.maps.renderer.createDefs();
-                        let xmlns: string = 'https://www.w3.org/2000/svg';
-                        let markerEle: Element = document.createElementNS (xmlns, 'marker');
-                        markerEle.setAttribute('id', 'triangle' + i);
+                        defElement.innerHTML += '<marker id="' + 'triangle' + i + '"></marker>';
+                        let markerEle: Element = defElement.querySelector('#' + 'triangle' + i);
                         markerEle.setAttribute('markerWidth', (arrowSize.toString()));
                         markerEle.setAttribute('markerHeight', (arrowSize.toString()));
                         markerEle.setAttribute('refX', (divide - offSet).toString());
@@ -149,7 +148,7 @@ export class NavigationLine {
     }
 
     /**
-     * To destroy the layers. 
+     * To destroy the layers.
      * @return {void}
      * @private
      */
@@ -158,4 +157,4 @@ export class NavigationLine {
          * Destroy method performed here
          */
     }
-} 
+}

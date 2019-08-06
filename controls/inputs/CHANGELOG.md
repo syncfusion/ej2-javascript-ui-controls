@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### MaskedTextBox
+
+#### Bug Fixes
+
+- `#243500` - Provided `readonly` property to control user interactions.
+
+## 17.2.39 (2019-07-30)
+
+### Uploader
+
+#### Bug Fixes
+
+- `#F145959`, `#242743` - Provided specific type for success event arguments in the `Uploader`.
+
 ## 17.2.36 (2019-07-24)
 
 ### Uploader

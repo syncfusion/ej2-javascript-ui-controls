@@ -195,6 +195,8 @@ const TOOLBAR_ID = '_toolbar';
 /** @hidden */
 const LAYOUT_ID = '_layout';
 /** @hidden */
+const NAVIGATION_ID = '_navigation';
+/** @hidden */
 const TREE_ID = '_tree';
 /** @hidden */
 const GRID_ID = '_grid';
@@ -249,6 +251,8 @@ const MULTI_SELECT = 'e-fe-m-select';
 const FILTER = 'e-fe-m-filter';
 /** @hidden */
 const LAYOUT = 'e-layout';
+/** @hidden */
+const NAVIGATION = 'e-navigation';
 /** @hidden */
 const LAYOUT_CONTENT = 'e-layout-content';
 /** @hidden */
@@ -518,6 +522,8 @@ const dropPath = 'drop-path';
 const dragHelper = 'drag-helper';
 /** @hidden */
 const dragging = 'dragging';
+/** @hidden */
+const updateSelectionData = 'update-selection-data';
 
 /**
  * Utility file for common actions
@@ -725,6 +731,7 @@ function getTargetModule(parent, element) {
     }
     parent.targetModule = tartgetModule;
 }
+/* istanbul ignore next */
 function refresh(parent) {
     parent.itemData = [getPathObject(parent)];
     if (!hasReadAccess(parent.itemData[0])) {
@@ -1074,7 +1081,7 @@ function doPasteUpdate(parent, operation, result) {
     }
     let flag = false;
     for (let count = 0; (count < result.files.length) && !flag; count++) {
-        parent.pasteNodes.push(result.files[count].name);
+        parent.pasteNodes.push(result.files[count][parent.hasId ? 'id' : 'name']);
         if (parent.isDragDrop) {
             parent.droppedObjects.push(result.files[count]);
         }
@@ -2189,6 +2196,7 @@ function onReSubmit(parent) {
         return;
     }
     let newPath = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
+    parent.renamedId = getValue('id', parent.itemData[0]);
     if (parent.isFile) {
         let oldExtension = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
         let newExtension = text.substr(text.lastIndexOf('.'));
@@ -2200,7 +2208,6 @@ function onReSubmit(parent) {
         }
     }
     else {
-        parent.renamedId = getValue('id', parent.itemData[0]);
         rename(parent, newPath, text);
     }
 }
@@ -2367,6 +2374,7 @@ class LargeIconsView {
     render(args) {
         this.parent.visitedItem = null;
         this.startItem = null;
+        showSpinner(this.parent.element);
         if (this.parent.view === 'LargeIcons') {
             this.resetMultiSelect();
             this.element.setAttribute('tabindex', '0');
@@ -2434,6 +2442,7 @@ class LargeIconsView {
             this.addEventListener();
             this.wireEvents();
             this.isRendered = true;
+            hideSpinner(this.parent.element);
             if (this.parent.selectedItems.length) {
                 this.checkItem();
             }
@@ -2590,9 +2599,10 @@ class LargeIconsView {
         while (i < items.length) {
             let icon = fileType(items[i]);
             let name = getValue('name', items[i]);
-            /* istanbul ignore next */
+            let id = getValue('id', items[i]);
+            let selected = this.parent.hasId ? id : getName(this.parent, items[i]);
             let className = ((this.parent.selectedItems &&
-                this.parent.selectedItems.indexOf(getName(this.parent, args.files[i])) !== -1)) ?
+                this.parent.selectedItems.indexOf(selected) !== -1)) ?
                 LARGE_ICON + ' e-active' : LARGE_ICON;
             if (!hasEditAccess(items[i])) {
                 className += ' ' + getAccessClass(items[i]);
@@ -2619,7 +2629,7 @@ class LargeIconsView {
         }
         this.onLayoutChange(args);
         this.clearSelect();
-        this.selectItems([getValue('name', this.parent.createdItem)]);
+        this.selectItems([getValue(this.parent.hasId ? 'id' : 'name', this.parent.createdItem)]);
         this.parent.createdItem = null;
         this.parent.largeiconsviewModule.element.focus();
     }
@@ -2719,6 +2729,12 @@ class LargeIconsView {
         }
         this.adjustHeight();
     }
+    onUpdateSelectionData() {
+        if (this.parent.view !== 'LargeIcons') {
+            return;
+        }
+        this.updateSelectedData();
+    }
     removeEventListener() {
         if (this.parent.isDestroyed) {
             return;
@@ -2752,6 +2768,7 @@ class LargeIconsView {
         this.parent.off(detailsInit, this.onDetailsInit);
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
         this.parent.off(dropPath, this.onDropPath);
+        this.parent.off(updateSelectionData, this.onUpdateSelectionData);
     }
     addEventListener() {
         this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
@@ -2783,6 +2800,7 @@ class LargeIconsView {
         this.parent.on(cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(dropPath, this.onDropPath, this);
+        this.parent.on(updateSelectionData, this.onUpdateSelectionData, this);
     }
     onMenuItemData(args) {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -3283,7 +3301,7 @@ class LargeIconsView {
     }
     getVisitedItem() {
         let item = this.parent.selectedItems[this.parent.selectedItems.length - 1];
-        let indexes = this.getIndexes([item]);
+        let indexes = this.getIndexes([item], this.parent.hasId);
         return this.itemList[indexes[0]];
     }
     getFocusedItem() {
@@ -3443,6 +3461,9 @@ class LargeIconsView {
     }
     getDataName(item) {
         let data = this.getItemObject(item);
+        if (this.parent.hasId) {
+            return getValue('id', data);
+        }
         return getName(this.parent, data);
     }
     addFocus(item) {
@@ -3506,8 +3527,8 @@ class LargeIconsView {
         let eventArgs = { action: action, fileDetails: data };
         this.parent.trigger('fileSelect', eventArgs);
     }
-    selectItems(items, byId) {
-        let indexes = this.getIndexes(items, byId);
+    selectItems(items) {
+        let indexes = this.getIndexes(items, this.parent.hasId);
         for (let j = 0, len = indexes.length; j < len; j++) {
             let eveArgs = { ctrlKey: true, shiftKey: false };
             this.doSelection(this.itemList[indexes[j]], eveArgs);
@@ -3515,7 +3536,7 @@ class LargeIconsView {
     }
     getIndexes(items, byId) {
         let indexes = [];
-        let filter = byId ? '_fm_id' : 'name';
+        let filter = byId ? 'id' : 'name';
         for (let i = 0, len = this.items.length; i < len; i++) {
             if (items.indexOf(getValue(filter, this.items[i])) !== -1) {
                 indexes.push(i);
@@ -3569,6 +3590,7 @@ class BreadCrumbBar {
         this.addressPath = '';
         this.addressBarLink = '';
         this.searchTimer = null;
+        this.searchWrapWidth = null;
         this.parent = parent;
         this.keyConfigs = {
             enter: 'enter'
@@ -3690,7 +3712,7 @@ class BreadCrumbBar {
             EventHandler.add(this.searchObj.element, 'keyup', this.onKeyUp.bind(this), this);
         }
         let searchWrap = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
-        breadCrumbBarWidth = breadCrumbBarWidth - searchWrap.offsetWidth;
+        breadCrumbBarWidth = breadCrumbBarWidth - (this.searchWrapWidth ? this.searchWrapWidth : searchWrap.offsetWidth);
         if (liElementsWidth > breadCrumbBarWidth) {
             let i = liElements.length;
             while (i--) {
@@ -3795,8 +3817,11 @@ class BreadCrumbBar {
         if (this.parent.isMobile) {
             if (this.parent.element.classList.contains(FILTER)) {
                 removeClass([this.parent.element], FILTER);
+                this.searchWrapWidth = null;
             }
             else {
+                let searchWrap = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
+                this.searchWrapWidth = searchWrap.offsetWidth;
                 addClass([this.parent.element], FILTER);
                 this.searchObj.element.focus();
             }
@@ -3836,7 +3861,7 @@ class BreadCrumbBar {
     }
     /* istanbul ignore next */
     removeSearchValue() {
-        if (this.searchObj.value !== '' || this.searchObj.element.value !== '') {
+        if (this.searchObj && (this.searchObj.value !== '' || this.searchObj.element.value !== '')) {
             this.searchObj.value = '';
             this.searchObj.element.value = '';
             this.searchObj.dataBind();
@@ -4748,9 +4773,13 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             id: this.element.id + LAYOUT_ID, className: LAYOUT
         });
         this.element.appendChild(layoutWrap);
+        let navigationWrap = this.createElement('div', {
+            id: this.element.id + NAVIGATION_ID, className: NAVIGATION
+        });
         let treeWrap = this.createElement('div', {
             id: this.element.id + TREE_ID
         });
+        navigationWrap.appendChild(treeWrap);
         let contentWrap = this.createElement('div', {
             id: this.element.id + CONTENT_ID, className: LAYOUT_CONTENT
         });
@@ -4772,7 +4801,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         contentWrap.appendChild(overlay);
         let paneSettings;
         if (!this.enableRtl) {
-            layoutWrap.appendChild(treeWrap);
+            layoutWrap.appendChild(navigationWrap);
             layoutWrap.appendChild(contentWrap);
             paneSettings = [
                 {
@@ -4784,7 +4813,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         }
         else {
             layoutWrap.appendChild(contentWrap);
-            layoutWrap.appendChild(treeWrap);
+            layoutWrap.appendChild(navigationWrap);
             paneSettings = [
                 { size: '75%', min: '270px' },
                 {
@@ -5066,6 +5095,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
                 e.preventDefault();
                 this.fileView = 'Details';
                 this.setProperties({ view: 'Details' }, true);
+                showSpinner(this.element);
                 updateLayout(this, 'Details');
                 break;
             /* istanbul ignore next */
@@ -5073,6 +5103,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
                 e.preventDefault();
                 this.fileView = 'LargeIcons';
                 this.setProperties({ view: 'LargeIcons' }, true);
+                showSpinner(this.element);
                 updateLayout(this, 'LargeIcons');
                 break;
             case 'ctrlU':
@@ -5288,6 +5319,14 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         if (!isNullOrUndefined(items)) {
             this.toolbarModule.enableItems(items, true);
         }
+    }
+    /**
+     * Gets the details of the selected files in the file manager.
+     * @returns void
+     */
+    getSelectedFiles() {
+        this.notify(updateSelectionData, {});
+        return this.itemData;
     }
     /**
      * Refreshes the folder files of the file manager.
@@ -5968,7 +6007,6 @@ class NavigationPane {
         });
         this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parent.element.id + TREE_ID);
-        this.treeObj.element.style.width = '25%';
         this.wireEvents();
     }
     addDragDrop() {
@@ -6696,6 +6734,7 @@ class DetailsView {
     // tslint:disable-next-line
     /* istanbul ignore next */
     render(args) {
+        showSpinner(this.parent.element);
         if (this.parent.view === 'Details') {
             removeClass([this.parent.element], MULTI_SELECT);
             let items = getSortedData(this.parent, args.files);
@@ -6887,7 +6926,7 @@ class DetailsView {
                 this.sortSelectedNodes = [];
                 while (len > 0) {
                     let data = this.gridObj.getRowsObject()[rows[len - 1]].data;
-                    this.sortSelectedNodes.push(getValue('name', data));
+                    this.sortSelectedNodes.push(getValue(this.parent.hasId ? 'id' : 'name', data));
                     len--;
                 }
             }
@@ -6901,6 +6940,7 @@ class DetailsView {
         }
     }
     onBeforeDataBound(args) {
+        showSpinner(this.parent.element);
         let items = getSortedData(this.parent, this.gridObj.dataSource);
         args.result = items;
     }
@@ -6920,7 +6960,7 @@ class DetailsView {
             }
         }
         if (this.parent.createdItem) {
-            this.selectRecords([getValue('name', this.parent.createdItem)]);
+            this.selectRecords([getValue(this.parent.hasId ? 'id' : 'name', this.parent.createdItem)]);
             this.parent.createdItem = null;
         }
         if (this.parent.layoutSelectedItems.length) {
@@ -6964,14 +7004,15 @@ class DetailsView {
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        hideSpinner(this.parent.element);
         this.islayoutChange = false;
         this.checkEmptyDiv(this.emptyArgs);
     }
-    selectRecords(nodes, byId) {
+    selectRecords(nodes) {
         let gridRecords = this.gridObj.getCurrentViewRecords();
         let sRecords = [];
         for (let i = 0, len = gridRecords.length; i < len; i++) {
-            let node = byId ? getValue('_fm_id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
+            let node = this.parent.hasId ? getValue('id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
@@ -7072,6 +7113,7 @@ class DetailsView {
         if (this.parent.view === 'Details') {
             /* istanbul ignore next */
             this.isInteracted = false;
+            showSpinner(this.parent.element);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
         }
@@ -7278,6 +7320,12 @@ class DetailsView {
     onAfterRequest() {
         this.isRendered = true;
     }
+    onUpdateSelectionData() {
+        if (this.parent.view !== 'Details') {
+            return;
+        }
+        this.parent.itemData = this.gridObj.getSelectedRecords();
+    }
     addEventListener() {
         this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(destroy, this.destroy, this);
@@ -7312,6 +7360,7 @@ class DetailsView {
         this.parent.on(splitterResize, this.onDetailsResize, this);
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(dropPath, this.onDropPath, this);
+        this.parent.on(updateSelectionData, this.onUpdateSelectionData, this);
     }
     removeEventListener() {
         this.parent.off(finalizeEnd, this.onFinalizeEnd);
@@ -7347,6 +7396,7 @@ class DetailsView {
         this.parent.off(splitterResize, this.onDetailsResize);
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
         this.parent.off(dropPath, this.onDropPath);
+        this.parent.off(updateSelectionData, this.onUpdateSelectionData);
     }
     onMenuItemData(args) {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -7582,7 +7632,14 @@ class DetailsView {
         let selectSize = 0;
         while (selectSize < selectedRecords.length) {
             let record = selectedRecords[selectSize];
-            this.parent.selectedItems.push(getName(this.parent, record));
+            let name;
+            if (this.parent.hasId) {
+                name = getValue('id', record);
+            }
+            else {
+                name = getName(this.parent, record);
+            }
+            this.parent.selectedItems.push(name);
             selectSize++;
         }
     }
@@ -7864,16 +7921,18 @@ class DetailsView {
                     this.ctrlMoveFunction(gridItems, e, selIndex);
                 break;
             case 'home':
-                this.parent.selectedItems = [getValue('name', gridItems[0])];
-                this.selectRecords([getValue('name', gridItems[0])]);
+                let firstItem = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[0])];
+                this.parent.setProperties({ selectedItems: firstItem }, true);
+                this.selectRecords(firstItem);
                 break;
             case 'moveUp':
             case 'moveDown':
                 this.moveFunction(gridItems, e, selIndex);
                 break;
             case 'end':
-                this.parent.selectedItems = [getValue('name', gridItems[gridLength - 1])];
-                this.selectRecords(this.parent.selectedItems);
+                let lastItem = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[gridLength - 1])];
+                this.parent.setProperties({ selectedItems: lastItem }, true);
+                this.selectRecords(lastItem);
                 break;
         }
     }
@@ -8116,5 +8175,5 @@ class DetailsView {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es2015.js.map

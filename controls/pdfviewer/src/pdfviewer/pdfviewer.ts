@@ -1,7 +1,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
@@ -9,14 +9,14 @@ import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
 import { BookmarkView } from './index';
 import { TextSelection } from './index';
 import { TextSearch } from './index';
-import { Print } from './index';
+import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs  } from './index';
@@ -42,7 +42,7 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      * shows only the defined options in the PdfViewer.
      */
     @Property()
-    public toolbarItem: ToolbarItem[];
+    public toolbarItems: ToolbarItem[];
 }
 
 /**
@@ -882,6 +882,36 @@ export class StickyNotesSettings extends ChildProperty<StickyNotesSettings> {
     public opacity: number;
 
 }
+
+/**
+ * The `MeasurementSettings` module is used to provide the settings to measurement annotations.
+ */
+export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
+    /**
+     * specifies the scale ratio of the annotation.
+     */
+    @Property(1)
+    public scaleRatio: number;
+
+    /**
+     * specifies the unit of the annotation.
+     */
+    @Property('in')
+    public conversionUnit: CalibrationUnit;
+
+    /**
+     * specifies the unit of the annotation.
+     */
+    @Property('in')
+    public displayUnit: CalibrationUnit;
+
+    /**
+     * specifies the depth of the volume annotation.
+     */
+    @Property(96)
+    public depth: number;
+}
+
 /**
  * Represents the PDF viewer component.
  * ```html
@@ -1020,6 +1050,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public hyperlinkOpenState: LinkTarget;
 
     /**
+     * Specifies the state of the ContextMenu in the PDF document.
+     * @default RightClick
+     */
+    @Property('RightClick')
+    public contextMenuOption: ContextMenuAction;
+
+    /**
      * Enable or disables the Navigation module of PdfViewer.
      * @default true
      */
@@ -1114,7 +1151,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, toolbarItem: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'] })
+    @Property({ showTooltip: true, toolbarItems: ['OpenOption', 'UndoRedoTool', 'PageNavigationTool', 'MagnificationTool', 'PanTool', 'SelectionTool', 'CommentTool', 'AnnotationEditTool', 'FreeTextAnnotationOption', 'InkAnnotationOption', 'ShapeAnnotationOption', 'StampAnnotation', 'SignatureOption', 'SearchOption', 'PrintOption', 'DownloadOption'] })
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
@@ -1245,6 +1282,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property({ author: 'Guest', subject: 'Sticky Note', modifiedDate: '', opacity: 1 })
     public stickyNotesSettings: StickyNotesSettingsModel;
+
+    /**
+     * Defines the settings of measurement annotation.
+     */
+    @Property({conversionUnit: 'in', displayUnit: 'in', scaleRatio: 1, depth: 96})
+    public measurementSettings: MeasurementSettingsModel;
 
     /**
      * @private
@@ -1790,6 +1833,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public download(): void {
         if (this.enableDownload) {
             this.viewerBase.download();
+        }
+    }
+
+    /**
+     * Saves the PDF document being loaded in the PDF Viewer control as blob.
+     * @returns Promise<Blob>
+     */
+    public saveAsBlob(): Promise<Blob> {
+        if (this.enableDownload) {
+            return new Promise((resolve: Function, reject: Function) => {
+                resolve(this.viewerBase.saveAsBlob());
+            });
+        } else {
+            return null;
         }
     }
 

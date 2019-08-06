@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isBlazor } from '@syncfusion/ej2-base';
 import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';
 import { getScrollableParent, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
@@ -309,6 +309,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specifies the width of the RichTextEditor.
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -354,6 +355,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**    
      * Specifies the height of the RichTextEditor component.    
      * @default "auto"    
+     * @blazorType string
      */
     @Property('auto')
     public height: string | number;
@@ -1263,7 +1265,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @return {Element} 
      */
     public getContent(): Element {
-        return this.contentModule.getPanel();
+        if (this.iframeSettings.enable && isBlazor()) {
+            return this.inputElement;
+        } else {
+            return this.contentModule.getPanel();
+        }
     }
     /**
      * Returns the text content as string.
@@ -1521,10 +1527,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     /**
-     * Applies all the pending property changes and render the component again.
+     * Refresh the view of the editor.
      * @public
      */
-    public refresh(): void {
+    public refreshUI(): void {
         this.renderModule.refresh();
     }
     /**
@@ -1567,6 +1573,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Get the selected range from the RichTextEditor's content.
      * @public
+     * @deprecated
      */
     public getRange(): Range {
         return this.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());

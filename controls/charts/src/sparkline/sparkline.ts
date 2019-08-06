@@ -733,6 +733,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
                 case 'axisSettings':
                 case 'type':
                 case 'valueType':
+                case 'enableRtl':
                     refresh = true;
                     break;
                 case 'border':

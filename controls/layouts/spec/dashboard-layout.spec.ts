@@ -927,7 +927,78 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
         });
 
-
+        it('Resizing test case with more rows(browser scroller enabled) south east', () => {
+            gridLayOut = new DashboardLayout({
+                columns: 6,
+                cellAspectRatio: 6,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [
+                    { id:"zero", sizeX: 2, sizeY: 2, row: 0, col: 0, content: "<div>1</div>" },
+                    { id:"one", sizeX: 2, sizeY: 2, row: 2, col: 0, content: "<div>2</div>" },
+                    { id:"two", sizeX: 2, sizeY: 2, row: 4, col: 0, content: "<div>3</div>" },
+                    { id:"three", sizeX: 2, sizeY: 2, row: 6, col: 0, content: "<div>4</div>" },
+                    { id:"four", sizeX: 2, sizeY: 2, row: 8, col: 0, content: "<div>5</div>" },
+                    { id:"five", sizeX: 2, sizeY: 2, row: 10, col: 0, content: "<div>6</div>" },
+                    { id:"six", sizeX: 2, sizeY: 2, row: 12, col: 0, content: "<div>7</div>" },
+                    { id:"seven", sizeX: 2, sizeY: 2, row: 14, col: 0, content: "<div>8</div>" },
+                    { id:"eight", sizeX: 2, sizeY: 2, row: 16, col: 0, content: "<div>9</div>" },
+                    { id:"nine", sizeX: 2, sizeY: 2, row: 18, col: 0, content: "<div>10</div>" },
+                    { id:"ten", sizeX: 2, sizeY: 2, row: 20, col: 0, content: "<div>11</div>" },
+                    { id:"eleven", sizeX: 2, sizeY: 2, row: 22, col: 0, content: "<div>12</div>" },
+                    { id:"twelve", sizeX: 2, sizeY: 2, row: 24, col: 0, content: "<div>13</div>" }
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            let resizingElement: HTMLElement = document.getElementById('eleven');
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-south-east');
+            let targetElemnt: HTMLElement = document.getElementById('eleven');
+            movingElemnt.style.display = "block";
+            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 412, 905);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'touchstart', mousedown);
+            let mousemove: any = getTouchEventObject(movingElemnt, 'touchmove', 350, 900);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 250, 890);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 230, 870);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 195, 865);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            let mouseup: any = getTouchEventObject(movingElemnt, 'touchend');
+            mouseup.type = 'touchend';
+            EventHandler.trigger(<any>(document), 'touchend', mouseup);
+            expect((<any>gridLayOut).getCellInstance('zero').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('zero').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('one').row == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('one').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('two').row == 4).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('two').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('three').row == 6).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('three').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('four').row == 8).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('four').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('five').row == 10).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('five').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('six').row == 12).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('six').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('seven').row == 14).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('seven').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('eight').row == 16).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('eight').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('nine').row == 18).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('nine').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('ten').row == 20).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('ten').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('eleven').row == 22).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('eleven').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('twelve').row == 23).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('twelve').col == 0).toBe(true);
+        });
         it('Resizing test case in east direction alone touch', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -1032,7 +1103,7 @@ describe('GridLayout', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
             mousemove = getTouchEventObject(movingElemnt, 'touchmove', 200, 130);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
-            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 210, 150);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 210, 160);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
             let mouseup: any = getTouchEventObject(movingElemnt, 'touchend');
@@ -1398,7 +1469,7 @@ describe('GridLayout', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
             mousemove = setMouseCordinates(mousemove, 161, 110);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = setMouseCordinates(mousemove, 163, 130);
+            mousemove = setMouseCordinates(mousemove, 163, 160);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
@@ -1460,7 +1531,7 @@ describe('GridLayout', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
             mousemove = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 161, 110);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 163, 130);
+            mousemove = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 163, 160);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
@@ -1508,7 +1579,7 @@ describe('GridLayout', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
             mousemove = getTouchEventObject(movingElemnt, 'touchmove', 161, 110);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
-            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 163, 130);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 163, 160);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
             let mouseup: any = getTouchEventObject(movingElemnt, 'touchend');
@@ -1583,7 +1654,6 @@ describe('GridLayout', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
                 columns: 12,
-                //     rows: 2,
                 cellSpacing: [5, 5],
                 resizableHandles: ['e-north'],
                 allowResizing: true,
@@ -1601,14 +1671,15 @@ describe('GridLayout', () => {
             resizingElement.classList.add('e-item-hover');
             let movingElemnt: HTMLElement = resizingElement.querySelector('.e-north');
             let targetElemnt: HTMLElement = document.getElementById('0');
-            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 76, 99);
+            movingElemnt.style.display = "block";
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 40, 136);
             EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
-            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 60, 90);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 41, 80);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
-            mousemove = setMouseCordinates(mousemove, 40, 88);
+            mousemove = setMouseCordinates(mousemove, 42, 40);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = setMouseCordinates(mousemove, 40, 50);
+            mousemove = setMouseCordinates(mousemove, 40, 20);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
@@ -1633,7 +1704,6 @@ describe('GridLayout', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
                 columns: 12,
-                //     rows: 2,
                 cellSpacing: [5, 5],
                 resizableHandles: ['e-north'],
                 allowResizing: true,
@@ -1652,14 +1722,14 @@ describe('GridLayout', () => {
             let movingElemnt: HTMLElement = resizingElement.querySelector('.e-north');
             let targetElemnt: HTMLElement = document.getElementById('0');
             movingElemnt.style.display = "block";
-            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 76, 99);
+            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 40, 136);
             EventHandler.trigger(<HTMLElement>movingElemnt, 'touchstart', mousedown);
-            let mousemove: any = getTouchEventObject(movingElemnt, 'touchmove', 60, 90);
+            let mousemove: any = getTouchEventObject(movingElemnt, 'touchmove', 41, 80);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
-            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 40, 88);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 42, 40);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
-            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 40, 50);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 40, 20);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
             EventHandler.trigger(<any>(document), 'touchmove', mousemove);
             let mouseup: any = getTouchEventObject(movingElemnt, 'touchend');
@@ -1956,7 +2026,7 @@ describe('GridLayout', () => {
             mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
             mousemove = setMouseCordinates(mousemove, 200, 130);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
-            mousemove = setMouseCordinates(mousemove, 210, 150);
+            mousemove = setMouseCordinates(mousemove, 230, 160);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             EventHandler.trigger(<any>(document), 'mousemove', mousemove);
             let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);

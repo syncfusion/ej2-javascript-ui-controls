@@ -1,14 +1,14 @@
 /**
  * datalabel testing
  */
-import { Maps, ILoadedEventArgs, DataLabel } from '../../../src/index';
+import { Maps, ILoadedEventArgs, DataLabel, Zoom } from '../../../src/index';
 import { createElement, remove, setCulture, setCurrencyCode } from '@syncfusion/ej2-base';
 import { usMap } from '../data/data.spec';
 import { electiondata } from '../data/us-data.spec';
 import { IDataLabelArgs } from '../../../src/maps/model/interface';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { getElement } from '../../../src/maps/utils/helper';
-Maps.Inject(DataLabel);
+Maps.Inject(DataLabel, Zoom);
 
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
@@ -312,6 +312,58 @@ describe('Map layer testing', () => {
                 spec = document.getElementById('label_LayerIndex_0_shapeIndex_4_LabelIndex_4');
                 expect(spec.innerHTML).toBe('4.00');
             };
+        });
+    });
+    describe('datalabel border testing with enable zoom', () => {
+        let id: string = 'label';
+        let label: Maps;
+        let ele: HTMLDivElement;
+        let spec: Element;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            label = new Maps({
+                layers: [{
+                    layerType: 'Geometry',
+
+                    dataLabelSettings: {
+                        visible: true,
+                        labelPath: 'name',
+                        textStyle: { size: '10px' },
+                    },
+                    shapeSettings: {
+                        fill: '#C3E6ED',
+                    },
+                    shapeData: usMap,
+                },
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            label.destroy();
+        });
+        it('checking with datalabel border with enable zoom', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                let zoomElement: Element = document.getElementById(label.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: zoomElement,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: zoomElement.getBoundingClientRect().left,
+                    pageY: zoomElement.getBoundingClientRect().top
+                };  
+                label.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+            };
+            label.zoomSettings.enable = true;
+            label.layers[0].dataLabelSettings.fill = "White";
+            label.layers[0].dataLabelSettings.visible = true;
+            label.layers[0].dataLabelSettings.border.width = 2;
+            label.layers[0].dataLabelSettings.border.color = "red"; 
+            label.refresh();
         });
     });
     it('memory leak', () => {

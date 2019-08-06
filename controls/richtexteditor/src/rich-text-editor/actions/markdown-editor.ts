@@ -34,6 +34,7 @@ export class MarkdownEditor {
      * Destroys the Markdown.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         this.removeEventListener();

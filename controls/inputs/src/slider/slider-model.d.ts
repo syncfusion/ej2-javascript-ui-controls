@@ -145,6 +145,7 @@ export interface SliderModel extends ComponentModel{
      *
      * {% codeBlock src="slider/value-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @isGenericType true
      */
     value?: number | number[];
 

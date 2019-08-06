@@ -3,7 +3,7 @@ import { Query, DataManager, Predicate, Deferred, UrlAdaptor } from '@syncfusion
 import { IDataProcessor, IGrid, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from '../base/interface';
 import { ReturnType } from '../base/type';
 import { SearchSettingsModel, PredicateModel, SortDescriptorModel } from '../base/grid-model';
-import { setFormatter, getDatePredicate, isGroupAdaptive, getColumnByForeignKeyValue } from '../base/util';
+import { setFormatter, getDatePredicate, isGroupAdaptive, getColumnByForeignKeyValue, refreshFilteredColsUid } from '../base/util';
 import { AggregateRowModel, AggregateColumnModel } from '../models/models';
 import * as events from '../base/constant';
 import { ValueFormatter } from '../services/value-formatter';
@@ -41,6 +41,7 @@ export class Data implements IDataProcessor {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.updateData, this.crudActions, this);
         this.parent.on(events.addDeleteAction, this.getData, this);
+        this.parent.on(events.autoCol, this.refreshFilteredCols, this);
     }
 
     private reorderRows(e: { fromIndex: number, toIndex: number }): void {
@@ -59,7 +60,7 @@ export class Data implements IDataProcessor {
         let gObj: IGrid = this.parent;
         this.dataManager = gObj.dataSource instanceof DataManager ? <DataManager>gObj.dataSource :
             (isNullOrUndefined(gObj.dataSource) ? new DataManager() : new DataManager(gObj.dataSource));
-        gObj.query = gObj.query instanceof Query ? gObj.query : new Query();
+        gObj.setProperties({ query: gObj.query instanceof Query ? gObj.query : new Query()}, true);
     }
 
     /**
@@ -322,6 +323,7 @@ export class Data implements IDataProcessor {
         let key: string = this.getKey(args.foreignKeyData &&
             Object.keys(args.foreignKeyData).length ?
             args.foreignKeyData : this.parent.getPrimaryKeyFieldNames());
+        this.parent.log('datasource_syntax_mismatch', { dataState: this.parent as IGrid });
         if (this.parent.dataSource && 'result' in this.parent.dataSource) {
             let def: Deferred = this.eventPromise(args, query, key);
             return def.promise;
@@ -480,6 +482,7 @@ export class Data implements IDataProcessor {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.updateData, this.crudActions);
         this.parent.off(events.addDeleteAction, this.getData);
+        this.parent.off(events.autoCol, this.refreshFilteredCols);
     }
     public getState(): PendingState {
         return this.dataState;
@@ -545,5 +548,11 @@ export class Data implements IDataProcessor {
             }
         }
         return colFieldNames;
+    }
+
+    private refreshFilteredCols(): void {
+        if (this.parent.filterSettings.columns.length) {
+            refreshFilteredColsUid(this.parent, this.parent.filterSettings.columns);
+        }
     }
 }

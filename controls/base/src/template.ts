@@ -16,7 +16,7 @@ const DBL_QUOTED_STR: RegExp = new RegExp('"(.*?)"', 'g');
 const SPECIAL_CHAR: RegExp = /\@|\#|\$/g;
 let exp: RegExp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
-
+let ARR_OBJ: RegExp = /^\..*/gm;
 
 /**
  * The function to set regular expression for template expression string.
@@ -102,7 +102,11 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                     //handling if condition
                     cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORD, (strs: string): string => {
                         strs = strs.trim();
-                        return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                        if (ARR_OBJ.test(strs)) {
+                            return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                        } else {
+                            return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                        }
                     })) + '{ \n str = str + "';
                 } else if (FOR_STMT.test(cnt)) {
 
@@ -162,6 +166,12 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
 
 function addNameSpace(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[]): string {
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
+}
+
+function NameSpaceArrObj(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[]): string {
+    let arrObjReg: RegExp = /^\..*/gm;
+    return ((addNS && !(NOT_NUMBER.test(str)) &&
+        ignoreList.indexOf(str.split('.')[0]) === -1 && !(arrObjReg.test(str))) ? nameSpace + '.' + str : str);
 }
 
 // // Create hashCode for template string to storeCached function

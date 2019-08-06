@@ -50,6 +50,7 @@ describe('Logger module', () => {
     let initial_action: ItemDetails = detailLists['initial_action'];
     let frozen_rows_columns: ItemDetails = detailLists['frozen_rows_columns'];
     let column_type_missing: ItemDetails = detailLists['column_type_missing'];
+    let datasource_syntax_mismatch: ItemDetails = detailLists['datasource_syntax_mismatch'];
 
     describe('Logger render => ', () => {
         let gridObj: Grid;
@@ -85,6 +86,9 @@ describe('Logger module', () => {
                         { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
                         { field: 'ShipCity' }
                     ],
+                    dataStateChange:(args:any) =>{
+
+                    },
                     actionBegin: actionBegin,
                     actionComplete: actionComplete
                 },               done);
@@ -197,6 +201,10 @@ describe('Logger module', () => {
             (<any>gridObj).loggerModule.destroy();
             expect(check_datasource_columns.check({}, gridObj).success).toBeFalsy();
             expect(check_datasource_columns.generateMessage({}, gridObj)).not.toBeNull();
+        });
+        it('datasource_format_mismatch test', () => {
+            expect(datasource_syntax_mismatch.check({dataState:gridObj}, gridObj).success).toBeTruthy();
+            expect(datasource_syntax_mismatch.generateMessage({dataState:gridObj}, gridObj)).not.toBeNull();
         });
         it('memory leak', () => {     
             profile.sample();

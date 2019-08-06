@@ -1,5 +1,5 @@
 import { Component, EventHandler, addClass, append, Property, Event, KeyboardEvents, EmitType, L10n, compile } from '@syncfusion/ej2-base';import { setStyleAttribute, extend, removeClass, prepend, isNullOrUndefined, detach, getValue, AnimationModel } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, rippleEffect, RippleOptions, ChildProperty, Complex } from '@syncfusion/ej2-base';import { DataManager, Query, DataOptions, DataUtil } from '@syncfusion/ej2-data';import { ListBase, SortOrder, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';import { Popup } from '@syncfusion/ej2-popups';import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
-import {SelectEventArgs} from "./drop-down-base";
+import {FilterType,SelectEventArgs} from "./drop-down-base";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -134,6 +134,45 @@ export interface DropDownBaseModel extends ComponentModel{
      * @default null
      */
     query?: Query;
+
+    /**
+     * Determines on which filter type, the component needs to be considered on search action. 
+     * The `FilterType` and its supported data types are 
+     * 
+     * <table> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * FilterType<br/></td><td colSpan=1 rowSpan=1> 
+     * Description<br/></td><td colSpan=1 rowSpan=1> 
+     * Supported Types<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value begins with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1> 
+     * Contains<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
+     * <br/>String<br/></td></tr> 
+     * </table>
+     * 
+     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * @default 'StartsWith'
+     */
+    filterType?: FilterType;
+
+    /**
+     * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
+     * By default consider the casing.
+     * @default true
+     */
+    ignoreCase?: boolean;
 
     /**
      * specifies the z-index value of the component popup element.

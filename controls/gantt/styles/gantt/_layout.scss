@@ -257,7 +257,7 @@
         z-index: 3;
       }
 
-      .e-left-label-container {
+      .e-left-label-container.e-left-label-temp-container {
         align-items: center;
         display: inline-flex;
         justify-content: flex-end;
@@ -266,22 +266,52 @@
         white-space: nowrap;
       }
 
-      .e-left-label-inner-div,
-      .e-right-label-container {
-        overflow: hidden;
-      }
-
-      .e-right-label-container {
+      .e-right-label-container.e-right-label-temp-container {
         align-items: center;
-        background-color: transparent;
         display: inline-flex;
         float: left;
-        margin: 0;
         outline: none;
         overflow: hidden;
         position: absolute;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+
+      .e-left-label-container {
+        display: inline-block;
+      }
+
+      .e-left-label-inner-div,
+      .e-right-label-container {
+        overflow: hidden;
+      }
+
+      .e-left-label-inner-div {
+        align-items: center;
+        display: inline-flex;
+        justify-content: flex-end;
+        width: 100%;
+      }
+
+      .e-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .e-right-label-container {
+        background-color: transparent;
+        display: inline-block;
+        margin: 0;
+        position: absolute;
+      }
+
+      .e-right-label-inner-div {
+        align-items: center;
+        display: inline-flex;
+        float: left;
+        outline: none;
+        overflow: hidden;
       }
 
       .e-indicator-span {

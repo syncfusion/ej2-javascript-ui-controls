@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### Gantt
+
+#### Bug Fixes
+
+- #F145936 -  Custom column values not updated in data source on Editing has been fixed.
+- Lexical declaration issues in es2015 has been fixed.
+
 ## 17.2.36 (2019-07-24)
 
 ### Gantt
@@ -9,7 +18,6 @@
 #### Bug Fixes
 
 - #241781 - Gantt task-data property missing in template data issue has been fixed.
-- #F145936 -  Custom column values not updated in data source on Editing has been fixed.
 
 ## 17.2.28-beta (2019-06-27)
 

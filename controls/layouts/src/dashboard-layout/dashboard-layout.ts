@@ -226,6 +226,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     protected elementY: number;
     protected elementWidth: number;
     protected elementHeight: number;
+    protected previousRow: number;
     protected originalWidth: number;
     protected originalHeight: number;
     protected handleClass: string;
@@ -770,6 +771,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
         this.originalHeight = this.getCellInstance(el.id).sizeY;
+        this.previousRow = this.getCellInstance(el.id).row;
     }
 
     protected touchDownResizeHandler(e: TouchEvent): void {
@@ -972,6 +974,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updateCloneArrayObject();
     }
     protected getResizeRowColumn(item: PanelModel, e: HTMLElement): PanelModel {
+        let isChanged: boolean = false;
         let col: number = item.col;
         if (['e-west', 'e-south-west'].indexOf(this.handleClass) !== -1) {
             col = this.pixelsToColumns(this.elementX, false);
@@ -979,14 +982,20 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let row: number = item.row;
         if (['e-north'].indexOf(this.handleClass) !== -1) {
             row = this.pixelsToRows(this.elementY, false);
+            if (this.previousRow !== row) {
+                this.previousRow = row;
+                isChanged = true;
+            }
         }
         let sizeX: number = item.sizeX;
         if (['e-north', 'e-south'].indexOf(this.handleClass) === -1) {
-            sizeX = this.pixelsToColumns(this.elementWidth - (col + 1) * this.cellSpacing[0], true);
+            sizeX = this.pixelsToColumns(this.elementWidth - (sizeX) * this.cellSpacing[1], true);
         }
         let sizeY: number = item.sizeY;
         if (['e-east', 'e-west'].indexOf(this.handleClass) === -1) {
-            sizeY = this.pixelsToRows(this.elementHeight - (row + 1) * this.cellSpacing[0], true);
+            if (this.handleClass === 'e-north' ? isChanged : true) {
+                sizeY = this.pixelsToRows(this.elementHeight - (sizeY) * this.cellSpacing[0], true);
+            }
         }
         if (item.col + item.sizeX > this.columns) {
             item.sizeX = item.sizeX - 1;
@@ -1009,9 +1018,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
     protected pixelsToRows(pixels: number, isCeil: boolean): number {
         if (isCeil) {
-            return Math.ceil(pixels / <number>this.cellSize[1]);
+            return Math.round(pixels / <number>this.cellSize[1]);
         } else {
-            return Math.floor(pixels / <number>this.cellSize[1]);
+            return Math.round(pixels / (<number>this.cellSize[1] + this.cellSpacing[0]));
         }
     }
     protected getMinWidth(item: PanelModel): number {

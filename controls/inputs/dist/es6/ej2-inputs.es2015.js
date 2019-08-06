@@ -6,6 +6,7 @@ const CLASSNAMES = {
     RTL: 'e-rtl',
     DISABLE: 'e-disabled',
     INPUT: 'e-input',
+    TEXTAREA: 'e-multi-line-input',
     INPUTGROUP: 'e-input-group',
     FLOATINPUT: 'e-float-input',
     FLOATLINE: 'e-float-line',
@@ -74,6 +75,9 @@ var Input;
             for (let i = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
             }
+        }
+        if (!isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
+            addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
         inputObject = setPropertyValue(args, inputObject);
         return inputObject;
@@ -320,12 +324,14 @@ var Input;
         }
         if (!isNullOrUndefined(clearButton) && clearButton) {
             let parentElement = getParentNode(element);
-            let button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-            if (element.value && parentElement.classList.contains('e-input-focus')) {
-                removeClass([button], CLASSNAMES.CLEARICONHIDE);
-            }
-            else {
-                addClass([button], CLASSNAMES.CLEARICONHIDE);
+            if (!isNullOrUndefined(parentElement)) {
+                let button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
+                if (element.value && parentElement.classList.contains('e-input-focus')) {
+                    removeClass([button], CLASSNAMES.CLEARICONHIDE);
+                }
+                else {
+                    addClass([button], CLASSNAMES.CLEARICONHIDE);
+                }
             }
         }
         checkInputValue(floatLabelType, element);
@@ -2083,7 +2089,7 @@ function maskInputBlurHandler(event) {
     }
 }
 function maskInputPasteHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let sIndex = this.element.selectionStart;
         let eIndex = this.element.selectionEnd;
         let oldValue = this.element.value;
@@ -2121,7 +2127,7 @@ function maskInputPasteHandler(event) {
     }
 }
 function maskInputCutHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let preValue = this.element.value;
         let sIndex = this.element.selectionStart;
         let eIndex = this.element.selectionEnd;
@@ -2184,7 +2190,7 @@ function maskInputHandler(event) {
     }
 }
 function maskInputKeyDownHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         if (event.keyCode !== 229) {
             if (event.ctrlKey && (event.keyCode === 89 || event.keyCode === 90)) {
                 event.preventDefault();
@@ -2354,7 +2360,7 @@ function removeMaskInputValues(event) {
     }
 }
 function maskInputKeyPressHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let oldValue = this.element.value;
         if ((!event.ctrlKey) || (event.ctrlKey && event.code !== 'KeyA' && event.code !== 'KeyY'
             && event.code !== 'KeyZ' && event.code !== 'KeyX' && event.code !== 'KeyC' && event.code !== 'KeyV')) {
@@ -2406,7 +2412,7 @@ function triggerMaskChangeEvent(event, oldValue) {
     attributes(this.element, { 'aria-valuenow': this.element.value });
 }
 function maskInputKeyUpHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let collec;
         if (!this.maskKeyPress && event.keyCode === 229) {
             let oldEventVal;
@@ -3007,7 +3013,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         }
     }
     checkHtmlAttributes(isDynamic) {
-        let attributes$$1 = ['placeholder', 'disabled', 'value'];
+        let attributes$$1 = ['placeholder', 'disabled', 'value', 'readonly'];
         for (let key of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
@@ -3031,6 +3037,14 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                             this.setProperties({ value: this.element.value }, isDynamic);
                         }
                         break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || !isDynamic) {
+                            let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, isDynamic);
+                        }
+                        break;
                 }
             }
         }
@@ -3043,6 +3057,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                 enableRtl: this.enableRtl,
                 cssClass: this.cssClass,
                 enabled: this.enabled,
+                readonly: this.readonly,
                 placeholder: this.placeholder,
                 showClearButton: this.showClearButton
             }
@@ -3073,6 +3088,9 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
+                    break;
+                case 'readonly':
+                    Input.setReadonly(newProp.readonly, this.element);
                     break;
                 case 'enableRtl':
                     Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);
@@ -3192,6 +3210,9 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], MaskedTextBox.prototype, "enabled", void 0);
+__decorate$1([
+    Property(false)
+], MaskedTextBox.prototype, "readonly", void 0);
 __decorate$1([
     Property(false)
 ], MaskedTextBox.prototype, "showClearButton", void 0);
@@ -9500,8 +9521,8 @@ let ColorPicker = class ColorPicker extends Component {
             target: this.container,
             disabled: this.disabled,
             enableRtl: this.enableRtl,
-            beforeOpen: this.beforeOpenFn.bind(this),
             open: this.onOpen.bind(this),
+            beforeOpen: this.beforeOpenFn.bind(this),
             beforeClose: this.beforePopupClose.bind(this),
             click: (args) => {
                 this.trigger('change', {

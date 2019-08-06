@@ -45,6 +45,7 @@ export class HtmlEditor {
      * Destroys the Markdown.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         this.removeEventListener();

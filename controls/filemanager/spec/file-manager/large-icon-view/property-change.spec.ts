@@ -799,40 +799,6 @@ describe('FileManager control LargeIcons view', () => {
         //         expect(feObj.navigationPaneSettings.visible).toBe(false);
         //     }, 500);
         // });
-
-        // it('for selectedItems', function (done) {
-        //     feObj = new FileManager({
-        //         view: 'LargeIcons',
-        //         ajaxSettings: {
-        //             url: '/FileOperations',
-        //             uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
-        //         },
-        //     });
-        //     feObj.appendTo('#file')
-        //     this.request = jasmine.Ajax.requests.mostRecent();
-        //     this.request.respondWith({
-        //         status: 200,
-        //         responseText: JSON.stringify(data1)
-        //     });
-        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-        //     let li: any = document.getElementById('file_largeicons').querySelectorAll('.e-frame.e-icons');
-        //     mouseEventArgs.target = li[1];
-        //     feObj.largeiconsviewModule.clickObj.tap(tapEvent);
-        //     mouseEventArgs.target = li[2];
-        //     feObj.largeiconsviewModule.clickObj.tap(tapEvent);
-        //     expect(feObj.selectedItems.length).toEqual(2);
-        //     this.request = jasmine.Ajax.requests.mostRecent();
-        //     this.request.respondWith({
-        //         status: 200,
-        //         responseText: JSON.stringify(data1)
-        //     });
-        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-        //     setTimeout(function () {
-        //         // expect(feObj.selectedItems).toBe(["Employees", "Food"]);
-        //         expect(feObj.selectedItems.length).toBe(2)
-        //     }, 500);
-        // });
-
         it('for path', (done: Function) => {
             feObj = new FileManager({
                 view: 'LargeIcons',
@@ -961,6 +927,66 @@ describe('FileManager control LargeIcons view', () => {
                     done();
                 }, 500);
             }, 500);
+        });
+        it('for selectedItems', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                selectedItems: ["Documents", "1.png"]
+            });
+            feObj.appendTo("#file");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.selectedItems = ["Employees", "Nature"];
+                feObj.dataBind();
+                expect(feObj.selectedItems).not.toEqual(jasmine.arrayContaining(["Documents", "1.png"]));
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["Employees", "Nature"]));
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                expect(li[1].getAttribute('aria-selected')).toEqual('true');
+                expect(li[3].getAttribute('aria-selected')).toEqual('true');
+                expect(li[0].getAttribute('aria-selected')).not.toEqual('true');
+                expect(li[4].getAttribute('aria-selected')).not.toEqual('true');
+                done();
+            }, 400);
+        });
+        it('for selectedItems with id', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                selectedItems: ["6171", "6175"]
+            });
+            feObj.appendTo("#file");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.selectedItems = ["6172", "6174"];
+                feObj.dataBind();
+                expect(feObj.selectedItems).not.toEqual(jasmine.arrayContaining(["6171", "6175"]));
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["6172", "6174"]));
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                expect(li[1].getAttribute('aria-selected')).toEqual('true');
+                expect(li[3].getAttribute('aria-selected')).toEqual('true');
+                expect(li[0].getAttribute('aria-selected')).not.toEqual('true');
+                expect(li[4].getAttribute('aria-selected')).not.toEqual('true');
+                done();
+            }, 400);
         });
     });
 });

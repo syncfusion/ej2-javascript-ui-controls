@@ -243,6 +243,7 @@ export interface DrawNodeEventArgs {
     node: HTMLLIElement;
     /**
      * Return the current rendering node as JSON object.
+     * @isGenericType true
      */
     nodeData: { [key: string]: Object };
     /**
@@ -280,6 +281,7 @@ export interface NodeKeyPressEventArgs {
 export interface DataBoundEventArgs {
     /**
      * Return the TreeView data.
+     * @isGenericType true
      */
     data: { [key: string]: Object }[];
 }
@@ -289,6 +291,7 @@ export interface DataSourceChangedEventArgs {
      * Return the updated TreeView data. The data source will be updated after performing some operation like
      * drag and drop, node editing, adding and removing node. If you want to get updated data source after performing operation like
      * selecting/unSelecting, checking/unChecking, expanding/collapsing the node, then you can use getTreeData method.
+     * @isGenericType true
      */
     data: { [key: string]: Object }[];
 }
@@ -317,6 +320,7 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
      * @default []
      * @aspDatasourceNullIgnore
      * @blazorDatasourceNullIgnore
+     * @isGenericType true
      */
     @Property([])
     public dataSource: DataManager | { [key: string]: Object }[];
@@ -2226,7 +2230,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.showSpinner(eicon as HTMLElement);
         let childItems: { [key: string]: Object }[];
-        if (this.fields.dataSource instanceof DataManager) {
+        // tslint:disable
+        if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor'))  {
             let level: number = this.parents(parentLi, '.' + PARENTITEM).length;
             let mapper: FieldsSettingsModel = this.getChildFields(this.fields, level, 1);
             if (isNOU(mapper) || isNOU(mapper.dataSource)) {
@@ -4877,6 +4882,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * of the corresponding node otherwise it will return the entire updated data source of TreeView.
      * * The updated data source also contains custom attributes if you specified in data source.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
+     * @isGenericType true
      */
     public getTreeData(node?: string | Element): { [key: string]: Object }[] {
         let id: string = this.getId(node);

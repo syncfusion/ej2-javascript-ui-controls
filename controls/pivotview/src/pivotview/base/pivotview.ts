@@ -2717,7 +2717,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.trigger(events.enginePopulating, { dataSourceSettings: this.dataSourceSettings }, (observedArgs: EnginePopulatingEventArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                let dataSet: IDataSet[] = this.dataSourceSettings.dataSource as IDataSet[];
+                let dataSet: IDataSet[] = this.engineModule.data as IDataSet[];
                 this.clonedDataSet = this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(dataSet);
                 this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
                 this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as DataSourceSettings;

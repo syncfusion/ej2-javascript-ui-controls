@@ -404,8 +404,13 @@ export class BatchEdit {
      * @hidden   
      */
     public addRowObject(row: Row<Column>): void {
-        this.parent.editSettings.newRowPosition === 'Top' ? this.parent.getRowsObject().unshift(row) :
+        let isTop: Boolean = this.parent.editSettings.newRowPosition === 'Top';
+        isTop ? this.parent.getRowsObject().unshift(row) :
             this.parent.getRowsObject().push(row);
+        let mRow: Row<Column>[] = this.parent.getMovableRowsObject() as Row<Column>[];
+        if (this.parent.getFrozenColumns() && !mRow.length) {
+            isTop ? mRow.unshift(row) : mRow.push(row);
+        }
     }
 
 
@@ -593,7 +598,7 @@ export class BatchEdit {
             this.addRowObject(modelData[0]);
             this.refreshRowIdx();
             this.focus.forgetPrevious();
-            gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject() });
+            gObj.notify(events.batchAdd, { rows: this.parent.getRowsObject(), args: { isFrozen: this.parent.getFrozenColumns() } });
             let changes: Object = this.getBatchChanges();
             let addedRecords: string = 'addedRecords';
             this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
@@ -654,7 +659,7 @@ export class BatchEdit {
         let gObj: IGrid = this.parent;
         let data: Object = {};
         let dValues: Object = { 'number': 0, 'string': null, 'boolean': false, 'date': null, 'datetime': null };
-        for (let col of gObj.columns as Column[]) {
+        for (let col of ((<{ columnModel?: Column[] }>gObj).columnModel)) {
             if (col.field) {
                 setValue(col.field, col.defaultValue ? col.defaultValue : dValues[col.type], data);
             }

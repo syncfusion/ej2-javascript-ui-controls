@@ -422,11 +422,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (this.isMenu && this.template) {
             let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
             resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-                },
-                500);
+            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
         this.wireEvents();
     }

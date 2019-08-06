@@ -9,15 +9,8 @@ import { BaselineAlignment } from '../../base/types';
  */
 export class SpellChecker {
 
-    /**
-     * The language id to process spell checker
-     */
-    public languageID: number;
-    /**
-     * Indicates whether spell checking and suggestions to be enabled.
-     * @default true
-     */
-    public allowSpellCheckAndSuggestion: boolean;
+    private langIDInternal: number = 0;
+    private spellSuggestionInternal: boolean = true;
     /**
      * @private
      */
@@ -34,11 +27,7 @@ export class SpellChecker {
      * @private
      */
     public currentContextInfo: ContextElementInfo;
-    /**
-     * Indicates whether to remove underline for the mis-spelled words.
-     * @default false
-     */
-    public removeUnderline: boolean;
+    private removeUnderlineInternal: boolean = false;
     private spellCheckSuggestion: string[];
     /**
      * @private
@@ -52,6 +41,54 @@ export class SpellChecker {
     }
 
     /**
+     * Gets the languageID.
+     * @aspType int
+     * @blazorType int
+     */
+    public get languageID(): number {
+        return isNullOrUndefined(this.langIDInternal) ? 0 : this.langIDInternal;
+    }
+    /**
+     * Sets the languageID.
+     * @aspType int
+     * @blazorType int
+     */
+    public set languageID(value: number) {
+        this.langIDInternal = value;
+    }
+    /**
+     * Getter indicates whether suggestion enabled.
+     * @aspType bool
+     * @blazorType bool
+     */
+    public get allowSpellCheckAndSuggestion(): boolean {
+        return this.spellSuggestionInternal;
+    }
+    /**
+     * Setter to enable or disable suggestion
+     * @aspType bool
+     * @blazorType bool 
+     */
+    public set allowSpellCheckAndSuggestion(value: boolean) {
+        this.spellSuggestionInternal = value;
+    }
+    /**
+     * Getter indicates whether underline removed for mis-spelled word.
+     * @aspType bool
+     * @blazorType bool
+     */
+    public get removeUnderline(): boolean {
+        return this.removeUnderlineInternal;
+    }
+    /**
+     * Setter to enable or disable underline for mis-spelled word
+     * @aspType bool
+     * @blazorType bool
+     */
+    public set removeUnderline(value: boolean) {
+        this.removeUnderlineInternal = value;
+    }
+    /**
      *
      */
     constructor(viewer: LayoutViewer) {
@@ -59,7 +96,6 @@ export class SpellChecker {
         this.errorWordCollection = new Dictionary<string, ElementBox[]>();
         this.errorSuggestions = new Dictionary<string, string[]>();
         this.ignoreAllItems = [];
-        this.removeUnderline = false;
     }
     /**
      * Method to manage replace logic
@@ -194,6 +230,7 @@ export class SpellChecker {
 
     /**
      * Method to handle ignore all items
+     * @private
      */
     public handleIgnoreAllItems(contextElement?: ContextElementInfo): void {
         let contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
@@ -210,6 +247,7 @@ export class SpellChecker {
 
     /**
      * Method to handle dictionary
+     * @private
      */
     public handleAddToDictionary(contextElement?: ContextElementInfo): void {
         let contextItem: ContextElementInfo = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
@@ -798,6 +836,7 @@ export class SpellChecker {
      * Method to create error element with matched results
      * @param {TextSearchResult} result  
      * @param {ElementBox} errorElement 
+     * @private
      */
     public createErrorElementWithInfo(result: TextSearchResult, errorElement: ElementBox): ErrorTextElementBox {
         let element: ErrorTextElementBox = new ErrorTextElementBox();
@@ -903,6 +942,7 @@ export class SpellChecker {
     /**
      * Method to retrieve next available combined element
      * @param {ElementBox} element 
+     * @private
      */
     public getCombinedElement(element: ElementBox): ElementBox {
         let prevElement: ElementBox = element;
@@ -930,7 +970,8 @@ export class SpellChecker {
     /**
      * Method to update error collection
      * @param {TextElementBox} currentElement 
-     * @param {TextElementBox} splittedElement 
+     * @param {TextElementBox} splittedElement
+     * @private 
      */
     public updateSplittedElementError(currentElement: TextElementBox, splittedElement: TextElementBox): void {
         let errorCount: number = currentElement.errorCollection.length;

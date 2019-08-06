@@ -1,5 +1,5 @@
 import { Component, addClass, createElement, EventHandler, isNullOrUndefined, Ajax, ModuleDeclaration, extend} from '@syncfusion/ej2-base';
-import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { removeClass, EmitType, Complex, Collection, KeyboardEventArgs, isBlazor, getElement } from '@syncfusion/ej2-base';
 import {Event, Property, NotifyPropertyChanges, INotifyPropertyChanged, setValue, KeyboardEvents, L10n } from '@syncfusion/ej2-base';
 import { Column, ColumnModel } from '../models/column';
 import { GridModel, ColumnQueryModeType, HeaderCellInfoEventArgs, EditSettingsModel as GridEditModel } from '@syncfusion/ej2-grids';
@@ -545,7 +545,7 @@ public pagerTemplate: string;
    * Triggers when cell is saved.
    * @event
    * @blazorproperty 'OnCellSave'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSaveArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSaveArgs<TValue>
    */
   @Event()
   public cellSave: EmitType<CellSaveArgs>;
@@ -554,7 +554,7 @@ public pagerTemplate: string;
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc., starts.
    * @event
    * @blazorproperty 'OnActionBegin'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs<TValue>
    */
   @Event()
   public actionBegin: EmitType<PageEventArgs | FilterEventArgs | SortEventArgs | SearchEventArgs | AddEventArgs | SaveEventArgs | EditEventArgs | DeleteEventArgs>;
@@ -563,7 +563,7 @@ public pagerTemplate: string;
    * Triggers when TreeGrid actions such as sorting, filtering, paging etc. are completed.
    * @event
    * @blazorproperty 'OnActionComplete'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.ActionEventArgs<TValue>
    */
 
   @Event()
@@ -573,7 +573,7 @@ public pagerTemplate: string;
    * Triggers before the record is to be edit.
    * @event
    * @blazorproperty 'OnBeginEdit'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.BeginEditArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.BeginEditArgs<TValue>
    */
   @Event()
   public beginEdit: EmitType<BeginEditArgs>;
@@ -581,7 +581,7 @@ public pagerTemplate: string;
    * Triggers when the cell is being edited.
    * @event
    * @blazorproperty 'OnCellEdit'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellEditArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.CellEditArgs<TValue>
    */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
@@ -627,7 +627,7 @@ public pagerTemplate: string;
    * Triggers when record is double clicked.
    * @event
    * @blazorproperty 'OnRecordDoubleClick'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.RecordDoubleClickEventArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.RecordDoubleClickEventArgs<TValue>
    */
   @Event()
   public recordDoubleClick: EmitType<RecordDoubleClickEventArgs>;
@@ -637,7 +637,7 @@ public pagerTemplate: string;
    * This will be triggered before the row element is appended to the TreeGrid element.
    * @event
    * @blazorproperty 'RowDataBound'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDataBoundEventArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDataBoundEventArgs<TValue>
    */
   @Event()
   public rowDataBound: EmitType<RowDataBoundEventArgs>;
@@ -645,9 +645,8 @@ public pagerTemplate: string;
    * Triggers after detail row expands.
    * > This event triggers at initial expand.  
    * @event
-   * @deprecated
    * @blazorproperty 'DetailDataBound'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.DetailDataBoundEventArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.DetailDataBoundEventArgs<TValue>
    */
   @Event()
   public detailDataBound: EmitType<DetailDataBoundEventArgs>;
@@ -656,7 +655,7 @@ public pagerTemplate: string;
    * This will be triggered before the cell element is appended to the TreeGrid element.
    * @event
    * @blazorproperty 'QueryCellInfo'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.QueryCellInfoEventArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.QueryCellInfoEventArgs<TValue>
    */
   @Event()
   public queryCellInfo: EmitType<QueryCellInfoEventArgs>;
@@ -670,7 +669,7 @@ public pagerTemplate: string;
      * Triggers before row selection occurs.
      * @event
      * @blazorproperty 'RowSelecting'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectingEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectingEventArgs<TValue>
      */
   @Event()
   public rowSelecting: EmitType<RowSelectingEventArgs>;
@@ -679,7 +678,7 @@ public pagerTemplate: string;
      * Triggers after a row is selected.
      * @event
      * @blazorproperty 'RowSelected'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs<TValue>
      */
   @Event()
   public rowSelected: EmitType<RowSelectEventArgs>;
@@ -688,7 +687,7 @@ public pagerTemplate: string;
      * Triggers before deselecting the selected row.
      * @event
      * @deprecated
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
      */
   @Event()
   public rowDeselecting: EmitType<RowDeselectEventArgs>;
@@ -697,7 +696,7 @@ public pagerTemplate: string;
      * Triggers when a selected row is deselected.
      * @event
      * @blazorproperty 'RowDeselected'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
      */
   @Event()
   public rowDeselected: EmitType<RowDeselectEventArgs>;
@@ -714,7 +713,7 @@ public pagerTemplate: string;
        * Triggers before any cell selection occurs.
        * @event
        * @blazorproperty 'CellSelecting'
-       * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs
+       * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs<TValue>
        */
   @Event()
   public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -739,9 +738,8 @@ public pagerTemplate: string;
     /**
      * Triggers after a cell is selected.
      * @event 
-     * @deprecated
      * @blazorproperty 'CellSelected'
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
      */
   @Event()
   public cellSelected: EmitType<CellSelectEventArgs>;
@@ -850,7 +848,7 @@ public pagerTemplate: string;
    * Triggers when a particular selected cell is deselected.
    * @event 
    * @blazorproperty 'OnDataBound'
-   * @blazorType Syncfusion.EJ2.Blazor.Grids.BeforeDataBoundArgs
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.BeforeDataBoundArgs<TValue>
    */
 @Event()
 public beforeDataBound: EmitType<BeforeDataBoundArgs>;
@@ -1542,7 +1540,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
       this.initialRender = false;
     };
-    this.grid.beforeDataBound = function (args: BeforeDataBoundArgs): void  {
+    this.grid.beforeDataBound = function (args: BeforeDataBoundArgs): void | Deferred  {
       let dataSource: string = 'dataSource';
       let requestType: string = getObject('action', args);
       if (isRemoteData(treeGrid) && !isOffline(treeGrid) && requestType !== 'edit') {
@@ -1560,7 +1558,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       extend(args, treeGrid.dataResults);
       // this.notify(events.beforeDataBound, args);
       if (!(<IGrid>this).isPrinting) {
-        treeGrid.trigger(events.beforeDataBound, args);
+        let callBackPromise: Deferred = new Deferred();
+        treeGrid.trigger(events.beforeDataBound, args, (beforeDataBoundArgs: BeforeDataBoundArgs) => {
+          callBackPromise.resolve(beforeDataBoundArgs);
+        });
+        return callBackPromise;
       }
     };
     this.extendedGridEvents();
@@ -1605,8 +1607,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
       let callBackPromise: Deferred = new Deferred();
       this.trigger(events.cellSave, args, (cellsaveArgs: CellSaveArgs) => {
+        if (isBlazor()) {
+          cellsaveArgs.cell = getElement(cellsaveArgs.cell);
+         }
         if (!cellsaveArgs.cancel) {
-          this.notify(events.cellSave, args);
+          this.notify(events.cellSave, cellsaveArgs);
         }
         callBackPromise.resolve(cellsaveArgs);
       });
@@ -1700,7 +1705,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.notify('detaildataBound', args);
       this.trigger(events.detailDataBound, args);
     };
-    this.grid.actionBegin = (args: Object): Deferred| void => {
+    this.grid.actionBegin = (args: ActionEventArgs): Deferred| void => {
       let requestType: string = getObject('requestType', args);
       if (requestType === 'reorder') {
         this.notify('getColumnIndex', {});
@@ -1711,9 +1716,20 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         this.grid.dataSource = this.dataResults.result;
       }
       let callBackPromise: Deferred = new Deferred();
+      if (isBlazor() && args.requestType === 'delete') {
+        let data: string = 'data';
+        args[data] = args[data][0];
+      }
       this.trigger(events.actionBegin, args, (actionArgs: ActionEventArgs) => {
         if (!actionArgs.cancel) {
           this.notify(events.beginEdit, actionArgs);
+        }
+        if (isBlazor() && actionArgs.requestType === 'delete') {
+          let data: string = 'data';
+          actionArgs[data] = this.getSelectedRecords();
+        }
+        if (isBlazor() && actionArgs.requestType === 'beginEdit') {
+          actionArgs.row = getElement(actionArgs.row);
         }
         callBackPromise.resolve(actionArgs);
       });
@@ -1772,6 +1788,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.bindGridProperties();
     this.bindGridEvents();
     setValue('registeredTemplate', this.registeredTemplate, this.grid);
+    let ref: string = 'viewContainerRef';
+    setValue('viewContainerRef', this[ref], this.grid);
   }
 
   /**

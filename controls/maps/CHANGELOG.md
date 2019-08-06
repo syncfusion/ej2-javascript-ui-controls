@@ -8,6 +8,26 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I243271` - The issue with changing text in our component when the text argument is changed in the datalabelRendering event has been fixed.
+- `#I243499` - The issue with arrow option in the navigation line has been fixed.
+- `#I238404` - The issue with bubble color and size when using point type shape data has been fixed.
+
+## 17.2.39 (2019-07-30)
+
+### Maps
+
+#### Bug Fixes
+
+- `#I240804` - The issue with dynamically updating the zoom factor along with the initial case of the zoom factor  has been fixed.
+
+- `#I240836` - The issue with border that was not applied for marker highlight and selection has been fixed.
+
 ## 17.2.36 (2019-07-24)
 
 ### Maps

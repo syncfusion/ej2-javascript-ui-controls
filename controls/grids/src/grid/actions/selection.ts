@@ -645,9 +645,18 @@ export class Selection implements IAction {
         if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
             let cancl: string = 'cancel';
             let rowDeselectObj: Object = {
-                rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData,
+                rowIndex: rowIndex, data: data, foreignKeyData: foreignKeyData,
                 cancel: false, target: target, isInteracted: this.isInteracted
             };
+            if (!isBlazor() || this.parent.isJsComponent) {
+                let rowInString: string = 'row';
+                rowDeselectObj[rowInString] = row;
+            } else {
+                let rowIndex: string = 'rowIndex';
+                let data: string = 'data';
+                rowDeselectObj[rowIndex] = rowDeselectObj[rowIndex][rowDeselectObj[rowIndex].length - 1];
+                rowDeselectObj[data] = rowDeselectObj[data][rowDeselectObj[data].length - 1];
+            }
             this.parent.trigger(type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj);
             this.isCancelDeSelect = rowDeselectObj[cancl];
             if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
@@ -1575,7 +1584,7 @@ export class Selection implements IAction {
             if (gObj.selectionSettings.cellSelectionMode.indexOf('Box') > -1 && !this.isRowType() && !this.isSingleSel()) {
                 this.isCellDrag = true;
                 isDrag = true;
-            } else if (gObj.allowRowDragAndDrop) {
+            } else if (gObj.allowRowDragAndDrop && !gObj.isEdit) {
                 if (!this.isRowType() || this.isSingleSel() || closest(target, 'td').classList.contains('e-selectionbackground')) {
                     this.isDragged = false;
                     return;

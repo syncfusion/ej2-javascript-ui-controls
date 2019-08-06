@@ -764,6 +764,48 @@ describe('DateRangePicker module', () => {
         });
     });
 
+    describe('Testing Display format when using inital value ', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('testing with empty format value', () => {
+            editorObj = renderEditor({
+                type: 'DateRange',
+                mode: 'Inline',
+                value: [new Date('01/01/2019'), new Date('01/10/2019')],
+                model: {
+                    format: ''
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('1/1/2019 - 1/10/2019');
+        });
+        it('testing with specified format value', () => {
+            editorObj = renderEditor({
+                type: 'DateRange',
+                mode: 'Inline',
+                value: [new Date('01/01/2019'), new Date('01/10/2019')],
+                model: {
+                    format: 'yyyy-MM-dd'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('2019-01-01 - 2019-01-10');
+            editorObj.value = [new Date('05/05/2019'), new Date('12/12/2019')];
+            editorObj.dataBind();
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('2019-05-05 - 2019-12-12');
+        });
+    });
+
     describe('beginEdit event testing', () => {
         let editorObj: any;
         let date: Date[] = [new Date('01/01/2019'), new Date('01/10/2019')];

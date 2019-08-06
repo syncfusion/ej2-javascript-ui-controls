@@ -2330,7 +2330,7 @@ let TreeMap = class TreeMap extends Component {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
+        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
     }
     createSvg() {
         if (this.svgObject) {
@@ -2709,7 +2709,7 @@ let TreeMap = class TreeMap extends Component {
             cancel: false,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            treemap: this
+            treemap: this.isBlazor ? null : this
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -2721,7 +2721,7 @@ let TreeMap = class TreeMap extends Component {
                 this.refreshing = true;
                 this.wireEVents();
                 args.currentSize = this.availableSize;
-                this.trigger(resize, this.isBlazor ? {} : args);
+                this.trigger(resize, args);
                 this.render();
             }, 500);
         }

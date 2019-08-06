@@ -4838,7 +4838,7 @@ export class Selection {
         }
         for (let i: number = 0; i < widget.children.length; i++) {
             let element: ElementBox = widget.children[i];
-            if (element instanceof ListTextElementBox) {     //after list implementation
+            if (element instanceof ListTextElementBox && !paragraphFormat.bidi) {     //after list implementation
                 if (i === 0) {
                     left += element.margin.left + element.width;
                 } else {
@@ -4877,6 +4877,11 @@ export class Selection {
         for (let i: number = 0; i < widget.children.length; i++) {
             element = widget.children[i];
             if (element instanceof ListTextElementBox) {
+                if (widget.paragraph.paragraphFormat.bidi) {
+                    left += element.margin.left;
+                    element = undefined;
+                    break;
+                }
                 left += element.margin.left + element.width;
                 element = undefined;
                 // }

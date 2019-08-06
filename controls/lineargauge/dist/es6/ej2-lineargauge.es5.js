@@ -3016,9 +3016,8 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
                     renderer = true;
                     break;
                 case 'container':
-                    refreshBounds = true;
-                    break;
                 case 'axes':
+                case 'orientation':
                     refreshBounds = true;
                     break;
             }

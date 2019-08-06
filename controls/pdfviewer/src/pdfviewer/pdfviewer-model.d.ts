@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs  } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs  } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -15,7 +15,7 @@ export interface ToolbarSettingsModel {
     /**
      * shows only the defined options in the PdfViewer.
      */
-    toolbarItem?: ToolbarItem[];
+    toolbarItems?: ToolbarItem[];
 
 }
 
@@ -758,6 +758,33 @@ export interface StickyNotesSettingsModel {
 }
 
 /**
+ * Interface for a class MeasurementSettings
+ */
+export interface MeasurementSettingsModel {
+
+    /**
+     * specifies the scale ratio of the annotation.
+     */
+    scaleRatio?: number;
+
+    /**
+     * specifies the unit of the annotation.
+     */
+    conversionUnit?: CalibrationUnit;
+
+    /**
+     * specifies the unit of the annotation.
+     */
+    displayUnit?: CalibrationUnit;
+
+    /**
+     * specifies the depth of the volume annotation.
+     */
+    depth?: number;
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -831,6 +858,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default CurrentTab
      */
     hyperlinkOpenState?: LinkTarget;
+
+    /**
+     * Specifies the state of the ContextMenu in the PDF document.
+     * @default RightClick
+     */
+    contextMenuOption?: ContextMenuAction;
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
@@ -1025,6 +1058,11 @@ export interface PdfViewerModel extends ComponentModel{
      * Defines the settings of stickyNotes annotation.
      */
     stickyNotesSettings?: StickyNotesSettingsModel;
+
+    /**
+     * Defines the settings of measurement annotation.
+     */
+    measurementSettings?: MeasurementSettingsModel;
 
     /**
      * Defines the collection of selected items, size and position of the selector

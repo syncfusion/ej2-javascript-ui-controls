@@ -5570,6 +5570,58 @@ describe('MultiSelect', () => {
             (<any>listObj).focusInHandler();
         });
     });
+    describe('Filtering API', () => {
+        let ele: HTMLElement = document.createElement('input');
+        ele.id = 'newlist';
+        let listObj: any;
+        let e: any = { preventDefault: function () { }, target: null };
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'lit2', text: 'PHP' }, { id: 'list22', text: 'Phython' }, { id: 'list32', text: 'Perl' },
+        { id: 'list42', text: 'Core' }, { id: 'lis2', text: 'C' }, { id: 'list12', text: 'C##' }];
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            listObj = new MultiSelect({
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                popupHeight: '100px',
+                filterType: 'StartsWith'
+            });
+            listObj.appendTo('#newlist');
+        });
+        afterAll(() => {
+            if (ele) {
+                ele.remove();
+            }
+        })
+        it(' check the filter', () => {
+            listObj.showPopup();
+            listObj.inputElement.value = 'java';
+            e.keyCode = 72;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).KeyUp(keyboardEventArgs);
+            expect(listObj.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect(listObj.liCollections[0].getAttribute('data-value') === 'list1').toBe(true);
+            listObj.filterType = 'Contains';
+            listObj.dataBind();
+            listObj.inputElement.value = 'o';
+            e.keyCode = 72;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).KeyUp(keyboardEventArgs);
+            expect(listObj.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect(listObj.liCollections.length >1).toBe(true);
+            listObj.filterType = 'EndsWith';   
+            listObj.dataBind();
+            listObj.inputElement.value = 'n';
+            e.keyCode = 72;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).KeyUp(keyboardEventArgs);
+            expect(listObj.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect(listObj.liCollections.length >=1).toBe(true);
+        });
+    });
     describe('Grouping in CheckBox Mode', () => {
         let listObj: MultiSelect;
         let popupObj: any;

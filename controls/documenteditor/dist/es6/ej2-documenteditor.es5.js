@@ -11783,11 +11783,13 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
      *
      */
     function SpellChecker(viewer) {
+        this.langIDInternal = 0;
+        this.spellSuggestionInternal = true;
+        this.removeUnderlineInternal = false;
         this.viewer = viewer;
         this.errorWordCollection = new Dictionary();
         this.errorSuggestions = new Dictionary();
         this.ignoreAllItems = [];
-        this.removeUnderline = false;
     }
     /**
      * Gets module name.
@@ -11795,6 +11797,66 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     SpellChecker.prototype.getModuleName = function () {
         return 'SpellChecker';
     };
+    Object.defineProperty(SpellChecker.prototype, "languageID", {
+        /**
+         * Gets the languageID.
+         * @aspType int
+         * @blazorType int
+         */
+        get: function () {
+            return isNullOrUndefined(this.langIDInternal) ? 0 : this.langIDInternal;
+        },
+        /**
+         * Sets the languageID.
+         * @aspType int
+         * @blazorType int
+         */
+        set: function (value) {
+            this.langIDInternal = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SpellChecker.prototype, "allowSpellCheckAndSuggestion", {
+        /**
+         * Getter indicates whether suggestion enabled.
+         * @aspType bool
+         * @blazorType bool
+         */
+        get: function () {
+            return this.spellSuggestionInternal;
+        },
+        /**
+         * Setter to enable or disable suggestion
+         * @aspType bool
+         * @blazorType bool
+         */
+        set: function (value) {
+            this.spellSuggestionInternal = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(SpellChecker.prototype, "removeUnderline", {
+        /**
+         * Getter indicates whether underline removed for mis-spelled word.
+         * @aspType bool
+         * @blazorType bool
+         */
+        get: function () {
+            return this.removeUnderlineInternal;
+        },
+        /**
+         * Setter to enable or disable underline for mis-spelled word
+         * @aspType bool
+         * @blazorType bool
+         */
+        set: function (value) {
+            this.removeUnderlineInternal = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Method to manage replace logic
      * @private
@@ -11926,6 +11988,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     };
     /**
      * Method to handle ignore all items
+     * @private
      */
     SpellChecker.prototype.handleIgnoreAllItems = function (contextElement) {
         var contextItem = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
@@ -11941,6 +12004,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     };
     /**
      * Method to handle dictionary
+     * @private
      */
     SpellChecker.prototype.handleAddToDictionary = function (contextElement) {
         var _this = this;
@@ -12515,6 +12579,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
      * Method to create error element with matched results
      * @param {TextSearchResult} result
      * @param {ElementBox} errorElement
+     * @private
      */
     SpellChecker.prototype.createErrorElementWithInfo = function (result, errorElement) {
         var element = new ErrorTextElementBox();
@@ -12615,6 +12680,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
     /**
      * Method to retrieve next available combined element
      * @param {ElementBox} element
+     * @private
      */
     SpellChecker.prototype.getCombinedElement = function (element) {
         var prevElement = element;
@@ -12641,6 +12707,7 @@ var SpellChecker = /** @__PURE__ @class */ (function () {
      * Method to update error collection
      * @param {TextElementBox} currentElement
      * @param {TextElementBox} splittedElement
+     * @private
      */
     SpellChecker.prototype.updateSplittedElementError = function (currentElement, splittedElement) {
         var errorCount = currentElement.errorCollection.length;
@@ -13431,6 +13498,8 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "spellChecker", {
         /**
          * Gets the spell check object of the document editor.
+         * @aspType SpellChecker
+         * @blazorType SpellChecker
          * @returns SpellChecker
          */
         get: function () {
@@ -16354,6 +16423,9 @@ var Layout = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable-next-line:max-line-length
     Layout.prototype.layoutEmptyLineWidget = function (paragraph, isEmptyLine, line, isShiftEnter) {
+        var paraFormat = paragraph.paragraphFormat;
+        var subWidth = 0;
+        var whiteSpaceCount = 0;
         isShiftEnter = isNullOrUndefined(isShiftEnter) ? false : isShiftEnter;
         //Calculate line height and descent based on formatting defined in paragraph.
         var paragraphMarkSize = this.viewer.textHelper.getParagraphMarkSize(paragraph.characterFormat);
@@ -16362,6 +16434,27 @@ var Layout = /** @__PURE__ @class */ (function () {
         var lineWidget;
         if (paragraph.childWidgets.length > 0 && !isShiftEnter) {
             lineWidget = paragraph.childWidgets[0];
+            if (lineWidget.children.length > 0) {
+                if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(lineWidget))) {
+                    this.reArrangeElementsForRtl(lineWidget, paraFormat.bidi);
+                }
+                var isParagraphStart = lineWidget.isFirstLine();
+                var isParagraphEnd = lineWidget.isLastLine();
+                var firstLineIndent = 0;
+                if (isParagraphStart) {
+                    beforeSpacing = this.getBeforeSpacing(paragraph);
+                    firstLineIndent = HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
+                }
+                var textAlignment = paraFormat.textAlignment;
+                if (textAlignment !== 'Left' && this.viewer.textWrap
+                    && (!(textAlignment === 'Justify' && isParagraphEnd)
+                        || (textAlignment === 'Justify' && paraFormat.bidi))) {
+                    // tslint:disable-next-line:max-line-length
+                    var getWidthAndSpace = this.getSubWidth(lineWidget, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
+                    subWidth = getWidthAndSpace.subWidth;
+                    whiteSpaceCount = getWidthAndSpace.spaceCount;
+                }
+            }
         }
         else {
             lineWidget = isEmptyLine ? this.addLineWidget(paragraph) : line;
@@ -16404,13 +16497,13 @@ var Layout = /** @__PURE__ @class */ (function () {
         bottomMargin += HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         for (var i = 0; i < lineWidget.children.length; i++) {
             var element = lineWidget.children[i];
-            if (element instanceof ListTextElementBox) {
+            if (i === 0 && element instanceof ListTextElementBox) {
                 var textAlignment = paragraph.paragraphFormat.textAlignment;
                 if (textAlignment === 'Right') { //Aligns the text as right justified.
-                    leftMargin = this.viewer.clientArea.width - element.width;
+                    leftMargin = subWidth;
                 }
                 else if (textAlignment === 'Center') { //Aligns the text as center justified.
-                    leftMargin = (this.viewer.clientArea.width - element.width) / 2;
+                    leftMargin = subWidth / 2;
                 }
                 element.margin = new Margin(leftMargin, topMargin, 0, bottomMargin);
                 element.line = lineWidget;
@@ -19459,7 +19552,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             splittedWidget = nextBlock.getSplitWidgets();
             nextBlock = splittedWidget[splittedWidget.length - 1].nextRenderedWidget;
         }
-        if (!viewer.owner.isShiftingEnabled || this.viewer.blockToShift !== block) {
+        if (!viewer.owner.isShiftingEnabled || (this.viewer.blockToShift && this.viewer.blockToShift !== block)) {
             this.viewer.owner.editorModule.updateListItemsTillEnd(block, updateNextBlockList);
         }
     };
@@ -21276,7 +21369,8 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var text = elementBox.text;
         var followCharacter = text === '\t' || text === ' ';
         if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
-            this.pageCanvas.setAttribute('dir', 'rtl');
+            var index = text.indexOf('.');
+            text = text.substr(index) + text.substring(0, index);
         }
         this.pageContext.fillStyle = this.getColor(color);
         // tslint:disable-next-line:max-line-length
@@ -21287,7 +21381,6 @@ var Renderer = /** @__PURE__ @class */ (function () {
         if (strikethrough !== 'None') {
             this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, baselineAlignment);
         }
-        this.pageCanvas.setAttribute('dir', 'ltr');
     };
     /**
      * Renders text element box.
@@ -37502,7 +37595,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         for (var i = 0; i < widget.children.length; i++) {
             var element = widget.children[i];
-            if (element instanceof ListTextElementBox) { //after list implementation
+            if (element instanceof ListTextElementBox && !paragraphFormat.bidi) { //after list implementation
                 if (i === 0) {
                     left += element.margin.left + element.width;
                 }
@@ -37543,6 +37636,11 @@ var Selection = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < widget.children.length; i++) {
             element = widget.children[i];
             if (element instanceof ListTextElementBox) {
+                if (widget.paragraph.paragraphFormat.bidi) {
+                    left += element.margin.left;
+                    element = undefined;
+                    break;
+                }
                 left += element.margin.left + element.width;
                 element = undefined;
                 // }
@@ -44560,10 +44658,8 @@ var Editor = /** @__PURE__ @class */ (function () {
                     tempSpan.characterFormat.copyFormat(insertFormat);
                     var insertIndex = inline.indexInOwner;
                     if (indexInInline === inline.length) {
-                        inline.line.children.splice(insertIndex + 1, 0, tempSpan);
-                        if (inline.line.paragraph.bidi) {
-                            this.viewer.layout.reArrangeElementsForRtl(inline.line, inline.line.paragraph.bidi);
-                        }
+                        var isParaBidi = inline.line.paragraph.bidi;
+                        inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
                     }
                     else if (indexInInline === 0) {
                         if (isRtl && !isBidi) {
@@ -46178,7 +46274,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         var lineIndex = line.indexInOwner;
         var insertIndex = element.indexInOwner;
         if (index === element.length) { // Add new Element in current 
-            insertIndex++;
+            if (!paragraph.paragraphFormat.bidi) {
+                insertIndex++;
+            }
             line.children.splice(insertIndex, 0, newElement);
         }
         else if (index === 0) {
@@ -48619,14 +48717,20 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         if (selection.isEmpty) {
             this.setOffsetValue(selection);
-            this.viewer.layout.isBidiReLayout = true;
+            var isBidiList = selection.paragraphFormat.bidi &&
+                (property === 'listFormat' || selection.paragraphFormat.listId !== -1);
+            if (!isBidiList) {
+                this.viewer.layout.isBidiReLayout = true;
+            }
             if (update && property === 'leftIndent') {
                 value = this.getIndentIncrementValue(selection.start.paragraph, value);
             }
             var para = selection.start.paragraph.combineWidget(this.viewer);
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
-            this.viewer.layout.isBidiReLayout = false;
+            if (!isBidiList) {
+                this.viewer.layout.isBidiReLayout = false;
+            }
         }
         else {
             //Iterate and update formatting's.      
@@ -48770,9 +48874,14 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.updateParagraphFormat(undefined, value, false);
                 break;
             case 'bidi':
-                this.viewer.layout.isBidiReLayout = true;
+                var isBidiList = this.selection.paragraphFormat.listId !== -1;
+                if (!isBidiList) {
+                    this.viewer.layout.isBidiReLayout = true;
+                }
                 this.updateParagraphFormat('bidi', value, false);
-                this.viewer.layout.isBidiReLayout = false;
+                if (!isBidiList) {
+                    this.viewer.layout.isBidiReLayout = false;
+                }
                 break;
             case 'contextualSpacing':
                 this.updateParagraphFormat('contextualSpacing', value, false);
@@ -50881,7 +50990,9 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.removeContent = function (lineWidget, startOffset, endOffset) {
         var count = this.selection.getLineLength(lineWidget);
-        for (var i = lineWidget.children.length - 1; i >= 0; i--) {
+        var isBidi = lineWidget.paragraph.paragraphFormat.bidi;
+        var childLength = lineWidget.children.length;
+        for (var i = isBidi ? 0 : childLength - 1; isBidi ? i < childLength : i >= 0; isBidi ? i++ : i--) {
             var inline = lineWidget.children[i];
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
@@ -52480,7 +52591,12 @@ var Editor = /** @__PURE__ @class */ (function () {
                     if (paragraph.childWidgets.length > 0) {
                         var lineWidget = paragraph.childWidgets[0];
                         if (lineWidget.children.length > 0) {
-                            element = lineWidget.children[0];
+                            if (paragraph.paragraphFormat.bidi) {
+                                element = lineWidget.children[lineWidget.children.length - 1];
+                            }
+                            else {
+                                element = lineWidget.children[0];
+                            }
                         }
                     }
                     if (!isNullOrUndefined(element)) {
@@ -55711,9 +55827,16 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                 this.owner.editorModule.updateSelectionParagraphFormatting(property, this.modifiedProperties[0].baseStyle, false);
                 return;
             }
-            this.owner.viewer.layout.isBidiReLayout = true;
+            var selection = this.owner.viewer.selection;
+            var isBidiList = (selection.paragraphFormat.bidi ||
+                (this.modifiedProperties[0] instanceof WParagraphFormat && this.modifiedProperties[0]).bidi) && (selection.paragraphFormat.listId !== -1 || property === 'listFormat');
+            if (!isBidiList) {
+                this.owner.viewer.layout.isBidiReLayout = true;
+            }
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
-            this.owner.viewer.layout.isBidiReLayout = false;
+            if (!isBidiList) {
+                this.owner.viewer.layout.isBidiReLayout = false;
+            }
         }
         else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
@@ -63815,7 +63938,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.document.abstractLists = [];
         for (var i = 0; i < viewer.abstractLists.length; i++) {
             var abstractList = viewer.abstractLists[i];
-            if (this.lists.indexOf(abstractList.abstractListId) > -1) {
+            if (abstractLists.indexOf(abstractList.abstractListId) > -1) {
                 this.document.abstractLists.push(this.writeAbstractList(abstractList));
             }
         }
@@ -66387,9 +66510,12 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
      * @private
      */
     ParagraphDialog.prototype.onParagraphFormat = function (paragraphFormat) {
-        this.owner.layout.isBidiReLayout = true;
-        this.owner.owner.editorModule.initHistory('ParagraphFormat');
         var selection = this.owner.selection;
+        var isListBidi = paragraphFormat.bidi && selection.paragraphFormat.listId !== -1;
+        if (!isListBidi) {
+            this.owner.layout.isBidiReLayout = true;
+        }
+        this.owner.owner.editorModule.initHistory('ParagraphFormat');
         this.owner.owner.isShiftingEnabled = true;
         if (this.owner.selection.isEmpty) {
             this.owner.owner.editorModule.applyParaFormatProperty(selection.start.paragraph, undefined, paragraphFormat, false);
@@ -66399,7 +66525,9 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
             this.owner.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
         }
         this.owner.owner.editorModule.reLayout(selection);
-        this.owner.layout.isBidiReLayout = false;
+        if (!isListBidi) {
+            this.owner.layout.isBidiReLayout = false;
+        }
     };
     /**
      * @private
@@ -76129,6 +76257,10 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         if (this.toolbarModule) {
             this.toolbarModule.initToolBar();
         }
+        if (this.element.getBoundingClientRect().height < 320) {
+            this.element.style.height = '320px';
+        }
+        this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
         this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
@@ -76211,6 +76343,8 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             zoomFactorChange: this.onZoomFactorChange.bind(this),
             requestNavigate: this.onRequestNavigate.bind(this),
             viewChange: this.onViewChange.bind(this),
+            customContextMenuSelect: this.onCustomContextMenuSelect.bind(this),
+            customContextMenuBeforeOpen: this.onCustomContextMenuBeforeOpen.bind(this),
             locale: this.locale,
             acceptTab: true,
             enableLocalPaste: this.enableLocalPaste,
@@ -76300,6 +76434,18 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         if (this.statusBar) {
             this.statusBar.updatePageNumberOnViewChange(args);
         }
+    };
+    /**
+     * @private
+     */
+    DocumentEditorContainer.prototype.onCustomContextMenuSelect = function (args) {
+        this.trigger('customContextMenuSelect', args);
+    };
+    /**
+     * @private
+     */
+    DocumentEditorContainer.prototype.onCustomContextMenuBeforeOpen = function (args) {
+        this.trigger('customContextMenuBeforeOpen', args);
     };
     /**
      * @private
@@ -76476,6 +76622,12 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], DocumentEditorContainer.prototype, "documentChange", void 0);
+    __decorate$1([
+        Event()
+    ], DocumentEditorContainer.prototype, "customContextMenuSelect", void 0);
+    __decorate$1([
+        Event()
+    ], DocumentEditorContainer.prototype, "customContextMenuBeforeOpen", void 0);
     __decorate$1([
         Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);

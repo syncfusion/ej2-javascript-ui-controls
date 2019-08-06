@@ -192,6 +192,23 @@ export interface NotifyArgs {
     allowedStylePropertiesArray?: string[];
 }
 
+export interface IItemCollectionArgs {
+    /** Defines the instance of the current selection */
+    selection?: NodeSelection;
+    /** Defines the HTML elements of currently selected content */
+    selectNode?: Node[];
+    /** Defines the parent HTML elements of current selection */
+    selectParent?: Node[];
+    /** Defines the URL action details for link element */
+    url?: string;
+    /** Defines the title of the link action details */
+    title?: string;
+    /** Defines the target as string for link element */
+    target?: string;
+    /** Defines the element to be inserted */
+    insertElement?: Element;
+}
+
 export interface ITouchData {
     prevClientX?: number;
     prevClientY?: number;
@@ -199,6 +216,9 @@ export interface ITouchData {
     clientY?: number;
 }
 
+/** 
+ * @hidden
+ */
 export interface IColorPickerModel extends ColorPickerModel {
     element?: HTMLElement;
     value?: string;
@@ -208,18 +228,27 @@ export interface IColorPickerModel extends ColorPickerModel {
     iconCss?: string;
 }
 
+/** 
+ * @hidden
+ */
 export interface IColorPickerEventArgs extends ColorPickerEventArgs {
     item?: IColorPickerModel;
     originalEvent: string;
     cancel?: boolean;
 }
 
+/** 
+ * @hidden
+ */
 export interface IDropDownItem extends ItemModel {
     command?: string;
     subCommand?: string;
     controlParent?: DropDownButton;
 }
 
+/** 
+ * @hidden
+ */
 export interface IDropDownClickArgs extends ClickEventArgs {
     item: IDropDownItem;
 }
@@ -306,6 +335,9 @@ export interface IToolbarItems {
     tooltipText?: string;
 }
 
+/** 
+ * @hidden
+ */
 export interface IToolbarItemModel extends ItemModel {
     command?: string;
     subCommand?: string;
@@ -359,6 +391,9 @@ export interface IToolsItemConfigs {
     value?: string;
 }
 
+/** 
+ * @hidden
+ */
 export interface IDropDownItemModel extends DropDownItemModel {
     cssClass?: string;
     command?: string;
@@ -378,7 +413,10 @@ export interface ActionCompleteEventArgs {
     elements?: Node[];
     /** Defines the event item. */
     event?: MouseEvent | KeyboardEvent;
-    /** Defines the selected range. */
+    /** 
+     * Defines the selected range.
+     * @deprecated
+     */
     range?: Range;
 }
 
@@ -387,14 +425,18 @@ export interface ActionBeginEventArgs {
     requestType?: string;
     /** Cancel the print action */
     cancel?: boolean;
-    /** Defines the current item. */
+    /** Defines the current item. 
+     * @deprecated
+     */
     item?: IToolbarItemModel | IDropDownItemModel;
     /** Defines the current item. */
     originalEvent?: MouseEvent | KeyboardEvent;
     /** Defines the event name. */
     name?: string;
-    /** Defines the url action details. */
-    itemCollection?: NotifyArgs;
+    /** Defines the url action details. 
+     * @deprecated
+     */
+    itemCollection?: IItemCollectionArgs;
 }
 
 export interface PrintEventArgs extends ActionBeginEventArgs {
@@ -447,8 +489,13 @@ export interface IQuickToolbarOptions {
 }
 
 export interface BeforeQuickToolbarOpenArgs {
+    /** Defines the instance of the current popup element
+     * @deprecated
+     */
     popup: Popup;
+    /** Determine whether the quick toolbar is open */
     cancel: boolean;
+    /** Defines the target element of the quick toolbar */
     targetElement: Element;
 }
 
@@ -471,7 +518,6 @@ export interface IFormatter {
     getUndoRedoStack?: Function;
     onSuccess?: Function;
     saveData?: Function;
-    undoRedoRefresh?: Function;
     disableToolbarItem?(items: string | string[]): void;
     enableUndo?: Function;
     setDocument?: Function;
@@ -547,7 +593,9 @@ export interface SanitizeSelectors {
 }
 
 export interface SanitizeRemoveAttrs {
+    /** Defines the attribute name to sanitize */
     attribute?: string;
+    /** Defines the selector that sanitize the specified attributes within the selector */
     selector?: string;
 }
 

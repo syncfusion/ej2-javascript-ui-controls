@@ -8049,14 +8049,14 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         end = !isSource ? points[length - 2] : points[1];
         var len = Point.distancePoints(start, end);
         len = (len === 0) ? 1 : len;
-        var width = connector.style.strokeWidth - 1;
-        point.x = (Math.round(start.x + width * (end.x - start.x) / len));
-        point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         var strokeWidth = 1;
         var node = isSource ? connector.sourceWrapper : connector.targetWrapper;
         if (node) {
             strokeWidth = node.style.strokeWidth;
         }
+        var width = strokeWidth - 1;
+        point.x = (Math.round(start.x + width * (end.x - start.x) / len));
+        point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         if ((isSource && connector.sourceDecorator.shape !== 'None') ||
             (!isSource && connector.targetDecorator.shape !== 'None')) {
             point = Point.adjustPoint(point, end, true, (strokeWidth / 2));
@@ -16800,7 +16800,7 @@ function getContent(element, isHtml) {
             var text = 'content';
             var annotations = 'annotations';
             var addInfo = 'addInfo';
-            content = element.diagramId + 'content_diagram';
+            content = node[id] + 'content_diagram';
             sentNode[id] = node[id];
             sentNode[height] = node[height];
             sentNode[width] = node[width];
@@ -16821,11 +16821,17 @@ function getContent(element, isHtml) {
     }
     var item;
     if (typeof element.content === 'string') {
-        var compiledString = void 0;
-        compiledString = compile(element.content);
-        for (var _i = 0, _a = compiledString(sentNode, null, null, content); _i < _a.length; _i++) {
-            item = _a[_i];
-            div.appendChild(item);
+        var template = document.getElementById(element.content);
+        if (template) {
+            div.appendChild(template);
+        }
+        else {
+            var compiledString = void 0;
+            compiledString = compile(element.content);
+            for (var _i = 0, _a = compiledString(sentNode, null, null, content); _i < _a.length; _i++) {
+                item = _a[_i];
+                div.appendChild(item);
+            }
         }
     }
     else {
@@ -26179,6 +26185,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        else if (node.parentId && this.diagram.nameTable[node.parentId] &&
+            this.diagram.nameTable[node.parentId].shape.type === 'UmlClassifier') {
+            if (isSelected(this.diagram, this.diagram.nameTable[node.parentId])) {
+                select = false;
+            }
+        }
         return select;
     };
     /**
@@ -30290,7 +30302,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             node = this.nodes[i];
             annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
-                updateBlazorTemplate(this.element.id + 'content_diagram', 'Content', this.nodes[i].shape);
+                updateBlazorTemplate(node.id + 'content_diagram', 'Content', this.nodes[i].shape);
             }
             else if (annotation && annotation.template instanceof HTMLElement) {
                 updateBlazorTemplate(this.element.id + 'template_diagram', 'Template', annotation);
@@ -30311,7 +30323,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             htmlNode = this.nodes[i];
             templateAnnotation = htmlNode.annotations[0];
             if (htmlNode.shape.type === 'HTML' && htmlNode.shape.content instanceof HTMLElement) {
-                resetBlazorTemplate(this.element.id + 'content', 'Content');
+                resetBlazorTemplate(htmlNode.id + 'content', 'Content');
             }
             else if (templateAnnotation && templateAnnotation.template instanceof HTMLElement) {
                 resetBlazorTemplate(this.element.id + 'template', 'Template');
@@ -31370,7 +31382,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var j = _a[_i];
                 if (this.nameTable[j] && this.nameTable[j].parentId) {
                     var child = getDiagramElement(j + '_groupElement', this.element.id);
-                    child.parentNode.removeChild(child);
+                    if (child) {
+                        child.parentNode.removeChild(child);
+                    }
                 }
             }
         }
@@ -48716,8 +48730,14 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
             content.pivot = stackPanel.pivot = { x: 0, y: 0 };
             stackPanel.id = content.id + '_symbol';
             stackPanel.style.fill = stackPanel.style.strokeColor = 'transparent';
-            stackPanel.offsetX = symbol.style.strokeWidth / 2;
-            stackPanel.offsetY = symbol.style.strokeWidth / 2;
+            if (symbol instanceof Node) {
+                stackPanel.offsetX = symbol.style.strokeWidth / 2;
+                stackPanel.offsetY = symbol.style.strokeWidth / 2;
+            }
+            else {
+                stackPanel.offsetX = 0.5;
+                stackPanel.offsetY = 0.5;
+            }
             //symbol description-textElement
             this.getSymbolDescription(symbolInfo, width, stackPanel);
             stackPanel.measure(new Size());

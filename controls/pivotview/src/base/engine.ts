@@ -1368,8 +1368,8 @@ export class PivotEngine {
             this.fieldList[field].formattedMembers = {};
             this.fieldList[field].dateMember = [];
         }
-        this.fillFieldMembers(dataSource.dataSource as IDataSet[], this.indexMatrix);
-        this.valueMatrix = this.generateValueMatrix(dataSource.dataSource as IDataSet[]);
+        this.fillFieldMembers(this.data as IDataSet[], this.indexMatrix);
+        this.valueMatrix = this.generateValueMatrix(this.data as IDataSet[]);
         this.filterMembers = [];
         this.cMembers = [];
         this.rMembers = [];
@@ -1473,11 +1473,11 @@ export class PivotEngine {
             columnFilteredData = (columnFilteredData.length > 0 ? columnFilteredData : columnHeaders);
             this.isEmptyDataAvail(rowFilteredData, columnFilteredData);
             let savedFieldList: IFieldListOptions = extend({}, this.fieldList, null, true) as IFieldListOptions;
-            this.indexMatrix = []; let fields: IDataSet = (dataSource.dataSource as IDataSet[])[0];
+            this.indexMatrix = []; let fields: IDataSet = (this.data as IDataSet[])[0];
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-            this.fillFieldMembers((dataSource.dataSource as IDataSet[]), this.indexMatrix);
+            this.fillFieldMembers((this.data as IDataSet[]), this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix((dataSource.dataSource as IDataSet[]));
+            this.valueMatrix = this.generateValueMatrix((this.data as IDataSet[]));
             this.filterMembers = []; let pageSize: number = 1; this.updateFilterMembers(dataSource);
             this.rMembers = rows.length !== 0 ?
                 this.getIndexedHeaders(rows, data, 0, rows[0].showNoDataItems ?

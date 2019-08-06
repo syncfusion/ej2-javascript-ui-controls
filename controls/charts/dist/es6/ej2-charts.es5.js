@@ -37134,7 +37134,7 @@ var RangeBandSettings = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], RangeBandSettings.prototype, "color", void 0);
     __decorate$20([
-        Property(null)
+        Property(1)
     ], RangeBandSettings.prototype, "opacity", void 0);
     return RangeBandSettings;
 }(ChildProperty));
@@ -38777,6 +38777,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
                 case 'axisSettings':
                 case 'type':
                 case 'valueType':
+                case 'enableRtl':
                     refresh = true;
                     break;
                 case 'border':

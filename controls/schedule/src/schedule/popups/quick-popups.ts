@@ -234,11 +234,6 @@ export class QuickPopups {
                 addClass([cancelButton], cls.DISABLE_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('wrongPattern');
                 break;
-            case 'dateValidation':
-                removeClass([cancelButton], cls.DISABLE_CLASS);
-                addClass([cancelButton], cls.QUICK_DIALOG_CANCEL_CLASS);
-                this.quickDialog.content = this.l10n.getConstant('recurrenceDateValidation');
-                break;
             case 'createError':
                 addClass([cancelButton], cls.DISABLE_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('createError');

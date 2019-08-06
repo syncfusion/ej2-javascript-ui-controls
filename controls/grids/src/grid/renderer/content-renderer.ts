@@ -29,7 +29,7 @@ export class ContentRender implements IRenderer {
     private freezeRows: Row<Column>[] = [];
     private movableRows: Row<Column>[] = [];
     private rowElements: Element[];
-    private freezeRowElements: Element[];
+    private freezeRowElements: Element[] = [];
     private index: number;
     public colgroup: Element;
     private isLoaded: boolean = true;
@@ -139,7 +139,7 @@ export class ContentRender implements IRenderer {
         }
         let table: Element = this.parent.createElement('table', {
             className: 'e-table', attrs: {
-                cellspacing: '0.25px', role: 'grid',
+                role: 'grid',
                 id: this.parent.element.id + id
             }
         });

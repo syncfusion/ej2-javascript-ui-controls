@@ -340,8 +340,8 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 target: this.container,
                 disabled: this.disabled,
                 enableRtl: this.enableRtl,
-                beforeOpen: this.beforeOpenFn.bind(this),
                 open: this.onOpen.bind(this),
+                beforeOpen: this.beforeOpenFn.bind(this),
                 beforeClose: this.beforePopupClose.bind(this),
                 click: (args: ClickEventArgs) => {
                     this.trigger('change', {

@@ -155,7 +155,7 @@ describe('NumericTextBox Control', () => {
             editorObj.value = 2;
             editorObj.dataBind();
             expect(editorObj.value).toEqual(2);
-            expect(valueEle.innerHTML).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2.00');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
@@ -203,7 +203,7 @@ describe('NumericTextBox Control', () => {
             editorObj.value = 2;
             editorObj.dataBind();
             expect(editorObj.value).toEqual(2);
-            expect(valueEle.innerHTML).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2.00');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
@@ -251,7 +251,7 @@ describe('NumericTextBox Control', () => {
             editorObj.value = 2;
             editorObj.dataBind();
             expect(editorObj.value).toEqual(2);
-            expect(valueEle.innerHTML).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2.00');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
@@ -299,7 +299,7 @@ describe('NumericTextBox Control', () => {
             editorObj.value = 2;
             editorObj.dataBind();
             expect(editorObj.value).toEqual(2);
-            expect(valueEle.innerHTML).toEqual('2');
+            expect(valueEle.innerHTML).toEqual('2.00');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
@@ -331,11 +331,11 @@ describe('NumericTextBox Control', () => {
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
             expect(editorObj.value).toEqual(5);
-            expect(valueEle.innerHTML).toEqual('5');
+            expect(valueEle.innerHTML).toEqual('5.00');
             editorObj.emptyText = 'Enter some text';
             editorObj.dataBind();
             expect(editorObj.value).toEqual(5);
-            expect(valueEle.innerHTML).toEqual('5');
+            expect(valueEle.innerHTML).toEqual('5.00');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
@@ -359,7 +359,7 @@ describe('NumericTextBox Control', () => {
             editorObj.value = 6;
             editorObj.dataBind();
             expect(editorObj.value).toEqual(6);
-            expect(valueEle.innerHTML).toEqual('6');
+            expect(valueEle.innerHTML).toEqual('6.00');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
@@ -389,7 +389,7 @@ describe('NumericTextBox Control', () => {
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
             valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
             expect(editorObj.value).toEqual(5);
-            expect(valueEle.innerHTML).toEqual('5');
+            expect(valueEle.innerHTML).toEqual('5.00');
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
@@ -407,6 +407,45 @@ describe('NumericTextBox Control', () => {
             expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual(null);
             expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
+        });
+    });
+
+    describe('Testing Display format when using inital value ', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('testing with empty format value', () => {
+            editorObj = renderEditor({
+                type: 'Numeric',
+                mode: 'Inline',
+                value: '100'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('100.00');
+        });
+        it('testing with specified format value', () => {
+            editorObj = renderEditor({
+                type: 'Numeric',
+                mode: 'Inline',
+                value: '100',
+                model: {
+                    format: 'c2'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('$100.00');
+            editorObj.value = '200';
+            editorObj.dataBind();
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('$200.00');
         });
     });
 

@@ -2448,7 +2448,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
+        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
     };
     TreeMap.prototype.createSvg = function () {
         if (this.svgObject) {
@@ -2835,7 +2835,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             cancel: false,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            treemap: this
+            treemap: this.isBlazor ? null : this
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -2847,7 +2847,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 _this.refreshing = true;
                 _this.wireEVents();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resize, _this.isBlazor ? {} : args);
+                _this.trigger(resize, args);
                 _this.render();
             }, 500);
         }

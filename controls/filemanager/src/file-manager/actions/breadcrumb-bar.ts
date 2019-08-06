@@ -23,6 +23,7 @@ export class BreadCrumbBar {
     private keyboardModule: KeyboardEvents;
     private searchTimer: number = null;
     private keyConfigs: { [key: string]: string };
+    private searchWrapWidth: number = null;
     /**
      * constructor for addressbar module
      * @hidden
@@ -147,7 +148,7 @@ export class BreadCrumbBar {
             EventHandler.add(this.searchObj.element, 'keyup', this.onKeyUp.bind(this), this);
         }
         let searchWrap: HTMLElement = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
-        breadCrumbBarWidth = breadCrumbBarWidth - searchWrap.offsetWidth;
+        breadCrumbBarWidth = breadCrumbBarWidth - (this.searchWrapWidth ? this.searchWrapWidth : searchWrap.offsetWidth);
         if (liElementsWidth > breadCrumbBarWidth) {
             let i: number = liElements.length;
             while (i--) {
@@ -248,7 +249,10 @@ export class BreadCrumbBar {
         if (this.parent.isMobile) {
             if (this.parent.element.classList.contains(CLS.FILTER)) {
                 removeClass([this.parent.element], CLS.FILTER);
+                this.searchWrapWidth = null;
             } else {
+                let searchWrap: HTMLElement = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
+                this.searchWrapWidth = searchWrap.offsetWidth;
                 addClass([this.parent.element], CLS.FILTER);
                 this.searchObj.element.focus();
             }
@@ -294,7 +298,7 @@ export class BreadCrumbBar {
 
     /* istanbul ignore next */
     private removeSearchValue(): void {
-        if (this.searchObj.value !== '' || this.searchObj.element.value !== '') {
+        if (this.searchObj && (this.searchObj.value !== '' || this.searchObj.element.value !== '')) {
             this.searchObj.value = '';
             this.searchObj.element.value = '';
             this.searchObj.dataBind();

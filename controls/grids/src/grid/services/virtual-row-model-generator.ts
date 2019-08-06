@@ -56,12 +56,23 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
                     this.parent.vRows = rows;
                     this.parent.vcRows = rows;
                 }
-                let median: number = ~~Math.max(rows.length, this.model.pageSize) / 2;
-                if (!this.isBlockAvailable(indexes[0])) {
-                    this.cache[indexes[0]] = rows.slice(0, median);
-                }
-                if (!this.isBlockAvailable(indexes[1])) {
-                    this.cache[indexes[1]] = rows.slice(median);
+                let median: number;
+                if (isGroupAdaptive(this.parent)) {
+                    median = this.model.pageSize / 2;
+                    if (!this.isBlockAvailable(indexes[0])) {
+                        this.cache[indexes[0]] = rows.slice(0, median);
+                    }
+                    if (!this.isBlockAvailable(indexes[1])) {
+                        this.cache[indexes[1]] = rows.slice(median, this.model.pageSize);
+                    }
+                } else {
+                    median = ~~Math.max(rows.length, this.model.pageSize) / 2;
+                    if (!this.isBlockAvailable(indexes[0])) {
+                        this.cache[indexes[0]] = rows.slice(0, median);
+                    }
+                    if (!this.isBlockAvailable(indexes[1])) {
+                        this.cache[indexes[1]] = rows.slice(median);
+                    }
                 }
             }
             if (this.parent.groupSettings.columns.length && !xAxis && this.cache[value]) {

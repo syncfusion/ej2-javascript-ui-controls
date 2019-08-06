@@ -692,6 +692,39 @@ describe("Toast Testing", () => {
             expect(ele.style.left).toBe('30%');
         });
     });
+    describe("Toast Position property testing for string case", () => {
+        let toast: Toast;
+        beforeEach((): void => {
+            document.body.innerHTML = "";
+            let ele: HTMLElement = document.createElement("div");
+            ele.id = "toast";
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            document.body.innerHTML = "";            
+        });
+        it("Toast Position value testing", (done: Function) => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({timeOut: 50, position: {X: "Center", Y: "Top" }}, ele);
+            toast.show();
+            expect(ele.classList.contains(TOPCENTER)).toBe(true);
+            setTimeout(() => { done(); }, TIME_DELAY);        
+        });
+        it("Toast Position Custom testing", () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({ timeOut: 50, position: {X : 30, Y: 50 }}, ele);
+            toast.show();
+            expect(ele.style.top).toBe('50px');
+            expect(ele.style.left).toBe('30px');
+        });
+        it("Toast Position Custom testing", () => {
+            let ele: HTMLElement = document.getElementById("toast");
+            toast = new Toast({ timeOut: 50, position: {X : "30", Y: "50" }}, ele);
+            toast.show();
+            expect(ele.style.top).toBe('50px');
+            expect(ele.style.left).toBe('30px');
+        });
+    });
     describe("Toast template Property testing", () => {
         let toast: Toast;
         beforeEach((): void => {
@@ -768,14 +801,17 @@ describe("Toast Testing", () => {
             newestOnTop: false, } , ele);
             toast.show();
             expect(ele.firstElementChild.querySelector('.' + MESSAGE).childElementCount).toBe(1);
-            expect(ele.firstElementChild.querySelector('.' + TITLE).textContent).toBe('Hello this is Title Element');
+            //EJ2-29660 Prevent DOM selector processing in title property - Hence title works only with string and HTML string
+            expect(ele.firstElementChild.querySelector('.' + TITLE).textContent).toBe('#titleEle');
             toast.show( {title: null, content: '#contentEle' });
             expect(ele.children[1].children[0].childElementCount).toBe(1);
             expect(ele.children[1].querySelector('.' + CONTENT).firstElementChild.textContent).toBe('Hello this is Content Element');
             expect(ele.firstElementChild.querySelector('.' + MESSAGE).childElementCount).toBe(1);
-            expect(ele.firstElementChild.querySelector('.' + TITLE).textContent).toBe('Hello this is Title Element');
+            //EJ2-29660 Prevent DOM selector processing in title property - Hence title works only with string and HTML string
+            expect(ele.firstElementChild.querySelector('.' + TITLE).textContent).toBe('#titleEle');
             toast.show( { title: '#titleEle', content: null });
-            expect(ele.children[2].querySelector('.' + TITLE).firstElementChild.textContent).toBe('Hello this is Title Element');
+            //EJ2-29660 Prevent DOM selector processing in title property - Hence title works only with string and HTML string
+            expect(ele.children[2].querySelector('.' + TITLE).textContent).toBe('#titleEle');
             expect(ele.children[2].childElementCount).toBe(1);
             toast.hide('All');
             setTimeout(() => { done(); }, TIME_DELAY);
@@ -791,7 +827,8 @@ describe("Toast Testing", () => {
             toast.show( { template: null, title: '#titleEle', content: '#contentEle' });
             expect(ele.children[1].childElementCount).toBe(1);
             expect(ele.children[1].children[0].childElementCount).toBe(2);
-            expect(ele.children[1].querySelector('.' + TITLE).firstElementChild.textContent).toBe('Hello this is Title Element');
+            //EJ2-29660 Prevent DOM selector processing in title property - Hence title works only with string and HTML string
+            expect(ele.children[1].querySelector('.' + TITLE).textContent).toBe('#titleEle');
             expect(ele.children[1].querySelector('.' + CONTENT).firstElementChild.textContent).toBe('Hello this is Content Element');
 
             expect(ele.firstElementChild.childElementCount).toBe(1);
@@ -799,11 +836,13 @@ describe("Toast Testing", () => {
             toast.show( { template: null, title: '#titleEle', content: '#contentEle' });
             expect(ele.children[1].childElementCount).toBe(1);
             expect(ele.children[1].children[0].childElementCount).toBe(2);
-            expect(ele.children[1].querySelector('.' + TITLE).firstElementChild.textContent).toBe('Hello this is Title Element');
+            //EJ2-29660 Prevent DOM selector processing in title property - Hence title works only with string and HTML string
+            expect(ele.children[1].querySelector('.' + TITLE).textContent).toBe('#titleEle');
             expect(ele.children[1].querySelector('.' + CONTENT).firstElementChild.textContent).toBe('Hello this is Content Element');
             expect(ele.children[2].childElementCount).toBe(1);
             expect(ele.children[2].children[0].childElementCount).toBe(2);
-            expect(ele.children[2].querySelector('.' + TITLE).firstElementChild.textContent).toBe('Hello this is Title Element');
+            //EJ2-29660 Prevent DOM selector processing in title property - Hence title works only with string and HTML string
+            expect(ele.children[2].querySelector('.' + TITLE).textContent).toBe('#titleEle');
             expect(ele.children[2].querySelector('.' + CONTENT).firstElementChild.textContent).toBe('Hello this is Content Element');
             toast.hide('All');
             setTimeout(() => { done(); }, TIME_DELAY);

@@ -94,7 +94,7 @@ export class Border extends ChildProperty<Border> {
 
     /**
      * The width of the border in pixels.
-     * @default '0'
+     * @default 0
      */
     @Property(0)
     public width: number;
@@ -216,6 +216,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Specifies to move the container.
+     * @default 0
      */
     @Property(0)
     public offset: number;

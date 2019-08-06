@@ -27,8 +27,10 @@ export const timelineSingleHeaderCell: string = 'e-timeline-single-header-cell';
 export const timelineSingleHeaderOuterDiv: string = 'e-timeline-single-header-outer-div';
 // Chart Rows-Class
 export const leftLabelContainer: string = 'e-left-label-container';
+export const leftLabelTempContainer: string = 'e-left-label-container e-left-label-temp-container';
 export const leftLabelInnerDiv: string = 'e-left-label-inner-div';
 export const rightLabelContainer: string = 'e-right-label-container';
+export const rightLabelTempContainer: string = 'e-right-label-container e-right-label-temp-container';
 export const rightLabelInnerDiv: string = 'e-right-label-inner-div';
 export const taskBarMainContainer: string = 'e-taskbar-main-container';
 export const parentTaskBarInnerDiv: string = 'e-gantt-parent-taskbar-inner-div';

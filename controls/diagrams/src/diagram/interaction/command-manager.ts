@@ -1236,6 +1236,11 @@ export class CommandHandler {
                     return false;
                 } else { select = this.selectBpmnSubProcesses(this.diagram.nameTable[parent]); }
             }
+        } else if (node.parentId && this.diagram.nameTable[node.parentId] &&
+            this.diagram.nameTable[node.parentId].shape.type === 'UmlClassifier') {
+            if (isSelected(this.diagram, this.diagram.nameTable[node.parentId])) {
+                select = false;
+            }
         }
         return select;
     }

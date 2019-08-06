@@ -2,7 +2,7 @@ import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler,
 import { cldrData, removeClass, getValue, getDefaultDateObject, closest } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { CheckBox, ChangeEventArgs, Button, RadioButton } from '@syncfusion/ej2-buttons';
+import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, BeforeOpenEventArgs, DialogModel } from '@syncfusion/ej2-popups';
 import {
     DropDownList, FilteringEventArgs, MultiSelect, ChangeEventArgs as ddlChangeEventArgs,
@@ -781,7 +781,9 @@ export class EventWindow {
 
     private showDetails(eventData: { [key: string]: Object }): void {
         let eventObj: { [key: string]: Object } = <{ [key: string]: Object }>extend({}, eventData, null, true);
-        this.trimAllDay(eventObj);
+        if ((<Date>eventObj[this.fields.endTime]).getHours() === 0 && (<Date>eventObj[this.fields.endTime]).getMinutes() === 0) {
+            this.trimAllDay(eventObj);
+        }
         this.eventData = eventObj;
         let formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
         let keyNames: string[] = Object.keys(eventObj);
@@ -1091,8 +1093,11 @@ export class EventWindow {
         }
         let ruleData: string = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() : null;
         eventObj[this.fields.recurrenceRule] = ruleData ? ruleData : undefined;
+        let resourceData: string[] | number[] = this.getResourceData(eventObj);
         let isResourceEventExpand: boolean = (this.parent.activeViewOptions.group.resources.length > 0 ||
-            this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit;
+            this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit
+            && !isNullOrUndefined(resourceData);
+
         if (!isNullOrUndefined(eventId)) {
             let eveId: number | string = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData: { [key: string]: Object } = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
@@ -1143,6 +1148,16 @@ export class EventWindow {
             return;
         }
         this.dialogObject.hide();
+    }
+
+    private getResourceData(eventObj: { [key: string]: Object }): string[] | number[] {
+        let resourceData: string[] | number[] = null;
+        if (!isNullOrUndefined(this.parent.resourceBase) && !isNullOrUndefined(this.parent.resourceBase.resourceCollection)
+            && this.parent.resourceBase.resourceCollection.length > 0) {
+            let lastResouceData: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
+            resourceData = eventObj[lastResouceData.field] as string[] | number[];
+        }
+        return resourceData;
     }
 
     public getObjectFromFormData(className: string): { [key: string]: Object } {
@@ -1224,10 +1239,7 @@ export class EventWindow {
                         }
                         break;
                     case 'MONTHLY':
-                        if ((this.getInstance('e-month-expander-checkbox-wrapper .e-radio') as RadioButton).checked
-                            && [29, 30, 31].indexOf(parseInt(recEditor.value.split(';')[1].split('=')[1], 10)) !== -1) {
-                            alertMessage = 'dateValidation';
-                        } else if (endDate.getTime() >= new Date(+startDate).setMonth(startDate.getMonth() + interval)) {
+                        if (endDate.getTime() >= new Date(+startDate).setMonth(startDate.getMonth() + interval)) {
                             alertMessage = 'createError';
                         }
                         break;

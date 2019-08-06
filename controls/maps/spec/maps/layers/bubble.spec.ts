@@ -216,13 +216,13 @@ describe('Map layer testing', () => {
                 expect(spec.getAttribute('opacity')).toBe('0.5');
                 expect(spec.getAttribute('stroke-width')).toBe('2');
                 expect(spec.getAttribute('stroke')).toBe('red');
-                expect(parseInt(spec.getAttribute('height'), 10)).toBe(20);
-                expect(parseInt(spec.getAttribute('width'), 10)).toBe(20);
+                expect(parseInt(spec.getAttribute('height'), 10)).toBe(24);
+                expect(parseInt(spec.getAttribute('width'), 10)).toBe(24);
                 expect(parseInt(spec.getAttribute('x'), 10)).toBe(0);
                 expect(parseInt(spec.getAttribute('y'), 10)).toBe(0);
                 let transform: string[] = spec.getAttribute('transform').split(' ');
-                expect(parseInt(transform[1], 10)).toBeGreaterThanOrEqual(328);
-                expect(parseInt(transform[2], 10)).toBeLessThanOrEqual(92);
+                expect(parseInt(transform[1], 10)).toBeGreaterThanOrEqual(326);
+                expect(parseInt(transform[2], 10)).toBeLessThanOrEqual(95);
                 done();
             };
             bubble.refresh();

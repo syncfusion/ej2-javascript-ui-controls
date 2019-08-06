@@ -207,7 +207,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property('')
     public documentName: string;
-
+    /**
+     * @private
+     */
     public spellCheckerModule: SpellChecker;
 
     /**
@@ -570,9 +572,11 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Gets the spell check object of the document editor.
+     * @aspType SpellChecker
+     * @blazorType SpellChecker
      * @returns SpellChecker
      */
-    get spellChecker(): SpellChecker {
+    public get spellChecker(): SpellChecker {
         return this.spellCheckerModule;
     }
     /**

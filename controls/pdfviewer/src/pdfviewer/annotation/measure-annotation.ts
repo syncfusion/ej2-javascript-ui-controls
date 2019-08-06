@@ -233,10 +233,10 @@ export class MeasureAnnotation {
         this.volumeStrokeColor = this.pdfViewer.volumeSettings.strokeColor ? this.pdfViewer.volumeSettings.strokeColor : '#ff0000';
         this.volumeOpacity = this.pdfViewer.volumeSettings.opacity ? this.pdfViewer.volumeSettings.opacity : 1;
         this.volumeThickness = this.pdfViewer.volumeSettings.thickness ? this.pdfViewer.volumeSettings.thickness : 1;
-        this.unit = 'in';
-        this.displayUnit = 'in';
-        this.ratio = 1;
-        this.volumeDepth = 96;
+        this.unit = this.pdfViewer.measurementSettings.conversionUnit;
+        this.displayUnit = this.pdfViewer.measurementSettings.displayUnit;
+        this.ratio = this.pdfViewer.measurementSettings.scaleRatio;
+        this.volumeDepth = this.pdfViewer.measurementSettings.depth;
         this.scaleRatioString = '1 ' + this.unit + ' = ' + '1 ' + this.displayUnit;
     }
 

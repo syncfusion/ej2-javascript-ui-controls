@@ -1217,6 +1217,67 @@ describe('Dialog Control', () => {
     });
 })
 
+describe('Position property testing using string type', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'dialog' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (dialog) {
+            dialog.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Initial and dynamic change on position property using custom values', () => {
+        dialog = new Dialog({ header: "Dialog", position: { X: "100", Y: "200" } }, '#dialog');
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+        expect((dialog.element as HTMLElement).style.top).toBe('200px');
+        dialog.position = { X: "100", Y: "400" };
+        dialog.dataBind();
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+    });
+    it('Initial and dynamic change on position property using custom values', () => {
+        dialog = new Dialog({ header: "Dialog", position: { X: 100, Y: 200 } }, '#dialog');
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+        expect((dialog.element as HTMLElement).style.top).toBe('200px');
+        dialog.position = { X: 100, Y: 400 };
+        dialog.dataBind();
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+    });
+    it('Initial and dynamic change on position property default positions', () => {
+        dialog = new Dialog({ header: "Dialog", position: { X: "center", Y: "center" } }, '#dialog');
+        expect(document.getElementById("dialog").children[0].classList.contains('e-dlg-center-center')).toEqual(false);
+        dialog.position = { X: "center", Y: "top" };
+        dialog.dataBind();
+        expect(document.getElementById("dialog").children[0].classList.contains('e-dlg-center-top')).toEqual(false);
+    });
+    it('Initial and dynamic change on position property using custom values for Modal dialog', () => {
+        dialog = new Dialog({ header: "Dialog", position: { X: "100", Y: "200" }, isModal: true }, '#dialog');
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+        expect((dialog.element as HTMLElement).style.top).toBe('200px');
+        dialog.position = { X: "100", Y: "400" };
+        dialog.dataBind();
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+    });
+    it('Initial and dynamic change on position property using custom values for Modal dialog', () => {
+        dialog = new Dialog({ header: "Dialog", position: { X: 100, Y: 200 }, isModal: true }, '#dialog');
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+        expect((dialog.element as HTMLElement).style.top).toBe('200px');
+        dialog.position = { X: 100, Y: 400 };
+        dialog.dataBind();
+        expect((dialog.element as HTMLElement).style.left).toBe('100px');
+    });
+    it('Initial and dynamic change on position property default position for Modal dialog', () => {
+        dialog = new Dialog({ header: "Dialog", position: { X: "center", Y: "center" }, isModal: true }, '#dialog');
+        expect(document.getElementById("dialog").parentElement.classList.contains('e-dlg-center-center')).toEqual(true);
+        dialog.position = { X: "center", Y: "top" };
+        dialog.dataBind();
+        expect(document.getElementById("dialog").parentElement.classList.contains('e-dlg-center-top')).toEqual(true);
+    });
+})
+
 describe('Dialog max-height testing', () => {
     let dialog: Dialog;
     beforeEach((): void => {

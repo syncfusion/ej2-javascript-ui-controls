@@ -3,7 +3,7 @@ import { Maps } from '../../maps/maps';
 import { getShapeColor } from '../model/theme';
 import { GeoLocation, isCustomPath, convertGeoToPoint, Point, PathOption, Size, PolylineOption, getElementByID } from '../utils/helper';
 import { MapLocation, RectOption, getTranslate, convertTileLatLongToPoint, checkShapeDataFields, CircleOption } from '../utils/helper';
-import { getZoomTranslate, getRatioOfBubble } from '../utils/helper';
+import { getZoomTranslate } from '../utils/helper';
 import { LayerSettings, ShapeSettings, Tile, BubbleSettings } from '../model/base';
 import { LayerSettingsModel } from '../model/base-model';
 import { BingMap } from './bing-map';
@@ -183,9 +183,6 @@ export class LayerPanel {
     //tslint:disable:max-func-body-length
     private bubbleCalculation(bubbleSettings: BubbleSettingsModel, range: { min: number, max: number }): void {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
-            if (bubbleSettings.colorValuePath == null) {
-                return;
-            }
             for (let i: number = 0; i < bubbleSettings.dataSource.length; i++) {
                 let bubbledata: number = parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
                 if (i !== 0) {
@@ -321,43 +318,9 @@ export class LayerPanel {
                         break;
                     case 'Point':
                         let pointData: Object = <Object>currentShapeData['point'];
-                        if (fill !== eventArgs.fill) {
-                            eventArgs.fill = eventArgs.fill;
-                        } else {
-                            if (bubbleSettings.length > 0) {
-                                for (let k: number = 0; k < bubbleSettings.length; k++) {
-                                    let bubbleColor: string = bubbleSettings[k].colorValuePath;
-                                    let shapePath: string = <string>this.currentLayer.shapePropertyPath;
-                                    let bubbleData: Object[] = bubbleSettings[k].dataSource; let radius: number;
-                                    let bubbleValue: number | string = bubbleSettings[k].valuePath; let indexValue: number;
-                                    let bubbleFill: string; let range: { min: number, max: number };
-                                    bubbleData.forEach((bubble: Object, index: number) => {
-                                        if (currentShapeData['property'][shapePath] === bubbleData[index][shapePath]) {
-                                            bubbleFill = bubble[bubbleColor];
-                                            indexValue = index;
-                                        }
-                                    });
-                                    if (!isNullOrUndefined(indexValue)) {
-                                        range = { min: 0, max: 0 };
-                                        this.bubbleCalculation(bubbleSettings[k], range);
-                                        radius = getRatioOfBubble(bubbleSettings[k]['minRadius'],
-                                                                  bubbleSettings[k]['maxRadius'],
-                                                                  bubbleData[k][bubbleValue], range.min, range.max);
-                                    }
-                                    if (isNullOrUndefined(bubbleFill) || isNullOrUndefined(radius)) {
-                                        bubbleFill = eventArgs.fill;
-                                        radius = shapeSettings.circleRadius;
-                                    }
-                                    circleOptions = new CircleOption(shapeID, bubbleFill, eventArgs.border, opacity,
-                                                                     pointData['x'], pointData['y'], radius, null);
-                                    pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
-                                }
-                            } else {
-                                circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity,
-                                                                 pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
-                                pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
-                            }
-                        }
+                        circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity,
+                                                         pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                        pathEle = this.mapObject.renderer.drawCircle(circleOptions) as SVGCircleElement;
                         break;
                     case 'Path':
                         path = <string>currentShapeData['point'];

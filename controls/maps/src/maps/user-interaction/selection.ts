@@ -23,7 +23,7 @@ export class Selection {
             this.maps.on(Browser.touchEndEvent, this.mouseClick, this);
         }
     }
-    /** 
+    /**
      * For removing events from selection modue
      */
     private removeEventListener(): void {
@@ -110,7 +110,10 @@ export class Selection {
         let eventArgs: ISelectionEventArgs = {
             opacity: this.selectionsettings.opacity,
             fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
-            border: { color: this.selectionsettings.border.color, width: this.selectionsettings.border.width / this.maps.scale },
+            border: {
+                color: this.selectionsettings.border.color,
+                width: this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)
+            },
             name: itemSelection,
             target: targetEle.id,
             cancel: false,
@@ -175,7 +178,7 @@ export class Selection {
     }
 
     /**
-     * To destroy the selection. 
+     * To destroy the selection.
      * @return {void}
      * @private
      */

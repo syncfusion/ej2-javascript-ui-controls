@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### File Manager
+
+#### New Features
+
+- The `ID` based support has been provided to the `selectedItems` property to manage the files with duplicate names.
+
 ## 17.2.36 (2019-07-24)
 
 ### File Manager

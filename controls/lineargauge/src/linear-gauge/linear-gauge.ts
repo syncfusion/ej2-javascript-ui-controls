@@ -1122,9 +1122,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     renderer = true;
                     break;
                 case 'container':
-                    refreshBounds = true;
-                    break;
                 case 'axes':
+                case 'orientation':
                     refreshBounds = true;
                     break;
             }

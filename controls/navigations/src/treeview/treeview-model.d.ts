@@ -17,6 +17,7 @@ export interface FieldsSettingsModel {
      * @default []
      * @aspDatasourceNullIgnore
      * @blazorDatasourceNullIgnore
+     * @isGenericType true
      */
     dataSource?: DataManager | { [key: string]: Object }[];
 

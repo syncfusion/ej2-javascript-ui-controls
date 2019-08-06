@@ -1485,7 +1485,7 @@ export function elementAnimate(
                 return;
             }
             let event: IAnimationCompleteEventArgs = {
-                cancel: false, name: animationComplete, element: ele, maps: maps
+                cancel: false, name: animationComplete, element: ele, maps: maps.isBlazor ? null : maps
             };
             maps.trigger(animationComplete, event);
         }

@@ -513,7 +513,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
         this.elementChange();
 
-        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
+        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
 
     }
 
@@ -914,7 +914,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             cancel: false,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            treemap: this
+            treemap: this.isBlazor ? null : this
         };
 
         if (this.resizeTo) {
@@ -928,7 +928,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.refreshing = true;
                     this.wireEVents();
                     args.currentSize = this.availableSize;
-                    this.trigger(resize, this.isBlazor ? {} : args);
+                    this.trigger(resize, args);
                     this.render();
                 },
                 500);

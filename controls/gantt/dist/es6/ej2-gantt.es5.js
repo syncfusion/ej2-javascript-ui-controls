@@ -2139,8 +2139,10 @@ var timelineSingleHeaderCell = 'e-timeline-single-header-cell';
 var timelineSingleHeaderOuterDiv = 'e-timeline-single-header-outer-div';
 // Chart Rows-Class
 var leftLabelContainer = 'e-left-label-container';
+var leftLabelTempContainer = 'e-left-label-container e-left-label-temp-container';
 var leftLabelInnerDiv = 'e-left-label-inner-div';
 var rightLabelContainer = 'e-right-label-container';
+var rightLabelTempContainer = 'e-right-label-container e-right-label-temp-container';
 var rightLabelInnerDiv = 'e-right-label-inner-div';
 var taskBarMainContainer = 'e-taskbar-main-container';
 var parentTaskBarInnerDiv = 'e-gantt-parent-taskbar-inner-div';
@@ -5882,8 +5884,8 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         }
     };
     ChartRows.prototype.leftLabelContainer = function () {
-        var template = '<div class="' + leftLabelContainer + ' ' +
-            '" tabindex="-1" ' + this.generateTaskLabelAriaLabel('left') + '  style="height:' +
+        var template = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? leftLabelTempContainer :
+            leftLabelContainer) + ' ' + '" tabindex="-1" ' + this.generateTaskLabelAriaLabel('left') + '  style="height:' +
             (this.parent.rowHeight - 1) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
         return this.createDivElement(template);
     };
@@ -5900,8 +5902,8 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         return this.createDivElement(template);
     };
     ChartRows.prototype.rightLabelContainer = function () {
-        var template = '<div class="' + rightLabelContainer + '" ' +
-            ' tabindex="-1" ' + this.generateTaskLabelAriaLabel('right') +
+        var template = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? rightLabelTempContainer :
+            rightLabelContainer) + '" ' + ' tabindex="-1" ' + this.generateTaskLabelAriaLabel('right') +
             ' style="left:' + this.getRightLabelLeft(this.templateData) + 'px;height:'
             + (this.parent.rowHeight - 1) + 'px;"></div>';
         return this.createDivElement(template);
@@ -14044,7 +14046,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                     this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
                 }
                 endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp);
-                if (endDate.getTime() > (ganttProp.startDate).getTime()) {
+                if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() > (ganttProp.startDate).getTime()) {
                     this.parent.setRecordValue('endDate', endDate, ganttProp, true);
                 }
             }
@@ -14272,7 +14274,12 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                     change: function (args) {
                         var tr = closest(args.element, 'tr');
                         var idInput = tr.querySelector('#' + _this.parent.element.id + 'DependencyTabContainerid');
-                        idInput.value = args.itemData.id;
+                        if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
+                            idInput.value = args.itemData.id;
+                        }
+                        else {
+                            idInput.value = '';
+                        }
                     },
                     autofill: true,
                 });
@@ -15317,6 +15324,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             this.updateScheduleDatesOnEditing(args);
         }
         eventArgs.requestType = 'save';
+        eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
         setValue('action', args.action, eventArgs);

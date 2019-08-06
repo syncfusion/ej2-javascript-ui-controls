@@ -926,10 +926,8 @@ export class Editor {
                     tempSpan.characterFormat.copyFormat(insertFormat);
                     let insertIndex: number = inline.indexInOwner;
                     if (indexInInline === inline.length) {
-                        inline.line.children.splice(insertIndex + 1, 0, tempSpan);
-                        if (inline.line.paragraph.bidi) {
-                            this.viewer.layout.reArrangeElementsForRtl(inline.line, inline.line.paragraph.bidi);
-                        }
+                        let isParaBidi: boolean = inline.line.paragraph.bidi;
+                        inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
                     } else if (indexInInline === 0) {
                         if (isRtl && !isBidi) {
                             inline.line.children.splice(insertIndex + 1, 0, tempSpan);
@@ -2081,8 +2079,8 @@ export class Editor {
         /* tslint:disable:no-any */
         if (sfdt) {
             let document: any = JSON.parse(sfdt);
-                this.pasteContents(document);
-                this.applyPasteOptions(this.currentPasteOptions);
+            this.pasteContents(document);
+            this.applyPasteOptions(this.currentPasteOptions);
         }
     }
     private getBlocks(pasteContent: any): BlockWidget[] {
@@ -2515,7 +2513,9 @@ export class Editor {
         let lineIndex: number = line.indexInOwner;
         let insertIndex: number = element.indexInOwner;
         if (index === element.length) { // Add new Element in current 
-            insertIndex++;
+            if (!paragraph.paragraphFormat.bidi) {
+                insertIndex++;
+            }
             line.children.splice(insertIndex, 0, newElement);
         } else if (index === 0) {
             if (isNullOrUndefined(element.previousNode)) {
@@ -4884,14 +4884,20 @@ export class Editor {
         }
         if (selection.isEmpty) {
             this.setOffsetValue(selection);
-            this.viewer.layout.isBidiReLayout = true;
+            let isBidiList: boolean = selection.paragraphFormat.bidi &&
+                (property === 'listFormat' || selection.paragraphFormat.listId !== -1);
+            if (!isBidiList) {
+                this.viewer.layout.isBidiReLayout = true;
+            }
             if (update && property === 'leftIndent') {
                 value = this.getIndentIncrementValue(selection.start.paragraph, value as number);
             }
             let para: ParagraphWidget = selection.start.paragraph.combineWidget(this.viewer) as ParagraphWidget;
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
-            this.viewer.layout.isBidiReLayout = false;
+            if (!isBidiList) {
+                this.viewer.layout.isBidiReLayout = false;
+            }
         } else {
             //Iterate and update formatting's.      
             if (action !== 'ParagraphBidi') {
@@ -5029,9 +5035,14 @@ export class Editor {
                 this.updateParagraphFormat(undefined, value, false);
                 break;
             case 'bidi':
-                this.viewer.layout.isBidiReLayout = true;
+                let isBidiList: boolean = this.selection.paragraphFormat.listId !== -1;
+                if (!isBidiList) {
+                    this.viewer.layout.isBidiReLayout = true;
+                }
                 this.updateParagraphFormat('bidi', value, false);
-                this.viewer.layout.isBidiReLayout = false;
+                if (!isBidiList) {
+                    this.viewer.layout.isBidiReLayout = false;
+                }
                 break;
             case 'contextualSpacing':
                 this.updateParagraphFormat('contextualSpacing', value, false);
@@ -7072,7 +7083,9 @@ export class Editor {
      */
     public removeContent(lineWidget: LineWidget, startOffset: number, endOffset: number): void {
         let count: number = this.selection.getLineLength(lineWidget);
-        for (let i: number = lineWidget.children.length - 1; i >= 0; i--) {
+        let isBidi: boolean = lineWidget.paragraph.paragraphFormat.bidi;
+        let childLength: number = lineWidget.children.length;
+        for (let i: number = isBidi ? 0 : childLength - 1; isBidi ? i < childLength : i >= 0; isBidi ? i++ : i--) {
             let inline: ElementBox = lineWidget.children[i];
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
@@ -8610,7 +8623,11 @@ export class Editor {
                     if (paragraph.childWidgets.length > 0) {
                         let lineWidget: LineWidget = paragraph.childWidgets[0] as LineWidget;
                         if (lineWidget.children.length > 0) {
-                            element = lineWidget.children[0] as ListTextElementBox;
+                            if (paragraph.paragraphFormat.bidi) {
+                                element = lineWidget.children[lineWidget.children.length - 1] as ListTextElementBox;
+                            } else {
+                                element = lineWidget.children[0] as ListTextElementBox;
+                            }
                         }
                     }
                     if (!isNullOrUndefined(element)) {

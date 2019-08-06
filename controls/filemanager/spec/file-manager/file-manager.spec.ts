@@ -321,7 +321,7 @@ describe('FileManager control', () => {
         });
         it('Splitter Module testing', () => {
             expect(feObj.element.querySelector('.e-layout').classList.contains('e-splitter')).toEqual(true);
-            expect(feObj.element.querySelector('.e-treeview').classList.contains('e-pane')).toEqual(true);
+            expect(feObj.element.querySelector('.e-navigation').classList.contains('e-pane')).toEqual(true);
             expect(feObj.element.querySelector('#file_content').classList.contains('e-pane')).toEqual(true);
             expect(feObj.splitterObj.paneSettings.length).toEqual(2);
             expect(feObj.element.querySelector('.e-splitter .e-split-bar .e-resize-handler').style.display).toEqual('');

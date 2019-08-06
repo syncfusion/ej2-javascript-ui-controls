@@ -35,6 +35,7 @@ describe('Batch Editing module', () => {
         }
         return datasrc;
     };
+    
     let batchData: Object[] = dataSource();
 
 
@@ -2145,6 +2146,98 @@ describe('Batch Editing module', () => {
         });
     });
 
+    describe('Batch editing render with Freeze and empty grid => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    frozenColumns: 2,
+                    frozenRows: 2,
+                    editSettings: {
+                        allowEditing: true, allowAdding: true, allowDeleting: true,
+                        mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false
+                    },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                        { field: 'ShipCity', type: 'string' }
+                    ]
+                }, done);
+        });
+
+        it(' Batch edit add start', (done: Function) => {
+            let beforeBatchAdd = (args?: any): void => {
+                expect(gridObj.isEdit).toBeFalsy();
+                gridObj.beforeBatchAdd = null;
+            };
+            let batchAdd = (args?: any): void => {
+                expect(gridObj.element.querySelectorAll('.e-editedbatchcell').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
+                expect(gridObj.element.querySelectorAll('form').length).toBe(1);
+                gridObj.batchAdd = null;
+                done();
+            };
+            gridObj.beforeBatchAdd = beforeBatchAdd;
+            gridObj.batchAdd = batchAdd;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+
+        it('cell save complete', (done: Function) => {
+            let cellSave = (args?: any): void => {
+                expect(gridObj.element.querySelectorAll('.e-updatedtd').length).toBeGreaterThan(2);
+                expect(gridObj.isEdit).toBeTruthy();
+                gridObj.cellSave = null;
+                done();
+            };
+            gridObj.editModule.editCell(0, 'Freight');
+            gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '10';
+            gridObj.editModule.editCell(0, 'ShipCity');
+            gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'Reims';
+            gridObj.cellSave = cellSave;
+            //toolbar status check
+            expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
+            gridObj.editModule.saveCell();
+        });
+
+        it('Batch edit add - cell edit complete', (done: Function) => {
+            let cellSave = (args?: any): void => {
+                expect(gridObj.isEdit).toBeTruthy();
+                gridObj.cellSave = null;
+                done();
+            };
+            gridObj.cellSave = cellSave;
+            //update orderid
+            gridObj.editModule.editCell(0, 'OrderID');
+            (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 10247;
+            gridObj.editModule.saveCell();
+        });
+
+        it('batch edit save', (done: Function) => {
+            let beforeBatchSave = (args?: any): void => {
+                expect(gridObj.isEdit).toBeFalsy();
+                gridObj.beforeBatchSave = null;
+            };
+            let dataBound = (args?: any): void => {
+                expect(gridObj.isEdit).toBeFalsy();
+                expect(gridObj.currentViewData.length).toBe(1);
+                gridObj.dataBound = null;
+                done();
+            };
+            gridObj.beforeBatchSave = beforeBatchSave;
+            gridObj.dataBound = dataBound;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_update' } });
+            gridObj.element.querySelector('#' + gridObj.element.id + 'EditConfirm').querySelectorAll('button')[0].click();
+        });
+        afterAll(() => {
+            gridObj.notify('tooltip-destroy', {});
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+    
     describe('EJ2-6489 hierarchy testing => ', () => {
         let gridObj: Grid;
         let childGridObj: Grid;

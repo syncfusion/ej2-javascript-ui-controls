@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, compile, createElement, extend, formatUnit, getInstance, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, closest, compile, createElement, extend, formatUnit, getElement, getInstance, isNullOrUndefined, prepend, remove, removeClass, resetBlazorTemplate, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, getObject, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
@@ -1409,8 +1409,8 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             this.fieldList[field].formattedMembers = {};
             this.fieldList[field].dateMember = [];
         }
-        this.fillFieldMembers(dataSource.dataSource, this.indexMatrix);
-        this.valueMatrix = this.generateValueMatrix(dataSource.dataSource);
+        this.fillFieldMembers(this.data, this.indexMatrix);
+        this.valueMatrix = this.generateValueMatrix(this.data);
         this.filterMembers = [];
         this.cMembers = [];
         this.rMembers = [];
@@ -1527,11 +1527,11 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
             this.isEmptyDataAvail(rowFilteredData, columnFilteredData);
             var savedFieldList = extend({}, this.fieldList, null, true);
             this.indexMatrix = [];
-            var fields = dataSource.dataSource[0];
+            var fields = this.data[0];
             this.getFieldList(fields, this.enableSort, dataSource.allowValueFilter);
-            this.fillFieldMembers(dataSource.dataSource, this.indexMatrix);
+            this.fillFieldMembers(this.data, this.indexMatrix);
             this.updateSortSettings(dataSource.sortSettings, this.enableSort);
-            this.valueMatrix = this.generateValueMatrix(dataSource.dataSource);
+            this.valueMatrix = this.generateValueMatrix(this.data);
             this.filterMembers = [];
             this.updateFilterMembers(dataSource);
             this.rMembers = rows.length !== 0 ?
@@ -5641,6 +5641,7 @@ var Render = /** @__PURE__ @class */ (function () {
         };
         this.parent.trigger(hyperlinkCellClick, args, function (observedArgs) {
             if (!observedArgs.cancel) {
+                args.currentCell = getElement(args.currentCell);
                 var url = args.currentCell.getAttribute('data-url') ? (args.currentCell).getAttribute('data-url') :
                     args.currentCell.querySelector('a').getAttribute('data-url');
                 window.open(url);
@@ -11611,7 +11612,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.trigger(enginePopulating, { dataSourceSettings: this.dataSourceSettings }, function (observedArgs) {
             _this_1.dataSourceSettings = observedArgs.dataSourceSettings;
             if (_this_1.dataSourceSettings.groupSettings && _this_1.dataSourceSettings.groupSettings.length > 0) {
-                var dataSet = _this_1.dataSourceSettings.dataSource;
+                var dataSet = _this_1.engineModule.data;
                 _this_1.clonedDataSet = _this_1.clonedDataSet ? _this_1.clonedDataSet : PivotUtil.getClonedData(dataSet);
                 _this_1.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
                 _this_1.clonedReport = _this_1.clonedReport ? _this_1.clonedReport : extend({}, _this_1.dataSourceSettings, null, true);
@@ -15622,7 +15623,7 @@ var PivotFieldList = /** @__PURE__ @class */ (function (_super) {
         this.trigger(enginePopulating, { dataSourceSettings: this.dataSourceSettings }, function (observedArgs) {
             _this.dataSourceSettings = observedArgs.dataSourceSettings;
             if (_this.dataSourceSettings.groupSettings && _this.dataSourceSettings.groupSettings.length > 0) {
-                var pivotDataSet = _this.dataSourceSettings.dataSource;
+                var pivotDataSet = _this.engineModule.data;
                 _this.clonedDataSet = _this.clonedDataSet ? _this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet);
                 _this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
                 _this.clonedReport = _this.clonedReport ? _this.clonedReport : extend({}, _this.dataSourceSettings, null, true);

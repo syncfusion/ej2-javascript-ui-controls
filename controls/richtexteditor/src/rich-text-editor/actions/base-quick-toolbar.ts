@@ -312,6 +312,7 @@ export class BaseQuickToolbar {
      * Destroys the Quick toolbar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         if (this.popupObj && !this.popupObj.isDestroyed) {

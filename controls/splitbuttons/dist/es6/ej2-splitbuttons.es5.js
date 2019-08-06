@@ -1341,6 +1341,9 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
         var count = 100;
         for (var i = this.percent; i < count; i++) {
             i += 10;
+            if (i > 100) {
+                i = 100;
+            }
             if (this.enableProgress) {
                 this.getProgress().style[isVertical ? 'height' : 'width'] = (this.percent < 100) ? (i + '%') : '100%';
             }

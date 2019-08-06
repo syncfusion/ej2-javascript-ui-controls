@@ -1117,11 +1117,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.renderItems();
         if (this.isMenu && this.template) {
-            var menuTemplateId_1 = this.element.id + TEMPLATE_PROPERTY;
-            resetBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
-            setTimeout(function () {
-                updateBlazorTemplate(menuTemplateId_1, TEMPLATE_PROPERTY);
-            }, 500);
+            var menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
+            resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
         this.wireEvents();
     };
@@ -9523,7 +9521,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         this.showSpinner(eicon);
         var childItems;
-        if (this.fields.dataSource instanceof DataManager) {
+        // tslint:disable
+        if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             var level = this.parents(parentLi, '.' + PARENTITEM).length;
             var mapper_2 = this.getChildFields(this.fields, level, 1);
             if (isNullOrUndefined(mapper_2) || isNullOrUndefined(mapper_2.dataSource)) {
@@ -12138,6 +12137,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      * of the corresponding node otherwise it will return the entire updated data source of TreeView.
      * * The updated data source also contains custom attributes if you specified in data source.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
+     * @isGenericType true
      */
     TreeView.prototype.getTreeData = function (node) {
         var id = this.getId(node);

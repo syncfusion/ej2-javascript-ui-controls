@@ -641,7 +641,7 @@ export function getContent(element: DiagramHtmlElement | DiagramNativeElement, i
             let text: string = 'content';
             let annotations: string = 'annotations';
             let addInfo: string = 'addInfo';
-            content = element.diagramId + 'content_diagram';
+            content = node[id] + 'content_diagram';
             sentNode[id] = node[id];
             sentNode[height] = node[height];
             sentNode[width] = node[width];
@@ -661,10 +661,15 @@ export function getContent(element: DiagramHtmlElement | DiagramNativeElement, i
     }
     let item: HTMLElement | SVGElement;
     if (typeof element.content === 'string') {
-        let compiledString: Function;
-        compiledString = compile(element.content);
-        for (item of compiledString(sentNode, null, null, content)) {
-            div.appendChild(item);
+        let template: HTMLElement = document.getElementById(element.content);
+        if (template) {
+            div.appendChild(template);
+        } else {
+            let compiledString: Function;
+            compiledString = compile(element.content);
+            for (item of compiledString(sentNode, null, null, content)) {
+                div.appendChild(item);
+            }
         }
     } else {
         div.appendChild(element.content);

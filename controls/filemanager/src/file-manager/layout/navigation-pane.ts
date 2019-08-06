@@ -85,7 +85,6 @@ export class NavigationPane {
         });
         this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parent.element.id + CLS.TREE_ID);
-        this.treeObj.element.style.width = '25%';
         this.wireEvents();
     }
 

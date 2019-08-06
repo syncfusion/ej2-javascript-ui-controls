@@ -201,9 +201,9 @@ export class RangeBandSettings extends ChildProperty<RangeBandSettings> {
     public color: string;
     /**
      * To configure sparkline rangeband opacity
-     * @aspDefaultValueIgnore 
+     * @default 1
      */
-    @Property(null)
+    @Property(1)
     public opacity: number;
 }
 /**

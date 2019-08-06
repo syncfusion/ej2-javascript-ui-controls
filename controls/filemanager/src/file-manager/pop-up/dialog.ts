@@ -527,6 +527,7 @@ function onReSubmit(parent: IFileManager): void {
         return;
     }
     let newPath: string = (parent.activeModule === 'navigationpane') ? getParentPath(parent.path) : parent.path;
+    parent.renamedId = getValue('id', parent.itemData[0]);
     if (parent.isFile) {
         let oldExtension: string = parent.currentItemText.substr(parent.currentItemText.lastIndexOf('.'));
         let newExtension: string = text.substr(text.lastIndexOf('.'));
@@ -536,7 +537,6 @@ function onReSubmit(parent: IFileManager): void {
             rename(parent, newPath, text);
         }
     } else {
-        parent.renamedId = getValue('id', parent.itemData[0]);
         rename(parent, newPath, text);
     }
 }

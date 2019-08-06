@@ -339,7 +339,7 @@ export class Edit implements IAction {
     /**
      * Gets the current value of the edited component.
      */
-    public getCurrentEditCellData(): string {
+    public getCurrentEditCellData(): Object {
         let obj: Object = this.getCurrentEditedData(this.formObj.element, {});
         return obj[Object.keys(obj)[0]];
     }

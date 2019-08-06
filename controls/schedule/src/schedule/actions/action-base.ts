@@ -195,7 +195,9 @@ export class ActionBase {
         }
         addClass([cloneElement], cloneClassLists);
         addClass([element], cls.EVENT_ACTION_CLASS);
-        element.parentElement.appendChild(cloneElement);
+        if (!isNullOrUndefined(element.parentElement)) {
+            element.parentElement.appendChild(cloneElement);
+        }
         cloneElement.style.width = formatUnit(cloneElement.offsetWidth - 2);
         if (this.parent.eventDragArea && this.actionObj.action === 'drag') {
             document.querySelector(this.parent.eventDragArea).appendChild(cloneElement);
@@ -214,7 +216,9 @@ export class ActionBase {
 
     public removeCloneElement(): void {
         this.actionObj.originalElement = [];
-        this.actionObj.cloneElement.forEach((element: HTMLElement) => remove(element));
+        this.actionObj.cloneElement.forEach((element: HTMLElement) => {
+            if (!isNullOrUndefined(element.parentNode)) { remove(element); }
+        });
         this.actionObj.cloneElement = [];
         let timeIndicator: Element = this.parent.element.querySelector('.' + cls.CLONE_TIME_INDICATOR_CLASS);
         if (timeIndicator) {

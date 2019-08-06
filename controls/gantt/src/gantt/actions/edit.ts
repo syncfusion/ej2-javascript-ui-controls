@@ -747,6 +747,7 @@ export class Edit {
             this.updateScheduleDatesOnEditing(args);
         }
         eventArgs.requestType = 'save';
+        eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
         setValue('action', args.action, eventArgs);

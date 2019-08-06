@@ -73,6 +73,10 @@ export class NormalEdit {
                 }));
                 break;
             case 'delete':
+                if (isBlazor() && !this.parent.isJsComponent) {
+                    let d: string = 'data';
+                    e[d] = e[d][0];
+                }
                 this.parent.trigger(events.actionComplete, extend(e, {
                     requestType: 'delete',
                     type: events.actionComplete
@@ -356,7 +360,7 @@ export class NormalEdit {
         }
         this.previousData = {};
         this.uid = '';
-        (<Column[]>gObj.columns).forEach((col: Column) => {
+        ((<{ columnModel?: Column[] }>gObj).columnModel).forEach((col: Column) => {
             if (col.field) {
                 DataUtil.setValue(col.field, col.defaultValue, this.previousData);
             }
@@ -405,10 +409,15 @@ export class NormalEdit {
                 data[i] = contained ? tmpRecord : { [fieldname]: data[i] };
             }
         }
-        this.parent.notify(events.modelChanged, {
+        let args: object = {
             requestType: 'delete', type: events.actionBegin, foreignKeyData: {}, //foreign key support
             data: data ? data : this.parent.getSelectedRecords(), tr: this.parent.getSelectedRows(), cancel: false
-        });
+        };
+        let dataInString: string = 'data';
+        if (isBlazor() && !this.parent.isJsComponent) {
+            args[dataInString] = args[dataInString][0];
+        }
+        this.parent.notify(events.modelChanged, args);
     }
 
     private stopEditStatus(): void {

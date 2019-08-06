@@ -1252,6 +1252,9 @@ let ProgressButton = class ProgressButton extends Button {
         let count = 100;
         for (let i = this.percent; i < count; i++) {
             i += 10;
+            if (i > 100) {
+                i = 100;
+            }
             if (this.enableProgress) {
                 this.getProgress().style[isVertical ? 'height' : 'width'] = (this.percent < 100) ? (i + '%') : '100%';
             }

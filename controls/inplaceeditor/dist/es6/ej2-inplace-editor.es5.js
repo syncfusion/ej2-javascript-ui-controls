@@ -14,28 +14,46 @@ var intl = new Internationalization();
 /**
  * @hidden
  */
-function parseValue(type, val) {
+function parseValue(type, val, model) {
     if (isNullOrUndefined(val) || val === '') {
         return '';
     }
     var result;
+    var tempFormat;
     switch (type) {
         case 'Color':
             var hex = val;
             result = (hex.length > 7) ? hex.slice(0, -2) : hex;
             break;
         case 'Date':
-            result = intl.formatDate(val, { skeleton: 'yMd' });
+            tempFormat = model.format;
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
             break;
         case 'DateRange':
+            tempFormat = model.format;
             var date = val;
-            result = intl.formatDate(date[0], { skeleton: 'yMd' }) + ' - ' + intl.formatDate(date[1], { skeleton: 'yMd' });
+            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: 'yMd' }) + ' - '
+                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: 'yMd' });
             break;
         case 'DateTime':
-            result = intl.formatDate(val, { skeleton: 'yMd' }) + ' ' + intl.formatDate(val, { skeleton: 'hm' });
+            tempFormat = model.format;
+            if (isNullOrUndefined(tempFormat) || tempFormat === '') {
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' }) + ' '
+                    + intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+            }
+            else {
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
+            }
             break;
         case 'Time':
-            result = intl.formatDate(val, { skeleton: 'hm' });
+            tempFormat = model.format;
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+            break;
+        case 'Numeric':
+            tempFormat = isNullOrUndefined(model.format) ? 'n2' :
+                model.format;
+            var tempVal = isNullOrUndefined(val) ? null : (typeof (val) === 'number' ? val : intl.parseNumber(val));
+            result = intl.formatNumber(tempVal, { format: tempFormat });
             break;
         default:
             result = val.toString();
@@ -283,7 +301,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -600,7 +618,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             return this.getDropDownsValue();
         }
         else {
-            return parseValue(this.type, this.value);
+            return parseValue(this.type, this.value, this.model);
         }
     };
     InPlaceEditor.prototype.setRtl = function (value) {
@@ -1138,10 +1156,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
                     break;
                 case 'emptyText':
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
                     break;
                 case 'template':
                     this.checkIsTemplate();
@@ -1348,6 +1366,7 @@ var AutoComplete$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     AutoComplete$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1387,6 +1406,7 @@ var ColorPicker$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     ColorPicker$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1426,6 +1446,7 @@ var ComboBox$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     ComboBox$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1466,6 +1487,7 @@ var DateRangePicker$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     DateRangePicker$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1508,6 +1530,7 @@ var MultiSelect$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     MultiSelect$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1562,6 +1585,7 @@ var Rte = /** @__PURE__ @class */ (function () {
      * Destroys the rte module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     Rte.prototype.destroy = function () {
         this.base.destroy();
@@ -1604,6 +1628,7 @@ var Slider$1 = /** @__PURE__ @class */ (function () {
      * Destroys the slider module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     Slider$$1.prototype.destroy = function () {
         this.base.destroy();
@@ -1643,6 +1668,7 @@ var TimePicker$1 = /** @__PURE__ @class */ (function () {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     TimePicker$$1.prototype.destroy = function () {
         this.base.destroy();

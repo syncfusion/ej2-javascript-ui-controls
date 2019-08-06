@@ -717,6 +717,9 @@ export class Layout {
      */
     // tslint:disable-next-line:max-line-length
     private layoutEmptyLineWidget(paragraph: ParagraphWidget, isEmptyLine: boolean, line?: LineWidget, isShiftEnter?: boolean): void {
+        let paraFormat: WParagraphFormat = paragraph.paragraphFormat;
+        let subWidth: number = 0;
+        let whiteSpaceCount: number = 0;
         isShiftEnter = isNullOrUndefined(isShiftEnter) ? false : isShiftEnter;
         //Calculate line height and descent based on formatting defined in paragraph.
         let paragraphMarkSize: TextSizeInfo = this.viewer.textHelper.getParagraphMarkSize(paragraph.characterFormat);
@@ -725,6 +728,27 @@ export class Layout {
         let lineWidget: LineWidget;
         if (paragraph.childWidgets.length > 0 && !isShiftEnter) {
             lineWidget = paragraph.childWidgets[0] as LineWidget;
+            if (lineWidget.children.length > 0) {
+                if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(lineWidget))) {
+                    this.reArrangeElementsForRtl(lineWidget, paraFormat.bidi);
+                }
+                let isParagraphStart: boolean = lineWidget.isFirstLine();
+                let isParagraphEnd: boolean = lineWidget.isLastLine();
+                let firstLineIndent: number = 0;
+                if (isParagraphStart) {
+                    beforeSpacing = this.getBeforeSpacing(paragraph);
+                    firstLineIndent = HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
+                }
+                let textAlignment: TextAlignment = paraFormat.textAlignment;
+                if (textAlignment !== 'Left' && this.viewer.textWrap
+                    && (!(textAlignment === 'Justify' && isParagraphEnd)
+                        || (textAlignment === 'Justify' && paraFormat.bidi))) {
+                    // tslint:disable-next-line:max-line-length
+                    let getWidthAndSpace: SubWidthInfo = this.getSubWidth(lineWidget, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
+                    subWidth = getWidthAndSpace.subWidth;
+                    whiteSpaceCount = getWidthAndSpace.spaceCount;
+                }
+            }
         } else {
             lineWidget = isEmptyLine ? this.addLineWidget(paragraph) : line;
         }
@@ -763,12 +787,12 @@ export class Layout {
         bottomMargin += HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
-            if (element instanceof ListTextElementBox) {
+            if (i === 0 && element instanceof ListTextElementBox) {
                 let textAlignment: TextAlignment = paragraph.paragraphFormat.textAlignment;
                 if (textAlignment === 'Right') {  //Aligns the text as right justified.
-                    leftMargin = this.viewer.clientArea.width - element.width;
+                    leftMargin = subWidth;
                 } else if (textAlignment === 'Center') { //Aligns the text as center justified.
-                    leftMargin = (this.viewer.clientArea.width - element.width) / 2;
+                    leftMargin = subWidth / 2;
                 }
                 element.margin = new Margin(leftMargin, topMargin, 0, bottomMargin);
                 element.line = lineWidget;
@@ -3734,7 +3758,7 @@ export class Layout {
             splittedWidget = nextBlock.getSplitWidgets() as BlockWidget[];
             nextBlock = splittedWidget[splittedWidget.length - 1].nextRenderedWidget as BlockWidget;
         }
-        if (!viewer.owner.isShiftingEnabled || this.viewer.blockToShift !== block) {
+        if (!viewer.owner.isShiftingEnabled || (this.viewer.blockToShift && this.viewer.blockToShift !== block)) {
             this.viewer.owner.editorModule.updateListItemsTillEnd(block, updateNextBlockList);
         }
     }

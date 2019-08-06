@@ -119,6 +119,23 @@ L10n.load({
 
 describe('RTE base module', () => {
 
+    beforeAll(() => {
+        let css: string = ".e-richtexteditor { margin-top: 100px; height: 200px }" +
+            ".e-toolbar { display: block; white-space: nowrap; position: relative; }" +
+            ".e-toolbar-items { display: inline-block; height: 1px; width: inherit; }" +
+            ".e-popup-open { display:block } .e-popup-close { display: none }" +
+            ".e-toolbar-item { display: inline-block; }";
+        let style: HTMLStyleElement = document.createElement('style');
+        style.type = "text/css";
+        style.id = "toolbar-style15017";
+        style.appendChild(document.createTextNode(css));
+        document.head.appendChild(style);
+    });
+
+    afterAll(() => {
+        document.head.getElementsByClassName('toolbar-style15017')[0].remove();
+    });
+
     describe('RTE without iframe', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -185,6 +202,28 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
 
+    });
+
+    describe('RTE getcontent method for blazor in iframe mode', () => {
+        let rteObj: RichTextEditor;
+        let elem: HTMLElement;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({ value: "<p>RTE</p>" });
+            elem = rteObj.element;
+            done();
+        });
+
+        it('getContent public method', () => {
+            let blazor: boolean = true;  
+            rteObj.iframeSettings.enable = true;
+            rteObj.dataBind();                
+            if (blazor && rteObj.iframeSettings.enable) {
+                expect((rteObj as any).inputElement.innerText).toBe("RTE");
+            }            
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
     });
 
     describe("DIV - RTE value property testing", () => {
@@ -1557,6 +1596,8 @@ describe('RTE base module', () => {
     describe('RTE Properties', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
+        let toolWrap: HTMLElement;
+        let view: HTMLElement;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
                 height: '200px',
@@ -1568,6 +1609,8 @@ describe('RTE base module', () => {
                 locale: 'de-DE'
             });
             elem = rteObj.element;
+            toolWrap = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_wrapper');
+            view = rteObj.element.querySelector('#' + rteObj.element.id + 'rte-view');
             done();
         });
         it('Ensure Width property', () => {
@@ -1585,10 +1628,10 @@ describe('RTE base module', () => {
             rteObj.height = '600px';
             rteObj.dataBind();
             expect(rteObj.element.style.height).toBe('600px');
-            let toolWrap: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_wrapper');
-            let view: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + 'rte-view');
-            expect(toolWrap.style.height === '21px').toBe(true);
-            expect(view.style.height === '579px').toBe(true);
+            let currentToolWrap: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + '_toolbar_wrapper');
+            let currentView: HTMLElement = rteObj.element.querySelector('#' + rteObj.element.id + 'rte-view');
+            expect(toolWrap.style.height === currentToolWrap.style.height).toBe(true);
+            expect(view.style.height === currentView.style.height).toBe(true);
         });
         it('Ensure readonly property', () => {
             let contentEle: HTMLElement = rteObj.element.querySelector(".e-content");
@@ -2737,9 +2780,10 @@ describe('EJ2-13507: RTE ng feature matrix - Markdown two way binding is not wor
     });
 });
 
-describe('EJ2-15017 - Toolbar refresh', () => {
+describe('EJ2-15017 - refresh editor', () => {
     let rteObj: RichTextEditor;
     let elem: HTMLElement;
+    let toolWrap: HTMLElement;
     beforeAll((done: Function) => {
         elem = document.createElement('div');
         elem.innerHTML = ` <p><b>Description:</b></p>
@@ -2757,11 +2801,12 @@ describe('EJ2-15017 - Toolbar refresh', () => {
         rteObj.appendTo("#defaultRTE");
         done();
     });
-    it(' Set the display block to component and refresh the component', () => {
+    it(' Set the display block to component and refresh the editor', () => {
+        toolWrap = rteObj.element.querySelector('#defaultRTE_toolbar_wrapper');
         rteObj.element.style.display = 'block';
-        rteObj.refresh();
-        let toolWrap: HTMLElement = rteObj.element.querySelector('#defaultRTE_toolbar_wrapper');
-        expect(toolWrap.style.height).toBe("21px");
+        rteObj.refreshUI();
+        let currentToolWrap: HTMLElement = rteObj.element.querySelector('#defaultRTE_toolbar_wrapper');
+        expect(toolWrap.style.height).toBe(currentToolWrap.style.height);
     });
     afterAll(() => {
         destroy(rteObj);

@@ -419,19 +419,11 @@
     margin-top: 14px;
   }
 
-  label[for='container_wholeWord_e-de-ltr'] {
+  label[for*='_wholeWord_e-de-ltr'] {
     left: 35px;
   }
 
-  label[for='container_wholeWord_e-de-rtl'] {
-    right: 35px;
-  }
-
-  label[for='container_editor_wholeWord_e-de-ltr'] {
-    left: 35px;
-  }
-
-  label[for='container_editor_wholeWord_e-de-rtl'] {
+  label[for*='_wholeWord_e-de-rtl'] {
     right: 35px;
   }
 

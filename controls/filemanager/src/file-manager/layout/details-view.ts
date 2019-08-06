@@ -4,6 +4,7 @@ import { isNullOrUndefined as isNOU, Touch, TapEventArgs, setValue, addClass, re
 import { Internationalization, closest, DragEventArgs, Draggable } from '@syncfusion/ej2-base';
 import { FileManager } from '../base/file-manager';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
 import { ReadArgs, SearchArgs, FileDetails, NotifyArgs } from '../base/interface';
@@ -101,6 +102,7 @@ export class DetailsView {
     // tslint:disable-next-line
     /* istanbul ignore next */
     private render(args: ReadArgs | SearchArgs): void {
+        showSpinner(this.parent.element);
         if (this.parent.view === 'Details') {
             removeClass([this.parent.element], CLS.MULTI_SELECT);
             let items: Object[] = getSortedData(this.parent, args.files);
@@ -290,7 +292,7 @@ export class DetailsView {
                 this.sortSelectedNodes = [];
                 while (len > 0) {
                     let data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
-                    this.sortSelectedNodes.push(getValue('name', data));
+                    this.sortSelectedNodes.push(getValue(this.parent.hasId ? 'id' : 'name', data));
                     len--;
                 }
             }
@@ -306,6 +308,7 @@ export class DetailsView {
     }
 
     private onBeforeDataBound(args: BeforeDataBoundArgs): void {
+        showSpinner(this.parent.element);
         let items: Object[] = getSortedData(this.parent, this.gridObj.dataSource as Object[]);
         args.result = items;
     }
@@ -324,7 +327,7 @@ export class DetailsView {
             }
         }
         if (this.parent.createdItem) {
-            this.selectRecords([getValue('name', this.parent.createdItem)]);
+            this.selectRecords([getValue(this.parent.hasId ? 'id' : 'name', this.parent.createdItem)]);
             this.parent.createdItem = null;
         }
         if (this.parent.layoutSelectedItems.length) {
@@ -366,15 +369,16 @@ export class DetailsView {
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        hideSpinner(this.parent.element);
         this.islayoutChange = false;
         this.checkEmptyDiv(this.emptyArgs);
     }
 
-    private selectRecords(nodes: string[], byId?: boolean): void {
+    private selectRecords(nodes: string[]): void {
         let gridRecords: { [key: string]: Object; }[] = <{ [key: string]: Object; }[]>this.gridObj.getCurrentViewRecords();
         let sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
-            let node: string = byId ? getValue('_fm_id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
+            let node: string = this.parent.hasId ? getValue('id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
             if (nodes.indexOf(node) !== -1) {
                 sRecords.push(i);
             }
@@ -476,6 +480,7 @@ export class DetailsView {
         if (this.parent.view === 'Details') {
             /* istanbul ignore next */
             this.isInteracted = false;
+            showSpinner(this.parent.element);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
         }
@@ -690,6 +695,11 @@ export class DetailsView {
         this.isRendered = true;
     }
 
+    private onUpdateSelectionData(): void {
+        if (this.parent.view !== 'Details') { return; }
+        this.parent.itemData = this.gridObj.getSelectedRecords();
+    }
+
     private addEventListener(): void {
         this.parent.on(events.finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(events.destroy, this.destroy, this);
@@ -724,6 +734,7 @@ export class DetailsView {
         this.parent.on(events.splitterResize, this.onDetailsResize, this);
         this.parent.on(events.layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(events.dropPath, this.onDropPath, this);
+        this.parent.on(events.updateSelectionData, this.onUpdateSelectionData, this);
     }
 
     private removeEventListener(): void {
@@ -760,6 +771,7 @@ export class DetailsView {
         this.parent.off(events.splitterResize, this.onDetailsResize);
         this.parent.off(events.layoutRefresh, this.onLayoutRefresh);
         this.parent.off(events.dropPath, this.onDropPath);
+        this.parent.off(events.updateSelectionData, this.onUpdateSelectionData);
     }
 
     private onMenuItemData(args: { [key: string]: Object; }): void {
@@ -995,7 +1007,13 @@ export class DetailsView {
         let selectSize: number = 0;
         while (selectSize < selectedRecords.length) {
             let record: FileDetails = <FileDetails>selectedRecords[selectSize];
-            this.parent.selectedItems.push(getName(this.parent, record));
+            let name: string;
+            if (this.parent.hasId) {
+                name = getValue('id', record);
+            } else {
+                name = getName(this.parent, record);
+            }
+            this.parent.selectedItems.push(name);
             selectSize++;
         }
     }
@@ -1280,16 +1298,18 @@ export class DetailsView {
                     this.ctrlMoveFunction(gridItems, e, selIndex);
                 break;
             case 'home':
-                this.parent.selectedItems = [getValue('name', gridItems[0])];
-                this.selectRecords([getValue('name', gridItems[0])]);
+                let firstItem: string[] = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[0])];
+                this.parent.setProperties({ selectedItems: firstItem }, true);
+                this.selectRecords(firstItem);
                 break;
             case 'moveUp':
             case 'moveDown':
                 this.moveFunction(gridItems, e, selIndex);
                 break;
             case 'end':
-                this.parent.selectedItems = [getValue('name', gridItems[gridLength - 1])];
-                this.selectRecords(this.parent.selectedItems);
+                let lastItem: string[] = [getValue(this.parent.hasId ? 'id' : 'name', gridItems[gridLength - 1])];
+                this.parent.setProperties({ selectedItems: lastItem }, true);
+                this.selectRecords(lastItem);
                 break;
         }
     }

@@ -371,6 +371,19 @@ export const detailLists: {[key: string]: ItemDetails} = {
             return ERROR + `: COLUMN TYPE MISSING-\n  ${options} column type was invalid or not defined.` +
             `Please go through below help link: ${DOC_URL}/grid/columns/#column-type`;
         }
+    },
+    datasource_syntax_mismatch: {
+        type: 'datasource_syntax_mismatch',
+        logType: 'warn',
+        check(args: {dataState: IGrid}, parent: IGrid): CheckOptions {
+            return { success: (args.dataState.dataSource instanceof DataManager || args.dataState.dataSource instanceof Array ) &&
+            !(isNullOrUndefined(args.dataState.dataStateChange))};
+        },
+        generateMessage(args: Object, parent: IGrid,  options: {fn: string}): string {
+            return WARNING + ': DATASOURCE SYNTAX WARNING\n' +
+            'DataSource should be in the form of {result: Object[], count: number}' +
+            'when dataStateChangeEvent used';
+        }
     }
 };
 

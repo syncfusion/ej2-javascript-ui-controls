@@ -667,6 +667,48 @@ describe('TimePicker module', () => {
         });
     });
 
+    describe('Testing Display format when using inital value ', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('testing with empty format value', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                value: new Date('12/11/2018 10:52:23'),
+                model: {
+                    format: ''
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('10:52 AM');
+        });
+        it('testing with specified format value', () => {
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                value: new Date('12/11/2018 10:52:23'),
+                model: {
+                    format: 'hh:mm:ss'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('10:52:23');
+            editorObj.value = new Date('01/04/2016 05:45:11');
+            editorObj.dataBind();
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('05:45:11');
+        });
+    });
+
     describe('beginEdit event testing', () => {
         let editorObj: any;
         let date: Date = new Date('4/9/2018 12:30 AM');

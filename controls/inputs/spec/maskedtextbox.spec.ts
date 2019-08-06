@@ -1308,6 +1308,130 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === 's>sssS').toEqual(true);
         });
     });
+    describe('Readonly API with initial rendering', () => {
+        let maskBox: MaskedTextBox;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLElement = createElement('input', { id: 'mask1' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Check readonly with float type auto', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Auto",
+                readonly: true,
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(true);
+        });
+        it('Check readonly with float type auto', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Always",
+                readonly: true,
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(true);
+        });
+        it('Check readonly with float type auto', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Never",
+                readonly: true,
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(true);
+        });
+        it('Check readonly with enabled case', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Auto",
+                readonly: true,
+                enabled: false,
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(true);
+        });
+        it('Check readonly attribute at htmlAttributes API', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Auto",
+                htmlAttributes: {"readonly":"true"},
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(true);
+        });
+        it('Check readonly attribute with API and htmlAttributes API', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Auto",
+                readonly: false,
+                htmlAttributes: {"readonly":"true"},
+            });
+            maskBox.appendTo('#mask1');
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(false);
+        });
+    });
+
+    describe('Readonly API at dynamic rendering', () => {
+        let maskBox: MaskedTextBox;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLElement = createElement('input', { id: 'mask1' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Check readonly with float type auto', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Auto",
+            });
+            maskBox.appendTo('#mask1');
+            maskBox.readonly = true;
+            maskBox.dataBind();
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(true);
+        });
+        it('Check readonly attribute with htmlAttributes API', () => {
+            maskBox = new MaskedTextBox({
+                mask: "+1(999) 9999-999",
+                placeholder: "Enter phone number",
+                floatLabelType: "Auto",
+                readonly: false,
+                htmlAttributes: {"readonly":"true"},
+            });
+            maskBox.appendTo('#mask1');
+            maskBox.htmlAttributes = {"readonly":"true"},
+            maskBox.dataBind();
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            expect(input.hasAttribute('readonly')).toEqual(true);
+        });
+    });
+
     describe('Edit values in MaskedTextBox-- Disable Upper and Lower Case', () => {
         let maskBox: MaskedTextBox;
         beforeEach((): void => {

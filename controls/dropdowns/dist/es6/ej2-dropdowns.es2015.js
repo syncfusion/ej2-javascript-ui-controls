@@ -1064,7 +1064,7 @@ let DropDownBase = class DropDownBase extends Component {
      * Gets the data Object that matches the given value.
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
-     * @isGenericType true
+     * @blazorType object
      */
     getDataByValue(value) {
         if (!isNullOrUndefined(this.listData)) {
@@ -1133,6 +1133,12 @@ __decorate([
 __decorate([
     Property(null)
 ], DropDownBase.prototype, "query", void 0);
+__decorate([
+    Property('StartsWith')
+], DropDownBase.prototype, "filterType", void 0);
+__decorate([
+    Property(true)
+], DropDownBase.prototype, "ignoreCase", void 0);
 __decorate([
     Property(1000)
 ], DropDownBase.prototype, "zIndex", void 0);
@@ -2274,6 +2280,25 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.inputElement.setSelectionRange(selection.end, selection.end);
         }
     }
+    getQuery(query) {
+        let filterQuery;
+        if (!this.isCustomFilter && this.allowFiltering) {
+            filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
+            let filterType = this.typedString === '' ? 'contains' : this.filterType;
+            let dataType = this.typeOfData(this.dataSource).typeof;
+            if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
+                filterQuery.where('', filterType, this.typedString, this.ignoreCase, this.ignoreAccent);
+            }
+            else {
+                let fields = (this.fields.text) ? this.fields.text : '';
+                filterQuery.where(fields, filterType, this.typedString, this.ignoreCase, this.ignoreAccent);
+            }
+        }
+        else {
+            filterQuery = query ? query : this.query ? this.query : new Query();
+        }
+        return filterQuery;
+    }
     getSelectionPoints() {
         let input = this.inputElement;
         return { start: Math.abs(input.selectionStart), end: Math.abs(input.selectionEnd) };
@@ -2302,16 +2327,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             };
             this.trigger('filtering', eventArgs, (eventArgs) => {
                 if (!eventArgs.cancel && !this.isCustomFilter && !eventArgs.preventDefaultAction) {
-                    let filterQuery = this.query ? this.query.clone() : new Query();
-                    let dataType = this.typeOfData(this.dataSource).typeof;
-                    if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
-                        filterQuery.where('', 'startswith', this.filterInput.value, true, this.ignoreAccent);
-                    }
-                    else {
-                        let fields = this.fields;
-                        filterQuery.where(!isNullOrUndefined(fields.text) ? fields.text : '', 'startswith', this.filterInput.value, true, this.ignoreAccent);
-                    }
-                    this.filteringAction(this.dataSource, filterQuery, this.fields);
+                    this.filteringAction(this.dataSource, null, this.fields);
                 }
             });
         }
@@ -5210,11 +5226,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             if (this.targetElement() !== null) {
                 let dataType = this.typeOfData(this.dataSource).typeof;
                 if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
-                    filterQuery.where('', 'startswith', this.targetElement(), this.ignoreCase, this.ignoreAccent);
+                    filterQuery.where('', this.filterType, this.targetElement(), this.ignoreCase, this.ignoreAccent);
                 }
                 else {
                     let fields = this.fields;
-                    filterQuery.where(!isNullOrUndefined(fields.text) ? fields.text : '', 'startswith', this.targetElement(), this.ignoreCase, this.ignoreAccent);
+                    filterQuery.where(!isNullOrUndefined(fields.text) ? fields.text : '', this.filterType, this.targetElement(), this.ignoreCase, this.ignoreAccent);
                 }
             }
             return filterQuery;
@@ -5260,19 +5276,20 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let dataChecks = !this.getValueByText(this.inputElement.value, this.ignoreCase);
         if (this.allowCustomValue && dataChecks) {
             let value = this.inputElement.value;
+            let field = fields ? fields : this.fields;
             let customData = (!isNullOrUndefined(this.mainData) && this.mainData.length > 0) ?
                 this.mainData[0] : this.mainData;
             if (typeof (customData) !== 'string') {
                 let dataItem = {};
-                setValue(fields.text, value, dataItem);
-                setValue(fields.value, value, dataItem);
+                setValue(field.text, value, dataItem);
+                setValue(field.value, value, dataItem);
                 let tempData = JSON.parse(JSON.stringify(this.listData));
                 tempData.splice(0, 0, dataItem);
-                this.resetList(tempData, fields ? fields : this.fields, query);
+                this.resetList(tempData, field, query);
             }
             else {
                 let tempData = [this.inputElement.value];
-                this.resetList(tempData, fields ? fields : this.fields);
+                this.resetList(tempData, field);
             }
         }
         if (this.value && this.value.length) {
@@ -6353,7 +6370,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     listOption(dataSource, fields) {
         let iconCss = isNullOrUndefined(fields.iconCss) ? false : true;
-        let fieldProperty = fields.properties;
+        let fieldProperty = isNullOrUndefined(fields.properties) ? fields :
+            fields.properties;
         this.listCurrentOptions = (fields.text !== null || fields.value !== null) ? {
             fields: fieldProperty, showIcon: iconCss, ariaAttributes: { groupItemRole: 'presentation' }
         } : { fields: { value: 'text' } };

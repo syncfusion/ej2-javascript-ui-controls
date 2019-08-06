@@ -1344,7 +1344,7 @@ function elementAnimate(element, delay, duration, point, maps, ele, radius = 0) 
                 return;
             }
             let event = {
-                cancel: false, name: animationComplete, element: ele, maps: maps
+                cancel: false, name: animationComplete, element: ele, maps: maps.isBlazor ? null : maps
             };
             maps.trigger(animationComplete, event);
         }
@@ -2958,13 +2958,10 @@ class Marker {
             return;
         }
         let eventArgs = {
-            cancel: false, name: markerClick, data: options.data, maps: this.maps, marker: options.marker,
-            target: target, x: e.clientX, y: e.clientY
+            cancel: false, name: markerClick, data: options.data, maps: this.maps.isBlazor ? null : this.maps,
+            marker: this.maps.isBlazor ? null : options.marker, target: target, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs = {
-            cancel: false, name: markerClick, marker: options.marker, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(markerClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        this.maps.trigger(markerClick, eventArgs);
     }
     /**
      * To check and trigger Cluster click event
@@ -3017,13 +3014,10 @@ class Marker {
             return;
         }
         let eventArgs = {
-            cancel: false, name: markerMouseMove, data: options.data, maps: this.maps,
-            target: targetId, x: e.clientX, y: e.clientY
+            cancel: false, name: markerMouseMove, data: options.data,
+            maps: this.maps.isBlazor ? null : this.maps, target: targetId, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs = {
-            cancel: false, name: markerMouseMove, target: targetId, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(markerMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        this.maps.trigger(markerMouseMove, eventArgs);
     }
     /**
      * To check and trigger cluster move event
@@ -3604,9 +3598,6 @@ class LayerPanel {
     //tslint:disable:max-func-body-length
     bubbleCalculation(bubbleSettings, range) {
         if (bubbleSettings.dataSource != null && bubbleSettings != null) {
-            if (bubbleSettings.colorValuePath == null) {
-                return;
-            }
             for (let i = 0; i < bubbleSettings.dataSource.length; i++) {
                 let bubbledata = parseFloat(bubbleSettings.dataSource[i][bubbleSettings.valuePath]);
                 if (i !== 0) {
@@ -3743,44 +3734,8 @@ class LayerPanel {
                         break;
                     case 'Point':
                         let pointData = currentShapeData['point'];
-                        if (fill !== eventArgs.fill) {
-                            eventArgs.fill = eventArgs.fill;
-                        }
-                        else {
-                            if (bubbleSettings.length > 0) {
-                                for (let k = 0; k < bubbleSettings.length; k++) {
-                                    let bubbleColor = bubbleSettings[k].colorValuePath;
-                                    let shapePath = this.currentLayer.shapePropertyPath;
-                                    let bubbleData = bubbleSettings[k].dataSource;
-                                    let radius;
-                                    let bubbleValue = bubbleSettings[k].valuePath;
-                                    let indexValue;
-                                    let bubbleFill;
-                                    let range;
-                                    bubbleData.forEach((bubble, index) => {
-                                        if (currentShapeData['property'][shapePath] === bubbleData[index][shapePath]) {
-                                            bubbleFill = bubble[bubbleColor];
-                                            indexValue = index;
-                                        }
-                                    });
-                                    if (!isNullOrUndefined(indexValue)) {
-                                        range = { min: 0, max: 0 };
-                                        this.bubbleCalculation(bubbleSettings[k], range);
-                                        radius = getRatioOfBubble(bubbleSettings[k]['minRadius'], bubbleSettings[k]['maxRadius'], bubbleData[k][bubbleValue], range.min, range.max);
-                                    }
-                                    if (isNullOrUndefined(bubbleFill) || isNullOrUndefined(radius)) {
-                                        bubbleFill = eventArgs.fill;
-                                        radius = shapeSettings.circleRadius;
-                                    }
-                                    circleOptions = new CircleOption(shapeID, bubbleFill, eventArgs.border, opacity, pointData['x'], pointData['y'], radius, null);
-                                    pathEle = this.mapObject.renderer.drawCircle(circleOptions);
-                                }
-                            }
-                            else {
-                                circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
-                                pathEle = this.mapObject.renderer.drawCircle(circleOptions);
-                            }
-                        }
+                        circleOptions = new CircleOption(shapeID, eventArgs.fill, eventArgs.border, opacity, pointData['x'], pointData['y'], shapeSettings.circleRadius, null);
+                        pathEle = this.mapObject.renderer.drawCircle(circleOptions);
                         break;
                     case 'Path':
                         path = currentShapeData['point'];
@@ -5214,6 +5169,7 @@ let Maps = class Maps extends Component {
                     break;
                 case 'height':
                 case 'width':
+                case 'layers':
                     this.createSVG();
                     render = true;
                     break;
@@ -5674,7 +5630,10 @@ class Bubble {
             shape = shape['property'];
             let shapePath = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
             if (shapeData[layer.shapeDataPath] === shape[shapePath]) {
-                if (!layerData[i]['_isMultiPolygon']) {
+                if (layerData[i]['type'] === 'Point') {
+                    shapePoints.push(this.getPoints(layerData[i], []));
+                }
+                else if (!layerData[i]['_isMultiPolygon']) {
                     shapePoints.push(this.getPoints(layerData[i], []));
                     currentLength = shapePoints[shapePoints.length - 1].length;
                     if (pointsLength < currentLength) {
@@ -5696,14 +5655,27 @@ class Bubble {
             }
         }
         let projectionType = this.maps.projectionType;
+        let centerY;
+        let eventArgs;
         let center = findMidPointOfPolygon(shapePoints[midIndex], projectionType);
-        if (!isNullOrUndefined(center)) {
-            let centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
-            let eventArgs = {
-                cancel: false, name: bubbleRendering, border: bubbleSettings.border,
-                cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor, maps: this.maps,
-                radius: radius
-            };
+        if (bubbleSettings.visible) {
+            if (!isNullOrUndefined(center)) {
+                centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
+                eventArgs = {
+                    cancel: false, name: bubbleRendering, border: bubbleSettings.border,
+                    cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor,
+                    maps: this.maps.isBlazor ? null : this.maps, radius: radius
+                };
+            }
+            else {
+                let shapePointsLength = shapePoints.length - 1;
+                eventArgs = {
+                    cancel: false, name: bubbleRendering, border: bubbleSettings.border,
+                    cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
+                    data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
+                    radius: radius
+                };
+            }
             this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs) => {
                 if (eventArgs.cancel) {
                     return;
@@ -5984,6 +5956,9 @@ class DataLabel {
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     this.maps.dataLabelShape.push(shapeWidth);
                 }
+                if (eventargs.text !== text && !eventargs.cancel) {
+                    text = eventargs.text;
+                }
                 let textSize = measureText(text, style);
                 let trimmedLable = textTrim(width, text, style);
                 let elementSize = measureText(trimmedLable, style);
@@ -6091,8 +6066,17 @@ class DataLabel {
                             let opacity = dataLabelSettings.opacity;
                             let rx = dataLabelSettings.rx;
                             let ry = dataLabelSettings.ry;
-                            let x = location['x'] - textSize['width'] / 2;
-                            let y = location['y'] - textSize['height'] / 2;
+                            let x;
+                            let y;
+                            let padding = 5;
+                            if (zoomLabelsPosition && scaleZoomValue > 1) {
+                                x = ((location['x'])) - textSize['width'] / 2;
+                                y = ((location['y'])) - textSize['height'] / 2 - padding;
+                            }
+                            else {
+                                x = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
+                                y = ((location['y'] + transPoint['y']) * scale) - textSize['height'] / 2;
+                            }
                             let rectOptions = new RectOption(this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index, fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry);
                             let rect = this.maps.renderer.drawRectangle(rectOptions);
                             group.appendChild(rect);
@@ -6241,9 +6225,8 @@ class NavigationLine {
                         offSet = (isNullOrUndefined(offSet)) ? 0 : offSet;
                         let triId = this.maps.element.id + '_triangle';
                         let defElement = this.maps.renderer.createDefs();
-                        let xmlns = 'https://www.w3.org/2000/svg';
-                        let markerEle = document.createElementNS(xmlns, 'marker');
-                        markerEle.setAttribute('id', 'triangle' + i);
+                        defElement.innerHTML += '<marker id="' + 'triangle' + i + '"></marker>';
+                        let markerEle = defElement.querySelector('#' + 'triangle' + i);
                         markerEle.setAttribute('markerWidth', (arrowSize.toString()));
                         markerEle.setAttribute('markerHeight', (arrowSize.toString()));
                         markerEle.setAttribute('refX', (divide - offSet).toString());
@@ -7270,8 +7253,9 @@ class Legend {
         let valuePath = this.maps.legendSettings.valuePath;
         if (!isNullOrUndefined(colorValuePath) && !isNullOrUndefined(dataSource)) {
             dataSource.forEach((data, dataIndex) => {
-                let showLegend = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
-                    true : data[this.maps.legendSettings.showLegendPath];
+                let showLegend = isNullOrUndefined(this.maps.legendSettings.showLegendPath) ?
+                    true : isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
+                    false : data[this.maps.legendSettings.showLegendPath];
                 let dataValue = data[colorValuePath];
                 let newData = [];
                 let legendFill = (isNullOrUndefined(fill)) ? dataValue : fill;
@@ -7667,12 +7651,21 @@ class Highlight {
         }
     }
     mapHighlight(targetEle, shapeData, data) {
+        let layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        let isMarkerSelect = false;
+        if (targetEle.id.indexOf('MarkerIndex') > -1) {
+            let marker$$1 = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+            isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker$$1].highlightSettings.enable;
+        }
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
             let eventArgs = {
                 opacity: this.highlightSettings.opacity,
                 fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
                     ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
-                border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width / this.maps.scale },
+                border: {
+                    color: this.highlightSettings.border.color,
+                    width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
+                },
                 name: itemHighlight,
                 target: targetEle.id,
                 cancel: false,
@@ -7833,7 +7826,10 @@ class Selection {
         let eventArgs = {
             opacity: this.selectionsettings.opacity,
             fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
-            border: { color: this.selectionsettings.border.color, width: this.selectionsettings.border.width / this.maps.scale },
+            border: {
+                color: this.selectionsettings.border.color,
+                width: this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)
+            },
             name: itemSelection,
             target: targetEle.id,
             cancel: false,
@@ -8232,7 +8228,7 @@ class Zoom {
         }
         else {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: map,
+                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: map.isBlazor ? null : map,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
             };
@@ -8378,6 +8374,7 @@ class Zoom {
         }
         zoomAnimate(element, 0, duration, new MapLocation(x, y), scale, this.maps.mapAreaRect, this.maps);
     }
+    //tslint:disable:max-func-body-length
     applyTransform(animate$$1) {
         let layerIndex;
         this.templateCount = 0;
@@ -8453,9 +8450,29 @@ class Zoom {
                             this.maps.zoomLabelPositions = [];
                             this.maps.zoomLabelPositions = this.maps.dataLabelModule.dataLabelCollections;
                             for (let k = 0; k < currentEle.childElementCount; k++) {
-                                this.zoomshapewidth = this.shapeZoomLocation[k].getBoundingClientRect();
-                                this.maps.zoomShapeCollection.push(this.zoomshapewidth);
-                                this.dataLabelTranslate(currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate$$1);
+                                if (currentEle.childNodes[k]['id'].indexOf('_LabelIndex_') > -1) {
+                                    let labelIndex = parseFloat(currentEle.childNodes[k]['id'].split('_LabelIndex_')[1].split('_')[0]);
+                                    this.zoomshapewidth = this.shapeZoomLocation[labelIndex].getBoundingClientRect();
+                                    this.maps.zoomShapeCollection.push(this.zoomshapewidth);
+                                    this.dataLabelTranslate(currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate$$1);
+                                    let dataLabel = this.maps.layers[this.index].dataLabelSettings;
+                                    let border = dataLabel.border;
+                                    if (k > 0 && border['width'] > 1) {
+                                        if (currentEle.childNodes[k - 1]['id'].indexOf('_rectIndex_') > -1) {
+                                            let labelX = ((this.maps.zoomLabelPositions[labelIndex]['location']['x'] + x) * scale);
+                                            let labelY = ((this.maps.zoomLabelPositions[labelIndex]['location']['y'] + y) * scale);
+                                            let zoomtext = currentEle.childNodes[k]['innerHTML'];
+                                            let style = this.maps.layers[this.index].dataLabelSettings.textStyle;
+                                            let zoomtextSize = measureText(zoomtext, style);
+                                            let padding = 5;
+                                            let rectElement = currentEle.childNodes[k - 1];
+                                            let rectX = labelX - zoomtextSize['width'] / 2;
+                                            let rectY = labelY - zoomtextSize['height'] / 2 - padding;
+                                            rectElement['setAttribute']('x', rectX);
+                                            rectElement['setAttribute']('y', rectY);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -8578,7 +8595,10 @@ class Zoom {
         let labelPath = this.maps.layers[this.index].dataLabelSettings.labelPath;
         let layerIndex = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
         let shapeIndex = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
-        let labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
+        let labelIndex;
+        if (element.id.indexOf('_LabelIndex_') > -1) {
+            labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
+        }
         let duration = this.currentLayer.animationDuration;
         for (let l = 0; l < labelCollection.length; l++) {
             let label = labelCollection[l];
@@ -8767,7 +8787,8 @@ class Zoom {
             let panningYDirection = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
             panArgs = {
-                cancel: false, name: pan, maps: map, tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
+                cancel: false, name: pan, maps: map.isBlazor ? null : map,
+                tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
                 scale: map.scale, tileZoomLevel: map.tileZoomLevel
             };
             map.trigger(pan, panArgs);
@@ -8794,7 +8815,8 @@ class Zoom {
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
             panArgs = {
-                cancel: false, name: pan, maps: map, tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
+                cancel: false, name: pan, maps: map.isBlazor ? null : map,
+                tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
                 translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
                 tileZoomLevel: map.tileZoomLevel
             };

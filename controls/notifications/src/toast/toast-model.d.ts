@@ -11,6 +11,7 @@ export interface ToastPositionModel {
    * Specifies the position of the Toast notification with respect to the target container's left edge.
    * @default 'Left'
    * @aspType string
+   * @blazorType string
    */
     X?: PositionX | number | string;
 
@@ -18,6 +19,7 @@ export interface ToastPositionModel {
    * Specifies the position of the Toast notification with respect to the target container's top edge.
    * @default 'Top'
    * @aspType string
+   * @blazorType string
    */
     Y?: PositionY | number | string;
 
@@ -110,12 +112,14 @@ export interface ToastModel extends ComponentModel{
      * Specifies the width of the Toast in pixels/numbers/percentage. Number value is considered as pixels.
      * In mobile devices, default width is considered as `100%`. 
      * @default '300'
+     * @blazorType string
      */
     width?: string | number;
 
     /**
      * Specifies the height of the Toast in pixels/number/percentage. Number value is considered as pixels.
      * @default 'auto'
+     * @blazorType string
      */
     height?: string | number;
 

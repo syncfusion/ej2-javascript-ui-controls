@@ -103,5 +103,57 @@ describe('FileManager control single selection LargeIcons view', () => {
                 done();
             }, 500);
         });
+        it('for selectedItems', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                selectedItems: ["Documents", "1.png"]
+            });
+            feObj.appendTo("#file");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["1.png"]));
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                expect(li[0].getAttribute('aria-selected')).toEqual(null);
+                expect(li[4].getAttribute('aria-selected')).toEqual('true');
+                done();
+            }, 400);
+        });
+        it('for selectedItems with id', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                selectedItems: ["6171", "6175"]
+            });
+            feObj.appendTo("#file");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["6175"]));
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                expect(li[0].getAttribute('aria-selected')).toEqual(null);
+                expect(li[4].getAttribute('aria-selected')).toEqual('true');
+                done();
+            }, 400);
+        });
     });
 });

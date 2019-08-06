@@ -4,7 +4,22 @@ import {  createElement} from '../src/dom';
  * Template Engine Spec
  */
 
- let specialCharValue = [{'@ShipCountry': 'France'}];
+let arrayOfObj = [
+    {
+        "IDPRATICA": 700,
+        "Giorni": [
+            {
+                "Data": "2019-05-01T00:00:00",
+                "IDSTATO": 99,
+            },
+            {
+                "Data": "2019-05-02T00:00:00",
+                "IDSTATO": 99,
+            }
+        ]
+    }
+];
+let specialCharValue = [{'@ShipCountry': 'France'}];
 let dsJSONArray: any = [{ name: 'one', info: { id: '01' } }, { name: 'two', info: { id: '02' } }];
 let dsSubArray: any = [{ name: 'one', items: ['AR Item1', 'AR Item2'] }, { name: 'two', items: ['AR Item1', 'AR Item2'] }];
 let dsJSONSubArray: any = [{ name: 'one', info: { id: '01', items: ['AR Item1', 'AR Item2'] } }, { name: 'two', info: { id: '02', items: ['AR Item1', 'AR Item2'] } }];
@@ -48,6 +63,13 @@ describe('Template', () => {
         let result: Element[] = [];
         result.push(createElement('div', { innerHTML: 'France' }));
         expect(outDOM(template.compile(templateStr), specialCharValue)).toEqual(result);
+    });
+    
+    it('JSON Array Input With Template String with array of value within object', () => {
+        let templateStr: string = '${if(Giorni[0].IDSTATO==99)}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
     });
 
     it('JSON Array Input With two space between class Names', () => {

@@ -6,6 +6,8 @@ export const TOOLBAR_ID: string = '_toolbar';
 /** @hidden */
 export const LAYOUT_ID: string = '_layout';
 /** @hidden */
+export const NAVIGATION_ID: string = '_navigation';
+/** @hidden */
 export const TREE_ID: string = '_tree';
 /** @hidden */
 export const GRID_ID: string = '_grid';
@@ -61,6 +63,8 @@ export const MULTI_SELECT: string = 'e-fe-m-select';
 export const FILTER: string = 'e-fe-m-filter';
 /** @hidden */
 export const LAYOUT: string = 'e-layout';
+/** @hidden */
+export const NAVIGATION: string = 'e-navigation';
 /** @hidden */
 export const LAYOUT_CONTENT: string = 'e-layout-content';
 /** @hidden */

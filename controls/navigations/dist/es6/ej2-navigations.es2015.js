@@ -1045,9 +1045,7 @@ let MenuBase = class MenuBase extends Component {
         if (this.isMenu && this.template) {
             let menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
             resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-            setTimeout(() => {
-                updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
-            }, 500);
+            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
         this.wireEvents();
     }
@@ -9213,7 +9211,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         this.showSpinner(eicon);
         let childItems;
-        if (this.fields.dataSource instanceof DataManager) {
+        // tslint:disable
+        if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             let level = this.parents(parentLi, '.' + PARENTITEM).length;
             let mapper = this.getChildFields(this.fields, level, 1);
             if (isNullOrUndefined(mapper) || isNullOrUndefined(mapper.dataSource)) {
@@ -11819,6 +11818,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      * of the corresponding node otherwise it will return the entire updated data source of TreeView.
      * * The updated data source also contains custom attributes if you specified in data source.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
+     * @isGenericType true
      */
     getTreeData(node) {
         let id = this.getId(node);

@@ -54,6 +54,7 @@ export class TicksData extends ChildProperty<TicksData> {
 export interface SliderTooltipEventArgs {
     /**
      * It is used to get the value of the Slider.
+     * @isGenericType true
      */
     value: number | number[];
     /**
@@ -68,10 +69,12 @@ export interface SliderTooltipEventArgs {
 export interface SliderChangeEventArgs {
     /**
      * It is used to get the current value of the Slider.
+     * @isGenericType true
      */
     value: number | number[];
     /**
      * It is used to get the previous value of the Slider.
+     * @isGenericType true
      */
     previousValue: number | number[];
     /**
@@ -364,7 +367,8 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     private scaleTransform: string = 'transform .4s cubic-bezier(.25, .8, .25, 1)';
     private previousVal: number | number[];
     private previousChanged: number | number[];
-    private repeatInterval: number;
+    // tslint:disable-next-line:no-any
+    private repeatInterval: any;
     private isMaterial: boolean;
     private isBootstrap: boolean;
     private isBootstrap4: boolean;
@@ -392,6 +396,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      *
      * {% codeBlock src="slider/value-api/index.ts" %}{% endcodeBlock %}
      * @default null
+     * @isGenericType true
      */
     @Property(null)
     public value: number | number[];

@@ -4,6 +4,7 @@ import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs,
 import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove } from '@syncfusion/ej2-base';
 import { IFileManager, FileOpenEventArgs, FileSelectEventArgs, NotifyArgs, FileLoadEventArgs } from '../base/interface';
 import { DataManager, Query } from '@syncfusion/ej2-data';
+import { hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import * as events from '../base/constant';
 import { ReadArgs, MouseArgs } from '../../index';
 import * as CLS from '../base/classes';
@@ -100,6 +101,7 @@ export class LargeIconsView {
     private render(args: ReadArgs): void {
         this.parent.visitedItem = null;
         this.startItem = null;
+        showSpinner(this.parent.element);
         if (this.parent.view === 'LargeIcons') {
             this.resetMultiSelect();
             this.element.setAttribute('tabindex', '0');
@@ -166,6 +168,7 @@ export class LargeIconsView {
             this.addEventListener();
             this.wireEvents();
             this.isRendered = true;
+            hideSpinner(this.parent.element);
             if (this.parent.selectedItems.length) { this.checkItem(); }
         }
     }
@@ -321,9 +324,10 @@ export class LargeIconsView {
         while (i < items.length) {
             let icon: string = fileType(items[i]);
             let name: string = getValue('name', items[i]);
-            /* istanbul ignore next */
+            let id: string = getValue('id', items[i]);
+            let selected: string = this.parent.hasId ? id : getName(this.parent, items[i]);
             let className: string = ((this.parent.selectedItems &&
-                this.parent.selectedItems.indexOf(getName(this.parent, args.files[i])) !== -1)) ?
+                this.parent.selectedItems.indexOf(selected) !== -1)) ?
                 CLS.LARGE_ICON + ' e-active' : CLS.LARGE_ICON;
             if (!hasEditAccess(items[i])) {
                 className += ' ' + getAccessClass(items[i]);
@@ -349,7 +353,7 @@ export class LargeIconsView {
         if (this.parent.view !== 'LargeIcons') { return; }
         this.onLayoutChange(args);
         this.clearSelect();
-        this.selectItems([getValue('name', this.parent.createdItem)]);
+        this.selectItems([getValue(this.parent.hasId ? 'id' : 'name', this.parent.createdItem)]);
         this.parent.createdItem = null;
         this.parent.largeiconsviewModule.element.focus();
     }
@@ -457,6 +461,11 @@ export class LargeIconsView {
         this.adjustHeight();
     }
 
+    private onUpdateSelectionData(): void {
+        if (this.parent.view !== 'LargeIcons') { return; }
+        this.updateSelectedData();
+    }
+
     private removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.finalizeEnd, this.onFinalizeEnd);
@@ -488,6 +497,7 @@ export class LargeIconsView {
         this.parent.off(events.detailsInit, this.onDetailsInit);
         this.parent.off(events.layoutRefresh, this.onLayoutRefresh);
         this.parent.off(events.dropPath, this.onDropPath);
+        this.parent.off(events.updateSelectionData, this.onUpdateSelectionData);
     }
 
     private addEventListener(): void {
@@ -520,6 +530,7 @@ export class LargeIconsView {
         this.parent.on(events.cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(events.layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(events.dropPath, this.onDropPath, this);
+        this.parent.on(events.updateSelectionData, this.onUpdateSelectionData, this);
     }
 
     private onMenuItemData(args: { [key: string]: Object; }): void {
@@ -1024,7 +1035,7 @@ export class LargeIconsView {
 
     private getVisitedItem(): Element {
         let item: string = this.parent.selectedItems[this.parent.selectedItems.length - 1];
-        let indexes: number[] = this.getIndexes([item]);
+        let indexes: number[] = this.getIndexes([item], this.parent.hasId);
         return this.itemList[indexes[0]];
     }
 
@@ -1195,6 +1206,9 @@ export class LargeIconsView {
 
     private getDataName(item: Element): string {
         let data: Object = this.getItemObject(item);
+        if (this.parent.hasId) {
+            return getValue('id', data);
+        }
         return getName(this.parent, data);
     }
 
@@ -1259,8 +1273,8 @@ export class LargeIconsView {
         this.parent.trigger('fileSelect', eventArgs);
     }
 
-    private selectItems(items: string[], byId?: boolean): void {
-        let indexes: number[] = this.getIndexes(items, byId);
+    private selectItems(items: string[]): void {
+        let indexes: number[] = this.getIndexes(items, this.parent.hasId);
         for (let j: number = 0, len: number = indexes.length; j < len; j++) {
             let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: false } as KeyboardEventArgs;
             this.doSelection(this.itemList[indexes[j]], eveArgs);
@@ -1269,7 +1283,7 @@ export class LargeIconsView {
 
     private getIndexes(items: string[], byId?: boolean): number[] {
         let indexes: number[] = [];
-        let filter: string = byId ? '_fm_id' : 'name';
+        let filter: string = byId ? 'id' : 'name';
         for (let i: number = 0, len: number = this.items.length; i < len; i++) {
             if (items.indexOf(getValue(filter, this.items[i])) !== -1) {
                 indexes.push(i);

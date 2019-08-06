@@ -475,8 +475,8 @@ export class ChartRows {
     }
 
     private leftLabelContainer(): NodeList {
-        let template: string = '<div class="' + cls.leftLabelContainer + ' ' +
-            '" tabindex="-1" ' + this.generateTaskLabelAriaLabel('left') + '  style="height:' +
+        let template: string = '<div class="' + ((this.leftTaskLabelTemplateFunction) ? cls.leftLabelTempContainer :
+            cls.leftLabelContainer) + ' ' + '" tabindex="-1" ' + this.generateTaskLabelAriaLabel('left') + '  style="height:' +
             (this.parent.rowHeight - 1) + 'px;width:' + this.taskNameWidth(this.templateData) + '"></div>';
         return this.createDivElement(template);
     }
@@ -495,8 +495,8 @@ export class ChartRows {
     }
 
     private rightLabelContainer(): NodeList {
-        let template: string = '<div class="' + cls.rightLabelContainer + '" ' +
-            ' tabindex="-1" ' + this.generateTaskLabelAriaLabel('right') +
+        let template: string = '<div class="' + ((this.rightTaskLabelTemplateFunction) ? cls.rightLabelTempContainer :
+            cls.rightLabelContainer) + '" ' + ' tabindex="-1" ' + this.generateTaskLabelAriaLabel('right') +
             ' style="left:' + this.getRightLabelLeft(this.templateData) + 'px;height:'
             + (this.parent.rowHeight - 1) + 'px;"></div>';
         return this.createDivElement(template);

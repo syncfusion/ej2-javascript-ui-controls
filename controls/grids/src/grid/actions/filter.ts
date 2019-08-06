@@ -191,7 +191,8 @@ export class Filter implements IAction {
         let col: Column = this.parent.getColumnByField(this.fieldName);
         let field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
         this.currentFilterObject = {
-            field: field, uid: col.uid, operator: this.operator, value: this.value as string, predicate: this.predicate,
+            field: field, uid: col.uid, isForeignKey: col.isForeignColumn(), operator: this.operator,
+            value: this.value as string, predicate: this.predicate,
             matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
         };
 

@@ -79,6 +79,11 @@ export class Render {
             this.contentRenderer.renderTable();
             this.emptyRow(false);
         }
+        this.parent.scrollModule.setWidth();
+        this.parent.scrollModule.setHeight();
+        if (this.parent.height !== 'auto') {
+            this.parent.scrollModule.setPadding();
+        }
         this.refreshDataManager();
     }
 
@@ -93,6 +98,10 @@ export class Render {
             this.resetTemplates();
         }
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
+            if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
+                let data: string = 'data';
+                args[data] = gObj.getSelectedRecords();
+            }
             if (args.cancel) {
                 gObj.notify(events.cancelBegin, args);
                 return;

@@ -113,6 +113,10 @@ export class ExcelExport {
         if (!this.isLocal()) {
           this.parent.flatData = [];
         }
+        if (property.dataSource) {
+          this.parent.dataModule.convertToFlatData(property.dataSource);
+          dtSrc = this.parent.flatData;
+        }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({json: <Object[]>dtSrc});
         return property;

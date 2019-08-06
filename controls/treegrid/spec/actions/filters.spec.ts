@@ -718,11 +718,13 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
          done();
         }
         gridObj.grid.actionComplete = actionComplete;
+        setTimeout(function () {
           (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
           gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(new Event('mouseover'));
           var mouseEve = document.createEvent('MouseEvents');
           mouseEve.initEvent('mouseover', true, true);
-          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);  
+          gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);
+        }, 100);
       });
       it('Check the custom filter of excel filter', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {

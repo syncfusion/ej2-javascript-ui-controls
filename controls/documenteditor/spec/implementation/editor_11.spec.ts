@@ -56,3 +56,37 @@ describe('Clear format selection validation', () => {
         expect(editor.selection.characterFormat.fontFamily).toBe('Calibri Light');
     });
 });
+
+describe('Test RTL combination text', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableEditorHistory: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('RTL english RTL test', () => {
+        editor.openBlank();
+        editor.editorModule.onApplyParagraphFormat('bidi', true, false, false);
+        editor.editor.insertText('גכיגכלדגכ');
+        editor.editor.insertText('Welcome');
+        editor.editor.insertText('גכיגכלדגכ');
+        expect((editor.selection.start.currentWidget.children[2] as TextElementBox).text).toBe('גכיגכלדגכ');
+    });
+});
+

@@ -1032,8 +1032,9 @@ export class Legend {
         let valuePath: string = this.maps.legendSettings.valuePath;
         if (!isNullOrUndefined(colorValuePath) && !isNullOrUndefined(dataSource)) {
             dataSource.forEach((data: Object, dataIndex: number) => {
-                let showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
-                    true : data[this.maps.legendSettings.showLegendPath];
+                let showLegend: boolean = isNullOrUndefined(this.maps.legendSettings.showLegendPath) ?
+                    true : isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ?
+                        false : data[this.maps.legendSettings.showLegendPath];
                 let dataValue: string = data[colorValuePath];
                 let newData: Object[] = [];
                 let legendFill: string = (isNullOrUndefined(fill)) ? dataValue : fill;

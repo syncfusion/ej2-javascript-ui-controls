@@ -115,6 +115,10 @@ export class PdfExport {
         if (!isLocal) {
           this.parent.flatData = [];
         }
+        if (prop.dataSource) {
+          this.parent.dataModule.convertToFlatData(prop.dataSource);
+          dtSrc = this.parent.flatData;
+        }
         prop = isNullOrUndefined(prop) ? {} : prop;
         prop.dataSource = new DataManager({json: <Object[]>dtSrc});
         return prop;

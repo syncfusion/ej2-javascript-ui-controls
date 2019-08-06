@@ -5,7 +5,6 @@ import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
-import {  isBlazor, getElement } from '@syncfusion/ej2-base';
 import { DataManager, Deferred } from '@syncfusion/ej2-data';
 import { findChildrenRecords } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
@@ -237,9 +236,6 @@ export class Edit {
   }
     private cellSave(args: CellSaveArgs): void {
       if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
-          if (isBlazor()) {
-           args.cell = getElement(args.cell);
-          }
           args.cancel = true;
           setValue('isEdit', false, this.parent.grid);
           args.rowData[args.columnName] = args.value;
@@ -463,7 +459,7 @@ export class Edit {
           let index: number =  this.addRowIndex;
           value.uniqueID = getUid(this.parent.element.id + '_data_');
           setValue('uniqueIDCollection.' +  value.uniqueID , value, this.parent);
-          let level: number; let dataIndex: number; let idMapping: Object;
+          let level: number = -1; let dataIndex: number; let idMapping: Object;
           let parentUniqueID: string; let parentItem: Object; let parentIdMapping: string;
           if (currentData.length) {
               level = currentData[this.addRowIndex].level;
@@ -496,10 +492,10 @@ export class Edit {
                   index = (childRecordCount1 > 0) ? ( currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                   value.level = level + 1;
                   if (this.isSelfReference) {
+                    if (!isNullOrUndefined(value.parentItem)) {
                       value[this.parent.parentIdMapping] = idMapping;
-                      if (!isNullOrUndefined(value.parentItem)) {
-                        updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
-                      }
+                      updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
+                    }
                   }
               }
               if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {

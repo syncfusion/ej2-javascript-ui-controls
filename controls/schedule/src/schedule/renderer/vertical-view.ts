@@ -174,7 +174,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return;
         }
-        if (this.parent.showTimeIndicator && this.isWorkHourRange(new Date())) {
+        if (this.parent.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             let currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
             if (currentDateIndex.length > 0) {
                 let workCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
@@ -312,7 +312,7 @@ export class VerticalView extends ViewBase implements IRenderer {
                     templateName = 'cellTemplate';
                     let args: CellTemplateArgs = { date: date, type: type, groupIndex: groupIndex };
                     cntEle =
-                    this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
+                        this.parent.getCellTemplate()(args, this.parent, templateName, templateId + viewName + templateName, false);
                 }
                 break;
         }

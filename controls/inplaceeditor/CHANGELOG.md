@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- The display format specified for the sub components in `In-place Editor`, will now be considered when initial value is provided.
+
 ## 17.2.35 (2019-07-17)
 
 ### In-place Editor

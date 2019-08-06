@@ -1,4 +1,4 @@
-import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isBlazor, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-popups';
@@ -1369,6 +1369,7 @@ function updateUndoRedoStatus(baseToolbar, undoRedoStatus) {
 }
 /**
  * To dispatch the event manually
+ * @hidden
  */
 function dispatchEvent(element, type) {
     var evt = document.createEvent('HTMLEvents');
@@ -2810,6 +2811,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     Toolbar$$1.prototype.destroy = function () {
         if (this.isToolbarDestroyed()) {
@@ -2911,8 +2913,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.onRefresh = function () {
         this.refreshToolbarOverflow();
-        this.parent.setContentHeight();
-        this.parent.formatter.undoRedoRefresh(this.parent);
+        this.parent.setContentHeight('', true);
     };
     /**
      * Called internally if any of the property value changed.
@@ -3043,6 +3044,7 @@ var keyCode = {
  *   });
  * </script>
  * ```
+ * @hidden
  */
 var KeyboardEvents$1 = /** @__PURE__ @class */ (function (_super) {
     __extends(KeyboardEvents$$1, _super);
@@ -3640,6 +3642,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
      * Destroys the Quick toolbar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     BaseQuickToolbar.prototype.destroy = function () {
         if (this.popupObj && !this.popupObj.isDestroyed) {
@@ -3943,6 +3946,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     QuickToolbar.prototype.destroy = function () {
         if (this.linkQTBar) {
@@ -4179,6 +4183,7 @@ var Count = /** @__PURE__ @class */ (function () {
      * Destroys the Count.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     Count.prototype.destroy = function () {
         this.removeEventListener();
@@ -4548,7 +4553,7 @@ var Formatter = /** @__PURE__ @class */ (function () {
      * @param  {IRichTextEditor} self
      * @param  {ActionBeginEventArgs} args
      * @param  {MouseEvent|KeyboardEvent} event
-     * @param  {NotifyArgs} value
+     * @param  {IItemCollectionArgs} value
      */
     Formatter.prototype.process = function (self, args, event, value) {
         var _this = this;
@@ -4683,13 +4688,6 @@ var Formatter = /** @__PURE__ @class */ (function () {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
                 self.trigger(toolbarStatusUpdate, status);
             }
-        }
-    };
-    Formatter.prototype.undoRedoRefresh = function (iRichTextEditor) {
-        if (this.editorManager.undoRedoManager.undoRedoStack.length) {
-            this.editorManager.undoRedoManager.undoRedoStack = [];
-            this.editorManager.undoRedoManager.steps = 0;
-            iRichTextEditor.disableToolbarItem(['Undo', 'Redo']);
         }
     };
     return Formatter;
@@ -6564,6 +6562,7 @@ var MarkdownEditor = /** @__PURE__ @class */ (function () {
      * Destroys the Markdown.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     MarkdownEditor.prototype.destroy = function () {
         this.removeEventListener();
@@ -11435,6 +11434,7 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
      * Destroys the Markdown.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     HtmlEditor.prototype.destroy = function () {
         this.removeEventListener();
@@ -12739,6 +12739,7 @@ var Link = /** @__PURE__ @class */ (function () {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     Link.prototype.destroy = function () {
         this.removeEventListener();
@@ -14111,6 +14112,7 @@ var Image = /** @__PURE__ @class */ (function () {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     Image.prototype.destroy = function () {
         this.removeEventListener();
@@ -15364,6 +15366,7 @@ var Table = /** @__PURE__ @class */ (function () {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     Table.prototype.destroy = function () {
         this.removeEventListener();
@@ -16750,7 +16753,12 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      * @return {Element}
      */
     RichTextEditor.prototype.getContent = function () {
-        return this.contentModule.getPanel();
+        if (this.iframeSettings.enable && isBlazor()) {
+            return this.inputElement;
+        }
+        else {
+            return this.contentModule.getPanel();
+        }
     };
     /**
      * Returns the text content as string.
@@ -17034,10 +17042,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         });
     };
     /**
-     * Applies all the pending property changes and render the component again.
+     * Refresh the view of the editor.
      * @public
      */
-    RichTextEditor.prototype.refresh = function () {
+    RichTextEditor.prototype.refreshUI = function () {
         this.renderModule.refresh();
     };
     /**
@@ -17081,6 +17089,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get the selected range from the RichTextEditor's content.
      * @public
+     * @deprecated
      */
     RichTextEditor.prototype.getRange = function () {
         return this.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());

@@ -12,7 +12,7 @@ import { Toolbar } from '../actions/toolbar';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs } from './interface';
 import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, ZoomEventArgs } from './interface';
-import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs } from './interface';
+import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
 import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettingsModel } from '../models/models';
@@ -29,8 +29,8 @@ import { Column, ColumnModel } from '../models/column';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
 import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
-import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';
-import { RowDataBoundEventArgs, HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
+import { RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';
+import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { Filter } from '../actions/filter';
 import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';
@@ -46,6 +46,7 @@ import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, 
 import { Selection } from '../actions/selection';
 import { DayMarkers } from '../actions/day-markers';
 import { ContextMenu } from './../actions/context-menu';
+import { RowSelectingEventArgs } from './interface';
 import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './interface';
 
 /**
@@ -849,7 +850,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers before row selection occurs.
      * @event
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectingEventArgs
      */
     @Event()
     public rowSelecting: EmitType<RowSelectingEventArgs>;
@@ -857,8 +857,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers after a row is selected.
      * @event
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowSelectEventArgs
-     */
+     */
     @Event()
     public rowSelected: EmitType<RowSelectEventArgs>;
 
@@ -929,8 +928,7 @@ export class Gantt extends Component<HTMLElement>
     /** 
      * This will be triggered before the row element is appended to the Grid element.
      * @event
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDataBoundEventArgs
-     */
+     */
     @Event()
     public rowDataBound: EmitType<RowDataBoundEventArgs>;
 

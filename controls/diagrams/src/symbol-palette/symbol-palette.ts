@@ -807,12 +807,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 if (symbolInfo.fit) {
                     sw = actualWidth / symbolInfo.width; sh = actualHeight / symbolInfo.height;
                 }
-                width = actualWidth; height = actualHeight;
-                sw = sh = Math.min(sw, sh);
-                symbolContainer.width = width;
-                symbolContainer.height = height;
-                content.width = symbolInfo.width;
-                content.height = symbolInfo.height;
+                width = actualWidth; height = actualHeight; sw = sh = Math.min(sw, sh);
+                symbolContainer.width = width; symbolContainer.height = height;
+                content.width = symbolInfo.width; content.height = symbolInfo.height;
                 this.scaleSymbol(symbol, symbolContainer, sw, sh, width, height);
             } else {
                 let outerBounds: Rect;
@@ -825,8 +822,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             content.pivot = stackPanel.pivot = { x: 0, y: 0 };
             stackPanel.id = content.id + '_symbol';
             stackPanel.style.fill = stackPanel.style.strokeColor = 'transparent';
-            stackPanel.offsetX = symbol.style.strokeWidth / 2;
-            stackPanel.offsetY = symbol.style.strokeWidth / 2;
+            if (symbol instanceof Node) {
+              stackPanel.offsetX = symbol.style.strokeWidth / 2;
+              stackPanel.offsetY = symbol.style.strokeWidth / 2;
+            } else {
+              stackPanel.offsetX = 0.5;
+              stackPanel.offsetY = 0.5;
+            }
             //symbol description-textElement
             this.getSymbolDescription(symbolInfo, width, stackPanel);
             stackPanel.measure(new Size());

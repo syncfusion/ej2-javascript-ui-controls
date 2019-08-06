@@ -603,9 +603,13 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             id: this.element.id + CLS.LAYOUT_ID, className: CLS.LAYOUT
         });
         this.element.appendChild(layoutWrap);
+        let navigationWrap: HTMLElement = this.createElement('div', {
+            id: this.element.id + CLS.NAVIGATION_ID, className: CLS.NAVIGATION
+        });
         let treeWrap: HTMLElement = this.createElement('div', {
             id: this.element.id + CLS.TREE_ID
         });
+        navigationWrap.appendChild(treeWrap);
         let contentWrap: HTMLElement = this.createElement('div', {
             id: this.element.id + CLS.CONTENT_ID, className: CLS.LAYOUT_CONTENT
         });
@@ -627,7 +631,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         contentWrap.appendChild(overlay);
         let paneSettings: PanePropertiesModel[];
         if (!this.enableRtl) {
-            layoutWrap.appendChild(treeWrap);
+            layoutWrap.appendChild(navigationWrap);
             layoutWrap.appendChild(contentWrap);
             paneSettings = [
                 {
@@ -638,7 +642,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             ];
         } else {
             layoutWrap.appendChild(contentWrap);
-            layoutWrap.appendChild(treeWrap);
+            layoutWrap.appendChild(navigationWrap);
             paneSettings = [
                 { size: '75%', min: '270px' },
                 {
@@ -929,6 +933,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 e.preventDefault();
                 this.fileView = 'Details';
                 this.setProperties({ view: 'Details' }, true);
+                showSpinner(this.element);
                 updateLayout(this, 'Details');
                 break;
             /* istanbul ignore next */
@@ -936,6 +941,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                 e.preventDefault();
                 this.fileView = 'LargeIcons';
                 this.setProperties({ view: 'LargeIcons' }, true);
+                showSpinner(this.element);
                 updateLayout(this, 'LargeIcons');
                 break;
             case 'ctrlU':
@@ -1158,6 +1164,15 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (!isNOU(items)) {
             this.toolbarModule.enableItems(items, true);
         }
+    }
+
+    /**
+     * Gets the details of the selected files in the file manager.
+     * @returns void
+     */
+    public getSelectedFiles(): Object[] {
+        this.notify(events.updateSelectionData, {});
+        return this.itemData;
     }
 
     /**

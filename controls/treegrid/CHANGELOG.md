@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#146272` - Ellipsis works fine for tree-view column.
+
 ## 17.2.39 (2019-07-30)
 
 ### TreeGrid

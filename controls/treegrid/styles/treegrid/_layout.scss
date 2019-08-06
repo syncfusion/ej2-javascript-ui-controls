@@ -24,6 +24,20 @@
       vertical-align: middle;
     }
 
+    .e-rowcell:not(.e-gridclip) {
+      .e-treecolumn-container {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        span.e-treecell {
+          display: inline;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
     .e-rowcell.e-treerowcell {
       padding-left: $treegrid-treecell-padding;
     }
@@ -58,6 +72,7 @@
 
     .e-treecell {
       display: table-cell;
+      line-height: normal;
     }
 
     .e-grid {

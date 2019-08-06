@@ -445,8 +445,8 @@ let Splitter = class Splitter extends Component {
         this.addSeparator(this.element);
     }
     checkSplitPane(currentBar, elementIndex) {
-        let paneEle = currentBar.parentElement.children[elementIndex];
-        return paneEle.classList.contains('e-pane') ? paneEle : null;
+        let paneEle = currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
+        return paneEle ? paneEle : null;
     }
     getPrevPane(currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -1977,6 +1977,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
         this.originalHeight = this.getCellInstance(el.id).sizeY;
+        this.previousRow = this.getCellInstance(el.id).row;
     }
     touchDownResizeHandler(e) {
         this.downHandler(e);
@@ -2180,6 +2181,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.updateCloneArrayObject();
     }
     getResizeRowColumn(item, e) {
+        let isChanged = false;
         let col = item.col;
         if (['e-west', 'e-south-west'].indexOf(this.handleClass) !== -1) {
             col = this.pixelsToColumns(this.elementX, false);
@@ -2187,14 +2189,20 @@ let DashboardLayout = class DashboardLayout extends Component {
         let row = item.row;
         if (['e-north'].indexOf(this.handleClass) !== -1) {
             row = this.pixelsToRows(this.elementY, false);
+            if (this.previousRow !== row) {
+                this.previousRow = row;
+                isChanged = true;
+            }
         }
         let sizeX = item.sizeX;
         if (['e-north', 'e-south'].indexOf(this.handleClass) === -1) {
-            sizeX = this.pixelsToColumns(this.elementWidth - (col + 1) * this.cellSpacing[0], true);
+            sizeX = this.pixelsToColumns(this.elementWidth - (sizeX) * this.cellSpacing[1], true);
         }
         let sizeY = item.sizeY;
         if (['e-east', 'e-west'].indexOf(this.handleClass) === -1) {
-            sizeY = this.pixelsToRows(this.elementHeight - (row + 1) * this.cellSpacing[0], true);
+            if (this.handleClass === 'e-north' ? isChanged : true) {
+                sizeY = this.pixelsToRows(this.elementHeight - (sizeY) * this.cellSpacing[0], true);
+            }
         }
         if (item.col + item.sizeX > this.columns) {
             item.sizeX = item.sizeX - 1;
@@ -2217,10 +2225,10 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     pixelsToRows(pixels, isCeil) {
         if (isCeil) {
-            return Math.ceil(pixels / this.cellSize[1]);
+            return Math.round(pixels / this.cellSize[1]);
         }
         else {
-            return Math.floor(pixels / this.cellSize[1]);
+            return Math.round(pixels / (this.cellSize[1] + this.cellSpacing[0]));
         }
     }
     getMinWidth(item) {

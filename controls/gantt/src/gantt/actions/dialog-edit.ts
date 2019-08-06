@@ -848,7 +848,7 @@ export class DialogEdit {
                     this.parent.dateValidationModule.setTime(ganttObj.defaultEndTime, endDate);
                 }
                 endDate = this.parent.dateValidationModule.checkEndDate(endDate, ganttProp);
-                if (endDate.getTime() > (ganttProp.startDate).getTime()) {
+                if (isNullOrUndefined(ganttProp.startDate) || endDate.getTime() > (ganttProp.startDate).getTime()) {
                     this.parent.setRecordValue('endDate', endDate, ganttProp, true);
                 }
             } else {
@@ -1069,7 +1069,11 @@ export class DialogEdit {
                     change: (args: ChangeEventArgs) => {
                         let tr: HTMLElement = closest(args.element, 'tr') as HTMLElement;
                         let idInput: HTMLInputElement = tr.querySelector('#' + this.parent.element.id + 'DependencyTabContainerid');
-                        idInput.value = (args.itemData as IPreData).id;
+                        if (!isNullOrUndefined(args.itemData) && !isNullOrUndefined(args.item)) {
+                            idInput.value = (args.itemData as IPreData).id;
+                        } else {
+                            idInput.value = '';
+                        }
                     },
                     autofill: true,
                 });

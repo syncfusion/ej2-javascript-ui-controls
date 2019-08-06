@@ -14,28 +14,46 @@ let intl = new Internationalization();
 /**
  * @hidden
  */
-function parseValue(type, val) {
+function parseValue(type, val, model) {
     if (isNullOrUndefined(val) || val === '') {
         return '';
     }
     let result;
+    let tempFormat;
     switch (type) {
         case 'Color':
             let hex = val;
             result = (hex.length > 7) ? hex.slice(0, -2) : hex;
             break;
         case 'Date':
-            result = intl.formatDate(val, { skeleton: 'yMd' });
+            tempFormat = model.format;
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
             break;
         case 'DateRange':
+            tempFormat = model.format;
             let date = val;
-            result = intl.formatDate(date[0], { skeleton: 'yMd' }) + ' - ' + intl.formatDate(date[1], { skeleton: 'yMd' });
+            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: 'yMd' }) + ' - '
+                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: 'yMd' });
             break;
         case 'DateTime':
-            result = intl.formatDate(val, { skeleton: 'yMd' }) + ' ' + intl.formatDate(val, { skeleton: 'hm' });
+            tempFormat = model.format;
+            if (isNullOrUndefined(tempFormat) || tempFormat === '') {
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' }) + ' '
+                    + intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+            }
+            else {
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
+            }
             break;
         case 'Time':
-            result = intl.formatDate(val, { skeleton: 'hm' });
+            tempFormat = model.format;
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+            break;
+        case 'Numeric':
+            tempFormat = isNullOrUndefined(model.format) ? 'n2' :
+                model.format;
+            let tempVal = isNullOrUndefined(val) ? null : (typeof (val) === 'number' ? val : intl.parseNumber(val));
+            result = intl.formatNumber(tempVal, { format: tempFormat });
             break;
         default:
             result = val.toString();
@@ -250,7 +268,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -567,7 +585,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             return this.getDropDownsValue();
         }
         else {
-            return parseValue(this.type, this.value);
+            return parseValue(this.type, this.value, this.model);
         }
     }
     setRtl(value) {
@@ -1100,10 +1118,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
                     break;
                 case 'emptyText':
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
                     break;
                 case 'template':
                     this.checkIsTemplate();
@@ -1308,6 +1326,7 @@ class AutoComplete$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();
@@ -1346,6 +1365,7 @@ class ColorPicker$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();
@@ -1384,6 +1404,7 @@ class ComboBox$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();
@@ -1423,6 +1444,7 @@ class DateRangePicker$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();
@@ -1464,6 +1486,7 @@ class MultiSelect$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();
@@ -1517,6 +1540,7 @@ class Rte {
      * Destroys the rte module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();
@@ -1558,6 +1582,7 @@ class Slider$1 {
      * Destroys the slider module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();
@@ -1596,6 +1621,7 @@ class TimePicker$1 {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.base.destroy();

@@ -10684,20 +10684,70 @@ class ColumnSizeInfo {
  */
 class SpellChecker {
     /**
+     *
+     */
+    constructor(viewer) {
+        this.langIDInternal = 0;
+        this.spellSuggestionInternal = true;
+        this.removeUnderlineInternal = false;
+        this.viewer = viewer;
+        this.errorWordCollection = new Dictionary();
+        this.errorSuggestions = new Dictionary();
+        this.ignoreAllItems = [];
+    }
+    /**
      * Gets module name.
      */
     getModuleName() {
         return 'SpellChecker';
     }
     /**
-     *
+     * Gets the languageID.
+     * @aspType int
+     * @blazorType int
      */
-    constructor(viewer) {
-        this.viewer = viewer;
-        this.errorWordCollection = new Dictionary();
-        this.errorSuggestions = new Dictionary();
-        this.ignoreAllItems = [];
-        this.removeUnderline = false;
+    get languageID() {
+        return isNullOrUndefined(this.langIDInternal) ? 0 : this.langIDInternal;
+    }
+    /**
+     * Sets the languageID.
+     * @aspType int
+     * @blazorType int
+     */
+    set languageID(value) {
+        this.langIDInternal = value;
+    }
+    /**
+     * Getter indicates whether suggestion enabled.
+     * @aspType bool
+     * @blazorType bool
+     */
+    get allowSpellCheckAndSuggestion() {
+        return this.spellSuggestionInternal;
+    }
+    /**
+     * Setter to enable or disable suggestion
+     * @aspType bool
+     * @blazorType bool
+     */
+    set allowSpellCheckAndSuggestion(value) {
+        this.spellSuggestionInternal = value;
+    }
+    /**
+     * Getter indicates whether underline removed for mis-spelled word.
+     * @aspType bool
+     * @blazorType bool
+     */
+    get removeUnderline() {
+        return this.removeUnderlineInternal;
+    }
+    /**
+     * Setter to enable or disable underline for mis-spelled word
+     * @aspType bool
+     * @blazorType bool
+     */
+    set removeUnderline(value) {
+        this.removeUnderlineInternal = value;
     }
     /**
      * Method to manage replace logic
@@ -10830,6 +10880,7 @@ class SpellChecker {
     }
     /**
      * Method to handle ignore all items
+     * @private
      */
     handleIgnoreAllItems(contextElement) {
         let contextItem = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
@@ -10845,6 +10896,7 @@ class SpellChecker {
     }
     /**
      * Method to handle dictionary
+     * @private
      */
     handleAddToDictionary(contextElement) {
         let contextItem = (!isNullOrUndefined(contextElement)) ? contextElement : this.retriveText();
@@ -11416,6 +11468,7 @@ class SpellChecker {
      * Method to create error element with matched results
      * @param {TextSearchResult} result
      * @param {ElementBox} errorElement
+     * @private
      */
     createErrorElementWithInfo(result, errorElement) {
         let element = new ErrorTextElementBox();
@@ -11516,6 +11569,7 @@ class SpellChecker {
     /**
      * Method to retrieve next available combined element
      * @param {ElementBox} element
+     * @private
      */
     getCombinedElement(element) {
         let prevElement = element;
@@ -11542,6 +11596,7 @@ class SpellChecker {
      * Method to update error collection
      * @param {TextElementBox} currentElement
      * @param {TextElementBox} splittedElement
+     * @private
      */
     updateSplittedElementError(currentElement, splittedElement) {
         let errorCount = currentElement.errorCollection.length;
@@ -12276,6 +12331,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the spell check object of the document editor.
+     * @aspType SpellChecker
+     * @blazorType SpellChecker
      * @returns SpellChecker
      */
     get spellChecker() {
@@ -15117,6 +15174,9 @@ class Layout {
      */
     // tslint:disable-next-line:max-line-length
     layoutEmptyLineWidget(paragraph, isEmptyLine, line, isShiftEnter) {
+        let paraFormat = paragraph.paragraphFormat;
+        let subWidth = 0;
+        let whiteSpaceCount = 0;
         isShiftEnter = isNullOrUndefined(isShiftEnter) ? false : isShiftEnter;
         //Calculate line height and descent based on formatting defined in paragraph.
         let paragraphMarkSize = this.viewer.textHelper.getParagraphMarkSize(paragraph.characterFormat);
@@ -15125,6 +15185,27 @@ class Layout {
         let lineWidget;
         if (paragraph.childWidgets.length > 0 && !isShiftEnter) {
             lineWidget = paragraph.childWidgets[0];
+            if (lineWidget.children.length > 0) {
+                if (!this.isBidiReLayout && (paraFormat.bidi || this.isContainsRtl(lineWidget))) {
+                    this.reArrangeElementsForRtl(lineWidget, paraFormat.bidi);
+                }
+                let isParagraphStart = lineWidget.isFirstLine();
+                let isParagraphEnd = lineWidget.isLastLine();
+                let firstLineIndent = 0;
+                if (isParagraphStart) {
+                    beforeSpacing = this.getBeforeSpacing(paragraph);
+                    firstLineIndent = HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
+                }
+                let textAlignment = paraFormat.textAlignment;
+                if (textAlignment !== 'Left' && this.viewer.textWrap
+                    && (!(textAlignment === 'Justify' && isParagraphEnd)
+                        || (textAlignment === 'Justify' && paraFormat.bidi))) {
+                    // tslint:disable-next-line:max-line-length
+                    let getWidthAndSpace = this.getSubWidth(lineWidget, textAlignment === 'Justify', whiteSpaceCount, firstLineIndent, isParagraphEnd);
+                    subWidth = getWidthAndSpace.subWidth;
+                    whiteSpaceCount = getWidthAndSpace.spaceCount;
+                }
+            }
         }
         else {
             lineWidget = isEmptyLine ? this.addLineWidget(paragraph) : line;
@@ -15167,13 +15248,13 @@ class Layout {
         bottomMargin += HelperMethods.convertPointToPixel(this.getAfterSpacing(paragraph));
         for (let i = 0; i < lineWidget.children.length; i++) {
             let element = lineWidget.children[i];
-            if (element instanceof ListTextElementBox) {
+            if (i === 0 && element instanceof ListTextElementBox) {
                 let textAlignment = paragraph.paragraphFormat.textAlignment;
                 if (textAlignment === 'Right') { //Aligns the text as right justified.
-                    leftMargin = this.viewer.clientArea.width - element.width;
+                    leftMargin = subWidth;
                 }
                 else if (textAlignment === 'Center') { //Aligns the text as center justified.
-                    leftMargin = (this.viewer.clientArea.width - element.width) / 2;
+                    leftMargin = subWidth / 2;
                 }
                 element.margin = new Margin(leftMargin, topMargin, 0, bottomMargin);
                 element.line = lineWidget;
@@ -18222,7 +18303,7 @@ class Layout {
             splittedWidget = nextBlock.getSplitWidgets();
             nextBlock = splittedWidget[splittedWidget.length - 1].nextRenderedWidget;
         }
-        if (!viewer.owner.isShiftingEnabled || this.viewer.blockToShift !== block) {
+        if (!viewer.owner.isShiftingEnabled || (this.viewer.blockToShift && this.viewer.blockToShift !== block)) {
             this.viewer.owner.editorModule.updateListItemsTillEnd(block, updateNextBlockList);
         }
     }
@@ -20018,7 +20099,8 @@ class Renderer {
         let text = elementBox.text;
         let followCharacter = text === '\t' || text === ' ';
         if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
-            this.pageCanvas.setAttribute('dir', 'rtl');
+            let index = text.indexOf('.');
+            text = text.substr(index) + text.substring(0, index);
         }
         this.pageContext.fillStyle = this.getColor(color);
         // tslint:disable-next-line:max-line-length
@@ -20029,7 +20111,6 @@ class Renderer {
         if (strikethrough !== 'None') {
             this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, baselineAlignment);
         }
-        this.pageCanvas.setAttribute('dir', 'ltr');
     }
     /**
      * Renders text element box.
@@ -35785,7 +35866,7 @@ class Selection {
         }
         for (let i = 0; i < widget.children.length; i++) {
             let element = widget.children[i];
-            if (element instanceof ListTextElementBox) { //after list implementation
+            if (element instanceof ListTextElementBox && !paragraphFormat.bidi) { //after list implementation
                 if (i === 0) {
                     left += element.margin.left + element.width;
                 }
@@ -35826,6 +35907,11 @@ class Selection {
         for (let i = 0; i < widget.children.length; i++) {
             element = widget.children[i];
             if (element instanceof ListTextElementBox) {
+                if (widget.paragraph.paragraphFormat.bidi) {
+                    left += element.margin.left;
+                    element = undefined;
+                    break;
+                }
                 left += element.margin.left + element.width;
                 element = undefined;
                 // }
@@ -42753,10 +42839,8 @@ class Editor {
                     tempSpan.characterFormat.copyFormat(insertFormat);
                     let insertIndex = inline.indexInOwner;
                     if (indexInInline === inline.length) {
-                        inline.line.children.splice(insertIndex + 1, 0, tempSpan);
-                        if (inline.line.paragraph.bidi) {
-                            this.viewer.layout.reArrangeElementsForRtl(inline.line, inline.line.paragraph.bidi);
-                        }
+                        let isParaBidi = inline.line.paragraph.bidi;
+                        inline.line.children.splice(isParaBidi ? insertIndex : insertIndex + 1, 0, tempSpan);
                     }
                     else if (indexInInline === 0) {
                         if (isRtl && !isBidi) {
@@ -44371,7 +44455,9 @@ class Editor {
         let lineIndex = line.indexInOwner;
         let insertIndex = element.indexInOwner;
         if (index === element.length) { // Add new Element in current 
-            insertIndex++;
+            if (!paragraph.paragraphFormat.bidi) {
+                insertIndex++;
+            }
             line.children.splice(insertIndex, 0, newElement);
         }
         else if (index === 0) {
@@ -46810,14 +46896,20 @@ class Editor {
         }
         if (selection.isEmpty) {
             this.setOffsetValue(selection);
-            this.viewer.layout.isBidiReLayout = true;
+            let isBidiList = selection.paragraphFormat.bidi &&
+                (property === 'listFormat' || selection.paragraphFormat.listId !== -1);
+            if (!isBidiList) {
+                this.viewer.layout.isBidiReLayout = true;
+            }
             if (update && property === 'leftIndent') {
                 value = this.getIndentIncrementValue(selection.start.paragraph, value);
             }
             let para = selection.start.paragraph.combineWidget(this.viewer);
             this.applyParaFormatProperty(para, property, value, update);
             this.layoutItemBlock(para, false);
-            this.viewer.layout.isBidiReLayout = false;
+            if (!isBidiList) {
+                this.viewer.layout.isBidiReLayout = false;
+            }
         }
         else {
             //Iterate and update formatting's.      
@@ -46961,9 +47053,14 @@ class Editor {
                 this.updateParagraphFormat(undefined, value, false);
                 break;
             case 'bidi':
-                this.viewer.layout.isBidiReLayout = true;
+                let isBidiList = this.selection.paragraphFormat.listId !== -1;
+                if (!isBidiList) {
+                    this.viewer.layout.isBidiReLayout = true;
+                }
                 this.updateParagraphFormat('bidi', value, false);
-                this.viewer.layout.isBidiReLayout = false;
+                if (!isBidiList) {
+                    this.viewer.layout.isBidiReLayout = false;
+                }
                 break;
             case 'contextualSpacing':
                 this.updateParagraphFormat('contextualSpacing', value, false);
@@ -49072,7 +49169,9 @@ class Editor {
      */
     removeContent(lineWidget, startOffset, endOffset) {
         let count = this.selection.getLineLength(lineWidget);
-        for (let i = lineWidget.children.length - 1; i >= 0; i--) {
+        let isBidi = lineWidget.paragraph.paragraphFormat.bidi;
+        let childLength = lineWidget.children.length;
+        for (let i = isBidi ? 0 : childLength - 1; isBidi ? i < childLength : i >= 0; isBidi ? i++ : i--) {
             let inline = lineWidget.children[i];
             if (endOffset <= count - inline.length) {
                 count -= inline.length;
@@ -50671,7 +50770,12 @@ class Editor {
                     if (paragraph.childWidgets.length > 0) {
                         let lineWidget = paragraph.childWidgets[0];
                         if (lineWidget.children.length > 0) {
-                            element = lineWidget.children[0];
+                            if (paragraph.paragraphFormat.bidi) {
+                                element = lineWidget.children[lineWidget.children.length - 1];
+                            }
+                            else {
+                                element = lineWidget.children[0];
+                            }
                         }
                     }
                     if (!isNullOrUndefined(element)) {
@@ -53838,9 +53942,16 @@ class BaseHistoryInfo {
                 this.owner.editorModule.updateSelectionParagraphFormatting(property, this.modifiedProperties[0].baseStyle, false);
                 return;
             }
-            this.owner.viewer.layout.isBidiReLayout = true;
+            let selection = this.owner.viewer.selection;
+            let isBidiList = (selection.paragraphFormat.bidi ||
+                (this.modifiedProperties[0] instanceof WParagraphFormat && this.modifiedProperties[0]).bidi) && (selection.paragraphFormat.listId !== -1 || property === 'listFormat');
+            if (!isBidiList) {
+                this.owner.viewer.layout.isBidiReLayout = true;
+            }
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
-            this.owner.viewer.layout.isBidiReLayout = false;
+            if (!isBidiList) {
+                this.owner.viewer.layout.isBidiReLayout = false;
+            }
         }
         else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
@@ -61853,7 +61964,7 @@ class SfdtExport {
         this.document.abstractLists = [];
         for (let i = 0; i < viewer.abstractLists.length; i++) {
             let abstractList = viewer.abstractLists[i];
-            if (this.lists.indexOf(abstractList.abstractListId) > -1) {
+            if (abstractLists.indexOf(abstractList.abstractListId) > -1) {
                 this.document.abstractLists.push(this.writeAbstractList(abstractList));
             }
         }
@@ -64413,9 +64524,12 @@ class ParagraphDialog {
      * @private
      */
     onParagraphFormat(paragraphFormat) {
-        this.owner.layout.isBidiReLayout = true;
-        this.owner.owner.editorModule.initHistory('ParagraphFormat');
         let selection = this.owner.selection;
+        let isListBidi = paragraphFormat.bidi && selection.paragraphFormat.listId !== -1;
+        if (!isListBidi) {
+            this.owner.layout.isBidiReLayout = true;
+        }
+        this.owner.owner.editorModule.initHistory('ParagraphFormat');
         this.owner.owner.isShiftingEnabled = true;
         if (this.owner.selection.isEmpty) {
             this.owner.owner.editorModule.applyParaFormatProperty(selection.start.paragraph, undefined, paragraphFormat, false);
@@ -64425,7 +64539,9 @@ class ParagraphDialog {
             this.owner.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
         }
         this.owner.owner.editorModule.reLayout(selection);
-        this.owner.layout.isBidiReLayout = false;
+        if (!isListBidi) {
+            this.owner.layout.isBidiReLayout = false;
+        }
     }
     /**
      * @private
@@ -73963,6 +74079,10 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         if (this.toolbarModule) {
             this.toolbarModule.initToolBar();
         }
+        if (this.element.getBoundingClientRect().height < 320) {
+            this.element.style.height = '320px';
+        }
+        this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
         this.textProperties = new TextProperties(this, this.element.id, false, this.enableRtl);
         this.headerFooterProperties = new HeaderFooterProperties(this, this.enableRtl);
@@ -74045,6 +74165,8 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             zoomFactorChange: this.onZoomFactorChange.bind(this),
             requestNavigate: this.onRequestNavigate.bind(this),
             viewChange: this.onViewChange.bind(this),
+            customContextMenuSelect: this.onCustomContextMenuSelect.bind(this),
+            customContextMenuBeforeOpen: this.onCustomContextMenuBeforeOpen.bind(this),
             locale: this.locale,
             acceptTab: true,
             enableLocalPaste: this.enableLocalPaste,
@@ -74133,6 +74255,18 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         if (this.statusBar) {
             this.statusBar.updatePageNumberOnViewChange(args);
         }
+    }
+    /**
+     * @private
+     */
+    onCustomContextMenuSelect(args) {
+        this.trigger('customContextMenuSelect', args);
+    }
+    /**
+     * @private
+     */
+    onCustomContextMenuBeforeOpen(args) {
+        this.trigger('customContextMenuBeforeOpen', args);
     }
     /**
      * @private
@@ -74310,6 +74444,12 @@ __decorate$1([
 __decorate$1([
     Event()
 ], DocumentEditorContainer.prototype, "documentChange", void 0);
+__decorate$1([
+    Event()
+], DocumentEditorContainer.prototype, "customContextMenuSelect", void 0);
+__decorate$1([
+    Event()
+], DocumentEditorContainer.prototype, "customContextMenuBeforeOpen", void 0);
 __decorate$1([
     Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
 ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);

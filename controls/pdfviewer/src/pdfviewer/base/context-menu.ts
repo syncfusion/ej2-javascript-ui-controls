@@ -38,7 +38,7 @@ export class ContextMenu {
         { text: this.pdfViewer.localeObj.getConstant('Delete Context'), iconCss: 'e-pv-delete-icon' },
         { text: this.pdfViewer.localeObj.getConstant('Scale Ratio'), iconCss: 'e-pv-scale-ratio-icon' },
         { separator: true, id: pdfViewer.element.id + '_context_menu_comment_separator' },
-        { text: this.pdfViewer.localeObj.getConstant('Comment'), iconCss: 'e-pv-comment-icon'},
+        { text: this.pdfViewer.localeObj.getConstant('Comment'), iconCss: 'e-pv-comment-icon' },
         { separator: true, id: pdfViewer.element.id + '_context_menu_separator' },
         { text: this.pdfViewer.localeObj.getConstant('Properties') }
         ];
@@ -113,7 +113,7 @@ export class ContextMenu {
                     if (this.pdfViewer.annotation && this.pdfViewer.annotation.isShapeCopied && ((args.event.target as HTMLElement).classList.contains('e-pv-text-layer') ||
                         (args.event.target as HTMLElement).classList.contains('e-pv-text')) && !this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         this.onOpeningForShape(false);
-                    // tslint:disable-next-line:max-line-length
+                        // tslint:disable-next-line:max-line-length
                     } else if (this.pdfViewerBase.isCalibrateAnnotationModule() && this.pdfViewer.annotationModule.measureAnnotationModule.currentAnnotationMode !== '') {
                         // tslint:disable-next-line:max-line-length
                         this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties')]);
@@ -128,11 +128,16 @@ export class ContextMenu {
                         this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
                         // tslint:disable-next-line:max-line-length
-                        this.contextMenuObj.showItems([ this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Comment')], false);
+                        this.contextMenuObj.showItems([this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Comment')], false);
                     } else {
                         args.cancel = true;
                     }
                 }
+            } else if (this.pdfViewer.textSelectionModule && (this.pdfViewer.contextMenuOption === 'MouseUp')) {
+                // tslint:disable-next-line:max-line-length
+                this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Scale Ratio'), this.pdfViewer.localeObj.getConstant('Comment'), this.pdfViewer.localeObj.getConstant('Properties')]);
+                this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
             } else {
                 if (this.pdfViewer.selectedItems.annotations.length === 0) {
                     // tslint:disable-next-line:max-line-length
@@ -141,6 +146,10 @@ export class ContextMenu {
                 }
             }
         } else {
+            args.cancel = true;
+        }
+
+        if (this.pdfViewer.contextMenuOption === 'None') {
             args.cancel = true;
         }
     }

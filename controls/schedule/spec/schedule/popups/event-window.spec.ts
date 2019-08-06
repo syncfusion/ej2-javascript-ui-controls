@@ -59,6 +59,16 @@ describe('Schedule event window initial load', () => {
         OwnerId: [1, 3],
         Description: 'Enjoying Holiday in Paris'
     }];
+    let resourceEvents: Object[] = [{
+        Id: 1,
+        Subject: 'Holiday',
+        StartTime: new Date(2017, 9, 30, 10, 0),
+        EndTime: new Date(2017, 9, 30, 10, 30),
+        Location: 'Paris',
+        CalendarId: 1,
+        Description: 'Enjoying Holiday in Paris'
+    }];
+
 
     beforeAll(() => {
         // tslint:disable-next-line:no-any
@@ -459,7 +469,6 @@ describe('Schedule event window initial load', () => {
             mDate.value = 30;
             endDate.value = new Date('11/30/2017');
             saveButton.click();
-            okButton.click();
             okButton.click();
             endDate.value = new Date('12/03/2017');
             monthDate.checked = false;
@@ -885,6 +894,39 @@ describe('Schedule event window initial load', () => {
             };
             schObj.readonly = true;
             schObj.dataBind();
+        });
+    });
+
+    describe('Schedule event window initial loading values', () => {
+        let schObj: Schedule;
+        let appData: Object[] = [{
+            Id: 1,
+            Subject: 'Meeting',
+            StartTime: new Date(2017, 10, 3, 0, 0),
+            EndTime: new Date(2017, 10, 4, 10, 0),
+            IsAllDay: true
+        }];
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = { height: '500px', currentView: 'Month', views: ['Month'], selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, appData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Event window appointments start and endTime value checking', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let startElement: HTMLInputElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS);
+            let endElement: HTMLInputElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            let allDayElement: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_ALL_DAY_CLASS + ' input');
+            let timezoneElement: HTMLElement = dialogElement.querySelector('.' + cls.TIME_ZONE_CLASS + ' input');
+            expect(((timezoneElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(false);
+            expect(((allDayElement as EJ2Instance).ej2_instances[0] as CheckBox).checked).toEqual(true);
+            expect(startElement.value).toEqual('11/3/17');
+            expect(endElement.value).toEqual('11/4/17');
+            let saveButton: HTMLElement = dialogElement.querySelector('.e-event-save') as HTMLElement;
+            saveButton.click();
         });
     });
 
@@ -1664,6 +1706,55 @@ describe('Schedule event window initial load', () => {
             endDate.value = new Date('7/4/18 12:00 PM');
             endDate.dataBind();
             (<HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS)).click();
+        });
+    });
+
+    describe('Add Event With Editor Template', () => {
+        let schObj: Schedule;
+        let beginArgs: string;
+        beforeAll((done: Function) => {
+            let template: string = '<div>Subject: ${Subject}</div>';
+            let scriptEle: HTMLScriptElement = document.createElement('script');
+            scriptEle.type = 'text/x-template';
+            scriptEle.id = 'eventEditor';
+            scriptEle.appendChild(document.createTextNode(template));
+            document.getElementsByTagName('head')[0].appendChild(scriptEle);
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                editorTemplate: '#eventEditor',
+                group: { resources: ['Calendars'] },
+                resources: [{
+                    field: 'CalendarId', name: 'Calendars',
+                    dataSource: [
+                        { CalendarText: 'My Calendar', CalendarId: 1, CalendarColor: '#c43081' },
+                        { CalendarText: 'Company', CalendarId: 2, CalendarColor: '#ff7f50' },
+                        { CalendarText: 'Birthday', CalendarId: 3, CalendarColor: '#AF27CD' },
+                        { CalendarText: 'Holiday', CalendarId: 4, CalendarColor: '#808000' }
+                    ]
+                }],
+                actionBegin: (e: ActionEventArgs) => {
+                    if (e.requestType === 'eventCreate') {
+                        beginArgs = e.requestType;
+                    }
+                },
+            };
+            schObj = util.createSchedule(model, resourceEvents, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('event window validation checking with save', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(beginArgs).not.toBeUndefined();
+                expect(beginArgs).toEqual('eventCreate');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveButton.click();
         });
     });
 

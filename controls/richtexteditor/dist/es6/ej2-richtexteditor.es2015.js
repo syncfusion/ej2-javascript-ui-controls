@@ -1,4 +1,4 @@
-import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isBlazor, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-popups';
@@ -1367,6 +1367,7 @@ function updateUndoRedoStatus(baseToolbar, undoRedoStatus) {
 }
 /**
  * To dispatch the event manually
+ * @hidden
  */
 function dispatchEvent(element, type) {
     let evt = document.createEvent('HTMLEvents');
@@ -2793,6 +2794,7 @@ class Toolbar$1 {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         if (this.isToolbarDestroyed()) {
@@ -2894,8 +2896,7 @@ class Toolbar$1 {
     }
     onRefresh() {
         this.refreshToolbarOverflow();
-        this.parent.setContentHeight();
-        this.parent.formatter.undoRedoRefresh(this.parent);
+        this.parent.setContentHeight('', true);
     }
     /**
      * Called internally if any of the property value changed.
@@ -3012,6 +3013,7 @@ let keyCode = {
  *   });
  * </script>
  * ```
+ * @hidden
  */
 let KeyboardEvents$1 = KeyboardEvents_1 = class KeyboardEvents$$1 extends Base {
     /**
@@ -3596,6 +3598,7 @@ class BaseQuickToolbar {
      * Destroys the Quick toolbar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         if (this.popupObj && !this.popupObj.isDestroyed) {
@@ -3894,6 +3897,7 @@ class QuickToolbar {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         if (this.linkQTBar) {
@@ -4128,6 +4132,7 @@ class Count {
      * Destroys the Count.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.removeEventListener();
@@ -4489,7 +4494,7 @@ class Formatter {
      * @param  {IRichTextEditor} self
      * @param  {ActionBeginEventArgs} args
      * @param  {MouseEvent|KeyboardEvent} event
-     * @param  {NotifyArgs} value
+     * @param  {IItemCollectionArgs} value
      */
     process(self, args, event, value) {
         let selection = self.contentModule.getDocument().getSelection();
@@ -4622,13 +4627,6 @@ class Formatter {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
                 self.trigger(toolbarStatusUpdate, status);
             }
-        }
-    }
-    undoRedoRefresh(iRichTextEditor) {
-        if (this.editorManager.undoRedoManager.undoRedoStack.length) {
-            this.editorManager.undoRedoManager.undoRedoStack = [];
-            this.editorManager.undoRedoManager.steps = 0;
-            iRichTextEditor.disableToolbarItem(['Undo', 'Redo']);
         }
     }
 }
@@ -6476,6 +6474,7 @@ class MarkdownEditor {
      * Destroys the Markdown.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.removeEventListener();
@@ -11344,6 +11343,7 @@ class HtmlEditor {
      * Destroys the Markdown.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.removeEventListener();
@@ -12644,6 +12644,7 @@ class Link {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.removeEventListener();
@@ -14007,6 +14008,7 @@ class Image {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.removeEventListener();
@@ -15253,6 +15255,7 @@ class Table {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     destroy() {
         this.removeEventListener();
@@ -16504,7 +16507,12 @@ let RichTextEditor = class RichTextEditor extends Component {
      * @return {Element}
      */
     getContent() {
-        return this.contentModule.getPanel();
+        if (this.iframeSettings.enable && isBlazor()) {
+            return this.inputElement;
+        }
+        else {
+            return this.contentModule.getPanel();
+        }
     }
     /**
      * Returns the text content as string.
@@ -16786,10 +16794,10 @@ let RichTextEditor = class RichTextEditor extends Component {
         });
     }
     /**
-     * Applies all the pending property changes and render the component again.
+     * Refresh the view of the editor.
      * @public
      */
-    refresh() {
+    refreshUI() {
         this.renderModule.refresh();
     }
     /**
@@ -16833,6 +16841,7 @@ let RichTextEditor = class RichTextEditor extends Component {
     /**
      * Get the selected range from the RichTextEditor's content.
      * @public
+     * @deprecated
      */
     getRange() {
         return this.formatter.editorManager.nodeSelection.getRange(this.contentModule.getDocument());

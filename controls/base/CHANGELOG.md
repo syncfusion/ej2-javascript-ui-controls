@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### Common
+
+#### Bug Fixes
+
+- `#I240696` - Resolved drag issue for actual drag element for scrolled parent element.
+
 ## 17.2.39 (2019-07-30)
 
 ### Common

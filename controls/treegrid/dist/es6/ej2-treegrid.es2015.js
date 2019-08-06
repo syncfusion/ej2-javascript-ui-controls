@@ -2376,7 +2376,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             extend(args, treeGrid.dataResults);
             // this.notify(events.beforeDataBound, args);
             if (!this.isPrinting) {
-                treeGrid.trigger(beforeDataBound, args);
+                let callBackPromise = new Deferred();
+                treeGrid.trigger(beforeDataBound, args, (beforeDataBoundArgs) => {
+                    callBackPromise.resolve(beforeDataBoundArgs);
+                });
+                return callBackPromise;
             }
         };
         this.extendedGridEvents();
@@ -2420,8 +2424,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
             let callBackPromise = new Deferred();
             this.trigger(cellSave, args, (cellsaveArgs) => {
+                if (isBlazor()) {
+                    cellsaveArgs.cell = getElement(cellsaveArgs.cell);
+                }
                 if (!cellsaveArgs.cancel) {
-                    this.notify(cellSave, args);
+                    this.notify(cellSave, cellsaveArgs);
                 }
                 callBackPromise.resolve(cellsaveArgs);
             });
@@ -2521,9 +2528,20 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 this.grid.dataSource = this.dataResults.result;
             }
             let callBackPromise = new Deferred();
+            if (isBlazor() && args.requestType === 'delete') {
+                let data = 'data';
+                args[data] = args[data][0];
+            }
             this.trigger(actionBegin, args, (actionArgs) => {
                 if (!actionArgs.cancel) {
                     this.notify(beginEdit, actionArgs);
+                }
+                if (isBlazor() && actionArgs.requestType === 'delete') {
+                    let data = 'data';
+                    actionArgs[data] = this.getSelectedRecords();
+                }
+                if (isBlazor() && actionArgs.requestType === 'beginEdit') {
+                    actionArgs.row = getElement(actionArgs.row);
                 }
                 callBackPromise.resolve(actionArgs);
             });
@@ -2583,6 +2601,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.bindGridProperties();
         this.bindGridEvents();
         setValue('registeredTemplate', this.registeredTemplate, this.grid);
+        let ref = 'viewContainerRef';
+        setValue('viewContainerRef', this[ref], this.grid);
     }
     /**
      * AutoGenerate TreeGrid columns from first record
@@ -4534,6 +4554,10 @@ class ExcelExport$1 {
         if (!this.isLocal()) {
             this.parent.flatData = [];
         }
+        if (property.dataSource) {
+            this.parent.dataModule.convertToFlatData(property.dataSource);
+            dtSrc = this.parent.flatData;
+        }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({ json: dtSrc });
         return property;
@@ -4664,6 +4688,10 @@ class PdfExport$1 {
         dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
         if (!isLocal) {
             this.parent.flatData = [];
+        }
+        if (prop.dataSource) {
+            this.parent.dataModule.convertToFlatData(prop.dataSource);
+            dtSrc = this.parent.flatData;
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
         prop.dataSource = new DataManager({ json: dtSrc });
@@ -5617,9 +5645,6 @@ class Edit$1 {
     }
     cellSave(args) {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
-            if (isBlazor()) {
-                args.cell = getElement(args.cell);
-            }
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
             args.rowData[args.columnName] = args.value;
@@ -5851,7 +5876,7 @@ class Edit$1 {
             let index = this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
             setValue('uniqueIDCollection.' + value.uniqueID, value, this.parent);
-            let level;
+            let level = -1;
             let dataIndex;
             let idMapping;
             let parentUniqueID;
@@ -5891,8 +5916,8 @@ class Edit$1 {
                     index = (childRecordCount1 > 0) ? (currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                     value.level = level + 1;
                     if (this.isSelfReference) {
-                        value[this.parent.parentIdMapping] = idMapping;
                         if (!isNullOrUndefined(value.parentItem)) {
+                            value[this.parent.parentIdMapping] = idMapping;
                             updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                         }
                     }

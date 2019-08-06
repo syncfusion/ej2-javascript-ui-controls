@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1 } from '../data';
+import { data1, idData1 } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -51,6 +51,98 @@ describe('FileManager control single selection LargeIcons view', () => {
                 feObj.refreshLayout();
                 expect((<any>document.getElementById("file4").getElementsByClassName('e-layout')[0]).style.height).not.toBe('0px');
                 expect((<any>document.getElementById("file4").getElementsByClassName('e-large-icons')[0]).style.height).not.toBe('0px');
+                done();
+            }, 400);
+        });
+    });
+    describe('methods testing', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        beforeEach(() => {
+            jasmine.Ajax.install();
+            ele = createElement('div', { id: 'file1' });
+            document.body.appendChild(ele);
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+        });
+        afterEach(() => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+        });
+        it('for getSelectedFiles', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
+                mouseEventArgs.target = li[0];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                mouseEventArgs.target = li[4];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["1.png"]));
+                let data: any = feObj.getSelectedFiles();
+                expect(data.length).toBe(1);
+                expect(data[0]['name']).toBe('1.png');
+                done();
+            }, 400);
+        });
+        it('for getSelectedFiles with id base', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let li: any = document.getElementById('file1_largeicons').querySelectorAll('li');
+                mouseEventArgs.target = li[0];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                mouseEventArgs.target = li[4];
+                mouseEventArgs.ctrlKey = true;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["6175"]));
+                let data: any = feObj.getSelectedFiles();
+                expect(data.length).toBe(1);
+                expect(data[0]['name']).toBe('Videos');
                 done();
             }, 400);
         });

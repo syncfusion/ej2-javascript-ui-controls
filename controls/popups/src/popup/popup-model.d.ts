@@ -9,11 +9,13 @@ export interface PositionDataModel {
 
     /**
      * specify the offset left value
+     * @blazorType string
      */
     X?: string | number;
 
     /**
      * specify the offset top value.
+     * @blazorType string
      */
     Y?: string | number;
 

@@ -131,7 +131,8 @@ export class DragAndDrop extends ActionBase {
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
         this.parent.trigger(events.dragStart, dragArgs);
-        if (dragArgs.cancel) {
+        if (dragArgs.cancel || (!isNullOrUndefined(this.actionObj.element) && isNullOrUndefined(this.actionObj.element.parentElement))) {
+            this.actionObj.action = '';
             this.removeCloneElementClasses();
             this.removeCloneElement();
             return;

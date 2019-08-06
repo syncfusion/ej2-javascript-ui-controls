@@ -2855,9 +2855,8 @@ let LinearGauge = class LinearGauge extends Component {
                     renderer = true;
                     break;
                 case 'container':
-                    refreshBounds = true;
-                    break;
                 case 'axes':
+                case 'orientation':
                     refreshBounds = true;
                     break;
             }

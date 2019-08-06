@@ -432,6 +432,9 @@ export class Toolbar {
             if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.length === 0 || !this.pdfViewer.annotationModule) {
                 this.enableToolbarItem(['AnnotationEditTool'], false);
             }
+            if (!this.pdfViewer.enableDownload) {
+                this.enableDownloadOption(false);
+            }
         } else {
             if (this.pdfViewerBase.pageCount === 0) {
                 this.toolbar.enableItems(this.textSearchItem.parentElement, false);
@@ -1361,7 +1364,7 @@ export class Toolbar {
     }
 
     private applyToolbarSettings(): void {
-        let toolbarSettingsItems: ToolbarItem[] = this.pdfViewer.toolbarSettings.toolbarItem;
+        let toolbarSettingsItems: ToolbarItem[] = this.pdfViewer.toolbarSettings.toolbarItems;
         if (toolbarSettingsItems) {
             if (toolbarSettingsItems.indexOf('OpenOption') !== -1) {
                 this.showOpenOption(true);

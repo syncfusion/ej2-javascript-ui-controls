@@ -136,6 +136,7 @@ export interface BeforeOpenEventArgs {
      * Returns the target element of the dialog.
      * @aspType string
      * @blazorType string
+     * @deprecated
      */
     target: HTMLElement | String;
 }
@@ -165,6 +166,7 @@ export interface BeforeCloseEventArgs {
      * Returns the target element of the dialog.
      * @aspType string
      * @blazorType string
+     * @deprecated
      */
     target: HTMLElement | String;
     /**
@@ -270,12 +272,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * Specifies the height of the dialog component.
      * @default 'auto'
+     * @blazorType string
      */
     @Property('auto')
     public height: string | number;
     /**
      * Specifies the width of the dialog. 
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -777,10 +781,10 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private positionChange(): void {
         if (this.isModal) {
-            if (typeof(this.position.X) === 'number' && typeof(this.position.Y) === 'number') {
+            if (!isNaN(parseFloat(this.position.X as string)) && !isNaN(parseFloat(this.position.Y as string))) {
                 this.setPopupPosition();
-            } else if ((typeof this.position.X === 'string' && typeof this.position.Y === 'number') ||
-            (typeof this.position.X === 'number' && typeof this.position.Y === 'string')) {
+            } else if ((!isNaN(parseFloat(this.position.X as string)) && isNaN(parseFloat(this.position.Y as string)))
+            || (isNaN(parseFloat(this.position.X as string)) && !isNaN(parseFloat(this.position.Y as string)))) {
                 this.setPopupPosition();
             } else {
                 this.element.style.top = '0px';

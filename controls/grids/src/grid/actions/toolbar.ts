@@ -224,7 +224,10 @@ export class Toolbar {
         let gObj: IGrid = this.parent;
         let gID: string = this.gridID;
         extend(args, { cancel: false });
-        gObj.trigger(events.toolbarClick, args, (toolbarargs: ClickEventArgs) => {
+        let newArgs: Object = !isBlazor() || this.parent.isJsComponent ? args : { item: args.item, cancel: args.cancel, name: args.name };
+        let originalEvent: Event = args.originalEvent;
+        gObj.trigger(events.toolbarClick, newArgs, (toolbarargs: ClickEventArgs) => {
+            toolbarargs.originalEvent = toolbarargs.originalEvent ? toolbarargs.originalEvent : originalEvent;
             if (!toolbarargs.cancel) {
                 switch (!isNullOrUndefined(toolbarargs.item) && toolbarargs.item.id) {
                     case gID + '_print':

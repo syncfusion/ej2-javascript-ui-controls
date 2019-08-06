@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### PDF Viewer
+
+#### New Features
+
+- #242329 - Provided the support to customize scale ratio value of measurement annotation.
+- #241886 - Provided the support to display context menu in mouse up action.
+
+#### Bug Fixes
+
+- #242495, 243160 – Hyperlink element is now rendered properly for the rotated page document.
+- #238064 – Searched target text is now highlighted properly for the provided document.
+- #241904, 241294 – Converted PDF document is now rendered properly in IE browser.
+- #242282 – Text search is now working properly while using PDF Viewer control inside the Tab control.
+
 ## 17.2.39 (2019-07-30)
 
 ### PDF Viewer

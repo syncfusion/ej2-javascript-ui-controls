@@ -14,6 +14,7 @@ export interface LineModel {
     /**
      * Height of the axis line.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValueIgnore
      */
     height?: number;
 
@@ -30,6 +31,7 @@ export interface LineModel {
 
     /**
      * Specifies to move the axis line.
+     * @default 0
      */
     offset?: number;
 

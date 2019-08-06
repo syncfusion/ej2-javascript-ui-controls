@@ -81,7 +81,7 @@ export interface BorderModel {
 
     /**
      * The width of the border in pixels.
-     * @default '0'
+     * @default 0
      */
     width?: number;
 
@@ -186,6 +186,7 @@ export interface ContainerModel {
 
     /**
      * Specifies to move the container.
+     * @default 0
      */
     offset?: number;
 

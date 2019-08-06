@@ -2540,7 +2540,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             extend(args, treeGrid.dataResults);
             // this.notify(events.beforeDataBound, args);
             if (!this.isPrinting) {
-                treeGrid.trigger(beforeDataBound, args);
+                var callBackPromise_1 = new Deferred();
+                treeGrid.trigger(beforeDataBound, args, function (beforeDataBoundArgs) {
+                    callBackPromise_1.resolve(beforeDataBoundArgs);
+                });
+                return callBackPromise_1;
             }
         };
         this.extendedGridEvents();
@@ -2586,8 +2590,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
             var callBackPromise = new Deferred();
             _this.trigger(cellSave, args, function (cellsaveArgs) {
+                if (isBlazor()) {
+                    cellsaveArgs.cell = getElement(cellsaveArgs.cell);
+                }
                 if (!cellsaveArgs.cancel) {
-                    _this.notify(cellSave, args);
+                    _this.notify(cellSave, cellsaveArgs);
                 }
                 callBackPromise.resolve(cellsaveArgs);
             });
@@ -2689,9 +2696,20 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 _this.grid.dataSource = _this.dataResults.result;
             }
             var callBackPromise = new Deferred();
+            if (isBlazor() && args.requestType === 'delete') {
+                var data = 'data';
+                args[data] = args[data][0];
+            }
             _this.trigger(actionBegin, args, function (actionArgs) {
                 if (!actionArgs.cancel) {
                     _this.notify(beginEdit, actionArgs);
+                }
+                if (isBlazor() && actionArgs.requestType === 'delete') {
+                    var data = 'data';
+                    actionArgs[data] = _this.getSelectedRecords();
+                }
+                if (isBlazor() && actionArgs.requestType === 'beginEdit') {
+                    actionArgs.row = getElement(actionArgs.row);
                 }
                 callBackPromise.resolve(actionArgs);
             });
@@ -2751,6 +2769,8 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.bindGridProperties();
         this.bindGridEvents();
         setValue('registeredTemplate', this.registeredTemplate, this.grid);
+        var ref = 'viewContainerRef';
+        setValue('viewContainerRef', this[ref], this.grid);
     };
     /**
      * AutoGenerate TreeGrid columns from first record
@@ -4741,6 +4761,10 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
         if (!this.isLocal()) {
             this.parent.flatData = [];
         }
+        if (property.dataSource) {
+            this.parent.dataModule.convertToFlatData(property.dataSource);
+            dtSrc = this.parent.flatData;
+        }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({ json: dtSrc });
         return property;
@@ -4873,6 +4897,10 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
         dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
         if (!isLocal) {
             this.parent.flatData = [];
+        }
+        if (prop.dataSource) {
+            this.parent.dataModule.convertToFlatData(prop.dataSource);
+            dtSrc = this.parent.flatData;
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
         prop.dataSource = new DataManager({ json: dtSrc });
@@ -5850,9 +5878,6 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     };
     Edit$$1.prototype.cellSave = function (args) {
         if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
-            if (isBlazor()) {
-                args.cell = getElement(args.cell);
-            }
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
             args.rowData[args.columnName] = args.value;
@@ -6084,7 +6109,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             var index = this.addRowIndex;
             value.uniqueID = getUid(this.parent.element.id + '_data_');
             setValue('uniqueIDCollection.' + value.uniqueID, value, this.parent);
-            var level = void 0;
+            var level = -1;
             var dataIndex = void 0;
             var idMapping = void 0;
             var parentUniqueID = void 0;
@@ -6124,8 +6149,8 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                     index = (childRecordCount1 > 0) ? (currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                     value.level = level + 1;
                     if (this.isSelfReference) {
-                        value[this.parent.parentIdMapping] = idMapping;
                         if (!isNullOrUndefined(value.parentItem)) {
+                            value[this.parent.parentIdMapping] = idMapping;
                             updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                         }
                     }

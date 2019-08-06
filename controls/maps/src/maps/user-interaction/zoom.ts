@@ -9,7 +9,7 @@ import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
 import { zoomIn, zoomOut, pan } from '../model/constants';
 import { PanDirection } from '../utils/enum';
 import { DataLabel } from '../layers/data-label';
-import { FontModel } from '../model/base-model';
+import { FontModel, DataLabelSettingsModel, BorderModel } from '../model/base-model';
 
 /**
  * Zoom module used to process the zoom for maps
@@ -125,7 +125,7 @@ export class Zoom {
             };
         } else {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: map,
+                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: map.isBlazor ? null : map,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
             };
@@ -275,6 +275,7 @@ export class Zoom {
         zoomAnimate(element, 0, duration, new MapLocation(x, y), scale, this.maps.mapAreaRect, this.maps);
     }
 
+    //tslint:disable:max-func-body-length
     public applyTransform(animate?: boolean): void {
         let layerIndex: number;
         this.templateCount = 0;
@@ -353,9 +354,29 @@ export class Zoom {
                             this.intersect = []; this.maps.zoomLabelPositions = [];
                             this.maps.zoomLabelPositions = this.maps.dataLabelModule.dataLabelCollections;
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
-                                this.zoomshapewidth = this.shapeZoomLocation[k].getBoundingClientRect();
-                                this.maps.zoomShapeCollection.push(this.zoomshapewidth);
-                                this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate);
+                                if (currentEle.childNodes[k]['id'].indexOf('_LabelIndex_') > -1) {
+                                    let labelIndex: number = parseFloat(currentEle.childNodes[k]['id'].split('_LabelIndex_')[1].split('_')[0]);
+                                    this.zoomshapewidth = this.shapeZoomLocation[labelIndex].getBoundingClientRect();
+                                    this.maps.zoomShapeCollection.push(this.zoomshapewidth);
+                                    this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate);
+                                    let dataLabel: DataLabelSettingsModel = this.maps.layers[this.index].dataLabelSettings;
+                                    let border: BorderModel = dataLabel.border;
+                                    if (k > 0 && border['width'] > 1) {
+                                        if (currentEle.childNodes[k - 1]['id'].indexOf('_rectIndex_') > -1) {
+                                            let labelX: number = ((this.maps.zoomLabelPositions[labelIndex]['location']['x'] + x) * scale);
+                                            let labelY: number = ((this.maps.zoomLabelPositions[labelIndex]['location']['y'] + y) * scale);
+                                            let zoomtext: string = currentEle.childNodes[k]['innerHTML'];
+                                            let style: FontModel = this.maps.layers[this.index].dataLabelSettings.textStyle;
+                                            let zoomtextSize: Size = measureText(zoomtext, style);
+                                            let padding: number = 5;
+                                            let rectElement: ChildNode = currentEle.childNodes[k - 1];
+                                            let rectX: number = labelX - zoomtextSize['width'] / 2;
+                                            let rectY: number = labelY - zoomtextSize['height'] / 2 - padding;
+                                            rectElement['setAttribute']('x', rectX);
+                                            rectElement['setAttribute']('y', rectY);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -479,7 +500,10 @@ export class Zoom {
         let labelPath: string = this.maps.layers[this.index].dataLabelSettings.labelPath;
         let layerIndex: number = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
         let shapeIndex: number = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
-        let labelIndex: number = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
+        let labelIndex: number;
+        if (element.id.indexOf('_LabelIndex_') > -1) {
+            labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
+        }
         let duration: number = this.currentLayer.animationDuration;
         for (let l: number = 0; l < labelCollection.length; l++) {
             let label: Object = labelCollection[l];
@@ -658,7 +682,8 @@ export class Zoom {
             let panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
             panArgs = {
-                cancel: false, name: pan, maps: map, tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
+                cancel: false, name: pan, maps: map.isBlazor ? null : map,
+                tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
                 scale: map.scale, tileZoomLevel: map.tileZoomLevel
             };
             map.trigger(pan, panArgs);
@@ -682,7 +707,8 @@ export class Zoom {
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
             panArgs = {
-                cancel: false, name: pan, maps: map, tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
+                cancel: false, name: pan, maps: map.isBlazor ? null : map,
+                tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
                 translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
                 tileZoomLevel: map.tileZoomLevel
             };

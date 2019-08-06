@@ -615,22 +615,15 @@ export class ExcelFilter extends CheckBoxFilter {
         if (this.options.column.filterTemplate) {
             let data: Object = {};
             let columnObj: Column = this.parent.getColumnByField(column);
-            if (isFilteredCol && elementId === '-xlfl-frstvalue') {
-                data = { column: predicates instanceof Array ? predicates[0] : predicates };
-                let indx: number = this.options.column.columnData && fltrPredicates.length > 1 ?
-                    (this.options.column.columnData.length === 1 ? 0 : 1) : 0;
-                data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
-                    ((<HTMLInputElement>fltrPredicates[indx]) as { value?: string | boolean | Date }).value;
-                if (this.options.foreignKeyValue) {
-                    data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
-                }
+            if (isFilteredCol && elementId) {
+                data = this.getExcelFilterData(elementId, data, columnObj, predicates, fltrPredicates);
             }
             let tempID: string = this.parent.element.id + columnObj.uid + 'filterTemplate';
             let element: Element[] = this.options.column.getFilterTemplate()(data, this.parent, 'filterTemplate', tempID);
             appendChildren(valueDiv, element);
             if (isBlazor()) {
                 valueDiv.children[0].classList.add(elementId);
-                if (this.parent.element.querySelectorAll('.e-xlfl-value').length > 1) {
+                if ((this.dlgDiv.querySelectorAll('.e-xlfl-value') as NodeList).length > 1) {
                     updateBlazorTemplate(tempID, 'FilterTemplate', columnObj);
                 }
             } else {
@@ -662,6 +655,23 @@ export class ExcelFilter extends CheckBoxFilter {
             types[this.options.type](this.options, column, valueInput, flValue, this.parent.enableRtl);
         }
     }
+
+    private getExcelFilterData(elementId?: string, data?: Object, columnObj?: Column,
+                               predicates?: PredicateModel[], fltrPredicates?: Object[]): Object {
+        let predIndex: number = elementId === '-xlfl-frstvalue' ? 0 : 1;
+        if (elementId === '-xlfl-frstvalue' || fltrPredicates.length > 1) {
+            data = { column: predicates instanceof Array ? predicates[predIndex] : predicates };
+            let indx: number = this.options.column.columnData && fltrPredicates.length > 1 ?
+                (this.options.column.columnData.length === 1 ? 0 : 1) : predIndex;
+            data[this.options.field] = columnObj.foreignKeyValue ? this.options.column.columnData[indx][columnObj.foreignKeyValue] :
+                ((<HTMLInputElement>fltrPredicates[indx]) as { value?: string | boolean | Date }).value;
+            if (this.options.foreignKeyValue) {
+                data[this.options.foreignKeyValue] = this.options.column.columnData[indx][columnObj.foreignKeyValue];
+            }
+        }
+        return data;
+    }
+
     /* tslint:disable-next-line:max-line-length */
     private renderMatchCase(column: string, tr: HTMLElement, matchCase: HTMLElement, elementId: string, predicates: PredicateModel[]): void {
 

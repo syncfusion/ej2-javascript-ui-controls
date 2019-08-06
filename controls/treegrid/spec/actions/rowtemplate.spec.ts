@@ -338,15 +338,17 @@ describe('Contextmenu in row template', () => {
              done();
             }
          gridObj.actionComplete = actionComplete;
-        (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getHeaderTable().querySelector('th') };
-        let e: Object = {
-            event: (gridObj.grid.contextMenuModule as any).eventArgs,
-            items: gridObj.grid.contextMenuModule.contextMenu.items,
-            parentItem: gridObj.element.querySelector('th'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
-        };
-        (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
-        (gridObj.grid.contextMenuModule as any).contextMenuOpen();
-        (<HTMLElement>document.getElementById(gridObj.element.id + '_gridcontrol_cmenu').getElementsByClassName('e-icon-descending')[0]).click();
+        setTimeout(function () {
+            (gridObj.grid.contextMenuModule as any).eventArgs = { target: gridObj.getHeaderTable().querySelector('th') };
+            let e: Object = {
+                event: (gridObj.grid.contextMenuModule as any).eventArgs,
+                items: gridObj.grid.contextMenuModule.contextMenu.items,
+                parentItem: gridObj.element.querySelector('th'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+            };
+            (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+            (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+            (<HTMLElement>document.getElementById(gridObj.element.id + '_gridcontrol_cmenu').getElementsByClassName('e-icon-descending')[0]).click();
+        }, 100)
     });
         afterAll(() => {
         destroy(gridObj);

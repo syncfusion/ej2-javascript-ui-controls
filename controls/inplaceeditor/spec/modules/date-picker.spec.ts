@@ -650,6 +650,48 @@ describe('DatePicker Control', () => {
         });
     });
 
+    describe('Testing Display format when using inital value ', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('testing with empty format value', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                value: new Date('4/9/2018'),
+                model: {
+                    format: ''
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('4/9/2018');
+        });
+        it('testing with specified format value', () => {
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                value: new Date('4/9/2018'),
+                model: {
+                    format: 'yyyy-MM-dd'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(valueEle.innerHTML).toEqual('2018-04-09');
+            editorObj.value = new Date('5/20/2018');
+            editorObj.dataBind();
+            editorObj.save();
+            expect(valueEle.innerHTML).toEqual('2018-05-20');
+        });
+    });
+
     describe('beginEdit event testing', () => {
         let editorObj: any;
         let date: Date = new Date('11/12/2019');

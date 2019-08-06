@@ -34819,7 +34819,7 @@ __decorate$20([
     Property(null)
 ], RangeBandSettings.prototype, "color", void 0);
 __decorate$20([
-    Property(null)
+    Property(1)
 ], RangeBandSettings.prototype, "opacity", void 0);
 /**
  * To configure the sparkline axis
@@ -36378,6 +36378,7 @@ let Sparkline = class Sparkline extends Component {
                 case 'axisSettings':
                 case 'type':
                 case 'valueType':
+                case 'enableRtl':
                     refresh = true;
                     break;
                 case 'border':

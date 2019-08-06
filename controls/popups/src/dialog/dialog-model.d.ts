@@ -130,12 +130,14 @@ export interface DialogModel extends ComponentModel{
     /**
      * Specifies the height of the dialog component.
      * @default 'auto'
+     * @blazorType string
      */
     height?: string | number;
 
     /**
      * Specifies the width of the dialog. 
      * @default '100%'
+     * @blazorType string
      */
     width?: string | number;
 

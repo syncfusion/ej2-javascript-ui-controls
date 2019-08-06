@@ -70,17 +70,12 @@ describe('ComboBox', () => {
             expect(comboBoxObj.inputElement.getAttribute('autocapitalize')).toEqual('off');
             expect(comboBoxObj.inputElement.getAttribute('spellcheck')).toEqual('false');
         });
-        it('input element as active when focus', (done) => {
+        it('input element as active when focus', () => {
             let mouseEventArgs: any = { preventDefault: function () { }, target: null };
             mouseEventArgs.target = comboBoxObj.inputWrapper.buttons[0];
             comboBoxObj.dropDownClick(mouseEventArgs);
-            setTimeout(() => {
-                expect(comboBoxObj.isPopupOpen).toBe(true);
-                expect(document.activeElement === comboBoxObj.inputElement).toBe(true);
-                done();
-            }, 450);
+            expect(document.activeElement === comboBoxObj.inputElement).toBe(true);
         });
-
     });
 
     describe('Custom value with initial rendering and dynamic change', () => {

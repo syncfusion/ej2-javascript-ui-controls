@@ -488,6 +488,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers on successful completion of the scheduler actions.
      * @event
      * @blazorproperty 'ActionCompleted'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionComplete: EmitType<ActionEventArgs>;
@@ -495,6 +496,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      * @event
      * @blazorproperty 'OnActionFailure'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
@@ -517,6 +519,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
      * @event
      * @blazorproperty 'OnEventClick'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventClickArgs<TValue>
      */
     @Event()
     public eventClick: EmitType<EventClickArgs>;
@@ -524,6 +527,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before each of the event getting rendered on the scheduler user interface.
      * @event
      * @blazorproperty 'EventRendered'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventRenderedArgs<TValue>
      */
     @Event()
     public eventRendered: EmitType<EventRenderedArgs>;
@@ -538,6 +542,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before any of the scheduler popups opens on the page.
      * @event
      * @blazorproperty 'OnPopupOpen'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.PopupOpenEventArgs<TValue>
      */
     @Event()
     public popupOpen: EmitType<PopupOpenEventArgs>;
@@ -1156,8 +1161,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 'instances of this series and match it to the whole series again?',
             createError: 'The duration of the event must be shorter than how frequently it occurs. ' +
                 'Shorten the duration, or change the recurrence pattern in the recurrence event editor.',
-            recurrenceDateValidation: 'Some months have fewer than the selected date. For these months, ' +
-                'the occurrence will fall on the last date of the month.',
             sameDayAlert: 'Two occurrences of the same event cannot occur on the same day.',
             editRecurrence: 'Edit Recurrence',
             repeats: 'Repeats',
@@ -1303,7 +1306,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
     public getStartEndTime(startEndTime: string): Date {
         if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
-            let startEndDate: Date = util.resetTime(new Date());
+            let startEndDate: Date = util.resetTime(this.getCurrentTime());
             let timeString: string[] = startEndTime.split(':');
             if (timeString.length === 2) {
                 startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);
@@ -1990,6 +1993,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public refreshEvents(): void {
+        if (this.dragAndDropModule) {
+        this.dragAndDropModule.actionObj.action = '';
+        }
         this.renderModule.refreshDataManager();
     }
 

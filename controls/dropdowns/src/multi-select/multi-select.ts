@@ -1023,12 +1023,12 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.targetElement() !== null) {
                 let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
                 if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
-                    filterQuery.where('', 'startswith', this.targetElement(), this.ignoreCase, this.ignoreAccent);
+                    filterQuery.where('', this.filterType, this.targetElement(), this.ignoreCase, this.ignoreAccent);
                 } else {
                     let fields: FieldSettingsModel = this.fields;
                     filterQuery.where(
                         !isNullOrUndefined(fields.text) ? fields.text : '',
-                        'startswith', this.targetElement(), this.ignoreCase, this.ignoreAccent);
+                        this.filterType, this.targetElement(), this.ignoreCase, this.ignoreAccent);
                 }
             }
             return filterQuery;
@@ -1077,18 +1077,19 @@ export class MultiSelect extends DropDownBase implements IInput {
         let dataChecks: boolean = !this.getValueByText(this.inputElement.value, this.ignoreCase);
         if (this.allowCustomValue && dataChecks) {
             let value: string = this.inputElement.value;
+            let field: FieldSettingsModel = fields ? fields : this.fields;
             let customData: Object | string = (!isNullOrUndefined(this.mainData) && this.mainData.length > 0) ?
                 (this.mainData as { [key: string]: Object; }[])[0] : this.mainData;
             if (typeof (customData) !== 'string') {
                 let dataItem: { [key: string]: string | Object } = {};
-                setValue(fields.text, value, dataItem);
-                setValue(fields.value, value, dataItem);
+                setValue(field.text, value, dataItem);
+                setValue(field.value, value, dataItem);
                 let tempData: [{ [key: string]: Object }] = JSON.parse(JSON.stringify(this.listData));
                 tempData.splice(0, 0, dataItem);
-                this.resetList(tempData, fields ? fields : this.fields, query);
+                this.resetList(tempData, field, query);
             } else {
                 let tempData: string[] = [this.inputElement.value];
-                this.resetList(tempData, fields ? fields : this.fields);
+                this.resetList(tempData, field);
             }
         }
         if (this.value && this.value.length) {
@@ -2146,7 +2147,8 @@ export class MultiSelect extends DropDownBase implements IInput {
 
     protected listOption(dataSource: { [key: string]: Object }[], fields: FieldSettingsModel): FieldSettingsModel {
         let iconCss: boolean = isNullOrUndefined(fields.iconCss) ? false : true;
-        let fieldProperty: Object = (fields as FieldSettingsModel & { properties: Object }).properties;
+        let fieldProperty: Object = isNullOrUndefined((fields as FieldSettingsModel & { properties: Object }).properties) ? fields :
+        (fields as FieldSettingsModel & { properties: Object }).properties;
         this.listCurrentOptions = (fields.text !== null || fields.value !== null) ? {
             fields: fieldProperty, showIcon: iconCss, ariaAttributes: { groupItemRole: 'presentation' }
         } : { fields: { value: 'text' } as Object };
@@ -3631,7 +3633,7 @@ export class MultiSelect extends DropDownBase implements IInput {
 export interface CustomValueEventArgs {
     /**
      * Gets the newly added data.
-     * @isGenericType true
+     * @blazorType object
      */
     newData: Object;
     /**
@@ -3647,7 +3649,7 @@ export interface TaggingEventArgs {
     isInteracted: boolean;
     /**
      * Returns the selected item as JSON Object from the data source.
-     * @isGenericType true
+     * @blazorType object
      */
     itemData: FieldSettingsModel;
     /**
@@ -3702,7 +3704,7 @@ export interface ISelectAllEventArgs {
     items: HTMLLIElement[];
     /**
      * Returns the selected items as JSON Object from the data source.
-     * @isGenericType true
+     * @blazorType object
      */
     itemData: FieldSettingsModel[];
     /**

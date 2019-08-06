@@ -173,6 +173,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
      * @default ''
+     * @blazorType string
      */
     @Property('')
     public primaryKey: string | number;
@@ -370,7 +371,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.updateAdaptor();
         this.appendValueElement();
         this.updateValue();
-        this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+        this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
         this.wireEvents();
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
@@ -665,7 +666,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
             return this.getDropDownsValue();
         } else {
-            return parseValue(this.type, this.value);
+            return parseValue(this.type, this.value, this.model);
         }
     }
     private setRtl(value: boolean): void {
@@ -1172,10 +1173,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                     break;
                 case 'value':
                     this.updateValue();
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
                     break;
                 case 'emptyText':
-                    this.renderValue(this.checkValue(parseValue(this.type, this.value)));
+                    this.renderValue(this.checkValue(parseValue(this.type, this.value, this.model)));
                     break;
                 case 'template':
                     this.checkIsTemplate();

@@ -4692,4 +4692,54 @@ describe('DDList', () => {
             }, 800);
         });
     });
+
+    describe('Filtering API', () => {
+        let ele: HTMLElement = document.createElement('input');
+        ele.id = 'newlist';
+        let listObj: any;
+        let e: any = { preventDefault: function () { }, target: null };
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'lit2', text: 'PHP' }, { id: 'list22', text: 'Phython' }, { id: 'list32', text: 'Perl' },
+        { id: 'list42', text: 'Core' }, { id: 'lis2', text: 'C' }, { id: 'list12', text: 'C##' }];
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            listObj = new DropDownList({
+                dataSource: data, fields: { text: 'text', value: 'id' }, allowFiltering: true,
+                popupHeight: '100px',
+                filterType: 'StartsWith'
+            });
+            listObj.appendTo('#newlist');
+        });
+        afterAll(() => {
+            if (ele) {
+                ele.remove();
+            }
+        })
+        it(' check the filter', () => {
+            listObj.showPopup();
+            listObj.filterInput.value = 'java';
+            e.keyCode = 72;
+            listObj.onInput();
+            listObj.onFilterUp(e);
+            expect(listObj.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect(listObj.liCollections[0].getAttribute('data-value') === 'list1').toBe(true);
+            listObj.filterType = 'Contains';
+            listObj.dataBind();
+            listObj.filterInput.value = 'o';
+            e.keyCode = 72;
+            listObj.onInput();
+            listObj.onFilterUp(e);
+            expect(listObj.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect(listObj.liCollections.length >1).toBe(true);
+            listObj.filterType = 'EndsWith';   
+            listObj.dataBind();
+            listObj.filterInput.value = 'n';
+            e.keyCode = 72;
+            listObj.onInput();
+            listObj.onFilterUp(e);
+            expect(listObj.list.classList.contains(dropDownBaseClasses.noData)).toBe(false);
+            expect(listObj.liCollections.length >=1).toBe(true);
+        });
+    });
 });

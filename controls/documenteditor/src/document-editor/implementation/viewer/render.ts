@@ -559,7 +559,8 @@ export class Renderer {
         let text: string = elementBox.text;
         let followCharacter: boolean = text === '\t' || text === ' ';
         if (!followCharacter && (format.bidi || elementBox.line.paragraph.paragraphFormat.bidi)) {
-            this.pageCanvas.setAttribute('dir', 'rtl');
+            let index: number = text.indexOf('.');
+            text = text.substr(index) + text.substring(0, index);
         }
         this.pageContext.fillStyle = this.getColor(color);
         // tslint:disable-next-line:max-line-length
@@ -571,7 +572,6 @@ export class Renderer {
         if (strikethrough !== 'None') {
             this.renderStrikeThrough(elementBox, left, top, format.strikethrough, color, baselineAlignment);
         }
-        this.pageCanvas.setAttribute('dir', 'ltr');
     }
     /**
      * Renders text element box.

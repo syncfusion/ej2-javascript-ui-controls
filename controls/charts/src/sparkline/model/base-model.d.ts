@@ -200,7 +200,7 @@ export interface RangeBandSettingsModel {
 
     /**
      * To configure sparkline rangeband opacity
-     * @aspDefaultValueIgnore 
+     * @default 1
      */
     opacity?: number;
 

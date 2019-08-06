@@ -385,10 +385,15 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
             let pos: PositionModel = this.element.getBoundingClientRect();
-            let verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
-            let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
-            let parentScrollX: number = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
-            let parentScrollY: number = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
+            let isModalDialog: boolean = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
+            let parentScrollX: number = 0;
+            let parentScrollY: number = 0;
+            if (!isModalDialog) {
+                let verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
+                let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
+                parentScrollX = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
+                parentScrollY = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
+            }
             this.relativeXPosition = intCoord.pageX - (pos.left + parentScrollX);
             this.relativeYPosition = intCoord.pageY - (pos.top + parentScrollY);
         }

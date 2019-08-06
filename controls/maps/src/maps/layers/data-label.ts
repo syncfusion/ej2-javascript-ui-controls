@@ -161,6 +161,9 @@ export class DataLabel {
                     shapeWidth = firstLevelMapLocation['rightMax']['x'] - firstLevelMapLocation['leftMax']['x'];
                     this.maps.dataLabelShape.push(shapeWidth);
                 }
+                if(eventargs.text !== text && !eventargs.cancel){
+                    text = eventargs.text;
+                }
                 let textSize: Size = measureText(text, style);
                 let trimmedLable: string = textTrim(width, text, style);
                 let elementSize: Size = measureText(trimmedLable, style);
@@ -266,8 +269,14 @@ export class DataLabel {
                             let opacity: number = dataLabelSettings.opacity;
                             let rx: number = dataLabelSettings.rx;
                             let ry: number = dataLabelSettings.ry;
-                            let x: number = location['x'] - textSize['width'] / 2;
-                            let y: number = location['y'] - textSize['height'] / 2;
+                            let x : number ; let y : number; let padding : number = 5;
+                            if (zoomLabelsPosition && scaleZoomValue > 1) {
+                                x = ((location['x'] ) ) - textSize['width'] / 2;
+                                y = ((location['y'] ) ) - textSize['height'] / 2 - padding;
+                            } else {
+                                x = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
+                                y = ((location['y'] + transPoint['y'] )* scale)- textSize['height'] / 2;
+                            } 
                             let rectOptions: RectOption = new RectOption(
                                 this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
                                 fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry

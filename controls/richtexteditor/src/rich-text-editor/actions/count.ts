@@ -98,6 +98,7 @@ export class Count {
      * Destroys the Count.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         this.removeEventListener();

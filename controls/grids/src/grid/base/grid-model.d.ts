@@ -172,6 +172,12 @@ export interface PredicateModel {
      */
     uid?: string;
 
+    /**
+     * @hidden 
+     * Defines the foreignKey availability in filtered columns.
+     */
+    isForeignKey?: boolean;
+
 }
 
 /**

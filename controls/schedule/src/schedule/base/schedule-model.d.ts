@@ -363,6 +363,7 @@ export interface ScheduleModel extends ComponentModel{
      * Triggers on successful completion of the scheduler actions.
      * @event
      * @blazorproperty 'ActionCompleted'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
      */
     actionComplete?: EmitType<ActionEventArgs>;
 
@@ -370,6 +371,7 @@ export interface ScheduleModel extends ComponentModel{
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      * @event
      * @blazorproperty 'OnActionFailure'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
      */
     actionFailure?: EmitType<ActionEventArgs>;
 
@@ -392,6 +394,7 @@ export interface ScheduleModel extends ComponentModel{
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
      * @event
      * @blazorproperty 'OnEventClick'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventClickArgs<TValue>
      */
     eventClick?: EmitType<EventClickArgs>;
 
@@ -399,6 +402,7 @@ export interface ScheduleModel extends ComponentModel{
      * Triggers before each of the event getting rendered on the scheduler user interface.
      * @event
      * @blazorproperty 'EventRendered'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventRenderedArgs<TValue>
      */
     eventRendered?: EmitType<EventRenderedArgs>;
 
@@ -413,6 +417,7 @@ export interface ScheduleModel extends ComponentModel{
      * Triggers before any of the scheduler popups opens on the page.
      * @event
      * @blazorproperty 'OnPopupOpen'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.PopupOpenEventArgs<TValue>
      */
     popupOpen?: EmitType<PopupOpenEventArgs>;
 

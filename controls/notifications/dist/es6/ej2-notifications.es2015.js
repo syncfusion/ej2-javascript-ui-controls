@@ -131,7 +131,6 @@ let Toast = class Toast extends Component {
     render() {
         this.progressObj = [];
         this.intervalId = [];
-        this.titleTemplate = null;
         this.contentTemplate = null;
         this.toastTemplate = null;
         if (this.isDevice && screen.width < 768) {
@@ -192,9 +191,6 @@ let Toast = class Toast extends Component {
         if (!isUndefined(toastObj.content) && !isNullOrUndefined(this.contentTemplate) && this.content !== toastObj.content) {
             this.clearContentTemplate();
         }
-        if (!isUndefined(toastObj.title) && !isNullOrUndefined(this.titleTemplate) && this.title !== toastObj.title) {
-            this.clearTitleTemplate();
-        }
         if (!isUndefined(toastObj.template) && !isNullOrUndefined(this.toastTemplate) && this.template !== toastObj.template) {
             this.clearToastTemplate();
         }
@@ -246,18 +242,21 @@ let Toast = class Toast extends Component {
         let templateFn;
         let tempVar;
         let tmpArray;
-        prob === 'title' ? tempVar = this.titleTemplate : prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
+        prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
         if (!isNullOrUndefined(tempVar)) {
             ele.appendChild(tempVar.cloneNode(true));
             return ele;
         }
         try {
             if (document.querySelectorAll(value).length > 0) {
-                let elem = document.querySelector(value);
-                ele.appendChild(elem);
-                elem.style.display = '';
-                let clo = elem.cloneNode(true);
-                prob === 'title' ? this.titleTemplate = clo : prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
+                let elem = null;
+                if (prob !== 'title') {
+                    elem = document.querySelector(value);
+                    ele.appendChild(elem);
+                    elem.style.display = '';
+                }
+                let clo = isNullOrUndefined(elem) ? tempVar : elem.cloneNode(true);
+                prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
             }
         }
         catch (e) {
@@ -309,20 +308,12 @@ let Toast = class Toast extends Component {
             });
             this.toastContainer = null;
         }
-        if (!isNullOrUndefined(this.titleTemplate)) {
-            this.clearTitleTemplate();
-        }
         if (!isNullOrUndefined(this.contentTemplate)) {
             this.clearContentTemplate();
         }
         if (!isNullOrUndefined(this.toastTemplate)) {
             this.clearToastTemplate();
         }
-    }
-    clearTitleTemplate() {
-        this.titleTemplate.style.display = 'none';
-        document.body.appendChild(this.titleTemplate);
-        this.titleTemplate = null;
     }
     clearContentTemplate() {
         this.contentTemplate.style.display = 'none';
@@ -367,7 +358,7 @@ let Toast = class Toast extends Component {
         attributes(this.toastEle, { 'role': 'alert' });
     }
     setPositioning(pos) {
-        if (typeof (pos.X) === 'number' || typeof (pos.Y) === 'number' || pos.X.indexOf('%') !== -1 || pos.Y.indexOf('%') !== -1) {
+        if (!isNaN(parseFloat(pos.X)) || !isNaN(parseFloat(pos.Y))) {
             setStyleAttribute(this.toastContainer, { 'left': formatUnit(pos.X), 'top': formatUnit(pos.Y) });
             this.customPosition = true;
         }

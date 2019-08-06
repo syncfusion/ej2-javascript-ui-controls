@@ -260,6 +260,13 @@ export class Predicate extends ChildProperty<Predicate> {
     @Property()
     public uid: string;
 
+    /**  
+     * @hidden 
+     * Defines the foreignKey availability in filtered columns.
+     */
+    @Property()
+    public isForeignKey: boolean;
+
 }
 
 /**  
@@ -2525,6 +2532,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     freezeRefresh = true;
                     requireGridRefresh = true;
                     break;
+                case 'query':
+                    requireRefresh = true; break;
                 default:
                     this.extendedPropertyChange(prop, newProp, requireGridRefresh);
             }
@@ -2647,7 +2656,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     this.selectRow(newProp.selectedRowIndex);
                 }
                 this.isSelectedRowIndexUpdating = false; break;
-
+   
         }
     }
 

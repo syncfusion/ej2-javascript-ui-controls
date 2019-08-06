@@ -215,7 +215,7 @@ export class TextLayer {
         lowerPageValue = (lowerPageValue > 0) ? lowerPageValue : 0;
         let higherPageValue: number = this.pdfViewerBase.currentPageNumber + 1;
         higherPageValue = (higherPageValue < this.pdfViewerBase.pageCount) ? higherPageValue : (this.pdfViewerBase.pageCount - 1);
-        let textLayers: NodeList = document.querySelectorAll('div[id*="_textLayer_"]');
+        let textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayers.length; i++) {
             (textLayers[i] as HTMLElement).style.display = 'block';
             if (this.pdfViewerBase.getMagnified() && (this.getTextSelectionStatus() || this.getTextSearchStatus())) {
@@ -312,7 +312,7 @@ export class TextLayer {
      * @private
      */
     public clearDivSelection(): void {
-        let textLayers: NodeList = document.querySelectorAll('div[id*="_textLayer_"]');
+        let textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayers.length; i++) {
             let childNodes: NodeList = textLayers[i].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {
@@ -347,7 +347,7 @@ export class TextLayer {
      * @private
      */
     public modifyTextCursor(isAdd: boolean): void {
-        let textLayerList: NodeList = document.querySelectorAll('div[id*="_textLayer_"]');
+        let textLayerList: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
         for (let i: number = 0; i < textLayerList.length; i++) {
             let childNodes: NodeList = textLayerList[i].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {

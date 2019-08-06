@@ -464,6 +464,9 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         let args: ProgressEventArgs; let count: number = 100;
         for (let i: number = this.percent; i < count; i++) {
             i += 10;
+            if (i > 100) {
+                i = 100;
+            }
             if (this.enableProgress) {
                 this.getProgress().style[isVertical ? 'height' : 'width'] = (this.percent < 100) ? (i + '%') : '100%';
             }

@@ -64,6 +64,7 @@ export class TextSelection {
     private previousScrollDifference: number = 0;
     private topStoreLeft: { [key: string]: Object } = null;
     private topStoreRight: { [key: string]: Object } = null;
+    private isTextSearched: boolean = false;
     /**
      * @private
      */
@@ -77,6 +78,7 @@ export class TextSelection {
      */
     public textSelectionOnMouseMove(target: EventTarget, x: number, y: number): void {
         let targetElement: HTMLElement = target as HTMLElement;
+        this.isTextSearched = true;
         if (targetElement.nodeType === targetElement.TEXT_NODE) {
             this.isBackwardPropagatedSelection = false;
             let range: Range = targetElement.ownerDocument.createRange();
@@ -268,7 +270,7 @@ export class TextSelection {
         let targetcentre: number = parseInt((targetRect.top + (targetRect.height / 2)).toString());
         // tslint:disable-next-line:radix
         let pageNumber: number = parseInt((event.target as HTMLElement).id.split('_text_')[1]);
-        let textDivs: NodeList = document.querySelectorAll('div[id*="_text_' + pageNumber + '"]');
+        let textDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_text_' + pageNumber + '"]');
         if (targetElement.classList.contains('e-pv-text')) {
             for (let i: number = 0; i < textDivs.length; i++) {
                 let rect: ClientRect = (textDivs[i] as HTMLElement).getBoundingClientRect();
@@ -301,6 +303,9 @@ export class TextSelection {
             this.selectionStartPage = parseInt(range.startContainer.parentElement.id.split('_text_')[1]);
             selection.addRange(range);
             this.isTextSelection = true;
+            if (selection != null && this.pdfViewer.contextMenuOption === 'MouseUp') {
+                this.calculateContextMenuPosition(event.clientY, event.clientY);
+            }
         }
     }
 
@@ -396,7 +401,7 @@ export class TextSelection {
     /**
      * @private
      */
-    public textSelectionOnMouseup(): void {
+    public textSelectionOnMouseup(event: MouseEvent): void {
         this.clear();
         if (window.getSelection().anchorNode !== null) {
             this.isMouseLeaveSelection = false;
@@ -418,11 +423,16 @@ export class TextSelection {
             if (this.pdfViewer.linkAnnotationModule) {
                 this.pdfViewer.linkAnnotationModule.modifyZindexForTextSelection(this.pdfViewerBase.currentPageNumber - 1, false);
             }
+            if (this.isTextSearched && this.pdfViewer.contextMenuOption === 'MouseUp') {
+                this.calculateContextMenuPosition(event.clientY, event.clientX);
+                this.isTextSearched = false;
+            }
         } else {
             this.pdfViewerBase.textLayer.clearDivSelection();
             if (this.pdfViewer.textSearchModule) {
                 this.pdfViewer.textSearchModule.searchAfterSelection();
             }
+            this.pdfViewerBase.contextMenuModule.contextMenuObj.close();
             this.removeTouchElements();
         }
     }
@@ -1484,8 +1494,11 @@ export class TextSelection {
             this.calculateContextMenuPosition(event.touches[0].clientY, event.touches[0].clientX);
         }
     }
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private calculateContextMenuPosition(top: any, left: any): any {
+    public calculateContextMenuPosition(top: any, left: any): any {
         top = top - this.pdfViewerBase.toolbarHeight;
         if (Browser.isDevice) {
             // tslint:disable-next-line
@@ -1495,6 +1508,9 @@ export class TextSelection {
             } else {
                 top = contextTop;
             }
+        }
+        if (this.pdfViewer.contextMenuOption === 'MouseUp') {
+            left = left - 50;
         }
         // tslint:disable-next-line:max-line-length
         this.pdfViewerBase.contextMenuModule.contextMenuObj.open(top, left - this.pdfViewerBase.viewerContainer.clientLeft, this.pdfViewerBase.viewerContainer);

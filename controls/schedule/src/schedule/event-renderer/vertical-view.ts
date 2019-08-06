@@ -77,7 +77,7 @@ export class VerticalEvent extends EventBase {
         this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.lastResourceLevel : [];
-        this.cellHeight = (this.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement).offsetHeight;
+        this.cellHeight = parseFloat(this.element.querySelector('.e-content-wrap tbody tr').getBoundingClientRect().height.toFixed(2));
         this.dateRender[0] = this.parent.activeView.renderDates;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.resources.forEach((resource: TdData, index: number) => this.dateRender[index] = resource.renderDates);

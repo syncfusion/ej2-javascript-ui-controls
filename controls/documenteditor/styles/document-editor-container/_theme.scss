@@ -500,6 +500,9 @@
   }
 
   .e-de-prop-pane {
+    height: 100%;
+    min-height: 200px;
+    overflow: auto;
     width: $de-text-pane-width;
   }
 
@@ -509,6 +512,9 @@
     }
 
     .e-de-prop-pane {
+      height: 100%;
+      min-height: 200px;
+      overflow: auto;
       width: $de-text-pane-width-big;
     }
 
@@ -1187,6 +1193,7 @@
     .e-de-tool-ctnr-properties-pane {
       display: inline-flex;
       height: $de-tool-ctnr-editor-height-big;
+      min-height: 200px;
       width: 100%;
     }
 

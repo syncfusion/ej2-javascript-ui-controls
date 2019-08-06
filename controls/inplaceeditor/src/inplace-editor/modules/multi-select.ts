@@ -41,6 +41,7 @@ export class MultiSelect implements IComponent {
      * Destroys the module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         this.base.destroy();

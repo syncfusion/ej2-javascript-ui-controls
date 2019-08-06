@@ -189,7 +189,9 @@ function getScrollBarWidth() {
     let value = 0;
     divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
     document.body.appendChild(divNode);
-    value = (divNode.offsetWidth - divNode.clientWidth) | 0;
+    let ratio = (devicePixelRatio) ? (devicePixelRatio.toFixed(2) === '1.10' || devicePixelRatio <= 1) ?
+        Math.ceil(devicePixelRatio % 1) : Math.floor(devicePixelRatio % 1) : 0;
+    value = (divNode.offsetWidth - divNode.clientWidth - ratio) | 0;
     document.body.removeChild(divNode);
     return scrollWidth = value;
 }
@@ -5501,11 +5503,6 @@ class QuickPopups {
                 addClass([cancelButton], DISABLE_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('wrongPattern');
                 break;
-            case 'dateValidation':
-                removeClass([cancelButton], DISABLE_CLASS);
-                addClass([cancelButton], QUICK_DIALOG_CANCEL_CLASS);
-                this.quickDialog.content = this.l10n.getConstant('recurrenceDateValidation');
-                break;
             case 'createError':
                 addClass([cancelButton], DISABLE_CLASS);
                 this.quickDialog.content = this.l10n.getConstant('createError');
@@ -8306,7 +8303,9 @@ class EventWindow {
     }
     showDetails(eventData) {
         let eventObj = extend({}, eventData, null, true);
-        this.trimAllDay(eventObj);
+        if (eventObj[this.fields.endTime].getHours() === 0 && eventObj[this.fields.endTime].getMinutes() === 0) {
+            this.trimAllDay(eventObj);
+        }
         this.eventData = eventObj;
         let formelement = this.getFormElements(EVENT_WINDOW_DIALOG_CLASS);
         let keyNames = Object.keys(eventObj);
@@ -8619,8 +8618,10 @@ class EventWindow {
         }
         let ruleData = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() : null;
         eventObj[this.fields.recurrenceRule] = ruleData ? ruleData : undefined;
+        let resourceData = this.getResourceData(eventObj);
         let isResourceEventExpand = (this.parent.activeViewOptions.group.resources.length > 0 ||
-            this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit;
+            this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit
+            && !isNullOrUndefined(resourceData);
         if (!isNullOrUndefined(eventId)) {
             let eveId = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
@@ -8676,6 +8677,15 @@ class EventWindow {
             return;
         }
         this.dialogObject.hide();
+    }
+    getResourceData(eventObj) {
+        let resourceData = null;
+        if (!isNullOrUndefined(this.parent.resourceBase) && !isNullOrUndefined(this.parent.resourceBase.resourceCollection)
+            && this.parent.resourceBase.resourceCollection.length > 0) {
+            let lastResouceData = this.parent.resourceBase.resourceCollection.slice(-1)[0];
+            resourceData = eventObj[lastResouceData.field];
+        }
+        return resourceData;
     }
     getObjectFromFormData(className) {
         let formElement = this.getFormElements(className);
@@ -8754,11 +8764,7 @@ class EventWindow {
                         }
                         break;
                     case 'MONTHLY':
-                        if (this.getInstance('e-month-expander-checkbox-wrapper .e-radio').checked
-                            && [29, 30, 31].indexOf(parseInt(recEditor.value.split(';')[1].split('=')[1], 10)) !== -1) {
-                            alertMessage = 'dateValidation';
-                        }
-                        else if (endDate.getTime() >= new Date(+startDate).setMonth(startDate.getMonth() + interval)) {
+                        if (endDate.getTime() >= new Date(+startDate).setMonth(startDate.getMonth() + interval)) {
                             alertMessage = 'createError';
                         }
                         break;
@@ -11108,8 +11114,6 @@ let Schedule = class Schedule extends Component {
                 'instances of this series and match it to the whole series again?',
             createError: 'The duration of the event must be shorter than how frequently it occurs. ' +
                 'Shorten the duration, or change the recurrence pattern in the recurrence event editor.',
-            recurrenceDateValidation: 'Some months have fewer than the selected date. For these months, ' +
-                'the occurrence will fall on the last date of the month.',
             sameDayAlert: 'Two occurrences of the same event cannot occur on the same day.',
             editRecurrence: 'Edit Recurrence',
             repeats: 'Repeats',
@@ -11254,7 +11258,7 @@ let Schedule = class Schedule extends Component {
     }
     getStartEndTime(startEndTime) {
         if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
-            let startEndDate = resetTime(new Date());
+            let startEndDate = resetTime(this.getCurrentTime());
             let timeString = startEndTime.split(':');
             if (timeString.length === 2) {
                 startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);
@@ -11938,6 +11942,9 @@ let Schedule = class Schedule extends Component {
      * @returns {void}
      */
     refreshEvents() {
+        if (this.dragAndDropModule) {
+            this.dragAndDropModule.actionObj.action = '';
+        }
         this.renderModule.refreshDataManager();
     }
     /**
@@ -12430,7 +12437,9 @@ class ActionBase {
         }
         addClass([cloneElement], cloneClassLists);
         addClass([element], EVENT_ACTION_CLASS);
-        element.parentElement.appendChild(cloneElement);
+        if (!isNullOrUndefined(element.parentElement)) {
+            element.parentElement.appendChild(cloneElement);
+        }
         cloneElement.style.width = formatUnit(cloneElement.offsetWidth - 2);
         if (this.parent.eventDragArea && this.actionObj.action === 'drag') {
             document.querySelector(this.parent.eventDragArea).appendChild(cloneElement);
@@ -12447,7 +12456,11 @@ class ActionBase {
     }
     removeCloneElement() {
         this.actionObj.originalElement = [];
-        this.actionObj.cloneElement.forEach((element) => remove(element));
+        this.actionObj.cloneElement.forEach((element) => {
+            if (!isNullOrUndefined(element.parentNode)) {
+                remove(element);
+            }
+        });
         this.actionObj.cloneElement = [];
         let timeIndicator = this.parent.element.querySelector('.' + CLONE_TIME_INDICATOR_CLASS);
         if (timeIndicator) {
@@ -13988,7 +14001,8 @@ class DragAndDrop extends ActionBase {
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
         this.parent.trigger(dragStart, dragArgs);
-        if (dragArgs.cancel) {
+        if (dragArgs.cancel || (!isNullOrUndefined(this.actionObj.element) && isNullOrUndefined(this.actionObj.element.parentElement))) {
+            this.actionObj.action = '';
             this.removeCloneElementClasses();
             this.removeCloneElement();
             return;
@@ -15260,7 +15274,7 @@ class VerticalEvent extends EventBase {
         this.resources = (this.parent.activeViewOptions.group.resources.length > 0) ? this.parent.uiStateValues.isGroupAdaptive ?
             [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] :
             this.parent.resourceBase.lastResourceLevel : [];
-        this.cellHeight = this.element.querySelector('.' + WORK_CELLS_CLASS).offsetHeight;
+        this.cellHeight = parseFloat(this.element.querySelector('.e-content-wrap tbody tr').getBoundingClientRect().height.toFixed(2));
         this.dateRender[0] = this.parent.activeView.renderDates;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             this.resources.forEach((resource, index) => this.dateRender[index] = resource.renderDates);
@@ -15991,7 +16005,7 @@ class VerticalView extends ViewBase {
             this.parent.activeViewOptions.headerRows.slice(-1)[0].option !== 'Hour') {
             return;
         }
-        if (this.parent.showTimeIndicator && this.isWorkHourRange(new Date())) {
+        if (this.parent.showTimeIndicator && this.isWorkHourRange(this.parent.getCurrentTime())) {
             let currentDateIndex = this.getCurrentTimeIndicatorIndex();
             if (currentDateIndex.length > 0) {
                 let workCells = [].slice.call(this.element.querySelectorAll('.' + WORK_CELLS_CLASS));

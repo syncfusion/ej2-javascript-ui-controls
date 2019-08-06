@@ -24,7 +24,10 @@ export type PositionX = 'Left' | 'Right' | 'Center';
 export interface ToastClickEventArgs extends BaseEventArgs {
   /** Defines the Toast element. */
   element: HTMLElement;
-  /** Defines the Toast object. */
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
   toastObj: Toast;
   /** Defines the prevent action for Toast click event. */
   cancel : boolean;
@@ -38,10 +41,13 @@ export interface ToastClickEventArgs extends BaseEventArgs {
  * Specifies the event arguments of Toast before open.
  */
 export interface ToastBeforeOpenArgs extends BaseEventArgs {
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
+  toastObj: Toast;
   /** Defines the Toast element. */
   element: HTMLElement;
-  /** Defines the Toast object. */
-  toastObj: Toast;
   /** Defines the prevent action for before opening toast. */
   cancel : boolean;
 }
@@ -50,10 +56,13 @@ export interface ToastBeforeOpenArgs extends BaseEventArgs {
  * Specifies the event arguments of Toast open.
  */
 export interface ToastOpenArgs extends BaseEventArgs {
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
+  toastObj: Toast;
   /** Defines the Toast element. */
   element: HTMLElement;
-  /** Defines the Toast object. */
-  toastObj: Toast;
 }
 
 /**
@@ -62,7 +71,10 @@ export interface ToastOpenArgs extends BaseEventArgs {
 export interface ToastCloseArgs extends BaseEventArgs {
   /** Defines the Toast container element. */
   toastContainer: HTMLElement;
-  /** Defines the Toast object. */
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
   toastObj: Toast;
 }
 
@@ -102,6 +114,7 @@ export class ToastPosition extends ChildProperty<ToastPosition> {
    * Specifies the position of the Toast notification with respect to the target container's left edge.
    * @default 'Left'
    * @aspType string
+   * @blazorType string
    */
   @Property('Left')
   public X: PositionX | number | string;
@@ -110,6 +123,7 @@ export class ToastPosition extends ChildProperty<ToastPosition> {
    * Specifies the position of the Toast notification with respect to the target container's top edge.
    * @default 'Top'
    * @aspType string
+   * @blazorType string
    */
   @Property('Top')
   public Y: PositionY | number | string;
@@ -209,7 +223,6 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private progressBarEle: HTEle;
     private intervalId: number[];
     private progressObj: Progressbar[];
-    private titleTemplate: HTEle;
     private contentTemplate: HTEle;
     private toastTemplate: HTEle;
     private customPosition: boolean;
@@ -229,6 +242,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
      * Specifies the width of the Toast in pixels/numbers/percentage. Number value is considered as pixels.
      * In mobile devices, default width is considered as `100%`. 
      * @default '300'
+     * @blazorType string
      */
     @Property('300px')
     public width: string | number;
@@ -236,6 +250,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Specifies the height of the Toast in pixels/number/percentage. Number value is considered as pixels.
      * @default 'auto'
+     * @blazorType string
      */
     @Property('auto')
     public height: string | number;
@@ -448,7 +463,6 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     public render(): void {
       this.progressObj = [];
       this.intervalId = [];
-      this.titleTemplate = null;
       this.contentTemplate = null;
       this.toastTemplate = null;
       if (this.isDevice && screen.width < 768) {
@@ -506,8 +520,6 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     private templateChanges(toastObj: ToastModel): void {
       if (!isUndefined(toastObj.content) && !isNOU(this.contentTemplate) && this.content !== toastObj.content) {
         this.clearContentTemplate(); }
-      if (!isUndefined(toastObj.title) && !isNOU(this.titleTemplate) && this.title !== toastObj.title ) {
-        this.clearTitleTemplate(); }
       if (!isUndefined(toastObj.template) && !isNOU(this.toastTemplate) && this.template !== toastObj.template) {
         this.clearToastTemplate(); }
     }
@@ -555,17 +567,20 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       let templateFn: Function;
       let tempVar: HTEle;
       let tmpArray: HTEle[];
-      prob === 'title' ? tempVar = this.titleTemplate : prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
+      prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
       if (!isNOU(tempVar)) {
         ele.appendChild(tempVar.cloneNode(true));
         return ele; }
       try {
         if (document.querySelectorAll(value).length > 0) {
-          let elem: HTEle = <HTEle> document.querySelector(value);
-          ele.appendChild(elem);
-          elem.style.display = '';
-          let clo: HTEle = <HTEle>elem.cloneNode(true);
-          prob === 'title' ? this.titleTemplate = clo : prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
+          let elem: HTEle = null;
+          if (prob !== 'title') {
+            elem = <HTEle>document.querySelector(value);
+            ele.appendChild(elem);
+            elem.style.display = '';
+          }
+          let clo: HTEle = isNOU(<HTEle>elem) ? tempVar : <HTEle>elem.cloneNode(true);
+          prob === 'content' ? this.contentTemplate = clo : this.toastTemplate = clo;
         }
       } catch (e) {
         templateFn = templateCompiler(value);
@@ -613,18 +628,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           this.toastContainer.classList.remove(pos); }
       });
       this.toastContainer = null;  }
-      if (!isNOU(this.titleTemplate)) {
-        this.clearTitleTemplate(); }
       if (!isNOU(this.contentTemplate)) {
         this.clearContentTemplate(); }
       if (!isNOU(this.toastTemplate)) {
         this.clearToastTemplate(); }
-    }
-
-    private clearTitleTemplate(): void {
-      this.titleTemplate.style.display = 'none';
-      document.body.appendChild(this.titleTemplate);
-      this.titleTemplate = null;
     }
 
     private clearContentTemplate(): void {
@@ -671,7 +678,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       attributes(this.toastEle, { 'role': 'alert' });
     }
     private setPositioning(pos: ToastPositionModel): void {
-       if (typeof(pos.X) === 'number' || typeof(pos.Y) === 'number' || pos.X.indexOf('%') !== -1 || pos.Y.indexOf('%') !== -1 ) {
+       if (!isNaN(parseFloat(pos.X as string)) || !isNaN(parseFloat(pos.Y as string))) {
          setStyleAttribute(this.toastContainer , { 'left' : formatUnit(pos.X), 'top': formatUnit(pos.Y)});
          this.customPosition = true;
        } else {

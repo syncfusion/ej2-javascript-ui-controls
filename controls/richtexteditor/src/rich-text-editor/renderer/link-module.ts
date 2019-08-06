@@ -417,6 +417,7 @@ export class Link {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         this.removeEventListener();

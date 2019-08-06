@@ -881,3 +881,13 @@ export function checkDepth(col: Column, index: number): number {
     }
     return index;
 }
+/**
+ * @hidden
+ */
+export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel[]): void {
+    for (let i: number = 0; i < filteredCols.length; i++) {
+        filteredCols[i].uid = filteredCols[i].isForeignKey ?
+            getColumnByForeignKeyValue(filteredCols[i].field, gObj.getForeignKeyColumns()).uid
+            : gObj.getColumnByField(filteredCols[i].field).uid;
+    }
+}

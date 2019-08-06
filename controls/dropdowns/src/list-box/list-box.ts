@@ -1703,9 +1703,6 @@ export interface BeforeItemRenderEventArgs extends BaseEventArgs {
  */
 export interface DragEventArgs {
     elements: Element[];
-/**
- * @isGenericType true
- */
     items: Object[];
     target?: Element;
     dragSelected?: boolean;
@@ -1716,13 +1713,7 @@ export interface DragEventArgs {
  */
 export interface ListBoxChangeEventArgs extends BaseEventArgs {
     elements: Element[];
-/**
- * @isGenericType true
- */
     items: Object[];
-/**
- * @isGenericType true
- */
     value: number | string | boolean;
     event: Event;
 }

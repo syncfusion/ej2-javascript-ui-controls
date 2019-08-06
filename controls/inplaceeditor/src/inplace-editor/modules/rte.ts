@@ -53,6 +53,7 @@ export class Rte implements IComponent {
      * Destroys the rte module.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         this.base.destroy();

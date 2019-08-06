@@ -116,7 +116,9 @@ export function getScrollBarWidth(): number {
     let value: number = 0;
     divNode.style.cssText = 'width:100px;height: 100px;overflow: scroll;position: absolute;top: -9999px;';
     document.body.appendChild(divNode);
-    value = (divNode.offsetWidth - divNode.clientWidth) | 0;
+    let ratio: number = (devicePixelRatio) ? (devicePixelRatio.toFixed(2) === '1.10' || devicePixelRatio <= 1) ?
+        Math.ceil(devicePixelRatio % 1) : Math.floor(devicePixelRatio % 1) : 0;
+    value = (divNode.offsetWidth - divNode.clientWidth - ratio) | 0;
     document.body.removeChild(divNode);
     return scrollWidth = value;
 }

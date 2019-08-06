@@ -1374,6 +1374,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     break;
                 case 'height':
                 case 'width':
+                case 'layers':
                     this.createSVG();
                     render = true;
                     break;

@@ -403,6 +403,7 @@ export class Toolbar {
      * Destroys the ToolBar.
      * @method destroy
      * @return {void}
+     * @hidden
      */
     public destroy(): void {
         if (this.isToolbarDestroyed()) {
@@ -506,8 +507,7 @@ export class Toolbar {
 
     private onRefresh(): void {
         this.refreshToolbarOverflow();
-        this.parent.setContentHeight();
-        this.parent.formatter.undoRedoRefresh(this.parent);
+        this.parent.setContentHeight('', true);
     }
     /**
      * Called internally if any of the property value changed.

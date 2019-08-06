@@ -26,7 +26,7 @@ export interface ChangeEventArgs extends SelectEventArgs {
     previousItem: HTMLLIElement;
     /**
      * Returns the previous selected item as JSON Object from the data source.
-     * @isGenericType true
+     * @blazorType object
      */
     previousItemData: FieldSettingsModel;
     /**
@@ -1416,6 +1416,23 @@ export class DropDownList extends DropDownBase implements IInput {
             this.inputElement.setSelectionRange(selection.end, selection.end);
         }
     }
+    protected getQuery(query: Query): Query {
+        let filterQuery: Query;
+        if (!this.isCustomFilter && this.allowFiltering) {
+            filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
+            let filterType: string = this.typedString === '' ? 'contains' : this.filterType;
+            let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
+            if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
+                filterQuery.where('', filterType, this.typedString, this.ignoreCase, this.ignoreAccent);
+            } else {
+                let fields: string = (this.fields.text) ? this.fields.text : '';
+                filterQuery.where(fields, filterType, this.typedString, this.ignoreCase, this.ignoreAccent);
+            }
+        } else {
+            filterQuery = query ? query : this.query ? this.query : new Query();
+        }
+        return filterQuery;
+    }
 
     protected getSelectionPoints(): { [key: string]: number } {
         let input: HTMLInputElement = <HTMLInputElement>this.inputElement;
@@ -1446,20 +1463,7 @@ export class DropDownList extends DropDownBase implements IInput {
             };
             this.trigger('filtering', eventArgs, (eventArgs: FilteringEventArgs) => {
                 if (!eventArgs.cancel && !this.isCustomFilter && !eventArgs.preventDefaultAction) {
-                    let filterQuery: Query = this.query ? this.query.clone() : new Query();
-                    let dataType: string = <string>this.typeOfData(this.dataSource as { [key: string]: Object; }[]).typeof;
-                    if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
-                        filterQuery.where('', 'startswith', this.filterInput.value, true, this.ignoreAccent);
-                    } else {
-                        let fields: FieldSettingsModel = this.fields;
-                        filterQuery.where(
-                            !isNullOrUndefined(fields.text) ? fields.text : '',
-                            'startswith',
-                            this.filterInput.value,
-                            true,
-                            this.ignoreAccent);
-                    }
-                    this.filteringAction(this.dataSource, filterQuery, this.fields);
+                    this.filteringAction(this.dataSource, null, this.fields);
                 }
             });
         }

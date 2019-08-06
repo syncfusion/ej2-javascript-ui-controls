@@ -1273,14 +1273,14 @@ export class Connector extends NodeBase implements IElement {
         end = !isSource ? points[length - 2] : points[1];
         let len: number = Point.distancePoints(start, end);
         len = (len === 0) ? 1 : len;
-        let width: number = connector.style.strokeWidth - 1;
-        point.x = (Math.round(start.x + width * (end.x - start.x) / len));
-        point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         let strokeWidth: number = 1;
         let node: DiagramElement = isSource ? connector.sourceWrapper : connector.targetWrapper;
         if (node) {
             strokeWidth = node.style.strokeWidth;
         }
+        let width: number = strokeWidth - 1;
+        point.x = (Math.round(start.x + width * (end.x - start.x) / len));
+        point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         if ((isSource && connector.sourceDecorator.shape !== 'None') ||
             (!isSource && connector.targetDecorator.shape !== 'None')) {
             point = Point.adjustPoint(point, end, true, (strokeWidth / 2));

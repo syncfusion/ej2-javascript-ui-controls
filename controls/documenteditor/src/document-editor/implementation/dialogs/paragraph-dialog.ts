@@ -488,9 +488,12 @@ export class ParagraphDialog {
      * @private
      */
     public onParagraphFormat(paragraphFormat: WParagraphFormat): void {
-        this.owner.layout.isBidiReLayout = true;
-        this.owner.owner.editorModule.initHistory('ParagraphFormat');
         let selection: Selection = this.owner.selection;
+        let isListBidi: boolean = paragraphFormat.bidi && selection.paragraphFormat.listId !== -1;
+        if (!isListBidi) {
+            this.owner.layout.isBidiReLayout = true;
+        }
+        this.owner.owner.editorModule.initHistory('ParagraphFormat');
         this.owner.owner.isShiftingEnabled = true;
         if (this.owner.selection.isEmpty) {
             this.owner.owner.editorModule.applyParaFormatProperty(selection.start.paragraph, undefined, paragraphFormat, false);
@@ -499,7 +502,9 @@ export class ParagraphDialog {
             this.owner.owner.editorModule.updateSelectionParagraphFormatting('ParagraphFormat', paragraphFormat, false);
         }
         this.owner.owner.editorModule.reLayout(selection);
-        this.owner.layout.isBidiReLayout = false;
+        if (!isListBidi) {
+            this.owner.layout.isBidiReLayout = false;
+        }
     }
     /**
      * @private

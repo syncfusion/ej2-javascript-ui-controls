@@ -1094,16 +1094,21 @@ export interface ActionEventArgs {
 
     /** Defines the direction of sort column. */
     direction?: SortDirection;
-
-    /** Defines the record objects. */
+    /** Defines the record objects.
+     * @isGenericType true
+     */
     data?: Object;
-    /** Defines the previous data. */
+    /** Defines the previous data.
+     * @isGenericType true
+     */
     previousData?: Object;
     /** Defines the added row. */
     row?: Object;
     /** Added row index */
     index?: number;
-    /** Defines the record objects */
+    /** Defines the record objects.
+     * @isGenericType true
+     */
     rowData?: Object;
     /** Defines the target for dialog */
     target?: HTMLElement;

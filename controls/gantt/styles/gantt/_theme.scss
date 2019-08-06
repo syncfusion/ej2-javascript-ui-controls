@@ -308,17 +308,32 @@
         border-color: $connector-point-hover-border-color;
       }
 
+      .e-left-label-inner-div,
+      .e-right-label-inner-div {
+        color: $gantt-label-color;
+        font-family: $font-family;
+        font-size: $gantt-label-size;
+      }
+
+      .e-left-label-temp-container {
+        padding-right: $gantt-right-label-container-margin-left;
+        font-family: $font-family;
+        font-size: $gantt-label-font-size;
+        color: $gantt-label-font-color;
+      }
+
+      .e-right-label-temp-container {
+        margin-left: $gantt-right-label-container-margin-left;
+        font-family: $font-family;
+        font-size: $gantt-label-font-size;
+        color: $gantt-label-font-color;
+      }
+
       .e-right-label-container {
         margin-left: $gantt-right-label-container-margin-left;
-        font-size: $gantt-label-font-size;
-        font-family: $font-family;
-        color: $gantt-label-font-color;
       }
       .e-left-label-container {
         padding-right: $gantt-right-label-container-margin-left;
-        font-size: $gantt-label-font-size;
-        font-family: $font-family;
-        color: $gantt-label-font-color;
       }
       .e-connectorpoint-right {
         margin-left: $gantt-connector-point-right-margin-left;
@@ -359,6 +374,10 @@
       .e-milestone-bottom {
         border-top-color: $gantt-milestone-border-color;
       }
+      .e-label {
+        font-size: $gantt-label-font-size;
+        color: $gantt-label-font-color;
+       }
       .e-active {
        background: $gantt-active-background;
        color: $gantt-active-color;

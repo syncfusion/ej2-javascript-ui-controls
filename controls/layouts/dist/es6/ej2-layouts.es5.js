@@ -466,8 +466,8 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.addSeparator(this.element);
     };
     Splitter.prototype.checkSplitPane = function (currentBar, elementIndex) {
-        var paneEle = currentBar.parentElement.children[elementIndex];
-        return paneEle.classList.contains('e-pane') ? paneEle : null;
+        var paneEle = currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
+        return paneEle ? paneEle : null;
     };
     Splitter.prototype.getPrevPane = function (currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -2024,6 +2024,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.elementHeight = el.offsetHeight;
         this.originalWidth = this.getCellInstance(el.id).sizeX;
         this.originalHeight = this.getCellInstance(el.id).sizeY;
+        this.previousRow = this.getCellInstance(el.id).row;
     };
     DashboardLayout.prototype.touchDownResizeHandler = function (e) {
         this.downHandler(e);
@@ -2227,6 +2228,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.updateCloneArrayObject();
     };
     DashboardLayout.prototype.getResizeRowColumn = function (item, e) {
+        var isChanged = false;
         var col = item.col;
         if (['e-west', 'e-south-west'].indexOf(this.handleClass) !== -1) {
             col = this.pixelsToColumns(this.elementX, false);
@@ -2234,14 +2236,20 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         var row = item.row;
         if (['e-north'].indexOf(this.handleClass) !== -1) {
             row = this.pixelsToRows(this.elementY, false);
+            if (this.previousRow !== row) {
+                this.previousRow = row;
+                isChanged = true;
+            }
         }
         var sizeX = item.sizeX;
         if (['e-north', 'e-south'].indexOf(this.handleClass) === -1) {
-            sizeX = this.pixelsToColumns(this.elementWidth - (col + 1) * this.cellSpacing[0], true);
+            sizeX = this.pixelsToColumns(this.elementWidth - (sizeX) * this.cellSpacing[1], true);
         }
         var sizeY = item.sizeY;
         if (['e-east', 'e-west'].indexOf(this.handleClass) === -1) {
-            sizeY = this.pixelsToRows(this.elementHeight - (row + 1) * this.cellSpacing[0], true);
+            if (this.handleClass === 'e-north' ? isChanged : true) {
+                sizeY = this.pixelsToRows(this.elementHeight - (sizeY) * this.cellSpacing[0], true);
+            }
         }
         if (item.col + item.sizeX > this.columns) {
             item.sizeX = item.sizeX - 1;
@@ -2264,10 +2272,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     DashboardLayout.prototype.pixelsToRows = function (pixels, isCeil) {
         if (isCeil) {
-            return Math.ceil(pixels / this.cellSize[1]);
+            return Math.round(pixels / this.cellSize[1]);
         }
         else {
-            return Math.floor(pixels / this.cellSize[1]);
+            return Math.round(pixels / (this.cellSize[1] + this.cellSpacing[0]));
         }
     };
     DashboardLayout.prototype.getMinWidth = function (item) {

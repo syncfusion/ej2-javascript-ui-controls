@@ -248,7 +248,7 @@ export class HeaderRender implements IRenderer {
             remove(this.getTable());
         }
         let columns: Column[] = <Column[]>gObj.getColumns();
-        let table: Element = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
+        let table: Element = this.parent.createElement('table', { className: 'e-table', attrs: { role: 'grid' } });
         let innerDiv: Element = <Element>this.getPanel().firstChild;
         let findHeaderRow: { thead: Element, rows: Row<Column>[] } = this.createHeaderContent();
         let thead: Element = findHeaderRow.thead;
@@ -595,7 +595,7 @@ export class HeaderRender implements IRenderer {
 
     public toggleStackClass(div: Element): void {
         let column: Column[] = this.parent.columns as Column[];
-        let stackedHdr: boolean = column.some((column: Column) => column.columns !== undefined);
+        let stackedHdr: boolean = column.some((column: Column) => !isNullOrUndefined(column.columns));
         if (stackedHdr) {
             div.classList.add('e-stackedheader');
         } else {

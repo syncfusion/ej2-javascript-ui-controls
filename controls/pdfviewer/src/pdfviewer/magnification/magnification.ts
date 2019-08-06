@@ -394,7 +394,7 @@ export class Magnification {
         clearInterval(this.rerenderInterval);
         this.rerenderInterval = null;
         this.clearRendering();
-        let oldCanvases: NodeListOf<Element> = document.querySelectorAll('canvas[id*="oldCanvas"]');
+        let oldCanvases: NodeListOf<Element> = document.querySelectorAll('canvas[id*="' + this.pdfViewer.element.id + '_oldCanvas_"]');
         for (let i: number = 0; i < oldCanvases.length; i++) {
             // tslint:disable-next-line
             let pageNumber: number = parseInt(oldCanvases[i].id.split('_oldCanvas_')[1]);
@@ -500,13 +500,14 @@ export class Magnification {
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];
             if (this.pdfViewerBase.textLayer) {
-                let textLayers: NodeList = document.querySelectorAll('div[id*="_textLayer_"]');
+                let textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
                 for (let i: number = 0; i < textLayers.length; i++) {
                     (textLayers[i] as HTMLElement).style.display = 'block';
                 }
             }
             if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
-                let annotationLayers: NodeList = document.querySelectorAll('canvas[id*="_annotationCanvas_"]');
+                // tslint:disable-next-line:max-line-length
+                let annotationLayers: NodeList = document.querySelectorAll('canvas[id*="' + this.pdfViewer.element.id + '_annotationCanvas_"]');
                 for (let j: number = 0; j < annotationLayers.length; j++) {
                     let pageNumber: string = (annotationLayers[j] as HTMLElement).id.split('_annotationCanvas_')[1];
                     // tslint:disable-next-line:radix

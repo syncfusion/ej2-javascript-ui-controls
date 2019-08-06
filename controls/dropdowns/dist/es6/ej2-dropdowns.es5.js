@@ -1090,7 +1090,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
      * Gets the data Object that matches the given value.
      * @param { string | number } value - Specifies the value of the list item.
      * @returns Object.
-     * @isGenericType true
+     * @blazorType object
      */
     DropDownBase.prototype.getDataByValue = function (value) {
         if (!isNullOrUndefined(this.listData)) {
@@ -1160,6 +1160,12 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(null)
     ], DropDownBase.prototype, "query", void 0);
+    __decorate([
+        Property('StartsWith')
+    ], DropDownBase.prototype, "filterType", void 0);
+    __decorate([
+        Property(true)
+    ], DropDownBase.prototype, "ignoreCase", void 0);
     __decorate([
         Property(1000)
     ], DropDownBase.prototype, "zIndex", void 0);
@@ -2322,6 +2328,25 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.setSelectionRange(selection.end, selection.end);
         }
     };
+    DropDownList.prototype.getQuery = function (query) {
+        var filterQuery;
+        if (!this.isCustomFilter && this.allowFiltering) {
+            filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
+            var filterType = this.typedString === '' ? 'contains' : this.filterType;
+            var dataType = this.typeOfData(this.dataSource).typeof;
+            if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
+                filterQuery.where('', filterType, this.typedString, this.ignoreCase, this.ignoreAccent);
+            }
+            else {
+                var fields = (this.fields.text) ? this.fields.text : '';
+                filterQuery.where(fields, filterType, this.typedString, this.ignoreCase, this.ignoreAccent);
+            }
+        }
+        else {
+            filterQuery = query ? query : this.query ? this.query : new Query();
+        }
+        return filterQuery;
+    };
     DropDownList.prototype.getSelectionPoints = function () {
         var input = this.inputElement;
         return { start: Math.abs(input.selectionStart), end: Math.abs(input.selectionEnd) };
@@ -2351,16 +2376,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             };
             this.trigger('filtering', eventArgs_1, function (eventArgs) {
                 if (!eventArgs.cancel && !_this.isCustomFilter && !eventArgs.preventDefaultAction) {
-                    var filterQuery = _this.query ? _this.query.clone() : new Query();
-                    var dataType = _this.typeOfData(_this.dataSource).typeof;
-                    if (!(_this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
-                        filterQuery.where('', 'startswith', _this.filterInput.value, true, _this.ignoreAccent);
-                    }
-                    else {
-                        var fields = _this.fields;
-                        filterQuery.where(!isNullOrUndefined(fields.text) ? fields.text : '', 'startswith', _this.filterInput.value, true, _this.ignoreAccent);
-                    }
-                    _this.filteringAction(_this.dataSource, filterQuery, _this.fields);
+                    _this.filteringAction(_this.dataSource, null, _this.fields);
                 }
             });
         }
@@ -5326,11 +5342,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             if (this.targetElement() !== null) {
                 var dataType = this.typeOfData(this.dataSource).typeof;
                 if (!(this.dataSource instanceof DataManager) && dataType === 'string' || dataType === 'number') {
-                    filterQuery.where('', 'startswith', this.targetElement(), this.ignoreCase, this.ignoreAccent);
+                    filterQuery.where('', this.filterType, this.targetElement(), this.ignoreCase, this.ignoreAccent);
                 }
                 else {
                     var fields = this.fields;
-                    filterQuery.where(!isNullOrUndefined(fields.text) ? fields.text : '', 'startswith', this.targetElement(), this.ignoreCase, this.ignoreAccent);
+                    filterQuery.where(!isNullOrUndefined(fields.text) ? fields.text : '', this.filterType, this.targetElement(), this.ignoreCase, this.ignoreAccent);
                 }
             }
             return filterQuery;
@@ -5376,19 +5392,20 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var dataChecks = !this.getValueByText(this.inputElement.value, this.ignoreCase);
         if (this.allowCustomValue && dataChecks) {
             var value = this.inputElement.value;
+            var field = fields ? fields : this.fields;
             var customData = (!isNullOrUndefined(this.mainData) && this.mainData.length > 0) ?
                 this.mainData[0] : this.mainData;
             if (typeof (customData) !== 'string') {
                 var dataItem = {};
-                setValue(fields.text, value, dataItem);
-                setValue(fields.value, value, dataItem);
+                setValue(field.text, value, dataItem);
+                setValue(field.value, value, dataItem);
                 var tempData = JSON.parse(JSON.stringify(this.listData));
                 tempData.splice(0, 0, dataItem);
-                this.resetList(tempData, fields ? fields : this.fields, query);
+                this.resetList(tempData, field, query);
             }
             else {
                 var tempData = [this.inputElement.value];
-                this.resetList(tempData, fields ? fields : this.fields);
+                this.resetList(tempData, field);
             }
         }
         if (this.value && this.value.length) {
@@ -6473,7 +6490,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.listOption = function (dataSource, fields) {
         var iconCss = isNullOrUndefined(fields.iconCss) ? false : true;
-        var fieldProperty = fields.properties;
+        var fieldProperty = isNullOrUndefined(fields.properties) ? fields :
+            fields.properties;
         this.listCurrentOptions = (fields.text !== null || fields.value !== null) ? {
             fields: fieldProperty, showIcon: iconCss, ariaAttributes: { groupItemRole: 'presentation' }
         } : { fields: { value: 'text' } };

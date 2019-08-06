@@ -860,7 +860,7 @@ export class SfdtExport {
         this.document.abstractLists = [];
         for (let i: number = 0; i < viewer.abstractLists.length; i++) {
             let abstractList: WAbstractList = viewer.abstractLists[i];
-            if (this.lists.indexOf(abstractList.abstractListId) > -1) {
+            if (abstractLists.indexOf(abstractList.abstractListId) > -1) {
                 this.document.abstractLists.push(this.writeAbstractList(abstractList));
             }
         }

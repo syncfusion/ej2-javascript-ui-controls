@@ -1653,7 +1653,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             annotation = node.annotations[0];
             if (node.shape.type === 'HTML' || node.shape.type === 'Native') {
 
-                updateBlazorTemplate(this.element.id + 'content_diagram', 'Content', this.nodes[i].shape);
+                updateBlazorTemplate(node.id + 'content_diagram', 'Content', this.nodes[i].shape);
 
             } else if (annotation && annotation.template instanceof HTMLElement) {
 
@@ -1679,7 +1679,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             htmlNode = this.nodes[i];
             templateAnnotation = htmlNode.annotations[0];
             if (htmlNode.shape.type === 'HTML' && (htmlNode.shape as HtmlModel).content instanceof HTMLElement) {
-                resetBlazorTemplate(this.element.id + 'content', 'Content');
+                resetBlazorTemplate(htmlNode.id + 'content', 'Content');
             } else if (templateAnnotation && templateAnnotation.template instanceof HTMLElement) {
                 resetBlazorTemplate(this.element.id + 'template', 'Template');
             }
@@ -2802,7 +2802,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let j of node.children) {
                 if (this.nameTable[j] && this.nameTable[j].parentId) {
                     let child: HTMLElement = getDiagramElement(j + '_groupElement', this.element.id);
-                    child.parentNode.removeChild(child);
+                    if (child) {
+                        child.parentNode.removeChild(child);
+                    }
                 }
             }
         }

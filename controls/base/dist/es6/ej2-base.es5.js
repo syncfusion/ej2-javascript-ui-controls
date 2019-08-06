@@ -5711,10 +5711,15 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
             var pos = this.element.getBoundingClientRect();
-            var verticalScrollParent = this.getScrollableParent(this.element.parentNode, 'vertical');
-            var horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
-            var parentScrollX = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
-            var parentScrollY = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
+            var isModalDialog = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
+            var parentScrollX = 0;
+            var parentScrollY = 0;
+            if (!isModalDialog) {
+                var verticalScrollParent = this.getScrollableParent(this.element.parentNode, 'vertical');
+                var horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
+                parentScrollX = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
+                parentScrollY = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
+            }
             this.relativeXPosition = intCoord.pageX - (pos.left + parentScrollX);
             this.relativeYPosition = intCoord.pageY - (pos.top + parentScrollY);
         }
@@ -6913,6 +6918,7 @@ var DBL_QUOTED_STR = new RegExp('"(.*?)"', 'g');
 var SPECIAL_CHAR = /\@|\#|\$/g;
 var exp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
+var ARR_OBJ = /^\..*/gm;
 /**
  * The function to set regular expression for template expression string.
  * @param  {RegExp} value - Value expression.
@@ -6980,7 +6986,12 @@ function evalExp(str, nameSpace, helper) {
                 //handling if condition
                 cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORD, function (strs) {
                     strs = strs.trim();
-                    return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                    if (ARR_OBJ.test(strs)) {
+                        return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                    }
+                    else {
+                        return addNameSpace(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
+                    }
                 })) + '{ \n str = str + "';
             }
             else if (FOR_STMT.test(cnt)) {
@@ -7031,6 +7042,11 @@ function evalExp(str, nameSpace, helper) {
 }
 function addNameSpace(str, addNS, nameSpace, ignoreList) {
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '.' + str : str);
+}
+function NameSpaceArrObj(str, addNS, nameSpace, ignoreList) {
+    var arrObjReg = /^\..*/gm;
+    return ((addNS && !(NOT_NUMBER.test(str)) &&
+        ignoreList.indexOf(str.split('.')[0]) === -1 && !(arrObjReg.test(str))) ? nameSpace + '.' + str : str);
 }
 // // Create hashCode for template string to storeCached function
 // function hashCode(str: string): string {

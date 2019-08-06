@@ -115,13 +115,10 @@ export class Marker {
             return;
         }
         let eventArgs: IMarkerClickEventArgs = {
-            cancel: false, name: markerClick, data: options.data, maps: this.maps, marker: options.marker,
-            target: target, x: e.clientX, y: e.clientY
+            cancel: false, name: markerClick, data: options.data, maps: this.maps.isBlazor ? null : this.maps,
+            marker: this.maps.isBlazor ? null : options.marker, target: target, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs: IMarkerClickEventArgs = {
-            cancel: false, name: markerClick, marker: options.marker, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(markerClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        this.maps.trigger(markerClick, eventArgs);
     }
     /**
      * To check and trigger Cluster click event
@@ -174,13 +171,10 @@ export class Marker {
             return;
         }
         let eventArgs: IMarkerMoveEventArgs = {
-            cancel: false, name: markerMouseMove, data: options.data, maps: this.maps,
-            target: targetId, x: e.clientX, y: e.clientY
+            cancel: false, name: markerMouseMove, data: options.data,
+            maps: this.maps.isBlazor ? null : this.maps, target: targetId, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs: IMarkerMoveEventArgs = {
-            cancel: false, name: markerMouseMove, target: targetId, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(markerMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        this.maps.trigger(markerMouseMove, eventArgs);
     }
     /**
      * To check and trigger cluster move event

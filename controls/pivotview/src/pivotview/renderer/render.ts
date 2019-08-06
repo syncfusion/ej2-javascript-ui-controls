@@ -6,7 +6,7 @@ import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu,
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, CellSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, append } from '@syncfusion/ej2-base';
+import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, append, getElement } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
@@ -949,6 +949,7 @@ export class Render {
         };
         this.parent.trigger(events.hyperlinkCellClick, args, (observedArgs: HyperCellClickEventArgs) => {
             if (!observedArgs.cancel) {
+                args.currentCell = getElement(args.currentCell) as Element;
                 let url: string = args.currentCell.getAttribute('data-url') ? (args.currentCell).getAttribute('data-url') :
                     (args.currentCell.querySelector('a') as HTMLElement).getAttribute('data-url');
                 window.open(url);

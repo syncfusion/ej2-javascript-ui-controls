@@ -53,3 +53,8 @@ export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'D
  * Enum unit for calibration annotation
  */
 export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' |'p';
+
+/**
+ * Enum unit for ContextMenu Actions
+ */
+export type ContextMenuAction = 'None' | 'MouseUp' | 'RightClick';

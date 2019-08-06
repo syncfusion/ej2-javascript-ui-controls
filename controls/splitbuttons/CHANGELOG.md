@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### ProgressButton
+
+#### Bug Fixes
+
+- Issue with 'progressComplete' method is fixed.
+
 ## 17.2.39 (2019-07-30)
 
 ### SplitButton

@@ -816,9 +816,17 @@ export class BaseHistoryInfo {
                 this.owner.editorModule.updateSelectionParagraphFormatting(property, (this.modifiedProperties[0] as WParagraphFormat).baseStyle, false);
                 return;
             }
-            this.owner.viewer.layout.isBidiReLayout = true;
+            let selection: Selection = this.owner.viewer.selection;
+            let isBidiList: boolean = (selection.paragraphFormat.bidi ||
+                (this.modifiedProperties[0] instanceof WParagraphFormat && this.modifiedProperties[0] as WParagraphFormat).bidi
+            ) && (selection.paragraphFormat.listId !== -1 || property === 'listFormat');
+            if (!isBidiList) {
+                this.owner.viewer.layout.isBidiReLayout = true;
+            }
             this.owner.editorModule.updateSelectionParagraphFormatting(property, undefined, false);
-            this.owner.viewer.layout.isBidiReLayout = false;
+            if (!isBidiList) {
+                this.owner.viewer.layout.isBidiReLayout = false;
+            }
         } else if (this.modifiedProperties[0] instanceof WSectionFormat) {
             this.owner.editorModule.updateSectionFormat(property, undefined);
         } else if (this.action === 'RestartNumbering') {
@@ -1003,7 +1011,7 @@ export class BaseHistoryInfo {
             case 'ParagraphBidi':
             case 'TableBidi':
                 return 'bidi';
-                case 'ContextualSpacing':
+            case 'ContextualSpacing':
                 return 'contextualSpacing';
         }
         return undefined;

@@ -135,6 +135,9 @@ export class MarkdownToolbarStatus {
         return new RegExp('(\\' + cmd + ')', 'g');
     }
 }
+/** 
+ * @hidden
+ */
 export interface ITextAreaElement extends HTMLTextAreaElement {
     selectionDirection: string;
 }

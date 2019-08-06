@@ -836,4 +836,38 @@ describe('RTE CR issues', () => {
             }, 100)
         });
     });
+
+    describe('EJ2-29347 - RTE base refresh method testing', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                value: '<p>Syncfusion</p>'
+            });
+            rteEle = rteObj.element;
+            controlId = rteEle.id;
+            done();
+        });
+        it(' Check the alignments dropdown items ', (done) => {
+            expect(rteObj.inputElement.innerHTML).toEqual('<p>Syncfusion</p>');
+            rteObj.inputElement.innerHTML = '<p>RTE</p>';
+            expect(rteObj.inputElement.innerHTML).toEqual('<p>RTE</p>');
+            rteObj.disableToolbarItem(['Bold']);
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(3);
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Bold');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Undo');
+            expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[2].getAttribute('title')).toEqual('Redo');
+            rteObj.refresh();
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay').length).toEqual(2);
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[0].getAttribute('title')).toEqual('Undo');
+                expect(document.querySelectorAll('.e-toolbar-item.e-overlay')[1].getAttribute('title')).toEqual('Redo');
+                done();
+            }, 200)
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+    });
 })

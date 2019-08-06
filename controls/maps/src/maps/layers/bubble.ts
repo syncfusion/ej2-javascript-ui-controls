@@ -50,7 +50,9 @@ export class Bubble {
             shape = shape['property'];
             let shapePath: string = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
             if (shapeData[layer.shapeDataPath] === shape[shapePath]) {
-                if (!layerData[i]['_isMultiPolygon']) {
+                if (layerData[i]['type'] === 'Point') {
+                    shapePoints.push(this.getPoints(<Object[]>layerData[i], []));
+                } else if (!layerData[i]['_isMultiPolygon']) {
                     shapePoints.push(this.getPoints(layerData[i] as object[], []));
                     currentLength = shapePoints[shapePoints.length - 1].length;
                     if (pointsLength < currentLength) {
@@ -71,15 +73,26 @@ export class Bubble {
                 }
             }
         }
-        let projectionType : string = this.maps.projectionType;
+        let projectionType: string = this.maps.projectionType;
+        let centerY: number; let eventArgs: IBubbleRenderingEventArgs;
         let center: object = findMidPointOfPolygon(shapePoints[midIndex], projectionType);
-        if (!isNullOrUndefined(center)) {
-            let centerY: number = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
-            let eventArgs: IBubbleRenderingEventArgs = {
-                cancel: false, name: bubbleRendering, border: bubbleSettings.border,
-                cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor, maps: this.maps,
-                radius: radius
-            };
+        if (bubbleSettings.visible) {
+            if (!isNullOrUndefined(center)) {
+                centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
+                eventArgs = {
+                    cancel: false, name: bubbleRendering, border: bubbleSettings.border,
+                    cx: center['x'], cy: centerY, data: shapeData, fill: bubbleColor,
+                    maps: this.maps.isBlazor ? null : this.maps, radius: radius
+                };
+            } else {
+                let shapePointsLength: number = shapePoints.length - 1;
+                eventArgs = {
+                    cancel: false, name: bubbleRendering, border: bubbleSettings.border,
+                    cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
+                    data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
+                    radius: radius
+                };
+            }
             this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs: IBubbleRenderingEventArgs) => {
                 if (eventArgs.cancel) {
                     return;

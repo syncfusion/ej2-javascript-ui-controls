@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### Toast
+
+#### Bug Fixes
+
+- `#242279` - The DOM selector processing has been prevented in the `title` property. The Toast component now accepts only string and HTML string in the `title` property.
+
 ## 16.3.31 (2018-11-07)
 
 ### Toast

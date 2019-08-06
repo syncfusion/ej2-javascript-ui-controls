@@ -216,7 +216,8 @@ export function updateUndoRedoStatus(baseToolbar: BaseToolbar, undoRedoStatus: {
 }
 
 /**
- * To dispatch the event manually 
+ * To dispatch the event manually
+ * @hidden
  */
 export function dispatchEvent(element: Element | HTMLDocument, type: string): void {
     let evt: Event = document.createEvent('HTMLEvents');

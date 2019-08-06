@@ -215,7 +215,7 @@ export function getTargetModule(parent: IFileManager, element: Element): void {
     }
     parent.targetModule = tartgetModule;
 }
-
+/* istanbul ignore next */
 export function refresh(parent: IFileManager): void {
     parent.itemData = [getPathObject(parent)];
     if (!hasReadAccess(parent.itemData[0])) {
@@ -570,7 +570,7 @@ export function doPasteUpdate(parent: IFileManager, operation: string, result: R
     }
     let flag: boolean = false;
     for (let count: number = 0; (count < result.files.length) && !flag; count++) {
-        parent.pasteNodes.push(<string>result.files[count].name);
+        parent.pasteNodes.push(<string>result.files[count][parent.hasId ? 'id' : 'name']);
         if (parent.isDragDrop) {
             parent.droppedObjects.push(result.files[count]);
         }

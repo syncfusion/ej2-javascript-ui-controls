@@ -549,6 +549,9 @@ export interface IGrid extends Component<HTMLElement> {
     isDetail?(): boolean;
     updateMediaColumns?(col: Column): void;
     hideScroll?(): void;
+
+    // public Events
+    dataStateChange?: EmitType<DataStateChangeEventArgs>;
 }
 
 /** @hidden */
@@ -1944,6 +1947,7 @@ export interface IFilterArgs {
     column?: Column;
     actualPredicate?: { [key: string]: PredicateModel[] };
     uid?: string;
+    isForeignKey?: boolean;
 }
 
 export interface PdfExportProperties {

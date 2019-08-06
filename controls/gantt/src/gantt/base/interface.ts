@@ -1,5 +1,7 @@
 import { ContextMenuType } from './enum';
 import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
+import { RowSelectingEventArgs as GridRowSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { RowSelectEventArgs as GridRowSelectEventArgs, RowDataBoundEventArgs as GridRowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { IGanttData, IValidateMode } from '../base/interface';
 import { Column } from '../models/column';
@@ -482,4 +484,19 @@ export interface ITemplateData {
     left?: number;
     progressWidth?: number;
     width?: number;
+}
+
+export interface RowSelectingEventArgs extends GridRowSelectingEventArgs {
+    /** Defines the data collections. */
+    data: IGanttData;
+}
+
+export interface RowSelectEventArgs extends GridRowSelectEventArgs {
+    /** Defines the data collections. */
+    data: IGanttData;
+}
+
+export interface RowDataBoundEventArgs extends GridRowDataBoundEventArgs {
+    /** Defines the data collections. */
+    data: IGanttData;
 }

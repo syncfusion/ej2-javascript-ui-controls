@@ -498,7 +498,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.trigger(events.enginePopulating, { dataSourceSettings: this.dataSourceSettings }, (observedArgs: EnginePopulatingEventArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                let pivotDataSet: IDataSet[] = this.dataSourceSettings.dataSource as IDataSet[];
+                let pivotDataSet: IDataSet[] = this.engineModule.data as IDataSet[];
                 this.clonedDataSet = this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet);
                 this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
                 this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;

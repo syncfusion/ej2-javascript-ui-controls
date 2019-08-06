@@ -125,12 +125,21 @@ export class Highlight {
         }
     }
     private mapHighlight(targetEle: Element, shapeData: object, data: object): void {
+        let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+        let isMarkerSelect: boolean = false;
+        if (targetEle.id.indexOf('MarkerIndex') > -1) {
+            let marker: number = parseInt(targetEle.id.split('_MarkerIndex_')[1].split('_')[0], 10);
+            isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
+        }
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
         let eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
             fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
             ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
-            border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width / this.maps.scale },
+            border: {
+                color: this.highlightSettings.border.color,
+                width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
+            },
             name: itemHighlight,
             target: targetEle.id,
             cancel: false,
@@ -173,7 +182,7 @@ export class Highlight {
     }
 
     /**
-     * To destroy the highlight. 
+     * To destroy the highlight.
      * @return {void}
      * @private
      */

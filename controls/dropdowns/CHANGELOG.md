@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#242599` - Now, filtering work properly when enabling the custom value property.
+
+### ComboBox
+
+#### New Features
+
+- `#F146233` - Now, you can specify type of filter using `filterType` property.
+
+### DropDownList
+
+#### New Features
+
+- `#F146233` - Now, you can specify type of filter using `filterType` property.
+
+### MultiSelect
+
+#### New Features
+
+- `#F146233` - Now, you can specify type of filter using `filterType` property.
+
 ## 17.2.39 (2019-07-30)
 
 ### ListBox
