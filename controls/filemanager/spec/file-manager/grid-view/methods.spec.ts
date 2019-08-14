@@ -6,7 +6,8 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, idData1 } from '../data';
+import { data1, idData1, filterData } from '../data';
+import { ColumnModel } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -208,6 +209,68 @@ describe('FileManager control Grid view', () => {
                 expect(data[0]['name']).toBe('Documents');
                 expect(data[1]['name']).toBe('Videos');
                 done();
+            }, 400);
+        });
+    });
+    describe('Custom method testing', () => {
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('for filterFiles', (done: Function) => {
+            expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(5);
+            feObj.filterFiles();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(filterData)
+            });
+            setTimeout(function () {
+                expect(feObj.detailsviewModule.gridObj.getRows().length).toBe(4);
+                let len: number = feObj.detailsviewModule.gridObj.columns.length;
+                let columnData: ColumnModel[] = JSON.parse(JSON.stringify(feObj.detailsviewModule.gridObj.columns));
+                expect(columnData[len - 1].field).toBe('filterPath');
+                (<HTMLElement>document.getElementById('file_tb_view')).click();
+                (<HTMLElement>document.getElementById('file_ddl_large')).click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(filterData)
+                }); jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toBe(4);
+                    done();
+                }, 400);
             }, 400);
         });
     });

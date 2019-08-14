@@ -229,6 +229,7 @@ describe('ListView', () => {
                     data: dataSourceWithComplexData[0]
                 };
                 expect(treeObj.getSelectedItems()).toEqual(data);
+                treeObj.blazorGetSelectedItems(treeObj.getSelectedItems());
                 expect((<HTMLElement>li.firstChild.firstChild).classList.contains('iconClass1')).toBe(true);
                 expect(li.innerText.trim()).toBe('text1');
 
@@ -369,6 +370,7 @@ describe('ListView', () => {
             };
 
             expect(treeObj.getSelectedItems()).toEqual(data);
+            treeObj.blazorGetSelectedItems(treeObj.getSelectedItems());
         });
 
         it('contentcontainer after and before empty the datasource', () => {
@@ -598,7 +600,7 @@ describe('ListView', () => {
                 expect((nTree.getSelectedItems().item as HTMLElement[])[0]).toBe(liItem1);
                 expect((nTree.getSelectedItems().item as HTMLElement[])[1]).toBe(liItem2);
                 expect((nTree.getSelectedItems().item as HTMLElement[])[2]).toBe(liItem3);
-
+                (nTree as any).blazorGetSelectedItems(nTree.getSelectedItems());
             });
 
 
@@ -803,6 +805,7 @@ describe('ListView', () => {
             };
 
             expect(treeObj.getSelectedItems()).toEqual(data);
+            treeObj.blazorGetSelectedItems(treeObj.getSelectedItems());
         });
 
         describe('back', () => {
@@ -1126,6 +1129,7 @@ describe('ListView', () => {
             let listItem: HTMLElement[] | HTMLElement = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-list-item');
             listObj.selectMultipleItems([listItem[0], listItem[1]]);
             let selectedListItem = (listObj.getSelectedItems().item as HTMLElement[]);
+            (listObj as any).blazorGetSelectedItems(listObj.getSelectedItems());
             listItem = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-active');
             expect(listItem.length).toBe(selectedListItem.length);
             expect(listItem[0]).toBe(selectedListItem[0]);
@@ -1406,6 +1410,7 @@ describe('ListView', () => {
             listObj.selectItem(listObj.liCollection[0]);
             listObj.selectItem(listObj.liCollection[0]);
             expect(listObj.getSelectedItems().text[0]).toBe('subText1');
+            listObj.blazorGetSelectedItems(listObj.getSelectedItems());
         });
 
         it('Navigation to parent from child', () => {
@@ -1425,6 +1430,7 @@ describe('ListView', () => {
             listObj.selectItem(listObj.liCollection[0]);
             expect(listObj.getSelectedItems().text[0]).toBe('subText1');
             expect(listObj.getSelectedItems().data[0].parentId[0]).toBe('01');
+            listObj.blazorGetSelectedItems(listObj.getSelectedItems());
         });
 
         it('Checking and unchecking checkbox', () => {

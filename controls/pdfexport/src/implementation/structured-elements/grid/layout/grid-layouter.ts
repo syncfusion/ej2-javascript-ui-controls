@@ -1569,11 +1569,7 @@ export class PdfGridLayoutFormat extends PdfLayoutFormat {
      * @private
      */
     public constructor(baseFormat ?: PdfLayoutFormat) {
-        if (typeof baseFormat === 'undefined') {
-            super();
-        } else {
-            super(baseFormat);
-        }
+        super(baseFormat);
     }
 }
 export abstract class GridCellEventArgs {

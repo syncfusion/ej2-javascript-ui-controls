@@ -175,8 +175,9 @@ export class Render {
             this.templateResult = null;
             args.cell.innerHTML = '';
         } else if (args.cell.classList.contains('e-templatecell')) {
-            for ( let i: number = 0; i < args.cell.children.length; i++ ) {
-                cellElement.appendChild(args.cell.children[i]);
+            let len: number = args.cell.children.length;
+            for (let i: number = 0; i < len; len = args.cell.children.length) {
+                 cellElement.appendChild(args.cell.children[i]);
             }
         } else {
             cellElement.innerHTML = textContent;

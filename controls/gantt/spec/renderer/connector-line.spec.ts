@@ -417,40 +417,40 @@ describe('Gantt connector line support', () => {
         });
         it('Remove Predecessor', () => {
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
-            ganttObj.removePredecessor(ganttObj.flatData[2].ganttProperties.taskId);
+            ganttObj.removePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId));
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('');
         });
         it('Add Predecessor', () => {
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('');
-            ganttObj.addPredecessor(ganttObj.flatData[2].ganttProperties.taskId, '2FS');
+            ganttObj.addPredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '2FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
         });
         it('Update Predecessor with same taskID', () => {
-            ganttObj.updatePredecessor(ganttObj.flatData[2].ganttProperties.taskId, '2FS,2');
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '2FS,2');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
         });
         it('Update Predecessor with invalid taskID', () => {
-            ganttObj.updatePredecessor(ganttObj.flatData[2].ganttProperties.taskId, '24FS,2');
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '24FS,2');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('2FS');
         });
         it('Update Predecessor with valid TaskID and invalid connector type', () => {
-            ganttObj.updatePredecessor(ganttObj.flatData[2].ganttProperties.taskId, '4KS,2');
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '4KS,2');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
         });
         it('Update Predecessor with cyclic dependency', () => {
-            ganttObj.updatePredecessor(ganttObj.flatData[2].ganttProperties.taskId, '3FS');
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '3FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
         });
         it('Update Predecessor with current parent', () => {
-            ganttObj.updatePredecessor(ganttObj.flatData[2].ganttProperties.taskId, '1FS');
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '1FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
         });
         it('Update Predecessor with independent parent', () => {
-            ganttObj.updatePredecessor(ganttObj.flatData[2].ganttProperties.taskId, '6FS');
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[2].ganttProperties.taskId), '6FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
         });
         it('Update Predecessor with some valid and invalid predecessor strings', () => {
-            ganttObj.updatePredecessor(ganttObj.flatData[8].ganttProperties.taskId, '2FS,5FS,4FS,3FS');
+            ganttObj.updatePredecessor(Number(ganttObj.flatData[8].ganttProperties.taskId), '2FS,5FS,4FS,3FS');
             expect(ganttObj.flatData[2].ganttProperties.predecessorsName).toBe('4FS,2FS');
         });
         it('Aria-label testing - SS', (done: Function) => {

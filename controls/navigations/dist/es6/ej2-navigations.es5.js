@@ -9097,17 +9097,24 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.changeState = function (wrapper, state, e, isPrevent, isAdd, doCheck) {
-        var ariaState;
+        var _this = this;
         var eventArgs;
         var currLi = closest(wrapper, '.' + LISTITEM);
         if (!isPrevent) {
             this.checkActionNodes = [];
             eventArgs = this.getCheckEvent(currLi, state, e);
-            this.trigger('nodeChecking', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeChecking', eventArgs, function (observedArgs) {
+                if (!observedArgs.cancel) {
+                    _this.nodeCheckAction(wrapper, state, currLi, observedArgs, e, isPrevent, isAdd, doCheck);
+                }
+            });
         }
+        else {
+            this.nodeCheckAction(wrapper, state, currLi, eventArgs, e, isPrevent, isAdd, doCheck);
+        }
+    };
+    TreeView.prototype.nodeCheckAction = function (wrapper, state, currLi, eventArgs, e, isPrevent, isAdd, doCheck) {
+        var ariaState;
         var frameSpan = wrapper.getElementsByClassName(CHECKBOXFRAME)[0];
         if (state === 'check' && !frameSpan.classList.contains(CHECK)) {
             frameSpan.classList.remove(INDETERMINATE);
@@ -9316,17 +9323,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    TreeView.prototype.nodeCheckingEvent = function (wrapper, isCheck, e) {
-        var currLi = closest(wrapper, '.' + LISTITEM);
-        this.checkActionNodes = [];
-        var ariaState = !isCheck ? 'true' : 'false';
-        if (!isNullOrUndefined(ariaState)) {
-            wrapper.setAttribute('aria-checked', ariaState);
-        }
-        var eventArgs = this.getCheckEvent(currLi, isCheck ? 'uncheck' : 'check', e);
-        this.trigger('nodeChecking', eventArgs);
-        return eventArgs;
-    };
     TreeView.prototype.nodeCheckedEvent = function (wrapper, isCheck, e) {
         var currLi = closest(wrapper, '.' + LISTITEM);
         var eventArgs = this.getCheckEvent(wrapper, isCheck ? 'uncheck' : 'check', e);
@@ -9432,12 +9428,21 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var colArgs;
         if (this.isLoaded) {
             colArgs = this.getExpandEvent(currLi, e);
-            this.trigger('nodeCollapsing', colArgs);
-            if (colArgs.cancel) {
-                removeClass([icon], PROCESS);
-                return;
-            }
+            this.trigger('nodeCollapsing', colArgs, function (observedArgs) {
+                if (observedArgs.cancel) {
+                    removeClass([icon], PROCESS);
+                }
+                else {
+                    _this.nodeCollapseAction(currLi, icon, observedArgs);
+                }
+            });
         }
+        else {
+            this.nodeCollapseAction(currLi, icon, colArgs);
+        }
+    };
+    TreeView.prototype.nodeCollapseAction = function (currLi, icon, colArgs) {
+        var _this = this;
         removeClass([icon], COLLAPSIBLE);
         addClass([icon], EXPANDABLE);
         var start = 0;
@@ -9731,6 +9736,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         return li.classList.contains(ACTIVE) ? true : false;
     };
     TreeView.prototype.selectNode = function (li, e, multiSelect) {
+        var _this = this;
         if (isNullOrUndefined(li) || (!this.allowMultiSelection && this.isActive(li) && !isNullOrUndefined(e))) {
             this.setFocusElement(li);
             return;
@@ -9738,11 +9744,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var eventArgs;
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'select', e);
-            this.trigger('nodeSelecting', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeSelecting', eventArgs, function (observedArgs) {
+                if (!observedArgs.cancel) {
+                    _this.nodeSelectAction(li, e, observedArgs, multiSelect);
+                }
+            });
         }
+        else {
+            this.nodeSelectAction(li, e, eventArgs, multiSelect);
+        }
+    };
+    TreeView.prototype.nodeSelectAction = function (li, e, eventArgs, multiSelect) {
         if (!this.allowMultiSelection || (!multiSelect && (!e || (e && !e.ctrlKey)))) {
             this.removeSelectAll();
         }
@@ -9775,14 +9787,21 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.unselectNode = function (li, e) {
+        var _this = this;
         var eventArgs;
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'un-select', e);
-            this.trigger('nodeSelecting', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeSelecting', eventArgs, function (observedArgs) {
+                if (!observedArgs.cancel) {
+                    _this.nodeUnselectAction(li, observedArgs);
+                }
+            });
         }
+        else {
+            this.nodeUnselectAction(li, eventArgs);
+        }
+    };
+    TreeView.prototype.nodeUnselectAction = function (li, eventArgs) {
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
@@ -9863,12 +9882,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             if (classList$$1.contains(EXPANDABLE)) {
                 this.expandAction(currLi, icon, e);
             }
-            else {
+            else if (classList$$1.contains(COLLAPSIBLE)) {
                 this.collapseNode(currLi, icon, e);
             }
         }
     };
     TreeView.prototype.expandAction = function (currLi, icon, e, expandChild, callback) {
+        var _this = this;
         if (icon.classList.contains(PROCESS)) {
             return;
         }
@@ -9877,12 +9897,20 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.isLoaded) {
             this.expandArgs = this.getExpandEvent(currLi, e);
-            this.trigger('nodeExpanding', this.expandArgs);
-            if (this.expandArgs.cancel) {
-                removeClass([icon], PROCESS);
-                return;
-            }
+            this.trigger('nodeExpanding', this.expandArgs, function (observedArgs) {
+                if (observedArgs.cancel) {
+                    removeClass([icon], PROCESS);
+                }
+                else {
+                    _this.nodeExpandAction(currLi, icon, expandChild, callback);
+                }
+            });
         }
+        else {
+            this.nodeExpandAction(currLi, icon, expandChild, callback);
+        }
+    };
+    TreeView.prototype.nodeExpandAction = function (currLi, icon, expandChild, callback) {
         var ul = select('.' + PARENTITEM, currLi);
         if (ul && ul.nodeName === 'UL') {
             this.expandNode(currLi, icon);
@@ -10037,14 +10065,27 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var checkWrap = select('.' + CHECKBOXWRAP, focusedNode);
         var isChecked = select(' .' + CHECKBOXFRAME, checkWrap).classList.contains(CHECK);
         if (!focusedNode.classList.contains('e-disable')) {
-            this.validateCheckNode(checkWrap, isChecked, focusedNode, e);
+            if (focusedNode.getElementsByClassName("e-checkbox-disabled").length == 0) {
+                this.validateCheckNode(checkWrap, isChecked, focusedNode, e);
+            }
         }
     };
     TreeView.prototype.validateCheckNode = function (checkWrap, isCheck, li, e) {
-        var eventArgs = this.nodeCheckingEvent(checkWrap, isCheck, e);
-        if (eventArgs.cancel) {
-            return;
+        var _this = this;
+        var currLi = closest(checkWrap, '.' + LISTITEM);
+        this.checkActionNodes = [];
+        var ariaState = !isCheck ? 'true' : 'false';
+        if (!isNullOrUndefined(ariaState)) {
+            checkWrap.setAttribute('aria-checked', ariaState);
         }
+        var eventArgs = this.getCheckEvent(currLi, isCheck ? 'uncheck' : 'check', e);
+        this.trigger('nodeChecking', eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                _this.nodeCheckingAction(checkWrap, isCheck, li, observedArgs, e);
+            }
+        });
+    };
+    TreeView.prototype.nodeCheckingAction = function (checkWrap, isCheck, li, eventArgs, e) {
         if (this.checkedElement.indexOf(li.getAttribute('data-uid')) === -1) {
             this.checkedElement.push(li.getAttribute('data-uid'));
             var child = this.getChildNodes(this.treeData, li.getAttribute('data-uid'));
@@ -10417,7 +10458,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 isChecked: checked, hasChildren: hasChildren
             };
         }
-        return { id: '', text: '', parentID: '', selected: '', expanded: '', isChecked: '', hasChildren: '' };
+        return { id: '', text: '', parentID: '', selected: false, expanded: false, isChecked: '', hasChildren: false };
     };
     TreeView.prototype.getText = function (currLi, fromDS) {
         if (fromDS) {

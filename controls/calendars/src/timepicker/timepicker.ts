@@ -570,7 +570,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.setProperties({ max: this.checkDateValue(new Date(this.checkInValue(this.max))) }, true);
         if (this.angularTag !== null) { this.validationAttribute(this.element, this.inputElement); }
         this.updateHtmlAttributeToElement();
-        this.checkAttributes(true); //check the input element attributes
+        this.checkAttributes(false); //check the input element attributes
         let localeText: { placeholder: string } = { placeholder: this.placeholder };
         this.l10n = new L10n('timepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -842,26 +842,30 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     }
 
     private updateHtmlAttributeToWrapper(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(key) > -1 ) {
-                if (key === 'class') {
-                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
-                } else if (key === 'style') {
-                    let timeStyle: string = this.inputWrapper.container.getAttribute(key);
-                    timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
-                    this.htmlAttributes[key];
-                    this.inputWrapper.container.setAttribute(key, timeStyle);
-                } else {
-                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(key) > -1 ) {
+                    if (key === 'class') {
+                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                    } else if (key === 'style') {
+                        let timeStyle: string = this.inputWrapper.container.getAttribute(key);
+                        timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                        this.inputWrapper.container.setAttribute(key, timeStyle);
+                    } else {
+                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
 
     private updateHtmlAttributeToElement(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(key) < 0 ) {
-                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(key) < 0 ) {
+                    this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -1442,17 +1446,18 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         }
     }
     protected checkAttributes(isDynamic: boolean): void {
-        let attributes: string[] = ['step', 'disabled', 'readonly', 'style', 'name', 'value', 'min', 'max', 'placeholder'];
+        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['step', 'disabled', 'readonly', 'style', 'name', 'value', 'min', 'max', 'placeholder'];
         let value: Date;
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['enabled'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'style':
@@ -1460,10 +1465,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['readonly'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly: boolean = this.inputElement.getAttribute(prop) === 'readonly' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'name':
@@ -1474,36 +1479,36 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ min: value }, isDynamic);
+                                this.setProperties({ min: value }, !isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ max: value }, isDynamic);
+                                this.setProperties({ max: value }, !isDynamic);
                             }
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
                                 this.initValue = value;
                                 this.updateInput(false, this.initValue);
-                                this.setProperties({ value: value }, isDynamic);
+                                this.setProperties({ value: value }, !isDynamic);
                             }
                         }
                         break;
@@ -2223,7 +2228,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'min':
                 case 'max':

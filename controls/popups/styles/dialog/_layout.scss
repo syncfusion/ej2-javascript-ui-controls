@@ -30,8 +30,7 @@
       width: $dialog-close-icon-width;
     }
 
-    .e-dlg-header,
-    .e-dlg-header * {
+    .e-dlg-header {
       display: block;
       font-size: $dialog-header-font-size;
       font-weight: $dialog-header-font-weight;

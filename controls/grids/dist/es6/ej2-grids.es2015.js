@@ -120,7 +120,7 @@ class Column {
          * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
          *
          * > Check the [`Filter UI`](../../grid/filtering/#custom-component-in-filter-menu) for its customization.
-         *  @default null
+         *  @default {}
          */
         this.filter = {};
         /**
@@ -161,7 +161,8 @@ class Column {
         }
         this.toJSON = () => {
             let col = {};
-            let skip = ['headerText', 'template', 'headerTemplate', 'edit', 'editTemplate', 'filterTemplate', 'commandsTemplate'];
+            let skip = ['filter', 'dataSource', 'headerText', 'template', 'headerTemplate', 'edit',
+                'editTemplate', 'filterTemplate', 'commandsTemplate'];
             let keys = Object.keys(this);
             for (let i = 0; i < keys.length; i++) {
                 if (keys[i] === 'columns') {
@@ -195,7 +196,7 @@ class Column {
         if (this.headerTemplate) {
             this.headerTemplateFn = templateCompiler(this.headerTemplate);
         }
-        if (this.filter.itemTemplate) {
+        if (!isNullOrUndefined(this.filter) && this.filter.itemTemplate) {
             this.fltrTemplateFn = templateCompiler(this.filter.itemTemplate);
         }
         if (this.editTemplate) {
@@ -1960,9 +1961,13 @@ class CheckBoxFilter {
     }
     showDialog(options) {
         let args = {
-            requestType: filterBeforeOpen, filterModel: this,
+            requestType: filterBeforeOpen,
             columnName: this.options.field, columnType: this.options.type, cancel: false
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionBegin, args);
         if (args.cancel) {
             return;
@@ -2263,8 +2268,12 @@ class CheckBoxFilter {
         query.requiresCount(); //consider take query
         this.addDistinct(query);
         let args = {
-            requestType: filterChoiceRequest, filterModel: this, query: query, filterChoiceCount: null
+            requestType: filterChoiceRequest, query: query, filterChoiceCount: null
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionBegin, args);
         args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
         query.take(args.filterChoiceCount);
@@ -2356,8 +2365,12 @@ class CheckBoxFilter {
         this.sInput.focus();
         let args = {
             requestType: filterAfterOpen,
-            filterModel: this, columnName: this.options.field, columnType: this.options.type
+            columnName: this.options.field, columnType: this.options.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionComplete, args);
     }
     processDataSource(query, isInitial, dataSource) {
@@ -2498,7 +2511,11 @@ class CheckBoxFilter {
         }
         this.filterState = !btn.disabled;
         btn.dataBind();
-        let args = { requestType: filterChoiceRequest, filterModel: this, dataSource: this.renderEmpty ? [] : data };
+        let args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionComplete, args);
         hideSpinner(this.spinner);
     }
@@ -2991,8 +3008,8 @@ class Data {
         this.parent.notify(crudAction, args);
     }
     /** @hidden */
-    saveChanges(changes, key, original) {
-        let query = this.generateQuery().requiresCount();
+    saveChanges(changes, key, original, query = this.generateQuery()) {
+        query.requiresCount();
         if ('result' in this.parent.dataSource) {
             let state;
             state = this.getStateEventArgument(query);
@@ -3112,7 +3129,7 @@ class Data {
         return colFieldNames;
     }
     refreshFilteredCols() {
-        if (this.parent.filterSettings.columns.length) {
+        if (this.parent.allowFiltering && this.parent.filterSettings.columns.length) {
             refreshFilteredColsUid(this.parent, this.parent.filterSettings.columns);
         }
     }
@@ -3993,7 +4010,7 @@ class ContentRender {
         }
         let table = this.parent.createElement('table', {
             className: 'e-table', attrs: {
-                role: 'grid',
+                cellspacing: '0.25px', role: 'grid',
                 id: this.parent.element.id + id
             }
         });
@@ -4669,7 +4686,7 @@ class HeaderRender {
             remove(this.getTable());
         }
         let columns = gObj.getColumns();
-        let table = this.parent.createElement('table', { className: 'e-table', attrs: { role: 'grid' } });
+        let table = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
         let innerDiv = this.getPanel().firstChild;
         let findHeaderRow = this.createHeaderContent();
         let thead = findHeaderRow.thead;
@@ -5089,6 +5106,9 @@ class CellRenderer {
             let index = 'index';
             if (isBlazor() && isEdit) {
                 result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], parseInt(attributes$$1[index], 10));
+                if (this.parent.editSettings.mode !== 'Batch') {
+                    updateBlazorTemplate(templateID, 'Template', cell.column, false);
+                }
             }
             else {
                 result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
@@ -12528,6 +12548,9 @@ let Grid = Grid_1 = class Grid extends Component {
         if (this.isDetail()) {
             index++;
         }
+        if (this.allowRowDragAndDrop && this.allowResizing) {
+            index++;
+        }
         /**
          * TODO: index normalization based on the stacked header, grouping and detailTemplate
          * and frozen should be handled here
@@ -13789,6 +13812,43 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
+     * Expands all the grouped rows of the Grid.
+     * @return {void}
+     */
+    groupExpandAll() {
+        if (this.groupModule) {
+            this.groupModule.expandAll();
+        }
+    }
+    /**
+    * Collapses all the grouped rows of the Grid.
+    * @return {void}
+    */
+    groupCollapseAll() {
+        if (this.groupModule) {
+            this.groupModule.collapseAll();
+        }
+    }
+    /**
+     * Expands or collapses grouped rows by target element.
+     * @param  {Element} target - Defines the target element of the grouped row.
+     * @return {void}
+     */
+    // public expandCollapseRows(target: Element): void {
+    //     if (this.groupModule) {
+    //         this.groupModule.expandCollapseRows(target);
+    //     }
+    // }
+    /**
+     * Clears all the grouped columns of the Grid.
+     * @return {void}
+     */
+    clearGrouping() {
+        if (this.groupModule) {
+            this.groupModule.clearGrouping();
+        }
+    }
+    /**
      * Ungroups a column by column name.
      * @param  {string} columnName - Defines the column name to ungroup.
      * @return {void}
@@ -13796,6 +13856,94 @@ let Grid = Grid_1 = class Grid extends Component {
     ungroupColumn(columnName) {
         if (this.groupModule) {
             this.groupModule.ungroupColumn(columnName);
+        }
+    }
+    /**
+     * Column chooser can be displayed on screen by given position(X and Y axis).
+     * @param  {number} X - Defines the X axis.
+     * @param  {number} Y - Defines the Y axis.
+     * @return {void}
+     */
+    openColumnChooser(x, y) {
+        if (this.columnChooserModule) {
+            this.columnChooserModule.openColumnChooser(x, y);
+        }
+    }
+    /**
+     * Collapses a detail row with the given target.
+     * @param  {Element} target - Defines the expanded element to collapse.
+     * @return {void}
+     */
+    // public detailCollapse(target: number | Element): void {
+    //     if (this.detailRowModule) {
+    //         this.detailRowModule.collapse(target);
+    //     }
+    // }
+    /**
+     * Collapses all the detail rows of the Grid.
+     * @return {void}
+     */
+    detailCollapseAll() {
+        if (this.detailRowModule) {
+            this.detailRowModule.collapseAll();
+        }
+    }
+    /**
+     * Expands a detail row with the given target.
+     * @param  {Element} target - Defines the collapsed element to expand.
+     * @return {void}
+     */
+    // public detailExpand(target: number | Element): void {
+    //     if (this.detailRowModule) {
+    //         this.detailRowModule.expand(target);
+    //     }
+    // }
+    /**
+    * Expands all the detail rows of the Grid.
+    * @return {void}
+    */
+    detailExpandAll() {
+        if (this.detailRowModule) {
+            this.detailRowModule.expandAll();
+        }
+    }
+    /**
+     * Deselects the currently selected cells.
+     * @return {void}
+     */
+    clearCellSelection() {
+        if (this.selectionModule) {
+            this.selectionModule.clearCellSelection();
+        }
+    }
+    /**
+     * Deselects the currently selected rows.
+     * @return {void}
+     */
+    clearRowSelection() {
+        if (this.selectionModule) {
+            this.selectionModule.clearRowSelection();
+        }
+    }
+    /**
+     * Selects a collection of cells by row and column indexes.
+     * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
+     * @return {void}
+     */
+    selectCells(rowCellIndexes) {
+        if (this.selectionModule) {
+            this.selectionModule.selectCells(rowCellIndexes);
+        }
+    }
+    /**
+     * Selects a range of rows from start and end row indexes.
+     * @param  {number} startIndex - Specifies the start row index.
+     * @param  {number} endIndex - Specifies the end row index.
+     * @return {void}
+     */
+    selectRowsByRange(startIndex, endIndex) {
+        if (this.selectionModule) {
+            this.selectionModule.selectRowsByRange(startIndex, endIndex);
         }
     }
     /**
@@ -16364,9 +16512,13 @@ class FilterMenuRenderer {
     }
     renderDlgContent(target, column) {
         let args = {
-            requestType: filterBeforeOpen, filterModel: this,
+            requestType: filterBeforeOpen,
             columnName: column.field, columnType: column.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionBegin, args);
         let mainDiv = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
         this.dlgDiv = this.parent.createElement('div', { className: 'e-flmenu', id: column.uid + '-flmdlg' });
@@ -16412,8 +16564,12 @@ class FilterMenuRenderer {
         }
         let args = {
             requestType: filterAfterOpen,
-            filterModel: this, columnName: column.field, columnType: column.type
+            columnName: column.field, columnType: column.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.isDialogOpen = true;
         this.parent.trigger(actionComplete, args);
     }
@@ -19744,22 +19900,52 @@ class RowDD {
             if (gObj.allowPaging) {
                 targetIndex = targetIndex + (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize;
             }
-            //Todo: drag and drop mapper & BatchChanges                   
-            gObj.notify(rowsAdded, { toIndex: targetIndex, records: records });
-            gObj.notify(modelChanged, {
-                type: actionBegin, requestType: 'rowdraganddrop'
-            });
-            let selectedRows = srcControl.getSelectedRowIndexes();
-            let skip = srcControl.allowPaging ?
-                (srcControl.pageSettings.currentPage * srcControl.pageSettings.pageSize) - srcControl.pageSettings.pageSize : 0;
-            this.selectedRows = [];
-            for (let i = 0, len = records.length; i < len; i++) {
-                this.selectedRows.push(skip + selectedRows[i]);
+            //Todo: drag and drop mapper & BatchChanges
+            if (!isBlazor()) {
+                gObj.notify(rowsAdded, { toIndex: targetIndex, records: records });
+                gObj.notify(modelChanged, {
+                    type: actionBegin, requestType: 'rowdraganddrop'
+                });
+                let selectedRows = srcControl.getSelectedRowIndexes();
+                let skip = srcControl.allowPaging ?
+                    (srcControl.pageSettings.currentPage * srcControl.pageSettings.pageSize) - srcControl.pageSettings.pageSize : 0;
+                this.selectedRows = [];
+                for (let i = 0, len = records.length; i < len; i++) {
+                    this.selectedRows.push(skip + selectedRows[i]);
+                }
+                srcControl.notify(rowsRemoved, { indexes: this.selectedRows, records: records });
+                srcControl.notify(modelChanged, {
+                    type: actionBegin, requestType: 'rowdraganddrop'
+                });
             }
-            srcControl.notify(rowsRemoved, { indexes: this.selectedRows, records: records });
-            srcControl.notify(modelChanged, {
-                type: actionBegin, requestType: 'rowdraganddrop'
-            });
+            else {
+                let changes = {
+                    addedRecords: records,
+                    deletedRecords: [],
+                    changedRecords: []
+                };
+                let dragDropDestinationIndex = 'dragDropDestinationIndex';
+                let query = new Query;
+                query[dragDropDestinationIndex] = targetIndex;
+                gObj.getDataModule().saveChanges(changes, gObj.getPrimaryKeyFieldNames()[0], {}, query)
+                    .then(() => {
+                    gObj.notify(modelChanged, {
+                        type: actionBegin, requestType: 'rowdraganddrop'
+                    });
+                }).catch((e) => {
+                    gObj.trigger(actionFailure, { error: e });
+                });
+                changes.deletedRecords = records;
+                changes.addedRecords = [];
+                srcControl.getDataModule().saveChanges(changes, srcControl.getPrimaryKeyFieldNames()[0], {}, query)
+                    .then(() => {
+                    srcControl.notify(modelChanged, {
+                        type: actionBegin, requestType: 'rowdraganddrop'
+                    });
+                }).catch((e) => {
+                    srcControl.trigger(actionFailure, { error: e });
+                });
+            }
         }
     }
     reorderRow(fromIndexes, toIndex) {
@@ -23318,6 +23504,15 @@ class NormalEdit {
         let primaryKeys = gObj.getPrimaryKeyFieldNames();
         let primaryKeyValues = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
+        if (isBlazor()) {
+            let cols = this.parent.getColumns();
+            for (let i = 0; i < cols.length; i++) {
+                let col = cols[i];
+                if (col.template) {
+                    resetBlazorTemplate(gObj.element.id + col.uid, 'Template', this.rowIndex);
+                }
+            }
+        }
         if (isGroupAdaptive(gObj)) {
             let rObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
@@ -23862,6 +24057,7 @@ class BatchEdit {
         this.cellDetails.cellIndex = cellIdx;
         this.editCell(rowIdx, this.parent.getColumns()[cellIdx].field, this.isAddRow(rowIdx));
     }
+    // tslint:disable-next-line:max-func-body-length
     closeEdit() {
         let gObj = this.parent;
         let rows = this.parent.getRowsObject();
@@ -23872,6 +24068,15 @@ class BatchEdit {
         }
         if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2) {
             rows.push.apply(rows, this.parent.getMovableRowsObject());
+        }
+        let cols = this.parent.getColumns();
+        if (isBlazor()) {
+            for (let i = 0; i < cols.length; i++) {
+                let col = cols[i];
+                if (col.template) {
+                    updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
+                }
+            }
         }
         let rowRenderer = new RowRenderer(this.serviceLocator, null, this.parent);
         let tr;
@@ -23992,6 +24197,16 @@ class BatchEdit {
             if (checkAllBox.classList.contains('e-checkbox-disabled') &&
                 gObj.pageSettings.totalRecordsCount > gObj.currentViewData.length) {
                 removeClass([checkAllBox], ['e-checkbox-disabled']);
+            }
+        }
+        let cols = this.parent.getColumns();
+        if (isBlazor()) {
+            for (let i = 0; i < cols.length; i++) {
+                let col = cols[i];
+                if (col.template) {
+                    blazorTemplates[this.parent.element.id + col.uid] = [];
+                    resetBlazorTemplate(this.parent.element.id + col.uid, 'Template');
+                }
             }
         }
         this.saveCell();
@@ -24351,6 +24566,9 @@ class BatchEdit {
         let gObj = this.parent;
         let col = gObj.getColumnByField(field);
         let keys = gObj.getPrimaryKeyFieldNames();
+        if (isBlazor() && col.template && !isAdd) {
+            resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
+        }
         if (gObj.editSettings.allowEditing && col.allowEditing) {
             if (gObj.isEdit && !(this.cellDetails.column.field === field
                 && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index))) {
@@ -24569,6 +24787,9 @@ class BatchEdit {
             gObj.editModule.destroyForm();
             gObj.isEdit = false;
             gObj.editModule.destroyWidgets([column]);
+            if (isBlazor() && column.template && !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow')) {
+                updateBlazorTemplate(gObj.element.id + column.uid, 'Template', column, false);
+            }
             this.parent.notify(tooltipDestroy, {});
             this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
@@ -25734,6 +25955,7 @@ class ColumnChooser {
         }
         if (!this.isInitialOpen) {
             this.dlgObj.content = this.renderChooserList();
+            this.updateIntermediateBtn();
         }
         else {
             this.refreshCheckboxState();
@@ -29723,6 +29945,7 @@ class ColumnMenu {
     columnMenuHandlerClick(e) {
         if (e.target.classList.contains('e-columnmenu')) {
             this.columnMenu.items = this.getItems();
+            this.columnMenu.dataBind();
             if ((this.isOpen && this.headerCell !== this.getHeaderCell(e)) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
                 this.columnMenu.close();
                 this.openColumnMenu(e);

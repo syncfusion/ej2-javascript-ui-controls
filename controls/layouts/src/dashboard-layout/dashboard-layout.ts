@@ -728,7 +728,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
     private resizeEvents(): void {
         if (this.allowResizing) {
-            for (let i: number = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+            for (let i: number = 0; i < this.element.querySelectorAll('.e-panel .e-panel-container .e-resize').length; i++) {
                 let eventName: string = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                 EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
                 if (Browser.info.name !== 'mise') {
@@ -1154,6 +1154,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
         this.removeResizeClasses(this.panelCollection);
         this.setClasses(this.panelCollection);
+        this.resizeEvents();
         this.checkDragging(this.dragCollection);
     }
 

@@ -186,8 +186,8 @@ export class CalculatedField implements IAction {
     private selectContextMenu(menu: MenuEventArgs): void {
         if (menu.element.textContent !== null) {
             let field: string = closest(this.curMenu, '.e-list-item').getAttribute('data-caption');
-            closest(this.curMenu, '.e-list-item').setAttribute('data-type', menu.element.textContent);
-            this.curMenu.textContent = field + ' (' + menu.element.textContent + ')';
+            closest(this.curMenu, '.e-list-item').setAttribute('data-type', menu.element.id);
+            this.curMenu.textContent = field + ' (' + menu.element.id.split(this.parent.element.id + '_')[1] + ')';
             addClass([this.curMenu.parentElement.parentElement], ['e-node-focus', 'e-hover']);
             this.curMenu.parentElement.parentElement.setAttribute('tabindex', '-1');
             this.curMenu.parentElement.parentElement.focus();
@@ -200,17 +200,17 @@ export class CalculatedField implements IAction {
      */
     private createMenu(): void {
         let menuItems: MenuItemModel[] = [
-            { text: COUNT, },
-            { text: AVG },
-            { text: MIN },
-            { text: MAX },
-            { text: SUM },
-            { text: DISTINCTCOUNT, },
-            { text: PRODUCT },
-            { text: STDEV },
-            { text: STDEVP },
-            { text: VAR },
-            { text: VARP }];
+            { id: this.parent.element.id + '_Sum', text: this.parent.localeObj.getConstant('Sum') },
+            { id: this.parent.element.id + '_Count', text: this.parent.localeObj.getConstant('Count') },
+            { id: this.parent.element.id + '_DistinctCount', text: this.parent.localeObj.getConstant('DistinctCount') },
+            { id: this.parent.element.id + '_Avg', text: this.parent.localeObj.getConstant('Avg') },
+            { id: this.parent.element.id + '_Min', text: this.parent.localeObj.getConstant('Min') },
+            { id: this.parent.element.id + '_Max', text: this.parent.localeObj.getConstant('Max') },
+            { id: this.parent.element.id + '_Product', text: this.parent.localeObj.getConstant('Product') },
+            { id: this.parent.element.id + '_SampleStDev', text: this.parent.localeObj.getConstant('SampleStDev') },
+            { id: this.parent.element.id + '_SampleVar', text: this.parent.localeObj.getConstant('SampleVar') },
+            { id: this.parent.element.id + '_PopulationStDev', text: this.parent.localeObj.getConstant('PopulationStDev') },
+            { id: this.parent.element.id + '_PopulationVar', text: this.parent.localeObj.getConstant('PopulationVar') }];
         let menuOptions: ContextMenuModel = {
             cssClass: this.parentID + 'calculatedmenu',
             items: menuItems,
@@ -642,7 +642,7 @@ export class CalculatedField implements IAction {
         let type: string[] = [SUM, COUNT, AVG, MIN, MAX, DISTINCTCOUNT, PRODUCT, STDEV, STDEVP, VAR, VARP];
         for (let i: number = 0; i < type.length; i++) {
             let input: HTMLInputElement = createElement('input', {
-                id: this.parentID + 'radio' + key + type[i],
+                id: this.parentID + 'radio' + type[i],
                 attrs: { 'type': 'radio', 'data-ftxt': key },
                 className: cls.CALCRADIO
             }) as HTMLInputElement;
@@ -735,12 +735,12 @@ export class CalculatedField implements IAction {
                 if (key === args.element.querySelector('[data-field').getAttribute('data-field')) {
                     for (let i: number = 0; i < type.length; i++) {
                         radiobutton = new RadioButton({
-                            label: type[i],
+                            label: this.parent.localeObj.getConstant(type[i]),
                             name: AGRTYPE + key,
                             change: this.onChange.bind(this),
                         });
                         radiobutton.isStringTemplate = true;
-                        radiobutton.appendTo('#' + this.parentID + 'radio' + key + type[i]);
+                        radiobutton.appendTo('#' + this.parentID + 'radio' + type[i]);
                     }
                 }
             });
@@ -748,9 +748,7 @@ export class CalculatedField implements IAction {
     }
 
     private onChange(args: ChangeArgs): void {
-        let type: string =
-            ((args.event.target as HTMLElement).parentElement.querySelector('.e-label') as HTMLElement).
-                innerText;
+        let type: string = (args.event.target as HTMLElement).id.split(this.parent.element.id + 'radio')[1];
         let field: string = (args.event.target as HTMLElement).closest('.e-acrdn-item').
             querySelector('[data-field').getAttribute('data-caption');
         ((args.event.target as HTMLElement).

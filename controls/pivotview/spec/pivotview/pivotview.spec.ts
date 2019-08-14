@@ -3943,7 +3943,7 @@ describe('PivotView spec', () => {
                     setTimeout(() => {
                         let menu: MenuEventArgs = {
                             element: document.querySelectorAll('.e-menu-item')[1] as HTMLElement,
-                            item: { id: 'Count', text: 'Count' }
+                            item: { id: pivotGridObj.element.id + '_Count', text: 'Count' }
                         };
                         (pivotGridObj.pivotButtonModule.menuOption as any).selectOptionInContextMenu(menu);
                         done();
@@ -11758,7 +11758,7 @@ describe('PivotView spec', () => {
             it('context menu select drill through', (done: Function) => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#drillthrough') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_drillthrough_menu') as HTMLElement).click();
                     done();
                 }, 6000);
             });
@@ -11785,7 +11785,7 @@ describe('PivotView spec', () => {
             it('context menu open calculated field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#CalculatedField') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_CalculatedField') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11812,7 +11812,7 @@ describe('PivotView spec', () => {
             it('context menu expand', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#expand') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_expand') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11826,7 +11826,7 @@ describe('PivotView spec', () => {
             it('context menu collapse', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#collapse') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_collapse') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11839,10 +11839,10 @@ describe('PivotView spec', () => {
             });
             it('context menu pdf export', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                let target: HTMLElement = document.querySelector('#exporting');
+                let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_exporting');
                 setTimeout(() => {
                     triggerMouseEvent(target, 'mouseover');
-                    (document.querySelector('#pdf') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_pdf') as HTMLElement).click();
                     expect(document.querySelector('.e-collapse') === null).toBeTruthy();
                     done();
                 }, 5000);
@@ -11855,10 +11855,10 @@ describe('PivotView spec', () => {
             });
             it('context menu excel export', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                let target: HTMLElement = document.querySelector('#exporting');
+                let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_exporting');
                 setTimeout(() => {
                     triggerMouseEvent(target, 'mouseover');
-                    (document.querySelector('#excel') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_excel') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11870,10 +11870,10 @@ describe('PivotView spec', () => {
             });
             it('context menu csv export', (done: Function) => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                let target: HTMLElement = document.querySelector('#exporting');
+                let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_exporting');
                 setTimeout(() => {
                     triggerMouseEvent(target, 'mouseover');
-                    (document.querySelector('#csv') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_csv') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11886,7 +11886,7 @@ describe('PivotView spec', () => {
             it('context menu value sorting ascending', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#sortasc') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_sortasc') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11900,7 +11900,7 @@ describe('PivotView spec', () => {
             it('context menu value sorting descending', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#sortdesc') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_sortdesc') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11921,7 +11921,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate count', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 5000);
@@ -11929,7 +11929,7 @@ describe('PivotView spec', () => {
             it('aggregate count click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggCount') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggCount') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11947,7 +11947,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate dcount', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 5000);
@@ -11955,7 +11955,7 @@ describe('PivotView spec', () => {
             it('aggregate dcount click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggDistinctCount') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggDistinctCount') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11973,7 +11973,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate product', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 6000);
@@ -11981,7 +11981,7 @@ describe('PivotView spec', () => {
             it('aggregate product click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggProduct') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggProduct') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -11999,7 +11999,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate average', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 6000);
@@ -12007,7 +12007,7 @@ describe('PivotView spec', () => {
             it('aggregate avg click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggAvg') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggAvg') as HTMLElement).click();
                     done();
                 }, 6000);
             });
@@ -12025,7 +12025,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate minimum', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 6000);
@@ -12033,7 +12033,7 @@ describe('PivotView spec', () => {
             it('aggregate Min click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggMin') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggMin') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -12051,7 +12051,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate maximum', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 5000);
@@ -12059,7 +12059,7 @@ describe('PivotView spec', () => {
             it('aggregate Max click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggMax') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggMax') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -12077,7 +12077,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate sum', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 5000);
@@ -12085,7 +12085,7 @@ describe('PivotView spec', () => {
             it('aggregate sum click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggSum') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggSum') as HTMLElement).click();
                     done();
                 }, 5000);
                 // expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText).toBe("104702.76999999997");
@@ -12104,7 +12104,7 @@ describe('PivotView spec', () => {
             it('context menu value aggregate more option', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 5000);
@@ -12112,7 +12112,7 @@ describe('PivotView spec', () => {
             it('aggregate  click', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    (document.querySelector('#AggMoreOption') as HTMLElement).click();
+                    (document.querySelector('#' + pivotGridObj.element.id + '_AggMoreOption') as HTMLElement).click();
                     done();
                 }, 5000);
             });
@@ -12134,7 +12134,7 @@ describe('PivotView spec', () => {
             it('context menu hide drillthrough', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#drillthrough').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_drillthrough_menu').classList.contains('e-disabled') === true);
                     done();
                 }, 5000);
             });
@@ -12148,8 +12148,8 @@ describe('PivotView spec', () => {
             it('context menu hide sorting', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#sortasc').classList.contains('e-disabled') === true);
-                    expect(document.querySelector('#sortdesc').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_sortasc').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_sortdesc').classList.contains('e-disabled') === true);
                     done();
                 }, 5000);
             });
@@ -12163,7 +12163,7 @@ describe('PivotView spec', () => {
             it('context menu check calculated field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#CalculatedField').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_CalculatedField').classList.contains('e-disabled') === true);
                     done();
                 }, 5000);
             });
@@ -12178,7 +12178,7 @@ describe('PivotView spec', () => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     setTimeout(() => {
-                        let target: HTMLElement = document.querySelector('#exporting');
+                        let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_exporting');
                         triggerMouseEvent(target, 'mouseover');
                         done();
                     }, 5000);
@@ -12187,7 +12187,7 @@ describe('PivotView spec', () => {
             it('check pdf field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#pdf').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_pdf').classList.contains('e-disabled') === true);
                     done();
                 }, 5000);
             });
@@ -12203,7 +12203,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     setTimeout(() => {
-                        let target: HTMLElement = document.querySelector('#exporting');
+                        let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_exporting');
                         triggerMouseEvent(target, 'mouseover');
                         done();
                     }, 5000);
@@ -12212,8 +12212,8 @@ describe('PivotView spec', () => {
             it('check pdf field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#excel').classList.contains('e-disabled') === true);
-                    expect(document.querySelector('#csv').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_excel').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_csv').classList.contains('e-disabled') === true);
                     done();
                     done();
                 }, 5000);
@@ -12229,7 +12229,7 @@ describe('PivotView spec', () => {
             it('context menu check excel and csv field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#exporting');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_exporting');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 6000);
@@ -12237,9 +12237,9 @@ describe('PivotView spec', () => {
             it('check excel and csv field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#exporting').classList.contains('e-disabled') === true);
-                    expect(document.querySelector('#excel').classList.contains('e-disabled') === true);
-                    expect(document.querySelector('#csv').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_exporting').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_excel').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_csv').classList.contains('e-disabled') === true);
                     done();
                 }, 6000);
             });
@@ -12253,7 +12253,7 @@ describe('PivotView spec', () => {
             it('context menu check calculated field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#CalculatedField');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_CalculatedField');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 6000);
@@ -12261,7 +12261,7 @@ describe('PivotView spec', () => {
             it('check calc field in disabled state', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#CalculatedField').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_CalculatedField').classList.contains('e-disabled') === true);
                     done();
                 }, 5000);
                 pivotGridObj.dataSourceSettings.valueAxis = 'row';
@@ -12276,7 +12276,7 @@ describe('PivotView spec', () => {
             it('context menu check calculated field', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    let target: HTMLElement = document.querySelector('#aggregate');
+                    let target: HTMLElement = document.querySelector('#' + pivotGridObj.element.id + '_aggregate');
                     triggerMouseEvent(target, 'mouseover');
                     done();
                 }, 5000);
@@ -12284,7 +12284,7 @@ describe('PivotView spec', () => {
             it('check calc field in disabled state', (done: Function) => {
                 //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect(document.querySelector('#aggregate').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#' + pivotGridObj.element.id + '_aggregate').classList.contains('e-disabled') === true);
                     done();
                 }, 5000);
             });

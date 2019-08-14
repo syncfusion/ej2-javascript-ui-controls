@@ -272,7 +272,7 @@ export class SfdtReader {
                 item.headersFooters = {};
             }
             this.viewer.headersFooters.push(this.parseHeaderFooter(item.headersFooters, this.viewer.headersFooters));
-            this.parseTextBody(item.blocks, section);
+            this.parseTextBody(item.blocks, section, i + 1 < data.length);
             for (let i: number = 0; i < section.childWidgets.length; i++) {
                 (section.childWidgets[i] as BlockWidget).containerWidget = section;
             }
@@ -316,32 +316,37 @@ export class SfdtReader {
         }
         return hfs;
     }
-    private parseTextBody(data: any, section: Widget): void {
-        this.parseBody(data, section.childWidgets as BlockWidget[], section);
+    private parseTextBody(data: any, section: Widget, isSectionBreak?: boolean): void {
+        this.parseBody(data, section.childWidgets as BlockWidget[], section, isSectionBreak);
     }
-    public parseBody(data: any, blocks: BlockWidget[], container?: Widget): void {
+    public parseBody(data: any, blocks: BlockWidget[], container?: Widget, isSectionBreak?: boolean): void {
         if (!isNullOrUndefined(data)) {
             for (let i: number = 0; i < data.length; i++) {
                 let block: any = data[i];
+                let hasValidElmts: boolean = false;
                 if (block.hasOwnProperty('inlines')) {
                     let writeInlineFormat: boolean = false;
                     //writeInlineFormat = this.isPasting && i === data.length - 1;
                     let paragraph: ParagraphWidget = new ParagraphWidget();
                     paragraph.characterFormat = new WCharacterFormat(paragraph);
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
-                    this.parseCharacterFormat(block.characterFormat, paragraph.characterFormat);
-                    this.parseParagraphFormat(block.paragraphFormat, paragraph.paragraphFormat);
-                    let styleObj: Object;
-                    if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
-                        styleObj = this.viewer.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
-                        if (!isNullOrUndefined(styleObj)) {
-                            paragraph.paragraphFormat.ApplyStyle(styleObj as WStyle);
-                        }
-                    }
                     if (block.inlines.length > 0) {
-                        this.parseParagraph(block.inlines, paragraph, writeInlineFormat);
+                        hasValidElmts = this.parseParagraph(block.inlines, paragraph, writeInlineFormat);
                     }
-                    blocks.push(paragraph);
+                    if (!(isSectionBreak && block === data[data.length - 1] && !hasValidElmts)) {
+                        this.parseCharacterFormat(block.characterFormat, paragraph.characterFormat);
+                        this.parseParagraphFormat(block.paragraphFormat, paragraph.paragraphFormat);
+                        let styleObj: Object;
+                        if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
+                            styleObj = this.viewer.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
+                            if (!isNullOrUndefined(styleObj)) {
+                                paragraph.paragraphFormat.ApplyStyle(styleObj as WStyle);
+                            }
+                        }
+                        blocks.push(paragraph);
+                    } else if (isSectionBreak && data.length === 1) {
+                        blocks.push(paragraph);
+                    }
                     paragraph.index = i;
                     paragraph.containerWidget = container;
                 } else if (block.hasOwnProperty('rows')) {
@@ -380,7 +385,7 @@ export class SfdtReader {
                         this.parseCellFormat(block.rows[i].cells[j].cellFormat, cell.cellFormat);
                     }
                     this.isPageBreakInsideTable = true;
-                    this.parseTextBody(block.rows[i].cells[j].blocks, cell);
+                    this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
                     this.isPageBreakInsideTable = false;
                 }
             }
@@ -413,8 +418,9 @@ export class SfdtReader {
     }
 
     // tslint:disable:max-func-body-length
-    private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean): void {
+    private parseParagraph(data: any, paragraph: ParagraphWidget, writeInlineFormat?: boolean): boolean {
         let lineWidget: LineWidget = new LineWidget(paragraph);
+        let hasValidElmts: boolean = false;
         for (let i: number = 0; i < data.length; i++) {
             let inline: any = data[i];
             if (inline.hasOwnProperty('text')) {
@@ -440,6 +446,7 @@ export class SfdtReader {
                 textElement.text = inline.text;
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
+                hasValidElmts = true;
             } else if (inline.hasOwnProperty('chartType')) {
                 // chartPreservation
                 let chartElement: ChartElementBox = new ChartElementBox();
@@ -466,6 +473,7 @@ export class SfdtReader {
                 officeChart.chartRender(inline);
                 chartElement.officeChart = officeChart;
                 officeChart.chart.appendTo(chartElement.targetElement);
+                hasValidElmts = true;
             } else if (inline.hasOwnProperty('imageString')) {
                 let image: ImageElementBox = new ImageElementBox(data[i].isInlineImage);
                 image.isMetaFile = data[i].isMetaFile;
@@ -483,6 +491,7 @@ export class SfdtReader {
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
+                hasValidElmts = true;
             } else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
                 let fieldBegin: FieldElementBox = new FieldElementBox(0);
                 fieldBegin.fieldCodeType = inline.fieldCodeType;
@@ -520,6 +529,7 @@ export class SfdtReader {
                     if (!isNullOrUndefined(field.fieldBegin) && field.fieldBegin.fieldSeparator) {
                         field.fieldSeparator = field.fieldBegin.fieldSeparator;
                         field.fieldBegin.fieldSeparator.fieldEnd = field;
+                        hasValidElmts = true;
                     }
                     //After setting all the property clear the field values
                     this.viewer.fieldStacks.splice(this.viewer.fieldStacks.length - 1, 1);
@@ -544,6 +554,9 @@ export class SfdtReader {
                         bookmark.reference = bookmarkStart;
                     }
                 }
+                if (bookmark.name.indexOf('_') !== 0) {
+                    hasValidElmts = true;
+                }
             } else if (inline.hasOwnProperty('editRangeId')) {
                 if (inline.hasOwnProperty('editableRangeStart')) {
                     let permEnd: EditRangeEndElementBox = new EditRangeEndElementBox();
@@ -563,9 +576,11 @@ export class SfdtReader {
                         this.editableRanges.add(inline.editRangeId, permStart);
                     }
                 }
+                hasValidElmts = true;
             }
         }
         paragraph.childWidgets.push(lineWidget);
+        return hasValidElmts;
     }
     private parseEditableRangeStart(data: any): EditRangeStartElementBox {
         let permStart: EditRangeStartElementBox = new EditRangeStartElementBox();

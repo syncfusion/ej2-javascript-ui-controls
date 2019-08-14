@@ -694,7 +694,6 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
     });
     describe('Excel Filter Custom Filter Testing - MatchCase', () => {
       let gridObj: TreeGrid;
-      let rows: Element[];
       let originalTimeout: number;
       let actionComplete: (args: CellSaveEventArgs) => void;
       beforeAll((done: Function) => {
@@ -724,7 +723,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
           var mouseEve = document.createEvent('MouseEvents');
           mouseEve.initEvent('mouseover', true, true);
           gridObj.element.getElementsByClassName('e-menu-item')[1].dispatchEvent(mouseEve);
-        }, 100);
+        }, 200);
       });
       it('Check the custom filter of excel filter', (done: Function) => {
         actionComplete = (args: CellSaveEventArgs): void => {

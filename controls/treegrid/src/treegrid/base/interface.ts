@@ -57,6 +57,10 @@ export interface ITreeData {
      * Specifies the summary of a record
      */
     isSummaryRow?: boolean;
+    /**
+     * Specifies the main data
+     */
+    taskData?: ITreeData;
 
 }
 

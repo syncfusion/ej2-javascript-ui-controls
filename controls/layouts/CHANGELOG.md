@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- Issue with "panel resizing after window resize" has been resolved.
+
+### Splitter
+
+#### Bug Fixes
+
+- #243003 - Resolved the issue with enabling expand and collapse arrow based on collapsible property.
+
+- #243007 - The issue "Collapsing and expanding splitter control does not return to original state" has been resolved.
+
 ## 17.2.40 (2019-08-06)
 
 ### Dashboard Layout

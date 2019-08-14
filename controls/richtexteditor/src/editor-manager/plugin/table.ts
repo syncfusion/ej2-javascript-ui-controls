@@ -55,7 +55,7 @@ export class TableCommand {
                 editorMode: 'HTML',
                 event: e.event,
                 range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
+                elements: [table] as Element[]
             });
         }
         return table;

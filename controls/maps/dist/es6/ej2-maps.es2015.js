@@ -1,4 +1,4 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -4181,6 +4181,9 @@ class Annotations {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElementByID(secondaryID)))) {
             getElementByID(secondaryID).appendChild(annotationGroup);
+            for (let i = 0; i < this.map.annotations.length; i++) {
+                updateBlazorTemplate(this.map.element.id + '_ContentTemplate_' + i, 'ContentTemplate', this.map.annotations[i]);
+            }
         }
     }
     /**
@@ -4202,9 +4205,10 @@ class Annotations {
             annotation: annotation
         };
         this.map.trigger(annotationRendering, argsData, (annotationArgs) => {
+            let blazor = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && templateFn(this.map).length) {
-                templateElement = Array.prototype.slice.call(templateFn(this.map));
+            if (templateFn && (!window[blazor] ? templateFn(this.map, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
+                templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? this.map : {}, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex));
                 let length = templateElement.length;
                 for (let i = 0; i < length; i++) {
                     childElement.appendChild(templateElement[i]);
@@ -4812,6 +4816,9 @@ let Maps = class Maps extends Component {
      * To Remove the SVG
      */
     removeSvg() {
+        for (let i = 0; i < this.annotations.length; i++) {
+            resetBlazorTemplate(this.element.id + '_ContentTemplate_' + i, 'ContentTemplate');
+        }
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
         if (document.getElementsByClassName('e-tooltip-wrap')[0]) {
@@ -5170,12 +5177,14 @@ let Maps = class Maps extends Component {
                 case 'height':
                 case 'width':
                 case 'layers':
-                    this.createSVG();
+                case 'projectionType':
+                case 'legendSettings':
                     render = true;
                     break;
             }
         }
         if (render) {
+            this.createSVG();
             this.render();
         }
     }
@@ -6769,7 +6778,7 @@ class Legend {
                                 if (value === 'highlight' && this.shapeElement !== targetElement) {
                                     if (j === 0) {
                                         this.legendHighlightCollection = [];
-                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], shapeEle.getAttribute('opacity'));
+                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], layer.shapeSettings);
                                     }
                                     length = this.legendHighlightCollection.length;
                                     let legendHighlightColor = this.legendHighlightCollection[length - 1]['legendOldFill'];
@@ -6780,7 +6789,7 @@ class Legend {
                                 else if (value === 'selection' && this.shapeSelection) {
                                     this.legendHighlightCollection = [];
                                     if (j === 0) {
-                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], shapeEle.getAttribute('opacity'));
+                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], layer.shapeSettings);
                                     }
                                     selectLength = this.legendSelectionCollection.length;
                                     let legendSelectionColor = this.legendSelectionCollection[selectLength - 1]['legendOldFill'];
@@ -6805,10 +6814,12 @@ class Legend {
         element.setAttribute('stroke', borderColor);
         element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
     }
-    pushCollection(targetElement, collection, oldElement, shapeOpacity) {
+    pushCollection(targetElement, collection, oldElement, shapeSettings) {
         collection.push({
             legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
-            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'], shapeOpacity: shapeOpacity
+            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'],
+            shapeOpacity: shapeSettings.opacity, shapeOldBorderColor: shapeSettings.border.color,
+            shapeOldBorderWidth: shapeSettings.border.width
         });
         length = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
@@ -6819,7 +6830,7 @@ class Legend {
             this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
             let dataCount = item['MapShapeCollection']['Elements'].length;
             for (let j = 0; j < dataCount; j++) {
-                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'], item['shapeOldBorderColor'], item['shapeOldBorderWidth']);
             }
         }
     }
@@ -6873,7 +6884,7 @@ class Legend {
                 if (getValue === 'highlight' && shapeElement['LegendEle'] !== this.legendElement) {
                     let selectionEle = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
                     if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index]);
+                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
                     }
                     if (length > 0) {
                         for (let j = 0; j < length; j++) {
@@ -6912,7 +6923,7 @@ class Legend {
                     }
                     if (targetElement.getAttribute('class') !== 'ShapeselectionMapStyle' && this.legendSelection) {
                         if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index]);
+                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
                         }
                         this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                         this.shapeElement = shapeElement['LegendEle'];
@@ -7146,7 +7157,7 @@ class Legend {
             if (!isDuplicate) {
                 this.legendCollection.push({
                     text: legendText, fill: legendFill, data: newColllection, opacity: legend.opacity,
-                    borderColor: legend.border.color, borderWidth: legend.border.width
+                    borderColor: legend.shapeBorder.color, borderWidth: legend.shapeBorder.width
                 });
             }
         }
@@ -7476,7 +7487,7 @@ class Legend {
     }
     legendGradientColor(colorMap, legendIndex) {
         let legendFillColor;
-        let xmlns = 'https://www.w3.org/2000/svg';
+        let xmlns = 'http://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
             let linerGradientEle = document.createElementNS(xmlns, 'linearGradient');
             let opacity = 1;
@@ -8019,7 +8030,7 @@ class MapsTooltip {
                 });
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
-            if (option.template !== null && Object.keys(option.template).length === 1) {
+            if (option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
                 option.template = option.template[Object.keys(option.template)[0]];
             }
             templateData = this.setTooltipContent(option, templateData);
@@ -8109,7 +8120,7 @@ class MapsTooltip {
     }
     removeTooltip() {
         if (document.getElementsByClassName('EJ2-maps-Tooltip').length > 0) {
-            document.getElementsByClassName('EJ2-maps-Tooltip')[0].remove();
+            remove(document.getElementsByClassName('EJ2-maps-Tooltip')[0]);
         }
     }
     /**

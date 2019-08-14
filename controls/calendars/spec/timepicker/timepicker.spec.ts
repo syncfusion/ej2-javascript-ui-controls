@@ -2470,7 +2470,76 @@ describe('TimePicker', () => {
             expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
         });
     });
-    
+    describe('HTML attribute API at inital rendering and dynamic rendering', () => {
+        let timeObj: any;
+        beforeEach((): void => {
+            timeObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'time' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (timeObj) {
+                timeObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Html attributes at initial rendering', () => {
+            timeObj = new TimePicker({ htmlAttributes:{placeholder:"Choose a time", class: "sample" } });
+            timeObj.appendTo('#time');
+            expect(timeObj.element.getAttribute('placeholder')).toBe('Choose a time');
+            expect(timeObj.inputWrapper.container.classList.contains('sample')).toBe(true);
+        });
+        it('Pass multiple attributes dynamically', () => {
+            timeObj = new TimePicker({ value: new Date("12/12/2016 1:00 AM") });
+            timeObj.appendTo('#time');
+            timeObj.htmlAttributes = { class:"sample", readonly: "true", disabled: "true"};
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe('1:00 AM');
+            expect(timeObj.inputWrapper.container.classList.contains('sample')).toBe(true);
+            expect(timeObj.element.hasAttribute('readonly')).toBe(true);
+            expect(timeObj.element.hasAttribute('disabled')).toBe(true);
+        });
+        it('Dynamically change attributes through htmlAttributes API', () => {
+            timeObj = new TimePicker({ value: new Date("12/12/2016 1:00 AM") });
+            timeObj.appendTo('#time');
+            timeObj.inputElement.value = "10/10/2016 1:00 AM";
+            timeObj.htmlAttributes = { class:"sample" };
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe('10/10/2016 1:00 AM');
+        });
+        it('Dynamically change multiple attributes through htmlAttributes API', () => {
+            timeObj = new TimePicker({ value: new Date("12/12/2016 1:00 AM") });
+            timeObj.appendTo('#time');
+            timeObj.element.value = "10/10/2016 1:00 AM";
+            timeObj.htmlAttributes = { class:"sample" , max:'10/20/2019', min:'10/5/2019'};
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe("10/10/2016 1:00 AM");
+            expect(timeObj.element.getAttribute('max')).toBe('10/20/2019');
+            expect(timeObj.element.getAttribute('min')).toBe('10/5/2019');
+        });
+        it('Pass null value in htmlAttributes', () => {
+            timeObj = new TimePicker({ value: new Date("12/12/2016 1:00 AM") });
+            timeObj.appendTo('#time');
+            timeObj.htmlAttributes = { null: "null"};
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe('1:00 AM');
+        });
+        it('Pass undefined in htmlAttributes', () => {
+            timeObj = new TimePicker({ value: new Date("12/12/2016 1:00 AM") });
+            timeObj.appendTo('#time');
+            timeObj.htmlAttributes = { undefined: "undefined"};
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe('1:00 AM');
+        });
+        it('Pass empty value in htmlAttributes', () => {
+            timeObj = new TimePicker({ value: new Date("12/12/2016 1:00 AM") });
+            timeObj.appendTo('#time');
+            timeObj.inputElement.value = "12/12/2016 1:00 AM";
+            timeObj.htmlAttributes = {};
+            timeObj.dataBind();
+            expect(timeObj.element.value).toBe('12/12/2016 1:00 AM');
+        });
+    });
 
     describe('mobile layout testing', () => {
         let ele: HTMLElement = createElement('input', { id: 'timepicker31' });

@@ -4499,6 +4499,10 @@ class Formatter {
     process(self, args, event, value) {
         let selection = self.contentModule.getDocument().getSelection();
         let range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
+        let saveSelection;
+        if (self.editorMode === 'HTML') {
+            saveSelection = this.editorManager.nodeSelection.save(range, self.contentModule.getDocument());
+        }
         if (!isNullOrUndefined(args)
             && args.item.command
             && args.item.command !== 'Table'
@@ -4557,6 +4561,9 @@ class Formatter {
                     }
                     self.isBlur = false;
                     self.contentModule.getEditPanel().focus();
+                    if (self.editorMode === 'HTML') {
+                        saveSelection.restore();
+                    }
                     let command = actionBeginArgs.item.subCommand.toLocaleLowerCase();
                     if (command === 'paste' || command === 'cut' || command === 'copy') {
                         self.clipboardAction(command, event);
@@ -5706,7 +5713,7 @@ const htmlKeyConfig = {
     'unordered-list': 'ctrl+alt+o',
     'space': '32',
     'enter': '13',
-    'tab': '9',
+    'tab': 'tab',
     'delete': '46'
 };
 /**
@@ -8672,7 +8679,7 @@ class ImageCommand {
                     editorMode: 'HTML',
                     event: e.event,
                     range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                    elements: imgElement
+                    elements: [imgElement]
                 });
             }
             else {
@@ -8912,7 +8919,7 @@ class TableCommand {
                 editorMode: 'HTML',
                 event: e.event,
                 range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument)
+                elements: [table]
             });
         }
         return table;
@@ -9379,6 +9386,7 @@ class SelectionCommands {
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
+            cursorNodes[0] = InsertMethods.Wrap(cursorNodes[0], this.GetFormatNode(format, value));
         }
         else {
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
@@ -11742,7 +11750,7 @@ class PasteCleanup {
                     callBack: (b) => {
                         imageproperties = b;
                         if (typeof (imageproperties) === 'object') {
-                            this.parent.formatter.editorManager.execCommand('Images', 'Image', e.args, this.imageFormatting.bind(this), 'pasteCleanup', imageproperties, 'pasteCleanupModule');
+                            this.parent.formatter.editorManager.execCommand('Images', 'Image', e.args, this.imageFormatting.bind(args), 'pasteCleanup', imageproperties, 'pasteCleanupModule');
                         }
                         else {
                             value = imageproperties;
@@ -11794,46 +11802,45 @@ class PasteCleanup {
             this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
             if (this.parent.pasteCleanupSettings.prompt) {
                 e.args.preventDefault();
-                this.pasteDialog(value);
+                this.pasteDialog(value, args);
             }
             else if (this.parent.pasteCleanupSettings.plainText) {
                 e.args.preventDefault();
-                this.plainFormatting(value);
+                this.plainFormatting(value, args);
             }
             else if (this.parent.pasteCleanupSettings.keepFormat) {
                 e.args.preventDefault();
-                this.formatting(value, false);
+                this.formatting(value, false, args);
             }
             else {
                 e.args.preventDefault();
-                this.formatting(value, true);
+                this.formatting(value, true, args);
             }
         }
-        setTimeout(() => { this.parent.formatter.onSuccess(this.parent, args); }, 0);
     }
     /**
      * Method for image formatting when pasting
      * @hidden
      */
-    imageFormatting(imgElement) {
+    imageFormatting(args) {
         let imageElement = this.parent.createElement('span');
-        imageElement.appendChild(imgElement.elements);
+        imageElement.appendChild(args.elements[0]);
         let imageValue = imageElement.innerHTML;
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
         let currentDocument = this.contentRenderer.getDocument();
         let range = this.nodeSelectionObj.getRange(currentDocument);
         this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
         if (this.parent.pasteCleanupSettings.prompt) {
-            this.pasteDialog(imageValue);
+            this.pasteDialog(imageValue, args);
         }
         else if (this.parent.pasteCleanupSettings.plainText) {
-            this.plainFormatting(imageValue);
+            this.plainFormatting(imageValue, args);
         }
         else if (this.parent.pasteCleanupSettings.keepFormat) {
-            this.formatting(imageValue, false);
+            this.formatting(imageValue, false, args);
         }
         else {
-            this.formatting(imageValue, true);
+            this.formatting(imageValue, true, args);
         }
     }
     radioRender() {
@@ -11850,26 +11857,26 @@ class PasteCleanup {
         let plainTextElement = this.parent.element.querySelector('#plainTextFormat');
         plainTextRadioButton.appendTo(plainTextElement);
     }
-    selectFormatting(value) {
+    selectFormatting(value, args) {
         let keepFormatElement = this.parent.element.querySelector('#keepFormating');
         let cleanFormatElement = this.parent.element.querySelector('#cleanFormat');
         if (keepFormatElement.checked) {
-            this.formatting(value, false);
+            this.formatting(value, false, args);
         }
         else if (cleanFormatElement.checked) {
-            this.formatting(value, true);
+            this.formatting(value, true, args);
         }
         else {
-            this.plainFormatting(value);
+            this.plainFormatting(value, args);
         }
     }
-    pasteDialog(value) {
+    pasteDialog(value, args) {
         let dialogModel = {
             buttons: [
                 {
                     click: () => {
                         if (!dialog.isDestroyed) {
-                            this.selectFormatting(value);
+                            this.selectFormatting(value, args);
                             dialog.hide();
                             this.dialogRenderObj.close(dialog);
                             dialog.destroy();
@@ -11930,7 +11937,7 @@ class PasteCleanup {
             detach(rteDialogWrapper.children[0]);
         }
     }
-    formatting(value, clean) {
+    formatting(value, clean, args) {
         let clipBoardElem = this.parent.createElement('div', { className: 'pasteContent', styles: 'display:inline;' });
         clipBoardElem.innerHTML = value;
         if (this.parent.pasteCleanupSettings.deniedTags !== null) {
@@ -11948,9 +11955,11 @@ class PasteCleanup {
         this.saveSelection.restore();
         this.parent.executeCommand('insertHTML', clipBoardElem);
         this.parent.notify(toolbarRefresh, {});
+        extend(args, { elements: [clipBoardElem] }, true);
+        this.parent.formatter.onSuccess(this.parent, args);
     }
     //Plain Formatting
-    plainFormatting(value) {
+    plainFormatting(value, args) {
         let clipBoardElem = this.parent.createElement('div');
         clipBoardElem.innerHTML = value;
         this.detachInlineElements(clipBoardElem);
@@ -11959,6 +11968,8 @@ class PasteCleanup {
         resultElement.innerHTML = text;
         this.saveSelection.restore();
         this.parent.executeCommand('insertHTML', resultElement);
+        extend(args, { elements: [resultElement] }, true);
+        this.parent.formatter.onSuccess(this.parent, args);
     }
     detachInlineElements(element) {
         while (!isNullOrUndefined(element)) {
@@ -12526,7 +12537,12 @@ class Link {
         }
         if (!this.selfLink.isUrl(linkUrl)) {
             linkText = (linkText === '') ? linkUrl : linkText;
-            linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
+            if (!this.selfLink.parent.enableAutoUrl) {
+                linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
+            }
+            else {
+                linkUrl = linkUrl;
+            }
         }
         else {
             this.selfLink.checkUrl(false);
@@ -12611,7 +12627,7 @@ class Link {
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             let linkUpdate = this.i10n.getConstant('dialogUpdate');
             let inputDetails = {
-                url: selectParentEle.href, text: selectParentEle.innerText,
+                url: selectParentEle.getAttribute('href'), text: selectParentEle.innerText,
                 title: selectParentEle.title, target: selectParentEle.target,
                 header: this.i10n.getConstant('editLink'), btnText: linkUpdate
             };
@@ -13916,14 +13932,14 @@ class Image {
                 if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
                     let reader = new FileReader();
                     reader.addEventListener('load', (e) => {
-                        let url = URL.createObjectURL(proxy.url(reader.result));
+                        let url = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result :
+                            URL.createObjectURL(proxy.url(reader.result));
                         proxy.uploadUrl = {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
-                            },
-                            height: {
+                            }, height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
                             }
@@ -13972,7 +13988,8 @@ class Image {
             reader.addEventListener('load', (e) => {
                 let url = {
                     cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? CLS_IMGINLINE : CLS_IMGBREAK),
-                    url: URL.createObjectURL(proxy.url(reader.result)),
+                    url: this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result :
+                        URL.createObjectURL(proxy.url(reader.result)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                         maxWidth: proxy.parent.insertImageSettings.maxWidth
@@ -14148,7 +14165,7 @@ class ViewSource {
         this.unWireBaseKeyDown();
         this.previewElement.focus();
         this.parent.updateValue();
-        if (!isNullOrUndefined(this.parent.placeholder)) {
+        if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
             let placeHolderWrapper = this.parent.element.querySelector('.rte-placeholder');
             placeHolderWrapper.style.display = 'none';
         }
@@ -15509,6 +15526,9 @@ __decorate$2([
     Property('inline')
 ], ImageSettings.prototype, "display", void 0);
 __decorate$2([
+    Property('Blob')
+], ImageSettings.prototype, "saveFormat", void 0);
+__decorate$2([
     Property('auto')
 ], ImageSettings.prototype, "width", void 0);
 __decorate$2([
@@ -15762,6 +15782,9 @@ function setAttributes(htmlAttributes, rte, isFrame, initial) {
             else if (htmlAttr === 'style') {
                 target.setAttribute('style', htmlAttributes[htmlAttr]);
             }
+            else if (htmlAttr === 'tabindex') {
+                rte.inputElement.setAttribute('tabindex', htmlAttributes[htmlAttr]);
+            }
             else if (htmlAttr === 'placeholder') {
                 rte.placeholder = htmlAttributes[htmlAttr];
                 rte.setPlaceHolder();
@@ -15997,9 +16020,13 @@ let RichTextEditor = class RichTextEditor extends Component {
     updateEnable() {
         if (this.enabled) {
             removeClass([this.element], CLS_DISABLED);
-            this.element.tabIndex = 0;
             this.element.setAttribute('aria-disabled', 'false');
-            this.inputElement.setAttribute('tabindex', '0');
+            if (!isNullOrUndefined(this.htmlAttributes.tabindex)) {
+                this.inputElement.setAttribute('tabindex', this.htmlAttributes.tabindex);
+            }
+            else {
+                this.inputElement.setAttribute('tabindex', '0');
+            }
         }
         else {
             if (this.getToolbar()) {
@@ -16029,13 +16056,27 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setContainer();
+        this.persistData();
         setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
         attributes(this.element, { role: 'application' });
     }
+    persistData() {
+        if (this.enablePersistence && this.originalElement.tagName === 'TEXTAREA') {
+            let data = window.localStorage.getItem(this.getModuleName() + this.element.id);
+            if (!(isNullOrUndefined(data) || (data === ''))) {
+                this.setProperties(JSON.parse(data), true);
+            }
+        }
+    }
+    ;
     setContainer() {
         this.originalElement = this.element.cloneNode(true);
         if (this.value === null || this.valueTemplate !== null) {
             this.setValue();
+        }
+        if (this.element.hasAttribute('tabindex')) {
+            this.htmlAttributes = { 'tabindex': this.element.getAttribute('tabindex') };
+            this.element.removeAttribute('tabindex');
         }
         if (!this.isBlazor()) {
             this.element.innerHTML = '';
@@ -16368,7 +16409,12 @@ let RichTextEditor = class RichTextEditor extends Component {
             requestType: 'Paste'
         };
         this.trigger(actionBegin, evenArgs, (pasteArgs) => {
-            if (!pasteArgs.cancel) {
+            let currentLength = this.getText().length;
+            let selectionLength = this.getSelection().length;
+            let pastedContentLength = (isNullOrUndefined(e) || isNullOrUndefined(e.clipboardData))
+                ? 0 : e.clipboardData.getData('text/plain').length;
+            let totalLength = (currentLength - selectionLength) + pastedContentLength;
+            if (!pasteArgs.cancel && (this.maxLength === -1 || totalLength < this.maxLength)) {
                 if (!isNullOrUndefined(this.pasteCleanupModule)) {
                     this.notify(pasteClean, { args: e });
                 }
@@ -16389,6 +16435,9 @@ let RichTextEditor = class RichTextEditor extends Component {
                     }
                     setTimeout(() => { this.formatter.onSuccess(this, args); }, 0);
                 }
+            }
+            else {
+                e.preventDefault();
             }
         });
     }
@@ -17090,8 +17139,20 @@ let RichTextEditor = class RichTextEditor extends Component {
                 this.cloneValue = this.inputElement.value === '' ? null :
                     this.inputElement.value;
             }
-            if (document.activeElement === this.element) {
+            let active = document.activeElement;
+            if (active === this.element || active === this.getToolbarElement() || active === this.contentModule.getEditPanel()
+                || (this.iframeSettings.enable && active === this.contentModule.getPanel())
+                || active.closest('.e-rte-toolbar') === this.getToolbarElement()) {
                 this.contentModule.getEditPanel().focus();
+                if (!isNullOrUndefined(this.getToolbarElement())) {
+                    this.getToolbarElement().setAttribute('tabindex', '-1');
+                    let items = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
+                    if (items.length !== 0) {
+                        items.forEach((element) => {
+                            element.setAttribute('tabindex', '-1');
+                        });
+                    }
+                }
             }
             this.preventDefaultResize(e);
             this.trigger('focus', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
@@ -17099,6 +17160,14 @@ let RichTextEditor = class RichTextEditor extends Component {
                 this.timeInterval = setInterval(this.updateIntervalValue.bind(this), this.saveInterval);
             }
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
+        }
+        if (!isNullOrUndefined(this.getToolbarElement())) {
+            let toolbarItem = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
+            toolbarItem.forEach((item) => {
+                if (!item.hasAttribute('tabindex') || item.getAttribute('tabindex') !== '-1') {
+                    item.setAttribute('tabindex', '-1');
+                }
+            });
         }
     }
     getUpdatedValue() {
@@ -17134,6 +17203,9 @@ let RichTextEditor = class RichTextEditor extends Component {
             let rteElement = closest(trg, '.' + CLS_RTE);
             if (rteElement && rteElement === this.element) {
                 this.isBlur = false;
+                if (trg === this.getToolbarElement()) {
+                    trg.setAttribute('tabindex', '-1');
+                }
             }
             else if (closest(trg, '[aria-owns="' + this.getID() + '"]')) {
                 this.isBlur = false;
@@ -17407,6 +17479,9 @@ __decorate$1([
 __decorate$1([
     Property(false)
 ], RichTextEditor.prototype, "enableTabKey", void 0);
+__decorate$1([
+    Property(false)
+], RichTextEditor.prototype, "enableAutoUrl", void 0);
 __decorate$1([
     Property(-1)
 ], RichTextEditor.prototype, "maxLength", void 0);

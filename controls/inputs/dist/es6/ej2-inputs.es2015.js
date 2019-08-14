@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -719,8 +719,11 @@ let NumericTextBox = class NumericTextBox extends Component {
             setValue('ej2_instances', ejInstance, this.element);
         }
         attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-        let localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: '' };
+        let localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder };
         this.l10n = new L10n('numerictextbox', localeText, this.locale);
+        if (this.l10n.getConstant('placeholder') !== '') {
+            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        }
         this.isValidState = true;
         this.inputStyle = null;
         this.inputName = null;
@@ -728,7 +731,7 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.initCultureInfo();
         this.initCultureFunc();
         this.updateHTMLAttrToElement();
-        this.checkAttributes(true);
+        this.checkAttributes(false);
         this.prevValue = this.value;
         if (this.formEle) {
             this.inputEleValue = this.value;
@@ -768,63 +771,64 @@ let NumericTextBox = class NumericTextBox extends Component {
         }
     }
     checkAttributes(isDynamic) {
-        let attributes$$1 = ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
+        let attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) :
+            ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || isDynamic) {
                             let setNumber = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
-                            this.setProperties(setValue(prop, setNumber, {}), isDynamic);
+                            this.setProperties(setValue(prop, setNumber, {}), !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || isDynamic) {
                             let minValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (minValue !== null && !isNaN(minValue)) {
-                                this.setProperties(setValue(prop, minValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, minValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || isDynamic) {
                             let maxValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (maxValue !== null && !isNaN(maxValue)) {
-                                this.setProperties(setValue(prop, maxValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, maxValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'step':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || isDynamic) {
                             let stepValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (stepValue !== null && !isNaN(stepValue)) {
-                                this.setProperties(setValue(prop, stepValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, stepValue, {}), !isDynamic);
                             }
                         }
                         break;
@@ -1083,6 +1087,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         }
     }
     pasteHandler() {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         let beforeUpdate = this.element.value;
         setTimeout(() => {
             if (!this.numericRegex().test(this.element.value)) {
@@ -1166,6 +1173,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         });
     }
     keyUpHandler(event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         if (!iOS && Browser.isDevice) {
             this.preventHandler();
@@ -1183,6 +1193,9 @@ let NumericTextBox = class NumericTextBox extends Component {
     }
     ;
     inputHandler(event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         let fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
@@ -1336,6 +1349,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         return false;
     }
     keyPressHandler(event) {
+        if (!this.enabled || this.readonly) {
+            return true;
+        }
         if (!Browser.isDevice && Browser.info.version === '11.0' && event.keyCode === 13) {
             let parsedInput = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             this.updateValue(parsedInput, event);
@@ -1419,6 +1435,9 @@ let NumericTextBox = class NumericTextBox extends Component {
     focusOutHandler(event) {
         this.blurEventArgs = { event: event, value: this.value, container: this.container };
         this.trigger('blur', this.blurEventArgs);
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         if (this.isPrevFocused) {
             event.preventDefault();
             if (Browser.isDevice) {
@@ -1634,7 +1653,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);
@@ -2906,7 +2925,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        this.checkHtmlAttributes(true);
+        this.checkHtmlAttributes(false);
         if (this.formElement) {
             this.initInputValue = this.value;
         }
@@ -3013,36 +3032,36 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         }
     }
     checkHtmlAttributes(isDynamic) {
-        let attributes$$1 = ['placeholder', 'disabled', 'value', 'readonly'];
+        let attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly'];
         for (let key of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || !isDynamic) {
-                            this.setProperties({ value: this.element.value }, isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                                 || this.element.getAttribute(key) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                 }
@@ -3111,7 +3130,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHtmlAttributes(false);
+                    this.checkHtmlAttributes(true);
                     break;
                 case 'mask':
                     let strippedValue$$1 = this.value;
@@ -6700,6 +6719,14 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const CONTROL_WRAPPER = 'e-upload';
 const INPUT_WRAPPER = 'e-file-select';
 const DROP_AREA = 'e-file-drop';
@@ -6796,6 +6823,7 @@ let Uploader = class Uploader extends Component {
         this.fileList = [];
         this.filesData = [];
         this.uploadedFilesData = [];
+        this.base64String = [];
         this.isForm = false;
         this.allTypes = false;
         this.pausedData = [];
@@ -6843,7 +6871,7 @@ let Uploader = class Uploader extends Component {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHTMLAttributes(false);
+                    this.checkHTMLAttributes(true);
                     break;
                 case 'files':
                     this.renderPreLoadFiles();
@@ -6949,7 +6977,7 @@ let Uploader = class Uploader extends Component {
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.updateHTMLAttrToElement();
-        this.checkHTMLAttributes(true);
+        this.checkHTMLAttributes(false);
         let parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -7560,6 +7588,19 @@ let Uploader = class Uploader extends Component {
             }
         }
     }
+    /* istanbul ignore next */
+    updateCustomheader(request, currentRequest) {
+        if (currentRequest.length > 0 && currentRequest[0]) {
+            for (let i = 0; i < currentRequest.length; i++) {
+                let data = currentRequest[i];
+                // tslint:disable-next-line
+                let value = Object.keys(data).map(function (e) {
+                    return data[e];
+                });
+                request.setRequestHeader(Object.keys(data)[0], value);
+            }
+        }
+    }
     removeCompleted(e, files, customTemplate) {
         let response = e && e.currentTarget ? this.getResponse(e) : null;
         let args = {
@@ -7677,7 +7718,8 @@ let Uploader = class Uploader extends Component {
                 this.getFilesFromFolder(args);
             }
             else {
-                let files = args.dataTransfer.files;
+                let files = this.sortFilesList = args.dataTransfer.files;
+                this.element.files = files;
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
                 this.renderSelectedFiles(args, targetFiles);
             }
@@ -7687,96 +7729,120 @@ let Uploader = class Uploader extends Component {
             this.renderSelectedFiles(args, targetFiles);
         }
     }
+    /* istanbul ignore next */
+    getBase64(file) {
+        return new Promise((resolve, reject) => {
+            let fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = () => resolve(fileReader.result);
+            fileReader.onerror = (error) => reject(error);
+        });
+    }
+    /* istanbul ignore next */
     renderSelectedFiles(args, 
     // tslint:disable-next-line
     targetFiles, directory, paste) {
-        let eventArgs = {
-            event: args,
-            cancel: false,
-            filesData: [],
-            isModified: false,
-            modifiedFilesData: [],
-            progressInterval: '',
-            isCanceled: false
-        };
-        /* istanbul ignore next */
-        if (targetFiles.length < 1) {
-            eventArgs.isCanceled = true;
-            this.trigger('selected', eventArgs);
-            return;
-        }
-        this.flag = true;
-        let fileData = [];
-        if (!this.multiple) {
-            this.clearData(true);
-            targetFiles = [targetFiles[0]];
-        }
-        for (let i = 0; i < targetFiles.length; i++) {
-            let file = directory ? targetFiles[i].file : targetFiles[i];
-            let fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
-                getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
-                this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
-            let fileDetails = {
-                name: fileName,
-                rawFile: file,
-                size: file.size,
-                status: this.localizedTexts('readyToUploadMessage'),
-                type: this.getFileType(file.name),
-                validationMessages: this.validatedFileSize(file.size),
-                statusCode: '1'
+        return __awaiter(this, void 0, void 0, function* () {
+            let eventArgs = {
+                event: args,
+                cancel: false,
+                filesData: [],
+                isModified: false,
+                modifiedFilesData: [],
+                progressInterval: '',
+                isCanceled: false,
+                currentRequest: null,
+                customFormData: null
             };
             /* istanbul ignore next */
-            if (paste) {
-                fileDetails.fileSource = 'paste';
+            if (targetFiles.length < 1) {
+                eventArgs.isCanceled = true;
+                this.trigger('selected', eventArgs);
+                return;
             }
-            fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
-                fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
-            if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
-                fileDetails.statusCode = '0';
-                this.checkActionComplete(true);
+            this.flag = true;
+            let fileData = [];
+            if (!this.multiple) {
+                this.clearData(true);
+                targetFiles = [targetFiles[0]];
             }
-            fileData.push(fileDetails);
-        }
-        eventArgs.filesData = fileData;
-        if (this.allowedExtensions.indexOf('*') > -1) {
-            this.allTypes = true;
-        }
-        if (!this.allTypes) {
-            fileData = this.checkExtension(fileData);
-        }
-        this.trigger('selected', eventArgs, (eventArgs) => {
-            if (!eventArgs.cancel) {
-                this.selectedFiles = fileData;
-                this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
-                if (this.showFileList) {
-                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                        let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
-                            this.checkExtension(eventArgs.modifiedFilesData);
-                        this.updateSortedFileList(dataFiles);
-                        this.filesData = dataFiles;
-                        if (!this.isForm || this.allowUpload()) {
-                            this.checkAutoUpload(dataFiles);
+            for (let i = 0; i < targetFiles.length; i++) {
+                let file = directory ? targetFiles[i].file : targetFiles[i];
+                /* istanbul ignore next */
+                if (isBlazor()) {
+                    let data = yield this.getBase64(file);
+                    this.base64String.push(data);
+                }
+                let fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
+                    getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
+                    this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
+                let fileDetails = {
+                    name: fileName,
+                    rawFile: file,
+                    size: file.size,
+                    status: this.localizedTexts('readyToUploadMessage'),
+                    type: this.getFileType(file.name),
+                    validationMessages: this.validatedFileSize(file.size),
+                    statusCode: '1'
+                };
+                /* istanbul ignore next */
+                if (paste) {
+                    fileDetails.fileSource = 'paste';
+                }
+                fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                    fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
+                if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
+                    fileDetails.statusCode = '0';
+                    this.checkActionComplete(true);
+                }
+                fileData.push(fileDetails);
+            }
+            eventArgs.filesData = fileData;
+            if (this.allowedExtensions.indexOf('*') > -1) {
+                this.allTypes = true;
+            }
+            if (!this.allTypes) {
+                fileData = this.checkExtension(fileData);
+            }
+            this.trigger('selected', eventArgs, (eventArgs) => {
+                if (!eventArgs.cancel) {
+                    /* istanbul ignore next */
+                    if (isBlazor()) {
+                        this.currentRequestHeader = eventArgs.currentRequest;
+                        this.customFormDatas = eventArgs.customFormData;
+                    }
+                    this.selectedFiles = fileData;
+                    this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
+                    if (this.showFileList) {
+                        if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                            let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
+                                this.checkExtension(eventArgs.modifiedFilesData);
+                            this.updateSortedFileList(dataFiles);
+                            this.filesData = dataFiles;
+                            if (!this.isForm || this.allowUpload()) {
+                                this.checkAutoUpload(dataFiles);
+                            }
+                        }
+                        else {
+                            this.createFileList(fileData);
+                            this.filesData = this.filesData.concat(fileData);
+                            if (!this.isForm || this.allowUpload()) {
+                                this.checkAutoUpload(fileData);
+                            }
+                        }
+                        if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                            this.progressInterval = eventArgs.progressInterval;
                         }
                     }
                     else {
-                        this.createFileList(fileData);
                         this.filesData = this.filesData.concat(fileData);
-                        if (!this.isForm || this.allowUpload()) {
-                            this.checkAutoUpload(fileData);
+                        if (this.autoUpload) {
+                            this.upload(this.filesData, true);
                         }
                     }
-                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                        this.progressInterval = eventArgs.progressInterval;
-                    }
+                    this.raiseActionComplete();
                 }
-                else {
-                    this.filesData = this.filesData.concat(fileData);
-                    if (this.autoUpload) {
-                        this.upload(this.filesData, true);
-                    }
-                }
-                this.raiseActionComplete();
-            }
+            });
         });
     }
     allowUpload() {
@@ -8419,49 +8485,50 @@ let Uploader = class Uploader extends Component {
         }
     }
     checkHTMLAttributes(isDynamic) {
-        let attributes$$1 = ['accept', 'multiple', 'disabled'];
+        let attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['accept', 'multiple', 'disabled'];
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'accept':
                         // tslint:disable-next-line
                         if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined))
-                            || !isDynamic) {
-                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, isDynamic);
+                            || isDynamic) {
+                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, !isDynamic);
                             this.initialAttr.accept = this.allowedExtensions;
                         }
                         break;
                     case 'multiple':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || isDynamic) {
                             let isMutiple = this.element.getAttribute(prop) === 'multiple' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ multiple: isMutiple }, isDynamic);
+                            this.setProperties({ multiple: isMutiple }, !isDynamic);
                             this.initialAttr.multiple = true;
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || isDynamic) {
                             let isDisabled = this.element.getAttribute(prop) === 'disabled' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: isDisabled }, isDynamic);
+                            this.setProperties({ enabled: isDisabled }, !isDynamic);
                             this.initialAttr.disabled = true;
                         }
                 }
             }
         }
     }
-    chunkUpload(file, custom) {
+    chunkUpload(file, custom, fileIndex) {
         let start = 0;
         let end = Math.min(this.asyncSettings.chunkSize, file.size);
         let index = 0;
         let blob = file.rawFile.slice(start, end);
         let metaData = { chunkIndex: index, blob: blob, file: file, start: start, end: end, retryCount: 0, request: null };
-        this.sendRequest(file, metaData, custom);
+        this.sendRequest(file, metaData, custom, fileIndex);
     }
-    sendRequest(file, metaData, custom) {
+    sendRequest(file, metaData, custom, fileIndex) {
         let formData = new FormData();
+        let cloneFile;
         let blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
@@ -8485,14 +8552,31 @@ let Uploader = class Uploader extends Component {
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                cloneFile = new File([file.rawFile], file.name);
+                eventArgs.fileData.rawFile = fileIndex ? this.base64String[fileIndex] : null;
+                if (this.currentRequestHeader) {
+                    this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                }
+                if (this.customFormDatas) {
+                    this.updateFormData(formData, this.customFormDatas);
+                }
+            }
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
                 this.trigger('uploading', eventArgs, (eventArgs) => {
+                    if (isBlazor()) {
+                        eventArgs.fileData.rawFile = cloneFile;
+                    }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
             else {
                 this.trigger('chunkUploading', eventArgs, (eventArgs) => {
+                    if (isBlazor()) {
+                        eventArgs.fileData.rawFile = cloneFile;
+                    }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
@@ -8921,6 +9005,7 @@ let Uploader = class Uploader extends Component {
      */
     /* istanbul ignore next */
     sortFileList(filesData) {
+        filesData = filesData ? filesData : this.sortFilesList;
         let files = filesData;
         let fileNames = [];
         for (let i = 0; i < files.length; i++) {
@@ -8972,6 +9057,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     upload(files, custom) {
+        files = files ? files : this.filesData;
         let uploadFiles = this.validateFileType(files);
         this.uploadFiles(uploadFiles, custom);
     }
@@ -8987,6 +9073,7 @@ let Uploader = class Uploader extends Component {
     }
     uploadFiles(files, custom) {
         let selectedFiles = [];
+        let cloneFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
             return;
         }
@@ -9007,15 +9094,35 @@ let Uploader = class Uploader extends Component {
         for (let i = 0; i < selectedFiles.length; i++) {
             let ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
             ajax.emitError = false;
+            let getFileData;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                getFileData = selectedFiles.slice(0);
+                cloneFiles.push(new File([getFileData[i].rawFile], getFileData[i].name));
+            }
             let eventArgs = {
-                fileData: selectedFiles[i],
+                fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
                 customFormData: [],
                 cancel: false
             };
             let formData = new FormData();
             ajax.beforeSend = (e) => {
                 eventArgs.currentRequest = ajax.httpRequest;
+                /* istanbul ignore next */
+                if (isBlazor()) {
+                    eventArgs.fileData.rawFile = this.base64String[i];
+                    if (this.currentRequestHeader) {
+                        this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                    }
+                    if (this.customFormDatas) {
+                        this.updateFormData(formData, this.customFormDatas);
+                    }
+                }
                 this.trigger('uploading', eventArgs, (eventArgs) => {
+                    /* istanbul ignore next */
+                    if (isBlazor()) {
+                        selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
+                    }
                     if (eventArgs.cancel) {
                         this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
                     }
@@ -9026,13 +9133,26 @@ let Uploader = class Uploader extends Component {
                 let name = this.element.getAttribute('name');
                 formData.append(name, selectedFiles[i].rawFile, selectedFiles[i].name);
                 if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
-                    this.chunkUpload(selectedFiles[i], custom);
+                    this.chunkUpload(selectedFiles[i], custom, i);
                 }
                 else {
-                    ajax.onLoad = (e) => { this.uploadComplete(e, selectedFiles[i], custom); return {}; };
+                    ajax.onLoad = (e) => {
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        }
+                        else {
+                            this.uploadComplete(e, selectedFiles[i], custom);
+                            return {};
+                        }
+                    };
                     ajax.onUploadProgress = (e) => {
-                        this.uploadInProgress(e, selectedFiles[i], custom, ajax);
-                        return {};
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        }
+                        else {
+                            this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                            return {};
+                        }
                     };
                     /* istanbul ignore next */
                     ajax.onError = (e) => { this.uploadFailed(e, selectedFiles[i]); return {}; };
@@ -9141,7 +9261,15 @@ let Uploader = class Uploader extends Component {
      * @returns FileInfo[]
      */
     getFilesData() {
-        return this.filesData;
+        if (!isBlazor()) {
+            return this.filesData;
+        }
+        else {
+            for (let i = 0; i < this.filesData.length; i++) {
+                this.filesData[i].rawFile = this.base64String[i];
+            }
+            return this.filesData;
+        }
     }
     /**
      * Pauses the in-progress chunked upload based on the file data.
@@ -9150,6 +9278,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     pause(fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
         let fileDataFiles = this.validateFileType(fileData);
         this.pauseUploading(fileDataFiles, custom);
     }
@@ -9178,6 +9307,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     resume(fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
         let fileDataFiles = this.validateFileType(fileData);
         this.resumeFiles(fileDataFiles, custom);
     }
@@ -9196,6 +9326,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     retry(fileData, fromcanceledStage, custom) {
+        fileData = fileData ? fileData : this.filesData;
         let fileDataFiles = this.validateFileType(fileData);
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     }
@@ -9223,6 +9354,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     cancel(fileData) {
+        fileData = fileData ? fileData : this.filesData;
         let cancelingFiles = this.validateFileType(fileData);
         this.cancelUpload(cancelingFiles);
     }
@@ -11221,7 +11353,7 @@ let TextBox = class TextBox extends Component {
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
                     let attributes$$1 = this.element.attributes;
-                    this.checkAttributes(attributes$$1, false);
+                    this.checkAttributes(true);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -11294,8 +11426,7 @@ let TextBox = class TextBox extends Component {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        let attributes$$1 = this.element.attributes;
-        this.checkAttributes(attributes$$1, true);
+        this.checkAttributes(false);
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
@@ -11331,44 +11462,46 @@ let TextBox = class TextBox extends Component {
             }
         }
     }
-    checkAttributes(attrs, isDynamic) {
-        for (let i = 0; i < attrs.length; i++) {
-            let key = attrs[i].nodeName;
-            switch (key) {
-                case 'disabled':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || !isDynamic) {
-                        let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
-                            this.element.getAttribute(key) === 'true' ? false : true;
-                        this.setProperties({ enabled: enabled }, isDynamic);
-                    }
-                    break;
-                case 'readonly':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || !isDynamic) {
-                        let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
-                            || this.element.getAttribute(key) === 'true' ? true : false;
-                        this.setProperties({ readonly: readonly }, isDynamic);
-                    }
-                    break;
-                case 'placeholder':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || !isDynamic) {
-                        this.setProperties({ placeholder: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
-                case 'value':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || !isDynamic) {
-                        this.setProperties({ value: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
-                case 'type':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || !isDynamic) {
-                        this.setProperties({ type: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
+    checkAttributes(isDynamic) {
+        let attrs = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        for (let key of attrs) {
+            if (!isNullOrUndefined(this.element.getAttribute(key))) {
+                switch (key) {
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
+                            let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                                this.element.getAttribute(key) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
+                        }
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
+                            let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        }
+                        break;
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
+                        }
+                        break;
+                    case 'type':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
+                            this.setProperties({ type: this.element.type }, !isDynamic);
+                        }
+                        break;
+                }
             }
         }
     }

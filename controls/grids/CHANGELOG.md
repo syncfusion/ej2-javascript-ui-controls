@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### Grid
+
+#### Bug Fixes
+
+- `#244183` - Provided the `cacheAdaptor` support in Grid.
+- `#240141` - Resize not working properly when enabling row drag and drop feature has been fixed.
+- `#243754` - Removed the `filterItemTemplate` from Grid persist data.
+- `#244375` - Checkbox state was not refreshed while calling `openColumnChooser` has been fixed.
+- `#234468` - Script error while refreshing the Grid with `foreignKeyColumn` in persistence enabled has been fixed.
+
+## 17.2.40 (2019-08-06)
+
+### Grid
+
+#### Bug Fixes
+
+- `#242503` - Add form gets misplaced in an empty grid with `frozenColumns`.
+- `#242201` - Script error thrown while navigating to other page and come back to grid with filter settings.
+- `#237984` - Need to show warning message if provided dataSource in incorrect format.
+- `#242484` - Default value is not set for the stacked columns.
+
 ## 17.2.39 (2019-07-30)
 
 ### Grid

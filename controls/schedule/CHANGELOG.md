@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#241514` - An issue with clone element not removing in DOM while invoke `refreshEvents` public method.
+
 ## 17.2.40 (2019-08-06)
 
 ### Schedule
@@ -12,6 +20,7 @@
 - `#242299` - An issue with events misaligned in different browser zooming has been fixed.
 - `#243422` - An issue with recurrence validation is showing unwanted alert has been fixed.
 - `#240463` - An issue with end time value of editor window in month view has been fixed.
+- `#146092` - An issue with displaying week number with different `firstDayOfWeek` has been fixed.
 
 ## 17.2.39 (2019-07-30)
 

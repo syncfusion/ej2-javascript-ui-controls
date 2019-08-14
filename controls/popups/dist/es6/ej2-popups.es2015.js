@@ -2558,35 +2558,37 @@ let Dialog = class Dialog extends Component {
         if (!this.element.classList.contains(ROOT)) {
             return;
         }
-        let eventArgs = {
-            cancel: false,
-            isInteraction: event ? true : false,
-            isInteracted: event ? true : false,
-            element: this.element,
-            target: this.target,
-            container: this.isModal ? this.dlgContainer : this.element,
-            event: event
-        };
-        this.closeArgs = eventArgs;
-        this.trigger('beforeClose', eventArgs, (beforeCloseArgs) => {
-            if (!beforeCloseArgs.cancel) {
-                if (this.isModal) {
-                    !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
-                        removeClass([document.body], SCROLL_DISABLED);
+        if (this.visible) {
+            let eventArgs = {
+                cancel: false,
+                isInteraction: event ? true : false,
+                isInteracted: event ? true : false,
+                element: this.element,
+                target: this.target,
+                container: this.isModal ? this.dlgContainer : this.element,
+                event: event
+            };
+            this.closeArgs = eventArgs;
+            this.trigger('beforeClose', eventArgs, (beforeCloseArgs) => {
+                if (!beforeCloseArgs.cancel) {
+                    if (this.isModal) {
+                        !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
+                            removeClass([document.body], SCROLL_DISABLED);
+                    }
+                    let closeAnimation = {
+                        name: this.animationSettings.effect + 'Out',
+                        duration: this.animationSettings.duration,
+                        delay: this.animationSettings.delay
+                    };
+                    this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
+                    this.dialogOpen = false;
+                    let prevOnChange = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    this.visible = false;
+                    this.isProtectedOnChange = prevOnChange;
                 }
-                let closeAnimation = {
-                    name: this.animationSettings.effect + 'Out',
-                    duration: this.animationSettings.duration,
-                    delay: this.animationSettings.delay
-                };
-                this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
-                this.dialogOpen = false;
-                let prevOnChange = this.isProtectedOnChange;
-                this.isProtectedOnChange = true;
-                this.visible = false;
-                this.isProtectedOnChange = prevOnChange;
-            }
-        });
+            });
+        }
     }
     /**
      * Specifies to view the Full screen Dialog.

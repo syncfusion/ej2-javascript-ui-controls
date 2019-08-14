@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### TreeView
+
+#### Bug Fixes
+
+- Issue with custom icon size changed while double clicking the tree node has been fixed.
+
 ## 17.2.39 (2019-07-30)
 
 ### TreeView

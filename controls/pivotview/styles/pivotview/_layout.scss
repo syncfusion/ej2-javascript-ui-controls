@@ -4,13 +4,15 @@
 
     // sass-lint:disable-all
     .e-value-field-settings,
-    .e-member-editor-dialog {
+    .e-member-editor-dialog,
+    .e-pivot-format-dialog {
       max-height: 450px !important;
     }
     // sass-lint:enable-all
 
     .e-value-field-settings,
-    .e-member-editor-dialog {
+    .e-member-editor-dialog,
+    .e-pivot-format-dialog {
       border-radius: $pivotgrid-default-border-radius;
       max-width: 400px;
       width: auto;
@@ -26,7 +28,6 @@
       }
 
       .e-footer-content {
-        border-top: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
         border-top-left-radius: 0;
         border-top-right-radius: 0;
         padding-bottom: 8px;
@@ -253,11 +254,67 @@
       }
     }
 
-    .e-value-field-settings {
+    .e-value-field-settings,
+    .e-member-editor-dialog {
+      .e-footer-content {
+        border-top: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
+      }
+    }
+
+    .e-value-field-settings,
+    .e-pivot-format-dialog {
       min-width: 300px;
 
       .e-dlg-content {
         overflow: auto;
+      }
+    }
+
+    .e-pivot-format-dialog {
+      max-width: 350px;
+
+      .e-pivot-format-dialog-outer {
+        padding: 0 $pivotgrid-editor-search-padding-size;
+
+        .e-pivot-format-value-lable,
+        .e-pivot-format-lable,
+        .e-pivot-format-custom-lable,
+        .e-pivot-format-symbol-lable,
+        .e-pivot-format-grouping-lable,
+        .e-pivot-format-decimal-lable {
+          font-weight: 500;
+          margin-bottom: 10px;
+        }
+
+        .e-pivot-format-value-drop,
+        .e-pivot-format-drop,
+        .e-pivot-format-custom-text,
+        .e-pivot-format-symbol-drop,
+        .e-pivot-format-grouping-drop,
+        .e-pivot-format-decimal-drop {
+          margin-bottom: 25px;
+        }
+
+        .e-pivot-format-custom-text.e-disable,
+        .e-pivot-format-symbol-drop.e-disable,
+        .e-pivot-format-custom-lable.e-disable,
+        .e-pivot-format-symbol-lable.e-disable {
+          display: none;
+        }
+
+        table tr td:nth-child(1) {
+          padding-left: 0;
+          padding-right: 30px;
+        }
+      }
+
+      &.e-rtl {
+        .e-pivot-format-dialog-outer {
+          table tr td:nth-child(1) {
+            padding-left: 30px;
+            padding-right: 0;
+          }
+        }
       }
     }
 
@@ -412,7 +469,8 @@
     // sass-lint:enable-all
 
     .e-member-editor-dialog,
-    .e-value-field-settings {
+    .e-value-field-settings,
+    .e-pivot-format-dialog {
       .e-dlg-header-content {
         .e-clear-filter-button.e-small {
           font-size: 14px;
@@ -465,6 +523,12 @@
 
       &.e-excel-filter {
         min-width: $pivotgrid-bigger-excel-dialog-min-width;
+      }
+    }
+
+    .e-pivot-format-dialog {
+      .e-pivot-format-dialog-outer {
+        padding: 0 20px 10px;
       }
     }
 

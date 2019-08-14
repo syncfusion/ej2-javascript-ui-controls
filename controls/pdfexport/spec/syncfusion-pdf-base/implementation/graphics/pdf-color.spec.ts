@@ -30,7 +30,7 @@ describe('PdfColor.ts', () => {
             expect(t1.toString(PdfColorSpace.Cmyk, false)).not.toBeUndefined();
         })
 
-        // let t2 : PdfColor = new PdfColor(10, 20, 30, 40);
+        let t2 : PdfColor = new PdfColor(t1);
         // t2.a = 0;
         // let t3 : PdfColor = new PdfColor(t2);
         // it('-when a == 0, calling ToString(PdfColorSpace.Rgb, false) == empty', () => {

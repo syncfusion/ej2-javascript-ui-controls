@@ -413,6 +413,8 @@ public theme: SmithchartTheme;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'background':
+                case 'border':
+                case 'series':
                     renderer = true;
                     break;
                 case 'size':
@@ -421,9 +423,6 @@ public theme: SmithchartTheme;
                     break;
                 case 'theme':
                     this.animateSeries = true;
-                    renderer = true;
-                    break;
-                case 'border':
                     renderer = true;
                     break;
             }
@@ -488,7 +487,7 @@ public theme: SmithchartTheme;
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
-        this.trigger('loaded', this.isBlazor ? {} : { smithchart: this });
+        this.trigger('loaded', { smithchart: this.isBlazor ? null : this });
     }
      private createSecondaryElement(): void {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {

@@ -31,7 +31,7 @@ export interface LineModel {
 
     /**
      * Specifies to move the axis line.
-     * @default 0
+     * @blazorDefaultValue 0
      */
     offset?: number;
 

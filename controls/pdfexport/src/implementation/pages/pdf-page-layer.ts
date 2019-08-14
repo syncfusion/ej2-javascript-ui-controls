@@ -183,21 +183,20 @@ export class PdfPageLayer implements IPdfWrapper {
      */
     public constructor(page : PdfPageBase, clipPageTemplates : boolean)
     public constructor(page : PdfPageBase, streamClipPageTemplates ?: boolean|PdfStream) {
+        if (page === null) {
+            throw new Error('ArgumentNullException:page');
+        }
+        this.pdfPage = page;
+        this.clipPageTemplates = true;
         if (typeof streamClipPageTemplates === 'undefined') {
-            this.pdfPage = page;
-            this.clipPageTemplates = true;
-            this.content = new PdfStream();
+             this.content = new PdfStream();
         } else if (streamClipPageTemplates instanceof PdfStream || streamClipPageTemplates === null) {
-            if (page == null) {
-                throw new Error('ArgumentNullException:page');
-            }
-            if (streamClipPageTemplates == null) {
+            if (streamClipPageTemplates === null) {
                 throw new Error('ArgumentNullException:stream');
             }
-            this.pdfPage = page;
             this.content = streamClipPageTemplates as PdfStream;
         } else {
-            this.constructor(page);
+            this.content = new PdfStream();
             this.clipPageTemplates = streamClipPageTemplates;
         }
     }

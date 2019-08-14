@@ -8790,17 +8790,23 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
     }
     changeState(wrapper, state, e, isPrevent, isAdd, doCheck) {
-        let ariaState;
         let eventArgs;
         let currLi = closest(wrapper, '.' + LISTITEM);
         if (!isPrevent) {
             this.checkActionNodes = [];
             eventArgs = this.getCheckEvent(currLi, state, e);
-            this.trigger('nodeChecking', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeChecking', eventArgs, (observedArgs) => {
+                if (!observedArgs.cancel) {
+                    this.nodeCheckAction(wrapper, state, currLi, observedArgs, e, isPrevent, isAdd, doCheck);
+                }
+            });
         }
+        else {
+            this.nodeCheckAction(wrapper, state, currLi, eventArgs, e, isPrevent, isAdd, doCheck);
+        }
+    }
+    nodeCheckAction(wrapper, state, currLi, eventArgs, e, isPrevent, isAdd, doCheck) {
+        let ariaState;
         let frameSpan = wrapper.getElementsByClassName(CHECKBOXFRAME)[0];
         if (state === 'check' && !frameSpan.classList.contains(CHECK)) {
             frameSpan.classList.remove(INDETERMINATE);
@@ -9009,17 +9015,6 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             }
         }
     }
-    nodeCheckingEvent(wrapper, isCheck, e) {
-        let currLi = closest(wrapper, '.' + LISTITEM);
-        this.checkActionNodes = [];
-        let ariaState = !isCheck ? 'true' : 'false';
-        if (!isNullOrUndefined(ariaState)) {
-            wrapper.setAttribute('aria-checked', ariaState);
-        }
-        let eventArgs = this.getCheckEvent(currLi, isCheck ? 'uncheck' : 'check', e);
-        this.trigger('nodeChecking', eventArgs);
-        return eventArgs;
-    }
     nodeCheckedEvent(wrapper, isCheck, e) {
         let currLi = closest(wrapper, '.' + LISTITEM);
         let eventArgs = this.getCheckEvent(wrapper, isCheck ? 'uncheck' : 'check', e);
@@ -9123,12 +9118,20 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let colArgs;
         if (this.isLoaded) {
             colArgs = this.getExpandEvent(currLi, e);
-            this.trigger('nodeCollapsing', colArgs);
-            if (colArgs.cancel) {
-                removeClass([icon], PROCESS);
-                return;
-            }
+            this.trigger('nodeCollapsing', colArgs, (observedArgs) => {
+                if (observedArgs.cancel) {
+                    removeClass([icon], PROCESS);
+                }
+                else {
+                    this.nodeCollapseAction(currLi, icon, observedArgs);
+                }
+            });
         }
+        else {
+            this.nodeCollapseAction(currLi, icon, colArgs);
+        }
+    }
+    nodeCollapseAction(currLi, icon, colArgs) {
         removeClass([icon], COLLAPSIBLE);
         addClass([icon], EXPANDABLE);
         let start = 0;
@@ -9427,11 +9430,17 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let eventArgs;
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'select', e);
-            this.trigger('nodeSelecting', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeSelecting', eventArgs, (observedArgs) => {
+                if (!observedArgs.cancel) {
+                    this.nodeSelectAction(li, e, observedArgs, multiSelect);
+                }
+            });
         }
+        else {
+            this.nodeSelectAction(li, e, eventArgs, multiSelect);
+        }
+    }
+    nodeSelectAction(li, e, eventArgs, multiSelect) {
         if (!this.allowMultiSelection || (!multiSelect && (!e || (e && !e.ctrlKey)))) {
             this.removeSelectAll();
         }
@@ -9467,11 +9476,17 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let eventArgs;
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'un-select', e);
-            this.trigger('nodeSelecting', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeSelecting', eventArgs, (observedArgs) => {
+                if (!observedArgs.cancel) {
+                    this.nodeUnselectAction(li, observedArgs);
+                }
+            });
         }
+        else {
+            this.nodeUnselectAction(li, eventArgs);
+        }
+    }
+    nodeUnselectAction(li, eventArgs) {
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
@@ -9551,7 +9566,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             if (classList$$1.contains(EXPANDABLE)) {
                 this.expandAction(currLi, icon, e);
             }
-            else {
+            else if (classList$$1.contains(COLLAPSIBLE)) {
                 this.collapseNode(currLi, icon, e);
             }
         }
@@ -9565,12 +9580,20 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         if (this.isLoaded) {
             this.expandArgs = this.getExpandEvent(currLi, e);
-            this.trigger('nodeExpanding', this.expandArgs);
-            if (this.expandArgs.cancel) {
-                removeClass([icon], PROCESS);
-                return;
-            }
+            this.trigger('nodeExpanding', this.expandArgs, (observedArgs) => {
+                if (observedArgs.cancel) {
+                    removeClass([icon], PROCESS);
+                }
+                else {
+                    this.nodeExpandAction(currLi, icon, expandChild, callback);
+                }
+            });
         }
+        else {
+            this.nodeExpandAction(currLi, icon, expandChild, callback);
+        }
+    }
+    nodeExpandAction(currLi, icon, expandChild, callback) {
         let ul = select('.' + PARENTITEM, currLi);
         if (ul && ul.nodeName === 'UL') {
             this.expandNode(currLi, icon);
@@ -9724,14 +9747,26 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let checkWrap = select('.' + CHECKBOXWRAP, focusedNode);
         let isChecked = select(' .' + CHECKBOXFRAME, checkWrap).classList.contains(CHECK);
         if (!focusedNode.classList.contains('e-disable')) {
-            this.validateCheckNode(checkWrap, isChecked, focusedNode, e);
+            if (focusedNode.getElementsByClassName("e-checkbox-disabled").length == 0) {
+                this.validateCheckNode(checkWrap, isChecked, focusedNode, e);
+            }
         }
     }
     validateCheckNode(checkWrap, isCheck, li, e) {
-        let eventArgs = this.nodeCheckingEvent(checkWrap, isCheck, e);
-        if (eventArgs.cancel) {
-            return;
+        let currLi = closest(checkWrap, '.' + LISTITEM);
+        this.checkActionNodes = [];
+        let ariaState = !isCheck ? 'true' : 'false';
+        if (!isNullOrUndefined(ariaState)) {
+            checkWrap.setAttribute('aria-checked', ariaState);
         }
+        let eventArgs = this.getCheckEvent(currLi, isCheck ? 'uncheck' : 'check', e);
+        this.trigger('nodeChecking', eventArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                this.nodeCheckingAction(checkWrap, isCheck, li, observedArgs, e);
+            }
+        });
+    }
+    nodeCheckingAction(checkWrap, isCheck, li, eventArgs, e) {
         if (this.checkedElement.indexOf(li.getAttribute('data-uid')) === -1) {
             this.checkedElement.push(li.getAttribute('data-uid'));
             let child = this.getChildNodes(this.treeData, li.getAttribute('data-uid'));
@@ -10104,7 +10139,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 isChecked: checked, hasChildren: hasChildren
             };
         }
-        return { id: '', text: '', parentID: '', selected: '', expanded: '', isChecked: '', hasChildren: '' };
+        return { id: '', text: '', parentID: '', selected: false, expanded: false, isChecked: '', hasChildren: false };
     }
     getText(currLi, fromDS) {
         if (fromDS) {

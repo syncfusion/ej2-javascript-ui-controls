@@ -1,7 +1,7 @@
 /**
  * Maps Component file
  */
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax } from '@syncfusion/ej2-base';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Ajax, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { EventHandler, Browser, EmitType, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Event, remove, L10n, Collection, Internationalization, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
@@ -984,6 +984,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * To Remove the SVG
      */
     private removeSvg(): void {
+        for (let i: number = 0; i < this.annotations.length; i++) {
+            resetBlazorTemplate(this.element.id + '_ContentTemplate_' + i, 'ContentTemplate');
+        }
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
         if (document.getElementsByClassName('e-tooltip-wrap')[0]) {
@@ -1375,12 +1378,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 case 'height':
                 case 'width':
                 case 'layers':
-                    this.createSVG();
+                case 'projectionType':
+                case 'legendSettings':
                     render = true;
                     break;
             }
         }
         if (render) {
+            this.createSVG();
             this.render();
         }
     }

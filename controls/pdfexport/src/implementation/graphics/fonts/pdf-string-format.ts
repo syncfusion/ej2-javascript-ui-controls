@@ -130,19 +130,13 @@ export class PdfStringFormat {
      */
     public constructor(alignment : PdfTextAlignment, lineAlignment : PdfVerticalAlignment)
     public constructor(arg1? : PdfTextAlignment|string, arg2? : PdfVerticalAlignment) {
-        if (typeof arg1 === 'undefined') {
-            this.internalLineLimit = true;
-            this.wordWrapType = PdfWordWrapType.Word;
-        } else if (typeof arg1 === 'string') {
-            this.constructor();
-        } else {
-            if (typeof arg2 === 'undefined') {
-                this.constructor();
-                this.textAlignment = arg1;
-            } else {
-                this.constructor(arg1);
-                this.verticalAlignment = arg2;
-            }
+        this.internalLineLimit = true;
+        this.wordWrapType = PdfWordWrapType.Word;
+        if ((typeof arg1 !== 'undefined') && (typeof arg1 !== 'string') ) {
+            this.textAlignment = arg1;
+        }
+        if (typeof arg2 !== 'undefined') {
+            this.verticalAlignment = arg2;
         }
     }
     //Properties

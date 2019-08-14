@@ -348,7 +348,7 @@ describe('Contextmenu in row template', () => {
             (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
             (gridObj.grid.contextMenuModule as any).contextMenuOpen();
             (<HTMLElement>document.getElementById(gridObj.element.id + '_gridcontrol_cmenu').getElementsByClassName('e-icon-descending')[0]).click();
-        }, 100)
+        }, 200)
     });
         afterAll(() => {
         destroy(gridObj);

@@ -4695,6 +4695,76 @@ describe('DateRangePicker', () => {
         });
     });
 
+    describe('HTML attribute API at inital rendering and dynamic rendering', () => {
+        let daterangepicker: any;
+        beforeEach((): void => {
+            daterangepicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'daterange' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Html attributes at initial rendering', () => {
+            daterangepicker = new DateRangePicker({ htmlAttributes:{placeholder:"Choose a date", class: "sample" } });
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.element.getAttribute('placeholder')).toBe('Choose a date');
+            expect(daterangepicker.inputWrapper.container.classList.contains('sample')).toBe(true);
+        });
+        it('Pass multiple attributes dynamically', () => {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
+            daterangepicker.appendTo('#daterange');
+            daterangepicker.htmlAttributes = { class:"sample", readonly: "true", disabled: "true"};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
+            expect(daterangepicker.inputWrapper.container.classList.contains('sample')).toBe(true);
+            expect(daterangepicker.element.hasAttribute('readonly')).toBe(true);
+            expect(daterangepicker.element.hasAttribute('disabled')).toBe(true);
+        });
+        it('Dynamically change attributes through htmlAttributes API', () => {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
+            daterangepicker.appendTo('#daterange');
+            daterangepicker.inputElement.value = "5/5/2019 - 6/10/2019";
+            daterangepicker.htmlAttributes = { class:"sample" };
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('5/5/2019 - 6/10/2019');
+        });
+        it('Dynamically change multiple attributes through htmlAttributes API', () => {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
+            daterangepicker.appendTo('#daterange');
+            daterangepicker.htmlAttributes = { class:"sample" , max:'5/15/2019', min:'6/5/2019'};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
+            expect(daterangepicker.element.getAttribute('max')).toBe('5/15/2019');
+            expect(daterangepicker.element.getAttribute('min')).toBe('6/5/2019');
+        });
+        it('Pass null value in htmlAttributes', () => {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
+            daterangepicker.appendTo('#daterange');
+            daterangepicker.htmlAttributes = { null: "null"};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
+        });
+        it('Pass undefined in htmlAttributes', () => {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
+            daterangepicker.appendTo('#daterange');
+            daterangepicker.htmlAttributes = { undefined: "undefined"};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('4/24/2017 - 8/10/2017');
+        });
+        it('Pass empty value in htmlAttributes', () => {
+            daterangepicker = new DateRangePicker({ startDate: new Date('4/24/2017'), endDate: new Date('8/10/2017') });
+            daterangepicker.appendTo('#daterange');
+            daterangepicker.inputElement.value = "5/5/2019 - 6/10/2019";
+            daterangepicker.htmlAttributes = {};
+            daterangepicker.dataBind();
+            expect(daterangepicker.element.value).toBe('5/5/2019 - 6/10/2019');
+        });
+    });
+
     describe('MinDays and MaxDays - Desktop', () => {
         let daterangepicker: any;
         let keyEventArgs: any = {

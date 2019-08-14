@@ -207,7 +207,8 @@ export class WParagraphFormat {
                 }
                 if (!isNullOrUndefined(baseStyle)) {
                     if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
-                        && baseStyle.paragraphFormat.listFormat.listId === -1) {
+                        && baseStyle.paragraphFormat.listFormat.listId === -1
+                        || !isNullOrUndefined(ifListFormat) && this.listFormat.listId !== baseStyle.paragraphFormat.listFormat.listId) {
                         return ifListFormat;
                     }
                     let propertyType: number = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);

@@ -3200,27 +3200,31 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
     updateHtmlAttributeToWrapper() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    let setStyle = this.inputWrapper.container.getAttribute(key);
-                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.inputWrapper.container.setAttribute(key, setStyle);
-                }
-                else {
-                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        let setStyle = this.inputWrapper.container.getAttribute(key);
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.inputWrapper.container.setAttribute(key, setStyle);
+                    }
+                    else {
+                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
     updateHtmlAttributeToElement() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) < 0) {
-                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) < 0) {
+                    this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -3763,6 +3767,8 @@ let DatePicker = class DatePicker extends Calendar {
             this.modal.style.display = 'none';
             this.modal.outerHTML = '';
             this.modal = null;
+        }
+        if (Browser.isDevice) {
             if (!isNullOrUndefined(this.mobilePopupWrapper)) {
                 this.mobilePopupWrapper.remove();
                 this.mobilePopupWrapper = null;
@@ -3921,7 +3927,7 @@ let DatePicker = class DatePicker extends Calendar {
             this.validationAttribute(this.element, this.inputElement);
         }
         this.updateHtmlAttributeToElement();
-        this.checkHtmlAttributes(true);
+        this.checkHtmlAttributes(false);
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.removeAttribute('tabindex');
         super.preRender();
@@ -3973,7 +3979,8 @@ let DatePicker = class DatePicker extends Calendar {
         this.globalize = new Internationalization(this.locale);
         this.checkFormat();
         this.checkView();
-        let attributes$$1 = ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
+        let attributes$$1 = dynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['value', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder', 'type'];
         let options;
         if (this.getModuleName() === 'datetimepicker') {
             if (this.calendarMode === 'Gregorian') {
@@ -4002,25 +4009,25 @@ let DatePicker = class DatePicker extends Calendar {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || !dynamic) {
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['enabled'] === undefined)) || dynamic) {
                             let enabled = this.inputElement.getAttribute(prop) === 'disabled' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, dynamic);
+                            this.setProperties({ enabled: enabled }, !dynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || !dynamic) {
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['readonly'] === undefined)) || dynamic) {
                             let readonly = this.inputElement.getAttribute(prop) === 'readonly' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, dynamic);
+                            this.setProperties({ readonly: readonly }, !dynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || !dynamic) {
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['placeholder'] === undefined)) || dynamic) {
                             let placeholder = this.inputElement.getAttribute(prop);
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, dynamic);
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !dynamic);
                         }
                         break;
                     case 'style':
@@ -4031,19 +4038,21 @@ let DatePicker = class DatePicker extends Calendar {
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || !dynamic) {
+                        if ((isNullOrUndefined(this.datepickerOptions) || (this.datepickerOptions['value'] === undefined)) || dynamic) {
                             let value = this.inputElement.getAttribute(prop);
-                            this.setProperties(setValue(prop, this.globalize.parseDate(value, options), {}), dynamic);
+                            this.setProperties(setValue(prop, this.globalize.parseDate(value, options), {}), !dynamic);
                         }
                         break;
                     case 'min':
-                        if ((+this.min === +new Date(1900, 0, 1)) || !dynamic) {
-                            this.setProperties(setValue(prop, this.globalize.parseDate(this.inputElement.getAttribute(prop)), {}), dynamic);
+                        if ((+this.min === +new Date(1900, 0, 1)) || dynamic) {
+                            let min = this.inputElement.getAttribute(prop);
+                            this.setProperties(setValue(prop, this.globalize.parseDate(min), {}), !dynamic);
                         }
                         break;
                     case 'max':
-                        if ((+this.max === +new Date(2099, 11, 31)) || !dynamic) {
-                            this.setProperties(setValue(prop, this.globalize.parseDate(this.inputElement.getAttribute(prop)), {}), dynamic);
+                        if ((+this.max === +new Date(2099, 11, 31)) || dynamic) {
+                            let max = this.inputElement.getAttribute(prop);
+                            this.setProperties(setValue(prop, this.globalize.parseDate(max), {}), !dynamic);
                         }
                         break;
                     case 'type':
@@ -4197,7 +4206,7 @@ let DatePicker = class DatePicker extends Calendar {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.checkHtmlAttributes(false);
+                    this.checkHtmlAttributes(true);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -4627,7 +4636,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         if (this.angularTag !== null) {
             this.validationAttribute(this.element, this.inputElement);
         }
-        this.checkHtmlAttributes(true);
+        this.checkHtmlAttributes(false);
         merge(this.defaultKeyConfigs, { shiftTab: 'shift+tab' });
         let start = this.checkDateValue(new Date(this.checkValue(this.startValue)));
         this.setProperties({ startDate: start }, true); // persist the value propeerty.
@@ -4683,27 +4692,31 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     updateHtmlAttributeToWrapper() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    let dateRangeStyle = this.inputWrapper.container.getAttribute(key);
-                    dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.inputWrapper.container.setAttribute(key, dateRangeStyle);
-                }
-                else {
-                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        let dateRangeStyle = this.inputWrapper.container.getAttribute(key);
+                        dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.inputWrapper.container.setAttribute(key, dateRangeStyle);
+                    }
+                    else {
+                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
     updateHtmlAttributeToElement() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) < 0) {
-                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) < 0) {
+                    this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -4893,58 +4906,58 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     checkHtmlAttributes(isDynamic) {
         this.globalize = new Internationalization(this.locale);
-        let attributes$$1;
-        attributes$$1 = ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled',
-            'readonly', 'style', 'name', 'placeholder', 'type', 'value'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder',
+                'type', 'value'];
         let format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['enabled'] === undefined)) || isDynamic) {
                             let disabled = this.inputElement.getAttribute(prop) === 'disabled' ||
-                                this.inputElement.getAttribute(prop) === '';
-                            this.setProperties({ enabled: !disabled }, isDynamic);
+                                this.inputElement.getAttribute(prop) === '' || this.inputElement.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ enabled: !disabled }, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly = this.inputElement.getAttribute(prop) === 'readonly' ||
-                                this.inputElement.getAttribute(prop) === '';
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                                this.inputElement.getAttribute(prop) === 'true' || this.inputElement.getAttribute(prop) === '' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['value'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateRangeOptions) || (this.dateRangeOptions['value'] === undefined)) || isDynamic) {
                             let value = this.inputElement.getAttribute(prop);
-                            this.setProperties(setValue(prop, value, {}), isDynamic);
+                            this.setProperties(setValue(prop, value, {}), !isDynamic);
                         }
                         break;
                     case 'style':
                         this.inputElement.setAttribute('style', '' + this.inputElement.getAttribute(prop));
                         break;
                     case 'min':
-                        if ((isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.min) || +this.min === +new Date(1900, 0, 1)) || isDynamic) {
                             let dateValue = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), isDynamic);
+                            this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
                         }
                         break;
                     case 'name':
                         this.inputElement.setAttribute('name', '' + this.inputElement.getAttribute(prop));
                         break;
                     case 'max':
-                        if ((isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.max) || +this.max === +new Date(2099, 11, 31)) || isDynamic) {
                             let dateValue = this.globalize.parseDate(this.inputElement.getAttribute(prop), format);
-                            this.setProperties(setValue(prop, dateValue, {}), isDynamic);
+                            this.setProperties(setValue(prop, dateValue, {}), !isDynamic);
                         }
                         break;
                     case 'startDate':
@@ -8120,6 +8133,8 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                             this.modal.style.display = 'none';
                             this.modal.outerHTML = '';
                             this.modal = null;
+                        }
+                        if (this.isMobile || Browser.isDevice) {
                             if (!isNullOrUndefined(this.mobileRangePopupWrap)) {
                                 this.mobileRangePopupWrap.remove();
                                 this.mobileRangePopupWrap = null;
@@ -8276,7 +8291,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.checkHtmlAttributes(false);
+                    this.checkHtmlAttributes(true);
                     break;
                 case 'showClearButton':
                     Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
@@ -8726,7 +8741,7 @@ let TimePicker = class TimePicker extends Component {
             this.validationAttribute(this.element, this.inputElement);
         }
         this.updateHtmlAttributeToElement();
-        this.checkAttributes(true); //check the input element attributes
+        this.checkAttributes(false); //check the input element attributes
         let localeText = { placeholder: this.placeholder };
         this.l10n = new L10n('timepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -9015,27 +9030,31 @@ let TimePicker = class TimePicker extends Component {
         return null;
     }
     updateHtmlAttributeToWrapper() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    let timeStyle = this.inputWrapper.container.getAttribute(key);
-                    timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.inputWrapper.container.setAttribute(key, timeStyle);
-                }
-                else {
-                    this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        let timeStyle = this.inputWrapper.container.getAttribute(key);
+                        timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.inputWrapper.container.setAttribute(key, timeStyle);
+                    }
+                    else {
+                        this.inputWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
     updateHtmlAttributeToElement() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(key) < 0) {
-                this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(key) < 0) {
+                    this.inputElement.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
@@ -9653,17 +9672,18 @@ let TimePicker = class TimePicker extends Component {
         }
     }
     checkAttributes(isDynamic) {
-        let attributes$$1 = ['step', 'disabled', 'readonly', 'style', 'name', 'value', 'min', 'max', 'placeholder'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['step', 'disabled', 'readonly', 'style', 'name', 'value', 'min', 'max', 'placeholder'];
         let value;
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled = this.inputElement.getAttribute(prop) === 'disabled' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'style':
@@ -9671,10 +9691,10 @@ let TimePicker = class TimePicker extends Component {
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly = this.inputElement.getAttribute(prop) === 'readonly' || this.inputElement.getAttribute(prop) === '' ||
                                 this.inputElement.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'name':
@@ -9685,36 +9705,36 @@ let TimePicker = class TimePicker extends Component {
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['min'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ min: value }, isDynamic);
+                                this.setProperties({ min: value }, !isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['max'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
-                                this.setProperties({ max: value }, isDynamic);
+                                this.setProperties({ max: value }, !isDynamic);
                             }
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.timeOptions) || (this.timeOptions['value'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!isNullOrUndefined(this.checkDateValue(value))) {
                                 this.initValue = value;
                                 this.updateInput(false, this.initValue);
-                                this.setProperties({ value: value }, isDynamic);
+                                this.setProperties({ value: value }, !isDynamic);
                             }
                         }
                         break;
@@ -10467,7 +10487,7 @@ let TimePicker = class TimePicker extends Component {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'min':
                 case 'max':
@@ -10795,7 +10815,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         this.dateTimeFormat = this.cldrDateTimeFormat();
         this.initValue = this.value;
         super.updateHtmlAttributeToElement();
-        this.checkAttributes(true);
+        this.checkAttributes(false);
         let localeText = { placeholder: this.placeholder };
         this.l10n = new L10n('datetimepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -11596,7 +11616,8 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         }
     }
     checkAttributes(isDynamic) {
-        let attributes$$1 = ['style', 'name', 'step', 'disabled', 'readonly', 'value', 'min', 'max', 'placeholder', 'type'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['style', 'name', 'step', 'disabled', 'readonly', 'value', 'min', 'max', 'placeholder', 'type'];
         let value;
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
@@ -11609,50 +11630,52 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly = this.inputElement.getAttribute(prop) === 'disabled' ||
-                                this.inputElement.getAttribute(prop) === '';
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                                this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ min: value }, isDynamic);
+                                this.setProperties({ min: value }, !isDynamic);
                             }
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled = this.inputElement.getAttribute(prop) === 'disabled' ||
-                                this.inputElement.getAttribute(prop) === '';
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                                this.inputElement.getAttribute(prop) === 'true' ||
+                                this.inputElement.getAttribute(prop) === '' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ value: value }, isDynamic);
+                                this.setProperties({ value: value }, !isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ max: value }, isDynamic);
+                                this.setProperties({ max: value }, !isDynamic);
                             }
                         }
                         break;
@@ -11912,7 +11935,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);

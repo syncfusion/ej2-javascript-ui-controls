@@ -5692,3 +5692,89 @@ describe('pivot grid slicer appearence spec', function () {
         browser.compareScreen(element(By.css('.container')),'fieldlist_slicer_FL_filterupdate');
     });
 });
+describe('number formatting', function () {
+    it('Initial', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        browser.compareScreen(element(By.css('#PivotView')), 'NumberFormatting_1');
+    });
+    it('Disable Grouping', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        element(By.id('format')).click();
+        browser.sleep(500);
+        let path: string = "document.querySelectorAll('.e-dropdownlist')[1].ej2_instances[0].value = 'false'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        browser.compareScreen(element(By.className('e-member-editor-dialog')), 'NumberFormatting_2');
+    });
+    it('Format Change to Currency', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        element(By.id('format')).click();
+        browser.sleep(500);
+        let path: string = "document.querySelectorAll('.e-dropdownlist')[2].ej2_instances[0].value = 'Currency'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        browser.compareScreen(element(By.className('e-member-editor-dialog')), 'NumberFormatting_3');
+    });
+    it('Format Change to Percentage', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        element(By.id('format')).click();
+        browser.sleep(500);
+        let path: string = "document.querySelectorAll('.e-dropdownlist')[2].ej2_instances[0].value = 'Percentage'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        browser.compareScreen(element(By.className('e-member-editor-dialog')), 'NumberFormatting_4');
+    });
+    it('Format Change to Number', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        element(By.id('format')).click();
+        browser.sleep(500);
+        let path: string = "document.querySelectorAll('.e-dropdownlist')[2].ej2_instances[0].value = 'Number'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        browser.compareScreen(element(By.className('e-member-editor-dialog')), 'NumberFormatting_5');
+    });
+    it('Decimal Change', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        element(By.id('format')).click();
+        browser.sleep(500);
+        let path: string = "document.querySelectorAll('.e-dropdownlist')[3].ej2_instances[0].value = 2";
+        browser.executeScript(path);
+        browser.sleep(500);
+        browser.compareScreen(element(By.className('e-member-editor-dialog')), 'NumberFormatting_5');
+    });
+    it('Currency Symbol Change to $', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        element(By.id('format')).click();
+        browser.sleep(500);
+        let path: string = "document.querySelectorAll('.e-dropdownlist')[2].ej2_instances[0].value = 'Currency'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        path = "document.querySelectorAll('.e-pivot-format-custom-text')[0].value = '$ '";
+        browser.executeScript(path);
+        browser.sleep(500);
+        browser.compareScreen(element(By.className('e-member-editor-dialog')), 'NumberFormatting_6');
+    });
+    it('Currency Symbol and Position change', function () {
+        browser.load('/demos/pivotview/numberformatting/numberformatting.html');
+        browser.sleep(500);
+        element(By.id('format')).click();
+        browser.sleep(500);
+        let path: string = "document.querySelectorAll('.e-dropdownlist')[2].ej2_instances[0].value = 'Currency'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        path = "document.querySelectorAll('.e-pivot-format-custom-text')[0].value = ' $'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        path = "document.querySelectorAll('.e-dropdownlist')[4].ej2_instances[0].value = 'Right'";
+        browser.executeScript(path);
+        browser.sleep(500);
+        browser.compareScreen(element(By.className('e-member-editor-dialog')), 'NumberFormatting_7');
+    });
+});

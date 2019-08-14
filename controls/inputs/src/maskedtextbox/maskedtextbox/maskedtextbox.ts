@@ -281,7 +281,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        this.checkHtmlAttributes(true);
+        this.checkHtmlAttributes(false);
         if (this.formElement) {
             this.initInputValue = this.value;
         }
@@ -390,36 +390,36 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         }
     }
     private checkHtmlAttributes(isDynamic: boolean): void {
-        let attributes: string[] = ['placeholder', 'disabled', 'value', 'readonly'];
+        let attributes: string[] = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly'];
         for (let key of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({placeholder: this.element.placeholder}, isDynamic);
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || !isDynamic) {
-                            this.setProperties({value: this.element.value}, isDynamic);
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({value: this.element.value}, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                                 || this.element.getAttribute(key) === 'true' ? true : false;
-                            this.setProperties({readonly: readonly}, isDynamic);
+                            this.setProperties({readonly: readonly}, !isDynamic);
                         }
                         break;
                 }
@@ -492,7 +492,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHtmlAttributes(false);
+                    this.checkHtmlAttributes(true);
                     break;
                 case 'mask':
                     let strippedValue: string = this.value;

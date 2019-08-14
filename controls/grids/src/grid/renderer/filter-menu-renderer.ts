@@ -80,9 +80,13 @@ export class FilterMenuRenderer {
 
     private renderDlgContent(target: Element, column: Column): void {
         let args: Object = {
-            requestType: events.filterBeforeOpen, filterModel: this,
+            requestType: events.filterBeforeOpen,
             columnName: column.field, columnType: column.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel: string = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(events.actionBegin, args);
 
         let mainDiv: HTMLElement = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
@@ -130,11 +134,14 @@ export class FilterMenuRenderer {
         }
         let args: Object = {
             requestType: events.filterAfterOpen,
-            filterModel: this, columnName: column.field, columnType: column.type
+            columnName: column.field, columnType: column.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel: string = 'filterModel';
+            args[filterModel] = this;
+        }
         this.isDialogOpen = true;
         this.parent.trigger(events.actionComplete, args);
-
     }
 
     private renderFilterUI(target: Element, col: Column): void {

@@ -616,7 +616,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     public gaugeResize(e: Event): boolean {
         let args: IResizeEventArgs = {
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
@@ -635,7 +635,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                     this.calculateBounds();
                     this.renderElements();
                     args.currentSize = this.availableSize;
-                    this.trigger(resized, this.isBlazor ? {} : args);
+                    this.trigger(resized, args);
                 },
                 500);
         }

@@ -137,13 +137,13 @@ export class PdfPen {
      */
     public constructor(color : PdfColor, width : number)
     public constructor(arg1 : PdfColor|PdfBrush, arg2? : number) {
-        if (typeof arg2 === 'number') {
-            this.constructor(arg1);
-            this.width = arg2;
-        } else if (typeof arg2 === 'undefined' && arg1 instanceof PdfBrush) {
+        if ( arg1 instanceof PdfBrush) {
             this.setBrush(arg1 as PdfBrush);
-        } else if (typeof arg2 === 'undefined' && arg1 instanceof PdfColor) {
+        } else if ( arg1 instanceof PdfColor) {
             this.color = arg1;
+        }
+        if (typeof arg2 === 'number') {
+           this.width = arg2;
         }
     }
     //Properties

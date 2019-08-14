@@ -2537,14 +2537,14 @@ export class MultiSelect extends DropDownBase implements IInput {
         if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
             let temp: HTMLElement = <HTMLElement>li.cloneNode(true);
             let data: Object = this.getDataByValue(value);
-            append([temp], this.mainList);
-            (this.mainData as { [key: string]: object }[]).push(data as { [key: string]: object });
             let eventArgs: CustomValueEventArgs = {
                 newData: data,
                 cancel: false
             };
             this.trigger('customValueSelection', eventArgs, (eventArgs: CustomValueEventArgs) => {
                 if (!eventArgs.cancel) {
+                    append([temp], this.mainList);
+                    (this.mainData as { [key: string]: object }[]).push(data as { [key: string]: object });
                     this.remoteCustomValue = false;
                     this.addValue(value, text, e);
                 }

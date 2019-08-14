@@ -5,10 +5,6 @@ import { IPdfPrimitive } from './../../interfaces/i-pdf-primitives';
 import { ObjectStatus } from './../input-output/enum';
 import { DictionaryProperties } from './../input-output/pdf-dictionary-properties';
 import { PdfDocument } from './../document/pdf-document';
-import { PdfPageBase } from './../pages/pdf-page-base';
-import { PdfPage } from './../pages/pdf-page';
-import { PdfSection } from './../pages/pdf-section';
-import { PdfSectionCollection } from './../pages/pdf-section-collection';
 import { IPdfWrapper } from './../../interfaces/i-pdf-wrapper';
 import { IPdfWriter } from './../../interfaces/i-pdf-writer';
 import { PdfCrossTable } from './../input-output/pdf-cross-table';
@@ -306,25 +302,7 @@ export class PdfReferenceHolder implements  IPdfPrimitive, IPdfWrapper {
     public constructor(obj1 : PdfReference, obj2 : PdfCrossTable)
     public constructor(obj1 : IPdfWrapper|IPdfPrimitive|PdfReference, obj2? : PdfCrossTable) {
         // if (typeof obj2 === 'undefined') {
-        if ( obj1 instanceof PdfArray
-                || obj1 instanceof PdfDictionary
-                || obj1 instanceof PdfName
-                || obj1 instanceof PdfNumber
-                || obj1 instanceof PdfStream
-                || obj1 instanceof PdfReference
-                || obj1 instanceof PdfString ) {
-            // if (obj1 === null) {
-            //     throw new Error('ArgumentNullException : obj');
-            // }
-            this.primitiveObject = <IPdfPrimitive>obj1;
-        // } else if (obj1 instanceof PdfPageBase
-        //             || obj1 instanceof PdfPage
-        //             || obj1 instanceof PdfSection
-        //             || obj1 instanceof PdfSectionCollection) {
-        } else {
-            let tempObj : IPdfWrapper = obj1 as IPdfWrapper;
-            this.constructor(tempObj.element);
-        }
+            this.initialize(obj1);
         // }
         // else {
         //     if (obj2 === null) {
@@ -337,6 +315,20 @@ export class PdfReferenceHolder implements  IPdfPrimitive, IPdfWrapper {
         //     let tempObj1 : PdfReference = <PdfReference>obj1;
         //     this.reference = tempObj1;
         // }
+    }
+    private initialize(obj1 : IPdfPrimitive | IPdfWrapper | PdfReference) : void {
+        if ( obj1 instanceof PdfArray
+            || obj1 instanceof PdfDictionary
+            || obj1 instanceof PdfName
+            || obj1 instanceof PdfNumber
+            || obj1 instanceof PdfStream
+            || obj1 instanceof PdfReference
+            || obj1 instanceof PdfString ) {
+            this.primitiveObject = <IPdfPrimitive>obj1;
+        } else {
+            let tempObj : IPdfWrapper = obj1 as IPdfWrapper;
+            this.initialize(tempObj.element);
+        }
     }
     /**
      * `Writes` a reference into a PDF document.

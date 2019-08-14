@@ -7,7 +7,7 @@ import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PivotCommon } from '../../src/common/base/pivot-common';
 import { MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { TreeView } from '@syncfusion/ej2-navigations';
-import { LoadEventArgs, FieldDroppedEventArgs } from '../../src';
+import { LoadEventArgs, FieldDroppedEventArgs, FieldListRefreshedEventArgs } from '../../src';
 import { CalculatedField } from '../../src/common/calculatedfield/calculated-field';
 import { EventHandler } from '@syncfusion/ej2-base';
 import { DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
@@ -23,6 +23,7 @@ describe('PivotFieldList spec', () => {
     /**
      * Pivot Field List base spec
      */
+    let isRefresh: boolean = false;
     function disableDialogAnimation(dialogObject: Dialog): void {
         dialogObject.animationSettings = { effect: 'None' };
         dialogObject.dataBind();
@@ -33,6 +34,10 @@ describe('PivotFieldList spec', () => {
         removeClass(treeObj.element.querySelectorAll('li'), ['e-node-focus', 'e-active']);
         addClass([li], ['e-node-focus', 'e-active']);
         (treeObj as any).checkNode((li).getAttribute('data-uid'));
+    }
+
+    function fieldListRefreshed(args: FieldListRefreshedEventArgs) {
+        isRefresh = true;
     }
 
     beforeAll(() => {
@@ -3366,6 +3371,7 @@ describe('PivotFieldList spec', () => {
                             fieldListObj.update(pivotGridObj);
                         }
                     },
+                    fieldListRefreshed: fieldListRefreshed,
                     enableValueSorting: true,
                     showGroupingBar: true,
                     allowDeferLayoutUpdate: true,
@@ -3460,6 +3466,7 @@ describe('PivotFieldList spec', () => {
             it('Apply button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton1').click();
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
+                expect(isRefresh).toBeTruthy();
             });
         });
         describe('Check public method for node state change', () => {

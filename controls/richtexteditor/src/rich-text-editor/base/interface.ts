@@ -47,7 +47,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
      * @default
      * {
      *  allowedTypes: ['jpeg', 'jpg', 'png'],
-     * display: 'inline', width: '200px',
+     * display: 'inline', width: '200px', saveFormat: 'Base64',
      * height: '200px', saveUrl:null, path: null, resize: false
      * }
      */
@@ -140,6 +140,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     executeCommand?(commandName: CommandName, value?: string | HTMLElement): void;
     serializeValue?(value: string): string;
     sanitizeHtml?(value: string): string;
+    enableAutoUrl?: boolean;
 }
 export interface IRenderer {
     linkQTBar?: BaseQuickToolbar;

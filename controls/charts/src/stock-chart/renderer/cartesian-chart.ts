@@ -9,7 +9,7 @@ import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';
 import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { MarginModel } from '../../chart';
-import { DataManager } from '@syncfusion/ej2-data';
+import { StockSeries } from '../model/base';
 
 interface Range {
     start: number;
@@ -22,7 +22,7 @@ export class CartesianChart {
     constructor(chart: StockChart) {
         this.stockChart = chart;
     }
-    public initializeChart(): void {
+    public initializeChart(chartArgsData ?: object[]): void {
         let stockChart: StockChart = this.stockChart;
         if (!stockChart.chartObject) {
             stockChart.chartObject = stockChart.renderer.createGroup({
@@ -52,6 +52,7 @@ export class CartesianChart {
                         args.chart.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
                     }
                 }
+                args.chart.animateSeries = false;
             },
             chartArea : stockChart.chartArea,
             margin : this.findMargin(stockChart),
@@ -67,6 +68,17 @@ export class CartesianChart {
                 this.stockChart.trigger('axisLabelRender', args);
             },
             seriesRender : (args : ISeriesRenderEventArgs) => {
+                if (args.data && this.stockChart.startValue && this.stockChart.endValue) {
+                    args.data = (args.data as Object[])
+                    .filter((data: Object) => {
+                        return (
+                            new Date(Date.parse(data[args.series.xName])).getTime() >= this.stockChart.startValue &&
+                            new Date(Date.parse(data[args.series.xName])).getTime() <= this.stockChart.endValue
+                            );
+                    });
+                }
+                args.data = chartArgsData ? chartArgsData : args.data;
+                //args.data = this.stockChart.findCurrentData(args.data ,args.series.xName);
                 this.stockChart.trigger('seriesRender', args);
             },
             pointClick: (args: IPointEventArgs) => {
@@ -127,6 +139,10 @@ export class CartesianChart {
             chartSeries[i].close = series[i].close;
             chartSeries[i].xName = series[i].xName;
             chartSeries[i].volume = series[i].volume;
+            chartSeries[i].animation = series[i].animation;
+            if ((series[i] as StockSeries).localData) {
+                chartSeries[i].dataSource = (series[i] as StockSeries).localData;
+            }
             if (chartSeries[i].type !== 'HiloOpenClose' && chartSeries[i].type !== 'Candle' && chartSeries[i].yName === 'volume') {
                 chartSeries[i].enableTooltip = false;
             }
@@ -171,31 +187,7 @@ export class CartesianChart {
      * @param end
      */
     public cartesianChartRefresh(stockChart: StockChart, start: number, end: number, data?: Object[]): void {
-        stockChart.chart.series.forEach((series: Series) => {
-            series.dataSource = data ? data : ((stockChart.blazorDataSource[series.index] ||
-                this.checkDataSource(stockChart.tempDataSource[series.index]) || this.checkDataSource(stockChart.dataSource)) as Object[])
-            .filter((data: Object) => {
-                return (
-                    new Date(Date.parse(data[series.xName])).getTime() >= start &&
-                    new Date(Date.parse(data[series.xName])).getTime() <= end
-                    );
-            });
-            series.animation.enable = false;
-            if (series.trendlines.length !== 0) {
-                for ( let trendLine of series.trendlines) {
-                    trendLine.animation.enable = false;
-                }
-            }
-        });
-        stockChart.cartesianChart.initializeChart();
-    }
-
-    private checkDataSource(data: Object[] | DataManager | Object): Object[] {
-        if (data instanceof DataManager) {
-            return(data.dataSource.json);
-        } else {
-            return data as Object[];
-        }
+        stockChart.cartesianChart.initializeChart(data);
     }
 
     private copyObject(originalObject: Object): Object {

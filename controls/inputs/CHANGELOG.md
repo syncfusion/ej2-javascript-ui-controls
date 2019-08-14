@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#244336` - Now, the percentage textbox value never changed in read-only mode after `focusIn` and `focusOut`.
+
+### Uploader
+
+#### Bug Fixes
+
+- `#F146285`, `244026` - Now, you can get the files in server-side when drag and drop the files in the synchronous upload.
+
 ## 17.2.40 (2019-08-06)
 
 ### MaskedTextBox

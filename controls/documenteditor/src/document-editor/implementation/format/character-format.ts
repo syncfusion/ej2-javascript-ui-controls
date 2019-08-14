@@ -1,4 +1,4 @@
-import { TextElementBox, ParagraphWidget } from '../viewer/page';
+import { TextElementBox, ParagraphWidget, LineWidget } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { Underline, HighlightColor, BaselineAlignment, Strikethrough, BiDirectionalOverride } from '../../base/types';
 import { WUniqueFormat } from '../../base/unique-format';
@@ -119,6 +119,28 @@ export class WCharacterFormat {
             if (!isNullOrUndefined(charStyleValue)) {
                 return charStyleValue;
             } else {
+                if (!isNullOrUndefined(this.baseCharStyle)) {
+                    /* tslint:disable-next-line:no-any */
+                    let paragraph: any = (this.ownerBase as TextElementBox).paragraph;
+                    let line: LineWidget = (this.ownerBase as TextElementBox).line;
+                    if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(line)) {
+                        let length: number = line.children.length;
+                        for (let i: number = 0; i < length; i++) {
+                            /* tslint:disable-next-line:no-any */
+                            let element: any = (this.ownerBase as any).line.children[i];
+                            if (element instanceof TextElementBox) {
+                                /* tslint:disable-next-line:no-any */
+                                let text: any = element.text;
+                                if (text.startsWith('HYPERLINK')) {
+                                    let index: number = text.indexOf('_Toc');
+                                    if (index !== -1) {
+                                        this.baseCharStyle = (this.ownerBase as TextElementBox).paragraph.paragraphFormat.baseStyle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 let baseStyleValue: Object = this.checkBaseStyle(property);
                 if (!isNullOrUndefined(baseStyleValue)) {
                     return baseStyleValue;

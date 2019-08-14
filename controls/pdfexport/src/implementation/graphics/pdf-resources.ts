@@ -56,10 +56,7 @@ export class PdfResources extends PdfDictionary {
      */
     public constructor(baseDictionary : PdfDictionary)
     public constructor(baseDictionary ?: PdfDictionary) {
-        super();
-        if (baseDictionary instanceof PdfDictionary) {
-            super(baseDictionary);
-        }
+        super(baseDictionary);
     }
     //Properties
     /**

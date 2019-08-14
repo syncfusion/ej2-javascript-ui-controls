@@ -3024,9 +3024,6 @@ class Canvas extends Container {
                         availableSize.width = availableSize.width || this.maxWidth || this.minWidth;
                         child.measure(availableSize);
                     }
-                    else {
-                        break;
-                    }
                 }
                 else if (!(child instanceof TextElement)) {
                     child.measure(availableSize);
@@ -11486,8 +11483,8 @@ function gridSelection(diagram, selectorModel, id, isSymbolDrag) {
     }
     return canvas;
 }
-function removeLaneChildNode(diagram, swimLaneNode, currentObj, isChildNode) {
-    let laneIndex = findLaneIndex(swimLaneNode, currentObj);
+function removeLaneChildNode(diagram, swimLaneNode, currentObj, isChildNode, laneIndex) {
+    laneIndex = (laneIndex !== undefined) ? laneIndex : findLaneIndex(swimLaneNode, currentObj);
     let preventHistory = false;
     let lanenode = swimLaneNode.shape.lanes[laneIndex];
     for (let j = lanenode.children.length - 1; j >= 0; j--) {
@@ -11560,64 +11557,69 @@ function deleteNode(diagram, node) {
     delete diagram.nameTable[node.id];
     diagram.removeElements(node);
 }
-function removeLane(diagram, lane, swimLane) {
-    let shape = swimLane.shape;
-    if (shape.lanes.length === 1) {
-        diagram.remove(swimLane);
-    }
-    else {
-        let x = swimLane.wrapper.bounds.x;
-        let y = swimLane.wrapper.bounds.y;
-        let row;
-        let i;
-        let cell;
-        let j;
-        let child;
-        let grid = swimLane.wrapper.children[0];
-        let laneIndex = findLaneIndex(swimLane, lane);
-        let undoObj = cloneObject(shape.lanes[laneIndex]);
-        removeLaneChildNode(diagram, swimLane, lane);
-        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-            let entry = {
-                type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
-                redoObject: cloneObject(lane), category: 'Internal'
-            };
-            diagram.addHistoryEntry(entry);
-        }
-        shape.lanes.splice(laneIndex, 1);
-        if (shape.orientation === 'Horizontal') {
-            row = grid.rows[lane.rowIndex];
-            for (i = 0; i < row.cells.length; i++) {
-                cell = row.cells[i];
-                if (cell && cell.children.length > 0) {
-                    for (j = 0; j < cell.children.length; j++) {
-                        child = cell.children[j];
-                        removeChildren(diagram, child);
-                    }
-                }
-            }
-            grid.removeRow(lane.rowIndex);
+function removeLane(diagram, lane, swimLane, lanes) {
+    if (swimLane.shape.type === 'SwimLane') {
+        let shape = swimLane.shape;
+        let laneIndex;
+        if (shape.lanes.length === 1) {
+            diagram.remove(swimLane);
         }
         else {
-            swimLane.width = (swimLane.width !== undefined) ?
-                swimLane.width - grid.rows[0].cells[lane.columnIndex].actualSize.width : swimLane.width;
-            for (i = 0; i < grid.rows.length; i++) {
-                cell = grid.rows[i].cells[lane.columnIndex];
-                if (cell && cell.children.length > 0) {
-                    for (j = 0; j < cell.children.length; j++) {
-                        child = cell.children[j];
-                        removeChildren(diagram, child);
+            let x = swimLane.wrapper.bounds.x;
+            let y = swimLane.wrapper.bounds.y;
+            let row;
+            let i;
+            let cell;
+            let j;
+            let child;
+            let grid = swimLane.wrapper.children[0];
+            laneIndex = (lanes) ? (shape.lanes.indexOf(lanes)) : findLaneIndex(swimLane, lane);
+            let undoObj = cloneObject(shape.lanes[laneIndex]);
+            removeLaneChildNode(diagram, swimLane, lane, undefined, laneIndex);
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                let entry = {
+                    type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
+                    redoObject: cloneObject(lane), category: 'Internal'
+                };
+                diagram.addHistoryEntry(entry);
+            }
+            shape.lanes.splice(laneIndex, 1);
+            let index = (lane) ? (shape.orientation === 'Horizontal' ? lane.rowIndex : lane.columnIndex) :
+                (findStartLaneIndex(swimLane) + laneIndex);
+            if (shape.orientation === 'Horizontal') {
+                row = grid.rows[index];
+                for (i = 0; i < row.cells.length; i++) {
+                    cell = row.cells[i];
+                    if (cell && cell.children.length > 0) {
+                        for (j = 0; j < cell.children.length; j++) {
+                            child = cell.children[j];
+                            removeChildren(diagram, child);
+                        }
                     }
                 }
+                grid.removeRow(index);
             }
-            grid.removeColumn(lane.columnIndex);
+            else {
+                swimLane.width = (swimLane.width !== undefined) ?
+                    swimLane.width - grid.rows[0].cells[index].actualSize.width : swimLane.width;
+                for (i = 0; i < grid.rows.length; i++) {
+                    cell = grid.rows[i].cells[index];
+                    if (cell && cell.children.length > 0) {
+                        for (j = 0; j < cell.children.length; j++) {
+                            child = cell.children[j];
+                            removeChildren(diagram, child);
+                        }
+                    }
+                }
+                grid.removeColumn(index);
+            }
+            swimLane.width = swimLane.wrapper.width = grid.width;
+            swimLane.height = swimLane.wrapper.height = grid.height;
+            swimLaneMeasureAndArrange(swimLane);
+            ChangeLaneIndex(diagram, swimLane, index);
+            diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
+            diagram.updateDiagramObject(swimLane);
         }
-        swimLane.width = swimLane.wrapper.width = grid.width;
-        swimLane.height = swimLane.wrapper.height = grid.height;
-        swimLaneMeasureAndArrange(swimLane);
-        ChangeLaneIndex(diagram, swimLane, lane.rowIndex);
-        diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
-        diagram.updateDiagramObject(swimLane);
     }
 }
 function removeChildren(diagram, canvas) {
@@ -11635,7 +11637,7 @@ function removeChildren(diagram, canvas) {
         deleteNode(diagram, node);
     }
 }
-function removePhase(diagram, phase, swimLane) {
+function removePhase(diagram, phase, swimLane, swimLanePhases) {
     diagram.protectPropertyChange(true);
     let x = swimLane.wrapper.bounds.x;
     let y = swimLane.wrapper.bounds.y;
@@ -11643,7 +11645,7 @@ function removePhase(diagram, phase, swimLane) {
     let previousPhase;
     let shape = swimLane.shape;
     let grid = swimLane.wrapper.children[0];
-    let phaseIndex = findPhaseIndex(phase, swimLane);
+    let phaseIndex = swimLanePhases ? shape.phases.indexOf(swimLanePhases) : findPhaseIndex(phase, swimLane);
     let phaseLength = shape.phases.length;
     if (shape.phases.length > 1) {
         if (phaseIndex === phaseLength - 1) {
@@ -11660,7 +11662,7 @@ function removePhase(diagram, phase, swimLane) {
             diagram.addHistoryEntry(entry);
         }
         if (shape.orientation === 'Horizontal') {
-            removeHorizontalPhase(diagram, grid, phase);
+            removeHorizontalPhase(diagram, grid, phase, phaseIndex);
         }
         else {
             removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane);
@@ -11672,13 +11674,14 @@ function removePhase(diagram, phase, swimLane) {
         diagram.updateDiagramObject(swimLane);
     }
 }
-function removeHorizontalPhase(diagram, grid, phase) {
+function removeHorizontalPhase(diagram, grid, phase, phaseIndex) {
     let row;
     let cell;
     let prevCell;
     let actualChild;
     let prevCanvas;
     let width;
+    phaseIndex = (phaseIndex !== undefined) ? phaseIndex : phase.columnIndex;
     let i;
     let j;
     let k;
@@ -11688,9 +11691,9 @@ function removeHorizontalPhase(diagram, grid, phase) {
     for (i = 0; i < grid.rows.length; i++) {
         row = grid.rows[i];
         if (row.cells.length > 1) {
-            cell = row.cells[phase.columnIndex];
-            prevCell = (row.cells.length - 1 === phase.columnIndex) ? row.cells[phase.columnIndex - 1] :
-                row.cells[phase.columnIndex + 1];
+            cell = row.cells[phaseIndex];
+            prevCell = (row.cells.length - 1 === phaseIndex) ? row.cells[phaseIndex - 1] :
+                row.cells[phaseIndex + 1];
             prevCanvas = prevCell.children[0];
             if (cell.children.length > 0) {
                 actualChild = cell.children[0];
@@ -11707,7 +11710,7 @@ function removeHorizontalPhase(diagram, grid, phase) {
                             if (!object.isLane) {
                                 object.parentId = prevCanvas.id;
                             }
-                            if ((row.cells.length - 1 === phase.columnIndex)) {
+                            if ((row.cells.length - 1 === phaseIndex)) {
                                 object.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
                                 child.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
                             }
@@ -11725,7 +11728,7 @@ function removeHorizontalPhase(diagram, grid, phase) {
                                 node.children.splice(node.children.indexOf(object.id), 1);
                             }
                         }
-                        if ((row.cells.length - 1 !== phase.columnIndex)) {
+                        if ((row.cells.length - 1 !== phaseIndex)) {
                             for (k = 0; k < prevCanvas.children.length; k++) {
                                 let prevChild = prevCanvas.children[k];
                                 if (prevChild instanceof Canvas) {
@@ -11747,16 +11750,17 @@ function removeHorizontalPhase(diagram, grid, phase) {
             }
         }
     }
-    grid.removeColumn(phase.columnIndex);
-    if ((phase.columnIndex < grid.columnDefinitions().length)) {
-        width = grid.columnDefinitions()[phase.columnIndex].width;
-        width += phase.wrapper.actualSize.width;
-        grid.updateColumnWidth(phase.columnIndex, width, true);
+    let prevWidth = grid.columnDefinitions()[phaseIndex].width;
+    grid.removeColumn(phaseIndex);
+    if ((phaseIndex < grid.columnDefinitions().length)) {
+        width = grid.columnDefinitions()[phaseIndex].width;
+        width += prevWidth;
+        grid.updateColumnWidth(phaseIndex, width, true);
     }
     else {
-        width = grid.columnDefinitions()[phase.columnIndex - 1].width;
-        width += phase.wrapper.actualSize.width;
-        grid.updateColumnWidth(phase.columnIndex - 1, width, true);
+        width = grid.columnDefinitions()[phaseIndex - 1].width;
+        width += prevWidth;
+        grid.updateColumnWidth(phaseIndex - 1, width, true);
     }
 }
 function removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane) {
@@ -11767,18 +11771,19 @@ function removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane) {
     let i;
     let j;
     let k;
-    row = grid.rows[phase.rowIndex];
     let prevCell;
     let prevChild;
     let shape = swimLane.shape;
     let child;
     let object;
+    let phaseRowIndex = (phaseIndex !== undefined) ? ((shape.header) ? phaseIndex + 1 : phaseIndex) : phase.rowIndex;
+    row = grid.rows[phaseRowIndex];
     let top = swimLane.wrapper.bounds.y;
     let phaseCount = shape.phases.length;
     if (shape.header !== undefined && shape.hasHeader) {
         top += grid.rowDefinitions()[0].height;
     }
-    prevRow = (phaseIndex === phaseCount) ? grid.rows[phase.rowIndex - 1] : grid.rows[phase.rowIndex + 1];
+    prevRow = (phaseIndex === phaseCount) ? grid.rows[phaseRowIndex - 1] : grid.rows[phaseRowIndex + 1];
     for (i = 0; i < row.cells.length; i++) {
         cell = row.cells[i];
         prevCell = prevRow.cells[i];
@@ -11816,16 +11821,17 @@ function removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane) {
             deleteNode(diagram, node);
         }
     }
-    grid.removeRow(phase.rowIndex);
-    if ((phase.rowIndex < grid.rowDefinitions().length)) {
-        height = grid.rowDefinitions()[phase.rowIndex].height;
-        height += phase.wrapper.actualSize.height;
-        grid.updateRowHeight(phase.rowIndex, height, true);
+    let prevHeight = grid.rowDefinitions()[phaseRowIndex].height;
+    grid.removeRow(phaseRowIndex);
+    if ((phaseRowIndex < grid.rowDefinitions().length)) {
+        height = grid.rowDefinitions()[phaseRowIndex].height;
+        height += prevHeight;
+        grid.updateRowHeight(phaseRowIndex, height, true);
     }
     else {
-        height = grid.rowDefinitions()[phase.rowIndex - 1].height;
-        height += phase.wrapper.actualSize.height;
-        grid.updateRowHeight(phase.rowIndex - 1, height, true);
+        height = grid.rowDefinitions()[phaseRowIndex - 1].height;
+        height += prevHeight;
+        grid.updateRowHeight(phaseRowIndex - 1, height, true);
     }
 }
 /**
@@ -15428,8 +15434,14 @@ __decorate$2([
  * Defines the functionalities that need to access DOM
  */
 /** @private */
-function removeElementsByClass(className) {
-    let elements = document.getElementsByClassName(className);
+function removeElementsByClass(className, id) {
+    let elements;
+    if (id) {
+        elements = document.getElementById(id).getElementsByClassName(className);
+    }
+    else {
+        elements = document.getElementsByClassName(className);
+    }
     while (elements.length > 0) {
         elements[0].parentNode.removeChild(elements[0]);
     }
@@ -23638,6 +23650,7 @@ class DiagramEventHandler {
                 };
                 this.diagram.add(temp);
                 this.diagram.updateConnectorEdges(node);
+                this.diagram.clearSelection();
                 this.diagram.select([this.diagram.nameTable[temp.id]]);
                 this.diagram.endGroupAction();
                 this.diagram.startTextEdit();
@@ -25024,7 +25037,8 @@ class CommandHandler {
     /** @private */
     selectObjects(obj, multipleSelection, oldValue) {
         let arg = {
-            oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
+            oldValue: oldValue ? oldValue : this.getSelectedObject(),
+            newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
         let select = true;
@@ -25074,7 +25088,8 @@ class CommandHandler {
                 }
             }
             arg = {
-                oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
+                oldValue: oldValue ? oldValue : arg.oldValue,
+                newValue: this.getSelectedObject(), cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Addition', cancel: false
             };
             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -30847,6 +30862,19 @@ class Diagram extends Component {
         connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
         connector.wrapper.arrange(connector.wrapper.desiredSize);
     }
+    removeChildrenFromLayout(nodes) {
+        let nodesCollection = [];
+        let node;
+        let parentId = 'parentId';
+        let processId = 'processId';
+        for (let i = 0; i < nodes.length; i++) {
+            node = nodes[i];
+            if (!node[parentId] && !node[processId]) {
+                nodesCollection.push(node);
+            }
+        }
+        return nodesCollection;
+    }
     /**
      * Automatically updates the diagram objects based on the type of the layout
      */
@@ -30855,27 +30883,28 @@ class Diagram extends Component {
         let layout;
         let propChange = this.isProtectedOnChange;
         this.protectPropertyChange(true);
+        let nodes = this.removeChildrenFromLayout(this.nodes);
         let viewPort = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.organizationalChartModule) {
-            layout = this.organizationalChartModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
+            layout = this.organizationalChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
             update = true;
             if (this.layoutAnimateModule && layout.rootNode && !this.diagramActions) {
                 this.updateNodeExpand(layout.rootNode, layout.rootNode.isExpanded);
             }
         }
         else if (this.mindMapChartModule) {
-            this.mindMapChartModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
+            this.mindMapChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
             update = true;
         }
         else if (this.radialTreeModule) {
-            this.radialTreeModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort);
+            this.radialTreeModule.updateLayout(nodes, this.nameTable, this.layout, viewPort);
             update = true;
         }
         else if (this.symmetricalLayoutModule) {
             this.symmetricalLayoutModule.maxIteration = this.layout.maxIteration;
             this.symmetricalLayoutModule.springLength = this.layout.springLength;
             this.symmetricalLayoutModule.springFactor = this.layout.springFactor;
-            this.symmetricalLayoutModule.updateLayout(this.nodes, this.connectors, this.symmetricalLayoutModule, this.nameTable, this.layout, viewPort);
+            this.symmetricalLayoutModule.updateLayout(nodes, this.connectors, this.symmetricalLayoutModule, this.nameTable, this.layout, viewPort);
             update = true;
         }
         else if (this.complexHierarchicalTreeModule) {
@@ -30888,7 +30917,8 @@ class Diagram extends Component {
         if (update) {
             this.preventUpdate = true;
             let connectors = {};
-            for (let obj of this.nodes) {
+            let updatedNodes = nodes;
+            for (let obj of updatedNodes) {
                 let node = obj;
                 if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {
                     this.updateIcon(node);
@@ -31152,6 +31182,18 @@ class Diagram extends Component {
         for (let i = 0; i < phases.length; i++) {
             addPhase(this, node, phases[i]);
         }
+    }
+    /**
+     * Remove dynamic Lanes to swimLane at runtime
+     */
+    removeLane(node, lane) {
+        removeLane(this, undefined, node, lane);
+    }
+    /**
+     * Remove a phase to a swimLane at runtime
+     */
+    removePhase(node, phase) {
+        removePhase(this, undefined, node, phase);
     }
     removelabelExtension(obj, labels, j, wrapper) {
         for (let i = 0; i < wrapper.children.length; i++) {
@@ -31931,8 +31973,10 @@ class Diagram extends Component {
                     this.realActions |= RealAction.PreventScale;
                     let diffX = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
+                    let diffY = (node1.offsetY - node.wrapper.offsetY);
+                    node1.offsetY = node.wrapper.offsetY;
                     if (node.flip === 'None') {
-                        this.drag(node1, diffX, 0);
+                        this.drag(node1, diffX, diffY);
                     }
                     this.realActions &= ~RealAction.PreventScale;
                 }
@@ -32490,8 +32534,8 @@ class Diagram extends Component {
     }
     /** @private */
     updateVirtualObjects(collection, remove$$1, tCollection) {
-        let diagramElementsLayer = document.getElementById('diagram_diagramLayer');
-        let htmlLayer = getHTMLLayer('diagram');
+        let diagramElementsLayer = document.getElementById(this.element.id + '_diagramLayer');
+        let htmlLayer = getHTMLLayer(this.element.id);
         if (this.mode === 'SVG') {
             for (let i = 0; i < collection.length; i++) {
                 let index = this.scroller.removeCollection.indexOf(collection[i]);
@@ -33965,6 +34009,9 @@ class Diagram extends Component {
         if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments)
             && this.diagramActions === DiagramAction.Render) {
             updateSelector = true;
+        }
+        if (actualObject.shape.type === 'Bpmn' && actualObject.shape.sequence === 'Default') {
+            this.commandHandler.updatePathElementOffset(actualObject);
         }
         if (!disableBridging) {
             this.updateBridging();
@@ -42627,7 +42674,11 @@ class HierarchicalTree {
                 layoutInfo.tree.hasSubTree = false;
                 if (!layout.nameTable[layout.root]) {
                     if (!node.inEdges || !node.inEdges.length) {
-                        rootNodes.push(node);
+                        let parentId = 'parentId';
+                        let processId = 'processId';
+                        if (!node[parentId] && !node[processId]) {
+                            rootNodes.push(node);
+                        }
                         if (node.data && String(node.data[uniqueId]) === layout.root) {
                             layout.firstLevelNodes.push(node);
                         }
@@ -45295,9 +45346,11 @@ class ComplexHierarchicalTree {
     getLayoutNodesCollection(nodes) {
         let nodesCollection = [];
         let node;
+        let parentId = 'parentId';
+        let processId = 'processId';
         for (let i = 0; i < nodes.length; i++) {
             node = nodes[i];
-            if (node.inEdges.length + node.outEdges.length > 0) {
+            if ((node.inEdges.length + node.outEdges.length > 0) && !node[parentId] && !node[processId]) {
                 nodesCollection.push(node);
             }
         }
@@ -46939,7 +46992,8 @@ class SymbolPalette extends Component {
         this.info = 'info';
         this.laneTable = {};
         this.isExpand = false;
-        this.isCollapsed = false;
+        this.isExpandMode = false;
+        this.isMethod = false;
         /**
          * helper method for draggable
          * @return {void}
@@ -47019,18 +47073,13 @@ class SymbolPalette extends Component {
                         if (newProp.palettes[index].expanded !== undefined) {
                             if (!this.palettes[index].isInteraction) {
                                 this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
-                                refresh = true;
+                                this.isExpand = true;
                             }
                             else {
                                 this.palettes[index].isInteraction = false;
                             }
-                            this.isExpand = true;
-                            this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
-                            if (index === 0) {
-                                this.isCollapsed = true;
-                            }
-                            else {
-                                this.isCollapsed = false;
+                            if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
+                                this.isExpand = true;
                             }
                         }
                     }
@@ -47046,6 +47095,7 @@ class SymbolPalette extends Component {
                 case 'expandMode':
                     this.accordionElement.expandMode = this.expandMode;
                     refresh = true;
+                    this.isExpandMode = true;
                     break;
                 case 'allowDrag':
                     this.allowDrag = newProp.allowDrag;
@@ -47063,8 +47113,9 @@ class SymbolPalette extends Component {
         if (refresh) {
             this.refreshPalettes();
         }
-        if (this.isExpand && !refresh && this.isCollapsed) {
+        if (this.isExpand && !refresh) {
             this.refresh();
+            this.isExpand = false;
             for (let p = 0; p < this.palettes.length; p++) {
                 let paletteElement = this.palettes[p].id;
                 if (window[paletteElement]) {
@@ -47075,6 +47126,7 @@ class SymbolPalette extends Component {
                 }
             }
         }
+        this.isMethod = false;
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -47785,6 +47837,7 @@ class SymbolPalette extends Component {
         e.preventDefault();
     }
     mouseUp(evt) {
+        this.isMethod = true;
         if (evt && evt.target) {
             if (evt.srcElement.id === 'iconSearch') {
                 let element = document.getElementById('iconSearch');
@@ -48020,7 +48073,7 @@ class SymbolPalette extends Component {
     }
     refreshPalettes() {
         this.accordionElement.items = [];
-        removeElementsByClass('e-remove-palette');
+        removeElementsByClass('e-remove-palette', this.element.id);
         this.updatePalettes();
         this.accordionElement.dataBind();
     }

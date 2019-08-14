@@ -426,7 +426,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
-        this.trigger('loaded', this.isBlazor ? {} : { sparkline: this });
+        this.trigger('loaded', { sparkline: this.isBlazor ? null : this });
     }
     /**
      * To render sparkline elements
@@ -581,7 +581,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         let args: ISparklineResizeEventArgs = {
             name: 'resize',
             previousSize: this.availableSize,
-            sparkline: this,
+            sparkline: this.isBlazor ? null : this,
             currentSize: new Size(0, 0)
         };
         if (this.resizeTo) {
@@ -598,7 +598,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
                 this.refreshing = true;
                 this.wireEvents();
                 args.currentSize = this.availableSize;
-                this.trigger('resize', this.isBlazor ? {} : args);
+                this.trigger('resize', args);
                 this.render();
             },
             500);
@@ -613,21 +613,18 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.setSparklineMouseXY(e);
         this.notify(Browser.touchMoveEvent, e);
         let args: ISparklineMouseEventArgs = {
-            name: 'sparklineMouseMove', cancel: false, sparkline: this, event: e
+            name: 'sparklineMouseMove', cancel: false,
+            sparkline: this.isBlazor ? null : this, event: e
         };
-        let blazorArgs: ISparklineMouseEventArgs = {
-            name: 'sparklineMouseMove', cancel: false, event: e
-        };
-        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
+        this.trigger(args.name, args);
         let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs: IPointRegionEventArgs = {
-                name: 'pointRegionMouseMove', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
+                name: 'pointRegionMouseMove', cancel: false,
+                event: e, sparkline: this.isBlazor ? null : this,
+                pointIndex: pointClick.pointIndex
             };
-            let pointBlazorArgs: IPointRegionEventArgs = {
-                name: 'pointRegionMouseMove', cancel: false, event: e, pointIndex: pointClick.pointIndex
-            };
-            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
+            this.trigger(pointArgs.name, pointArgs);
         }
         return false;
     }
@@ -639,21 +636,18 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public sparklineClick(e: PointerEvent): boolean {
         this.setSparklineMouseXY(e);
         let args: ISparklineMouseEventArgs = {
-            name: 'sparklineMouseClick', cancel: false, sparkline: this, event: e
+            name: 'sparklineMouseClick', cancel: false,
+            sparkline: this.isBlazor ? null : this, event: e
         };
-        let blazorArgs: ISparklineMouseEventArgs = {
-            name: 'sparklineMouseClick', cancel: false, event: e
-        };
-        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
+        this.trigger(args.name, args);
         let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs: IPointRegionEventArgs = {
-                name: 'pointRegionMouseClick', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
+                name: 'pointRegionMouseClick', cancel: false,
+                event: e, sparkline: this.isBlazor ? null : this,
+                pointIndex: pointClick.pointIndex
             };
-            let pointBlazorArgs: IPointRegionEventArgs = {
-                name: 'pointRegionMouseClick', cancel: false, event: e, pointIndex: pointClick.pointIndex
-            };
-            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
+            this.trigger(pointArgs.name, pointArgs);
         }
         return false;
     }

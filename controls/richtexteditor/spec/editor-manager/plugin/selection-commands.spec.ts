@@ -533,3 +533,42 @@ describe('Selection commands', () => {
         expect((document.getElementById('paragraph26').firstElementChild as HTMLElement).style.fontSize).toEqual('10px');
     });
 });
+
+describe('Bold the content', () => {
+    let innervalue: string = `<p>The rich text editor component is WYSIWYG ("what you see is what you get") editor that provides the best user experience to create and update the content. 
+    Users can format their content using standard toolbar commands.</p>
+      <table contenteditable="false">
+    <tbody><tr>
+    <td>first row
+      <table contenteditable="false">
+        <tbody><tr>
+          <td>
+            <div contenteditable="true" id="nestedTable">editable content</div>
+          </td>
+        </tr>
+      </tbody></table>
+    </td>
+    </tr>
+    </tbody></table>`;
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Apply Bold with parent element contenteditable as false', () => {
+        let node1: Node = document.getElementById('nestedTable');
+        let text1: Text = node1.childNodes[0] as Text;
+        domSelection.setSelectionText(document, text1, text1, 1, 1);
+        SelectionCommands.applyFormat(document, 'bold', parentDiv);
+        expect(node1.childNodes[0].nodeName.toLowerCase()).toEqual('strong');
+    });
+});

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### File Manager
+
+#### Bug Fixes
+
+- The issue with the `file manager that throws script error while accessing the shared folder in physical file provider` has been fixed.
+
+#### New Features
+
+- A method has been provided to customize the filtering support in file manager.
+
 ## 17.2.40 (2019-08-06)
 
 ### File Manager

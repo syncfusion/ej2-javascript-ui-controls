@@ -120,9 +120,11 @@ export class ToolBase {
 
     protected endAction(): void {
         //remove helper  
-        this.commandHandler.tool = '';
-        if (this.helper) {
-            this.commandHandler.remove(this.helper);
+        if (this.commandHandler) {
+            this.commandHandler.tool = '';
+            if (this.helper) {
+                this.commandHandler.remove(this.helper);
+            }
         }
         this.commandHandler = null;
         this.currentElement = null;

@@ -1501,6 +1501,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         } else if (state.isLayout) {
             this.initializeView(this.currentView);
         } else if (state.isDataManager && this.renderModule) {
+            if (this.dragAndDropModule) {
+                this.dragAndDropModule.actionObj.action = '';
+                removeClass([this.element], cls.EVENT_ACTION_CLASS);
+            }
             this.renderModule.refreshDataManager();
         }
     }
@@ -1994,7 +1998,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public refreshEvents(): void {
         if (this.dragAndDropModule) {
-        this.dragAndDropModule.actionObj.action = '';
+            this.dragAndDropModule.actionObj.action = '';
+            removeClass([this.element], cls.EVENT_ACTION_CLASS);
         }
         this.renderModule.refreshDataManager();
     }
@@ -2074,7 +2079,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (action === 'Add' && !isEventData) {
             (data as { [key: string]: Object }).startTime = this.getDateTime(<Date>(data as { [key: string]: Object }).startTime);
             (data as { [key: string]: Object }).endTime = this.getDateTime(<Date>(data as { [key: string]: Object }).endTime);
-            (data as { [key: string]: Object }).element = getElement((data as { [key: string]: Object }).element);
+            if (!isNullOrUndefined((data as { [key: string]: Object }).element)) {
+                (data as { [key: string]: Object }).element = getElement((data as { [key: string]: Object }).element);
+            }
         } else {
             (data as { [key: string]: Object })[this.eventFields.startTime] =
                 this.getDateTime(<Date>(data as { [key: string]: Object })[this.eventFields.startTime]);

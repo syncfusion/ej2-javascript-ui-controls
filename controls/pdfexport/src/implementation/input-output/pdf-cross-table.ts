@@ -510,18 +510,14 @@ export class RegisteredObject {
      */
     public constructor(offset : number, reference : PdfReference, free : boolean)
     public constructor(offset : number|PdfCrossTable, reference : PdfReference, free? : boolean|PdfReference) {
+        let tempOffset : number = <number>offset;
+        this.offsetNumber = tempOffset;
+        let tempReference : PdfReference = <PdfReference>reference;
+        this.generation = tempReference.genNumber;
+        this.object = tempReference.objNumber;
         if (typeof free === 'undefined') {
-            let tempOffset : number = <number>offset;
-            this.offsetNumber = tempOffset;
-            let tempReference : PdfReference = <PdfReference>reference;
-            this.generation = tempReference.genNumber;
-            this.object = tempReference.objNumber;
             this.type = ObjectType.Normal;
         } else {
-            let tempOffset : number = <number>offset;
-            let tempReference : PdfReference = <PdfReference>reference;
-            this.constructor(tempOffset, tempReference);
-            let tempFree : boolean = <boolean>free;
             this.type = ObjectType.Free;
         }
     }

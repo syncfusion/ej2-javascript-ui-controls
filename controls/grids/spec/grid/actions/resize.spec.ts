@@ -955,4 +955,42 @@ describe('Resize module', () => {
             gridObj = null;
         });
     });
+
+    describe('Resize functionalities with row drag and drop', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    allowResizing: true,
+                    allowRowDragAndDrop: true,
+                    dataSource: data,
+                    columns: [{ field: 'OrderID', headerText: 'OrderID', width: 150 },
+                            { field: 'CustomerID', headerText: 'CustomerID', width: 150 },
+                            { field: 'EmployeeID', headerText: 'EmployeeID', width: 150 },
+                            { field: 'Freight', headerText: 'Freight', width: 150, allowResizing: false },
+                            { field: 'ShipCity', headerText: 'ShipCity', width: 150 }
+                    ],
+                }, done);
+        });
+
+        it('Row drag and drop header element', () => {
+            expect(gridObj.element.querySelectorAll('.e-rowdragheader').length).toBe(1);
+        });
+
+        it('Column width after resize', () => {
+            let width = (gridObj.getHeaderTable().querySelectorAll('th')[3]).offsetWidth;
+            expect(gridObj.getHeaderTable().querySelectorAll('th')[3].offsetWidth).toBe(width);
+            let handler: HTMLElement = gridObj.getHeaderTable().querySelectorAll('.' + resizeClassList.root)[1];
+            gridObj.resizeModule.resizeStart({ target: handler, pageX: 150 });
+            gridObj.resizeModule.resizing({ target: handler, pageX: 300 });
+            width += 150;
+            expect(gridObj.getHeaderTable().querySelectorAll('th')[2].offsetWidth).toEqual(width);
+            expect(gridObj.getHeaderTable().querySelectorAll('th')[3].offsetWidth).not.toBe(width);
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });

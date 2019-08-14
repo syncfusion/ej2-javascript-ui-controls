@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### RichTextEditor
+
+#### New Features
+
+- **Support for saving images in base64**
+    - `#240002`, `#242405` - This feature allows users to save the images in the RichTextEditor in base64 format along with the existing blob format.
+
+- `#242771` - Provided the support to handle both absolute and relative path links.
+
+#### Bug Fixes
+
+- `#243767` - The issue with applying selected format based on content editable has been fixed.
+
 ## 17.2.36 (2019-07-24)
 
 ### RichTextEditor
@@ -11,6 +26,12 @@
 - `#242377` - The issue, "alignment is not working while pasting content from notepad" has been resolved.
 
 - `#F146057` - The issue, "formatting(strong and alignment) is not maintained on pasting web content" has been resolved.
+
+- `#243475` - Resolved the issue with max-length validation on pasting the content.
+
+- `#243921` - The issue, "font-size not applied to cursor based selection" has been resolved.
+
+- `#242999` - The key action for `tab` key and `shift + tab` key are similar now.
 
 ## 17.2.35 (2019-07-17)
 

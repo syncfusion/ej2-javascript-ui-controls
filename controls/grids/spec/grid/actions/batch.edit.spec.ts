@@ -33,7 +33,8 @@ describe('Batch Editing module', () => {
         for (let i = 0; i < 11; i++) {
             datasrc.push(extend({}, {}, data[i], true));
         }
-        return datasrc;
+        
+        return datasrc; 
     };
     
     let batchData: Object[] = dataSource();

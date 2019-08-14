@@ -216,6 +216,21 @@ describe('Diagram Control', () => {
             done();
         });
 
+        it('Checking remove Lane at runtime', (done: Function) => {
+            var lane = (diagram.nodes[0].shape as SwimLaneModel).lanes[0];
+            diagram.removeLane(diagram.nameTable['node1'], lane);
+            expect((diagram.nameTable['node1'].shape as SwimLaneModel).lanes.length===1).toBe(true);
+            done();
+        });
+        it('Checking remove phase at runtime', (done: Function) => {
+            var lane = (diagram.nodes[0].shape as SwimLaneModel).phases[0];
+            diagram.removePhase(diagram.nameTable['node1'], lane);
+            expect((diagram.nameTable['node1'].shape as SwimLaneModel).phases.length===1).toBe(true);
+            done();
+        });
+
+
+
 
     });
     describe('Vertical Swimlane', () => {
@@ -5847,7 +5862,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking Horizontal add node at runtime', (done: Function) => {
-
             expect(diagram.nodes[0].offsetX == 600 && diagram.nodes[0].offsetY == 250).toBe(true);
             done();
         });

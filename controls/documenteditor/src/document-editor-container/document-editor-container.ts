@@ -23,7 +23,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * Show or hide properties pane.
      */
-    @Property(false)
+    @Property(true)
     public showPropertiesPane: boolean;
     /**
      * Enable or disable toolbar in document editor container.
@@ -164,15 +164,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * @private
      */
-    public showHeaderProperties: boolean = false;
-    /**
-     * @private
-     */
     public previousContext: string = '';
-    /**
-     * @private
-     */
-    public showPropertiesPaneInternal: boolean = true;
     /**
      * Defines the settings of the DocumentEditorContainer service.
      */
@@ -503,9 +495,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * @private
      */
     public showHidePropertiesPane(show: boolean): void {
+        if (this.showPropertiesPane) {
+            this.showPropertiesPaneOnSelection();
+        }
         this.propertiesPaneContainer.style.display = show ? 'block' : 'none';
         if (this.toolbarModule) {
-            this.showPropertiesPaneInternal = show;
             this.toolbarModule.propertiesPaneButton.element.style.opacity = show ? '1' : '0.5';
         }
         this.documentEditor.resize();
@@ -626,36 +620,22 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         let currentContext: string = this.documentEditor.selection.contextType;
         let isInHeaderFooter: boolean = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;
-        if (!isInHeaderFooter && !this.showPropertiesPaneInternal) {
-            this.showPropertiesPane = false;
-            this.documentEditor.focusIn();
-            return;
-        }
-        if (!isInHeaderFooter) {
-            if (this.headerFooterProperties &&
-                this.headerFooterProperties.element.style.display === 'block') {
-                this.showPropertiesPane = false;
-                this.documentEditor.selection.closeHeaderFooter();
-            }
-            this.showHeaderProperties = true;
-        } else if (isInHeaderFooter && this.showHeaderProperties) {
-            this.showPropertiesPaneInternal = true;
-        }
-        if (this.showPropertiesPaneInternal) {
-            this.showPropertiesPane = true;
-            if (isInHeaderFooter && this.showHeaderProperties) {
+        if (!this.showPropertiesPane) {
+            this.showHidePropertiesPane(false);
+            this.propertiesPaneContainer.style.display = 'none';
+        } else {
+            this.propertiesPaneContainer.style.display = 'block';
+            if (isInHeaderFooter) {
                 this.showProperties('headerfooter');
-            } else {
-                if (currentContext.indexOf('Text') >= 0
-                    && currentContext.indexOf('Table') < 0) {
-                    this.showProperties('text');
-                } else if (currentContext.indexOf('Image') >= 0) {
-                    this.showProperties('image');
-                } else if (currentContext.indexOf('TableOfContents') >= 0) {
-                    this.showProperties('toc');
-                } else if (currentContext.indexOf('Table') >= 0) {
-                    this.showProperties('table');
-                }
+            } else if (currentContext.indexOf('Text') >= 0
+                && currentContext.indexOf('Table') < 0) {
+                this.showProperties('text');
+            } else if (currentContext.indexOf('Image') >= 0) {
+                this.showProperties('image');
+            } else if (currentContext.indexOf('TableOfContents') >= 0) {
+                this.showProperties('toc');
+            } else if (currentContext.indexOf('Table') >= 0) {
+                this.showProperties('table');
             }
         }
         this.previousContext = this.documentEditor.selection.contextType;

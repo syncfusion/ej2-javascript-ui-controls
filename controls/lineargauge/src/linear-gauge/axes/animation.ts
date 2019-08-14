@@ -66,7 +66,7 @@ export class Animations {
                 markerElement.setAttribute('d', currentPath);
                 pointer.startValue = pointer.currentValue;
                 pointer.animationComplete = true;
-                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     }
@@ -173,7 +173,7 @@ export class Animations {
                     }
                 }
                 pointer.startValue = pointer.currentValue;
-                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete,  this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     }

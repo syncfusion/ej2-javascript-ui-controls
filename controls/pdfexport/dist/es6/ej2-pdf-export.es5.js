@@ -2938,26 +2938,7 @@ var PdfReferenceHolder = /** @__PURE__ @class */ (function () {
          */
         this.dictionaryProperties = new DictionaryProperties();
         // if (typeof obj2 === 'undefined') {
-        if (obj1 instanceof PdfArray
-            || obj1 instanceof PdfDictionary
-            || obj1 instanceof PdfName
-            || obj1 instanceof PdfNumber
-            || obj1 instanceof PdfStream
-            || obj1 instanceof PdfReference
-            || obj1 instanceof PdfString) {
-            // if (obj1 === null) {
-            //     throw new Error('ArgumentNullException : obj');
-            // }
-            this.primitiveObject = obj1;
-            // } else if (obj1 instanceof PdfPageBase
-            //             || obj1 instanceof PdfPage
-            //             || obj1 instanceof PdfSection
-            //             || obj1 instanceof PdfSectionCollection) {
-        }
-        else {
-            var tempObj = obj1;
-            this.constructor(tempObj.element);
-        }
+        this.initialize(obj1);
         // }
         // else {
         //     if (obj2 === null) {
@@ -3092,6 +3073,21 @@ var PdfReferenceHolder = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    PdfReferenceHolder.prototype.initialize = function (obj1) {
+        if (obj1 instanceof PdfArray
+            || obj1 instanceof PdfDictionary
+            || obj1 instanceof PdfName
+            || obj1 instanceof PdfNumber
+            || obj1 instanceof PdfStream
+            || obj1 instanceof PdfReference
+            || obj1 instanceof PdfString) {
+            this.primitiveObject = obj1;
+        }
+        else {
+            var tempObj = obj1;
+            this.initialize(tempObj.element);
+        }
+    };
     /**
      * `Writes` a reference into a PDF document.
      * @private
@@ -3731,22 +3727,29 @@ var PdfColor = /** @__PURE__ @class */ (function () {
             this.alpha = color1.alpha;
             this.filled = (this.alpha !== 0);
         }
-        else if (typeof color1 === 'number' && typeof color2 === 'number' && typeof color3 === 'number' &&
-            typeof color4 === 'undefined') {
-            this.constructor(PdfColor.maxColourChannelValue, color1, color2, color3); //doubt-byte/float
-        }
-        else if (typeof color1 === 'number' && typeof color2 === 'number' && typeof color3 === 'number' && typeof color4 === 'number') {
-            this.redColor = color2;
+        else {
             this.cyanColor = 0;
-            this.greenColor = color3;
             this.magentaColor = 0;
-            this.blueColor = color4;
             this.yellowColor = 0;
             this.blackColor = 0;
             this.grayColor = 0;
-            this.alpha = color1;
-            this.filled = true;
-            this.assignCMYK(color2, color3, color4);
+            if (typeof color4 === 'undefined') {
+                //doubt-byte/float
+                this.redColor = color1;
+                this.greenColor = color2;
+                this.blueColor = color3;
+                this.alpha = PdfColor.maxColourChannelValue;
+                this.filled = true;
+                this.assignCMYK(color1, color2, color3);
+            }
+            else {
+                this.redColor = color2;
+                this.greenColor = color3;
+                this.blueColor = color4;
+                this.alpha = color1;
+                this.filled = true;
+                this.assignCMYK(color2, color3, color4);
+            }
         }
     }
     /**
@@ -4712,22 +4715,13 @@ var PdfStringFormat = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.wordWrapType = PdfWordWrapType.Word;
-        if (typeof arg1 === 'undefined') {
-            this.internalLineLimit = true;
-            this.wordWrapType = PdfWordWrapType.Word;
+        this.internalLineLimit = true;
+        this.wordWrapType = PdfWordWrapType.Word;
+        if ((typeof arg1 !== 'undefined') && (typeof arg1 !== 'string')) {
+            this.textAlignment = arg1;
         }
-        else if (typeof arg1 === 'string') {
-            this.constructor();
-        }
-        else {
-            if (typeof arg2 === 'undefined') {
-                this.constructor();
-                this.textAlignment = arg1;
-            }
-            else {
-                this.constructor(arg1);
-                this.verticalAlignment = arg2;
-            }
+        if (typeof arg2 !== 'undefined') {
+            this.verticalAlignment = arg2;
         }
     }
     Object.defineProperty(PdfStringFormat.prototype, "alignment", {
@@ -7104,18 +7098,15 @@ var PdfCrossTable = /** @__PURE__ @class */ (function () {
 }());
 var RegisteredObject = /** @__PURE__ @class */ (function () {
     function RegisteredObject(offset, reference, free) {
+        var tempOffset = offset;
+        this.offsetNumber = tempOffset;
+        var tempReference = reference;
+        this.generation = tempReference.genNumber;
+        this.object = tempReference.objNumber;
         if (typeof free === 'undefined') {
-            var tempOffset = offset;
-            this.offsetNumber = tempOffset;
-            var tempReference = reference;
-            this.generation = tempReference.genNumber;
-            this.object = tempReference.objNumber;
             this.type = ObjectType.Normal;
         }
         else {
-            var tempOffset = offset;
-            var tempReference = reference;
-            this.constructor(tempOffset, tempReference);
             this.type = ObjectType.Free;
         }
     }
@@ -8462,15 +8453,14 @@ var PdfPen = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.colorSpace = PdfColorSpace.Rgb;
-        if (typeof arg2 === 'number') {
-            this.constructor(arg1);
-            this.width = arg2;
-        }
-        else if (typeof arg2 === 'undefined' && arg1 instanceof PdfBrush) {
+        if (arg1 instanceof PdfBrush) {
             this.setBrush(arg1);
         }
-        else if (typeof arg2 === 'undefined' && arg1 instanceof PdfColor) {
+        else if (arg1 instanceof PdfColor) {
             this.color = arg1;
+        }
+        if (typeof arg2 === 'number') {
+            this.width = arg2;
         }
     }
     Object.defineProperty(PdfPen.prototype, "color", {
@@ -8842,7 +8832,7 @@ var Matrix = /** @__PURE__ @class */ (function () {
             this.metrixElements = [];
         }
         else if (typeof arg1 === 'number') {
-            this.constructor();
+            this.metrixElements = [];
             this.metrixElements.push(arg1);
             this.metrixElements.push(arg2);
             this.metrixElements.push(arg3);
@@ -14385,15 +14375,15 @@ var PdfGraphics = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.startCutIndex = -1;
+        this.getResources = arg2;
+        this.canvasSize = arg1;
         if (arg3 instanceof PdfStreamWriter) {
             this.pdfStreamWriter = arg3;
-            this.getResources = arg2;
-            this.canvasSize = arg1;
-            this.initialize();
         }
         else {
-            this.constructor(arg1, arg2, new PdfStreamWriter(arg3));
+            this.pdfStreamWriter = new PdfStreamWriter(arg3);
         }
+        this.initialize();
     }
     Object.defineProperty(PdfGraphics.prototype, "stringLayoutResult", {
         //  Properties
@@ -15967,23 +15957,22 @@ var PdfPageLayer = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.dictionaryProperties = new DictionaryProperties();
+        if (page === null) {
+            throw new Error('ArgumentNullException:page');
+        }
+        this.pdfPage = page;
+        this.clipPageTemplates = true;
         if (typeof streamClipPageTemplates === 'undefined') {
-            this.pdfPage = page;
-            this.clipPageTemplates = true;
             this.content = new PdfStream();
         }
         else if (streamClipPageTemplates instanceof PdfStream || streamClipPageTemplates === null) {
-            if (page == null) {
-                throw new Error('ArgumentNullException:page');
-            }
-            if (streamClipPageTemplates == null) {
+            if (streamClipPageTemplates === null) {
                 throw new Error('ArgumentNullException:stream');
             }
-            this.pdfPage = page;
             this.content = streamClipPageTemplates;
         }
         else {
-            this.constructor(page);
+            this.content = new PdfStream();
             this.clipPageTemplates = streamClipPageTemplates;
         }
     }
@@ -16706,15 +16695,12 @@ var __extends$13 = (undefined && undefined.__extends) || (function () {
 var PdfResources = /** @__PURE__ @class */ (function (_super) {
     __extends$13(PdfResources, _super);
     function PdfResources(baseDictionary) {
-        var _this = _super.call(this) || this;
+        var _this = _super.call(this, baseDictionary) || this;
         /**
          * Dictionary for the `properties names`.
          * @private
          */
         _this.properties = new PdfDictionary();
-        if (baseDictionary instanceof PdfDictionary) {
-            _this = _super.call(this, baseDictionary) || this;
-        }
         return _this;
     }
     Object.defineProperty(PdfResources.prototype, "names", {
@@ -18059,15 +18045,16 @@ var PdfSection = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.dictionaryProperties = new DictionaryProperties();
+        this.pdfDocument = document;
         if (typeof pageSettings === 'undefined') {
-            this.constructor(document, document.pageSettings);
+            this.settings = document.pageSettings.clone();
+            this.initialSettings = this.settings.clone();
         }
         else {
-            this.pdfDocument = document;
             this.settings = pageSettings.clone();
             this.initialSettings = this.settings.clone();
-            this.initialize();
         }
+        this.initialize();
     }
     Object.defineProperty(PdfSection.prototype, "parent", {
         //Property
@@ -19084,25 +19071,27 @@ var PdfDocument = /** @__PURE__ @class */ (function (_super) {
          */
         _this.streamWriter = null;
         _this.document = _this;
-        if (isMerging === true || isMerging === false || typeof isMerging !== 'undefined') {
-            var objects = new PdfMainObjectCollection();
-            _this.setMainObjectCollection(objects);
-            var crossTable = new PdfCrossTable();
-            crossTable.isMerging = isMerging;
-            crossTable.document = _this;
-            _this.setCrossTable(crossTable);
-            var catalog = new PdfCatalog();
-            _this.setCatalog(catalog);
-            objects.add(catalog);
-            catalog.position = -1;
-            _this.sectionCollection = new PdfSectionCollection(_this);
-            _this.documentPageCollection = new PdfDocumentPageCollection(_this);
-            catalog.pages = _this.sectionCollection;
+        var isMerge = false;
+        if (typeof isMerging === 'undefined') {
+            PdfDocument.cacheCollection = new PdfCacheCollection();
+            isMerge = false;
         }
         else {
-            PdfDocument.cacheCollection = new PdfCacheCollection();
-            _this.constructor(false);
+            isMerge = isMerging;
         }
+        var objects = new PdfMainObjectCollection();
+        _this.setMainObjectCollection(objects);
+        var crossTable = new PdfCrossTable();
+        crossTable.isMerging = isMerge;
+        crossTable.document = _this;
+        _this.setCrossTable(crossTable);
+        var catalog = new PdfCatalog();
+        _this.setCatalog(catalog);
+        objects.add(catalog);
+        catalog.position = -1;
+        _this.sectionCollection = new PdfSectionCollection(_this);
+        _this.documentPageCollection = new PdfDocumentPageCollection(_this);
+        catalog.pages = _this.sectionCollection;
         return _this;
     }
     Object.defineProperty(PdfDocument, "defaultFont", {
@@ -19993,7 +19982,7 @@ var __extends$5 = (undefined && undefined.__extends) || (function () {
 var PdfStandardFont = /** @__PURE__ @class */ (function (_super) {
     __extends$5(PdfStandardFont, _super);
     function PdfStandardFont(fontFamilyPrototype, size, style) {
-        var _this = _super.call(this, size, style) || this;
+        var _this = _super.call(this, size, (typeof style === 'undefined') ? ((fontFamilyPrototype instanceof PdfStandardFont) ? fontFamilyPrototype.style : PdfFontStyle.Regular) : style) || this;
         /**
          * Gets `ascent` of the font.
          * @private
@@ -20006,24 +19995,21 @@ var PdfStandardFont = /** @__PURE__ @class */ (function (_super) {
          */
         _this.encodings = ['Unknown', 'StandardEncoding', 'MacRomanEncoding', 'MacExpertEncoding',
             'WinAnsiEncoding', 'PDFDocEncoding', 'IdentityH'];
-        if ((typeof fontFamilyPrototype === 'number') && (typeof style === 'undefined')) {
-            _this.constructor(fontFamilyPrototype, size, PdfFontStyle.Regular);
+        if (typeof fontFamilyPrototype === 'undefined') {
+            _this.pdfFontFamily = PdfFontFamily.Helvetica;
         }
-        else if ((typeof fontFamilyPrototype === 'number') && (typeof style !== 'undefined')) {
-            _this = _super.call(this, size, style) || this;
+        else if ((fontFamilyPrototype instanceof PdfStandardFont)) {
+            _this.pdfFontFamily = fontFamilyPrototype.fontFamily;
+        }
+        else {
             _this.pdfFontFamily = fontFamilyPrototype;
-            _this.checkStyle();
-            _this.initializeInternals();
         }
-        else if ((fontFamilyPrototype instanceof PdfStandardFont) && (typeof style === 'undefined')) {
-            _this.constructor(fontFamilyPrototype.fontFamily, size, fontFamilyPrototype.style);
-        }
-        else if ((fontFamilyPrototype instanceof PdfStandardFont) && (typeof style !== 'undefined')) {
-            _this.constructor(fontFamilyPrototype.fontFamily, size, style);
-        }
+        _this.checkStyle();
+        _this.initializeInternals();
         return _this;
     }
     Object.defineProperty(PdfStandardFont.prototype, "fontFamily", {
+        /* tslint:enable */
         //Properties
         /**
          * Gets the `FontFamily`.
@@ -20425,14 +20411,7 @@ var __extends$3 = (undefined && undefined.__extends) || (function () {
 var PdfLinkAnnotation = /** @__PURE__ @class */ (function (_super) {
     __extends$3(PdfLinkAnnotation, _super);
     function PdfLinkAnnotation(rectangle) {
-        var _this = this;
-        if (typeof rectangle === 'undefined') {
-            _this = _super.call(this) || this;
-        }
-        else {
-            _this = _super.call(this, rectangle) || this;
-        }
-        return _this;
+        return _super.call(this, rectangle) || this;
     }
     // Implementation
     /**
@@ -21190,32 +21169,27 @@ var PdfTextElement = /** @__PURE__ @class */ (function (_super) {
             //
         }
         else if (typeof arg1 === 'string' && typeof arg2 === 'undefined') {
-            _this = _super.call(this) || this;
             _this.content = arg1;
             _this.elementValue = arg1;
         }
         else if (typeof arg1 === 'string' && arg2 instanceof PdfFont && typeof arg3 === 'undefined') {
-            _this = _super.call(this) || this;
             _this.content = arg1;
             _this.elementValue = arg1;
             _this.pdfFont = arg2;
         }
         else if (typeof arg1 === 'string' && arg2 instanceof PdfFont && arg3 instanceof PdfPen && typeof arg4 === 'undefined') {
-            _this = _super.call(this) || this;
             _this.content = arg1;
             _this.elementValue = arg1;
             _this.pdfFont = arg2;
             _this.pdfPen = arg3;
         }
         else if (typeof arg1 === 'string' && arg2 instanceof PdfFont && arg3 instanceof PdfBrush && typeof arg4 === 'undefined') {
-            _this = _super.call(this) || this;
             _this.content = arg1;
             _this.elementValue = arg1;
             _this.pdfFont = arg2;
             _this.pdfBrush = arg3;
         }
         else {
-            _this = _super.call(this) || this;
             _this.content = arg1;
             _this.elementValue = arg1;
             _this.pdfFont = arg2;
@@ -22493,17 +22467,13 @@ var PdfDestination = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.array = new PdfArray();
-        if (typeof arg2 === 'undefined') {
-            var angle = PdfPageRotateAngle.RotateAngle0;
-            this.destinationLocation = new PointF(0, this.destinationLocation.y);
-            this.pdfPage = arg1;
-        }
-        else if (arg2 instanceof PointF) {
-            this.constructor(arg1);
+        var angle = PdfPageRotateAngle.RotateAngle0;
+        this.destinationLocation = new PointF(0, this.destinationLocation.y);
+        this.pdfPage = arg1;
+        if (arg2 instanceof PointF) {
             this.destinationLocation = arg2;
         }
         else {
-            this.constructor(arg1);
             this.bounds = arg2;
         }
     }
@@ -22786,35 +22756,31 @@ var PdfPageTemplateElement = /** @__PURE__ @class */ (function () {
     /* tslint:disable */
     function PdfPageTemplateElement(arg1, arg2, arg3, arg4, arg5) {
         if (arg1 instanceof RectangleF && typeof arg2 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg1.width, arg1.height);
+            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, null);
         }
         else if (arg1 instanceof RectangleF && arg2 instanceof PdfPage && typeof arg3 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
+            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
         }
         else if (arg1 instanceof PointF && arg2 instanceof SizeF && typeof arg3 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg2.width, arg2.height);
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, null);
         }
         else if (arg1 instanceof PointF && arg2 instanceof SizeF && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
         }
         else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
-            this.constructor(arg1.width, arg1.height);
+            this.InitiateBounds(0, 0, arg1.width, arg1.height, null);
         }
         else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'undefined') {
-            this.constructor(0, 0, arg1, arg2);
+            this.InitiateBounds(0, 0, arg1, arg2, null);
         }
         else if (typeof arg1 === 'number' && typeof arg2 === 'number' && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.constructor(0, 0, arg1, arg2, arg3);
+            this.InitiateBounds(0, 0, arg1, arg2, arg3);
         }
         else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'number' && typeof arg5 === 'undefined') {
-            this.x = arg1;
-            this.y = arg2;
-            this.pdfTemplate = new PdfTemplate(arg3, arg4);
+            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
         }
         else {
-            this.x = arg1;
-            this.y = arg2;
-            this.pdfTemplate = new PdfTemplate(arg3, arg4);
+            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
             // this.graphics.colorSpace = this.page.document.colorSpace;
         }
         /* tslint:enable */
@@ -23052,6 +23018,16 @@ var PdfPageTemplateElement = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    /**
+     * `Initialize Bounds` Initialize the bounds value of the template.
+     * @private
+     */
+    PdfPageTemplateElement.prototype.InitiateBounds = function (arg1, arg2, arg3, arg4, arg5) {
+        this.x = arg1;
+        this.y = arg2;
+        this.pdfTemplate = new PdfTemplate(arg3, arg4);
+        // this.graphics.colorSpace = this.page.document.colorSpace;
+    };
     /**
      * `Updates Dock` property if template is used as header/footer.
      * @private
@@ -24124,12 +24100,9 @@ var PdfGridCell = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.present = false;
-        if (typeof row === 'undefined') {
-            this.gridRowSpan = 1;
-            this.colSpan = 1;
-        }
-        else {
-            this.constructor();
+        this.gridRowSpan = 1;
+        this.colSpan = 1;
+        if (typeof row !== 'undefined') {
             this.gridRow = row;
         }
     }
@@ -27929,14 +27902,7 @@ var PdfGridLayoutFormat = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     function PdfGridLayoutFormat(baseFormat) {
-        var _this = this;
-        if (typeof baseFormat === 'undefined') {
-            _this = _super.call(this) || this;
-        }
-        else {
-            _this = _super.call(this, baseFormat) || this;
-        }
-        return _this;
+        return _super.call(this, baseFormat) || this;
     }
     return PdfGridLayoutFormat;
 }(PdfLayoutFormat));

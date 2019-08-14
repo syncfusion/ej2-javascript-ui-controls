@@ -4410,7 +4410,8 @@ var CacheAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @param  {Ajax} settings?
      */
     CacheAdaptor.prototype.beforeSend = function (dm, request, settings) {
-        if (DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch) && settings.type.toLowerCase() === 'post') {
+        if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
+            && settings.type.toLowerCase() === 'post') {
             request.setRequestHeader('Accept', this.cacheAdaptor.options.multipartAccept);
         }
         if (!dm.dataSource.crossDomain) {
@@ -4626,8 +4627,12 @@ var DataManager = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, query);
             }
-            else {
+            else if (!isNullOrUndefined(result.url)) {
                 this.makeRequest(result, deffered, args, query);
+            }
+            else {
+                args = DataManager.getDeferedArgs(query, result, args);
+                deffered.resolve(args);
             }
         }
         else {

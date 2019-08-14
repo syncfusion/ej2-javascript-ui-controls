@@ -164,7 +164,7 @@ export class GaugeTooltip {
                         if (pageX + bounds['width'] <= window.innerWidth && bounds['x'] <= 0) {
                             this.tooltipEle.style.left = pageX + 20 + 'px';
                             this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
-                        } else if (bounds['x'] <= 0 && pageX + bounds['width'] >= window.innerWidth) {
+                        } else {
                             this.tooltipEle.style.left = pageX - bounds['width'] + 20 + 'px';
                             this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
                         }

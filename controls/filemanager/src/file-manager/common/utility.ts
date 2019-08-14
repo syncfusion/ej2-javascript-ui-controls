@@ -1,7 +1,7 @@
 import { IFileManager, ReadArgs, SortOrder, SearchArgs, FileDragEventArgs } from '../base/interface';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
-import { read, paste, Search } from '../common/operations';
+import { read, paste, Search, filter } from '../common/operations';
 import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement } from '@syncfusion/ej2-base';
 import { closest, DragEventArgs, detach } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -121,7 +121,7 @@ export function activeElement(action: string, parent: IFileManager): boolean {
         parent.selectedNodes.push(getValue('name', parent.activeRecords[i]));
         i++;
     }
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '' &&
+    if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) &&
         parent.activeModule !== 'navigationpane') {
         parent.selectedNodes = [];
         parent.isSearchCut = true;
@@ -163,7 +163,7 @@ export function getModule(parent: IFileManager, element: Element): void {
 
 export function searchWordHandler(parent: IFileManager, value: string, isLayoutChange: boolean): void {
     let searchWord: string;
-    if (value.length === 0) {
+    if (value.length === 0 && !parent.isFiltered) {
         parent.notify(events.pathColumn, { args: parent });
     }
     if (parent.searchSettings.filterType === 'startsWith') {
@@ -180,19 +180,24 @@ export function searchWordHandler(parent: IFileManager, value: string, isLayoutC
         let hiddenItems: boolean = parent.showHiddenItems;
         Search(parent, isLayoutChange ? events.layoutChange : events.search, parent.path, searchWord, hiddenItems, !caseSensitive);
     } else {
-        read(parent, isLayoutChange ? events.layoutChange : events.search, parent.path);
+        if (!parent.isFiltered) {
+            read(parent, isLayoutChange ? events.layoutChange : events.search, parent.path);
+        } else {
+            filter(parent, events.layoutChange);
+        }
     }
 }
 
 export function updateLayout(parent: IFileManager, view: string): void {
     parent.setProperties({ view: view }, true);
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) {
         parent.layoutSelectedItems = parent.selectedItems;
     }
     let searchWord: string = '';
     if (parent.breadcrumbbarModule.searchObj.element.value) {
         searchWord = parent.breadcrumbbarModule.searchObj.element.value;
     }
+    parent.isLayoutChange = true;
     searchWordHandler(parent, searchWord, true);
 }
 
@@ -290,7 +295,7 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
     if (parent.hasId) {
         let imgId: string = getValue('id', item);
         imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
-    } else if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNOU(fPath)) {
+    } else if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) && !isNOU(fPath)) {
         imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
     } else {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
@@ -319,7 +324,7 @@ export function getFullName(item: Object): string {
 export function getName(parent: IFileManager, data: Object): string {
     let name: string = getValue('name', data);
     let fPath: string = getValue('filterPath', data);
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNOU(fPath)) {
+    if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) && !isNOU(fPath)) {
         fPath = fPath.replace(/\\/g, '/');
         name = fPath.replace(parent.path, '') + name;
     }
@@ -366,6 +371,9 @@ export function createEmptyElement(parent: IFileManager, element: HTMLElement, a
         if (!isNOU(args.error)) {
             element.querySelector('.' + CLS.EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Access-Denied');
             element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Access-Details');
+        } else if (parent.isFiltered) {
+            element.querySelector('.' + CLS.EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Filter-Empty');
+            element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Filter-Key');
         } else if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
             element.querySelector('.' + CLS.EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Search-Empty');
             element.querySelector('.' + CLS.EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Search-Key');
@@ -384,7 +392,6 @@ export function getDirectories(files: Object[]): Object[] {
 }
 
 export function setNodeId(result: ReadArgs, rootId: string): void {
-    setValue('_fm_id', rootId, result.cwd);
     let dirs: Object[] = getDirectories(result.files);
     for (let i: number = 0, len: number = dirs.length; i < len; i++) {
         setValue('_fm_id', rootId + '_' + i, dirs[i]);

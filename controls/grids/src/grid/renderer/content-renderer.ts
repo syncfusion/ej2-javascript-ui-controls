@@ -139,7 +139,7 @@ export class ContentRender implements IRenderer {
         }
         let table: Element = this.parent.createElement('table', {
             className: 'e-table', attrs: {
-                role: 'grid',
+                cellspacing: '0.25px', role: 'grid',
                 id: this.parent.element.id + id
             }
         });

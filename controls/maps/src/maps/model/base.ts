@@ -1209,6 +1209,7 @@ export class MarkerSettings extends MarkerBase {
 export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * Specifies the shape data for the layer.
+     * @isdatamanager false
      * @default null
      */
     @Property(null)

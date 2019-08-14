@@ -1,5 +1,5 @@
 /* tslint:disable-next-line:max-line-length */
-import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue } from '@syncfusion/ej2-base';
+import { EventHandler, L10n, isNullOrUndefined, extend, classList, addClass, removeClass, Browser, getValue, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { parentsUntil, getUid, isActionPrevent, appendChildren, getDatePredicate } from '../base/util';
 import { remove, debounce } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -252,12 +252,16 @@ export class CheckBoxFilter {
 
     protected showDialog(options: IFilterArgs): void {
         let args: {
-            requestType: string, filterModel: CheckBoxFilter, columnName: string,
+            requestType: string, filterModel?: CheckBoxFilter, columnName: string,
             columnType: string, cancel: boolean
         } = {
-                requestType: events.filterBeforeOpen, filterModel: this,
+                requestType: events.filterBeforeOpen,
                 columnName: this.options.field, columnType: this.options.type, cancel: false
             };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel: string = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(events.actionBegin, args);
         if (args.cancel) {
             return;
@@ -569,10 +573,14 @@ export class CheckBoxFilter {
         this.addDistinct(query);
         let args: {
             dataSource?: Object[], requestType?: string,
-            filterModel: CheckBoxFilter, query: Query, filterChoiceCount: number
+            filterModel?: CheckBoxFilter, query: Query, filterChoiceCount: number
         } = {
-                requestType: events.filterChoiceRequest, filterModel: this, query: query, filterChoiceCount: null
+                requestType: events.filterChoiceRequest, query: query, filterChoiceCount: null
             };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel: string = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(events.actionBegin, args);
         args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
         query.take(args.filterChoiceCount);
@@ -670,8 +678,12 @@ export class CheckBoxFilter {
         this.sInput.focus();
         let args: Object = {
             requestType: events.filterAfterOpen,
-            filterModel: this, columnName: this.options.field, columnType: this.options.type
+            columnName: this.options.field, columnType: this.options.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel: string = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(events.actionComplete, args);
     }
 
@@ -821,8 +833,12 @@ export class CheckBoxFilter {
         btn.dataBind();
         let args: {
             dataSource?: Object[], requestType?: string,
-            filterModel: CheckBoxFilter
-        } = { requestType: events.filterChoiceRequest, filterModel: this, dataSource: this.renderEmpty ? [] : data };
+            filterModel?: CheckBoxFilter
+        } = { requestType: events.filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            let filterModel: string = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(events.actionComplete, args);
         hideSpinner(this.spinner);
     }

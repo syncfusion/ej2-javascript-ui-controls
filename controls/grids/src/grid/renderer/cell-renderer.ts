@@ -1,5 +1,5 @@
 import { L10n } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, extend, isBlazor } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, isBlazor, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
 import { ICellRenderer, IValueFormatter, ICellFormatter, IGrid, ICell } from '../base/interface';
@@ -61,6 +61,9 @@ export class CellRenderer implements ICellRenderer<Column> {
                 result = cell.column.getColumnTemplate()(
                     extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str],
                     parseInt(attributes[index], 10));
+                if (this.parent.editSettings.mode !== 'Batch') {
+                    updateBlazorTemplate(templateID, 'Template', cell.column, false);
+                }
             } else {
                 result = cell.column.getColumnTemplate()(
                     extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);

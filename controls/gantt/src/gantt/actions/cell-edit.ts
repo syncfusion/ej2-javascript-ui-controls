@@ -43,9 +43,11 @@ export class CellEdit {
             args.cancel = true;
         } else {
             this.parent.trigger('cellEdit', args);
-            if (!isNOU(this.parent.toolbarModule) && !args.cancel) {
+            if (!args.cancel) {
                 this.isCellEdit = true;
-                this.parent.toolbarModule.refreshToolbarItems();
+                if (!isNOU(this.parent.toolbarModule)) {
+                    this.parent.toolbarModule.refreshToolbarItems();
+                }
                 if (args.columnName === 'Notes') {
                     this.openNotesEditor(args);
                 }

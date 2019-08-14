@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Complex, Component, Draggable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, createElement, detach, formatUnit, getValue, isBlazor, isNullOrUndefined, isVisible, matches, remove, removeClass, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Complex, Component, Draggable, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, createElement, detach, extend, formatUnit, getValue, isBlazor, isNullOrUndefined, isVisible, matches, remove, removeClass, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -551,6 +551,8 @@ var finalizeEnd = 'finalize-end';
 /** @hidden */
 var createEnd = 'create-end';
 /** @hidden */
+var filterEnd = 'filter-end';
+/** @hidden */
 var beforeDelete = 'before-delete';
 /** @hidden */
 var pathDrag = 'path-drag';
@@ -759,7 +761,7 @@ function activeElement(action, parent) {
         parent.selectedNodes.push(getValue('name', parent.activeRecords[i]));
         i++;
     }
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '' &&
+    if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) &&
         parent.activeModule !== 'navigationpane') {
         parent.selectedNodes = [];
         parent.isSearchCut = true;
@@ -800,7 +802,7 @@ function getModule(parent, element) {
 }
 function searchWordHandler(parent, value, isLayoutChange) {
     var searchWord;
-    if (value.length === 0) {
+    if (value.length === 0 && !parent.isFiltered) {
         parent.notify(pathColumn, { args: parent });
     }
     if (parent.searchSettings.filterType === 'startsWith') {
@@ -820,18 +822,24 @@ function searchWordHandler(parent, value, isLayoutChange) {
         Search(parent, isLayoutChange ? layoutChange : search, parent.path, searchWord, hiddenItems, !caseSensitive);
     }
     else {
-        read(parent, isLayoutChange ? layoutChange : search, parent.path);
+        if (!parent.isFiltered) {
+            read(parent, isLayoutChange ? layoutChange : search, parent.path);
+        }
+        else {
+            filter(parent, layoutChange);
+        }
     }
 }
 function updateLayout(parent, view) {
     parent.setProperties({ view: view }, true);
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
+    if (parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) {
         parent.layoutSelectedItems = parent.selectedItems;
     }
     var searchWord = '';
     if (parent.breadcrumbbarModule.searchObj.element.value) {
         searchWord = parent.breadcrumbbarModule.searchObj.element.value;
     }
+    parent.isLayoutChange = true;
     searchWordHandler(parent, searchWord, true);
 }
 /* istanbul ignore next */
@@ -936,7 +944,7 @@ function getImageUrl(parent, item) {
         var imgId = getValue('id', item);
         imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
     }
-    else if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNullOrUndefined(fPath)) {
+    else if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) && !isNullOrUndefined(fPath)) {
         imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
     }
     else {
@@ -964,7 +972,7 @@ function getFullName(item) {
 function getName(parent, data) {
     var name = getValue('name', data);
     var fPath = getValue('filterPath', data);
-    if (parent.breadcrumbbarModule.searchObj.element.value !== '' && !isNullOrUndefined(fPath)) {
+    if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) && !isNullOrUndefined(fPath)) {
         fPath = fPath.replace(/\\/g, '/');
         name = fPath.replace(parent.path, '') + name;
     }
@@ -1012,6 +1020,10 @@ function createEmptyElement(parent, element, args) {
             element.querySelector('.' + EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Access-Denied');
             element.querySelector('.' + EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Access-Details');
         }
+        else if (parent.isFiltered) {
+            element.querySelector('.' + EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Filter-Empty');
+            element.querySelector('.' + EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Filter-Key');
+        }
         else if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
             element.querySelector('.' + EMPTY_CONTENT).innerHTML = getLocaleText(parent, 'Search-Empty');
             element.querySelector('.' + EMPTY_INNER_CONTENT).innerHTML = getLocaleText(parent, 'Search-Key');
@@ -1029,7 +1041,6 @@ function getDirectories(files) {
     return new DataManager(files).executeLocal(new Query().where(isFile, 'equal', false, false));
 }
 function setNodeId(result, rootId) {
-    setValue('_fm_id', rootId, result.cwd);
     var dirs = getDirectories(result.files);
     for (var i = 0, len = dirs.length; i < len; i++) {
         setValue('_fm_id', rootId + '_' + i, dirs[i]);
@@ -1490,13 +1501,23 @@ function createFolder(parent, itemName) {
     createAjax(parent, data, createSuccess);
 }
 /**
+ * Function to filter the files in File Manager.
+ * @private
+ */
+function filter(parent, event) {
+    var data = { action: 'filter', path: parent.path, showHiddenItems: parent.showHiddenItems, data: [getPathObject(parent)] };
+    var filterData;
+    filterData = parent.filterData ? extend(filterData, data, parent.filterData) : data;
+    createAjax(parent, filterData, filterSuccess, event, getValue('action', filterData));
+}
+/**
  * Function to rename the folder/file in File Manager.
  * @private
  */
 function rename(parent, path, itemNewName) {
     var name;
     var newName;
-    if (parent.breadcrumbbarModule.searchObj.element.value === '') {
+    if (parent.breadcrumbbarModule.searchObj.element.value === '' && !parent.isFiltered) {
         name = parent.currentItemText;
         newName = itemNewName;
     }
@@ -1577,18 +1598,11 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                         result = JSON.parse(result);
                     }
                     parent.notify(afterRequest, { action: 'success' });
-                    if (!isNullOrUndefined(result.files)) {
-                        // tslint:disable-next-line
-                        setDateObject(result.files);
-                        for (var i = 0, len = result.files.length; i < len; i++) {
-                            var item = result.files[i];
-                            setValue('_fm_iconClass', fileType(item), item);
-                        }
-                        if (getValue('action', data) === 'read') {
-                            var id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
-                            setNodeId(result, id);
-                            setValue(id, result.files, parent.feFiles);
-                            setValue(id, result.cwd, parent.feParent);
+                    var id = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
+                    if (!isNullOrUndefined(result.cwd) && (getValue('action', data) === 'read')) {
+                        setValue('_fm_id', id, result.cwd);
+                        setValue(id, result.cwd, parent.feParent);
+                        if (!isNullOrUndefined(result.files) || result.error.code === '401') {
                             if ((event === 'finalize-end' || event === 'initial-end') && parent.pathNames.length === 0) {
                                 var root = getValue(parent.pathId[0], parent.feParent);
                                 parent.pathNames[0] = getValue('name', root);
@@ -1597,6 +1611,18 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                             if (event === 'finalize-end') {
                                 generatePath(parent);
                             }
+                        }
+                    }
+                    if (!isNullOrUndefined(result.files)) {
+                        // tslint:disable-next-line
+                        setDateObject(result.files);
+                        for (var i = 0, len = result.files.length; i < len; i++) {
+                            var item = result.files[i];
+                            setValue('_fm_iconClass', fileType(item), item);
+                        }
+                        if (getValue('action', data) === 'read') {
+                            setNodeId(result, id);
+                            setValue(id, result.files, parent.feFiles);
                         }
                     }
                     fn(parent, result, event, operation, targetPath);
@@ -1650,6 +1676,16 @@ function readSuccess(parent, result, event) {
         parent.isDropEnd = parent.isDragDrop = false;
     }
 }
+function filterSuccess(parent, result, event, action) {
+    if (!isNullOrUndefined(result.files)) {
+        parent.notify(event, result);
+        var args = { action: action, result: result };
+        parent.trigger('success', args);
+    }
+    else {
+        onFailure(parent, result, action);
+    }
+}
 /* istanbul ignore next */
 function createSuccess(parent, result) {
     if (!isNullOrUndefined(result.files)) {
@@ -1695,7 +1731,12 @@ function renameSuccess(parent, result, path) {
                 Search(parent, renameEnd, parent.path, parent.searchWord, parent.showHiddenItems, !parent.searchSettings.ignoreCase);
             }
             else {
-                read(parent, renameEnd, parent.path);
+                if (parent.isFiltered) {
+                    filter(parent, renameEnd);
+                }
+                else {
+                    read(parent, renameEnd, parent.path);
+                }
             }
         }
     }
@@ -1750,8 +1791,13 @@ function deleteSuccess(parent, result, path) {
         parent.setProperties({ path: path }, true);
         parent.itemData = [getPathObject(parent)];
         read(parent, deleteEnd, parent.path);
-        var args = { action: 'delete', result: result };
-        parent.trigger('success', args);
+        if (result.error) {
+            onFailure(parent, result, 'delete');
+        }
+        else {
+            var args = { action: 'delete', result: result };
+            parent.trigger('success', args);
+        }
     }
     else {
         onFailure(parent, result, 'delete');
@@ -2707,6 +2753,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 this.element.focus();
             }
             this.checkItem();
+            this.parent.isLayoutChange = false;
         }
         else {
             this.element.setAttribute('tabindex', '-1');
@@ -2792,16 +2839,6 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             this.updateRenameData();
         }
     };
-    LargeIconsView.prototype.onRenameEnd = function (args) {
-        if (this.parent.view !== 'LargeIcons') {
-            return;
-        }
-        this.onLayoutChange(args);
-        this.clearSelect();
-        this.parent.setProperties({ selectedItems: [] }, true);
-        this.addSelection(this.parent.renamedItem);
-        this.parent.renamedItem = null;
-    };
     LargeIconsView.prototype.onPathChanged = function (args) {
         this.parent.isCut = false;
         /* istanbul ignore next */
@@ -2812,6 +2849,11 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             removeBlur(this.parent);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.onLayoutChange(args);
+            if (this.parent.renamedItem) {
+                this.clearSelect();
+                this.addSelection(this.parent.renamedItem);
+                this.parent.renamedItem = null;
+            }
         }
     };
     LargeIconsView.prototype.onOpenInit = function (args) {
@@ -2881,7 +2923,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.off(openEnd, this.onPathChanged);
         this.parent.off(modelChanged, this.onPropertyChanged);
         this.parent.off(renameInit, this.onRenameInit);
-        this.parent.off(renameEnd, this.onRenameEnd);
+        this.parent.off(renameEnd, this.onPathChanged);
         this.parent.off(hideLayout, this.onHideLayout);
         this.parent.off(selectAllInit, this.onSelectAllInit);
         this.parent.off(clearAllInit, this.onClearAllInit);
@@ -2898,6 +2940,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
         this.parent.off(dropPath, this.onDropPath);
         this.parent.off(updateSelectionData, this.onUpdateSelectionData);
+        this.parent.off(filterEnd, this.onPathChanged);
     };
     LargeIconsView.prototype.addEventListener = function () {
         this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
@@ -2912,7 +2955,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.on(search, this.onSearch, this);
         this.parent.on(openInit, this.onOpenInit, this);
         this.parent.on(renameInit, this.onRenameInit, this);
-        this.parent.on(renameEnd, this.onRenameEnd, this);
+        this.parent.on(renameEnd, this.onPathChanged, this);
         this.parent.on(openEnd, this.onPathChanged, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
         this.parent.on(hideLayout, this.onHideLayout, this);
@@ -2930,6 +2973,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(dropPath, this.onDropPath, this);
         this.parent.on(updateSelectionData, this.onUpdateSelectionData, this);
+        this.parent.on(filterEnd, this.onPathChanged, this);
     };
     LargeIconsView.prototype.onMenuItemData = function (args) {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -3218,7 +3262,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                     var text = getValue('name', details_1);
                     if (!_this.parent.isFile) {
                         var val = _this.parent.breadcrumbbarModule.searchObj.element.value;
-                        if (val === '') {
+                        if (val === '' && !_this.parent.isFiltered) {
                             var id = getValue('id', details_1);
                             var newPath = _this.parent.path + (isNullOrUndefined(id) ? text : id) + '/';
                             _this.parent.setProperties({ path: newPath }, true);
@@ -3230,6 +3274,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                         else {
                             openSearchFolder(_this.parent, details_1);
                         }
+                        _this.parent.isFiltered = false;
                         _this.parent.setProperties({ selectedItems: [] }, true);
                     }
                     else {
@@ -3667,9 +3712,9 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.getIndexes = function (items, byId) {
         var indexes = [];
-        var filter = byId ? 'id' : 'name';
+        var filter$$1 = byId ? 'id' : 'name';
         for (var i = 0, len = this.items.length; i < len; i++) {
-            if (items.indexOf(getValue(filter, this.items[i])) !== -1) {
+            if (items.indexOf(getValue(filter$$1, this.items[i])) !== -1) {
                 indexes.push(i);
             }
         }
@@ -3925,6 +3970,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     BreadCrumbBar.prototype.searchChangeHandler = function (args) {
         var _this = this;
         if (!isNullOrUndefined(args.value)) {
+            this.parent.isFiltered = false;
             if (this.parent.searchSettings.allowSearchOnTyping) {
                 window.clearTimeout(this.searchTimer);
                 this.searchTimer = window.setTimeout(function () { searchWordHandler(_this.parent, args.value, false); }, 300);
@@ -3939,6 +3985,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         if (li.nodeName === 'LI' || li.nodeName === 'A') {
             var node = li.nodeName === 'LI' ? li.children[0] : li;
             if (!isNullOrUndefined(node)) {
+                this.parent.isFiltered = false;
                 var currentPath = this.updatePath(node);
                 this.liClick(currentPath);
                 var treeNodeId = this.parent.pathId[this.parent.pathId.length - 1];
@@ -3995,6 +4042,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.removeSearchValue = function () {
+        this.parent.isFiltered = false;
         if (this.searchObj && (this.searchObj.value !== '' || this.searchObj.element.value !== '')) {
             this.searchObj.value = '';
             this.searchObj.element.value = '';
@@ -4704,6 +4752,8 @@ var defaultLocale = {
     'File-Upload': 'Drag files here to upload',
     'Search-Empty': 'No results found',
     'Search-Key': 'Try with different keywords',
+    'Filter-Empty': 'No results found',
+    'Filter-Key': 'Try with different filter',
     'Sub-Folder-Error': 'The destination folder is the subfolder of the source folder.',
     'Access-Denied': 'Access Denied',
     'Access-Details': 'You don"t have permission to access this folder.',
@@ -4750,11 +4800,13 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     __extends$7(FileManager, _super);
     function FileManager(options, element) {
         var _this = _super.call(this, options, element) || this;
+        _this.filterData = null;
         _this.selectedNodes = [];
         _this.duplicateItems = [];
         _this.duplicateRecords = [];
         _this.previousPath = [];
         _this.nextPath = [];
+        _this.isLayoutChange = false;
         _this.layoutSelectedItems = [];
         _this.renamedId = null;
         _this.uploadItem = [];
@@ -4768,6 +4820,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         _this.isPasteError = false;
         _this.folderPath = '';
         _this.isSameAction = false;
+        _this.isFiltered = false;
         _this.enablePaste = false;
         _this.persistData = false;
         _this.retryArgs = [];
@@ -5473,6 +5526,22 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(items)) {
             this.toolbarModule.enableItems(items, true);
         }
+    };
+    /**
+     * Display the custom filtering files in file manager.
+     * @param {filterData: Object} filterData - Specifies the custom filter details along with custom file action name,
+     * which needs to be sent to the server side. If you do not specify the details, then default action name will be `filter`.
+     * @returns void
+     */
+    FileManager.prototype.filterFiles = function (filterData) {
+        this.filterData = filterData ? filterData : null;
+        this.setProperties({ selectedItems: [] }, true);
+        this.notify(selectionChanged, {});
+        this.isFiltered = true;
+        if (this.breadcrumbbarModule.searchObj.element.value !== '') {
+            this.breadcrumbbarModule.searchObj.element.value = '';
+        }
+        filter(this, filterEnd);
     };
     /**
      * Gets the details of the selected files in the file manager.
@@ -6257,6 +6326,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     NavigationPane.prototype.onNodeSelected = function (args) {
         if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj && !this.renameParent) {
             this.parent.breadcrumbbarModule.searchObj.element.value = '';
+            this.parent.isFiltered = false;
         }
         this.parent.searchedItems = [];
         if (!args.isInteracted && !this.isPathDragged && !this.isRenameParent) {
@@ -6439,7 +6509,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     /* istanbul ignore next */
     NavigationPane.prototype.onRenameEnd = function (args) {
-        if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+        if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
             this.updateTree(args);
         }
         else {
@@ -6461,7 +6531,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
                 this.renameParent = getValue(this.treeObj.fields.parentID, resultData[0]);
                 this.parent.expandedId = this.renameParent;
                 this.parent.itemData = this.getTreeData(this.renameParent);
-                read(this.parent, renameEndParent, this.parent.filterPath);
+                read(this.parent, renameEndParent, this.parent.filterPath.replace(/\\/g, '/'));
             }
         }
     };
@@ -6844,10 +6914,9 @@ var DetailsView = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     function DetailsView(parent) {
-        this.islayoutChange = false;
         this.isInteracted = true;
         this.isPasteOperation = false;
-        this.isCloumnRefresh = false;
+        this.isColumnRefresh = false;
         this.dragObj = null;
         this.startIndex = null;
         this.firstItemIndex = null;
@@ -6949,7 +7018,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < columns.length; i++) {
             if (columns[i].field === fieldName) {
                 var nameWidth = void 0;
-                if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+                if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                     nameWidth = (this.element.clientWidth <= 500) ? '120px' : 'auto';
                 }
                 else {
@@ -7019,7 +7088,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         if (td) {
             td.setAttribute('title', getValue('name', args.data));
         }
-        if (this.islayoutChange && this.parent.isCut && this.parent.fileAction === 'move' &&
+        if (this.parent.isLayoutChange && this.parent.isCut && this.parent.fileAction === 'move' &&
             this.parent.selectedNodes && this.parent.selectedNodes.length !== 0) {
             if (this.parent.selectedNodes.indexOf(getValue('name', args.data)) !== -1) {
                 addBlur(args.row);
@@ -7117,12 +7186,12 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.selectRecords(this.parent.selectedItems);
         }
         if (this.isPasteOperation === true) {
-            if (!this.isCloumnRefresh) {
+            if (!this.isColumnRefresh) {
                 this.selectRecords(this.parent.pasteNodes);
                 this.isPasteOperation = false;
             }
             else {
-                this.isCloumnRefresh = false;
+                this.isColumnRefresh = false;
             }
         }
         if (this.parent.createdItem) {
@@ -7170,8 +7239,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        this.parent.isLayoutChange = false;
         hideSpinner(this.parent.element);
-        this.islayoutChange = false;
         this.checkEmptyDiv(this.emptyArgs);
     };
     DetailsView.prototype.selectRecords = function (nodes) {
@@ -7269,10 +7338,13 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             var len = this.gridObj.columns.length;
             var columnData = JSON.parse(JSON.stringify(this.gridObj.columns));
             if (columnData[len - 1].field) {
-                if (columnData[len - 1].field === 'filterPath') {
+                if (columnData[len - 1].field === 'filterPath' && !this.parent.isFiltered) {
                     this.gridObj.columns.pop();
                     this.gridObj.refreshColumns();
-                    this.isCloumnRefresh = true;
+                    this.isColumnRefresh = true;
+                }
+                else {
+                    this.updatePathColumn();
                 }
             }
         }
@@ -7285,6 +7357,21 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
         }
         this.emptyArgs = args;
+    };
+    DetailsView.prototype.updatePathColumn = function () {
+        var len = this.gridObj.columns.length;
+        var columnData = JSON.parse(JSON.stringify(this.gridObj.columns));
+        if (columnData[len - 1].field && columnData[len - 1].field !== 'filterPath' &&
+            this.parent.isFiltered && !this.parent.isMobile) {
+            var pathColumn$$1 = {
+                field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto'
+            };
+            this.gridObj.columns.push(pathColumn$$1);
+            this.adjustWidth(this.gridObj.columns, 'filterPath');
+            this.adjustWidth(this.gridObj.columns, 'name');
+            this.gridObj.refreshColumns();
+            this.isColumnRefresh = true;
+        }
     };
     DetailsView.prototype.checkEmptyDiv = function (args) {
         var items = getSortedData(this.parent, args.files);
@@ -7334,7 +7421,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     var val = _this.parent.breadcrumbbarModule.searchObj.element.value;
-                    if (val === '') {
+                    if (val === '' && !_this.parent.isFiltered) {
                         var id = getValue('id', data);
                         var newPath = _this.parent.path + (isNullOrUndefined(id) ? name_2 : id) + '/';
                         _this.parent.setProperties({ path: newPath }, true);
@@ -7346,6 +7433,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                     else {
                         openSearchFolder(_this.parent, data);
                     }
+                    _this.parent.isFiltered = false;
                 }
                 _this.element.focus();
             }
@@ -7354,11 +7442,12 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     /* istanbul ignore next */
     DetailsView.prototype.onLayoutChange = function (args) {
         if (this.parent.view === 'Details') {
-            if (getValue('name', args) === 'layout-change') {
-                this.islayoutChange = true;
-            }
             if (!this.gridObj) {
                 this.render(args);
+            }
+            if (this.parent.isFiltered) {
+                this.updatePathColumn();
+                this.parent.setProperties({ selectedItems: [] }, true);
             }
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
             this.parent.notify(hideLayout, {});
@@ -7377,7 +7466,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.parent.setProperties({ selectedItems: [] }, true);
             this.parent.notify(selectionChanged, {});
             this.removePathColumn();
-            if (!this.islayoutChange) {
+            if (!this.parent.isLayoutChange) {
                 this.parent.layoutSelectedItems = [];
             }
             var item = { field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto' };
@@ -7513,6 +7602,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.on(openInit, this.onOpenInit, this);
         this.parent.on(sortColumn, this.onSortColumn, this);
         this.parent.on(openEnd, this.onPathChanged, this);
+        this.parent.on(filterEnd, this.onPathChanged, this);
         this.parent.on(pasteInit, this.onPasteInit, this);
         this.parent.on(hideLayout, this.onHideLayout, this);
         this.parent.on(selectAllInit, this.onSelectAllInit, this);
@@ -7542,6 +7632,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.off(modelChanged, this.onPropertyChanged);
         this.parent.off(renameInit, this.onRenameInit);
         this.parent.off(renameEnd, this.onPathChanged);
+        this.parent.off(filterEnd, this.onPathChanged);
         this.parent.off(openInit, this.onOpenInit);
         this.parent.off(sortColumn, this.onSortColumn);
         this.parent.off(openEnd, this.onPathChanged);
@@ -7615,7 +7706,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             var gridHeaderColNames = this.gridObj.getColumns();
             for (var i = 0; i < gridHeaderColNames.length; i++) {
                 if (gridHeaderColNames[i].field === 'name' || gridHeaderColNames[i].field === 'filterPath') {
-                    if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+                    if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                         if (this.element.clientWidth <= 500) {
                             gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');
                             gridContentColGroup.children[i].setAttribute('style', 'width: 120px');
@@ -7725,7 +7816,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     DetailsView.prototype.onSelected = function (args) {
         this.addFocus(this.gridObj.selectedRowIndex);
         this.parent.activeModule = 'detailsview';
-        if (!this.islayoutChange) {
+        if (!this.parent.isLayoutChange || this.parent.isFiltered) {
             this.selectedRecords();
         }
         this.parent.notify(selectionChanged, {});
@@ -7775,7 +7866,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             var checkItem = item.querySelector('.e-checkselect');
             checkItem.focus();
         }
-        if (!this.islayoutChange) {
+        if (!this.parent.isLayoutChange) {
             this.isInteracted = true;
         }
     };
@@ -7783,7 +7874,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     DetailsView.prototype.onPathColumn = function () {
         if (this.parent.view === 'Details' && !isNullOrUndefined(this.gridObj)) {
             var len = this.gridObj.columns.length;
-            if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+            if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                 var column = JSON.parse(JSON.stringify(this.gridObj.columns));
                 if (column[len - 1].field) {
                     if (column[len - 1].field === 'filterPath') {
@@ -8344,5 +8435,5 @@ var DetailsView = /** @__PURE__ @class */ (function () {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es5.js.map

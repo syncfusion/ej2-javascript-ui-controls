@@ -1906,7 +1906,8 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
                 }
                 if (!isNullOrUndefined(baseStyle)) {
                     if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
-                        && baseStyle.paragraphFormat.listFormat.listId === -1) {
+                        && baseStyle.paragraphFormat.listFormat.listId === -1
+                        || !isNullOrUndefined(ifListFormat) && this.listFormat.listId !== baseStyle.paragraphFormat.listFormat.listId) {
                         return ifListFormat;
                     }
                     var propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
@@ -2339,6 +2340,28 @@ var WCharacterFormat = /** @__PURE__ @class */ (function () {
                 return charStyleValue;
             }
             else {
+                if (!isNullOrUndefined(this.baseCharStyle)) {
+                    /* tslint:disable-next-line:no-any */
+                    var paragraph = this.ownerBase.paragraph;
+                    var line = this.ownerBase.line;
+                    if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(line)) {
+                        var length_1 = line.children.length;
+                        for (var i = 0; i < length_1; i++) {
+                            /* tslint:disable-next-line:no-any */
+                            var element = this.ownerBase.line.children[i];
+                            if (element instanceof TextElementBox) {
+                                /* tslint:disable-next-line:no-any */
+                                var text = element.text;
+                                if (text.startsWith('HYPERLINK')) {
+                                    var index = text.indexOf('_Toc');
+                                    if (index !== -1) {
+                                        this.baseCharStyle = this.ownerBase.paragraph.paragraphFormat.baseStyle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 var baseStyleValue = this.checkBaseStyle(property);
                 if (!isNullOrUndefined(baseStyleValue)) {
                     return baseStyleValue;
@@ -16570,7 +16593,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             if (currentListLevel.followCharacter === 'Tab') {
                 element.text = '\t';
                 var index = lineWidget.children.indexOf(element);
-                element.width = this.getTabWidth(paragraph, viewer, index, lineWidget, undefined);
+                element.width = this.getTabWidth(paragraph, viewer, index, lineWidget, element);
             }
             else {
                 element.text = ' ';
@@ -17620,7 +17643,10 @@ var Layout = /** @__PURE__ @class */ (function () {
         var position = viewer.clientActiveArea.x -
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         var defaultTabWidth = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
-        if (tabs.length === 0 && (position === 0 || defaultTabWidth === 0)) {
+        if (tabs.length === 0) {
+            if (position > 0 && defaultTabWidth > position) {
+                return defaultTabWidth - position;
+            }
             return defaultTabWidth;
         }
         else {
@@ -17630,9 +17656,9 @@ var Layout = /** @__PURE__ @class */ (function () {
                     var tabPosition = HelperMethods.convertPointToPixel(tabs[i].position);
                     if ((position + elementWidth) < tabPosition) {
                         isCustomTab = true;
-                        if (tabStop.tabJustification === 'Left') {
+                        if (tabStop.tabJustification === 'Left' || tabStop.tabJustification === 'List') {
                             fPosition = tabPosition;
-                            if (!isNullOrUndefined(element)) {
+                            if (element instanceof TabElementBox) {
                                 element.tabLeader = tabs[i].tabLeader;
                                 element.tabText = '';
                             }
@@ -17643,11 +17669,14 @@ var Layout = /** @__PURE__ @class */ (function () {
                             var width = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
                             if (width < tabWidth) {
                                 if (tabStop.tabJustification === 'Right') {
-                                    var exceedWidth = 0;
-                                    if (position + tabWidth > this.viewer.clientArea.width) {
-                                        exceedWidth = (position + tabWidth) - this.viewer.clientArea.width;
+                                    defaultTabWidth = tabWidth - width;
+                                    var areaWidth = this.viewer.clientActiveArea.width - defaultTabWidth;
+                                    if (areaWidth < 0) {
+                                        defaultTabWidth += areaWidth - width;
                                     }
-                                    defaultTabWidth = tabWidth - width - exceedWidth;
+                                    else if (width > areaWidth) {
+                                        defaultTabWidth -= width - areaWidth;
+                                    }
                                 }
                                 else {
                                     defaultTabWidth = tabWidth - width / 2;
@@ -17660,7 +17689,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                                 defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
                             }
                             fPosition = position;
-                            if (!isNullOrUndefined(element)) {
+                            if (element instanceof TabElementBox) {
                                 element.tabLeader = tabs[i].tabLeader;
                                 element.tabText = '';
                             }
@@ -26302,7 +26331,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 item.headersFooters = {};
             }
             this.viewer.headersFooters.push(this.parseHeaderFooter(item.headersFooters, this.viewer.headersFooters));
-            this.parseTextBody(item.blocks, section);
+            this.parseTextBody(item.blocks, section, i + 1 < data.length);
             for (var i_1 = 0; i_1 < section.childWidgets.length; i_1++) {
                 section.childWidgets[i_1].containerWidget = section;
             }
@@ -26346,32 +26375,38 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         }
         return hfs;
     };
-    SfdtReader.prototype.parseTextBody = function (data, section) {
-        this.parseBody(data, section.childWidgets, section);
+    SfdtReader.prototype.parseTextBody = function (data, section, isSectionBreak) {
+        this.parseBody(data, section.childWidgets, section, isSectionBreak);
     };
-    SfdtReader.prototype.parseBody = function (data, blocks, container) {
+    SfdtReader.prototype.parseBody = function (data, blocks, container, isSectionBreak) {
         if (!isNullOrUndefined(data)) {
             for (var i = 0; i < data.length; i++) {
                 var block = data[i];
+                var hasValidElmts = false;
                 if (block.hasOwnProperty('inlines')) {
                     var writeInlineFormat = false;
                     //writeInlineFormat = this.isPasting && i === data.length - 1;
                     var paragraph = new ParagraphWidget();
                     paragraph.characterFormat = new WCharacterFormat(paragraph);
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
-                    this.parseCharacterFormat(block.characterFormat, paragraph.characterFormat);
-                    this.parseParagraphFormat(block.paragraphFormat, paragraph.paragraphFormat);
-                    var styleObj = void 0;
-                    if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
-                        styleObj = this.viewer.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
-                        if (!isNullOrUndefined(styleObj)) {
-                            paragraph.paragraphFormat.ApplyStyle(styleObj);
-                        }
-                    }
                     if (block.inlines.length > 0) {
-                        this.parseParagraph(block.inlines, paragraph, writeInlineFormat);
+                        hasValidElmts = this.parseParagraph(block.inlines, paragraph, writeInlineFormat);
                     }
-                    blocks.push(paragraph);
+                    if (!(isSectionBreak && block === data[data.length - 1] && !hasValidElmts)) {
+                        this.parseCharacterFormat(block.characterFormat, paragraph.characterFormat);
+                        this.parseParagraphFormat(block.paragraphFormat, paragraph.paragraphFormat);
+                        var styleObj = void 0;
+                        if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
+                            styleObj = this.viewer.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
+                            if (!isNullOrUndefined(styleObj)) {
+                                paragraph.paragraphFormat.ApplyStyle(styleObj);
+                            }
+                        }
+                        blocks.push(paragraph);
+                    }
+                    else if (isSectionBreak && data.length === 1) {
+                        blocks.push(paragraph);
+                    }
                     paragraph.index = i;
                     paragraph.containerWidget = container;
                 }
@@ -26411,7 +26446,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                         this.parseCellFormat(block.rows[i].cells[j].cellFormat, cell.cellFormat);
                     }
                     this.isPageBreakInsideTable = true;
-                    this.parseTextBody(block.rows[i].cells[j].blocks, cell);
+                    this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
                     this.isPageBreakInsideTable = false;
                 }
             }
@@ -26445,6 +26480,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
     // tslint:disable:max-func-body-length
     SfdtReader.prototype.parseParagraph = function (data, paragraph, writeInlineFormat) {
         var lineWidget = new LineWidget(paragraph);
+        var hasValidElmts = false;
         for (var i = 0; i < data.length; i++) {
             var inline = data[i];
             if (inline.hasOwnProperty('text')) {
@@ -26472,6 +26508,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 textElement.text = inline.text;
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
+                hasValidElmts = true;
             }
             else if (inline.hasOwnProperty('chartType')) {
                 // chartPreservation
@@ -26498,6 +26535,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 officeChart.chartRender(inline);
                 chartElement.officeChart = officeChart;
                 officeChart.chart.appendTo(chartElement.targetElement);
+                hasValidElmts = true;
             }
             else if (inline.hasOwnProperty('imageString')) {
                 var image = new ImageElementBox(data[i].isInlineImage);
@@ -26517,6 +26555,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
+                hasValidElmts = true;
             }
             else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
                 var fieldBegin = new FieldElementBox(0);
@@ -26557,6 +26596,7 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                     if (!isNullOrUndefined(field.fieldBegin) && field.fieldBegin.fieldSeparator) {
                         field.fieldSeparator = field.fieldBegin.fieldSeparator;
                         field.fieldBegin.fieldSeparator.fieldEnd = field;
+                        hasValidElmts = true;
                     }
                     //After setting all the property clear the field values
                     this.viewer.fieldStacks.splice(this.viewer.fieldStacks.length - 1, 1);
@@ -26583,6 +26623,9 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                         bookmark.reference = bookmarkStart;
                     }
                 }
+                if (bookmark.name.indexOf('_') !== 0) {
+                    hasValidElmts = true;
+                }
             }
             else if (inline.hasOwnProperty('editRangeId')) {
                 if (inline.hasOwnProperty('editableRangeStart')) {
@@ -26604,9 +26647,11 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                         this.editableRanges.add(inline.editRangeId, permStart);
                     }
                 }
+                hasValidElmts = true;
             }
         }
         paragraph.childWidgets.push(lineWidget);
+        return hasValidElmts;
     };
     SfdtReader.prototype.parseEditableRangeStart = function (data) {
         var permStart = new EditRangeStartElementBox();
@@ -60897,6 +60942,12 @@ var WordExport = /** @__PURE__ @class */ (function () {
         this.serializeCellWidth(writer, cell);
         // serialize cell margins
         this.serializeCellMargins(writer, cellFormat);
+        if (ensureMerge) {
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
+            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
+            this.serializeCellMerge(writer, cellFormat);
+        }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
         this.serializeBorders(writer, cellFormat.borders, 8);
@@ -60957,12 +61008,6 @@ var WordExport = /** @__PURE__ @class */ (function () {
         //     m_writer.WriteEndElement();
         //     m_isAlternativeCellFormat = false;
         // }
-        if (ensureMerge) {
-            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-            this.serializeGridSpan(writer, cell);
-            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
-            this.serializeCellMerge(writer, cellFormat);
-        }
         if (endProperties) {
             writer.writeEndElement();
         }
@@ -72449,23 +72494,13 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         var restrictDropDown = new DropDownButton(lockItems, restrictEditing);
     };
     Toolbar$$1.prototype.showHidePropertiesPane = function () {
-        if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
-            this.documentEditor.focusIn();
-            return;
-        }
-        else if (this.container.tocProperties.element.style.display === 'block' && this.container.showPropertiesPaneInternal) {
-            this.enableDisablePropertyPaneButton(true);
-            this.container.showPropertiesPaneOnSelection();
-            return;
-        }
-        if (this.container.previousContext.indexOf('Header') >= 0
-            || this.container.previousContext.indexOf('Footer') >= 0) {
-            this.container.showHeaderProperties = !this.container.showHeaderProperties;
+        if (this.container.propertiesPaneContainer.style.display === 'none') {
+            this.container.showPropertiesPane = true;
         }
         else {
-            this.container.showPropertiesPaneInternal = !this.container.showPropertiesPaneInternal;
+            this.container.showPropertiesPane = false;
         }
-        this.enableDisablePropertyPaneButton(this.container.showPropertiesPaneInternal);
+        this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
         this.container.showPropertiesPaneOnSelection();
         this.documentEditor.focusIn();
     };
@@ -72773,7 +72808,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
     };
     Toolbar$$1.prototype.onToc = function () {
-        if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
+        if (this.container.previousContext === 'TableOfContents' && this.container.propertiesPaneContainer.style.display === 'none') {
+            this.container.showPropertiesPane = false;
             this.documentEditor.focusIn();
             return;
         }
@@ -72781,7 +72817,6 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.documentEditor.selection.closeHeaderFooter();
         }
         this.enableDisablePropertyPaneButton(false);
-        this.container.showPropertiesPaneInternal = true;
         this.container.showProperties('toc');
     };
     /**
@@ -74317,7 +74352,6 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
             _this.footerFromTop.element.addEventListener('blur', function () { _this.changeFooterValue(); _this.isFooterTopApply = false; });
         };
         this.onClose = function () {
-            _this.container.showHeaderProperties = true;
             _this.documentEditor.selection.closeHeaderFooter();
         };
         this.changeFirstPageOptions = function () {
@@ -74793,12 +74827,11 @@ var TocProperties = /** @__PURE__ @class */ (function () {
             _this.closeButton.addEventListener('click', function () { _this.onClose(); });
         };
         this.onClose = function () {
-            if (_this.container.showPropertiesPaneInternal
+            if (_this.container.showPropertiesPane
                 && _this.container.previousContext !== 'TableOfContents') {
                 _this.container.showPropertiesPaneOnSelection();
             }
             else {
-                _this.container.showPropertiesPaneInternal = false;
                 _this.showTocPane(false);
                 if (_this.toolbar) {
                     _this.toolbar.enableDisablePropertyPaneButton(false);
@@ -76032,15 +76065,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         /**
          * @private
          */
-        _this.showHeaderProperties = false;
-        /**
-         * @private
-         */
         _this.previousContext = '';
-        /**
-         * @private
-         */
-        _this.showPropertiesPaneInternal = true;
         /**
          * default locale
          * @private
@@ -76359,9 +76384,11 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     DocumentEditorContainer.prototype.showHidePropertiesPane = function (show) {
+        if (this.showPropertiesPane) {
+            this.showPropertiesPaneOnSelection();
+        }
         this.propertiesPaneContainer.style.display = show ? 'block' : 'none';
         if (this.toolbarModule) {
-            this.showPropertiesPaneInternal = show;
             this.toolbarModule.propertiesPaneButton.element.style.opacity = show ? '1' : '0.5';
         }
         this.documentEditor.resize();
@@ -76481,41 +76508,27 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         var currentContext = this.documentEditor.selection.contextType;
         var isInHeaderFooter = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;
-        if (!isInHeaderFooter && !this.showPropertiesPaneInternal) {
-            this.showPropertiesPane = false;
-            this.documentEditor.focusIn();
-            return;
+        if (!this.showPropertiesPane) {
+            this.showHidePropertiesPane(false);
+            this.propertiesPaneContainer.style.display = 'none';
         }
-        if (!isInHeaderFooter) {
-            if (this.headerFooterProperties &&
-                this.headerFooterProperties.element.style.display === 'block') {
-                this.showPropertiesPane = false;
-                this.documentEditor.selection.closeHeaderFooter();
-            }
-            this.showHeaderProperties = true;
-        }
-        else if (isInHeaderFooter && this.showHeaderProperties) {
-            this.showPropertiesPaneInternal = true;
-        }
-        if (this.showPropertiesPaneInternal) {
-            this.showPropertiesPane = true;
-            if (isInHeaderFooter && this.showHeaderProperties) {
+        else {
+            this.propertiesPaneContainer.style.display = 'block';
+            if (isInHeaderFooter) {
                 this.showProperties('headerfooter');
             }
-            else {
-                if (currentContext.indexOf('Text') >= 0
-                    && currentContext.indexOf('Table') < 0) {
-                    this.showProperties('text');
-                }
-                else if (currentContext.indexOf('Image') >= 0) {
-                    this.showProperties('image');
-                }
-                else if (currentContext.indexOf('TableOfContents') >= 0) {
-                    this.showProperties('toc');
-                }
-                else if (currentContext.indexOf('Table') >= 0) {
-                    this.showProperties('table');
-                }
+            else if (currentContext.indexOf('Text') >= 0
+                && currentContext.indexOf('Table') < 0) {
+                this.showProperties('text');
+            }
+            else if (currentContext.indexOf('Image') >= 0) {
+                this.showProperties('image');
+            }
+            else if (currentContext.indexOf('TableOfContents') >= 0) {
+                this.showProperties('toc');
+            }
+            else if (currentContext.indexOf('Table') >= 0) {
+                this.showProperties('table');
             }
         }
         this.previousContext = this.documentEditor.selection.contextType;
@@ -76590,7 +76603,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         this.editorContainer = undefined;
     };
     __decorate$1([
-        Property(false)
+        Property(true)
     ], DocumentEditorContainer.prototype, "showPropertiesPane", void 0);
     __decorate$1([
         Property(true)

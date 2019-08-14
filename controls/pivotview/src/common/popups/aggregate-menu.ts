@@ -55,14 +55,14 @@ export class AggregateMenu {
     }
     private createContextMenu(): void {
         let menuItems: MenuItemModel[] = [
-            { text: 'Sum', id: 'Sum' },
-            { text: 'Count', id: 'Count' },
-            { text: 'Distinct Count', id: 'DistinctCount' },
-            { text: 'Product', id: 'Product' },
-            { text: 'Avg', id: 'Avg' },
-            { text: 'Min', id: 'Min' },
-            { text: 'Max', id: 'Max' },
-            { text: 'More...', id: 'MoreOption' }];
+            { text: this.parent.localeObj.getConstant('Sum'), id: this.parent.element.id + '_Sum' },
+            { text: this.parent.localeObj.getConstant('Count'), id: this.parent.element.id + '_Count' },
+            { text: this.parent.localeObj.getConstant('DistinctCount'), id: this.parent.element.id + '_DistinctCount' },
+            { text: this.parent.localeObj.getConstant('Product'), id: this.parent.element.id + '_Product' },
+            { text: this.parent.localeObj.getConstant('Avg'), id: this.parent.element.id + '_Avg' },
+            { text: this.parent.localeObj.getConstant('Min'), id: this.parent.element.id + '_Min' },
+            { text: this.parent.localeObj.getConstant('Max'), id: this.parent.element.id + '_Max' },
+            { text: this.parent.localeObj.getConstant('MoreOption'), id: this.parent.element.id + '_MoreOption' }];
         let menuOptions: ContextMenuModel = {
             items: menuItems,
             enableRtl: this.parent.enableRtl,
@@ -133,27 +133,27 @@ export class AggregateMenu {
         let baseItem: string = buttonElement.getAttribute('data-baseitem');
         summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
         let summaryDataSource: { [key: string]: Object }[] = [
-            { value: 'Sum', text: 'Sum' },
-            { value: 'Count', text: 'Count' },
-            { value: 'DistinctCount', text: 'Distinct Count' },
-            { value: 'Product', text: 'Product' },
-            { value: 'Avg', text: 'Avg' },
-            { value: 'Min', text: 'Min' },
-            { value: 'Max', text: 'Max' },
-            { value: 'Index', text: 'Index' },
-            { value: 'SampleStDev', text: 'Sample StDev' },
-            { value: 'PopulationStDev', text: 'Population StDev' },
-            { value: 'SampleVar', text: 'Sample Var' },
-            { value: 'PopulationVar', text: 'Population Var' },
-            { value: 'RunningTotals', text: 'Running Totals' },
-            { value: 'DifferenceFrom', text: 'Difference From' },
-            { value: 'PercentageOfDifferenceFrom', text: '% of Difference From' },
-            { value: 'PercentageOfGrandTotal', text: '% of Grand Total' },
-            { value: 'PercentageOfColumnTotal', text: '% of Column Total' },
-            { value: 'PercentageOfRowTotal', text: '% of Row Total' },
-            { value: 'PercentageOfParentTotal', text: '% of Parent Total' },
-            { value: 'PercentageOfParentColumnTotal', text: '% of Parent Column Total' },
-            { value: 'PercentageOfParentRowTotal', text: '% of Parent Row Total' },
+            { value: 'Sum', text: this.parent.localeObj.getConstant('Sum') },
+            { value: 'Count', text: this.parent.localeObj.getConstant('Count') },
+            { value: 'DistinctCount', text: this.parent.localeObj.getConstant('DistinctCount') },
+            { value: 'Product', text: this.parent.localeObj.getConstant('Product') },
+            { value: 'Avg', text: this.parent.localeObj.getConstant('Avg') },
+            { value: 'Min', text: this.parent.localeObj.getConstant('Min') },
+            { value: 'Max', text: this.parent.localeObj.getConstant('Max') },
+            { value: 'Index', text: this.parent.localeObj.getConstant('Index') },
+            { value: 'SampleStDev', text: this.parent.localeObj.getConstant('SampleStDev') },
+            { value: 'PopulationStDev', text: this.parent.localeObj.getConstant('PopulationStDev') },
+            { value: 'SampleVar', text: this.parent.localeObj.getConstant('SampleVar') },
+            { value: 'PopulationVar', text: this.parent.localeObj.getConstant('PopulationVar') },
+            { value: 'RunningTotals', text: this.parent.localeObj.getConstant('RunningTotals') },
+            { value: 'DifferenceFrom', text: this.parent.localeObj.getConstant('DifferenceFrom') },
+            { value: 'PercentageOfDifferenceFrom', text: this.parent.localeObj.getConstant('PercentageOfDifferenceFrom') },
+            { value: 'PercentageOfGrandTotal', text: this.parent.localeObj.getConstant('PercentageOfGrandTotal') },
+            { value: 'PercentageOfColumnTotal', text: this.parent.localeObj.getConstant('PercentageOfColumnTotal') },
+            { value: 'PercentageOfRowTotal', text: this.parent.localeObj.getConstant('PercentageOfRowTotal') },
+            { value: 'PercentageOfParentTotal', text: this.parent.localeObj.getConstant('PercentageOfParentTotal') },
+            { value: 'PercentageOfParentColumnTotal', text: this.parent.localeObj.getConstant('PercentageOfParentColumnTotal') },
+            { value: 'PercentageOfParentRowTotal', text: this.parent.localeObj.getConstant('PercentageOfParentRowTotal') }
         ];
         let baseItemTypes: string[] = ['DifferenceFrom', 'PercentageOfDifferenceFrom'];
         let baseFieldTypes: string[] = ['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
@@ -283,7 +283,8 @@ export class AggregateMenu {
     private selectOptionInContextMenu(menu: MenuEventArgs): void {
         if (menu.item.text !== null) {
             let buttonElement: HTMLElement = this.currentMenu.parentElement as HTMLElement;
-            if (menu.item.id === 'MoreOption') {
+            let type: string = menu.item.id.split(this.parent.element.id + '_')[1];
+            if (type === 'MoreOption') {
                 this.createValueSettingsDialog(buttonElement, this.parentElement);
             } else {
                 let field: string = buttonElement.getAttribute('data-uid');
@@ -292,12 +293,12 @@ export class AggregateMenu {
                 let captionName: string = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
                 contentElement.innerHTML = captionName;
                 contentElement.setAttribute('title', captionName);
-                buttonElement.setAttribute('data-type', menu.item.id as string);
+                buttonElement.setAttribute('data-type', type as string);
                 for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
                     if (this.parent.dataSourceSettings.values[vCnt].name === field) {
                         let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
                             (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt];
-                        dataSourceItem.type = menu.item.id as SummaryTypes;
+                        dataSourceItem.type = type as SummaryTypes;
                         this.parent.lastAggregationInfo = dataSourceItem;
                         /* tslint:disable-next-line:no-any */
 

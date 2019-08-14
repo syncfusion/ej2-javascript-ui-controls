@@ -1326,7 +1326,7 @@ class Animations {
                 markerElement.setAttribute('d', currentPath);
                 pointer.startValue = pointer.currentValue;
                 pointer.animationComplete = true;
-                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     }
@@ -1444,7 +1444,7 @@ class Animations {
                     }
                 }
                 pointer.startValue = pointer.currentValue;
-                this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     }
@@ -1585,6 +1585,7 @@ class AxisRenderer extends Animations {
         let anchor;
         let baseline;
         let padding = 5;
+        let fontColor = this.gauge.themeStyle.labelColor;
         let labelColor;
         let offset = axis.labelStyle.offset;
         let labelElement = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup' });
@@ -1592,7 +1593,7 @@ class AxisRenderer extends Animations {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? this.gauge.themeStyle.labelColor : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? (axis.labelStyle.font.color || fontColor) : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;

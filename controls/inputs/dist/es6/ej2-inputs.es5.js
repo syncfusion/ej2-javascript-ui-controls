@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -737,8 +737,11 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             setValue('ej2_instances', ejInstance, this.element);
         }
         attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-        var localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: '' };
+        var localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder };
         this.l10n = new L10n('numerictextbox', localeText, this.locale);
+        if (this.l10n.getConstant('placeholder') !== '') {
+            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        }
         this.isValidState = true;
         this.inputStyle = null;
         this.inputName = null;
@@ -746,7 +749,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         this.initCultureInfo();
         this.initCultureFunc();
         this.updateHTMLAttrToElement();
-        this.checkAttributes(true);
+        this.checkAttributes(false);
         this.prevValue = this.value;
         if (this.formEle) {
             this.inputEleValue = this.value;
@@ -786,64 +789,65 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     NumericTextBox.prototype.checkAttributes = function (isDynamic) {
-        var attributes$$1 = ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
+        var attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) :
+            ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || isDynamic) {
                             var enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || isDynamic) {
                             var readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || isDynamic) {
                             var setNumber = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
-                            this.setProperties(setValue(prop, setNumber, {}), isDynamic);
+                            this.setProperties(setValue(prop, setNumber, {}), !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || isDynamic) {
                             var minValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (minValue !== null && !isNaN(minValue)) {
-                                this.setProperties(setValue(prop, minValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, minValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || isDynamic) {
                             var maxValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (maxValue !== null && !isNaN(maxValue)) {
-                                this.setProperties(setValue(prop, maxValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, maxValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'step':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || isDynamic) {
                             var stepValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (stepValue !== null && !isNaN(stepValue)) {
-                                this.setProperties(setValue(prop, stepValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, stepValue, {}), !isDynamic);
                             }
                         }
                         break;
@@ -1105,6 +1109,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     NumericTextBox.prototype.pasteHandler = function () {
         var _this = this;
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         var beforeUpdate = this.element.value;
         setTimeout(function () {
             if (!_this.numericRegex().test(_this.element.value)) {
@@ -1189,6 +1196,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         });
     };
     NumericTextBox.prototype.keyUpHandler = function (event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         if (!iOS && Browser.isDevice) {
             this.preventHandler();
@@ -1206,6 +1216,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     
     NumericTextBox.prototype.inputHandler = function (event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         var fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
@@ -1359,6 +1372,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     NumericTextBox.prototype.keyPressHandler = function (event) {
+        if (!this.enabled || this.readonly) {
+            return true;
+        }
         if (!Browser.isDevice && Browser.info.version === '11.0' && event.keyCode === 13) {
             var parsedInput = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             this.updateValue(parsedInput, event);
@@ -1444,6 +1460,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.blurEventArgs = { event: event, value: this.value, container: this.container };
         this.trigger('blur', this.blurEventArgs);
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         if (this.isPrevFocused) {
             event.preventDefault();
             if (Browser.isDevice) {
@@ -1664,7 +1683,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);
@@ -2959,7 +2978,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        this.checkHtmlAttributes(true);
+        this.checkHtmlAttributes(false);
         if (this.formElement) {
             this.initInputValue = this.value;
         }
@@ -3068,37 +3087,37 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MaskedTextBox.prototype.checkHtmlAttributes = function (isDynamic) {
-        var attributes$$1 = ['placeholder', 'disabled', 'value', 'readonly'];
+        var attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var key = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
                             var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || !isDynamic) {
-                            this.setProperties({ value: this.element.value }, isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
                             var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                                 || this.element.getAttribute(key) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                 }
@@ -3168,7 +3187,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHtmlAttributes(false);
+                    this.checkHtmlAttributes(true);
                     break;
                 case 'mask':
                     var strippedValue_1 = this.value;
@@ -6841,6 +6860,41 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
 var CONTROL_WRAPPER = 'e-upload';
 var INPUT_WRAPPER = 'e-file-select';
 var DROP_AREA = 'e-file-drop';
@@ -6953,6 +7007,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         _this.fileList = [];
         _this.filesData = [];
         _this.uploadedFilesData = [];
+        _this.base64String = [];
         _this.isForm = false;
         _this.allTypes = false;
         _this.pausedData = [];
@@ -7002,7 +7057,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHTMLAttributes(false);
+                    this.checkHTMLAttributes(true);
                     break;
                 case 'files':
                     this.renderPreLoadFiles();
@@ -7109,7 +7164,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.updateHTMLAttrToElement();
-        this.checkHTMLAttributes(true);
+        this.checkHTMLAttributes(false);
         var parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -7727,6 +7782,22 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /* istanbul ignore next */
+    Uploader.prototype.updateCustomheader = function (request, currentRequest) {
+        if (currentRequest.length > 0 && currentRequest[0]) {
+            var _loop_2 = function (i) {
+                var data = currentRequest[i];
+                // tslint:disable-next-line
+                var value = Object.keys(data).map(function (e) {
+                    return data[e];
+                });
+                request.setRequestHeader(Object.keys(data)[0], value);
+            };
+            for (var i = 0; i < currentRequest.length; i++) {
+                _loop_2(i);
+            }
+        }
+    };
     Uploader.prototype.removeCompleted = function (e, files, customTemplate) {
         var response = e && e.currentTarget ? this.getResponse(e) : null;
         var args = {
@@ -7773,7 +7844,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (!validDirectoryUpload) {
             return;
         }
-        var _loop_2 = function (i) {
+        var _loop_3 = function (i) {
             // tslint:disable-next-line
             var item = items[i].webkitGetAsEntry();
             if (item.isFile) {
@@ -7791,7 +7862,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         var this_1 = this;
         for (var i = 0; i < items.length; i++) {
-            _loop_2(i);
+            _loop_3(i);
         }
     };
     /* istanbul ignore next */
@@ -7811,7 +7882,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         if (typeof (item) === 'boolean') {
             var files_3 = [];
-            var _loop_3 = function (i) {
+            var _loop_4 = function (i) {
                 this_2.filesEntries[i].file(function (fileObj) {
                     var path = _this.filesEntries[i].fullPath;
                     files_3.push({ 'path': path, 'file': fileObj });
@@ -7819,7 +7890,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             };
             var this_2 = this;
             for (var i = 0; i < this.filesEntries.length; i++) {
-                _loop_3(i);
+                _loop_4(i);
             }
             this.renderSelectedFiles(event, files_3, true);
         }
@@ -7853,7 +7924,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 this.getFilesFromFolder(args);
             }
             else {
-                var files = args.dataTransfer.files;
+                var files = this.sortFilesList = args.dataTransfer.files;
+                this.element.files = files;
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
                 this.renderSelectedFiles(args, targetFiles);
             }
@@ -7863,97 +7935,137 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.renderSelectedFiles(args, targetFiles);
         }
     };
+    /* istanbul ignore next */
+    Uploader.prototype.getBase64 = function (file) {
+        return new Promise(function (resolve, reject) {
+            var fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = function () { return resolve(fileReader.result); };
+            fileReader.onerror = function (error) { return reject(error); };
+        });
+    };
+    /* istanbul ignore next */
     Uploader.prototype.renderSelectedFiles = function (args, 
     // tslint:disable-next-line
     targetFiles, directory, paste) {
-        var _this = this;
-        var eventArgs = {
-            event: args,
-            cancel: false,
-            filesData: [],
-            isModified: false,
-            modifiedFilesData: [],
-            progressInterval: '',
-            isCanceled: false
-        };
-        /* istanbul ignore next */
-        if (targetFiles.length < 1) {
-            eventArgs.isCanceled = true;
-            this.trigger('selected', eventArgs);
-            return;
-        }
-        this.flag = true;
-        var fileData = [];
-        if (!this.multiple) {
-            this.clearData(true);
-            targetFiles = [targetFiles[0]];
-        }
-        for (var i = 0; i < targetFiles.length; i++) {
-            var file = directory ? targetFiles[i].file : targetFiles[i];
-            var fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
-                getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
-                this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
-            var fileDetails = {
-                name: fileName,
-                rawFile: file,
-                size: file.size,
-                status: this.localizedTexts('readyToUploadMessage'),
-                type: this.getFileType(file.name),
-                validationMessages: this.validatedFileSize(file.size),
-                statusCode: '1'
-            };
-            /* istanbul ignore next */
-            if (paste) {
-                fileDetails.fileSource = 'paste';
-            }
-            fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
-                fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
-            if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
-                fileDetails.statusCode = '0';
-                this.checkActionComplete(true);
-            }
-            fileData.push(fileDetails);
-        }
-        eventArgs.filesData = fileData;
-        if (this.allowedExtensions.indexOf('*') > -1) {
-            this.allTypes = true;
-        }
-        if (!this.allTypes) {
-            fileData = this.checkExtension(fileData);
-        }
-        this.trigger('selected', eventArgs, function (eventArgs) {
-            if (!eventArgs.cancel) {
-                _this.selectedFiles = fileData;
-                _this.btnTabIndex = _this.disableKeyboardNavigation ? '-1' : '0';
-                if (_this.showFileList) {
-                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                        var dataFiles = _this.allTypes ? eventArgs.modifiedFilesData :
-                            _this.checkExtension(eventArgs.modifiedFilesData);
-                        _this.updateSortedFileList(dataFiles);
-                        _this.filesData = dataFiles;
-                        if (!_this.isForm || _this.allowUpload()) {
-                            _this.checkAutoUpload(dataFiles);
+        return __awaiter(this, void 0, void 0, function () {
+            var eventArgs, fileData, i, file, data, fileName, fileDetails;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        eventArgs = {
+                            event: args,
+                            cancel: false,
+                            filesData: [],
+                            isModified: false,
+                            modifiedFilesData: [],
+                            progressInterval: '',
+                            isCanceled: false,
+                            currentRequest: null,
+                            customFormData: null
+                        };
+                        /* istanbul ignore next */
+                        if (targetFiles.length < 1) {
+                            eventArgs.isCanceled = true;
+                            this.trigger('selected', eventArgs);
+                            return [2 /*return*/];
                         }
-                    }
-                    else {
-                        _this.createFileList(fileData);
-                        _this.filesData = _this.filesData.concat(fileData);
-                        if (!_this.isForm || _this.allowUpload()) {
-                            _this.checkAutoUpload(fileData);
+                        this.flag = true;
+                        fileData = [];
+                        if (!this.multiple) {
+                            this.clearData(true);
+                            targetFiles = [targetFiles[0]];
                         }
-                    }
-                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                        _this.progressInterval = eventArgs.progressInterval;
-                    }
+                        i = 0;
+                        _a.label = 1;
+                    case 1:
+                        if (!(i < targetFiles.length)) return [3 /*break*/, 5];
+                        file = directory ? targetFiles[i].file : targetFiles[i];
+                        if (!isBlazor()) return [3 /*break*/, 3];
+                        return [4 /*yield*/, this.getBase64(file)];
+                    case 2:
+                        data = _a.sent();
+                        this.base64String.push(data);
+                        _a.label = 3;
+                    case 3:
+                        fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
+                            getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
+                            this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
+                        fileDetails = {
+                            name: fileName,
+                            rawFile: file,
+                            size: file.size,
+                            status: this.localizedTexts('readyToUploadMessage'),
+                            type: this.getFileType(file.name),
+                            validationMessages: this.validatedFileSize(file.size),
+                            statusCode: '1'
+                        };
+                        /* istanbul ignore next */
+                        if (paste) {
+                            fileDetails.fileSource = 'paste';
+                        }
+                        fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                            fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
+                        if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
+                            fileDetails.statusCode = '0';
+                            this.checkActionComplete(true);
+                        }
+                        fileData.push(fileDetails);
+                        _a.label = 4;
+                    case 4:
+                        i++;
+                        return [3 /*break*/, 1];
+                    case 5:
+                        eventArgs.filesData = fileData;
+                        if (this.allowedExtensions.indexOf('*') > -1) {
+                            this.allTypes = true;
+                        }
+                        if (!this.allTypes) {
+                            fileData = this.checkExtension(fileData);
+                        }
+                        this.trigger('selected', eventArgs, function (eventArgs) {
+                            if (!eventArgs.cancel) {
+                                /* istanbul ignore next */
+                                if (isBlazor()) {
+                                    _this.currentRequestHeader = eventArgs.currentRequest;
+                                    _this.customFormDatas = eventArgs.customFormData;
+                                }
+                                _this.selectedFiles = fileData;
+                                _this.btnTabIndex = _this.disableKeyboardNavigation ? '-1' : '0';
+                                if (_this.showFileList) {
+                                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                                        var dataFiles = _this.allTypes ? eventArgs.modifiedFilesData :
+                                            _this.checkExtension(eventArgs.modifiedFilesData);
+                                        _this.updateSortedFileList(dataFiles);
+                                        _this.filesData = dataFiles;
+                                        if (!_this.isForm || _this.allowUpload()) {
+                                            _this.checkAutoUpload(dataFiles);
+                                        }
+                                    }
+                                    else {
+                                        _this.createFileList(fileData);
+                                        _this.filesData = _this.filesData.concat(fileData);
+                                        if (!_this.isForm || _this.allowUpload()) {
+                                            _this.checkAutoUpload(fileData);
+                                        }
+                                    }
+                                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                                        _this.progressInterval = eventArgs.progressInterval;
+                                    }
+                                }
+                                else {
+                                    _this.filesData = _this.filesData.concat(fileData);
+                                    if (_this.autoUpload) {
+                                        _this.upload(_this.filesData, true);
+                                    }
+                                }
+                                _this.raiseActionComplete();
+                            }
+                        });
+                        return [2 /*return*/];
                 }
-                else {
-                    _this.filesData = _this.filesData.concat(fileData);
-                    if (_this.autoUpload) {
-                        _this.upload(_this.filesData, true);
-                    }
-                }
-                _this.raiseActionComplete();
-            }
+            });
         });
     };
     Uploader.prototype.allowUpload = function () {
@@ -8606,7 +8718,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.checkHTMLAttributes = function (isDynamic) {
-        var attributes$$1 = ['accept', 'multiple', 'disabled'];
+        var attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['accept', 'multiple', 'disabled'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
@@ -8614,43 +8726,44 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     case 'accept':
                         // tslint:disable-next-line
                         if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined))
-                            || !isDynamic) {
-                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, isDynamic);
+                            || isDynamic) {
+                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, !isDynamic);
                             this.initialAttr.accept = this.allowedExtensions;
                         }
                         break;
                     case 'multiple':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || isDynamic) {
                             var isMutiple = this.element.getAttribute(prop) === 'multiple' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ multiple: isMutiple }, isDynamic);
+                            this.setProperties({ multiple: isMutiple }, !isDynamic);
                             this.initialAttr.multiple = true;
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || isDynamic) {
                             var isDisabled = this.element.getAttribute(prop) === 'disabled' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: isDisabled }, isDynamic);
+                            this.setProperties({ enabled: isDisabled }, !isDynamic);
                             this.initialAttr.disabled = true;
                         }
                 }
             }
         }
     };
-    Uploader.prototype.chunkUpload = function (file, custom) {
+    Uploader.prototype.chunkUpload = function (file, custom, fileIndex) {
         var start = 0;
         var end = Math.min(this.asyncSettings.chunkSize, file.size);
         var index = 0;
         var blob = file.rawFile.slice(start, end);
         var metaData = { chunkIndex: index, blob: blob, file: file, start: start, end: end, retryCount: 0, request: null };
-        this.sendRequest(file, metaData, custom);
+        this.sendRequest(file, metaData, custom, fileIndex);
     };
-    Uploader.prototype.sendRequest = function (file, metaData, custom) {
+    Uploader.prototype.sendRequest = function (file, metaData, custom, fileIndex) {
         var _this = this;
         var formData = new FormData();
+        var cloneFile;
         var blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
@@ -8674,14 +8787,31 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         ajax.beforeSend = function (e) {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                cloneFile = new File([file.rawFile], file.name);
+                eventArgs.fileData.rawFile = fileIndex ? _this.base64String[fileIndex] : null;
+                if (_this.currentRequestHeader) {
+                    _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
+                }
+                if (_this.customFormDatas) {
+                    _this.updateFormData(formData, _this.customFormDatas);
+                }
+            }
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
                 _this.trigger('uploading', eventArgs, function (eventArgs) {
+                    if (isBlazor()) {
+                        eventArgs.fileData.rawFile = cloneFile;
+                    }
                     _this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
             else {
                 _this.trigger('chunkUploading', eventArgs, function (eventArgs) {
+                    if (isBlazor()) {
+                        eventArgs.fileData.rawFile = cloneFile;
+                    }
                     _this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
@@ -9114,6 +9244,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     /* istanbul ignore next */
     Uploader.prototype.sortFileList = function (filesData) {
+        filesData = filesData ? filesData : this.sortFilesList;
         var files = filesData;
         var fileNames = [];
         for (var i = 0; i < files.length; i++) {
@@ -9167,6 +9298,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.upload = function (files, custom) {
+        files = files ? files : this.filesData;
         var uploadFiles = this.validateFileType(files);
         this.uploadFiles(uploadFiles, custom);
     };
@@ -9183,6 +9315,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.uploadFiles = function (files, custom) {
         var _this = this;
         var selectedFiles = [];
+        var cloneFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
             return;
         }
@@ -9200,18 +9333,38 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             selectedFiles = files;
         }
         var chunkEnabled = this.checkChunkUpload();
-        var _loop_4 = function (i) {
+        var _loop_5 = function (i) {
             var ajax = new Ajax(this_3.asyncSettings.saveUrl, 'POST', true, null);
             ajax.emitError = false;
+            var getFileData = void 0;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                getFileData = selectedFiles.slice(0);
+                cloneFiles.push(new File([getFileData[i].rawFile], getFileData[i].name));
+            }
             var eventArgs = {
-                fileData: selectedFiles[i],
+                fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
                 customFormData: [],
                 cancel: false
             };
             var formData = new FormData();
             ajax.beforeSend = function (e) {
                 eventArgs.currentRequest = ajax.httpRequest;
+                /* istanbul ignore next */
+                if (isBlazor()) {
+                    eventArgs.fileData.rawFile = _this.base64String[i];
+                    if (_this.currentRequestHeader) {
+                        _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
+                    }
+                    if (_this.customFormDatas) {
+                        _this.updateFormData(formData, _this.customFormDatas);
+                    }
+                }
                 _this.trigger('uploading', eventArgs, function (eventArgs) {
+                    /* istanbul ignore next */
+                    if (isBlazor()) {
+                        selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
+                    }
                     if (eventArgs.cancel) {
                         _this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
                     }
@@ -9222,13 +9375,26 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 var name_4 = this_3.element.getAttribute('name');
                 formData.append(name_4, selectedFiles[i].rawFile, selectedFiles[i].name);
                 if (chunkEnabled && selectedFiles[i].size > this_3.asyncSettings.chunkSize) {
-                    this_3.chunkUpload(selectedFiles[i], custom);
+                    this_3.chunkUpload(selectedFiles[i], custom, i);
                 }
                 else {
-                    ajax.onLoad = function (e) { _this.uploadComplete(e, selectedFiles[i], custom); return {}; };
+                    ajax.onLoad = function (e) {
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        }
+                        else {
+                            _this.uploadComplete(e, selectedFiles[i], custom);
+                            return {};
+                        }
+                    };
                     ajax.onUploadProgress = function (e) {
-                        _this.uploadInProgress(e, selectedFiles[i], custom, ajax);
-                        return {};
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        }
+                        else {
+                            _this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                            return {};
+                        }
                     };
                     /* istanbul ignore next */
                     ajax.onError = function (e) { _this.uploadFailed(e, selectedFiles[i]); return {}; };
@@ -9238,7 +9404,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         var this_3 = this;
         for (var i = 0; i < selectedFiles.length; i++) {
-            _loop_4(i);
+            _loop_5(i);
         }
     };
     /**
@@ -9284,7 +9450,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             eventArgs.filesData = removeFiles;
             var removeUrl = this.asyncSettings.removeUrl;
             var validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
-            var _loop_5 = function (files) {
+            var _loop_6 = function (files) {
                 index = this_4.filesData.indexOf(files);
                 if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
                     this_4.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
@@ -9314,7 +9480,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var this_4 = this;
             for (var _i = 0, removeFiles_1 = removeFiles; _i < removeFiles_1.length; _i++) {
                 var files = removeFiles_1[_i];
-                _loop_5(files);
+                _loop_6(files);
             }
         }
     };
@@ -9348,7 +9514,15 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns FileInfo[]
      */
     Uploader.prototype.getFilesData = function () {
-        return this.filesData;
+        if (!isBlazor()) {
+            return this.filesData;
+        }
+        else {
+            for (var i = 0; i < this.filesData.length; i++) {
+                this.filesData[i].rawFile = this.base64String[i];
+            }
+            return this.filesData;
+        }
     };
     /**
      * Pauses the in-progress chunked upload based on the file data.
@@ -9357,6 +9531,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.pause = function (fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
         var fileDataFiles = this.validateFileType(fileData);
         this.pauseUploading(fileDataFiles, custom);
     };
@@ -9385,6 +9560,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.resume = function (fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
         var fileDataFiles = this.validateFileType(fileData);
         this.resumeFiles(fileDataFiles, custom);
     };
@@ -9403,6 +9579,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.retry = function (fileData, fromcanceledStage, custom) {
+        fileData = fileData ? fileData : this.filesData;
         var fileDataFiles = this.validateFileType(fileData);
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     };
@@ -9430,6 +9607,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.cancel = function (fileData) {
+        fileData = fileData ? fileData : this.filesData;
         var cancelingFiles = this.validateFileType(fileData);
         this.cancelUpload(cancelingFiles);
     };
@@ -11478,7 +11656,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
                     var attributes$$1 = this.element.attributes;
-                    this.checkAttributes(attributes$$1, false);
+                    this.checkAttributes(true);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -11551,8 +11729,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        var attributes$$1 = this.element.attributes;
-        this.checkAttributes(attributes$$1, true);
+        this.checkAttributes(false);
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
@@ -11588,44 +11765,47 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    TextBox.prototype.checkAttributes = function (attrs, isDynamic) {
-        for (var i = 0; i < attrs.length; i++) {
-            var key = attrs[i].nodeName;
-            switch (key) {
-                case 'disabled':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || !isDynamic) {
-                        var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
-                            this.element.getAttribute(key) === 'true' ? false : true;
-                        this.setProperties({ enabled: enabled }, isDynamic);
-                    }
-                    break;
-                case 'readonly':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || !isDynamic) {
-                        var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
-                            || this.element.getAttribute(key) === 'true' ? true : false;
-                        this.setProperties({ readonly: readonly }, isDynamic);
-                    }
-                    break;
-                case 'placeholder':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || !isDynamic) {
-                        this.setProperties({ placeholder: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
-                case 'value':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || !isDynamic) {
-                        this.setProperties({ value: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
-                case 'type':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || !isDynamic) {
-                        this.setProperties({ type: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
+    TextBox.prototype.checkAttributes = function (isDynamic) {
+        var attrs = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        for (var _i = 0, attrs_1 = attrs; _i < attrs_1.length; _i++) {
+            var key = attrs_1[_i];
+            if (!isNullOrUndefined(this.element.getAttribute(key))) {
+                switch (key) {
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
+                            var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                                this.element.getAttribute(key) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
+                        }
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
+                            var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        }
+                        break;
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
+                        }
+                        break;
+                    case 'type':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
+                            this.setProperties({ type: this.element.type }, !isDynamic);
+                        }
+                        break;
+                }
             }
         }
     };

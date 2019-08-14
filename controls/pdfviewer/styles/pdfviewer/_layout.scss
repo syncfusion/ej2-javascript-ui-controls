@@ -27,6 +27,13 @@
       position: absolute;
     }
 
+    .e-pv-search-text-highlight,
+    .e-pv-search-text-highlightother {
+      line-height: normal;
+      opacity: $pv-text-selection-opacity;
+      position: absolute;
+    }
+
     .e-pv-hyperlink {
       z-index: 2;
     }

@@ -81,11 +81,10 @@ export class TocProperties {
         this.closeButton.addEventListener('click', (): void => { this.onClose(); });
     }
     private onClose = (): void => {
-        if (this.container.showPropertiesPaneInternal
+        if (this.container.showPropertiesPane
             && this.container.previousContext !== 'TableOfContents') {
             this.container.showPropertiesPaneOnSelection();
         } else {
-            this.container.showPropertiesPaneInternal = false;
             this.showTocPane(false);
             if (this.toolbar) {
                 this.toolbar.enableDisablePropertyPaneButton(false);

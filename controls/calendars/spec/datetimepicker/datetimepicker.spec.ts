@@ -1688,7 +1688,7 @@ describe('HTML attribute API dynamic testing', () => {
         expect(datetimepicker.element.min).toBe('2/10/2018');
         expect(datetimepicker.element.max).toBe('2/25/2018');
         expect(datetimepicker.inputWrapper.container.getAttribute('title')).toBe('sample');
-        datetimepicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title:"heading"};
+        datetimepicker.htmlAttributes = { placeholder:"choose a date", readonly: "false", disabled: "false", value: "4/20/2018", max: "4/25/2018", min: "4/10/2018", title:"heading"};
         datetimepicker.dataBind();
         expect(datetimepicker.element.getAttribute('placeholder')).toBe('choose a date');
         expect(datetimepicker.element.hasAttribute('readonly')).toBe(false);
@@ -1749,7 +1749,75 @@ describe('HTML attribute API dynamic testing', () => {
             expect(document.querySelector('.e-float-text').innerHTML).toBe('choose a date');
         });
 });
-
+describe('HTML attribute API at inital rendering and dynamic rendering', () => {
+    let datetimepicker: any;
+    beforeEach((): void => {
+        datetimepicker = undefined;
+        let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'datetime' });
+        document.body.appendChild(ele);
+    });
+    afterEach((): void => {
+        if (datetimepicker) {
+            datetimepicker.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Html attributes at initial rendering', () => {
+        datetimepicker = new DateTimePicker({ htmlAttributes:{placeholder:"Choose a date", class: "sample" } });
+        datetimepicker.appendTo('#datetime');
+        expect(datetimepicker.element.getAttribute('placeholder')).toBe('Choose a date');
+        expect(datetimepicker.inputWrapper.container.classList.contains('sample')).toBe(true);
+    });
+    it('Pass multiple attributes dynamically', () => {
+        datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 10:00") });
+        datetimepicker.appendTo('#datetime');
+        datetimepicker.htmlAttributes = { class:"sample", readonly: "true", disabled: "true"};
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('12/12/2016 10:00 AM');
+        expect(datetimepicker.inputWrapper.container.classList.contains('sample')).toBe(true);
+        expect(datetimepicker.element.hasAttribute('readonly')).toBe(true);
+        expect(datetimepicker.element.hasAttribute('disabled')).toBe(true);
+    });
+    it('Dynamically change attributes through htmlAttributes API', () => {
+        datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 10:00") });
+        datetimepicker.appendTo('#datetime');
+        datetimepicker.inputElement.value = '10/10/2016 10:00';
+        datetimepicker.htmlAttributes = { class:"sample" };
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('10/10/2016 10:00');
+    });
+    it('Dynamically change multiple attributes through htmlAttributes API', () => {
+        datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 10:00 AM") });
+        datetimepicker.appendTo('#datetime');
+        datetimepicker.htmlAttributes = { class:"sample" , max:'10/5/2016 10:00', min:'10/20/2016 10:00'};
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('12/12/2016 10:00 AM');
+        expect(datetimepicker.element.getAttribute('max')).toBe('10/5/2016 10:00');
+        expect(datetimepicker.element.getAttribute('min')).toBe('10/20/2016 10:00');
+    });
+    it('Pass null value in htmlAttributes', () => {
+        datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 10:00 AM") });
+        datetimepicker.appendTo('#datetime');
+        datetimepicker.htmlAttributes = { null: "null"};
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('12/12/2016 10:00 AM');
+    });
+    it('Pass undefined in htmlAttributes', () => {
+        datetimepicker = new DateTimePicker({value: new Date("12/12/2016 10:00 AM") });
+        datetimepicker.appendTo('#datetime');
+        datetimepicker.htmlAttributes = { undefined: "undefined"};
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('12/12/2016 10:00 AM');
+    });
+    it('Pass empty value in htmlAttributes', () => {
+        datetimepicker = new DateTimePicker({ value: new Date("12/12/2016 10:00") });
+        datetimepicker.appendTo('#datetime');
+        datetimepicker.inputElement.value = "12/12/2016 10:00";
+        datetimepicker.htmlAttributes = {};
+        datetimepicker.dataBind();
+        expect(datetimepicker.element.value).toBe('12/12/2016 10:00');
+    });
+});
 describe('keyboard events', () => {
     let datetimepicker: any;
     let keyEventArgs: any = {

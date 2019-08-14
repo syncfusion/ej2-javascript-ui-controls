@@ -283,32 +283,37 @@ export class PdfPageTemplateElement {
     /* tslint:disable */
     public constructor(arg1 : number|PointF|SizeF|RectangleF, arg2 ?: number|SizeF|PdfPage, arg3 ?: number|PdfPage, arg4 ?: number, arg5 ?: PdfPage) {
         if (arg1 instanceof RectangleF && typeof arg2 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg1.width, arg1.height);
+           this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, null);
         } else if (arg1 instanceof RectangleF && arg2 instanceof PdfPage && typeof arg3 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
+            this.InitiateBounds(arg1.x, arg1.y, arg1.width, arg1.height, arg2);
         } else if (arg1 instanceof PointF && arg2 instanceof SizeF && typeof arg3 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg2.width, arg2.height);
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, null);
         } else if (arg1 instanceof PointF && arg2 instanceof SizeF && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.constructor(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
+            this.InitiateBounds(arg1.x, arg1.y, arg2.width, arg2.height, arg3);
         } else if (arg1 instanceof SizeF && typeof arg2 === 'undefined') {
-            this.constructor(arg1.width, arg1.height);
+            this.InitiateBounds(0, 0, arg1.width, arg1.height , null);
         } else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'undefined') {
-            this.constructor(0, 0, arg1, arg2);
+            this.InitiateBounds(0, 0, arg1, arg2, null);
         } else if (typeof arg1 === 'number' && typeof arg2 === 'number' && arg3 instanceof PdfPage && typeof arg4 === 'undefined') {
-            this.constructor(0, 0, arg1, arg2, arg3);
+            this.InitiateBounds(0, 0, arg1, arg2, arg3);
         } else if (typeof arg1 === 'number' && typeof arg2 === 'number' && typeof arg3 === 'number' && typeof arg4 === 'number' && typeof arg5 === 'undefined') {
-            this.x = arg1;
-            this.y = arg2;
-            this.pdfTemplate = new PdfTemplate(arg3, arg4);
+            this.InitiateBounds(arg1, arg2, arg3, arg4, null);
         } else {
-            this.x = arg1 as number;
-            this.y = arg2 as number;
-            this.pdfTemplate = new PdfTemplate(arg3 as number, arg4 as number);
+            this.InitiateBounds(arg1 as number, arg2 as number, arg3 as number, arg4 as number, null);
             // this.graphics.colorSpace = this.page.document.colorSpace;
         }
         /* tslint:enable */
     }
-
+    /**
+     * `Initialize Bounds` Initialize the bounds value of the template.
+     * @private
+     */
+    private InitiateBounds(arg1 : number, arg2 : number, arg3 : number, arg4 : number , arg5 : PdfPage) : void {
+        this.x = arg1 as number;
+        this.y = arg2 as number;
+        this.pdfTemplate = new PdfTemplate(arg3 as number, arg4 as number);
+        // this.graphics.colorSpace = this.page.document.colorSpace;
+    }
     /**
      * `Updates Dock` property if template is used as header/footer.
      * @private

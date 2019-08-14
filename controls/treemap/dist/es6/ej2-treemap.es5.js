@@ -3178,6 +3178,9 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'height':
                 case 'width':
+                case 'layoutType':
+                case 'leafItemSettings':
+                case 'legendSettings':
                     render = true;
                     break;
             }

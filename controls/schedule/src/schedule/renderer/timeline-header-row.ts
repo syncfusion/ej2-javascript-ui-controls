@@ -69,7 +69,7 @@ export class TimelineHeaderRow {
                         viewTemplate = `<span class="e-header-month">${dateParser(dates[0], 'MMMM')}</span>`;
                         break;
                     case 'Week':
-                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates[0])}</span>`;
+                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates.slice(-1)[0])}</span>`;
                 }
                 let headerWrapper: HTMLElement = createElement('div', { innerHTML: viewTemplate });
                 htmlCol = headerWrapper.childNodes;

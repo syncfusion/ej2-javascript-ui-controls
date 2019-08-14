@@ -98,7 +98,7 @@ export class ContextMenu {
         }
         switch (item) {
             case 'TaskInformation':
-                this.parent.openEditDialog(this.rowData);
+                this.parent.openEditDialog(Number(this.rowData.ganttProperties.taskId));
                 break;
             case 'Above':
             case 'Below':

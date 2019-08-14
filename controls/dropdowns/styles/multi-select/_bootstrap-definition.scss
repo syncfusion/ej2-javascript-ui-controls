@@ -38,7 +38,7 @@ $ddl-input-height: 32px !default;
 $ddl-input-bigger-height: 38px !default;
 $ddl-delimviewheight-bigger: 39px !default;
 $ddl-input-mob-height: 30px !default;
-$ddl-control-height: 34px !default;
+$ddl-control-height: 32px !default;
 $ddl-control-bigger-height: 38px !default;
 $ddl-delimviewheight: 35px !default;
 $ddl-closer-hooker-font: 10px !default;
@@ -150,8 +150,6 @@ $ddl-closer-margin-top-bigger-small: -4em !default;
   .e-multiselect .e-input-group-icon.e-ddl-icon {
     border-radius: 0 4px 4px 0;
     border-right-width: 0;
-    height: 34px;
-    width: 36px;
   }
 
   .e-multiselect.e-rtl .e-input-group-icon.e-ddl-icon {

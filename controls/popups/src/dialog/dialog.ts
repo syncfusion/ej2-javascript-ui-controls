@@ -1403,35 +1403,37 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     public hide(event?: Event): void {
         if (!this.element.classList.contains(ROOT)) { return; }
-        let eventArgs: BeforeCloseEventArgs = {
-            cancel: false,
-            isInteraction: event ? true : false,
-            isInteracted: event ? true : false,
-            element: this.element,
-            target: this.target,
-            container: this.isModal ? this.dlgContainer : this.element,
-            event: event
-        };
-        this.closeArgs = eventArgs;
-        this.trigger('beforeClose', eventArgs, (beforeCloseArgs: BeforeCloseEventArgs) => {
-            if (!beforeCloseArgs.cancel) {
-                if (this.isModal) {
-                    !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
-                        removeClass([document.body], SCROLL_DISABLED);
+        if (this.visible) {
+            let eventArgs: BeforeCloseEventArgs = {
+                cancel: false,
+                isInteraction: event ? true : false,
+                isInteracted: event ? true : false,
+                element: this.element,
+                target: this.target,
+                container: this.isModal ? this.dlgContainer : this.element,
+                event: event
+            };
+            this.closeArgs = eventArgs;
+            this.trigger('beforeClose', eventArgs, (beforeCloseArgs: BeforeCloseEventArgs) => {
+                if (!beforeCloseArgs.cancel) {
+                    if (this.isModal) {
+                        !isNullOrUndefined(this.targetEle) ? removeClass([this.targetEle], SCROLL_DISABLED) :
+                            removeClass([document.body], SCROLL_DISABLED);
+                    }
+                    let closeAnimation: Object = {
+                        name: this.animationSettings.effect + 'Out',
+                        duration: this.animationSettings.duration,
+                        delay: this.animationSettings.delay
+                    };
+                    this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
+                    this.dialogOpen = false;
+                    let prevOnChange: boolean = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    this.visible = false;
+                    this.isProtectedOnChange = prevOnChange;
                 }
-                let closeAnimation: Object = {
-                    name: this.animationSettings.effect + 'Out',
-                    duration: this.animationSettings.duration,
-                    delay: this.animationSettings.delay
-                };
-                this.animationSettings.effect === 'None' ? this.popupObj.hide() : this.popupObj.hide(closeAnimation);
-                this.dialogOpen = false;
-                let prevOnChange: boolean = this.isProtectedOnChange;
-                this.isProtectedOnChange = true;
-                this.visible = false;
-                this.isProtectedOnChange = prevOnChange;
-            }
-        });
+            });
+        }
     }
     /**
      * Specifies to view the Full screen Dialog.

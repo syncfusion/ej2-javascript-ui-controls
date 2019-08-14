@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getValue, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
@@ -980,7 +980,7 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
             return new Date(date.getTime());
         }
         else {
-            var dateObject = this.parent.globalize.parseDate(date, { format: 'MM/dd/yyyy hh:mm a', type: 'dateTime' });
+            var dateObject = this.parent.globalize.parseDate(date, { format: this.parent.dateFormat, type: 'dateTime' });
             return isNullOrUndefined(dateObject) ? new Date(date) : dateObject;
         }
     };
@@ -8729,19 +8729,27 @@ var Splitter$1 = /** @__PURE__ @class */ (function () {
             resizeStart: function (args) {
                 _this.splitterPreviousPositionGrid = args.pane[0].scrollWidth + 1 + 'px';
                 _this.splitterPreviousPositionChart = args.pane[1].scrollWidth + 1 + 'px';
-                _this.parent.trigger('splitterResizeStart', args);
+                var callBackPromise = new Deferred();
+                _this.parent.trigger('splitterResizeStart', args, function (resizeStartArgs) {
+                    callBackPromise.resolve(resizeStartArgs);
+                });
+                return callBackPromise;
             },
             resizing: function (args) {
                 _this.parent.trigger('splitterResizing', args);
             },
             resizeStop: function (args) {
-                _this.parent.trigger('splitterResized', args);
-                if (args.cancel === true) {
-                    _this.splitterObject.paneSettings[0].size = null;
-                    _this.splitterObject.paneSettings[0].size = _this.getSpliterPositionInPercentage(_this.splitterPreviousPositionGrid);
-                    _this.splitterObject.paneSettings[1].size = null;
-                    _this.splitterObject.paneSettings[1].size = _this.getSpliterPositionInPercentage(_this.splitterPreviousPositionChart);
-                }
+                var callBackPromise = new Deferred();
+                _this.parent.trigger('splitterResized', args, function (splitterResizedArgs) {
+                    if (splitterResizedArgs.cancel === true) {
+                        _this.splitterObject.paneSettings[0].size = null;
+                        _this.splitterObject.paneSettings[0].size = _this.getSpliterPositionInPercentage(_this.splitterPreviousPositionGrid);
+                        _this.splitterObject.paneSettings[1].size = null;
+                        _this.splitterObject.paneSettings[1].size = _this.getSpliterPositionInPercentage(_this.splitterPreviousPositionChart);
+                    }
+                    callBackPromise.resolve(splitterResizedArgs);
+                });
+                return callBackPromise;
             }
         });
         this.parent.element.appendChild(this.parent.splitterElement);
@@ -9639,7 +9647,16 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         this.treeGridModule.renderTreeGrid();
     };
     Gantt.prototype.updateCurrentViewData = function () {
-        this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
+        if (isBlazor()) {
+            var records = this.treeGrid.getCurrentViewRecords().slice();
+            this.currentViewData = [];
+            for (var i = 0; i < records.length; i++) {
+                this.currentViewData.push(this.getTaskByUniqueID(records[i].uniqueID));
+            }
+        }
+        else {
+            this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
+        }
     };
     /**
      * @private
@@ -9679,6 +9696,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get expanded records from given record collection.
      * @param {IGanttData[]} records - Defines record collection.
+     * @isGenericType true
      */
     Gantt.prototype.getExpandedRecords = function (records) {
         var _this = this;
@@ -10513,6 +10531,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     /**
      * Get parent task by clone parent item.
      * @param {IParent} cloneParent - Defines the clone parent item.
+     * @isGenericType true
      */
     Gantt.prototype.getParentTask = function (cloneParent) {
         if (!isNullOrUndefined(cloneParent)) {
@@ -10719,6 +10738,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     /**
      * Method to get task by uniqueId value.
      * @param {string} id - Defines the task id.
+     * @isGenericType true
      */
     Gantt.prototype.getTaskByUniqueID = function (id) {
         var value = this.flatData.filter(function (val) {
@@ -10734,6 +10754,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     /**
      * Method to get record by id value.
      * @param {string} id - Defines the id of record.
+     * @isGenericType true
      */
     Gantt.prototype.getRecordByID = function (id) {
         if (isNullOrUndefined(id)) {
@@ -10770,7 +10791,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Expand the record by task id.
-     * @param {string | number} id - Defines the id of task.
+     * @param {number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -10792,7 +10813,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Collapse the record by id value.
-     * @param {string | number} id - Defines the id of task.
+     * @param {number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -10871,7 +10892,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To add dependency for Task.
-     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to add.
      * @return {void}
      * @public
@@ -10884,7 +10905,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To remove dependency from task.
-     * @param  {String|number} id - Defines the ID of task to modify.
+     * @param  {number} id - Defines the ID of task to modify.
      * @return {void}
      * @public
      */
@@ -10896,7 +10917,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To modify current dependency values of Task by task id.
-     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to update.
      * @return {void}
      * @public
@@ -10919,7 +10940,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Method to open Edit dialog.
-     * @param {number | string | Object} taskId - Defines the id of task.
+     * @param {number } taskId - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -11513,9 +11534,11 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         }
         else {
             this.parent.trigger('cellEdit', args);
-            if (!isNullOrUndefined(this.parent.toolbarModule) && !args.cancel) {
+            if (!args.cancel) {
                 this.isCellEdit = true;
-                this.parent.toolbarModule.refreshToolbarItems();
+                if (!isNullOrUndefined(this.parent.toolbarModule)) {
+                    this.parent.toolbarModule.refreshToolbarItems();
+                }
                 if (args.columnName === 'Notes') {
                     this.openNotesEditor(args);
                 }
@@ -15981,7 +16004,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     recordIndex = currentItemIndex + dataChildCount + 1;
                     //Expand Add record's parent item 
                     if (!this.addRowSelectedItem.expanded) {
-                        this.parent.expandByID(this.addRowSelectedItem.ganttProperties.taskId);
+                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.taskId));
                     }
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
@@ -16659,7 +16682,11 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
         this.isInteracted = false;
     };
     Selection$$1.prototype.cellSelecting = function (args) {
-        this.parent.trigger('cellSelecting', args);
+        var callBackPromise = new Deferred();
+        this.parent.trigger('cellSelecting', args, function (cellselectingArgs) {
+            callBackPromise.resolve(cellselectingArgs);
+        });
+        return callBackPromise;
     };
     Selection$$1.prototype.cellSelected = function (args) {
         this.parent.trigger('cellSelected', args);
@@ -17758,7 +17785,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         }
         switch (item) {
             case 'TaskInformation':
-                this.parent.openEditDialog(this.rowData);
+                this.parent.openEditDialog(Number(this.rowData.ganttProperties.taskId));
                 break;
             case 'Above':
             case 'Below':

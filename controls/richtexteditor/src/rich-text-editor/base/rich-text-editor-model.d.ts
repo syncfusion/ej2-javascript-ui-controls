@@ -104,6 +104,7 @@ export interface RichTextEditorModel extends ComponentModel{
      * * display - Sets the default display for an image when it is inserted in to the RichTextEditor. 
      * Possible options are: 'inline' and 'block'.
      * * width - Sets the default width of the image when it is inserted in the RichTextEditor.
+     * * saveFormat - Specifies the format to store the image in the RichTextEditor (Base64 or Blob).
      * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
      * * saveUrl - Provides URL to map the action result method to save the image.
      * * path - Specifies the location to store the image.
@@ -113,6 +114,7 @@ export interface RichTextEditorModel extends ComponentModel{
      *  display: 'inline',
      *  width: 'auto', 
      *  height: 'auto', 
+     *  saveFormat: 'Blob'
      *  saveUrl: null, 
      *  path: null,
      * }
@@ -267,6 +269,13 @@ export interface RichTextEditorModel extends ComponentModel{
      * @default false 
      */
     enableTabKey?: boolean;
+
+    /**
+     * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks, otherwise
+     * the given URL will automatically convert to absolute path URL by prefixing `https://` for hyperlinks.
+     * @default false
+     */
+    enableAutoUrl?: boolean;
 
     /**
      * Specifies the maximum number of characters allowed in the RichTextEditor component.

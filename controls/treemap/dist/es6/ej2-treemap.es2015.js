@@ -3048,6 +3048,9 @@ let TreeMap = class TreeMap extends Component {
                     break;
                 case 'height':
                 case 'width':
+                case 'layoutType':
+                case 'leafItemSettings':
+                case 'legendSettings':
                     render = true;
                     break;
             }

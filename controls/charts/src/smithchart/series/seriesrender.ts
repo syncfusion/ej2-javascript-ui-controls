@@ -284,12 +284,10 @@ private performAnimation(smithchart: Smithchart, gsEle: Element, seriesIndex: nu
              clipRect.setAttribute('x', x.toString());
             }
             let event: ISmithchartAnimationCompleteEventArgs = {
-                cancel: false, name: animationComplete, smithchart: smithchart
+                cancel: false, name: animationComplete,
+                smithchart: smithchart.isBlazor ? null : smithchart
             };
-            let blazorEvent: ISmithchartAnimationCompleteEventArgs = {
-                cancel: false, name: animationComplete, smithchart: smithchart
-            };
-            smithchart.trigger(animationComplete, smithchart.isBlazor ? blazorEvent : event );
+            smithchart.trigger(animationComplete, event);
         }
     });
   }

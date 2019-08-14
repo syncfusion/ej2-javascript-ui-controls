@@ -1,7 +1,7 @@
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
 import { cldrData, removeClass, getValue, getDefaultDateObject, closest } from '@syncfusion/ej2-base';
 import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
-import { DataManager, Query } from '@syncfusion/ej2-data';
+import { DataManager, Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, BeforeOpenEventArgs, DialogModel } from '@syncfusion/ej2-popups';
 import {
@@ -172,7 +172,7 @@ export class EventWindow {
         this.updateEditorTemplate();
     }
 
-    private onBeforeOpen(args: BeforeOpenEventArgs): void {
+    private onBeforeOpen(args: BeforeOpenEventArgs): Deferred {
         let eventProp: PopupOpenEventArgs = {
             type: 'Editor',
             data: this.eventData,
@@ -183,6 +183,7 @@ export class EventWindow {
         if (this.cellClickAction) {
             eventProp.duration = this.getSlotDuration();
         }
+        let callBackPromise: Deferred = new Deferred();
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             args.cancel = popupArgs.cancel;
             this.duration = this.cellClickAction ? popupArgs.duration : null;
@@ -196,7 +197,9 @@ export class EventWindow {
             if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
                 this.recurrenceEditor = this.getInstance('e-recurrenceeditor') as RecurrenceEditor;
             }
+            callBackPromise.resolve(args);
         });
+        return callBackPromise;
     }
 
     private onBeforeClose(): void {

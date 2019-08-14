@@ -147,7 +147,7 @@ export class ViewSource {
         this.unWireBaseKeyDown();
         this.previewElement.focus();
         this.parent.updateValue();
-        if (!isNullOrUndefined(this.parent.placeholder)) {
+        if (!isNullOrUndefined(this.parent.placeholder) && !this.parent.iframeSettings.enable) {
             let placeHolderWrapper: HTMLElement = this.parent.element.querySelector('.rte-placeholder') as HTMLElement;
             placeHolderWrapper.style.display = 'none';
         }

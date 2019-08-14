@@ -82,6 +82,7 @@ export class ColumnMenu implements IAction {
     public columnMenuHandlerClick(e: Event): void {
         if ((e.target as HTMLElement).classList.contains('e-columnmenu')) {
             this.columnMenu.items =  this.getItems();
+            this.columnMenu.dataBind();
             if ((this.isOpen && this.headerCell !== this.getHeaderCell(e)) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
                 this.columnMenu.close();
                 this.openColumnMenu(e);

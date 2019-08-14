@@ -276,7 +276,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Specifies the model object configuration for the integrated components like AutoComplete, DatePicker,NumericTextBox, etc.
      * @default null
-     * @isGenericType true
      */
     @Property(null)
     public model: AutoCompleteModel | ColorPickerModel | ComboBoxModel | DatePickerModel | DateRangePickerModel | DateTimePickerModel | DropDownListModel | MaskedTextBoxModel | MultiSelectModel | NumericTextBoxModel | RichTextEditorModel | SliderModel | TextBoxModel | TimePickerModel;

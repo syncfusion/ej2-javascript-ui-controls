@@ -1,5 +1,5 @@
 ﻿import { Virtualization } from './virtualization';
-import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';
 import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
@@ -263,7 +263,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It provides the data to render the ListView component which is mapped
      *  with the fields of ListView.
-     *
+     * @isGenericType true
      * {% codeBlock src="listview/datasource-api/index.ts" %}{% endcodeBlock %}
      * @default []
      */
@@ -556,7 +556,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    //Suport Component Functions
+    // Support Component Functions
     private header(text?: string, showBack?: boolean): void {
         if (this.headerEle === undefined && this.showHeader) {
             this.headerEle = this.createElement('div', { className: classNames.header });
@@ -573,7 +573,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 let headerTemplateEle: HTMLElement = this.createElement('div', { className: classNames.headerTemplateText });
                 append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                 append([headerTemplateEle], this.headerEle);
-                this.updateBlazorTemplates(false, true);
+                this.updateBlazorTemplates(false, true, true);
             }
             if (this.headerTemplate && this.headerTitle) {
                 textEle.classList.add('header');
@@ -1417,15 +1417,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private updateBlazorTemplates(
         template: boolean = false,
-        headerTemplate: boolean = false): void {
+        headerTemplate: boolean = false,
+        resetExistingElements: boolean = false): void {
         if (this.template && template && !this.enableVirtualization) {
-            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this, resetExistingElements);
         }
         if (this.groupTemplate && template && !this.enableVirtualization) {
-            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this, resetExistingElements);
         }
         if (this.headerTemplate && headerTemplate) {
-            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this, resetExistingElements);
         }
     }
 
@@ -1438,7 +1439,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data: { [key: string]: Object; }[] = this.curViewDS as { [key: string]: Object; }[];
-                this.resetBlazorTemplates();
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
                 ele.setAttribute('pID', <string>uID);
                 (ele as HTMLElement).style.display = 'none';
@@ -1645,15 +1645,21 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
+     * @blazorType ListSelectedItem<TValue>
      */
     public getSelectedItems(): SelectedItem | SelectedCollection | UISelectedItem | NestedListData {
+        // tslint:disable-next-line:no-any
+        let finalValue: any;
+        let isCompleted: boolean = false;
         this.selectedId = [];
         let dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
-        if (this.enableVirtualization) {
-            return this.virtualizationModule.getSelectedItems();
-        } else if (this.showCheckBox) {
-            let liCollection: NodeList = this.curUL.getElementsByClassName(classNames.selected);
+        if (this.enableVirtualization && !isCompleted) {
+            finalValue = this.virtualizationModule.getSelectedItems();
+            isCompleted = true;
+        } else if (this.showCheckBox && !isCompleted) {
+            // tslint:disable-next-line:no-any
+            let liCollection: any = this.curUL.getElementsByClassName(classNames.selected);
             let liTextCollection: string[] = []; let liDataCollection: { [key: string]: Object }[] = []; this.selectedId = [];
             let dataParent: DataAndParent[] = [];
             for (let i: number = 0; i < liCollection.length; i++) {
@@ -1677,40 +1683,94 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
             }
-            if (typeof (dataSource as string[])[0] === 'string' || typeof (dataSource as number[])[0] === 'number') {
-                return { item: liCollection, data: dataSource as string[] | number[], text: liTextCollection };
+            if ((typeof (dataSource as string[])[0] === 'string'
+                || typeof (dataSource as number[])[0] === 'number')
+                && !isCompleted) {
+                finalValue = { item: liCollection, data: dataSource as string[] | number[], text: liTextCollection };
+                isCompleted = true;
             }
-            if (this.isNestedList) {
-                return { item: liCollection, data: dataParent, text: liTextCollection };
-            } else {
-                return { item: liCollection, data: liDataCollection, text: liTextCollection };
+            if (this.isNestedList && !isCompleted) {
+                finalValue = { item: liCollection, data: dataParent, text: liTextCollection };
+                isCompleted = true;
+            } else if (!isCompleted) {
+                finalValue = { item: liCollection, data: liDataCollection, text: liTextCollection };
+                isCompleted = true;
             }
-        } else {
+        } else if (!isCompleted) {
             let liElement: Element = this.element.getElementsByClassName(classNames.selected)[0];
             let fieldData: { [key: string]: Object } =
                 <{ [key: string]: Object }>getFieldValues(this.getItemData(liElement), this.listBaseOption.fields);
-            if (typeof (dataSource as string[])[0] === 'string' || typeof (dataSource as number[])[0] === 'number') {
-                return (!isNullOrUndefined(liElement)) ? {
+            if ((typeof (dataSource as string[])[0] === 'string'
+                || typeof (dataSource as number[])[0] === 'number')
+                && !isCompleted) {
+                finalValue = (!isNullOrUndefined(liElement)) ? {
                     item: liElement, data: dataSource as string[] | number[],
                     text: (liElement as HTMLElement).innerText.trim()
                 } : undefined;
-            } else {
+                isCompleted = true;
+            } else if (!isCompleted) {
                 if (isNullOrUndefined(fieldData) || isNullOrUndefined(liElement)) {
-                    return undefined;
+                    finalValue = undefined;
+                    isCompleted = true;
                 } else {
                     this.selectedId.push(<string>fieldData[this.listBaseOption.fields.id]);
-                    return {
+                    finalValue = {
                         text: <string>fieldData[this.listBaseOption.fields.text], item: liElement,
                         data: this.getItemData(liElement)
                     };
+                    isCompleted = true;
                 }
             }
         }
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            return this.blazorGetSelectedItems(finalValue) as any;
+        } else {
+            return finalValue;
+        }
     }
 
+    // tslint:disable-next-line:no-any
+    private blazorGetSelectedItems(finalGetSelectedItem: any): ListSelectedItem {
+        let blazorSelectedItem: ListSelectedItem = {
+            data: [],
+            index: [],
+            parentId: [],
+            text: []
+        };
+
+        if (!isNullOrUndefined(finalGetSelectedItem)) {
+            if (!isNullOrUndefined(finalGetSelectedItem.data)) {
+                if (this.showCheckBox && this.isNestedList) {
+                    finalGetSelectedItem.data.forEach((currentData: DataAndParent) => {
+                        blazorSelectedItem.data.push(currentData.data);
+                    });
+                    if (!isNullOrUndefined(finalGetSelectedItem.data[0])
+                        && !isNullOrUndefined(finalGetSelectedItem.data[0].parentId)) {
+                        blazorSelectedItem.parentId = finalGetSelectedItem.data[0].parentId;
+                    }
+                } else {
+                    blazorSelectedItem.data = this.convertItemsToArray(finalGetSelectedItem.data);
+                }
+            }
+            if (!isNullOrUndefined(finalGetSelectedItem.text)) {
+                blazorSelectedItem.text = this.convertItemsToArray(finalGetSelectedItem.text);
+            }
+            if (!isNullOrUndefined(finalGetSelectedItem.index)) {
+                blazorSelectedItem.index = this.convertItemsToArray(finalGetSelectedItem.index);
+            }
+        }
+        return blazorSelectedItem;
+    }
+
+    // tslint:disable-next-line:no-any
+    private convertItemsToArray(items: any): any[] {
+        return Array.isArray(items) ? [...items] : [items];
+    }
     /**
      * It is used to find out an item details from the current list.
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * @blazorType TValue
      */
     public findItem(obj: Fields | HTMLElement | Element): SelectedItem {
         return <SelectedItem & { [key: string]: Object }>this.getItemData(obj);
@@ -1812,7 +1872,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                     child = child.concat(data);
                     if (ds instanceof Array) {
-                        this.resetBlazorTemplates();
                         data.forEach((dataSource: { [key: string]: Object; }) => {
                             (this.dataSource as { [key: string]: Object; }[]).push(dataSource);
                             this.setViewDataSource(this.dataSource as { [key: string]: Object; }[]);
@@ -1856,7 +1915,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (this.enableVirtualization) {
                 this.virtualizationModule.removeItem(obj);
             } else {
-                this.resetBlazorTemplates();
                 this.removeItemFromList(obj);
                 this.updateBlazorTemplates(true);
             }
@@ -1903,7 +1961,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public removeMultipleItems(obj: HTMLElement[] | Element[] | Fields[]): void {
         if (!(this.dataSource instanceof DataManager)) {
             if (obj.length) {
-                this.resetBlazorTemplates();
                 for (let i: number = 0; i < obj.length; i++) {
                     if (this.enableVirtualization) {
                         this.removeItem(obj[i]);
@@ -1978,6 +2035,29 @@ export interface ClassNames {
     itemCheckList: string;
 }
 
+export interface ListSelectedItem {
+    /**
+     * Selected Item dataSource collection.
+     * @isGenericType true
+     * @blazorType List<T>
+     */
+    data?: object[];
+    /**
+     * Selected Item text collection.
+     */
+    text?: string[];
+    /**
+     * Index of the selected element.
+     * Available only in virtualization.
+     */
+    index?: number[];
+    /**
+     * Hierarchical Parent Id collection of the current view.
+     * Available only in nested list with Checkbox enabled.
+     */
+    parentId?: string[];
+}
+
 export interface SelectedItem {
     /**
      * It denotes the Selected Item text.
@@ -1991,6 +2071,7 @@ export interface SelectedItem {
 
     /**
      * It denotes the Selected Item dataSource JSON object.
+     * @isGenericType true
      */
     data: { [key: string]: Object } | string[] | number[];
 
@@ -2009,6 +2090,7 @@ export interface SelectedCollection {
 
     /**
      * It denotes the Selected Item dataSource JSON object or object collection.
+     * @isGenericType true
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string[] | number[];
 }
@@ -2026,6 +2108,7 @@ export interface UISelectedItem {
 
     /**
      * It denotes the Selected Item dataSource JSON object or object collection.
+     * @isGenericType true
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string | number | string[] | number[];
     /**
@@ -2041,6 +2124,7 @@ export interface UISelectedItem {
 export interface DataAndParent {
     /**
      * It denotes the Selected Item dataSource JSON object or object collection.
+     * @isGenericType true
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string[];
     /**

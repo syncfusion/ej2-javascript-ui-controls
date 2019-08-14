@@ -1778,7 +1778,7 @@ describe('Edit module', () => {
       actionComplete = (args?: any): void => {
         if (args.requestType === 'save') {
           expect(gridObj.getRows().length == 37).toBe(true);
-          expect(gridObj.dataSource[2].subtasks[0].childRecords[1].taskID == 133).toBe(true);
+          expect(gridObj.dataSource[2].subtasks[0].subtasks[1].taskID == 133).toBe(true);
           done();
         }
       };
@@ -1824,7 +1824,7 @@ describe('Edit module', () => {
       actionComplete = (args?: any): void => {
         if (args.requestType === 'delete') {
           expect(gridObj.getRows().length == 35).toBe(true);
-          expect(gridObj.dataSource[2].subtasks[0].childRecords[0].childRecords[0].taskName == "Development Task 2").toBe(true);
+          expect(gridObj.dataSource[2].subtasks[0].subtasks[0].subtasks[0].taskName == "Development Task 2").toBe(true);
           done();
         }
       };
@@ -1848,7 +1848,7 @@ describe('Edit module', () => {
       actionComplete = (args?: any): void => {
         if (args.requestType === 'save') {
           expect(gridObj.getRows().length == 36).toBe(true);
-          expect(gridObj.dataSource[2].subtasks[0].childRecords[1].taskID == 133).toBe(true);
+          expect(gridObj.dataSource[2].subtasks[0].subtasks[1].taskID == 133).toBe(true);
           done();
         }
       };
@@ -1934,7 +1934,7 @@ describe('Edit module', () => {
               { field: 'taskName', headerText: 'Task Name' },
               { field: 'progress', headerText: 'Progress' },
               { field: 'startDate', headerText: 'Start Date' }
-              ]
+            ]
         },
         done
       );
@@ -1958,8 +1958,8 @@ describe('Edit module', () => {
         (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'child1';
         if(args.requestType === 'save'){
           expect(gridObj.getRows().length).toBe(36);
-          expect(gridObj.dataSource[1].subtasks[3].childRecords[0].taskID === 121).toBe(true);
-          expect(gridObj.dataSource[1].subtasks[3].childRecords[0].taskName === 'child1').toBe(true);
+          expect(gridObj.dataSource[1].subtasks[3].subtasks[0].taskID === 121).toBe(true);
+          expect(gridObj.dataSource[1].subtasks[3].subtasks[0].taskName === 'child1').toBe(true);
           done();
         } 
       };

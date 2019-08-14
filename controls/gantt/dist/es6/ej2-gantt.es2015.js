@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getValue, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
@@ -979,7 +979,7 @@ class DateProcessor {
             return new Date(date.getTime());
         }
         else {
-            let dateObject = this.parent.globalize.parseDate(date, { format: 'MM/dd/yyyy hh:mm a', type: 'dateTime' });
+            let dateObject = this.parent.globalize.parseDate(date, { format: this.parent.dateFormat, type: 'dateTime' });
             return isNullOrUndefined(dateObject) ? new Date(date) : dateObject;
         }
     }
@@ -8360,19 +8360,27 @@ class Splitter$1 {
             resizeStart: (args) => {
                 this.splitterPreviousPositionGrid = args.pane[0].scrollWidth + 1 + 'px';
                 this.splitterPreviousPositionChart = args.pane[1].scrollWidth + 1 + 'px';
-                this.parent.trigger('splitterResizeStart', args);
+                let callBackPromise = new Deferred();
+                this.parent.trigger('splitterResizeStart', args, (resizeStartArgs) => {
+                    callBackPromise.resolve(resizeStartArgs);
+                });
+                return callBackPromise;
             },
             resizing: (args) => {
                 this.parent.trigger('splitterResizing', args);
             },
             resizeStop: (args) => {
-                this.parent.trigger('splitterResized', args);
-                if (args.cancel === true) {
-                    this.splitterObject.paneSettings[0].size = null;
-                    this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
-                    this.splitterObject.paneSettings[1].size = null;
-                    this.splitterObject.paneSettings[1].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionChart);
-                }
+                let callBackPromise = new Deferred();
+                this.parent.trigger('splitterResized', args, (splitterResizedArgs) => {
+                    if (splitterResizedArgs.cancel === true) {
+                        this.splitterObject.paneSettings[0].size = null;
+                        this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
+                        this.splitterObject.paneSettings[1].size = null;
+                        this.splitterObject.paneSettings[1].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionChart);
+                    }
+                    callBackPromise.resolve(splitterResizedArgs);
+                });
+                return callBackPromise;
             }
         });
         this.parent.element.appendChild(this.parent.splitterElement);
@@ -9253,7 +9261,16 @@ let Gantt = class Gantt extends Component {
         this.treeGridModule.renderTreeGrid();
     }
     updateCurrentViewData() {
-        this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
+        if (isBlazor()) {
+            let records = this.treeGrid.getCurrentViewRecords().slice();
+            this.currentViewData = [];
+            for (let i = 0; i < records.length; i++) {
+                this.currentViewData.push(this.getTaskByUniqueID(records[i].uniqueID));
+            }
+        }
+        else {
+            this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
+        }
     }
     /**
      * @private
@@ -9293,6 +9310,7 @@ let Gantt = class Gantt extends Component {
     /**
      * Get expanded records from given record collection.
      * @param {IGanttData[]} records - Defines record collection.
+     * @isGenericType true
      */
     getExpandedRecords(records) {
         let expandedRecords = records.filter((record) => {
@@ -10125,6 +10143,7 @@ let Gantt = class Gantt extends Component {
     /**
      * Get parent task by clone parent item.
      * @param {IParent} cloneParent - Defines the clone parent item.
+     * @isGenericType true
      */
     getParentTask(cloneParent) {
         if (!isNullOrUndefined(cloneParent)) {
@@ -10331,6 +10350,7 @@ let Gantt = class Gantt extends Component {
     /**
      * Method to get task by uniqueId value.
      * @param {string} id - Defines the task id.
+     * @isGenericType true
      */
     getTaskByUniqueID(id) {
         let value = this.flatData.filter((val) => {
@@ -10346,6 +10366,7 @@ let Gantt = class Gantt extends Component {
     /**
      * Method to get record by id value.
      * @param {string} id - Defines the id of record.
+     * @isGenericType true
      */
     getRecordByID(id) {
         if (isNullOrUndefined(id)) {
@@ -10382,7 +10403,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Expand the record by task id.
-     * @param {string | number} id - Defines the id of task.
+     * @param {number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -10404,7 +10425,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Collapse the record by id value.
-     * @param {string | number} id - Defines the id of task.
+     * @param {number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -10483,7 +10504,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To add dependency for Task.
-     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to add.
      * @return {void}
      * @public
@@ -10496,7 +10517,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To remove dependency from task.
-     * @param  {String|number} id - Defines the ID of task to modify.
+     * @param  {number} id - Defines the ID of task to modify.
      * @return {void}
      * @public
      */
@@ -10508,7 +10529,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To modify current dependency values of Task by task id.
-     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to update.
      * @return {void}
      * @public
@@ -10531,7 +10552,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Method to open Edit dialog.
-     * @param {number | string | Object} taskId - Defines the id of task.
+     * @param {number } taskId - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -11123,9 +11144,11 @@ class CellEdit {
         }
         else {
             this.parent.trigger('cellEdit', args);
-            if (!isNullOrUndefined(this.parent.toolbarModule) && !args.cancel) {
+            if (!args.cancel) {
                 this.isCellEdit = true;
-                this.parent.toolbarModule.refreshToolbarItems();
+                if (!isNullOrUndefined(this.parent.toolbarModule)) {
+                    this.parent.toolbarModule.refreshToolbarItems();
+                }
                 if (args.columnName === 'Notes') {
                     this.openNotesEditor(args);
                 }
@@ -15575,7 +15598,7 @@ class Edit$2 {
                     recordIndex = currentItemIndex + dataChildCount + 1;
                     //Expand Add record's parent item 
                     if (!this.addRowSelectedItem.expanded) {
-                        this.parent.expandByID(this.addRowSelectedItem.ganttProperties.taskId);
+                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.taskId));
                     }
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;
@@ -16245,7 +16268,11 @@ class Selection$1 {
         this.isInteracted = false;
     }
     cellSelecting(args) {
-        this.parent.trigger('cellSelecting', args);
+        let callBackPromise = new Deferred();
+        this.parent.trigger('cellSelecting', args, (cellselectingArgs) => {
+            callBackPromise.resolve(cellselectingArgs);
+        });
+        return callBackPromise;
     }
     cellSelected(args) {
         this.parent.trigger('cellSelected', args);
@@ -17333,7 +17360,7 @@ class ContextMenu$2 {
         }
         switch (item) {
             case 'TaskInformation':
-                this.parent.openEditDialog(this.rowData);
+                this.parent.openEditDialog(Number(this.rowData.ganttProperties.taskId));
                 break;
             case 'Above':
             case 'Below':

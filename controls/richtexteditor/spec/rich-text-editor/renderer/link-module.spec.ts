@@ -239,7 +239,7 @@ describe('insert Link', () => {
             };
             (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
             (<any>rteObj).linkModule.editLink(evnArg);
-            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'http://data/').toBe(true);
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'http://data').toBe(true);
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'http://data').toBe(true);
             expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value === 'http://data').toBe(true);
             evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
@@ -254,6 +254,59 @@ describe('insert Link', () => {
             (<any>rteObj).linkModule.linkDialog(evnArg);
             let eventArgs = { target: document, preventDefault: function () { } };
             (<any>rteObj).linkModule.onIframeMouseDown();
+        });
+    });
+
+    describe('Link actions with LinkPath API property set as Relative', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({ 
+                value: '<p>test</p>',
+                enableAutoUrl: true
+             });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('insert link, editlink, openlink', () => {
+            (rteObj as any).value = 'test';
+            (rteObj as any).dataBind();
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            let event: any = { preventDefault: function () { } };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+            let selectNode: any = new NodeSelection().getNodeCollection(range);
+            let evnArg: any = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+                selectParent: selectParent, selectNode: selectNode
+            };
+            (<any>rteObj).linkModule.linkDialog(evnArg);
+            (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'relativelink/link';
+            evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+            (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor')).not.toBe(null);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').title === 'relativelink/link').toBe(true);
+            expect((<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').innerHTML === 'relativelink/link').toBe(true);
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').focus();
+            args = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+            event = { preventDefault: function () { } };
+            range = new NodeSelection().getRange(document);
+            save = new NodeSelection().save(range, document);
+            selectParent = new NodeSelection().getParentNodeCollection(range);
+            selectNode = new NodeSelection().getNodeCollection(range);
+            evnArg = {
+                target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save, selectNode: selectNode,
+                selectParent: selectParent
+            };
+            (<any>rteObj).contentModule.getEditPanel().querySelector('.e-rte-anchor').target = '_blank';
+            (<any>rteObj).linkModule.editLink(evnArg);
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value === 'relativelink/link').toBe(true);
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value === 'relativelink/link').toBe(true);
+            expect((<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkTitle').value === 'relativelink/link').toBe(true);
         });
     });
 

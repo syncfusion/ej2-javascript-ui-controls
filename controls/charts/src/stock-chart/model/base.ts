@@ -14,7 +14,7 @@ import { CornerRadius } from '../../common/model/base';
 import { TextOverflow, Alignment, Regions, Units, Position, FlagType } from '../../common/utils/enum';
 import { Theme } from '../../common/model/theme';
 import { AnimationModel, CornerRadiusModel, EmptyPointSettingsModel, ConnectorModel } from '../../index';
-import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel } from './base-model';
+import {  StockChartBorderModel, StockChartConnectorModel, StockChartStripLineSettingsModel, StockSeriesModel } from './base-model';
 import { StockChartFontModel } from './base-model';
 
 export class StockChartFont extends ChildProperty<StockChartFont> {
@@ -359,10 +359,10 @@ class Animation extends ChildProperty<Animation> {
 
     /**
      * If set to true, series gets animated on initial loading.
-     * @default true
+     * @default false
      */
 
-    @Property(true)
+    @Property(false)
     public enable: boolean;
 
     /**
@@ -720,6 +720,8 @@ export class StockSeries extends ChildProperty<StockSeries> {
      */
     @Property(0)
     public columnSpacing: number;
+    /** @private */
+    public localData: Object = undefined;
 }
 
 export interface IStockChartEventArgs {
@@ -762,7 +764,7 @@ export interface IStockEventRenderArgs {
      /** Defines the event cancel status */
      cancel: boolean;
      /** Defines the stock series */
-     series: StockSeries;
+     series: StockSeriesModel;
 }
 
 

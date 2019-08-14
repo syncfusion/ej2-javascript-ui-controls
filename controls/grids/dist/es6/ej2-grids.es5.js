@@ -122,7 +122,7 @@ var Column = /** @__PURE__ @class */ (function () {
          * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
          *
          * > Check the [`Filter UI`](../../grid/filtering/#custom-component-in-filter-menu) for its customization.
-         *  @default null
+         *  @default {}
          */
         this.filter = {};
         /**
@@ -163,7 +163,8 @@ var Column = /** @__PURE__ @class */ (function () {
         }
         this.toJSON = function () {
             var col = {};
-            var skip = ['headerText', 'template', 'headerTemplate', 'edit', 'editTemplate', 'filterTemplate', 'commandsTemplate'];
+            var skip = ['filter', 'dataSource', 'headerText', 'template', 'headerTemplate', 'edit',
+                'editTemplate', 'filterTemplate', 'commandsTemplate'];
             var keys = Object.keys(_this);
             for (var i = 0; i < keys.length; i++) {
                 if (keys[i] === 'columns') {
@@ -197,7 +198,7 @@ var Column = /** @__PURE__ @class */ (function () {
         if (this.headerTemplate) {
             this.headerTemplateFn = templateCompiler(this.headerTemplate);
         }
-        if (this.filter.itemTemplate) {
+        if (!isNullOrUndefined(this.filter) && this.filter.itemTemplate) {
             this.fltrTemplateFn = templateCompiler(this.filter.itemTemplate);
         }
         if (this.editTemplate) {
@@ -1983,9 +1984,13 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
     };
     CheckBoxFilter.prototype.showDialog = function (options) {
         var args = {
-            requestType: filterBeforeOpen, filterModel: this,
+            requestType: filterBeforeOpen,
             columnName: this.options.field, columnType: this.options.type, cancel: false
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionBegin, args);
         if (args.cancel) {
             return;
@@ -2288,8 +2293,12 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         query.requiresCount(); //consider take query
         this.addDistinct(query);
         var args = {
-            requestType: filterChoiceRequest, filterModel: this, query: query, filterChoiceCount: null
+            requestType: filterChoiceRequest, query: query, filterChoiceCount: null
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionBegin, args);
         args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
         query.take(args.filterChoiceCount);
@@ -2383,8 +2392,12 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         this.sInput.focus();
         var args = {
             requestType: filterAfterOpen,
-            filterModel: this, columnName: this.options.field, columnType: this.options.type
+            columnName: this.options.field, columnType: this.options.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionComplete, args);
     };
     CheckBoxFilter.prototype.processDataSource = function (query, isInitial, dataSource) {
@@ -2528,7 +2541,11 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         }
         this.filterState = !btn.disabled;
         btn.dataBind();
-        var args = { requestType: filterChoiceRequest, filterModel: this, dataSource: this.renderEmpty ? [] : data };
+        var args = { requestType: filterChoiceRequest, dataSource: this.renderEmpty ? [] : data };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionComplete, args);
         hideSpinner(this.spinner);
     };
@@ -3030,8 +3047,9 @@ var Data = /** @__PURE__ @class */ (function () {
         this.parent.notify(crudAction, args);
     };
     /** @hidden */
-    Data.prototype.saveChanges = function (changes, key, original) {
-        var query = this.generateQuery().requiresCount();
+    Data.prototype.saveChanges = function (changes, key, original, query) {
+        if (query === void 0) { query = this.generateQuery(); }
+        query.requiresCount();
         if ('result' in this.parent.dataSource) {
             var state = void 0;
             state = this.getStateEventArgument(query);
@@ -3153,7 +3171,7 @@ var Data = /** @__PURE__ @class */ (function () {
         return colFieldNames;
     };
     Data.prototype.refreshFilteredCols = function () {
-        if (this.parent.filterSettings.columns.length) {
+        if (this.parent.allowFiltering && this.parent.filterSettings.columns.length) {
             refreshFilteredColsUid(this.parent, this.parent.filterSettings.columns);
         }
     };
@@ -4104,7 +4122,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         }
         var table = this.parent.createElement('table', {
             className: 'e-table', attrs: {
-                role: 'grid',
+                cellspacing: '0.25px', role: 'grid',
                 id: this.parent.element.id + id
             }
         });
@@ -4784,7 +4802,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             remove(this.getTable());
         }
         var columns = gObj.getColumns();
-        var table = this.parent.createElement('table', { className: 'e-table', attrs: { role: 'grid' } });
+        var table = this.parent.createElement('table', { className: 'e-table', attrs: { cellspacing: '0.25px', role: 'grid' } });
         var innerDiv = this.getPanel().firstChild;
         var findHeaderRow = this.createHeaderContent();
         var thead = findHeaderRow.thead;
@@ -5207,6 +5225,9 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             var index = 'index';
             if (isBlazor() && isEdit) {
                 result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str], parseInt(attributes$$1[index], 10));
+                if (this.parent.editSettings.mode !== 'Batch') {
+                    updateBlazorTemplate(templateID, 'Template', cell.column, false);
+                }
             }
             else {
                 result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
@@ -13052,6 +13073,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (this.isDetail()) {
             index++;
         }
+        if (this.allowRowDragAndDrop && this.allowResizing) {
+            index++;
+        }
         /**
          * TODO: index normalization based on the stacked header, grouping and detailTemplate
          * and frozen should be handled here
@@ -14322,6 +14346,43 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Expands all the grouped rows of the Grid.
+     * @return {void}
+     */
+    Grid.prototype.groupExpandAll = function () {
+        if (this.groupModule) {
+            this.groupModule.expandAll();
+        }
+    };
+    /**
+    * Collapses all the grouped rows of the Grid.
+    * @return {void}
+    */
+    Grid.prototype.groupCollapseAll = function () {
+        if (this.groupModule) {
+            this.groupModule.collapseAll();
+        }
+    };
+    /**
+     * Expands or collapses grouped rows by target element.
+     * @param  {Element} target - Defines the target element of the grouped row.
+     * @return {void}
+     */
+    // public expandCollapseRows(target: Element): void {
+    //     if (this.groupModule) {
+    //         this.groupModule.expandCollapseRows(target);
+    //     }
+    // }
+    /**
+     * Clears all the grouped columns of the Grid.
+     * @return {void}
+     */
+    Grid.prototype.clearGrouping = function () {
+        if (this.groupModule) {
+            this.groupModule.clearGrouping();
+        }
+    };
+    /**
      * Ungroups a column by column name.
      * @param  {string} columnName - Defines the column name to ungroup.
      * @return {void}
@@ -14329,6 +14390,94 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.ungroupColumn = function (columnName) {
         if (this.groupModule) {
             this.groupModule.ungroupColumn(columnName);
+        }
+    };
+    /**
+     * Column chooser can be displayed on screen by given position(X and Y axis).
+     * @param  {number} X - Defines the X axis.
+     * @param  {number} Y - Defines the Y axis.
+     * @return {void}
+     */
+    Grid.prototype.openColumnChooser = function (x, y) {
+        if (this.columnChooserModule) {
+            this.columnChooserModule.openColumnChooser(x, y);
+        }
+    };
+    /**
+     * Collapses a detail row with the given target.
+     * @param  {Element} target - Defines the expanded element to collapse.
+     * @return {void}
+     */
+    // public detailCollapse(target: number | Element): void {
+    //     if (this.detailRowModule) {
+    //         this.detailRowModule.collapse(target);
+    //     }
+    // }
+    /**
+     * Collapses all the detail rows of the Grid.
+     * @return {void}
+     */
+    Grid.prototype.detailCollapseAll = function () {
+        if (this.detailRowModule) {
+            this.detailRowModule.collapseAll();
+        }
+    };
+    /**
+     * Expands a detail row with the given target.
+     * @param  {Element} target - Defines the collapsed element to expand.
+     * @return {void}
+     */
+    // public detailExpand(target: number | Element): void {
+    //     if (this.detailRowModule) {
+    //         this.detailRowModule.expand(target);
+    //     }
+    // }
+    /**
+    * Expands all the detail rows of the Grid.
+    * @return {void}
+    */
+    Grid.prototype.detailExpandAll = function () {
+        if (this.detailRowModule) {
+            this.detailRowModule.expandAll();
+        }
+    };
+    /**
+     * Deselects the currently selected cells.
+     * @return {void}
+     */
+    Grid.prototype.clearCellSelection = function () {
+        if (this.selectionModule) {
+            this.selectionModule.clearCellSelection();
+        }
+    };
+    /**
+     * Deselects the currently selected rows.
+     * @return {void}
+     */
+    Grid.prototype.clearRowSelection = function () {
+        if (this.selectionModule) {
+            this.selectionModule.clearRowSelection();
+        }
+    };
+    /**
+     * Selects a collection of cells by row and column indexes.
+     * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
+     * @return {void}
+     */
+    Grid.prototype.selectCells = function (rowCellIndexes) {
+        if (this.selectionModule) {
+            this.selectionModule.selectCells(rowCellIndexes);
+        }
+    };
+    /**
+     * Selects a range of rows from start and end row indexes.
+     * @param  {number} startIndex - Specifies the start row index.
+     * @param  {number} endIndex - Specifies the end row index.
+     * @return {void}
+     */
+    Grid.prototype.selectRowsByRange = function (startIndex, endIndex) {
+        if (this.selectionModule) {
+            this.selectionModule.selectRowsByRange(startIndex, endIndex);
         }
     };
     /**
@@ -16951,9 +17100,13 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
     };
     FilterMenuRenderer.prototype.renderDlgContent = function (target, column) {
         var args = {
-            requestType: filterBeforeOpen, filterModel: this,
+            requestType: filterBeforeOpen,
             columnName: column.field, columnType: column.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.parent.trigger(actionBegin, args);
         var mainDiv = this.parent.createElement('div', { className: 'e-flmenu-maindiv', id: column.uid + '-flmenu' });
         this.dlgDiv = this.parent.createElement('div', { className: 'e-flmenu', id: column.uid + '-flmdlg' });
@@ -16999,8 +17152,12 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
         }
         var args = {
             requestType: filterAfterOpen,
-            filterModel: this, columnName: column.field, columnType: column.type
+            columnName: column.field, columnType: column.type
         };
+        if (!isBlazor() || this.parent.isJsComponent) {
+            var filterModel = 'filterModel';
+            args[filterModel] = this;
+        }
         this.isDialogOpen = true;
         this.parent.trigger(actionComplete, args);
     };
@@ -20356,7 +20513,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
         var draggObj = e.droppedElement.parentElement.ej2_instances[0];
         if (e.droppedElement.getAttribute('action') !== 'grouping') {
             var targetRow = closest(e.target, 'tr');
-            var srcControl = void 0;
+            var srcControl_1;
             var currentIndex = void 0;
             if ((e.droppedElement.querySelector('tr').getAttribute('single-dragrow') !== 'true' &&
                 e.droppedElement.parentElement.id === gObj.element.id)
@@ -20365,16 +20522,16 @@ var RowDD = /** @__PURE__ @class */ (function () {
                 return;
             }
             if (e.droppedElement.parentElement.id !== gObj.element.id) {
-                srcControl = e.droppedElement.parentElement.ej2_instances[0];
+                srcControl_1 = e.droppedElement.parentElement.ej2_instances[0];
             }
             else if (this.isSingleRowDragDrop || e.droppedElement.querySelector('tr').getAttribute('single-dragrow') === 'true') {
                 this.singleRowDrop(e);
                 return;
             }
-            if (srcControl.element.id !== gObj.element.id && srcControl.rowDropSettings.targetID !== gObj.element.id) {
+            if (srcControl_1.element.id !== gObj.element.id && srcControl_1.rowDropSettings.targetID !== gObj.element.id) {
                 return;
             }
-            var records = srcControl.getSelectedRecords();
+            var records = srcControl_1.getSelectedRecords();
             var targetIndex = currentIndex = this.getTargetIdx(targetRow);
             if (isNaN(targetIndex)) {
                 targetIndex = currentIndex = 0;
@@ -20382,22 +20539,52 @@ var RowDD = /** @__PURE__ @class */ (function () {
             if (gObj.allowPaging) {
                 targetIndex = targetIndex + (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize;
             }
-            //Todo: drag and drop mapper & BatchChanges                   
-            gObj.notify(rowsAdded, { toIndex: targetIndex, records: records });
-            gObj.notify(modelChanged, {
-                type: actionBegin, requestType: 'rowdraganddrop'
-            });
-            var selectedRows = srcControl.getSelectedRowIndexes();
-            var skip = srcControl.allowPaging ?
-                (srcControl.pageSettings.currentPage * srcControl.pageSettings.pageSize) - srcControl.pageSettings.pageSize : 0;
-            this.selectedRows = [];
-            for (var i = 0, len = records.length; i < len; i++) {
-                this.selectedRows.push(skip + selectedRows[i]);
+            //Todo: drag and drop mapper & BatchChanges
+            if (!isBlazor()) {
+                gObj.notify(rowsAdded, { toIndex: targetIndex, records: records });
+                gObj.notify(modelChanged, {
+                    type: actionBegin, requestType: 'rowdraganddrop'
+                });
+                var selectedRows = srcControl_1.getSelectedRowIndexes();
+                var skip = srcControl_1.allowPaging ?
+                    (srcControl_1.pageSettings.currentPage * srcControl_1.pageSettings.pageSize) - srcControl_1.pageSettings.pageSize : 0;
+                this.selectedRows = [];
+                for (var i = 0, len = records.length; i < len; i++) {
+                    this.selectedRows.push(skip + selectedRows[i]);
+                }
+                srcControl_1.notify(rowsRemoved, { indexes: this.selectedRows, records: records });
+                srcControl_1.notify(modelChanged, {
+                    type: actionBegin, requestType: 'rowdraganddrop'
+                });
             }
-            srcControl.notify(rowsRemoved, { indexes: this.selectedRows, records: records });
-            srcControl.notify(modelChanged, {
-                type: actionBegin, requestType: 'rowdraganddrop'
-            });
+            else {
+                var changes = {
+                    addedRecords: records,
+                    deletedRecords: [],
+                    changedRecords: []
+                };
+                var dragDropDestinationIndex = 'dragDropDestinationIndex';
+                var query = new Query;
+                query[dragDropDestinationIndex] = targetIndex;
+                gObj.getDataModule().saveChanges(changes, gObj.getPrimaryKeyFieldNames()[0], {}, query)
+                    .then(function () {
+                    gObj.notify(modelChanged, {
+                        type: actionBegin, requestType: 'rowdraganddrop'
+                    });
+                }).catch(function (e) {
+                    gObj.trigger(actionFailure, { error: e });
+                });
+                changes.deletedRecords = records;
+                changes.addedRecords = [];
+                srcControl_1.getDataModule().saveChanges(changes, srcControl_1.getPrimaryKeyFieldNames()[0], {}, query)
+                    .then(function () {
+                    srcControl_1.notify(modelChanged, {
+                        type: actionBegin, requestType: 'rowdraganddrop'
+                    });
+                }).catch(function (e) {
+                    srcControl_1.trigger(actionFailure, { error: e });
+                });
+            }
         }
     };
     RowDD.prototype.reorderRow = function (fromIndexes, toIndex) {
@@ -24068,6 +24255,15 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
         var primaryKeys = gObj.getPrimaryKeyFieldNames();
         var primaryKeyValues = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
+        if (isBlazor()) {
+            var cols = this.parent.getColumns();
+            for (var i = 0; i < cols.length; i++) {
+                var col = cols[i];
+                if (col.template) {
+                    resetBlazorTemplate(gObj.element.id + col.uid, 'Template', this.rowIndex);
+                }
+            }
+        }
         if (isGroupAdaptive(gObj)) {
             var rObj = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;
@@ -24637,6 +24833,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         this.cellDetails.cellIndex = cellIdx;
         this.editCell(rowIdx, this.parent.getColumns()[cellIdx].field, this.isAddRow(rowIdx));
     };
+    // tslint:disable-next-line:max-func-body-length
     BatchEdit.prototype.closeEdit = function () {
         var gObj = this.parent;
         var rows = this.parent.getRowsObject();
@@ -24647,6 +24844,15 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
         if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2) {
             rows.push.apply(rows, this.parent.getMovableRowsObject());
+        }
+        var cols = this.parent.getColumns();
+        if (isBlazor()) {
+            for (var i = 0; i < cols.length; i++) {
+                var col = cols[i];
+                if (col.template) {
+                    updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
+                }
+            }
         }
         var rowRenderer = new RowRenderer(this.serviceLocator, null, this.parent);
         var tr;
@@ -24767,6 +24973,16 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             if (checkAllBox.classList.contains('e-checkbox-disabled') &&
                 gObj.pageSettings.totalRecordsCount > gObj.currentViewData.length) {
                 removeClass([checkAllBox], ['e-checkbox-disabled']);
+            }
+        }
+        var cols = this.parent.getColumns();
+        if (isBlazor()) {
+            for (var i = 0; i < cols.length; i++) {
+                var col = cols[i];
+                if (col.template) {
+                    blazorTemplates[this.parent.element.id + col.uid] = [];
+                    resetBlazorTemplate(this.parent.element.id + col.uid, 'Template');
+                }
             }
         }
         this.saveCell();
@@ -25131,6 +25347,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var col = gObj.getColumnByField(field);
         var keys = gObj.getPrimaryKeyFieldNames();
+        if (isBlazor() && col.template && !isAdd) {
+            resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
+        }
         if (gObj.editSettings.allowEditing && col.allowEditing) {
             if (gObj.isEdit && !(this.cellDetails.column.field === field
                 && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index))) {
@@ -25351,6 +25570,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             gObj.editModule.destroyForm();
             gObj.isEdit = false;
             gObj.editModule.destroyWidgets([column]);
+            if (isBlazor() && column.template && !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow')) {
+                updateBlazorTemplate(gObj.element.id + column.uid, 'Template', column, false);
+            }
             _this.parent.notify(tooltipDestroy, {});
             _this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
             removeClass([tr], ['e-editedrow', 'e-batchrow']);
@@ -26543,6 +26765,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         }
         if (!this.isInitialOpen) {
             this.dlgObj.content = this.renderChooserList();
+            this.updateIntermediateBtn();
         }
         else {
             this.refreshCheckboxState();
@@ -30612,6 +30835,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     ColumnMenu.prototype.columnMenuHandlerClick = function (e) {
         if (e.target.classList.contains('e-columnmenu')) {
             this.columnMenu.items = this.getItems();
+            this.columnMenu.dataBind();
             if ((this.isOpen && this.headerCell !== this.getHeaderCell(e)) || document.querySelector('.e-grid-menu .e-menu-parent.e-ul')) {
                 this.columnMenu.close();
                 this.openColumnMenu(e);

@@ -20,8 +20,13 @@ import { getElement } from './diagram-util';
  */
 
 /** @private */
-export function removeElementsByClass(className: string): void {
-    let elements: HTMLCollectionOf<Element> = document.getElementsByClassName(className);
+export function removeElementsByClass(className: string, id?: string): void {
+    let elements: HTMLCollectionOf<Element> | NodeListOf<Element>;
+    if (id) {
+        elements = document.getElementById(id).getElementsByClassName(className);
+    } else {
+        elements = document.getElementsByClassName(className);
+    }
     while (elements.length > 0) {
         elements[0].parentNode.removeChild(elements[0]);
     }

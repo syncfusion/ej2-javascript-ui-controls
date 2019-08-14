@@ -1324,6 +1324,34 @@ describe('Schedule Month view', () => {
                 schObj.dataBind();
             });
         });
+        describe('CR Issue EJ2- Getting Week numbers while changing firstdayofWeek', () => {
+            let schObj: Schedule;
+            beforeAll((done: Function) => {
+                let schOptions: ScheduleModel = {
+                    selectedDate: new Date(2017, 10, 6),
+                    currentView: 'Month',
+                    showWeekNumber: true
+                };
+                schObj = util.createSchedule(schOptions, testData, done);
+            });
+            afterAll(() => {
+                util.destroy(schObj);
+            });
+            it('Week number testing for when firstdayofWeek set to Sunday', ()  => {
+                schObj.firstDayOfWeek = 0;
+                expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
+            });
+            it('Week number testing for when firstdayofWeek set to Monday', ()  => {
+                schObj.firstDayOfWeek = 1;
+                schObj.dataBind();
+                expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('46');
+            });
+            it('Week number testing for when firstdayofWeek set to saturday', ()  => {
+                schObj.firstDayOfWeek = 6;
+                schObj.dataBind();
+                expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
+            });
+        });    
     });
 
     it('memory leak', () => {

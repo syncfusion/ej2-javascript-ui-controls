@@ -169,3 +169,17 @@ export type FilterType =
     'Excel' |
     /**  Defines FilterType as menu */
     'Menu' ;
+
+/**
+ * Defines the wrap mode.
+ * * Both -  Wraps both header and content.
+ * * Header - Wraps header alone.
+ * * Content - Wraps content alone.
+ */
+export type WrapMode =
+    /** Wraps both header and content */
+    'Both' |
+    /** Wraps  header alone */
+    'Header' |
+    /** Wraps  content alone */
+    'Content';

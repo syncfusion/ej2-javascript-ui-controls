@@ -75,17 +75,14 @@ export class PdfDestination implements IPdfWrapper {
      */
     public constructor(page : PdfPageBase, rectangle : RectangleF)
     public constructor(arg1 : PdfPageBase, arg2 ?: RectangleF | PointF) {
-        if (typeof arg2 === 'undefined') {
             let angle : PdfPageRotateAngle = PdfPageRotateAngle.RotateAngle0;
             this.destinationLocation = new PointF(0,  this.destinationLocation.y);
             this.pdfPage = arg1;
-        } else if (arg2 instanceof PointF) {
-            this.constructor(arg1);
-            this.destinationLocation = arg2;
-        } else {
-            this.constructor(arg1);
-            this.bounds = arg2;
-        }
+            if (arg2 instanceof PointF) {
+                this.destinationLocation = arg2;
+            } else {
+                this.bounds = arg2;
+            }
     }
     // Properties
     /**

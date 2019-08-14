@@ -1,4 +1,4 @@
-﻿import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+﻿import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import {AnimationSettings,checkBoxPosition,SelectEventArgs} from "./list-view";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -111,7 +111,7 @@ export interface ListViewModel extends ComponentModel{
     /**
      * It provides the data to render the ListView component which is mapped
      *  with the fields of ListView.
-     *
+     * @isGenericType true
      * {% codeBlock src="listview/datasource-api/index.ts" %}{% endcodeBlock %}
      * @default []
      */

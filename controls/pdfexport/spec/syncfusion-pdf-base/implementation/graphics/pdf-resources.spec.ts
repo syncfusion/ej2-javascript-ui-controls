@@ -31,7 +31,7 @@ describe('PdfResources.ts', () => {
         t1.getNames();
         it('-this.GetNames() method calling', () => {
             let fonts : IPdfPrimitive = font.element;
-            expect(fonts).toBeUndefined();
+            expect(fonts).not.toBeUndefined();
         })
         // t1.RequireProcedureSet('test');
         it('-this.RequireProcedureSet(string) method calling', () => {

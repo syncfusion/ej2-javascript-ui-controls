@@ -706,7 +706,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
     private findSumOfPoints(result: Object): void {
         let length: number = Object.keys(result).length;
         for (let i: number = 0; i < length; i++) {
-            if (!isNullOrUndefined(result[i][this.yName])) {
+            if (!isNullOrUndefined(result[i]) && !isNullOrUndefined(result[i][this.yName]) && !isNaN(result[i][this.yName])) {
                 this.sumOfPoints += Math.abs(result[i][this.yName]);
             }
         }
@@ -822,7 +822,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
      * @private
      */
     public setAccEmptyPoint(point: AccPoints, i: number, data: Object, colors: string[]): void {
-        if (!isNullOrUndefined(point.y)) {
+        if (!(isNullOrUndefined(point.y) || isNaN(point.y))){
             return null;
         }
         point.color = this.emptyPointSettings.fill || point.color;

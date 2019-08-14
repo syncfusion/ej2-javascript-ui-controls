@@ -521,26 +521,42 @@ export const ICON_ASC: string = 'e-icon-ascending';
 /** @hidden */
 export const ICON_DESC: string = 'e-icon-descending';
 /** @hidden */
-export const CONTEXT_EXPAND_ID: string = '#expand';
-/** @hidden */
-export const CONTEXT_COLLAPSE_ID: string = '#collapse';
-/** @hidden */
-export const CONTEXT_DRILLTHROUGH_ID: string = '#drillthrough';
-/** @hidden */
-export const CONTEXT_SORT_ASC_ID: string = '#sortasc';
-/** @hidden */
-export const CONTEXT_SORT_DESC_ID: string = '#sortdesc';
-/** @hidden */
-export const CONTEXT_CALC_ID: string = '#CalculatedField';
-/** @hidden */
-export const CONTEXT_PDF_ID: string = '#pdf';
-/** @hidden */
-export const CONTEXT_EXCEL_ID: string = '#excel';
-/** @hidden */
-export const CONTEXT_CSV_ID: string = '#csv';
-/** @hidden */
-export const CONTEXT_EXPORT_ID: string = '#exporting';
-/** @hidden */
-export const CONTEXT_AGGREGATE_ID: string = '#aggregate';
-/** @hidden */
 export const GRID_GROUPING_BAR_CLASS: string = 'e-pivot-grouping-bar';
+/** @hidden */
+export const FORMATTING_DIALOG: string = 'e-pivot-format-dialog';
+/** @hidden */
+export const FORMATTING_DIALOG_OUTER: string = 'e-pivot-format-dialog-outer';
+/** @hidden */
+export const FORMATTING_VALUE_LABLE: string = 'e-pivot-format-value-lable';
+/** @hidden */
+export const FORMATTING_VALUE_DROP: string = 'e-pivot-format-value-drop';
+/** @hidden */
+export const FORMATTING_FORMAT_LABLE: string = 'e-pivot-format-lable';
+/** @hidden */
+export const FORMATTING_FORMAT_DROP: string = 'e-pivot-format-drop';
+/** @hidden */
+export const FORMATTING_CUSTOM_LABLE: string = 'e-pivot-format-custom-lable';
+/** @hidden */
+export const FORMATTING_CUSTOM_TEXT: string = 'e-pivot-format-custom-text';
+/** @hidden */
+export const FORMATTING_SYMBOL_LABLE: string = 'e-pivot-format-symbol-lable';
+/** @hidden */
+export const FORMATTING_SYMBOL_DROP: string = 'e-pivot-format-symbol-drop';
+/** @hidden */
+export const FORMATTING_GROUPING_LABLE: string = 'e-pivot-format-grouping-lable';
+/** @hidden */
+export const FORMATTING_GROUPING_DROP: string = 'e-pivot-format-grouping-drop';
+/** @hidden */
+export const FORMATTING_DECIMAL_LABLE: string = 'e-pivot-format-decimal-lable';
+/** @hidden */
+export const FORMATTING_DECIMAL_DROP: string = 'e-pivot-format-decimal-drop';
+/** @hidden */
+export const FORMATTING_TOOLBAR: string = 'e-pivot-format-toolbar';
+/** @hidden */
+export const FORMATTING_TABLE: string = 'e-pivot-format-table';
+/** @hidden */
+export const FORMATTING_MENU: string = 'e-pivot-format-menu';
+/** @hidden */
+export const NUMBER_FORMATTING_MENU: string = 'e-pivot-number-format-menu';
+/** @hidden */
+export const CONDITIONAL_FORMATTING_MENU: string = 'e-pivot-conditional-format-menu';

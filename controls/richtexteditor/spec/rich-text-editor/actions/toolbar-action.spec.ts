@@ -733,7 +733,8 @@ Tabs and shift-tabs work too`;
             document.getElementById(controlId + "_toolbar_Paste").click();
             expect(actionBegin).toBe(true);
             setTimeout(() => {
-                expect(actionComplete).toBe(true);
+                //The actioncomplete won't be triggered unless a data is pasted.
+                expect(actionComplete).toBe(false);
                 actionBegin = false;
                 actionComplete = false;
                 done();

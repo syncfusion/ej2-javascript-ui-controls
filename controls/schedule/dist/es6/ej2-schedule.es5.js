@@ -2,7 +2,7 @@ import { Animation, Browser, ChildProperty, Collection, Complex, Component, Drag
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
-import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { FormValidator, Input, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
@@ -107,10 +107,10 @@ function lastDateOfMonth(dt) {
     return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
 }
 function getWeekNumber(dt) {
-    var currentDate = new Date('' + dt).valueOf();
     var date = new Date(dt.getFullYear(), 0, 1).valueOf();
-    var a = (currentDate - date);
-    return Math.ceil((((a) / MS_PER_DAY) + new Date(date).getDay() + 1) / 7);
+    var currentDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).valueOf();
+    var dayOfYear = ((currentDate - date + MS_PER_DAY) / MS_PER_DAY);
+    return Math.ceil(dayOfYear / 7);
 }
 function setTime(date, time) {
     var tzOffsetBefore = date.getTimezoneOffset();
@@ -7847,6 +7847,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         if (this.cellClickAction) {
             eventProp.duration = this.getSlotDuration();
         }
+        var callBackPromise = new Deferred();
         this.parent.trigger(popupOpen, eventProp, function (popupArgs) {
             args.cancel = popupArgs.cancel;
             _this.duration = _this.cellClickAction ? popupArgs.duration : null;
@@ -7860,7 +7861,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             if (_this.parent.editorTemplate && _this.element.querySelector('.e-recurrenceeditor') && !_this.recurrenceEditor) {
                 _this.recurrenceEditor = _this.getInstance('e-recurrenceeditor');
             }
+            callBackPromise.resolve(args);
         });
+        return callBackPromise;
     };
     EventWindow.prototype.onBeforeClose = function () {
         this.resetForm();
@@ -11823,6 +11826,10 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.initializeView(this.currentView);
         }
         else if (state.isDataManager && this.renderModule) {
+            if (this.dragAndDropModule) {
+                this.dragAndDropModule.actionObj.action = '';
+                removeClass([this.element], EVENT_ACTION_CLASS);
+            }
             this.renderModule.refreshDataManager();
         }
     };
@@ -12314,6 +12321,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     Schedule.prototype.refreshEvents = function () {
         if (this.dragAndDropModule) {
             this.dragAndDropModule.actionObj.action = '';
+            removeClass([this.element], EVENT_ACTION_CLASS);
         }
         this.renderModule.refreshDataManager();
     };
@@ -12394,7 +12402,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         if (action === 'Add' && !isEventData) {
             data.startTime = this.getDateTime(data.startTime);
             data.endTime = this.getDateTime(data.endTime);
-            data.element = getElement(data.element);
+            if (!isNullOrUndefined(data.element)) {
+                data.element = getElement(data.element);
+            }
         }
         else {
             data[this.eventFields.startTime] =
@@ -18733,7 +18743,7 @@ var TimelineHeaderRow = /** @__PURE__ @class */ (function () {
                         viewTemplate = "<span class=\"e-header-month\">" + dateParser(dates[0], 'MMMM') + "</span>";
                         break;
                     case 'Week':
-                        viewTemplate = "<span class=\"e-header-week\">" + getWeekNumber(dates[0]) + "</span>";
+                        viewTemplate = "<span class=\"e-header-week\">" + getWeekNumber(dates.slice(-1)[0]) + "</span>";
                 }
                 var headerWrapper = createElement('div', { innerHTML: viewTemplate });
                 htmlCol = headerWrapper.childNodes;

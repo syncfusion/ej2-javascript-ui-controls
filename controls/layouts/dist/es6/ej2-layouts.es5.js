@@ -682,8 +682,13 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         var eventArgs = this.beforeAction(e);
         this.trigger('beforeExpand', eventArgs, function (beforeExpandArgs) {
             if (!beforeExpandArgs.cancel) {
-                _this.previousPane.style.flexGrow = '1';
                 _this.nextPane.style.flexGrow = '0';
+                if (_this.previousPane.classList.contains('e-collapsed') && _this.previousPane.style.flexGrow === '0') {
+                    _this.previousPane.style.flexGrow = '0';
+                }
+                else {
+                    _this.previousPane.style.flexGrow = '1';
+                }
                 if (!_this.previousPane.classList.contains(COLLAPSE_PANE)) {
                     removeClass([_this.nextPane], EXPAND_PANE);
                     removeClass([_this.previousPane], collapseClass);
@@ -825,7 +830,6 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             else {
                 if (this.paneSettings[this.currentBarIndex].collapsible && !this.paneSettings[this.currentBarIndex + 1].collapsible) {
                     this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
-                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
                 }
                 else {
                     this.showTargetBarIcon(this.prevBar, this.rightArrow);
@@ -1982,7 +1986,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     DashboardLayout.prototype.resizeEvents = function () {
         if (this.allowResizing) {
-            for (var i = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+            for (var i = 0; i < this.element.querySelectorAll('.e-panel .e-panel-container .e-resize').length; i++) {
                 var eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                 EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
                 if (Browser.info.name !== 'mise') {
@@ -2407,6 +2411,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         this.removeResizeClasses(this.panelCollection);
         this.setClasses(this.panelCollection);
+        this.resizeEvents();
         this.checkDragging(this.dragCollection);
     };
     DashboardLayout.prototype.updateGridLines = function () {

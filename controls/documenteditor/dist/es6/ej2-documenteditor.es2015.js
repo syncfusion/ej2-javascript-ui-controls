@@ -1766,7 +1766,8 @@ class WParagraphFormat {
                 }
                 if (!isNullOrUndefined(baseStyle)) {
                     if (!isNullOrUndefined(ifListFormat) && this.listFormat.listId !== -1
-                        && baseStyle.paragraphFormat.listFormat.listId === -1) {
+                        && baseStyle.paragraphFormat.listFormat.listId === -1
+                        || !isNullOrUndefined(ifListFormat) && this.listFormat.listId !== baseStyle.paragraphFormat.listFormat.listId) {
                         return ifListFormat;
                     }
                     let propertyType = WUniqueFormat.getPropertyType(WParagraphFormat.uniqueFormatType, property);
@@ -2138,6 +2139,28 @@ class WCharacterFormat {
                 return charStyleValue;
             }
             else {
+                if (!isNullOrUndefined(this.baseCharStyle)) {
+                    /* tslint:disable-next-line:no-any */
+                    let paragraph = this.ownerBase.paragraph;
+                    let line = this.ownerBase.line;
+                    if (!isNullOrUndefined(paragraph) && !isNullOrUndefined(line)) {
+                        let length = line.children.length;
+                        for (let i = 0; i < length; i++) {
+                            /* tslint:disable-next-line:no-any */
+                            let element = this.ownerBase.line.children[i];
+                            if (element instanceof TextElementBox) {
+                                /* tslint:disable-next-line:no-any */
+                                let text = element.text;
+                                if (text.startsWith('HYPERLINK')) {
+                                    let index = text.indexOf('_Toc');
+                                    if (index !== -1) {
+                                        this.baseCharStyle = this.ownerBase.paragraph.paragraphFormat.baseStyle;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
                 let baseStyleValue = this.checkBaseStyle(property);
                 if (!isNullOrUndefined(baseStyleValue)) {
                     return baseStyleValue;
@@ -15321,7 +15344,7 @@ class Layout {
             if (currentListLevel.followCharacter === 'Tab') {
                 element.text = '\t';
                 let index = lineWidget.children.indexOf(element);
-                element.width = this.getTabWidth(paragraph, viewer, index, lineWidget, undefined);
+                element.width = this.getTabWidth(paragraph, viewer, index, lineWidget, element);
             }
             else {
                 element.text = ' ';
@@ -16371,7 +16394,10 @@ class Layout {
         let position = viewer.clientActiveArea.x -
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
-        if (tabs.length === 0 && (position === 0 || defaultTabWidth === 0)) {
+        if (tabs.length === 0) {
+            if (position > 0 && defaultTabWidth > position) {
+                return defaultTabWidth - position;
+            }
             return defaultTabWidth;
         }
         else {
@@ -16381,9 +16407,9 @@ class Layout {
                     let tabPosition = HelperMethods.convertPointToPixel(tabs[i].position);
                     if ((position + elementWidth) < tabPosition) {
                         isCustomTab = true;
-                        if (tabStop.tabJustification === 'Left') {
+                        if (tabStop.tabJustification === 'Left' || tabStop.tabJustification === 'List') {
                             fPosition = tabPosition;
-                            if (!isNullOrUndefined(element)) {
+                            if (element instanceof TabElementBox) {
                                 element.tabLeader = tabs[i].tabLeader;
                                 element.tabText = '';
                             }
@@ -16394,11 +16420,14 @@ class Layout {
                             let width = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
                             if (width < tabWidth) {
                                 if (tabStop.tabJustification === 'Right') {
-                                    let exceedWidth = 0;
-                                    if (position + tabWidth > this.viewer.clientArea.width) {
-                                        exceedWidth = (position + tabWidth) - this.viewer.clientArea.width;
+                                    defaultTabWidth = tabWidth - width;
+                                    let areaWidth = this.viewer.clientActiveArea.width - defaultTabWidth;
+                                    if (areaWidth < 0) {
+                                        defaultTabWidth += areaWidth - width;
                                     }
-                                    defaultTabWidth = tabWidth - width - exceedWidth;
+                                    else if (width > areaWidth) {
+                                        defaultTabWidth -= width - areaWidth;
+                                    }
                                 }
                                 else {
                                     defaultTabWidth = tabWidth - width / 2;
@@ -16411,7 +16440,7 @@ class Layout {
                                 defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
                             }
                             fPosition = position;
-                            if (!isNullOrUndefined(element)) {
+                            if (element instanceof TabElementBox) {
                                 element.tabLeader = tabs[i].tabLeader;
                                 element.tabText = '';
                             }
@@ -24932,7 +24961,7 @@ class SfdtReader {
                 item.headersFooters = {};
             }
             this.viewer.headersFooters.push(this.parseHeaderFooter(item.headersFooters, this.viewer.headersFooters));
-            this.parseTextBody(item.blocks, section);
+            this.parseTextBody(item.blocks, section, i + 1 < data.length);
             for (let i = 0; i < section.childWidgets.length; i++) {
                 section.childWidgets[i].containerWidget = section;
             }
@@ -24976,32 +25005,38 @@ class SfdtReader {
         }
         return hfs;
     }
-    parseTextBody(data, section) {
-        this.parseBody(data, section.childWidgets, section);
+    parseTextBody(data, section, isSectionBreak) {
+        this.parseBody(data, section.childWidgets, section, isSectionBreak);
     }
-    parseBody(data, blocks, container) {
+    parseBody(data, blocks, container, isSectionBreak) {
         if (!isNullOrUndefined(data)) {
             for (let i = 0; i < data.length; i++) {
                 let block = data[i];
+                let hasValidElmts = false;
                 if (block.hasOwnProperty('inlines')) {
                     let writeInlineFormat = false;
                     //writeInlineFormat = this.isPasting && i === data.length - 1;
                     let paragraph = new ParagraphWidget();
                     paragraph.characterFormat = new WCharacterFormat(paragraph);
                     paragraph.paragraphFormat = new WParagraphFormat(paragraph);
-                    this.parseCharacterFormat(block.characterFormat, paragraph.characterFormat);
-                    this.parseParagraphFormat(block.paragraphFormat, paragraph.paragraphFormat);
-                    let styleObj;
-                    if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
-                        styleObj = this.viewer.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
-                        if (!isNullOrUndefined(styleObj)) {
-                            paragraph.paragraphFormat.ApplyStyle(styleObj);
-                        }
-                    }
                     if (block.inlines.length > 0) {
-                        this.parseParagraph(block.inlines, paragraph, writeInlineFormat);
+                        hasValidElmts = this.parseParagraph(block.inlines, paragraph, writeInlineFormat);
                     }
-                    blocks.push(paragraph);
+                    if (!(isSectionBreak && block === data[data.length - 1] && !hasValidElmts)) {
+                        this.parseCharacterFormat(block.characterFormat, paragraph.characterFormat);
+                        this.parseParagraphFormat(block.paragraphFormat, paragraph.paragraphFormat);
+                        let styleObj;
+                        if (!isNullOrUndefined(block.paragraphFormat) && !isNullOrUndefined(block.paragraphFormat.styleName)) {
+                            styleObj = this.viewer.styles.findByName(block.paragraphFormat.styleName, 'Paragraph');
+                            if (!isNullOrUndefined(styleObj)) {
+                                paragraph.paragraphFormat.ApplyStyle(styleObj);
+                            }
+                        }
+                        blocks.push(paragraph);
+                    }
+                    else if (isSectionBreak && data.length === 1) {
+                        blocks.push(paragraph);
+                    }
                     paragraph.index = i;
                     paragraph.containerWidget = container;
                 }
@@ -25041,7 +25076,7 @@ class SfdtReader {
                         this.parseCellFormat(block.rows[i].cells[j].cellFormat, cell.cellFormat);
                     }
                     this.isPageBreakInsideTable = true;
-                    this.parseTextBody(block.rows[i].cells[j].blocks, cell);
+                    this.parseTextBody(block.rows[i].cells[j].blocks, cell, false);
                     this.isPageBreakInsideTable = false;
                 }
             }
@@ -25075,6 +25110,7 @@ class SfdtReader {
     // tslint:disable:max-func-body-length
     parseParagraph(data, paragraph, writeInlineFormat) {
         let lineWidget = new LineWidget(paragraph);
+        let hasValidElmts = false;
         for (let i = 0; i < data.length; i++) {
             let inline = data[i];
             if (inline.hasOwnProperty('text')) {
@@ -25102,6 +25138,7 @@ class SfdtReader {
                 textElement.text = inline.text;
                 textElement.line = lineWidget;
                 lineWidget.children.push(textElement);
+                hasValidElmts = true;
             }
             else if (inline.hasOwnProperty('chartType')) {
                 // chartPreservation
@@ -25128,6 +25165,7 @@ class SfdtReader {
                 officeChart.chartRender(inline);
                 chartElement.officeChart = officeChart;
                 officeChart.chart.appendTo(chartElement.targetElement);
+                hasValidElmts = true;
             }
             else if (inline.hasOwnProperty('imageString')) {
                 let image = new ImageElementBox(data[i].isInlineImage);
@@ -25147,6 +25185,7 @@ class SfdtReader {
                 image.width = HelperMethods.convertPointToPixel(inline.width);
                 image.height = HelperMethods.convertPointToPixel(inline.height);
                 this.parseCharacterFormat(inline.characterFormat, image.characterFormat);
+                hasValidElmts = true;
             }
             else if (inline.hasOwnProperty('hasFieldEnd') || (inline.hasOwnProperty('fieldType') && inline.fieldType === 0)) {
                 let fieldBegin = new FieldElementBox(0);
@@ -25187,6 +25226,7 @@ class SfdtReader {
                     if (!isNullOrUndefined(field.fieldBegin) && field.fieldBegin.fieldSeparator) {
                         field.fieldSeparator = field.fieldBegin.fieldSeparator;
                         field.fieldBegin.fieldSeparator.fieldEnd = field;
+                        hasValidElmts = true;
                     }
                     //After setting all the property clear the field values
                     this.viewer.fieldStacks.splice(this.viewer.fieldStacks.length - 1, 1);
@@ -25213,6 +25253,9 @@ class SfdtReader {
                         bookmark.reference = bookmarkStart;
                     }
                 }
+                if (bookmark.name.indexOf('_') !== 0) {
+                    hasValidElmts = true;
+                }
             }
             else if (inline.hasOwnProperty('editRangeId')) {
                 if (inline.hasOwnProperty('editableRangeStart')) {
@@ -25234,9 +25277,11 @@ class SfdtReader {
                         this.editableRanges.add(inline.editRangeId, permStart);
                     }
                 }
+                hasValidElmts = true;
             }
         }
         paragraph.childWidgets.push(lineWidget);
+        return hasValidElmts;
     }
     parseEditableRangeStart(data) {
         let permStart = new EditRangeStartElementBox();
@@ -58925,6 +58970,12 @@ class WordExport {
         this.serializeCellWidth(writer, cell);
         // serialize cell margins
         this.serializeCellMargins(writer, cellFormat);
+        if (ensureMerge) {
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
+            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
+            this.serializeCellMerge(writer, cellFormat);
+        }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
         this.serializeBorders(writer, cellFormat.borders, 8);
@@ -58985,12 +59036,6 @@ class WordExport {
         //     m_writer.WriteEndElement();
         //     m_isAlternativeCellFormat = false;
         // }
-        if (ensureMerge) {
-            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-            this.serializeGridSpan(writer, cell);
-            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
-            this.serializeCellMerge(writer, cellFormat);
-        }
         if (endProperties) {
             writer.writeEndElement();
         }
@@ -70378,23 +70423,13 @@ class Toolbar$1 {
         let restrictDropDown = new DropDownButton(lockItems, restrictEditing);
     }
     showHidePropertiesPane() {
-        if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
-            this.documentEditor.focusIn();
-            return;
-        }
-        else if (this.container.tocProperties.element.style.display === 'block' && this.container.showPropertiesPaneInternal) {
-            this.enableDisablePropertyPaneButton(true);
-            this.container.showPropertiesPaneOnSelection();
-            return;
-        }
-        if (this.container.previousContext.indexOf('Header') >= 0
-            || this.container.previousContext.indexOf('Footer') >= 0) {
-            this.container.showHeaderProperties = !this.container.showHeaderProperties;
+        if (this.container.propertiesPaneContainer.style.display === 'none') {
+            this.container.showPropertiesPane = true;
         }
         else {
-            this.container.showPropertiesPaneInternal = !this.container.showPropertiesPaneInternal;
+            this.container.showPropertiesPane = false;
         }
-        this.enableDisablePropertyPaneButton(this.container.showPropertiesPaneInternal);
+        this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
         this.container.showPropertiesPaneOnSelection();
         this.documentEditor.focusIn();
     }
@@ -70698,7 +70733,8 @@ class Toolbar$1 {
         this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
     }
     onToc() {
-        if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
+        if (this.container.previousContext === 'TableOfContents' && this.container.propertiesPaneContainer.style.display === 'none') {
+            this.container.showPropertiesPane = false;
             this.documentEditor.focusIn();
             return;
         }
@@ -70706,7 +70742,6 @@ class Toolbar$1 {
             this.documentEditor.selection.closeHeaderFooter();
         }
         this.enableDisablePropertyPaneButton(false);
-        this.container.showPropertiesPaneInternal = true;
         this.container.showProperties('toc');
     }
     /**
@@ -72202,7 +72237,6 @@ class HeaderFooterProperties {
             this.footerFromTop.element.addEventListener('blur', () => { this.changeFooterValue(); this.isFooterTopApply = false; });
         };
         this.onClose = () => {
-            this.container.showHeaderProperties = true;
             this.documentEditor.selection.closeHeaderFooter();
         };
         this.changeFirstPageOptions = () => {
@@ -72661,12 +72695,11 @@ class TocProperties {
             this.closeButton.addEventListener('click', () => { this.onClose(); });
         };
         this.onClose = () => {
-            if (this.container.showPropertiesPaneInternal
+            if (this.container.showPropertiesPane
                 && this.container.previousContext !== 'TableOfContents') {
                 this.container.showPropertiesPaneOnSelection();
             }
             else {
-                this.container.showPropertiesPaneInternal = false;
                 this.showTocPane(false);
                 if (this.toolbar) {
                     this.toolbar.enableDisablePropertyPaneButton(false);
@@ -73860,15 +73893,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         /**
          * @private
          */
-        this.showHeaderProperties = false;
-        /**
-         * @private
-         */
         this.previousContext = '';
-        /**
-         * @private
-         */
-        this.showPropertiesPaneInternal = true;
         /**
          * default locale
          * @private
@@ -74181,9 +74206,11 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
      * @private
      */
     showHidePropertiesPane(show) {
+        if (this.showPropertiesPane) {
+            this.showPropertiesPaneOnSelection();
+        }
         this.propertiesPaneContainer.style.display = show ? 'block' : 'none';
         if (this.toolbarModule) {
-            this.showPropertiesPaneInternal = show;
             this.toolbarModule.propertiesPaneButton.element.style.opacity = show ? '1' : '0.5';
         }
         this.documentEditor.resize();
@@ -74302,41 +74329,27 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         let currentContext = this.documentEditor.selection.contextType;
         let isInHeaderFooter = currentContext.indexOf('Header') >= 0
             || currentContext.indexOf('Footer') >= 0;
-        if (!isInHeaderFooter && !this.showPropertiesPaneInternal) {
-            this.showPropertiesPane = false;
-            this.documentEditor.focusIn();
-            return;
+        if (!this.showPropertiesPane) {
+            this.showHidePropertiesPane(false);
+            this.propertiesPaneContainer.style.display = 'none';
         }
-        if (!isInHeaderFooter) {
-            if (this.headerFooterProperties &&
-                this.headerFooterProperties.element.style.display === 'block') {
-                this.showPropertiesPane = false;
-                this.documentEditor.selection.closeHeaderFooter();
-            }
-            this.showHeaderProperties = true;
-        }
-        else if (isInHeaderFooter && this.showHeaderProperties) {
-            this.showPropertiesPaneInternal = true;
-        }
-        if (this.showPropertiesPaneInternal) {
-            this.showPropertiesPane = true;
-            if (isInHeaderFooter && this.showHeaderProperties) {
+        else {
+            this.propertiesPaneContainer.style.display = 'block';
+            if (isInHeaderFooter) {
                 this.showProperties('headerfooter');
             }
-            else {
-                if (currentContext.indexOf('Text') >= 0
-                    && currentContext.indexOf('Table') < 0) {
-                    this.showProperties('text');
-                }
-                else if (currentContext.indexOf('Image') >= 0) {
-                    this.showProperties('image');
-                }
-                else if (currentContext.indexOf('TableOfContents') >= 0) {
-                    this.showProperties('toc');
-                }
-                else if (currentContext.indexOf('Table') >= 0) {
-                    this.showProperties('table');
-                }
+            else if (currentContext.indexOf('Text') >= 0
+                && currentContext.indexOf('Table') < 0) {
+                this.showProperties('text');
+            }
+            else if (currentContext.indexOf('Image') >= 0) {
+                this.showProperties('image');
+            }
+            else if (currentContext.indexOf('TableOfContents') >= 0) {
+                this.showProperties('toc');
+            }
+            else if (currentContext.indexOf('Table') >= 0) {
+                this.showProperties('table');
             }
         }
         this.previousContext = this.documentEditor.selection.contextType;
@@ -74412,7 +74425,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
     }
 };
 __decorate$1([
-    Property(false)
+    Property(true)
 ], DocumentEditorContainer.prototype, "showPropertiesPane", void 0);
 __decorate$1([
     Property(true)

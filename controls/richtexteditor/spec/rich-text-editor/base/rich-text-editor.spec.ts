@@ -921,18 +921,39 @@ describe('RTE base module', () => {
         });
 
         it(' trigger the actionBegin and actionComplete while pressing the action key in paste', (done) => {
-            editNode.focus();
-            selectNode = editNode.querySelector('.first-p');
-            setCursorPoint(curDocument, selectNode, 0);
-            keyBoardEvent.action = "paste";
-            (rteObj as any).onPaste(keyBoardEvent);
+            keyBoardEvent.clipboardData = {
+                getData: (e: any) => {
+                  if (e === "text/plain") {
+                    return 'Hi syncfusion website https://ej2.syncfusion.com is here with another URL https://ej2.syncfusion.com text after second URL';
+                  } else {
+                    return '';
+                  }
+                },
+                items: []
+            };
+            rteObj.pasteCleanupSettings.prompt = false;
+            rteObj.pasteCleanupSettings.plainText = false;
+            rteObj.pasteCleanupSettings.keepFormat = true;
+            rteObj.dataBind();
+            (rteObj as any).inputElement.focus();
+            setCursorPoint(curDocument, (rteObj as any).inputElement, 0);
+            rteObj.onPaste(keyBoardEvent);
             setTimeout(() => {
-                expect(beforeCount).toBe(true);
-                expect(afterCount).toBe(true);
-                afterCount = false;
-                beforeCount = false;
-                done();
-            }, 10);
+            let allElem: any = (rteObj as any).inputElement.firstElementChild;
+            expect(allElem.children[0].childNodes[1].tagName.toLowerCase() === 'a').toBe(true);
+            expect(allElem.children[0].childNodes[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+            let expected: boolean = false;
+            let expectedElem: string = `<p>Hi syncfusion website <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>is here with another URL <a classname="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com </a>text after second URL</p>`;
+            if (allElem.innerHTML === expectedElem) {
+                expected = true;
+            }
+            expect(expected).toBe(true);
+            expect(beforeCount).toBe(true);
+            expect(afterCount).toBe(true);
+            afterCount = false;
+            beforeCount = false;
+            done();
+            }, 100);
         });
 
         it(' trigger the actionBegin and args.cancel for actionComplete while pressing the action key in paste', (done) => {
@@ -1785,6 +1806,41 @@ describe('RTE base module', () => {
             destroy(rteObj);
         });
     });
+
+    describe('RTE enablePersistence Properties in textarea mode', () => {
+        let rteObj: RichTextEditor;
+        let element: HTMLElement;
+        beforeAll((done: Function) => {
+            element = createElement('div', {
+                id: "Wrapper", innerHTML: `<textarea id="defaultRTE_28695"></textarea>` 
+            });
+            document.body.appendChild(element);
+            done();
+        });
+        it('Ensure enablePersistence property', () => {
+            rteObj = new RichTextEditor({
+                placeholder: 'Type something',
+                enablePersistence: true,
+                value: "<p>Richtexteditor</p>"
+            });
+            rteObj.appendTo('#defaultRTE_28695');
+            window.localStorage.setItem("value", "<p>Richtexteditor</p>");
+            expect(rteObj.value).toBe(window.localStorage.getItem("value"));
+            window.localStorage.removeItem("value");
+            rteObj.value = "<p>Richtexteditor value updated</p>";
+            rteObj.dataBind();
+            window.localStorage.setItem("value", "<p>Richtexteditor value updated</p>");           
+            expect(rteObj.value).toBe(window.localStorage.getItem("value"));
+            window.localStorage.removeItem("value");
+            rteObj.enablePersistence = false;
+            rteObj.dataBind();     
+        });
+        afterAll(() => {
+            destroy(rteObj);
+            document.body.innerHTML = '';
+        });
+    });
+
     describe('RTE htmlAttributes Properties', () => {
         let rteObj: RichTextEditor;
         let elem: HTMLElement;
@@ -3029,8 +3085,8 @@ describe(' Paste action events', () => {
     let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: null, which: 64, key: '' };
     let curDocument: Document;
     let selectNode: Element;
-    let actionBegin: boolean;
-    let actionComplete: boolean;
+    let actionBegin: boolean = false;
+    let actionComplete: boolean = false;
     beforeAll((done: Function) => {
         rteObj = renderRTE({
             value: `<div><p class='first-p'>First p node-0</p></div>`,
@@ -3051,7 +3107,8 @@ describe(' Paste action events', () => {
         (rteObj as any).inputElement.dispatchEvent(new ClipboardEvent('paste', keyBoardEvent));
         setTimeout(() => {
             expect(actionBegin).toBe(true);
-            expect(actionComplete).toBe(true);
+            //The actioncomplete won't be triggered unless a data is pasted.
+            expect(actionComplete).toBe(false);
             done();
         }, 10);
     });
@@ -3138,7 +3195,7 @@ describe('EJ2-23205 Revert the headings and blockquotes format while applying th
 });
 
 describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE reactive form ', () => {
-    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', action: 'tab'};
     let rteObj: RichTextEditor;
     let curDocument: Document;
     let editNode: Element;
@@ -3150,9 +3207,6 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
             toolbarSettings: {
                 items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
                     'FontName']
-            },
-            change: (e): void => {
-                isChanged = true;
             }
         });
         rteEle = rteObj.element;
@@ -3167,7 +3221,7 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
         selectNode = editNode.querySelector('br');
         setCursorPoint(curDocument, selectNode, 0);
         (rteObj as any).keyDown(keyBoardEvent);
-        expect(isChanged).toBe(false);
+        expect(editNode.textContent.length === 0).toBe(true);
     });
 });
 
@@ -3382,5 +3436,55 @@ describe('To change the keyconfig API property', () => {
         expect(rteObj.formatter.keyConfig.bold === 'ctrl+b').toBe(true);
         rteObj.formatter = new HTMLFormatter ({ keyConfig: { 'bold': 'ctrl+q' } });
         expect(rteObj.formatter.keyConfig.bold === 'ctrl+q').toBe(true);
+    });
+});
+
+describe('EJ2-29801 Tab and shift+tab key combination should have same behavior', () => {
+    let innerHtml: string = `<p class="e-one-paragraph">EJ2 RichTextEditor with HtmlEditor</p>
+    <p class="e-one-paragraph">EJ2 RichTextEditor with Markdown</p>
+     <p class="e-two-paragraph">EJ2 RichTextEditor with IframeEditor</p>ss`;
+    let rteObj: RichTextEditor;
+    let inpEle: HTMLElement;
+    let controlId: string;
+    let rteElement: HTMLElement;
+    let evt: any;
+    beforeAll((done: Function) => {
+        inpEle = createElement('input', { id: 'testinput' });
+        document.body.appendChild(inpEle);
+        rteObj = renderRTE({
+            value: innerHtml
+        });
+        controlId = rteObj.element.id;
+        rteElement = rteObj.element;
+        done();
+    });
+    it("check tab press on toolbar behavior", function () {
+        (<any>rteObj).getToolbarElement().focus();
+        evt = new Event("focus");
+        evt.relatedTarget = inpEle;
+        (<any>rteObj).focusHandler(evt);
+        expect(document.activeElement != rteObj.getToolbarElement()).toBe(true);
+    });
+    afterAll(() => {
+        destroy(rteObj);
+    });
+});
+
+describe('EJ2-29801 Tab and shift+tab key combination should have same behavior', () => {
+    let rteObj: RichTextEditor;
+    beforeAll((done: Function) => {
+        let element: HTMLElement = createElement('div', { id: getUniqueID('rte-test'), attrs: {tabindex: "1"} });
+        document.body.appendChild(element);
+        rteObj = new RichTextEditor();
+        rteObj.appendTo(element);
+        done();
+    });
+    it("check whether the provided tabindex in the element is added to editable input", function () {
+        expect(rteObj.htmlAttributes.tabindex === rteObj.inputElement.getAttribute("tabindex")).toBe(true);
+    });
+    afterAll(() => {
+        rteObj.destroy();
+        detach(rteObj.element);
+        document.body.innerHTML = '';
     });
 });

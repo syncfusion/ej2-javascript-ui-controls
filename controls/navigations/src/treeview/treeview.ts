@@ -96,6 +96,7 @@ export interface NodeExpandEventArgs {
     node: HTMLLIElement;
     /**
      * Return the expanded/collapsed node as JSON object from data source.
+     * @BlazorType NodeData
      */
     nodeData: { [key: string]: Object };
 
@@ -121,6 +122,7 @@ export interface NodeSelectEventArgs {
     node: HTMLLIElement;
     /**
      * Return the currently selected node as JSON object from data source.
+     * @BlazorType NodeData
      */
     nodeData: { [key: string]: Object };
 }
@@ -144,6 +146,7 @@ export interface NodeCheckEventArgs {
     node: HTMLLIElement;
     /**
      * Return the currently checked node as JSON object from data source.
+     * @BlazorType List<NodeData>
      */
     data: { [key: string]: Object }[];
 }
@@ -163,6 +166,7 @@ export interface NodeEditEventArgs {
     node: HTMLLIElement;
     /**
      * Return the current node as JSON object from data source.
+     * @BlazorType NodeData
      */
     nodeData: { [key: string]: Object };
     /**
@@ -194,6 +198,7 @@ export interface DragAndDropEventArgs {
     draggedNode: HTMLLIElement;
     /**
      * Return the currently dragged node as array of JSON object from data source.
+     * @BlazorType NodeData
      */
     draggedNodeData: { [key: string]: Object };
     /**
@@ -224,6 +229,7 @@ export interface DragAndDropEventArgs {
     droppedNode: HTMLLIElement;
     /**
      * Return the dropped node as array of JSON object from data source.
+     * @BlazorType NodeData
      */
     droppedNodeData: { [key: string]: Object };
     /**
@@ -302,6 +308,16 @@ export interface ItemCreatedArgs {
     options: ListBaseOptions;
     text: string;
     fields: FieldsMapping;
+}
+
+export interface NodeData {
+    id: string;
+    text: string;
+    parentID: string;
+    selected: boolean;
+    expanded: boolean;
+    isChecked: string;
+    hasChildren: boolean;
 }
 
 /**
@@ -746,7 +762,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeChecked'
      */
@@ -755,7 +770,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeChecking'
      */
@@ -764,7 +778,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node is clicked successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeClicked'
      */
@@ -773,7 +786,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node collapses successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeCollapsed'
      */
@@ -782,7 +794,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node collapses.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeCollapsing'
      */
@@ -837,7 +848,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers when the TreeView node expands successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeExpanded'
      */
@@ -846,7 +856,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is to be expanded.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeExpanding'
      */
@@ -863,7 +872,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Triggers before the TreeView node is selected/unselected.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeSelecting'
      */
@@ -1804,17 +1812,24 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private changeState(
         wrapper: HTMLElement | Element, state: string, e?: MouseEvent | KeyboardEventArgs, isPrevent?: boolean, isAdd?: boolean,
         doCheck?: boolean): void {
-        let ariaState: string;
         let eventArgs: NodeCheckEventArgs;
-        let currLi : Element = closest(wrapper, '.' + LISTITEM);
+        let currLi: Element = closest(wrapper, '.' + LISTITEM);
         if (!isPrevent) {
             this.checkActionNodes = [];
             eventArgs = this.getCheckEvent(currLi, state, e);
-            this.trigger('nodeChecking', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeChecking', eventArgs, (observedArgs: NodeCheckEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.nodeCheckAction(wrapper, state, currLi, observedArgs, e, isPrevent, isAdd, doCheck);
+                }
+            });
+        } else {
+            this.nodeCheckAction(wrapper, state, currLi, eventArgs, e, isPrevent, isAdd, doCheck);
         }
+    }
+
+    private nodeCheckAction(wrapper: HTMLElement | Element, state: string, currLi: Element, eventArgs: NodeCheckEventArgs,
+                            e?: MouseEvent | KeyboardEventArgs, isPrevent?: boolean, isAdd?: boolean, doCheck?: boolean): void {
+        let ariaState: string;
         let frameSpan: Element = wrapper.getElementsByClassName(CHECKBOXFRAME)[0];
         if (state === 'check' && !frameSpan.classList.contains(CHECK)) {
             frameSpan.classList.remove(INDETERMINATE);
@@ -2021,18 +2036,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private nodeCheckingEvent(wrapper: HTMLElement | Element, isCheck: boolean, e: MouseEvent | KeyboardEventArgs): NodeCheckEventArgs {
-        let currLi: Element = closest(wrapper, '.' + LISTITEM);
-        this.checkActionNodes = [];
-        let ariaState: string = !isCheck ? 'true' : 'false';
-        if (!isNOU(ariaState)) {
-            wrapper.setAttribute('aria-checked', ariaState);
-        }
-        let eventArgs: NodeCheckEventArgs = this.getCheckEvent(currLi, isCheck ? 'uncheck' : 'check', e);
-        this.trigger('nodeChecking', eventArgs);
-        return eventArgs;
-    }
-
     private nodeCheckedEvent(wrapper: HTMLElement | Element, isCheck: boolean, e: MouseEvent | KeyboardEventArgs): void {
         let currLi: Element = closest(wrapper, '.' + LISTITEM);
         let eventArgs: NodeCheckEventArgs = this.getCheckEvent(wrapper, isCheck ? 'uncheck' : 'check', e);
@@ -2138,12 +2141,19 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let colArgs: NodeExpandEventArgs;
         if (this.isLoaded) {
             colArgs = this.getExpandEvent(currLi, e);
-            this.trigger('nodeCollapsing', colArgs);
-            if (colArgs.cancel) {
-                removeClass([icon], PROCESS);
-                return;
-            }
+            this.trigger('nodeCollapsing', colArgs, (observedArgs: NodeExpandEventArgs) => {
+                if (observedArgs.cancel) {
+                    removeClass([icon], PROCESS);
+                } else {
+                    this.nodeCollapseAction(currLi, icon, observedArgs);
+                }
+            });
+        } else {
+            this.nodeCollapseAction(currLi, icon, colArgs);
         }
+    }
+
+    private nodeCollapseAction(currLi: Element, icon: Element, colArgs : NodeExpandEventArgs) : void {
         removeClass([icon], COLLAPSIBLE);
         addClass([icon], EXPANDABLE);
         let start: number = 0;
@@ -2180,7 +2190,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.collapsedNode(liEle, ul, icon, colArgs);
         }
     }
-
     private collapsedNode(liEle: HTMLElement, ul: HTMLElement, icon: Element, colArgs: NodeExpandEventArgs): void {
         ul.style.display = 'none';
         liEle.style.overflow = '';
@@ -2449,11 +2458,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let eventArgs: NodeSelectEventArgs;
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'select', e);
-            this.trigger('nodeSelecting', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeSelecting', eventArgs, (observedArgs: NodeSelectEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.nodeSelectAction(li, e, observedArgs, multiSelect);
+                }
+            });
+        } else {
+            this.nodeSelectAction(li, e, eventArgs, multiSelect);
         }
+    }
+
+    private nodeSelectAction(li: Element, e: MouseEvent | KeyboardEventArgs, eventArgs: NodeSelectEventArgs, multiSelect?: boolean) : void{
         if (!this.allowMultiSelection || (!multiSelect && (!e || (e && !e.ctrlKey)))) {
             this.removeSelectAll();
         }
@@ -2484,16 +2499,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.trigger('nodeSelected', eventArgs);
         }
     }
-
     private unselectNode(li: Element, e: MouseEvent | KeyboardEventArgs): void {
         let eventArgs: NodeSelectEventArgs;
         if (this.isLoaded) {
             eventArgs = this.getSelectEvent(li, 'un-select', e);
-            this.trigger('nodeSelecting', eventArgs);
-            if (eventArgs.cancel) {
-                return;
-            }
+            this.trigger('nodeSelecting', eventArgs, (observedArgs: NodeSelectEventArgs) => {
+                if (!observedArgs.cancel) {
+                    this.nodeUnselectAction(li, observedArgs);
+                }
+            });
+        } else {
+            this.nodeUnselectAction(li, eventArgs);
         }
+    }
+
+    private nodeUnselectAction(li: Element, eventArgs: NodeSelectEventArgs): void {
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
@@ -2576,14 +2596,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let classList: DOMTokenList = icon.classList;
             if (classList.contains(EXPANDABLE)) {
                 this.expandAction(currLi, icon, e);
-            } else {
+            } else if (classList.contains(COLLAPSIBLE)) {
                 this.collapseNode(currLi, icon, e);
             }
         }
     }
 
     private expandAction(
-        currLi: Element, icon: Element, e: MouseEvent |KeyboardEventArgs |TapEventArgs, expandChild?: boolean, callback?: Function): void {
+        currLi: Element, icon: Element, e: MouseEvent | KeyboardEventArgs | TapEventArgs, expandChild?: boolean, callback?: Function): void {
         if (icon.classList.contains(PROCESS)) {
             return;
         } else {
@@ -2591,12 +2611,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.isLoaded) {
             this.expandArgs = this.getExpandEvent(currLi, e);
-            this.trigger('nodeExpanding', this.expandArgs);
-            if (this.expandArgs.cancel) {
-                removeClass([icon], PROCESS);
-                return;
-            }
+            this.trigger('nodeExpanding', this.expandArgs, (observedArgs: NodeExpandEventArgs) => {
+                if (observedArgs.cancel) {
+                    removeClass([icon], PROCESS);
+                }
+                else {
+                    this.nodeExpandAction(currLi, icon, expandChild, callback);
+                }
+            });
         }
+        else {
+            this.nodeExpandAction(currLi, icon, expandChild, callback);
+        }
+    }
+
+    private nodeExpandAction(currLi: Element, icon: Element, expandChild?: boolean, callback?: Function): void {
         let ul: Element = select('.' + PARENTITEM, currLi);
         if (ul && ul.nodeName === 'UL') {
             this.expandNode(currLi, icon);
@@ -2752,16 +2781,30 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let checkWrap: Element = select('.' + CHECKBOXWRAP, focusedNode);
         let isChecked: boolean = select(' .' + CHECKBOXFRAME, checkWrap).classList.contains(CHECK);
         if (!focusedNode.classList.contains('e-disable')) {
-            this.validateCheckNode(checkWrap, isChecked, focusedNode, e);
+            if (focusedNode.getElementsByClassName("e-checkbox-disabled").length == 0) {
+                this.validateCheckNode(checkWrap, isChecked, focusedNode, e);
+            }
         }
     }
 
     private validateCheckNode(
         checkWrap: HTMLElement | Element, isCheck: boolean, li: HTMLElement | Element, e: KeyboardEventArgs | MouseEvent): void {
-        let eventArgs : NodeCheckEventArgs = this.nodeCheckingEvent(checkWrap, isCheck, e);
-        if (eventArgs.cancel) {
-            return;
+            let currLi: Element = closest(checkWrap, '.' + LISTITEM);
+        this.checkActionNodes = [];
+        let ariaState: string = !isCheck ? 'true' : 'false';
+        if (!isNOU(ariaState)) {
+            checkWrap.setAttribute('aria-checked', ariaState);
         }
+        let eventArgs: NodeCheckEventArgs = this.getCheckEvent(currLi, isCheck ? 'uncheck' : 'check', e);
+        this.trigger('nodeChecking', eventArgs, (observedArgs: NodeCheckEventArgs) => {
+            if (!observedArgs.cancel) {
+                this.nodeCheckingAction(checkWrap, isCheck, li, observedArgs, e);
+            }
+        });
+    }
+
+    private nodeCheckingAction(checkWrap: HTMLElement | Element, isCheck: boolean, li: HTMLElement | Element,
+                               eventArgs: NodeCheckEventArgs, e: KeyboardEventArgs | MouseEvent): void {
         if (this.checkedElement.indexOf(li.getAttribute('data-uid')) === -1) {
             this.checkedElement.push(li.getAttribute('data-uid'));
             let child: { [key: string]: Object }[] = this.getChildNodes(this.treeData, li.getAttribute('data-uid'));
@@ -2781,6 +2824,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     }
+
     /**
      * Update checkedNodes when UI interaction happens before the child node renders in DOM
      */
@@ -3138,7 +3182,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 isChecked: checked, hasChildren: hasChildren
             };
         }
-        return { id: '', text: '', parentID: '', selected: '', expanded: '', isChecked: '', hasChildren: '' };
+        return { id: '', text: '', parentID: '', selected: false, expanded: false, isChecked: '', hasChildren: false };
     }
 
     private getText(currLi: Element, fromDS?: boolean): string {

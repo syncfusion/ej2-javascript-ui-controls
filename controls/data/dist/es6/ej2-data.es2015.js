@@ -4329,7 +4329,8 @@ class CacheAdaptor extends UrlAdaptor {
      * @param  {Ajax} settings?
      */
     beforeSend(dm, request, settings) {
-        if (DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch) && settings.type.toLowerCase() === 'post') {
+        if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
+            && settings.type.toLowerCase() === 'post') {
             request.setRequestHeader('Accept', this.cacheAdaptor.options.multipartAccept);
         }
         if (!dm.dataSource.crossDomain) {
@@ -4542,8 +4543,12 @@ class DataManager {
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, query);
             }
-            else {
+            else if (!isNullOrUndefined(result.url)) {
                 this.makeRequest(result, deffered, args, query);
+            }
+            else {
+                args = DataManager.getDeferedArgs(query, result, args);
+                deffered.resolve(args);
             }
         }
         else {

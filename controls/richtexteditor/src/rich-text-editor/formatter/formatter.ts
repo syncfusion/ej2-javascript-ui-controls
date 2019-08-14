@@ -7,6 +7,7 @@ import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack } fro
 import { KEY_DOWN, KEY_UP } from './../../common/constant';
 import { MarkdownUndoRedoData } from '../../markdown-parser/base/interface';
 import { IHtmlUndoRedoData } from '../../editor-manager/base/interface';
+import { NodeSelection } from '../../selection/selection';
 /**
  * Formatter
  * @hidden
@@ -23,6 +24,10 @@ export class Formatter {
     public process(self: IRichTextEditor, args: ActionBeginEventArgs, event: MouseEvent | KeyboardEvent, value: IItemCollectionArgs): void {
         let selection: Selection = self.contentModule.getDocument().getSelection();
         let range: Range = (selection.rangeCount > 0) ? selection.getRangeAt(selection.rangeCount - 1) : null;
+        let saveSelection: NodeSelection;
+        if (self.editorMode === 'HTML') {
+            saveSelection = this.editorManager.nodeSelection.save(range, self.contentModule.getDocument());
+        }
         if (!isNullOrUndefined(args)
             && args.item.command
             && args.item.command !== 'Table'
@@ -80,6 +85,9 @@ export class Formatter {
                     }
                     self.isBlur = false;
                     (self.contentModule.getEditPanel() as HTMLElement).focus();
+                    if (self.editorMode === 'HTML') {
+                        saveSelection.restore();
+                    }
                     let command: string = actionBeginArgs.item.subCommand.toLocaleLowerCase();
                     if (command === 'paste' || command === 'cut' || command === 'copy') {
                         self.clipboardAction(command, event);

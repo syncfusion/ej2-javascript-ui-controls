@@ -294,7 +294,11 @@ export class Link {
         if (linkUrl === '') { (this as NotifyArgs).selfLink.checkUrl(true); return; }
         if (!(this as NotifyArgs).selfLink.isUrl(linkUrl)) {
             linkText = (linkText === '') ? linkUrl : linkText;
-            linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
+            if (!(this as NotifyArgs).selfLink.parent.enableAutoUrl) {
+                linkUrl = linkUrl.indexOf('http') > -1 ? linkUrl : 'http://' + linkUrl;
+            } else {
+                linkUrl = linkUrl;
+            }
         } else {
             (this as NotifyArgs).selfLink.checkUrl(false);
         }
@@ -381,7 +385,7 @@ export class Link {
         if (selectParentEle.classList.contains('e-rte-anchor') || selectParentEle.tagName === 'A') {
             let linkUpdate: string = this.i10n.getConstant('dialogUpdate');
             let inputDetails: { [key: string]: string } = {
-                url: (selectParentEle as HTMLAnchorElement).href, text: selectParentEle.innerText,
+                url: (selectParentEle as HTMLAnchorElement).getAttribute('href'), text: selectParentEle.innerText,
                 title: selectParentEle.title, target: (selectParentEle as HTMLAnchorElement).target,
                 header: this.i10n.getConstant('editLink'), btnText: linkUpdate
             };

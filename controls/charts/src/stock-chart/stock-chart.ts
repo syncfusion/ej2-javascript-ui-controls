@@ -504,11 +504,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     /** @private */
     public scrollElement: Element;
     private chartid: number = 57723;
-    /** @private */
-    public tempDataSource: Object[] = [];
-     /** @private */
-     public blazorDataSource: Object[] = [];
-    /** @private */
     public tempSeriesType: ChartSeriesType[] = [];
     /** @private */
     public chart: Chart;
@@ -560,6 +555,10 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     public stockChartTheme: IThemeStyle;
     /** @private */
     public initialRender: boolean = true;
+    /** @private */
+    public rangeFound: boolean = false;
+    /** @private */
+    public tempPeriods: PeriodsModel[] = [];
 
     /**
      * Constructor for creating the widget
@@ -579,7 +578,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         for (let property of Object.keys(newProp)) {
             switch (property) {
                 case 'series':
-                    this.tempDataSource = this.blazorDataSource = [];
+                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -590,15 +589,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     public rangeChanged(updatedStart: number, updatedEnd: number): void {
         // manage chart refresh
-        this.chart.series.forEach((series: Series) => {
-            series.dataSource = (this.tempDataSource[series.index] as Object[]).filter((data: Object) => {
-                return (
-                    new Date( Date.parse(data[series.xName])).getTime() >= updatedStart &&
-                    new Date( Date.parse(data[series.xName])).getTime() <= updatedEnd
-                );
-            });
-            series.animation.enable = false;
-        });
         let chartElement: Element = document.getElementById(this.chartObject.id);
         if (chartElement) {
             while (chartElement.firstChild) {
@@ -673,6 +663,11 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             let collection: number = document.getElementsByClassName('e-stockChart').length;
             this.element.id = 'stockChart_' + this.chartid + '_' + collection;
         }
+        this.seriesXMax = null;
+        this.seriesXMin = null;
+        this.startValue = null;
+        this.endValue = null;
+        this.currentEnd = null;
     }
 
     /**
@@ -684,7 +679,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     private storeDataSource(): void {
         this.series.forEach((series: Series) => {
-            this.tempDataSource.push(series.dataSource);
             this.tempSeriesType.push(series.type);
         });
     }
@@ -762,6 +756,20 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         let height: number = (this.enablePeriodSelector ? this.toolbarHeight : 0) + this.titleSize.height;
         tooltipDiv.setAttribute('style', 'position: relative; height:' + height + 'px');
         appendChildElement(false, this.element, tooltipDiv, false);
+    }
+
+    public findCurrentData(totalData: Object, xName: string): Object {
+        let tempData: Object;
+        if (totalData && this.startValue && this.endValue) {
+            tempData = (totalData as Object[])
+            .filter((data: Object) => {
+                return (
+                    new Date(Date.parse(data[xName])).getTime() >= this.startValue &&
+                    new Date(Date.parse(data[xName])).getTime() <= this.endValue
+                    );
+            });
+        }
+        return tempData;
     }
 
     /**
@@ -853,31 +861,30 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     private findRange(): void {
         this.seriesXMin = Infinity; this.seriesXMax = -Infinity;
-        for (let axis of this.chart.axisCollections) {
-            if (axis.orientation === 'Horizontal') {
-                this.seriesXMin = Math.min(this.seriesXMin, axis.visibleRange.min);
-                this.seriesXMax = Math.max(this.seriesXMax, axis.visibleRange.max);
-            }
-            this.endValue = this.currentEnd = this.seriesXMax;
-            if (this.enablePeriodSelector) {
-                this.toolbarSelector = new ToolBarSelector(this);
-                this.periodSelector = new PeriodSelector(this);
-                this.periods = this.periods.length ? this.periods : this.toolbarSelector.calculateAutoPeriods();
-                this.periods.map((period: PeriodsModel, index: number) => {
-                    if (period.selected && period.text.toLowerCase() === 'ytd') {
-                        this.startValue = new Date(new Date(this.currentEnd).getFullYear().toString()).getTime();
-                    } else if (period.selected && period.text.toLowerCase() === 'all') {
-                        this.startValue = this.seriesXMin;
-                    } else if (period.selected) {
-                        this.startValue = this.periodSelector.changedRange(
-                            period.intervalType, this.endValue, period.interval
-                        ).getTime();
-                    }
-                });
-            } else {
-                this.startValue = this.seriesXMin;
-            }
+        for (let value of this.chart.series as Series[]) {
+            this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
+            this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
         }
+        this.endValue = this.currentEnd = this.seriesXMax;
+        if (this.enablePeriodSelector) {
+            this.toolbarSelector = new ToolBarSelector(this);
+            this.periodSelector = new PeriodSelector(this);
+            this.tempPeriods = this.periods.length ? this.periods : this.toolbarSelector.calculateAutoPeriods();
+            this.tempPeriods.map((period: PeriodsModel, index: number) => {
+                if (period.selected && period.text.toLowerCase() === 'ytd') {
+                    this.startValue = new Date(new Date(this.currentEnd).getFullYear().toString()).getTime();
+                } else if (period.selected && period.text.toLowerCase() === 'all') {
+                    this.startValue = this.seriesXMin;
+                } else if (period.selected) {
+                    this.startValue = this.periodSelector.changedRange(
+                        period.intervalType, this.endValue, period.interval
+                    ).getTime();
+                }
+            });
+        } else {
+            this.startValue = this.seriesXMin;
+        }
+        this.rangeFound = true;
     }
 
     /**
@@ -1042,6 +1049,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
             if (this.mouseDownXPoint < this.mouseUpXPoint) {
                 if (this.seriesXMin <= this.referenceXAxis.visibleRange.min - diff) {
+                    this.startValue = this.referenceXAxis.visibleRange.min - diff;
+                    this.endValue = this.referenceXAxis.visibleRange.max - diff;
                     this.cartesianChart.cartesianChartRefresh(this, this.referenceXAxis.visibleRange.min - diff,
                                                               this.referenceXAxis.visibleRange.max - diff);
                     this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min - diff,
@@ -1049,6 +1058,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
                 }
             } else {
                 if (this.seriesXMax >= this.referenceXAxis.visibleRange.max + diff) {
+                    this.startValue = this.referenceXAxis.visibleRange.min + diff;
+                    this.endValue = this.referenceXAxis.visibleRange.max + diff;
                     this.cartesianChart.cartesianChartRefresh(this, this.referenceXAxis.visibleRange.min + diff,
                                                               this.referenceXAxis.visibleRange.max + diff);
                     this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min + diff,

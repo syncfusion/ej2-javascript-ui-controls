@@ -163,6 +163,7 @@ export class Annotation extends ChildProperty<Annotation> {
     /**
      * Specifies the value of axis.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     @Property(null)
     public axisValue: number;
@@ -216,7 +217,7 @@ export class Container extends ChildProperty<Container> {
 
     /**
      * Specifies to move the container.
-     * @default 0
+     * @blazorDefaultValue 0
      */
     @Property(0)
     public offset: number;

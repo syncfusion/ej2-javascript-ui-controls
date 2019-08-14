@@ -11,8 +11,8 @@ import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { LineSeries, SplineSeries, CandleSeries, HiloOpenCloseSeries, HiloSeries, RangeAreaSeries, Trendlines } from '../../src/index';
 import { EmaIndicator, RsiIndicator, BollingerBands, TmaIndicator, MomentumIndicator, SmaIndicator, AtrIndicator } from '../../src/index';
 import { AccumulationDistributionIndicator, MacdIndicator, StochasticIndicator } from '../../src/index';
-StockChart.Inject(DateTime, Tooltip, RangeTooltip);
-StockChart.Inject(LineSeries, CandleSeries);
+StockChart.Inject(DateTime, Tooltip, RangeTooltip, EmaIndicator, RsiIndicator, BollingerBands, TmaIndicator, MomentumIndicator, SmaIndicator, AtrIndicator);
+StockChart.Inject(LineSeries, CandleSeries, AccumulationDistributionIndicator, MacdIndicator, StochasticIndicator);
 
 describe('Stock chart', () => {
     beforeAll(() => {
@@ -46,7 +46,7 @@ describe('Stock chart', () => {
             chartElement.remove();
         });
         it('checking with Series button click', (done: Function) => {
-            element = document.getElementById('seriesType');
+            element = document.getElementById('stock1_seriesType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[0];
            // expect(list.textContent).toBe('Line');
@@ -59,7 +59,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with HiloOpenClose series selection', (done: Function) => {
-            element = document.getElementById('seriesType');
+            element = document.getElementById('stock1_seriesType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[2];
             trigger.clickEvent(list);
@@ -67,7 +67,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Candle series selection', (done: Function) => {
-            element = document.getElementById('seriesType');
+            element = document.getElementById('stock1_seriesType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[3];
             trigger.clickEvent(list);
@@ -76,7 +76,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Spline series selection', (done: Function) => {
-            element = document.getElementById('seriesType');
+            element = document.getElementById('stock1_seriesType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[4];
             trigger.clickEvent(list);
@@ -84,7 +84,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Candle series selection', (done: Function) => {
-            element = document.getElementById('seriesType');
+            element = document.getElementById('stock1_seriesType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[5];
             trigger.clickEvent(list);
@@ -92,7 +92,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Ema Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[0];
             trigger.clickEvent(list);
@@ -100,7 +100,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Tma Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[1];
             trigger.clickEvent(list);
@@ -108,7 +108,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Sma Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[2];
             trigger.clickEvent(list);
@@ -116,7 +116,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Momentum Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[3];
             trigger.clickEvent(list);
@@ -124,7 +124,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Atr Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[4];
             trigger.clickEvent(list);
@@ -132,7 +132,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with AccumulationDistribution Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[5];
             trigger.clickEvent(list);
@@ -140,7 +140,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with BollingerBands Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[6];
             trigger.clickEvent(list);
@@ -148,7 +148,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Macd Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[7];
             trigger.clickEvent(list);
@@ -156,7 +156,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Stochastic Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[8];
             trigger.clickEvent(list);
@@ -164,7 +164,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with Rsi Indicator selection', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[9];
             trigger.clickEvent(list);
@@ -172,7 +172,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with tick mark in Ema Indicator while selected', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[0];
             expect(list.textContent !== 'Ema').toBe(true);
@@ -185,7 +185,7 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with tick mark in Macd Indicator while unselected', (done: Function) => {
-            element = document.getElementById('indicatorType');
+            element = document.getElementById('stock1_indicatorType');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[7];
             trigger.clickEvent(list);
@@ -193,30 +193,26 @@ describe('Stock chart', () => {
             done();
         });
         it('checking with export type', (done: Function) => {
-            element = document.getElementById('export');
+            element = document.getElementById('stock1_export');
             trigger.clickEvent(element);
             list = document.getElementsByClassName('e-item')[0];
             //expect(list.textContent == 'PNG').toBe(true);
             done();
         });
         it('checking with print type', (done: Function) => {
-            element = document.getElementById('print');
+            element = document.getElementById('stock1_print');
             expect(element.textContent == 'Print').toBe(true);
             done();
         });
         it('checking with reset', (done: Function) => {
-            chart.loaded = (args: IStockChartEventArgs) => {
-                chart.loaded = null;
-                element = document.getElementById('resetClick');
-                trigger.clickEvent(element);
-                expect(chart.series[0].type == 'Candle').toBe(true);
-                done();
-            }
-            chart.refresh();
+            element = document.getElementById('stock1_reset');
+            trigger.clickEvent(element);
+            expect(chart.series[0].type == 'Candle').toBe(true);
+            done();
         });
         it('checking with periodselector', (done: Function) => {
             chart.loaded = (args: IStockChartEventArgs) => {
-                element = document.getElementById('indicatorType');
+                element = document.getElementById('stock1_indicatorType');
                 trigger.clickEvent(element);
                 expect(chart.series[0].type == 'Candle').toBe(true);
                 done();
@@ -226,7 +222,7 @@ describe('Stock chart', () => {
         });
         it('checking with periodselector', (done: Function) => {
             chart.loaded = (args: IStockChartEventArgs) => {
-                element = document.getElementById('indicatorType');
+                element = document.getElementById('stock1_indicatorType');
                 trigger.clickEvent(element);
                 expect(chart.series[0].type == 'Candle').toBe(true);
                 done();

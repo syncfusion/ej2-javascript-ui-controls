@@ -1,5 +1,5 @@
 import { StockChart } from '../stock-chart';
-import { PeriodsModel, Chart, TechnicalIndicatorModel, titlePositionX, textElement, appendChildElement } from '../../index';
+import { PeriodsModel, TechnicalIndicatorModel, titlePositionX, textElement, appendChildElement } from '../../index';
 import { AxisModel, RowModel, ExportType, TrendlineTypes, TrendlineModel, TechnicalIndicators, ChartSeriesType } from '../../index';
 import { getElement, StockSeriesModel, FontModel } from '../../index';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -7,6 +7,7 @@ import { Button } from '@syncfusion/ej2-buttons';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { remove } from '@syncfusion/ej2-base';
+import { StockSeries } from '../model/base';
 
 /**
  * Period selector for range navigator
@@ -26,7 +27,7 @@ export class ToolBarSelector {
     }
 
     public initializePeriodSelector(): void {
-        let periods: PeriodsModel[] = this.stockChart.periods.length ? this.stockChart.periods : this.calculateAutoPeriods();
+        let periods: PeriodsModel[] = this.stockChart.tempPeriods;
         this.stockChart.periods = periods;
         this.stockChart.periodSelector.rootControl = this.stockChart;
         let rect : Rect = this.stockChart.chart.chartAxisLayoutPanel.seriesClipRect;
@@ -103,7 +104,7 @@ export class ToolBarSelector {
                 this.stockChart.cartesianChart.initializeChart();
             },
         });
-        seriesType.appendTo('#seriesType');
+        seriesType.appendTo('#' + this.stockChart.element.id + '_seriesType');
     }
 
     //private variables:
@@ -112,8 +113,8 @@ export class ToolBarSelector {
     private secondayIndicators: TechnicalIndicators[] = [];
     public resetButton(): void {
         let reset: Button = new Button();
-        reset.appendTo('#resetClick');
-        document.getElementById('resetClick').onclick = () => {
+        reset.appendTo('#' + this.stockChart.element.id + '_reset');
+        document.getElementById(this.stockChart.element.id + '_reset').onclick = () => {
             let indicatorlength: number = this.indicators.length;
             while (indicatorlength) {
                 this.stockChart.indicators.pop();
@@ -144,9 +145,7 @@ export class ToolBarSelector {
             this.stockChart.indicatorElements = null;
             this.stockChart.resizeTo = null;
             this.stockChart.zoomChange = false;
-            for (let j: number = 0; j < this.stockChart.series.length; j++) {
-                this.stockChart.series[j].dataSource = this.stockChart.tempDataSource[j] || this.stockChart.blazorDataSource[j];
-            }
+
             this.stockChart.refresh();
         };
     }
@@ -188,7 +187,7 @@ export class ToolBarSelector {
                 }
             },
         });
-        this.trendlineDropDown.appendTo('#trendType');
+        this.trendlineDropDown.appendTo('#' + this.stockChart.element.id + '_trendType');
     }
     public initializeIndicatorSelector(): void {
         this.indicatorDropDown = new DropDownButton({
@@ -230,18 +229,19 @@ export class ToolBarSelector {
                 }
             },
         });
-        this.indicatorDropDown.appendTo('#indicatorType');
+        this.indicatorDropDown.appendTo('#' + this.stockChart.element.id + '_indicatorType');
     }
     private getIndicator(type: TechnicalIndicators, yAxisName: string): TechnicalIndicatorModel[] {
+        let currentSeries: StockSeries = this.stockChart.series[0] as StockSeries;
         let indicator: TechnicalIndicatorModel[] = [{
             type: type, period: 3, yAxisName: yAxisName,
-            dataSource : this.stockChart.series[0].dataSource,
-            xName : this.stockChart.series[0].xName,
-            open : this.stockChart.series[0].open,
-            close : this.stockChart.series[0].close,
-            high : this.stockChart.series[0].high,
-            low : this.stockChart.series[0].low,
-            volume : this.stockChart.series[0].volume,
+            dataSource : currentSeries.localData,
+            xName : currentSeries.xName,
+            open : currentSeries.open,
+            close : currentSeries.close,
+            high : currentSeries.high,
+            low : currentSeries.low,
+            volume : currentSeries.volume,
             fill: type === 'Sma' ? '#32CD32' : '#6063ff',
             animation: { enable: false }, upperLine: { color: '#FFE200', width: 1 },
             periodLine: { width: 2 }, lowerLine: { color: '#FAA512', width: 1 },
@@ -335,8 +335,8 @@ export class ToolBarSelector {
     public printButton(): void {
         if (this.stockChart.exportType.indexOf('Print') > -1) {
             let print: Button = new Button();
-            print.appendTo('#print');
-            document.getElementById('print').onclick = () => {
+            print.appendTo('#' + this.stockChart.element.id + '_print');
+            document.getElementById(this.stockChart.element.id + '_print').onclick = () => {
                     this.stockChart.chart.print(this.stockChart.element.id);
             };
         }
@@ -372,19 +372,11 @@ export class ToolBarSelector {
                 }
             }
         });
-        exportChart.appendTo('#export');
+        exportChart.appendTo('#' + this.stockChart.element.id + '_export');
     }
     public calculateAutoPeriods(): PeriodsModel[] {
         let defaultPeriods: PeriodsModel[] = [];
-        let chart: Chart = this.stockChart.chart;
-        let axisMin: number = Infinity; let axisMax: number = -Infinity;
-        for (let axis of chart.axisCollections) {
-            if (axis.orientation === 'Horizontal') {
-                axisMin = Math.min(axisMin, axis.visibleRange.min);
-                axisMax = Math.max(axisMax, axis.visibleRange.max);
-            }
-        }
-        defaultPeriods = this.findRange(axisMin, axisMax);
+        defaultPeriods = this.findRange(this.stockChart.seriesXMin, this.stockChart.seriesXMax);
         defaultPeriods.push({ text: 'YTD', selected: true }, { text: 'All' });
         return defaultPeriods;
     }

@@ -168,7 +168,7 @@ describe('Gantt Selection support', () => {
                 searchbar.value = '';
                 (ganttObj.toolbarModule as any).keyUpHandler(getKeyUpObj(13, searchbar));
                 done();
-              }, 100);   
-        }, 200);		
+              }, 800);   
+        }, 1000);		
     });
 });

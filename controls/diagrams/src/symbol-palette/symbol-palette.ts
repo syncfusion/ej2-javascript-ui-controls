@@ -335,7 +335,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     private draggable: Draggable;
     private laneTable: {} = {};
     private isExpand: boolean = false;
-    private isCollapsed: boolean = false;
+    private isExpandMode: boolean = false;
+    private isMethod: boolean = false;
 
     //region - protected methods 
 
@@ -408,16 +409,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                         if (newProp.palettes[index].expanded !== undefined) {
                             if (!(this.palettes[index] as Palette).isInteraction) {
                                 this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
-                                refresh = true;
+                                this.isExpand = true;
                             } else {
                                 (this.palettes[index] as Palette).isInteraction = false;
                             }
-                            this.isExpand = true;
-                            this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
-                            if (index === 0) {
-                                this.isCollapsed = true;
-                            } else {
-                                this.isCollapsed = false;
+                            if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
+                                this.isExpand = true;
                             }
 
                         }
@@ -430,10 +427,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                         this.accordionElement.animation = { expand: { duration: 400 }, collapse: { duration: 400 } };
                     }
                     break;
-
                 case 'expandMode':
                     this.accordionElement.expandMode = this.expandMode;
                     refresh = true;
+                    this.isExpandMode = true;
                     break;
                 case 'allowDrag':
                     this.allowDrag = newProp.allowDrag;
@@ -450,8 +447,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (refresh) {
             this.refreshPalettes();
         }
-        if (this.isExpand && !refresh && this.isCollapsed) {
+        if (this.isExpand && !refresh) {
             this.refresh();
+            this.isExpand = false;
             for (let p: number = 0; p < this.palettes.length; p++) {
                 let paletteElement: string = this.palettes[p].id;
                 if (window[paletteElement]) {
@@ -462,6 +460,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 }
             }
         }
+        this.isMethod = false;
     }
 
     /**
@@ -1199,6 +1198,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     }
 
     private mouseUp(evt: PointerEvent): void {
+        this.isMethod = true;
         if (evt && evt.target) {
             if (evt.srcElement.id === 'iconSearch') {
                 let element: HTMLElement = document.getElementById('iconSearch');
@@ -1467,7 +1467,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     private refreshPalettes(): void {
         this.accordionElement.items = [];
-        removeElementsByClass('e-remove-palette');
+        removeElementsByClass('e-remove-palette', this.element.id);
         this.updatePalettes();
         this.accordionElement.dataBind();
     }

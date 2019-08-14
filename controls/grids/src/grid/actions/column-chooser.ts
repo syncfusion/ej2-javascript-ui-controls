@@ -238,6 +238,7 @@ export class ColumnChooser implements IAction {
         }
         if (!this.isInitialOpen) {
             this.dlgObj.content = this.renderChooserList();
+            this.updateIntermediateBtn();
         } else {
             this.refreshCheckboxState();
         }

@@ -1635,6 +1635,7 @@ export class DiagramEventHandler {
                 };
                 this.diagram.add(temp);
                 this.diagram.updateConnectorEdges(node as Node);
+                this.diagram.clearSelection();
                 this.diagram.select([this.diagram.nameTable[temp.id]]);
                 this.diagram.endGroupAction();
                 this.diagram.startTextEdit();

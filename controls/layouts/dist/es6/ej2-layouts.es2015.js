@@ -659,8 +659,13 @@ let Splitter = class Splitter extends Component {
         let eventArgs = this.beforeAction(e);
         this.trigger('beforeExpand', eventArgs, (beforeExpandArgs) => {
             if (!beforeExpandArgs.cancel) {
-                this.previousPane.style.flexGrow = '1';
                 this.nextPane.style.flexGrow = '0';
+                if (this.previousPane.classList.contains('e-collapsed') && this.previousPane.style.flexGrow === '0') {
+                    this.previousPane.style.flexGrow = '0';
+                }
+                else {
+                    this.previousPane.style.flexGrow = '1';
+                }
                 if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
                     removeClass([this.nextPane], EXPAND_PANE);
                     removeClass([this.previousPane], collapseClass);
@@ -801,7 +806,6 @@ let Splitter = class Splitter extends Component {
             else {
                 if (this.paneSettings[this.currentBarIndex].collapsible && !this.paneSettings[this.currentBarIndex + 1].collapsible) {
                     this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
-                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
                 }
                 else {
                     this.showTargetBarIcon(this.prevBar, this.rightArrow);
@@ -1935,7 +1939,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     resizeEvents() {
         if (this.allowResizing) {
-            for (let i = 0; i < document.querySelectorAll('.e-resize').length; i++) {
+            for (let i = 0; i < this.element.querySelectorAll('.e-panel .e-panel-container .e-resize').length; i++) {
                 let eventName = (Browser.info.name === 'msie') ? 'mousedown pointerdown' : 'mousedown';
                 EventHandler.add(document.querySelectorAll('.e-resize')[i], eventName, this.downResizeHandler, this);
                 if (Browser.info.name !== 'mise') {
@@ -2360,6 +2364,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         this.removeResizeClasses(this.panelCollection);
         this.setClasses(this.panelCollection);
+        this.resizeEvents();
         this.checkDragging(this.dragCollection);
     }
     updateGridLines() {

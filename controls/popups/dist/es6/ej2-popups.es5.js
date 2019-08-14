@@ -2623,35 +2623,37 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (!this.element.classList.contains(ROOT)) {
             return;
         }
-        var eventArgs = {
-            cancel: false,
-            isInteraction: event ? true : false,
-            isInteracted: event ? true : false,
-            element: this.element,
-            target: this.target,
-            container: this.isModal ? this.dlgContainer : this.element,
-            event: event
-        };
-        this.closeArgs = eventArgs;
-        this.trigger('beforeClose', eventArgs, function (beforeCloseArgs) {
-            if (!beforeCloseArgs.cancel) {
-                if (_this.isModal) {
-                    !isNullOrUndefined(_this.targetEle) ? removeClass([_this.targetEle], SCROLL_DISABLED) :
-                        removeClass([document.body], SCROLL_DISABLED);
+        if (this.visible) {
+            var eventArgs = {
+                cancel: false,
+                isInteraction: event ? true : false,
+                isInteracted: event ? true : false,
+                element: this.element,
+                target: this.target,
+                container: this.isModal ? this.dlgContainer : this.element,
+                event: event
+            };
+            this.closeArgs = eventArgs;
+            this.trigger('beforeClose', eventArgs, function (beforeCloseArgs) {
+                if (!beforeCloseArgs.cancel) {
+                    if (_this.isModal) {
+                        !isNullOrUndefined(_this.targetEle) ? removeClass([_this.targetEle], SCROLL_DISABLED) :
+                            removeClass([document.body], SCROLL_DISABLED);
+                    }
+                    var closeAnimation = {
+                        name: _this.animationSettings.effect + 'Out',
+                        duration: _this.animationSettings.duration,
+                        delay: _this.animationSettings.delay
+                    };
+                    _this.animationSettings.effect === 'None' ? _this.popupObj.hide() : _this.popupObj.hide(closeAnimation);
+                    _this.dialogOpen = false;
+                    var prevOnChange = _this.isProtectedOnChange;
+                    _this.isProtectedOnChange = true;
+                    _this.visible = false;
+                    _this.isProtectedOnChange = prevOnChange;
                 }
-                var closeAnimation = {
-                    name: _this.animationSettings.effect + 'Out',
-                    duration: _this.animationSettings.duration,
-                    delay: _this.animationSettings.delay
-                };
-                _this.animationSettings.effect === 'None' ? _this.popupObj.hide() : _this.popupObj.hide(closeAnimation);
-                _this.dialogOpen = false;
-                var prevOnChange = _this.isProtectedOnChange;
-                _this.isProtectedOnChange = true;
-                _this.visible = false;
-                _this.isProtectedOnChange = prevOnChange;
-            }
-        });
+            });
+        }
     };
     /**
      * Specifies to view the Full screen Dialog.

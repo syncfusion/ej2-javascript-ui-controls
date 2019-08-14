@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.40 (2019-08-06)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Iterative constructor call issue has been resolved.
+
 ## 17.2.35 (2019-07-17)
 
 ### Pdf Export

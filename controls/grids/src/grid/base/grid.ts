@@ -3353,6 +3353,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.isDetail()) {
             index++;
         }
+        if (this.allowRowDragAndDrop && this.allowResizing){
+            index++;
+        }
         /**
          * TODO: index normalization based on the stacked header, grouping and detailTemplate 
          * and frozen should be handled here 
@@ -4707,7 +4710,45 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.groupModule.groupColumn(columnName);
         }
     }
+    /** 
+     * Expands all the grouped rows of the Grid.          
+     * @return {void} 
+     */
+    public groupExpandAll(): void {
+        if (this.groupModule) {
+            this.groupModule.expandAll();
+        }
+    }
+    /** 
+    * Collapses all the grouped rows of the Grid.         
+    * @return {void} 
+    */
+    public groupCollapseAll(): void {
+        if (this.groupModule) {
+            this.groupModule.collapseAll();
+        }
+    }
 
+    /**  
+     * Expands or collapses grouped rows by target element. 
+     * @param  {Element} target - Defines the target element of the grouped row.      
+     * @return {void}  
+     */
+    // public expandCollapseRows(target: Element): void {
+    //     if (this.groupModule) {
+    //         this.groupModule.expandCollapseRows(target);
+    //     }
+    // }
+
+    /**  
+     * Clears all the grouped columns of the Grid.  
+     * @return {void} 
+     */
+    public clearGrouping(): void {
+        if (this.groupModule) {
+            this.groupModule.clearGrouping();
+        }
+    }
     /** 
      * Ungroups a column by column name. 
      * @param  {string} columnName - Defines the column name to ungroup.  
@@ -4716,6 +4757,103 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public ungroupColumn(columnName: string): void {
         if (this.groupModule) {
             this.groupModule.ungroupColumn(columnName);
+        }
+    }
+
+    /** 
+     * Column chooser can be displayed on screen by given position(X and Y axis). 
+     * @param  {number} X - Defines the X axis.
+     * @param  {number} Y - Defines the Y axis. 
+     * @return {void}
+     */
+    public openColumnChooser(x?: number, y?: number): void {
+        if (this.columnChooserModule) {
+            this.columnChooserModule.openColumnChooser(x, y);
+        }
+    }
+
+    /** 
+     * Collapses a detail row with the given target.     
+     * @param  {Element} target - Defines the expanded element to collapse.
+     * @return {void} 
+     */
+    // public detailCollapse(target: number | Element): void {
+    //     if (this.detailRowModule) {
+    //         this.detailRowModule.collapse(target);
+    //     }
+    // }
+
+    /** 
+     * Collapses all the detail rows of the Grid.         
+     * @return {void} 
+     */
+    public detailCollapseAll(): void {
+        if (this.detailRowModule) {
+            this.detailRowModule.collapseAll();
+        }
+    }
+
+    /** 
+     * Expands a detail row with the given target.  
+     * @param  {Element} target - Defines the collapsed element to expand.
+     * @return {void} 
+     */
+    // public detailExpand(target: number | Element): void {
+    //     if (this.detailRowModule) {
+    //         this.detailRowModule.expand(target);
+    //     }
+    // }
+
+    /** 
+    * Expands all the detail rows of the Grid.          
+    * @return {void} 
+    */
+    public detailExpandAll(): void {
+        if (this.detailRowModule) {
+            this.detailRowModule.expandAll();
+        }
+    }
+
+    /** 
+     * Deselects the currently selected cells.
+     * @return {void} 
+     */
+    public clearCellSelection(): void {
+        if (this.selectionModule) {
+            this.selectionModule.clearCellSelection();
+        }
+    }
+
+    /** 
+     * Deselects the currently selected rows.
+     * @return {void} 
+     */
+    public clearRowSelection(): void {
+        if (this.selectionModule) {
+            this.selectionModule.clearRowSelection();
+        }
+    }
+
+    /**
+     * Selects a collection of cells by row and column indexes. 
+     * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
+     * @return {void}
+     */
+    public selectCells(rowCellIndexes: ISelectedCell[]): void {
+        if (this.selectionModule) {
+            this.selectionModule.selectCells(rowCellIndexes);
+        }
+    }
+
+    /** 
+     * Selects a range of rows from start and end row indexes. 
+     * @param  {number} startIndex - Specifies the start row index. 
+     * @param  {number} endIndex - Specifies the end row index. 
+     * @return {void} 
+     */
+    public selectRowsByRange(startIndex: number, endIndex?: number): void {
+        if (this.selectionModule) {
+            this.selectionModule.selectRowsByRange(startIndex, endIndex);
         }
     }
 

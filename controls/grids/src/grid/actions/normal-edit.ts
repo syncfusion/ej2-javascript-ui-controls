@@ -1,5 +1,5 @@
 import { extend, isBlazor } from '@syncfusion/ej2-base';
-import { remove, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { remove, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EditEventArgs, AddEventArgs, SaveEventArgs } from '../base/interface';
 import { parentsUntil, isGroupAdaptive, refreshForeignData, getObject } from '../base/util';
 import * as events from '../base/constant';
@@ -91,6 +91,15 @@ export class NormalEdit {
         let primaryKeys: string[] = gObj.getPrimaryKeyFieldNames();
         let primaryKeyValues: string[] = [];
         this.rowIndex = this.editRowIndex = parseInt(tr.getAttribute('aria-rowindex'), 10);
+        if (isBlazor()) {
+            let cols: Column[] = this.parent.getColumns();
+            for (let i: number = 0; i < cols.length; i++) {
+                let col: Column = cols[i];
+                if (col.template) {
+                    resetBlazorTemplate(gObj.element.id + col.uid, 'Template', this.rowIndex);
+                }
+            }
+        }
         if (isGroupAdaptive(gObj)) {
             let rObj: Row<Column> = gObj.getRowObjectFromUID(tr.getAttribute('data-uid'));
             this.previousData = rObj.data;

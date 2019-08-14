@@ -297,134 +297,134 @@ export class Render {
             let pivotValue1: IAxisSet = this.parent.pivotValues[rowIndex][colIndex] as IAxisSet;
             let select: string = item.id;
             switch (select) {
-                case 'expand':
+                case this.parent.element.id + '_expand':
                     if (elem.querySelectorAll('.' + cls.EXPAND).length > 0) {
-                        if (args.element.querySelectorAll(cls.CONTEXT_COLLAPSE_ID)) {
-                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelectorAll('#' + this.parent.element.id + '_expand')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_expand').classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_HIDE)) {
-                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_HIDE);
-                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_HIDE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_expand').classList.contains(cls.MENU_HIDE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.remove(cls.MENU_HIDE);
+                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.remove(cls.MENU_HIDE);
                         }
                     } else {
 
                         if (bool) {
-                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_HIDE);
+                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_HIDE);
                         } else {
-                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_DISABLE);
+                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_DISABLE);
                         }
                     }
                     break;
-                case 'collapse':
+                case this.parent.element.id + '_collapse':
                     if (elem.querySelectorAll('.' + cls.COLLAPSE).length > 0) {
-                        if (args.element.querySelector(cls.CONTEXT_EXPAND_ID)) {
-                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_expand')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.add(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_HIDE)) {
-                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_HIDE);
-                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_HIDE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.contains(cls.MENU_HIDE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.remove(cls.MENU_HIDE);
+                            args.element.querySelector('#' + this.parent.element.id + '_expand').classList.remove(cls.MENU_HIDE);
                         }
                     } else {
 
                         if (bool) {
-                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_HIDE);
+                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.add(cls.MENU_HIDE);
                         } else {
-                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_DISABLE);
+                            args.element.querySelector('#' + this.parent.element.id + '_collapse').classList.add(cls.MENU_DISABLE);
                         }
                     }
                     break;
-                case 'drillthrough':
+                case this.parent.element.id + '_drillthrough':
                     if (!this.parent.allowDrillThrough) {
-                        if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
-                            args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_drillthrough')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.add(cls.MENU_DISABLE);
                         }
                     } else if (!(elem.classList.contains('e-summary'))) {
                         if ((elem as HTMLElement).innerText === "") {
-                            if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
-                                args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.add(cls.MENU_DISABLE);
+                            if (args.element.querySelector('#' + this.parent.element.id + '_drillthrough')) {
+                                args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.add(cls.MENU_DISABLE);
                             }
                         }
                     } else {
-                        if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.remove(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_drillthrough').classList.remove(cls.MENU_DISABLE);
                         }
                     }
                     break;
-                case 'sortasc':
+                case this.parent.element.id + '_sortasc':
                     if (!this.parent.enableValueSorting) {
-                        if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID)) {
-                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_sortasc')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.add(cls.MENU_DISABLE);
                         }
                     } else if (elem.querySelectorAll('.e-icon-descending').length > 0) {
-                        if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID)) {
-                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.add(cls.MENU_DISABLE);
                         } else {
-                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
+                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.remove(cls.MENU_DISABLE);
                         }
-                    } else if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.contains(cls.MENU_DISABLE)) {
-                        args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
+                    } else if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.contains(cls.MENU_DISABLE)) {
+                        args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.remove(cls.MENU_DISABLE);
                     }
                     break;
-                case 'sortdesc':
+                case this.parent.element.id + '_sortdesc':
                     if (!this.parent.enableValueSorting) {
-                        if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID)) {
-                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.add(cls.MENU_DISABLE);
                         }
                     } else if (elem.querySelectorAll('.e-icon-ascending').length > 0) {
-                        if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID)) {
-                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_sortasc')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.add(cls.MENU_DISABLE);
                         } else {
-                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
+                            args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.remove(cls.MENU_DISABLE);
                         }
-                        if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_sortdesc').classList.remove(cls.MENU_DISABLE);
                         }
-                    } else if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.contains(cls.MENU_DISABLE)) {
-                        args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
+                    } else if (args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.contains(cls.MENU_DISABLE)) {
+                        args.element.querySelector('#' + this.parent.element.id + '_sortasc').classList.remove(cls.MENU_DISABLE);
                     }
                     break;
-                case 'CalculatedField':
+                case this.parent.element.id + '_CalculatedField':
                     if (!this.parent.allowCalculatedField) {
-                        args.element.querySelector(cls.CONTEXT_CALC_ID).classList.add(cls.MENU_DISABLE);
+                        args.element.querySelector('#' + this.parent.element.id + '_CalculatedField').classList.add(cls.MENU_DISABLE);
                     }
                     break;
-                case 'pdf':
+                case this.parent.element.id + '_pdf':
                     if (!this.parent.allowPdfExport) {
-                        args.element.querySelector(cls.CONTEXT_PDF_ID).classList.add(cls.MENU_DISABLE);
+                        args.element.querySelector('#' + this.parent.element.id + '_pdf').classList.add(cls.MENU_DISABLE);
                     }
                     break;
-                case 'excel':
+                case this.parent.element.id + '_excel':
                     if (!this.parent.allowExcelExport) {
-                        args.element.querySelector(cls.CONTEXT_EXCEL_ID).classList.add(cls.MENU_DISABLE);
+                        args.element.querySelector('#' + this.parent.element.id + '_excel').classList.add(cls.MENU_DISABLE);
                     }
                     break;
-                case 'csv':
+                case this.parent.element.id + '_csv':
                     if (!this.parent.allowExcelExport) {
-                        args.element.querySelector(cls.CONTEXT_CSV_ID).classList.add(cls.MENU_DISABLE);
+                        args.element.querySelector('#' + this.parent.element.id + '_csv').classList.add(cls.MENU_DISABLE);
                     }
                     break;
-                case 'exporting':
+                case this.parent.element.id + '_exporting':
                     if ((!this.parent.allowExcelExport) && (!this.parent.allowPdfExport)) {
-                        args.element.querySelector(cls.CONTEXT_EXPORT_ID).classList.add(cls.MENU_DISABLE);
+                        args.element.querySelector('#' + this.parent.element.id + '_exporting').classList.add(cls.MENU_DISABLE);
                     }
                     break;
-                case 'aggregate':
+                case this.parent.element.id + '_aggregate':
                     if ((elem as HTMLElement).innerText === "") {
-                        if (args.element.querySelector(cls.CONTEXT_AGGREGATE_ID)) {
-                            args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.add(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_aggregate')) {
+                            args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.add(cls.MENU_DISABLE);
                         }
                     } else {
-                        if (args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.contains(cls.MENU_DISABLE)) {
-                            args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.remove(cls.MENU_DISABLE);
+                        if (args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector('#' + this.parent.element.id + '_aggregate').classList.remove(cls.MENU_DISABLE);
                         }
                     }
                     break;
@@ -454,26 +454,27 @@ export class Render {
         let rowIndx: number = Number(ele.getAttribute('index'));
         let colIndx: number = Number(ele.getAttribute('aria-colindex'));
         let pivotValue: IAxisSet = this.parent.pivotValues[rowIndx][colIndx] as IAxisSet;
-        if (args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' ||
-            args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' ||
-            args.item.id === 'AggMax' || args.item.id === 'AggMoreOption') {
+        if (args.item.id === this.parent.element.id + '_AggSum' || args.item.id === this.parent.element.id + '_AggProduct' ||
+            args.item.id === this.parent.element.id + '_AggCount' || args.item.id === this.parent.element.id + '_AggDistinctCount' ||
+            args.item.id === this.parent.element.id + '_AggAvg' || args.item.id === this.parent.element.id + '_AggMin' ||
+            args.item.id === this.parent.element.id + '_AggMax' || args.item.id === this.parent.element.id + '_AggMoreOption') {
             this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].id;
             this.fieldCaption =  this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
         }
         switch (selected) {
-            case 'pdf':
+            case this.parent.element.id + '_pdf':
                 this.parent.pdfExport();
                 break;
-            case 'excel':
+            case this.parent.element.id + '_excel':
                 this.parent.excelExport();
                 break;
-            case 'csv':
+            case this.parent.element.id + '_csv':
                 this.parent.csvExport();
                 break;
-            case 'drillthrough':
+            case this.parent.element.id + '_drillthrough_menu':
                 ele.dispatchEvent(event);
                 break;
-            case 'sortasc':
+            case this.parent.element.id + '_sortasc':
                 this.parent.setProperties({
                     dataSourceSettings: {
                         valueSortSettings: {
@@ -484,7 +485,7 @@ export class Render {
                 });
                 this.parent.dataSourceSettings.valueSortSettings.sortOrder = 'Ascending';
                 break;
-            case 'sortdesc':
+            case this.parent.element.id + '_sortdesc':
                 this.parent.setProperties({
                     dataSourceSettings: {
                         valueSortSettings: {
@@ -495,43 +496,43 @@ export class Render {
                 });
                 this.parent.dataSourceSettings.valueSortSettings.sortOrder = 'Descending';
                 break;
-            case 'expand':
+            case this.parent.element.id + '_expand':
                 if (ele.querySelectorAll('.' + cls.EXPAND)) {
                     let exp = ele.querySelectorAll('.' + cls.EXPAND)[0] as Element
                     this.parent.onDrill(exp);
                 }
                 break;
-            case 'collapse':
+            case this.parent.element.id + '_collapse':
                 if (ele.querySelectorAll('.' + cls.COLLAPSE)) {
                     let colp = ele.querySelectorAll('.' + cls.COLLAPSE)[0] as Element
                     this.parent.onDrill(colp);
                 }
                 break;
-            case 'CalculatedField':
+            case this.parent.element.id + '_CalculatedField':
                 this.parent.calculatedFieldModule.createCalculatedFieldDialog();
                 break;
-            case 'AggSum':
+            case this.parent.element.id + '_AggSum':
                 this.updateAggregate('Sum');
                 break;
-            case 'AggProduct':
+            case this.parent.element.id + '_AggProduct':
                 this.updateAggregate('Product');
                 break;
-            case 'AggCount':
+            case this.parent.element.id + '_AggCount':
                 this.updateAggregate('Count');
                 break;
-            case 'AggDistinctCount':
+            case this.parent.element.id + '_AggDistinctCount':
                 this.updateAggregate('DistinctCount');
                 break;
-            case 'AggAvg':
+            case this.parent.element.id + '_AggAvg':
                 this.updateAggregate('Avg');
                 break;
-            case 'AggMin':
+            case this.parent.element.id + '_AggMin':
                 this.updateAggregate('Min');
                 break;
-            case 'AggMax':
+            case this.parent.element.id + '_AggMax':
                 this.updateAggregate('Max');
                 break;
-            case 'AggMoreOption':
+            case this.parent.element.id + '_AggMoreOption':
                 ele.setAttribute('id', this.field);
                 ele.setAttribute('data-caption', this.fieldCaption);
                 ele.setAttribute('data-field', this.field);
@@ -1013,11 +1014,11 @@ export class Render {
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
-        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
         colCount = colCount - 1;
         let colWidth: number =
             (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return colWidth;
+        return Math.floor(colWidth);
     }
 
     public resizeColWidth(colCount: number): number {
@@ -1025,10 +1026,10 @@ export class Render {
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
         colCount = colCount - 1;
-        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - 2;
         let colWidth: number =
             (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
-        return colWidth;
+        return Math.floor(colWidth);
     }
 
     public calculateGridWidth(): number | string {
@@ -1063,7 +1064,7 @@ export class Render {
                 gridHeight = parHeight - (gBarHeight + toolBarHeight) - 2;
                 if (elementCreated) {
                     let tableHeight: number =
-                        (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetHeight;
+                        (this.parent.element.querySelector('.' + cls.FROZENCONTENT_DIV + ' .' + cls.TABLE) as HTMLElement).offsetHeight;
                     let contentHeight: number =
                         (this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV) as HTMLElement).offsetHeight;
                     let tableWidth: number =

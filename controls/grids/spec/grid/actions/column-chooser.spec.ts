@@ -304,6 +304,7 @@ describe('Column chooser module', () => {
         it('change checkstate', (done: Function) => {
             setTimeout(() => {
                 gridObj.columnChooserModule.openColumnChooser();
+                expect(gridObj.element.querySelectorAll('.e-selectall.e-stop').length).toBe(1);
                 let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
                 let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
                 cheEle.click();

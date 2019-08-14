@@ -188,8 +188,11 @@ export class DataManager {
             let result: ReturnOption = this.adaptor.processQuery(this, query);
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, <Query>query);
-            } else {
+            } else if (!isNullOrUndefined(result.url)) {
                 this.makeRequest(result, deffered, args, <Query>query);
+            } else {
+                args = DataManager.getDeferedArgs(<Query>query, result as ReturnOption, args as ReturnOption);
+                deffered.resolve(args);
             }
         } else {
             DataManager.nextTick(

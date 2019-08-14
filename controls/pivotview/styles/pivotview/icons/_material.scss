@@ -88,7 +88,7 @@
     }
 
     .e-toolbar-formatting::before {
-      content: '\e70b';
+      content: '\e725';
     }
   }
 
@@ -124,4 +124,19 @@
     content: '\e554';
   }
 
+  .e-pivot-format-menu::before {
+    content: '\e728';
+  }
+
+  .e-pivot-number-format-menu::before {
+    content: '\e70b';
+  }
+
+  .e-pivot-conditional-format-menu::before {
+    content: '\e725';
+  }
+
+  .e-pivot-format-toolbar::before {
+    content: '\e70b';
+  }
 }

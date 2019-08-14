@@ -28,6 +28,7 @@ export class Toolbar {
     private exportMenu: Menu;
     private subTotalMenu: Menu;
     private grandTotalMenu: Menu;
+    private formattingMenu: Menu;
     private dropArgs: ChangeEventArgs;
 
     constructor(parent: PivotView) {
@@ -165,6 +166,18 @@ export class Toolbar {
                         click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('toolbarFormatting')
                     });
                     break;
+                case 'NumberFormatting':
+                    items.push({
+                        prefixIcon: cls.FORMATTING_TOOLBAR + ' ' + cls.ICON, id: this.parent.element.id + 'numberFormatting',
+                        click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('numberFormat')
+                    });
+                    break;
+                case 'Formatting':
+                    items.push({
+                        template: '<ul id="' + this.parent.element.id + 'formatting_menu"></ul>',
+                        id: this.parent.element.id + 'formattingmenu'
+                    });
+                    break;
                 case 'FieldList':
                     items.push({
                         prefixIcon: cls.TOOLBAR_FIELDLIST + ' ' + cls.ICON, tooltipText: this.parent.localeObj.getConstant('fieldList'),
@@ -295,6 +308,11 @@ export class Toolbar {
             case (this.parent.element.id + 'formatting'):
                 if (this.parent.conditionalFormattingModule) {
                     this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
+                }
+                break;
+            case (this.parent.element.id + 'numberFormatting'):
+                if (this.parent.numberFormattingModule) {
+                    this.parent.numberFormattingModule.showNumberFormattingDialog();
                 }
                 break;
         }
@@ -613,6 +631,30 @@ export class Toolbar {
             this.grandTotalMenu.isStringTemplate = true;
             this.grandTotalMenu.appendTo('#' + this.parent.element.id + 'grandtotal_menu');
         }
+        if (this.parent.element.querySelector('#' + this.parent.element.id + 'formatting_menu')) {
+            let menu: MenuItemModel[] = [{
+                iconCss: cls.FORMATTING_MENU + ' ' + cls.ICON,
+                items: [
+                    {
+                        text: this.parent.localeObj.getConstant('numberFormat'),
+                        iconCss: cls.NUMBER_FORMATTING_MENU + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'numberFormattingMenu'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('conditionalFormating'),
+                        iconCss: cls.CONDITIONAL_FORMATTING_MENU + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'conditionalFormattingMenu'
+                    }
+                ]
+            }];
+            this.formattingMenu = new Menu(
+                {
+                    items: menu, enableRtl: this.parent.enableRtl,
+                    select: this.menuItemClick.bind(this)
+                });
+            this.formattingMenu.isStringTemplate = true;
+            this.formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
+        }
         if (this.parent.element.querySelector('#' + this.parent.element.id + '_reportlist')) {
             let reports: FetchReportArgs = this.fetchReports();
             this.reportList = new DropDownList({
@@ -786,6 +828,16 @@ export class Toolbar {
                 this.parent.dataSourceSettings.showColumnGrandTotals = true;
                 this.parent.dataSourceSettings.showRowGrandTotals = true;
                 break;
+            case (this.parent.element.id + 'numberFormattingMenu'):
+                if (this.parent.numberFormattingModule) {
+                    this.parent.numberFormattingModule.showNumberFormattingDialog();
+                }
+                break;
+            case (this.parent.element.id + 'conditionalFormattingMenu'):
+                if (this.parent.conditionalFormattingModule) {
+                    this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
+                }
+                break;
         }
     }
 
@@ -838,6 +890,9 @@ export class Toolbar {
         }
         if (this.grandTotalMenu && !this.grandTotalMenu.isDestroyed) {
             this.grandTotalMenu.destroy();
+        }
+        if (this.formattingMenu && !this.formattingMenu.isDestroyed) {
+            this.formattingMenu.destroy();
         }
         if (this.reportList && !this.reportList.isDestroyed) {
             this.reportList.destroy();

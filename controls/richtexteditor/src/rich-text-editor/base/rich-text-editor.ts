@@ -251,6 +251,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * * display - Sets the default display for an image when it is inserted in to the RichTextEditor. 
      * Possible options are: 'inline' and 'block'.
      * * width - Sets the default width of the image when it is inserted in the RichTextEditor.
+     * * saveFormat - Specifies the format to store the image in the RichTextEditor (Base64 or Blob).
      * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
      * * saveUrl - Provides URL to map the action result method to save the image.
      * * path - Specifies the location to store the image.
@@ -260,6 +261,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *  display: 'inline',
      *  width: 'auto', 
      *  height: 'auto', 
+     *  saveFormat: 'Blob'
      *  saveUrl: null, 
      *  path: null,
      * }
@@ -416,6 +418,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enableTabKey: boolean;
+    /**     
+     * Enable `enableAutoUrl` to accept the given URL (relative or absolute) without validating the URL for hyperlinks, otherwise
+     * the given URL will automatically convert to absolute path URL by prefixing `https://` for hyperlinks.
+     * @default false
+     */
+    @Property(false)
+    public enableAutoUrl: boolean;
     /**     
      * Specifies the maximum number of characters allowed in the RichTextEditor component.
      * @default -1
@@ -739,9 +748,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private updateEnable(): void {
         if (this.enabled) {
             removeClass([this.element], classes.CLS_DISABLED);
-            this.element.tabIndex = 0;
             this.element.setAttribute('aria-disabled', 'false');
-            this.inputElement.setAttribute('tabindex', '0');
+            if (!isNOU(this.htmlAttributes.tabindex)) {
+                this.inputElement.setAttribute('tabindex', this.htmlAttributes.tabindex);
+            } else {
+                this.inputElement.setAttribute('tabindex', '0');
+            }
         } else {
             if (this.getToolbar()) {
                 removeClass(this.getToolbar().querySelectorAll('.' + classes.CLS_ACTIVE), classes.CLS_ACTIVE);
@@ -771,14 +783,28 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setContainer();
+        this.persistData();
         setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
         attributes(this.element, { role: 'application' });
     }
+
+    private persistData (): void {
+        if (this.enablePersistence && this.originalElement.tagName === 'TEXTAREA') {
+            let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
+            if (!(isNOU(data) || (data === ''))) {
+                this.setProperties(JSON.parse(data), true);
+            }
+        }
+    };
 
     private setContainer(): void {
         this.originalElement = this.element.cloneNode(true) as HTMLElement;
         if (this.value === null || this.valueTemplate !== null) {
             this.setValue();
+        }
+        if (this.element.hasAttribute('tabindex')) {
+            this.htmlAttributes = { 'tabindex': this.element.getAttribute('tabindex') };
+            this.element.removeAttribute('tabindex');
         }
         if (!this.isBlazor()) { this.element.innerHTML = ''; }
         let invalidAttr: string[] = ['class', 'style', 'id', 'ejs-for'];
@@ -1125,7 +1151,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             requestType: 'Paste'
         };
         this.trigger(events.actionBegin, evenArgs, (pasteArgs: { [key: string]: Object }) => {
-            if (!pasteArgs.cancel) {
+            let currentLength: number = this.getText().length;
+            let selectionLength: number = this.getSelection().length;
+            let pastedContentLength: number = (isNOU(e as ClipboardEvent) || isNOU((e as ClipboardEvent).clipboardData))
+            ? 0 : (e as ClipboardEvent).clipboardData.getData('text/plain').length;
+            let totalLength: number = (currentLength - selectionLength) + pastedContentLength;
+            if (!pasteArgs.cancel && (this.maxLength === -1 || totalLength < this.maxLength)) {
                 if (!isNOU(this.pasteCleanupModule)) {
                     this.notify(events.pasteClean, { args: e as ClipboardEvent });
                 } else {
@@ -1145,6 +1176,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     }
                     setTimeout(() => { this.formatter.onSuccess(this, args); }, 0);
                 }
+            } else {
+                e.preventDefault();
             }
         });
     }
@@ -1827,8 +1860,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.cloneValue = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                     (this.inputElement as HTMLTextAreaElement).value;
             }
-            if (document.activeElement === this.element) {
+            let active: Element = document.activeElement;
+            if (active === this.element || active === this.getToolbarElement() || active === this.contentModule.getEditPanel()
+                || (this.iframeSettings.enable && active === this.contentModule.getPanel())
+                || active.closest('.e-rte-toolbar') === this.getToolbarElement()) {
                 (this.contentModule.getEditPanel() as HTMLElement).focus();
+                if (!isNOU(this.getToolbarElement())) {
+                    this.getToolbarElement().setAttribute('tabindex', '-1');
+                    let items: NodeList = this.getToolbarElement().querySelectorAll('[tabindex="0"]');
+                    if (items.length !== 0) { items.forEach((element: Element) => {
+                        (element as HTMLElement).setAttribute('tabindex', '-1'); }); }
+                }
             }
             this.preventDefaultResize(e);
             this.trigger('focus', { event: e, isInteracted: Object.keys(e).length === 0 ? false : true });
@@ -1836,6 +1878,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 this.timeInterval = setInterval(this.updateIntervalValue.bind(this), this.saveInterval);
             }
             EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
+        }
+        if (!isNOU(this.getToolbarElement())) {
+            let toolbarItem: NodeList = this.getToolbarElement().querySelectorAll('input,select,button,a,[tabindex]');
+            toolbarItem.forEach((item: Element) => {
+                if (!item.hasAttribute('tabindex') || item.getAttribute('tabindex') !== '-1') {
+                    item.setAttribute('tabindex', '-1');
+                }
+            });
         }
     }
 
@@ -1874,6 +1924,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             let rteElement: Element = closest(trg, '.' + classes.CLS_RTE);
             if (rteElement && rteElement === this.element) {
                 this.isBlur = false;
+                if (trg === this.getToolbarElement()) { trg.setAttribute('tabindex', '-1'); }
             } else if (closest(trg, '[aria-owns="' + this.getID() + '"]')) {
                 this.isBlur = false;
             } else {

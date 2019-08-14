@@ -402,10 +402,8 @@ export function getTemplateFunction(template: string): Function {
     let templateFn: Function = null;
     let e: Object;
     try {
-        if (document.querySelectorAll(template).length) {
-            if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
-                templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
-            }
+        if (document.querySelectorAll(template).length !== document.getElementsByTagName(template).length) {
+            templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
         }
     } catch (e) {
         templateFn = templateComplier(template);

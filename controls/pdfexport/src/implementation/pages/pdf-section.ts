@@ -112,14 +112,15 @@ export class PdfSection implements IPdfWrapper {
      */
     constructor(document : PdfDocument, pageSettings : PdfPageSettings)
     constructor(document : PdfDocument, pageSettings? : PdfPageSettings) {
+        this.pdfDocument = document;
         if (typeof pageSettings === 'undefined') {
-            this.constructor(document, document.pageSettings);
+            this.settings = document.pageSettings.clone();
+            this.initialSettings = this.settings.clone();
         } else {
-            this.pdfDocument = document;
             this.settings = pageSettings.clone();
             this.initialSettings = this.settings.clone();
-            this.initialize();
         }
+        this.initialize();
     }
     //Property
     /**

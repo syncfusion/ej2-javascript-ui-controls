@@ -357,7 +357,20 @@ describe('column menu module', () => {
             colMenu.columnMenuOnClose(args);
             expect(colMenu.isFilterPopupOpen()).toBe(false);
         });
-        
+
+        it('ensure getitems method', () => {
+            let colMenu = gridObj.columnMenuModule as any;
+            colMenu.getItems = function() {
+                let flag: boolean = true;
+                expect(flag).toBe(true);
+                return this.columnMenu.items;
+            };
+            let eve = {
+                target: gridObj.element.querySelectorAll('.e-columnmenu')[1],
+                preventDefault: function () { }
+            };
+            colMenu.columnMenuHandlerClick(eve);
+        });
 
         afterAll(() => {
             gridObj.destroy();

@@ -32,10 +32,10 @@ export class PivotContextMenu {
     }
     private renderContextMenu(): void {
         let menuItems: MenuItemModel[] = [
-            { text: this.parent.localeObj.getConstant('addToFilter'), id: 'Context_Filters' },
-            { text: this.parent.localeObj.getConstant('addToRow'), id: 'Context_Rows' },
-            { text: this.parent.localeObj.getConstant('addToColumn'), id: 'Context_Columns' },
-            { text: this.parent.localeObj.getConstant('addToValue'), id: 'Context_Values' }];
+            { text: this.parent.localeObj.getConstant('addToFilter'), id: this.parent.element.id + '_Filters' },
+            { text: this.parent.localeObj.getConstant('addToRow'), id: this.parent.element.id + '_Rows' },
+            { text: this.parent.localeObj.getConstant('addToColumn'), id: this.parent.element.id + '_Columns' },
+            { text: this.parent.localeObj.getConstant('addToValue'), id: this.parent.element.id + '_Values' }];
         let menuOptions: ContextMenuModel = {
             cssClass: cls.PIVOT_CONTEXT_MENU_CLASS,
             items: menuItems,
@@ -67,7 +67,7 @@ export class PivotContextMenu {
     private onSelectContextMenu(menu: MenuEventArgs): void {
         if (menu.element.textContent !== null) {
             let fieldName: string = this.fieldElement.getAttribute('data-uid');
-            let dropClass: string = menu.item.id.replace('Context_', '').toLowerCase();
+            let dropClass: string = menu.item.id.replace(this.parent.element.id + '_', '').toLowerCase();
             this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
                 ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
             this.parent.pivotCommon.dataSourceUpdate.updateDataSource(fieldName, dropClass, -1);

@@ -1,6 +1,7 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
 import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass, compile } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
+import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * ElementContext
@@ -357,17 +358,23 @@ export class Virtualization {
                         textCollection.push((curViewDS[index] as { [key: string]: string; })[text]);
                         (dataCollection as { [key: string]: Object; }[]).push(curViewDS[index] as { [key: string]: Object });
                     });
+                    let dataSource: { [key: string]: Object; }[] =
+                        this.listViewInstance.dataSource instanceof DataManager
+                            ? curViewDS : this.listViewInstance.dataSource;
                     return {
                         text: textCollection,
                         data: dataCollection,
                         index: this.uiIndices.activeIndices.map((index: number) =>
-                            (this.listViewInstance.dataSource).indexOf(curViewDS[index] as { [key: string]: Object }))
+                            dataSource.indexOf(curViewDS[index] as { [key: string]: Object }))
                     };
                 } else {
+                    let dataSource: { [key: string]: Object; }[] =
+                        this.listViewInstance.dataSource instanceof DataManager
+                            ? curViewDS : this.listViewInstance.dataSource;
                     return {
                         text: curViewDS[this.activeIndex][this.listViewInstance.fields.text] as string,
                         data: curViewDS[this.activeIndex],
-                        index: (this.listViewInstance.dataSource as { [key: string]: Object; }[]).indexOf(curViewDS[this.activeIndex])
+                        index: dataSource.indexOf(curViewDS[this.activeIndex])
                     };
                 }
             }
@@ -712,12 +719,14 @@ export class Virtualization {
         let commonTemplate: string = '<div class="e-text-content" role="presentation"> ' +
             '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
         template.innerHTML = this.listViewInstance.template || commonTemplate;
-        let templateElements: NodeList = template.getElementsByTagName('*');
+        // tslint:disable-next-line:no-any
+        let templateElements: any = template.getElementsByTagName('*');
         let groupTemplate: HTMLElement = this.listViewInstance.createElement('div');
         if (this.listViewInstance.fields.groupBy) {
             groupTemplate.innerHTML = this.listViewInstance.groupTemplate || commonTemplate;
         }
-        let groupTemplateElements: NodeList = groupTemplate.getElementsByTagName('*');
+        // tslint:disable-next-line:no-any
+        let groupTemplateElements: any = groupTemplate.getElementsByTagName('*');
         if (args.curData.isHeader) {
             this.headerData = args.curData;
         }
@@ -933,11 +942,10 @@ export class Virtualization {
             detach(this.listViewInstance.contentContainer);
         }
         this.listViewInstance.preRender();
-        this.listViewInstance.localData = this.listViewInstance.dataSource;
         // resetting the dom count to 0, to avoid edge case of dataSource suddenly becoming zero
         // and then manually adding item using addItem API
         this.domItemCount = 0;
-        this.listViewInstance.renderList();
+        this.listViewInstance.setLocalData();
     }
 
     private updateUI(element: HTMLElement, index: number, targetElement?: HTMLElement): void {

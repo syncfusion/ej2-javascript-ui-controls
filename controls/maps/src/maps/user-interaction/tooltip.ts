@@ -1,6 +1,6 @@
 import { Maps, ITooltipRenderEventArgs, tooltipRender } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
-import { createElement, Browser, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
 import { MapLocation, checkShapeDataFields, getMousePosition, Internalize, checkPropertyPath } from '../utils/helper';
 /**
@@ -117,7 +117,7 @@ export class MapsTooltip {
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
             let content: string;
-            if (option.template !== null && Object.keys(option.template).length === 1) {
+            if (option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
                 option.template = option.template[Object.keys(option.template)[0]];
             }
             templateData = this.setTooltipContent(option, templateData);
@@ -134,7 +134,7 @@ export class MapsTooltip {
             };
             this.maps.trigger('tooltipRender', tootipArgs, (observedArgs: ITooltipRenderEventArgs) => {
                 if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
-                (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1 )) {
+                    (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
                     this.maps['isProtectedOnChange'] = true;
                     tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
                         || tootipArgs.options['textStyle']['color'];
@@ -165,7 +165,7 @@ export class MapsTooltip {
     }
 
     /**
-     * To get content for the current toolitp 
+     * To get content for the current toolitp
      */
     private setTooltipContent(options: TooltipSettingsModel, templateData: object): object {
         let localData: object = extend({}, templateData, null, true);
@@ -207,7 +207,7 @@ export class MapsTooltip {
 
     public removeTooltip(): void {
         if (document.getElementsByClassName('EJ2-maps-Tooltip').length > 0) {
-            document.getElementsByClassName('EJ2-maps-Tooltip')[0].remove();
+            remove(document.getElementsByClassName('EJ2-maps-Tooltip')[0]);
         }
     }
     /**
@@ -236,7 +236,7 @@ export class MapsTooltip {
         return 'MapsTooltip';
     }
     /**
-     * To destroy the tooltip. 
+     * To destroy the tooltip.
      * @return {void}
      * @private
      */

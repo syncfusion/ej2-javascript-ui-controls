@@ -951,6 +951,8 @@ export class PdfViewerBase {
         }
         if (this.pageCount > 0) {
             this.unloadDocument(this);
+            // tslint:disable-next-line
+            this.textLayer.characterBound = new Array();
         }
         this.windowSessionStorageClear();
         if (this.pinchZoomStorage) {
@@ -3043,6 +3045,8 @@ export class PdfViewerBase {
             // tslint:disable-next-line
             textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor']
         };
+        // tslint:disable-next-line
+        this.textLayer.characterBound[pageIndex] = data['characterBounds'];
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.magnificationModule ? this.pdfViewer.magnificationModule.checkZoomFactor() : true) {
             this.manageSessionStorage(pageIndex, storeObject);

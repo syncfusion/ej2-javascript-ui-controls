@@ -100,4 +100,20 @@ export const beforeBatchCancel: string = 'before-batch-cancel';
 export const batchEditFormRendered: string = 'batcheditform-rendered';
 /** @hidden */
 export const detailDataBound: string = 'detailDataBound';
+/** @hidden */
+export const rowDrag: string = 'rowDrag';
+/** @hidden */
+export const rowDragStartHelper: string = 'rowDragStartHelper';
+/** @hidden */
+export const rowDrop: string = 'rowDrop';
+/** @hidden */
+export const rowDragStart: string = 'rowDragStart';
+/** @hidden */
+export const rowsAdd: string = 'rows-add';
+/** @hidden */
+export const rowsRemove: string = 'rows-remove';
+/** @hidden */
+export const rowdraging: string = 'row-draging';
+/** @hidden */
+export const rowDropped: string = 'row-dropped';
 

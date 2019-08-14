@@ -323,10 +323,8 @@ function getElement(id) {
 function getTemplateFunction(template) {
     let templateFn = null;
     try {
-        if (document.querySelectorAll(template).length) {
-            if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
-                templateFn = compile(document.querySelector(template).innerHTML.trim());
-            }
+        if (document.querySelectorAll(template).length !== document.getElementsByTagName(template).length) {
+            templateFn = compile(document.querySelector(template).innerHTML.trim());
         }
     }
     catch (e) {
@@ -1307,7 +1305,7 @@ class GaugeTooltip {
                             this.tooltipEle.style.left = pageX + 20 + 'px';
                             this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
                         }
-                        else if (bounds['x'] <= 0 && pageX + bounds['width'] >= window.innerWidth) {
+                        else {
                             this.tooltipEle.style.left = pageX - bounds['width'] + 20 + 'px';
                             this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
                         }
@@ -1880,7 +1878,7 @@ class PointerRenderer {
             end: (model) => {
                 this.setPointerValue(axis, pointer, end);
                 if (pointer.type === 'Marker' || (element.id.indexOf('_Pointer_NeedleCap') >= 0)) {
-                    this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                    this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
                 }
             }
         });
@@ -2557,7 +2555,7 @@ let CircularGauge = class CircularGauge extends Component {
      */
     gaugeResize(e) {
         let args = {
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
             name: resized,
             currentSize: new Size(0, 0)
@@ -2572,7 +2570,7 @@ let CircularGauge = class CircularGauge extends Component {
                 this.calculateBounds();
                 this.renderElements();
                 args.currentSize = this.availableSize;
-                this.trigger(resized, this.isBlazor ? {} : args);
+                this.trigger(resized, args);
             }, 500);
         }
         return false;

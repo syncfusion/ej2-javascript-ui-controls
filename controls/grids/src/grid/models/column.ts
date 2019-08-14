@@ -264,7 +264,7 @@ export class Column {
      * {% codeBlock src="grid/filter-menu-api/index.ts" %}{% endcodeBlock %}
      * 
      * > Check the [`Filter UI`](../../grid/filtering/#custom-component-in-filter-menu) for its customization.
-     *  @default null
+     *  @default {}
      */
 
     public filter: IFilter = {};
@@ -426,7 +426,8 @@ export class Column {
         }
         this.toJSON = () => {
             let col: object = {};
-            let skip: string[] = ['headerText', 'template', 'headerTemplate', 'edit', 'editTemplate', 'filterTemplate', 'commandsTemplate'];
+            let skip: string[] = ['filter', 'dataSource', 'headerText', 'template', 'headerTemplate', 'edit',
+                'editTemplate', 'filterTemplate', 'commandsTemplate'];
             let keys : string[] = Object.keys(this);
             for (let i: number = 0; i < keys.length; i++) {
                 if (keys[i] === 'columns') {
@@ -459,7 +460,7 @@ export class Column {
         if (this.headerTemplate) {
             this.headerTemplateFn = templateCompiler(this.headerTemplate);
         }
-        if (this.filter.itemTemplate) {
+        if (!isNullOrUndefined(this.filter) && this.filter.itemTemplate) {
             this.fltrTemplateFn = templateCompiler(this.filter.itemTemplate);
         }
         if (this.editTemplate) {

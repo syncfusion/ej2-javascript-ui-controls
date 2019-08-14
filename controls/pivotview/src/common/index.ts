@@ -18,3 +18,4 @@ export * from './popups/filter-dialog';
 export * from './popups/context-menu';
 export * from './popups/aggregate-menu';
 export * from './popups/toolbar';
+export * from './popups/formatting-dialog';

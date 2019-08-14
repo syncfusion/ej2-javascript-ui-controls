@@ -453,3 +453,8 @@ export interface QueryCellInfoEventArgs {
     /** Define the pivot component object */
     pivotview?: PivotView;
 }
+
+export interface FieldListRefreshedEventArgs {
+    dataSourceSettings?: IDataOptions;
+    pivotValues?: IPivotValues;
+}

@@ -1,9 +1,9 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer } from '../base/interface';
+import { IRichTextEditor, NotifyArgs, IRenderer, ActionCompleteEventArgs } from '../base/interface';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
@@ -55,7 +55,7 @@ export class PasteCleanup {
   }
 
   private pasteClean(e?: NotifyArgs): void {
-    let args: Object = {
+    let args: { [key: string]: string |NotifyArgs } = {
       requestType: 'Paste',
       editorMode: this.parent.editorMode,
       event: e
@@ -82,7 +82,7 @@ export class PasteCleanup {
                 'Images',
                 'Image',
                 e.args,
-                this.imageFormatting.bind(this),
+                this.imageFormatting.bind(args),
                 'pasteCleanup',
                 imageproperties,
                 'pasteCleanupModule');
@@ -133,41 +133,40 @@ export class PasteCleanup {
       this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
       if (this.parent.pasteCleanupSettings.prompt) {
         (e.args as ClipboardEvent).preventDefault();
-        this.pasteDialog(value);
+        this.pasteDialog(value, args);
       } else if (this.parent.pasteCleanupSettings.plainText) {
         (e.args as ClipboardEvent).preventDefault();
-        this.plainFormatting(value);
+        this.plainFormatting(value, args);
       } else if (this.parent.pasteCleanupSettings.keepFormat) {
         (e.args as ClipboardEvent).preventDefault();
-        this.formatting(value, false);
+        this.formatting(value, false, args);
       } else {
         (e.args as ClipboardEvent).preventDefault();
-        this.formatting(value, true);
+        this.formatting(value, true, args);
       }
     }
-    setTimeout(() => { this.parent.formatter.onSuccess(this.parent, args); }, 0);
   }
 
   /**
    * Method for image formatting when pasting
    * @hidden
    */
-  public imageFormatting(imgElement: { [key: string]: Element }): void {
+  public imageFormatting(args: ActionCompleteEventArgs): void {
     let imageElement: HTMLElement = this.parent.createElement('span');
-    imageElement.appendChild(imgElement.elements);
+    imageElement.appendChild(args.elements[0]);
     let imageValue: string = imageElement.innerHTML;
     this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
     let currentDocument: Document = this.contentRenderer.getDocument();
     let range: Range = this.nodeSelectionObj.getRange(currentDocument);
     this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
     if (this.parent.pasteCleanupSettings.prompt) {
-      this.pasteDialog(imageValue);
+      this.pasteDialog(imageValue, args);
     } else if (this.parent.pasteCleanupSettings.plainText) {
-      this.plainFormatting(imageValue);
+      this.plainFormatting(imageValue, args);
     } else if (this.parent.pasteCleanupSettings.keepFormat) {
-      this.formatting(imageValue, false);
+      this.formatting(imageValue, false, args);
     } else {
-      this.formatting(imageValue, true);
+      this.formatting(imageValue, true, args);
     }
   }
 
@@ -186,24 +185,24 @@ export class PasteCleanup {
     plainTextRadioButton.appendTo(plainTextElement);
   }
 
-  private selectFormatting(value: string): void {
+  private selectFormatting(value: string, args: Object): void {
     let keepFormatElement: HTMLInputElement = this.parent.element.querySelector('#keepFormating');
     let cleanFormatElement: HTMLInputElement = this.parent.element.querySelector('#cleanFormat');
     if (keepFormatElement.checked) {
-      this.formatting(value, false);
+      this.formatting(value, false, args);
     } else if (cleanFormatElement.checked) {
-      this.formatting(value, true);
+      this.formatting(value, true, args);
     } else {
-      this.plainFormatting(value);
+      this.plainFormatting(value, args);
     }
   }
-  private pasteDialog(value: string): void {
+  private pasteDialog(value: string, args: Object): void {
     let dialogModel: DialogModel = {
       buttons: [
         {
           click: () => {
             if (!dialog.isDestroyed) {
-              this.selectFormatting(value);
+              this.selectFormatting(value, args);
               dialog.hide();
               this.dialogRenderObj.close(dialog);
               dialog.destroy();
@@ -266,7 +265,7 @@ export class PasteCleanup {
     }
   }
 
-  private formatting(value: string, clean: boolean): void {
+  private formatting(value: string, clean: boolean, args: Object): void {
     let clipBoardElem: HTMLElement = this.parent.createElement(
       'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
     clipBoardElem.innerHTML = value;
@@ -284,10 +283,12 @@ export class PasteCleanup {
     this.saveSelection.restore();
     this.parent.executeCommand('insertHTML', clipBoardElem);
     this.parent.notify(events.toolbarRefresh, {});
+    extend(args, {elements: [clipBoardElem]}, true);
+    this.parent.formatter.onSuccess(this.parent, args);
   }
 
   //Plain Formatting
-  private plainFormatting(value: string): void {
+  private plainFormatting(value: string, args: Object): void {
     let clipBoardElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
     clipBoardElem.innerHTML = value;
     this.detachInlineElements(clipBoardElem);
@@ -297,6 +298,8 @@ export class PasteCleanup {
     resultElement.innerHTML = text;
     this.saveSelection.restore();
     this.parent.executeCommand('insertHTML', resultElement);
+    extend(args, {elements: [resultElement]}, true);
+    this.parent.formatter.onSuccess(this.parent, args);
   }
 
   private detachInlineElements(element: HTMLElement): void {

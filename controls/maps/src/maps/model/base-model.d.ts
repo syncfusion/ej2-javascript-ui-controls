@@ -1155,6 +1155,7 @@ export interface LayerSettingsModel {
 
     /**
      * Specifies the shape data for the layer.
+     * @isdatamanager false
      * @default null
      */
     shapeData?: object | DataManager | MapAjax;

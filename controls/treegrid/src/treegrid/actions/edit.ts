@@ -6,7 +6,7 @@ import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
 import { DataManager, Deferred } from '@syncfusion/ej2-data';
-import { findChildrenRecords } from '../utils';
+import { findChildrenRecords, getParentData } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
 import { RowPosition } from '../enum';
 
@@ -357,7 +357,7 @@ export class Edit {
       let rows: Element[] = this.parent.grid.getDataRows();
       if (this.parent.editSettings.mode !== 'Dialog') {
         if (this.parent.editSettings.newRowPosition === 'Child' && !((<ITreeData>records[index]).expanded) &&
-          (<ITreeData>records[index][this.parent.childMapping]) && (<ITreeData>records[index][this.parent.childMapping].length)) {
+        (<ITreeData>records[index][this.parent.childMapping]) && (<ITreeData>records[index][this.parent.childMapping].length)) {
           this.parent.expandRow(<HTMLTableRowElement>rows[index + 1], records[index]);
         }
         if (this.parent.editSettings.newRowPosition === 'Above') {
@@ -453,13 +453,14 @@ export class Edit {
       if (args.action === 'add') {
           let key: string = this.parent.grid.getPrimaryKeyFieldNames()[0];
           let position: string = null;
+          value.taskData = isNullOrUndefined(value.taskData) ? extend({}, args.data) : value.taskData;
           // let currentData: ITreeData[] = this.batchRecords.length ? this.batchRecords :
           //            <ITreeData[]>this.parent.grid.getCurrentViewRecords();
           let currentData: ITreeData[] = <ITreeData[]>this.parent.grid.getCurrentViewRecords();
           let index: number =  this.addRowIndex;
           value.uniqueID = getUid(this.parent.element.id + '_data_');
           setValue('uniqueIDCollection.' +  value.uniqueID , value, this.parent);
-          let level: number = -1; let dataIndex: number; let idMapping: Object;
+          let level: number; let dataIndex: number; let idMapping: Object;
           let parentUniqueID: string; let parentItem: Object; let parentIdMapping: string;
           if (currentData.length) {
               level = currentData[this.addRowIndex].level;
@@ -471,10 +472,9 @@ export class Edit {
               }
               parentItem = currentData[this.addRowIndex].parentItem;
           }
-          if (this.parent.editSettings.newRowPosition !== 'Top') {
+          if (this.parent.editSettings.newRowPosition !== 'Top' && currentData.length) {
               if (this.parent.editSettings.newRowPosition === 'Above') {
-                  position = 'before';
-                  index = currentData[this.addRowIndex].index;
+                  position = 'before'; index = currentData[this.addRowIndex].index;
               } else if (this.parent.editSettings.newRowPosition === 'Below') {
                   position = 'after';
                   let childRecordCount: number = findChildrenRecords(currentData[this.addRowIndex]).length;
@@ -492,21 +492,20 @@ export class Edit {
                   index = (childRecordCount1 > 0) ? ( currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                   value.level = level + 1;
                   if (this.isSelfReference) {
-                    if (!isNullOrUndefined(value.parentItem)) {
-                      value[this.parent.parentIdMapping] = idMapping;
-                      updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
-                    }
+                      value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = idMapping;
+                      if (!isNullOrUndefined(value.parentItem)) {
+                        updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
+                      }
                   }
               }
               if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                 if (this.selectedIndex > -1 && level) {
-                  value.parentUniqueID = parentUniqueID;
-                  value.parentItem = extend({}, parentItem);
+                  value.parentUniqueID = parentUniqueID; value.parentItem = extend({}, parentItem);
                   delete value.parentItem.childRecords; delete value.parentItem[this.parent.childMapping];
                 }
                 value.level = level;
                 if (this.isSelfReference) {
-                  value[this.parent.parentIdMapping] = parentIdMapping;
+                  value.taskData[this.parent.parentIdMapping] = value[this.parent.parentIdMapping] = parentIdMapping;
                   if (!isNullOrUndefined(value.parentItem)) {
                     updateParentRow(key, value.parentItem, 'add', this.parent, this.isSelfReference, value);
                   }
@@ -525,12 +524,22 @@ export class Edit {
             value.level = level;
           }
           // this.addedIndex = args.index;
-          value.hasChildRecords = false;
-          value.childRecords = [];
-          value.index = 0;
+          value.hasChildRecords = false; value.childRecords = []; value.index = 0;
       }
       if (args.action === 'add') {
         this.internalProperties = {level: value.level, parentItem: value.parentItem};
+      }
+      if (args.requestType === 'delete') {
+        let deletedValues: ITreeData[] = args.data as Object[];
+        for (let i: number = 0; i < deletedValues.length; i++) {
+          if (deletedValues[i].parentItem) {
+            let parentItem: ITreeData = getParentData(this.parent, deletedValues[i].parentItem.uniqueID);
+            if (!isNullOrUndefined(parentItem) && parentItem.hasChildRecords) {
+              let childIndex: number = parentItem.childRecords.indexOf(deletedValues[i]);
+              parentItem.childRecords.splice(childIndex, 1);
+            }
+          }
+        }
       }
       return args;
     }

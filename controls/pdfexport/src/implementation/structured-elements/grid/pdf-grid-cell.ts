@@ -132,11 +132,9 @@ export class PdfGridCell {
      */
     public constructor(row : PdfGridRow)
     public constructor(row ?: PdfGridRow) {
-        if (typeof row === 'undefined') {
-            this.gridRowSpan = 1;
-            this.colSpan = 1;
-        } else {
-            this.constructor();
+        this.gridRowSpan = 1;
+        this.colSpan = 1;
+        if (typeof row !== 'undefined') {
             this.gridRow = row;
         }
     }

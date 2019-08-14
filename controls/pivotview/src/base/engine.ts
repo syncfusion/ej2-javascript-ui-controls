@@ -66,6 +66,8 @@ export class PivotEngine {
     /** @hidden */
     public formatFields: { [key: string]: IFormatSettings } = {};
     /** @hidden */
+    public dateFormatFunction: { [key: string]: { exactFormat: Function, fullFormat: Function } } = {};
+    /** @hidden */
     public calculatedFieldSettings: ICalculatedFieldSettings[];
     /** @hidden */
     public calculatedFields: { [key: string]: ICalculatedFields } = {};
@@ -147,6 +149,7 @@ export class PivotEngine {
         dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function): void {
         this.getValueCellInfo = fn;
         this.formatFields = {};
+        this.dateFormatFunction = {};
         this.calculatedFields = {};
         this.calculatedFormulas = {};
         this.valueAxis = 0;
@@ -195,7 +198,7 @@ export class PivotEngine {
         this.isValueFilterEnabled = false;
         this.enableValueSorting = customProperties ? customProperties.enableValueSorting : false;
         this.valueContent = [];
-        if(!(dataSource.dataSource instanceof DataManager)) {
+        if (!(dataSource.dataSource instanceof DataManager)) {
             this.data = dataSource.dataSource;
         }
         if (this.data && (this.data as IDataSet[])[0]) {
@@ -515,6 +518,14 @@ export class PivotEngine {
         let cnt: number = this.formats.length;
         while (cnt--) {
             this.formatFields[this.formats[cnt].name] = this.formats[cnt];
+            if (this.formats[cnt].type) {
+                this.dateFormatFunction[this.formats[cnt].name] = {
+                    exactFormat: this.globalize.getDateFormat(this.formats[cnt]),
+                    fullFormat: this.globalize.getDateFormat({
+                        format: 'yyyy/MM/dd/HH/mm/ss', type: this.formats[cnt].type
+                    })
+                };
+            }
             // for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
             // if (fields[len] && fields[len].name === this.formats[cnt].name) {
             //     this.formatFields[fields[len].name] = this.formats[cnt];
@@ -1413,7 +1424,9 @@ export class PivotEngine {
                 this.columnCount = 0; this.rowCount = 0; this.cMembers = []; this.rMembers = [];
                 if (rows.length !== 0) {
                     this.rMembers =
-                        this.getIndexedHeaders(rows, data, 0, rows[0].showNoDataItems ? filterMembers : this.filterMembers, 'row', '', this.allowValueFilter);
+                        this.getIndexedHeaders(
+                            rows, data, 0, rows[0].showNoDataItems ? filterMembers : this.filterMembers,
+                            'row', '', this.allowValueFilter);
                 }
                 if (columns.length !== 0) {
                     this.cMembers = this.getIndexedHeaders(columns, data, 0, columns[0].showNoDataItems ?
@@ -1875,11 +1888,21 @@ export class PivotEngine {
         return framedHeader;
     }
     private getSortedHeaders(headers: IAxisSet[], sortOrder: string): IAxisSet[] {
-        return this.enableSort ? (sortOrder === 'Ascending' ?
-            (headers.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
-            (sortOrder === 'Descending' ?
-                (headers.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) : headers)) :
-            headers;
+        let isNotDateType: boolean = !(this.formatFields && this.formatFields[(headers[0].valueSort as any).axis] &&
+            this.formatFields[(headers[0].valueSort as any).axis].type);
+        if (isNotDateType) {
+            return sortOrder === 'Ascending' ?
+                (headers.sort((a, b) => (a.actualText > b.actualText) ? 1 : ((b.actualText > a.actualText) ? -1 : 0))) :
+                sortOrder === 'Descending' ?
+                    (headers.sort((a, b) => (a.actualText < b.actualText) ? 1 : ((b.actualText < a.actualText) ? -1 : 0))) :
+                    headers;
+        } else {
+            return sortOrder === 'Ascending' ?
+                (headers.sort((a, b) => (a.dateText > b.dateText) ? 1 : ((b.dateText > a.dateText) ? -1 : 0))) :
+                sortOrder === 'Descending' ?
+                    (headers.sort((a, b) => (a.dateText < b.dateText) ? 1 : ((b.dateText < a.dateText) ? -1 : 0))) :
+                    headers;
+        }
     }
     /** @hidden */
     public applyValueSorting(rMembers?: IAxisSet[], cMembers?: IAxisSet[]): ISortedHeaders {
@@ -2151,7 +2174,11 @@ export class PivotEngine {
                     this.fieldFilterMem[fieldName].memberObj[headerValue] === headerValue) {
                     continue;
                 }
-                let formattedValue: IAxisSet = isDateType ? this.getFormattedValue(headerValue, fieldName) :
+                let formattedValue: IAxisSet = isDateType ? {
+                    actualText: headerValue,
+                    formattedText: childrens.dateMember[memInd - 1].formattedText,
+                    dateText: childrens.dateMember[memInd - 1].actualText
+                } :
                     {
                         formattedText: headerValue === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(headerValue)) :
                             headerValue === undefined ? (this.localeObj ? (fieldName in this.groupingFields) ?
@@ -3463,16 +3490,13 @@ export class PivotEngine {
     /* tslint:enable */
     /** hidden */
     public getFormattedValue(value: number | string, fieldName: string): IAxisSet {
+        let commonValue: number | string = value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) :
+            value === undefined ? (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                this.localeObj.getConstant('undefined') : String(value)) : value;
         let formattedValue: IAxisSet = {
-            formattedText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
-                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
-                    this.localeObj.getConstant('undefined') : String(value)) : value.toString(),
-            actualText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
-                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
-                    this.localeObj.getConstant('undefined') : String(value)) : value,
-            dateText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
-                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
-                    this.localeObj.getConstant('undefined') : String(value)) : value
+            formattedText: commonValue.toString(),
+            actualText: commonValue,
+            dateText: commonValue
         };
         if (this.formatFields[fieldName] && value) {
             let formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName]).properties ?
@@ -3487,14 +3511,14 @@ export class PivotEngine {
                 delete formatSetting.maximumSignificantDigits;
             }
             if (formatSetting.type) {
-                formattedValue.formattedText = this.globalize.formatDate(new Date(value as string), formatSetting);
+                formattedValue.formattedText = this.dateFormatFunction[fieldName].exactFormat(new Date(value as string));
             } else {
                 formattedValue.formattedText = this.globalize.formatNumber(value as number, formatSetting);
             }
             formattedValue.actualText = value;
-            if (formatSetting.type && ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
-                formatSetting.format = 'yyyy/MM/dd/HH/mm/ss';
-                formattedValue.dateText = this.globalize.formatDate(new Date(value as string), formatSetting);
+            if (this.fieldList[fieldName].sort !== 'None' && formatSetting.type &&
+                ['date', 'dateTime', 'time'].indexOf(this.formatFields[fieldName].type) > -1) {
+                formattedValue.dateText = this.dateFormatFunction[fieldName].fullFormat(new Date(value as string));
             }
         }
         return formattedValue;

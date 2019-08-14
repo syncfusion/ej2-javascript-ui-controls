@@ -88,7 +88,7 @@
     }
 
     .e-toolbar-formatting::before {
-      content: '\e711';
+      content: '\e725';
     }
   }
 
@@ -108,12 +108,12 @@
     content: '\e614';
   }
 
-  .e-pivotview-export::before {
-    content: '\e702';
-  }
-
   .e-pivotview-grid::before {
     content: '\e70f';
+  }
+
+  .e-pivotview-export::before {
+    content: '\e702';
   }
 
   .e-pivotview-expand::before {
@@ -122,5 +122,21 @@
 
   .e-pivotview-collapse::before {
     content: '\e557';
+  }
+
+  .e-pivot-format-menu::before {
+    content: '\e728';
+  }
+
+  .e-pivot-number-format-menu::before {
+    content: '\e711';
+  }
+
+  .e-pivot-conditional-format-menu::before {
+    content: '\e725';
+  }
+
+  .e-pivot-format-toolbar::before {
+    content: '\e711';
   }
 }

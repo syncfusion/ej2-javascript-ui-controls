@@ -746,7 +746,7 @@ third line`;
     let elem: HTMLElement = createElement('span', {
       id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
     });
-    pasteCleanupObj.imageFormatting({elements: elem.firstElementChild });
+    pasteCleanupObj.imageFormatting({elements: [elem.firstElementChild] });
     setTimeout(() => {
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       expect(allElem.children[0].tagName.toLowerCase() === 'img').toBe(true);
@@ -770,7 +770,7 @@ third line`;
     let elem: HTMLElement = createElement('span', {
       id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
     });
-    pasteCleanupObj.imageFormatting({elements: elem.firstElementChild });
+    pasteCleanupObj.imageFormatting({elements: [elem.firstElementChild] });
     setTimeout(() => {
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       let expected: boolean = false;
@@ -792,7 +792,7 @@ third line`;
     let elem: HTMLElement = createElement('span', {
       id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
     });
-    pasteCleanupObj.imageFormatting({elements: elem.firstElementChild });
+    pasteCleanupObj.imageFormatting({elements: [elem.firstElementChild] });
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
         let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
@@ -940,6 +940,74 @@ describe('EJ2-23795: Console error occurs when pasting the copied content using 
         }, 100);
       }, 50)
     }
+  });
+  afterAll(() => {
+    destroy(rteObj);
+  });
+});
+
+describe("Pasting text with max Length", () => {
+  let editorObj: EditorManager;
+  let rteObj: RichTextEditor;
+  let pasteCleanUp: PasteCleanup;
+  let rteEle: HTMLElement;
+  let element: HTMLElement;
+  let keepFormatButton: HTMLElement;
+  let beforeDialogOpenEvent: boolean = false;
+  let keyBoardEvent: any = {
+    preventDefault: () => { },
+    type: "keydown",
+    stopPropagation: () => { },
+    ctrlKey: false,
+    shiftKey: false,
+    action: null,
+    which: 64,
+    key: ""
+  };
+  let defaultString: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p>dom node</p></div>`;
+
+  beforeAll((done: Function) => {
+    rteObj = renderRTE({
+      pasteCleanupSettings: {
+        prompt: true
+      },
+      showCharCount: true,
+      maxLength: 10
+    });
+    rteEle = rteObj.element;
+    editorObj = new EditorManager({ document: document, editableElement: document.getElementsByClassName("e-content")[0] });
+    done();
+  });
+  it("pasting text exceeding max length testing", (done) => {
+    let localElem: string = `<p>Syncfusion test case content with length more than 10</p>`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = true;
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog");
+        expect(keepFormat).toBeNull;
+      }
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      let expected: boolean = true;
+      let expectedElem: string = ``;
+      if (allElem.textContent !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
   });
   afterAll(() => {
     destroy(rteObj);

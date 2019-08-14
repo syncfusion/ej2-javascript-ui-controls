@@ -140,6 +140,7 @@ export interface AnnotationModel {
     /**
      * Specifies the value of axis.
      * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     axisValue?: number;
 
@@ -186,7 +187,7 @@ export interface ContainerModel {
 
     /**
      * Specifies to move the container.
-     * @default 0
+     * @blazorDefaultValue 0
      */
     offset?: number;
 

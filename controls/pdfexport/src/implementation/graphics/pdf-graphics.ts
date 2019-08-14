@@ -415,14 +415,14 @@ export class PdfGraphics {
      */
     public constructor(size : SizeF, resources : GetResourceEventHandler, stream : PdfStream)
     public constructor(arg1 : SizeF, arg2 : GetResourceEventHandler, arg3 : PdfStream | PdfStreamWriter) {
+        this.getResources = arg2 as GetResourceEventHandler;
+        this.canvasSize = arg1;
         if (arg3 instanceof PdfStreamWriter) {
             this.pdfStreamWriter = arg3;
-            this.getResources = arg2 as GetResourceEventHandler;
-            this.canvasSize = arg1;
-            this.initialize();
         } else {
-            this.constructor(arg1, arg2, new PdfStreamWriter(arg3));
+            this.pdfStreamWriter = new PdfStreamWriter(arg3);
         }
+        this.initialize();
     }
     //Implementation
     /**

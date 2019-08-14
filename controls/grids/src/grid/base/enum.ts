@@ -46,7 +46,13 @@ export type Action =
     /** Defines current Action as cancel */
     'cancel' |
     /** Defines current Action as add */
-    'add';
+    'add' |
+    /** Defines current Action as filterBeforeOpen */
+    'filterBeforeOpen' |
+    /** Defines current Action as filterChoiceRequest */
+    'filterChoiceRequest' |
+    /** Defines current Action as filterAfterOpen */
+    'filterAfterOpen';
 
 
 

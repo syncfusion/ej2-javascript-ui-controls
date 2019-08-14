@@ -302,6 +302,7 @@ export class LargeIconsView {
                 this.element.focus();
             }
             this.checkItem();
+            this.parent.isLayoutChange = false;
         } else {
             this.element.setAttribute('tabindex', '-1');
         }
@@ -389,15 +390,6 @@ export class LargeIconsView {
         }
     }
 
-    private onRenameEnd(args: ReadArgs): void {
-        if (this.parent.view !== 'LargeIcons') { return; }
-        this.onLayoutChange(args);
-        this.clearSelect();
-        this.parent.setProperties({ selectedItems: [] }, true);
-        this.addSelection(this.parent.renamedItem);
-        this.parent.renamedItem = null;
-    }
-
     private onPathChanged(args: ReadArgs): void {
         this.parent.isCut = false;
         /* istanbul ignore next */
@@ -408,6 +400,11 @@ export class LargeIconsView {
             removeBlur(this.parent);
             this.parent.setProperties({ selectedItems: [] }, true);
             this.onLayoutChange(args);
+            if (this.parent.renamedItem) {
+                this.clearSelect();
+                this.addSelection(this.parent.renamedItem);
+                this.parent.renamedItem = null;
+            }
         }
     }
 
@@ -481,7 +478,7 @@ export class LargeIconsView {
         this.parent.off(events.openEnd, this.onPathChanged);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.renameInit, this.onRenameInit);
-        this.parent.off(events.renameEnd, this.onRenameEnd);
+        this.parent.off(events.renameEnd, this.onPathChanged);
         this.parent.off(events.hideLayout, this.onHideLayout);
         this.parent.off(events.selectAllInit, this.onSelectAllInit);
         this.parent.off(events.clearAllInit, this.onClearAllInit);
@@ -498,6 +495,7 @@ export class LargeIconsView {
         this.parent.off(events.layoutRefresh, this.onLayoutRefresh);
         this.parent.off(events.dropPath, this.onDropPath);
         this.parent.off(events.updateSelectionData, this.onUpdateSelectionData);
+        this.parent.off(events.filterEnd, this.onPathChanged);
     }
 
     private addEventListener(): void {
@@ -513,7 +511,7 @@ export class LargeIconsView {
         this.parent.on(events.search, this.onSearch, this);
         this.parent.on(events.openInit, this.onOpenInit, this);
         this.parent.on(events.renameInit, this.onRenameInit, this);
-        this.parent.on(events.renameEnd, this.onRenameEnd, this);
+        this.parent.on(events.renameEnd, this.onPathChanged, this);
         this.parent.on(events.openEnd, this.onPathChanged, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.hideLayout, this.onHideLayout, this);
@@ -531,6 +529,7 @@ export class LargeIconsView {
         this.parent.on(events.layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(events.dropPath, this.onDropPath, this);
         this.parent.on(events.updateSelectionData, this.onUpdateSelectionData, this);
+        this.parent.on(events.filterEnd, this.onPathChanged, this);
     }
 
     private onMenuItemData(args: { [key: string]: Object; }): void {
@@ -825,7 +824,7 @@ export class LargeIconsView {
                     let text: string = getValue('name', details);
                     if (!this.parent.isFile) {
                         let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
-                        if (val === '') {
+                        if (val === '' && !this.parent.isFiltered) {
                             let id: string = getValue('id', details);
                             let newPath: string = this.parent.path + (isNOU(id) ? text : id) + '/';
                             this.parent.setProperties({ path: newPath }, true);
@@ -836,6 +835,7 @@ export class LargeIconsView {
                         } else {
                             openSearchFolder(this.parent, details);
                         }
+                        this.parent.isFiltered = false;
                         this.parent.setProperties({ selectedItems: [] }, true);
                     } else {
                         let icon: string = fileType(details);

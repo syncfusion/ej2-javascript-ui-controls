@@ -336,10 +336,8 @@ function getElement(id) {
 function getTemplateFunction(template) {
     var templateFn = null;
     try {
-        if (document.querySelectorAll(template).length) {
-            if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
-                templateFn = compile(document.querySelector(template).innerHTML.trim());
-            }
+        if (document.querySelectorAll(template).length !== document.getElementsByTagName(template).length) {
+            templateFn = compile(document.querySelector(template).innerHTML.trim());
         }
     }
     catch (e) {
@@ -1435,7 +1433,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                             _this.tooltipEle.style.left = pageX + 20 + 'px';
                             _this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
                         }
-                        else if (bounds['x'] <= 0 && pageX + bounds['width'] >= window.innerWidth) {
+                        else {
                             _this.tooltipEle.style.left = pageX - bounds['width'] + 20 + 'px';
                             _this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
                         }
@@ -2015,7 +2013,7 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
             end: function (model) {
                 _this.setPointerValue(axis, pointer, end);
                 if (pointer.type === 'Marker' || (element.id.indexOf('_Pointer_NeedleCap') >= 0)) {
-                    _this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                    _this.gauge.trigger(animationComplete, _this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
                 }
             }
         });
@@ -2729,7 +2727,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
     CircularGauge.prototype.gaugeResize = function (e) {
         var _this = this;
         var args = {
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
             name: resized,
             currentSize: new Size(0, 0)
@@ -2744,7 +2742,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 _this.calculateBounds();
                 _this.renderElements();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resized, _this.isBlazor ? {} : args);
+                _this.trigger(resized, args);
             }, 500);
         }
         return false;

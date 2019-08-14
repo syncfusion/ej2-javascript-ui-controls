@@ -1707,4 +1707,48 @@ describe('Filtering module => ', () => {
     
 
     });
+    describe('Ensure the filtered columns UID after change the Grid columns manually', ()=>{
+        let gridObj: Grid;
+        let uid: string;
+        let dBound: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120,filter:{operator:"equal" } },
+                        { field: 'CustomerID',  headerText: 'Customer ID', width: 120,filter:{operator:"endswith" } },
+                        { field: 'Freight',  headerText: 'Freight', width: 120,filter:{operator:"equal" }},
+                        { field: 'ShipCountry',  headerText: 'Ship Country', width: 120,filter:{operator:"contains" } }
+                    ]
+                }, done);
+        });
+        it('Perfom filtering', (done: Function) => {
+            dBound = (args?: Object): void => {
+                uid = (gridObj.filterSettings.columns[0] as Column).uid;
+                done();
+            };
+            gridObj.dataBound = dBound;
+            gridObj.filterByColumn('CustomerID', 'startswith', 'v');
+        });
+        it('Ensure UID', (done: Function) => {
+            dBound = (args?: Object): void => {
+                expect((gridObj.filterSettings.columns[0] as Column).uid).not.toBe(uid);
+                done();
+            };
+            gridObj.dataBound = dBound;
+            gridObj.columns = [
+                { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                { field: 'CustomerID',  headerText: 'Customer ID', width: 120},
+                { field: 'Freight',  headerText: 'Freight', width: 120},
+                { field: 'ShipCountry',  headerText: 'Ship Country', width: 120}
+            ];
+            gridObj.dataBind();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = dBound = null;
+        });
+    });
 });

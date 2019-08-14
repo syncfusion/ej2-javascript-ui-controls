@@ -476,10 +476,6 @@
 .e-multiselect .e-input-group-icon.e-ddl-icon {
   float: right;
   margin-top: $ddl-check-icon-top;
-  @if $ddl-multiselect-skin-name == 'bootstrap' {
-    height: 36px;
-    width: 36px;
-  }
 }
 
 .e-multiselect.e-rtl .e-input-group-icon.e-ddl-icon {
@@ -502,10 +498,7 @@
 
 .e-multiselect.e-checkbox .e-multi-select-wrapper,
 .e-multiselect .e-multi-select-wrapper.e-down-icon {
-  padding: 2px 0 0;
-  @if $ddl-multiselect-skin-name != 'material' {
-    padding: 0;
-  }
+  padding: 0;
 }
 
 .e-ddl.e-popup.e-multi-select-list-wrapper .e-filter-parent .e-input-filter,

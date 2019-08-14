@@ -208,7 +208,6 @@ export class HeaderFooterProperties {
         this.footerFromTop.element.addEventListener('blur', (): void => { this.changeFooterValue(); this.isFooterTopApply = false; });
     }
     private onClose = (): void => {
-        this.container.showHeaderProperties = true;
         this.documentEditor.selection.closeHeaderFooter();
     }
     private changeFirstPageOptions = (): void => {

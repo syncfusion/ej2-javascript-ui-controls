@@ -95,6 +95,8 @@ export const aggregateCellInfo: string = 'aggregateCellInfo';
 export const contextMenuClick: string = 'contextMenuClick';
 /** @hidden */
 export const contextMenuOpen: string = 'contextMenuOpen';
+/** @hidden */
+export const fieldListRefreshed: string = 'fieldListRefreshed';
 
 /** 
  * Specifies pivot internal events
@@ -122,3 +124,5 @@ export const initCalculatedField: string = 'init-calculatedfield';
 export const click: string = 'click';
 /** @hidden */
 export const initToolbar: string = 'init-toolbar';
+/** @hidden */
+export const initFormatting: string = 'init-formatting';

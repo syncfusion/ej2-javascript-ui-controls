@@ -1241,6 +1241,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 case 'height':
                 case 'width':
+                case 'layoutType':
+                case 'leafItemSettings':
+                case 'legendSettings':
                     render = true;
                     break;
             }

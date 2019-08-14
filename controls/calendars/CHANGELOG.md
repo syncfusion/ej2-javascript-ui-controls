@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- `#F146493` - Issue with "DateRangePicker popup not opened on the second click action in iPad devices" has been resolved.
+
 ## 17.2.36 (2019-07-24)
 
 ### DatePicker

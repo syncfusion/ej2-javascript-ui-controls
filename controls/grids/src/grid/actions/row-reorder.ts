@@ -1,4 +1,4 @@
-import { MouseEventArgs, Draggable } from '@syncfusion/ej2-base';
+import { MouseEventArgs, Draggable, isBlazor } from '@syncfusion/ej2-base';
 import { removeClass } from '@syncfusion/ej2-base';
 import { remove, closest as closestElement, classList } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
@@ -6,6 +6,7 @@ import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses } from
 import * as events from '../base/constant';
 import { Scroll } from '../actions/scroll';
 import { RowDropEventArgs } from '../base/interface';
+import { Query } from '@syncfusion/ej2-data';
 
 /**
  * 
@@ -483,22 +484,51 @@ export class RowDD {
             if (gObj.allowPaging) {
                 targetIndex = targetIndex + (gObj.pageSettings.currentPage * gObj.pageSettings.pageSize) - gObj.pageSettings.pageSize;
             }
-            //Todo: drag and drop mapper & BatchChanges                   
-            gObj.notify(events.rowsAdded, { toIndex: targetIndex, records: records });
-            gObj.notify(events.modelChanged, {
-                type: events.actionBegin, requestType: 'rowdraganddrop'
-            });
-            let selectedRows: number[] = srcControl.getSelectedRowIndexes();
-            let skip: number = srcControl.allowPaging ?
-                (srcControl.pageSettings.currentPage * srcControl.pageSettings.pageSize) - srcControl.pageSettings.pageSize : 0;
-            this.selectedRows = [];
-            for (let i: number = 0, len: number = records.length; i < len; i++) {
-                this.selectedRows.push(skip + selectedRows[i]);
+            //Todo: drag and drop mapper & BatchChanges
+            if (!isBlazor()) {
+                gObj.notify(events.rowsAdded, { toIndex: targetIndex, records: records });
+                gObj.notify(events.modelChanged, {
+                    type: events.actionBegin, requestType: 'rowdraganddrop'
+                });
+                let selectedRows: number[] = srcControl.getSelectedRowIndexes();
+                let skip: number = srcControl.allowPaging ?
+                    (srcControl.pageSettings.currentPage * srcControl.pageSettings.pageSize) - srcControl.pageSettings.pageSize : 0;
+                this.selectedRows = [];
+                for (let i: number = 0, len: number = records.length; i < len; i++) {
+                    this.selectedRows.push(skip + selectedRows[i]);
+                }
+                srcControl.notify(events.rowsRemoved, { indexes: this.selectedRows, records: records });
+                srcControl.notify(events.modelChanged, {
+                    type: events.actionBegin, requestType: 'rowdraganddrop'
+                });
+            } else {
+                let changes: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {
+                    addedRecords: records,
+                    deletedRecords: [],
+                    changedRecords: []
+                };
+                let dragDropDestinationIndex: string = 'dragDropDestinationIndex';
+                let query: Query = new Query;
+                query[dragDropDestinationIndex] =  targetIndex;
+                gObj.getDataModule().saveChanges(changes, gObj.getPrimaryKeyFieldNames()[0], {}, query)
+                        .then(() => {
+                            gObj.notify(events.modelChanged, {
+                                type: events.actionBegin, requestType: 'rowdraganddrop'
+                            });
+                        }).catch((e: Error) => {
+                            gObj.trigger(events.actionFailure, { error: e });
+                        });
+                changes.deletedRecords = records;
+                changes.addedRecords = [];
+                srcControl.getDataModule().saveChanges(changes, srcControl.getPrimaryKeyFieldNames()[0], {}, query)
+                .then(() => {
+                    srcControl.notify(events.modelChanged, {
+                        type: events.actionBegin, requestType: 'rowdraganddrop'
+                    });
+                }).catch((e: Error) => {
+                    srcControl.trigger(events.actionFailure, { error: e });
+                });
             }
-            srcControl.notify(events.rowsRemoved, { indexes: this.selectedRows, records: records });
-            srcControl.notify(events.modelChanged, {
-                type: events.actionBegin, requestType: 'rowdraganddrop'
-            });
         }
     }
 

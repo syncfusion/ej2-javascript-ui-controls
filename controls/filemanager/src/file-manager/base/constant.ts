@@ -16,6 +16,8 @@ export const finalizeEnd: string = 'finalize-end';
 /** @hidden */
 export const createEnd: string = 'create-end';
 /** @hidden */
+export const filterEnd: string = 'filter-end';
+/** @hidden */
 export const beforeDelete: string = 'before-delete';
 /** @hidden */
 export const pathDrag: string = 'path-drag';

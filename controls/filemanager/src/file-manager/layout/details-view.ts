@@ -32,11 +32,10 @@ export class DetailsView {
     private keyboardModule: KeyboardEvents;
     private keyboardDownModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
-    private islayoutChange: boolean = false;
     private sortItem: boolean;
     private isInteracted: boolean = true;
     private isPasteOperation: boolean = false;
-    private isCloumnRefresh: boolean = false;
+    private isColumnRefresh: boolean = false;
     private clickObj: Touch;
     private sortSelectedNodes: string[];
     private emptyArgs: ReadArgs | SearchArgs;
@@ -151,7 +150,7 @@ export class DetailsView {
         for (let i: number = 0; i < columns.length; i++) {
             if (columns[i].field === fieldName) {
                 let nameWidth: string;
-                if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+                if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                     nameWidth = (this.element.clientWidth <= 500) ? '120px' : 'auto';
                 } else {
                     nameWidth = (this.element.clientWidth <= 680) ? ((fieldName === 'name') ? '120px' : '180px') : 'auto';
@@ -220,7 +219,7 @@ export class DetailsView {
         if (td) {
             td.setAttribute('title', getValue('name', args.data));
         }
-        if (this.islayoutChange && this.parent.isCut && this.parent.fileAction === 'move' &&
+        if (this.parent.isLayoutChange && this.parent.isCut && this.parent.fileAction === 'move' &&
             this.parent.selectedNodes && this.parent.selectedNodes.length !== 0) {
             if (this.parent.selectedNodes.indexOf(getValue('name', args.data)) !== -1) {
                 addBlur(args.row);
@@ -319,11 +318,11 @@ export class DetailsView {
             this.selectRecords(this.parent.selectedItems);
         }
         if (this.isPasteOperation === true) {
-            if (!this.isCloumnRefresh) {
+            if (!this.isColumnRefresh) {
                 this.selectRecords(this.parent.pasteNodes);
                 this.isPasteOperation = false;
             } else {
-                this.isCloumnRefresh = false;
+                this.isColumnRefresh = false;
             }
         }
         if (this.parent.createdItem) {
@@ -369,8 +368,8 @@ export class DetailsView {
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        this.parent.isLayoutChange = false;
         hideSpinner(this.parent.element);
-        this.islayoutChange = false;
         this.checkEmptyDiv(this.emptyArgs);
     }
 
@@ -469,11 +468,11 @@ export class DetailsView {
             let len: number = this.gridObj.columns.length;
             let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
             if (columnData[len - 1].field) {
-                if (columnData[len - 1].field === 'filterPath') {
+                if (columnData[len - 1].field === 'filterPath' && !this.parent.isFiltered) {
                     this.gridObj.columns.pop();
                     this.gridObj.refreshColumns();
-                    this.isCloumnRefresh = true;
-                }
+                    this.isColumnRefresh = true;
+                } else { this.updatePathColumn(); }
             }
         }
         removeBlur(this.parent);
@@ -485,6 +484,22 @@ export class DetailsView {
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
         }
         this.emptyArgs = args;
+    }
+
+    private updatePathColumn(): void {
+        let len: number = this.gridObj.columns.length;
+        let columnData: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
+        if (columnData[len - 1].field && columnData[len - 1].field !== 'filterPath' &&
+            this.parent.isFiltered && !this.parent.isMobile) {
+            let pathColumn: ColumnModel = {
+                field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto'
+            };
+            (<ColumnModel[]>this.gridObj.columns).push(pathColumn);
+            this.adjustWidth((<Column[]>this.gridObj.columns), 'filterPath');
+            this.adjustWidth((<Column[]>this.gridObj.columns), 'name');
+            this.gridObj.refreshColumns();
+            this.isColumnRefresh = true;
+        }
     }
 
     private checkEmptyDiv(args: ReadArgs | SearchArgs): void {
@@ -534,7 +549,7 @@ export class DetailsView {
                     }
                 } else {
                     let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
-                    if (val === '') {
+                    if (val === '' && !this.parent.isFiltered) {
                         let id: string = getValue('id', data);
                         let newPath: string = this.parent.path + (isNOU(id) ? name : id) + '/';
                         this.parent.setProperties({ path: newPath }, true);
@@ -545,6 +560,7 @@ export class DetailsView {
                     } else {
                         openSearchFolder(this.parent, data);
                     }
+                    this.parent.isFiltered = false;
                 }
                 this.element.focus();
             }
@@ -554,11 +570,12 @@ export class DetailsView {
     /* istanbul ignore next */
     private onLayoutChange(args: ReadArgs): void {
         if (this.parent.view === 'Details') {
-            if (getValue('name', args) === 'layout-change') {
-                this.islayoutChange = true;
-            }
             if (!this.gridObj) {
                 this.render(args);
+            }
+            if (this.parent.isFiltered) {
+                this.updatePathColumn();
+                this.parent.setProperties({ selectedItems: [] }, true);
             }
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
             this.parent.notify(events.hideLayout, {});
@@ -578,7 +595,7 @@ export class DetailsView {
             this.parent.setProperties({ selectedItems: [] }, true);
             this.parent.notify(events.selectionChanged, {});
             this.removePathColumn();
-            if (!this.islayoutChange) {
+            if (!this.parent.isLayoutChange) {
                 this.parent.layoutSelectedItems = [];
             }
             let item: Object = { field: 'filterPath', headerText: getLocaleText(this.parent, 'Path'), minWidth: 180, width: 'auto' };
@@ -719,6 +736,7 @@ export class DetailsView {
         this.parent.on(events.openInit, this.onOpenInit, this);
         this.parent.on(events.sortColumn, this.onSortColumn, this);
         this.parent.on(events.openEnd, this.onPathChanged, this);
+        this.parent.on(events.filterEnd, this.onPathChanged, this);
         this.parent.on(events.pasteInit, this.onPasteInit, this);
         this.parent.on(events.hideLayout, this.onHideLayout, this);
         this.parent.on(events.selectAllInit, this.onSelectAllInit, this);
@@ -749,6 +767,7 @@ export class DetailsView {
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.renameInit, this.onRenameInit);
         this.parent.off(events.renameEnd, this.onPathChanged);
+        this.parent.off(events.filterEnd, this.onPathChanged);
         this.parent.off(events.openInit, this.onOpenInit);
         this.parent.off(events.sortColumn, this.onSortColumn);
         this.parent.off(events.openEnd, this.onPathChanged);
@@ -825,7 +844,7 @@ export class DetailsView {
             let gridHeaderColNames: ColumnModel[] = this.gridObj.getColumns();
             for (let i: number = 0; i < gridHeaderColNames.length; i++) {
                 if (gridHeaderColNames[i].field === 'name' || gridHeaderColNames[i].field === 'filterPath') {
-                    if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+                    if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                         if (this.element.clientWidth <= 500) {
                             gridHeaderColGroup.children[i].setAttribute('style', 'width: 120px');
                             gridContentColGroup.children[i].setAttribute('style', 'width: 120px');
@@ -933,7 +952,7 @@ export class DetailsView {
     private onSelected(args: RowSelectEventArgs): void {
         this.addFocus(this.gridObj.selectedRowIndex);
         this.parent.activeModule = 'detailsview';
-        if (!this.islayoutChange) { this.selectedRecords(); }
+        if (!this.parent.isLayoutChange || this.parent.isFiltered) { this.selectedRecords(); }
         this.parent.notify(events.selectionChanged, {});
         if (this.gridObj.getSelectedRowIndexes().length === 1) {
             this.firstItemIndex = this.gridObj.selectedRowIndex;
@@ -980,7 +999,7 @@ export class DetailsView {
             let checkItem: HTMLElement = <HTMLElement>item.querySelector('.e-checkselect');
             checkItem.focus();
         }
-        if (!this.islayoutChange) {
+        if (!this.parent.isLayoutChange) {
             this.isInteracted = true;
         }
     }
@@ -988,7 +1007,7 @@ export class DetailsView {
     private onPathColumn(): void {
         if (this.parent.view === 'Details' && !isNOU(this.gridObj)) {
             let len: number = this.gridObj.columns.length;
-            if (this.parent.breadcrumbbarModule.searchObj.element.value === '') {
+            if (this.parent.breadcrumbbarModule.searchObj.element.value === '' && !this.parent.isFiltered) {
                 let column: ColumnModel[] = JSON.parse(JSON.stringify(this.gridObj.columns));
                 if (column[len - 1].field) {
                     if (column[len - 1].field === 'filterPath') {

@@ -1,5 +1,5 @@
 import { Maps, IAnnotationRenderingEventArgs, annotationRendering, Annotation } from '../index';
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { getTemplateFunction, Size, getElementOffset, getElementByID } from '../utils/helper';
 
 /**
@@ -26,6 +26,9 @@ export class Annotations {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElementByID(secondaryID)))) {
             getElementByID(secondaryID).appendChild(annotationGroup);
+            for (let i: number = 0; i < this.map.annotations.length; i++) {
+                updateBlazorTemplate(this.map.element.id + '_ContentTemplate_' + i, 'ContentTemplate', this.map.annotations[i]);
+            }
         }
     }
 
@@ -45,9 +48,12 @@ export class Annotations {
             annotation: annotation
         };
         this.map.trigger(annotationRendering, argsData, (annotationArgs: IAnnotationRenderingEventArgs) => {
+            let blazor: string = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && templateFn(this.map).length) {
-                templateElement = Array.prototype.slice.call(templateFn(this.map));
+            if (templateFn && (!window[blazor] ? templateFn(
+                    this.map, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
+                templateElement = Array.prototype.slice.call(templateFn(
+                    !window[blazor] ? this.map : {}, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex));
                 let length: number = templateElement.length;
                 for (let i: number = 0; i < length; i++) {
                     childElement.appendChild(templateElement[i]);

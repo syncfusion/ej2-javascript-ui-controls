@@ -927,6 +927,59 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
         });
 
+        it('Resizing test case in east direction alone after refresh', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                cellSpacing: [5, 5],
+                resizableHandles: ['e-east'],
+                allowResizing: true,
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "maxSizeX": 1, "minSizeY": 1, "maxSizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "id": '4', "sizeX": 1, "sizeY": 2, "minSizeX": 1, "maxSizeX": 3, "minSizeY": 1, "maxSizeY": 3, "row": 0, "col": 4, content: generateTemplate('4') },
+                    { "id": '5', "sizeX": 1, "sizeY": 2, "minSizeX": 1, "maxSizeX": 3, "minSizeY": 1, "maxSizeY": 3, "row": 0, "col": 7, content: generateTemplate('5') },
+                    { "id": '6', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 1, "col": 8, content: generateTemplate('6') },
+                    { "id": '7', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 0, "col": 8, content: generateTemplate('7') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.refresh();
+            let resizingElement: HTMLElement = document.getElementById('0');
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-east');
+            let targetElemnt: HTMLElement = document.getElementById('1');
+            let mouseOver: any = getEventObject('MouseEvents', 'mouseover', movingElemnt, targetElemnt, 30, 60);
+            mouseOver = setMouseCordinates(mouseOver, 30, 60);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mouseover', mouseOver);
+            // (<any>gridLayOut).addHoverClass(mouseOver);
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 103, 58);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 59);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 150, 60);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 162, 58);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+        });
+
         it('Resizing test case with more rows(browser scroller enabled) south east', () => {
             gridLayOut = new DashboardLayout({
                 columns: 6,
@@ -1050,6 +1103,59 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
         });
 
+
+        it('Resizing test case in east direction alone touch after refresh', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                cellSpacing: [5, 5],
+                resizableHandles: ['e-east'],
+                allowResizing: true,
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "maxSizeX": 1, "minSizeY": 1, "maxSizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "id": '4', "sizeX": 1, "sizeY": 2, "minSizeX": 1, "maxSizeX": 3, "minSizeY": 1, "maxSizeY": 3, "row": 0, "col": 4, content: generateTemplate('4') },
+                    { "id": '5', "sizeX": 1, "sizeY": 2, "minSizeX": 1, "maxSizeX": 3, "minSizeY": 1, "maxSizeY": 3, "row": 0, "col": 7, content: generateTemplate('5') },
+                    { "id": '6', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 1, "col": 8, content: generateTemplate('6') },
+                    { "id": '7', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 0, "col": 8, content: generateTemplate('7') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.refresh();
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            let resizingElement: HTMLElement = document.getElementById('0');
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-east');
+            let targetElemnt: HTMLElement = document.getElementById('1');
+            movingElemnt.style.display = "block";
+            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 103, 58);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'touchstart', mousedown);
+            let mousemove: any = getTouchEventObject(movingElemnt, 'touchmove', 110, 59);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 150, 60);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 162, 58);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            let mouseup: any = getTouchEventObject(movingElemnt, 'touchend');
+            mouseup.type = 'touchend';
+            EventHandler.trigger(<any>(document), 'touchend', mouseup);
+            expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+        });
+
         it('intial mediaQuery true case', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -1089,6 +1195,58 @@ describe('GridLayout', () => {
                 ]
             });
             gridLayOut.appendTo('#gridlayout');
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            let resizingElement: HTMLElement = document.getElementById('0');
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-south-east');
+            let targetElemnt: HTMLElement = document.getElementById('1');
+            movingElemnt.style.display = "block";
+            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 90, 95);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'touchstart', mousedown);
+            let mousemove: any = getTouchEventObject(movingElemnt, 'touchmove', 100, 100);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 200, 130);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 210, 160);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            let mouseup: any = getTouchEventObject(movingElemnt, 'touchend');
+            mouseup.type = 'touchend';
+            EventHandler.trigger(<any>(document), 'touchend', mouseup);
+            expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').row == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').row == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+        });
+
+        it('Resizing test case in southEast expand direction alone touch after refresh', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                //     rows: 2,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "id": '4', "sizeX": 1, "sizeY": 1, "row": 0, "col": 4, content: generateTemplate('4') },
+                    { "id": '5', "sizeX": 1, "sizeY": 1, "row": 1, "col": 4, content: generateTemplate('5') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.refresh();
             let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
             setCss(CellElements);
             let resizingElement: HTMLElement = document.getElementById('0');
@@ -1278,6 +1436,58 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).allowResizing).toBe(false);
         });
 
+        it('Resizing test case in west direction alone touch after refresh', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                resizableHandles: ['e-west'],
+                columns: 12,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "sizeX": 1, "sizeY": 1, "row": 0, "col": 4, content: generateTemplate('4') },
+
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.refresh();
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            setCss(CellElements);
+            let resizingElement: HTMLElement = document.getElementById('1');
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-west');
+            let targetElemnt: HTMLElement = document.getElementById('0');
+            movingElemnt.style.display = "block";
+            let mousedown: any = getTouchEventObject(movingElemnt, 'touchstart', 110, 58);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'touchstart', mousedown);
+            let mousemove: any = getTouchEventObject(movingElemnt, 'touchmove', 105, 59);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 75, 60);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            mousemove = getTouchEventObject(movingElemnt, 'touchmove', 45, 58);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            EventHandler.trigger(<any>(document), 'touchmove', mousemove);
+            let mouseup: any = getTouchEventObject(movingElemnt, 'touchend');
+            mouseup.type = 'touchend';
+            EventHandler.trigger(<any>(document), 'touchend', mouseup);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').sizeX == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            gridLayOut.allowResizing = false;
+            gridLayOut.dataBind();
+            expect((<any>gridLayOut).allowResizing).toBe(false);
+        });
+
 
         it('Resizing test case for false case by dynamically changing touch', () => {
             gridLayOut = new DashboardLayout({
@@ -1387,6 +1597,57 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).allowResizing).toBe(false);
         });
 
+        it('Resizing test case in west direction alone after refreshing', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                resizableHandles: ['e-west'],
+                columns: 12,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "sizeX": 1, "sizeY": 1, "row": 0, "col": 4, content: generateTemplate('4') },
+
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.refresh();
+            let resizingElement: HTMLElement = document.getElementById('1');
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-west');
+            let targetElemnt: HTMLElement = document.getElementById('0');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 110, 58);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 105, 59);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 75, 60);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 45, 58);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            // expect((<any>gridLayOut).getCellInstance('0').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').sizeX == 2).toBe(true);
+            // expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('layout_0').col == 4).toBe(true);
+            gridLayOut.allowResizing = false;
+            gridLayOut.dataBind();
+            expect((<any>gridLayOut).allowResizing).toBe(false);
+        });
+
         it('Resizing test case for false case by dynamically changing', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -1458,6 +1719,54 @@ describe('GridLayout', () => {
                 ]
             });
             gridLayOut.appendTo('#gridlayout');
+            let resizingElement: HTMLElement = document.getElementById('1');
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-south');
+            let targetElemnt: HTMLElement = document.getElementById('0');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 163, 103);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 162, 105);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 161, 110);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 163, 160);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').sizeY == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+        });
+
+        it('Resizing test case in south direction alone after refreshing', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                cellSpacing: [5, 5],
+                resizableHandles: ['e-south'],
+                allowResizing: true,
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "id": '4', "sizeX": 1, "sizeY": 1, "row": 0, "col": 4, content: generateTemplate('4') },
+                    { "id": '5', "sizeX": 1, "sizeY": 1, "row": 1, "col": 0, content: generateTemplate('5') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.refresh();
             let resizingElement: HTMLElement = document.getElementById('1');
             resizingElement.classList.add('e-item-hover');
             let movingElemnt: HTMLElement = resizingElement.querySelector('.e-south');

@@ -340,7 +340,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeChecked'
      */
@@ -348,7 +347,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeChecking'
      */
@@ -356,7 +354,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is clicked successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeClicked'
      */
@@ -364,7 +361,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node collapses successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeCollapsed'
      */
@@ -372,7 +368,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node collapses.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeCollapsing'
      */
@@ -423,7 +418,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node expands successfully.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeExpanded'
      */
@@ -431,7 +425,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is to be expanded.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeExpanding'
      */
@@ -446,7 +439,6 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers before the TreeView node is selected/unselected.
-     * @deprecated
      * @event
      * @blazorProperty 'NodeSelecting'
      */

@@ -834,12 +834,11 @@ export class SparklineRenderer {
      */
     private triggerPointRender(name: string, i: number, fill: string, border: SparklineBorderModel): ISparklinePointEventArgs {
         let args: ISparklinePointEventArgs = {
-            name: name, cancel: false, border: border, fill: fill, sparkline: this.sparkline, pointIndex: i
+            name: name, cancel: false, border: border,
+            fill: fill, sparkline: this.sparkline.isBlazor ? null : this.sparkline,
+            pointIndex: i
         };
-        let blazorArgs: ISparklinePointEventArgs = {
-            name: name, cancel: false, border: border, fill: fill, pointIndex: i
-        };
-        this.sparkline.trigger(name, this.sparkline.isBlazor ? blazorArgs : args);
+        this.sparkline.trigger(name, args);
         return args;
     }
 }

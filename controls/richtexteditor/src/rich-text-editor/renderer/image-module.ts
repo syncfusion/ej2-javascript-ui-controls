@@ -1272,14 +1272,14 @@ export class Image {
                 if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
                     let reader: FileReader = new FileReader();
                     reader.addEventListener('load', (e: MouseEvent) => {
-                        let url: string = URL.createObjectURL(proxy.url(reader.result as string));
+                        let url: string = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
+                            URL.createObjectURL(proxy.url(reader.result as string));
                         proxy.uploadUrl = {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
-                            },
-                            height: {
+                            }, height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
                             }
@@ -1329,7 +1329,8 @@ export class Image {
             reader.addEventListener('load', (e: MouseEvent) => {
                 let url: IImageCommandsArgs = {
                     cssClass: (proxy.parent.insertImageSettings.display === 'inline' ? classes.CLS_IMGINLINE : classes.CLS_IMGBREAK),
-                    url: URL.createObjectURL(proxy.url(reader.result as string)),
+                    url: this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
+                        URL.createObjectURL(proxy.url(reader.result as string)),
                     width: {
                         width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                         maxWidth: proxy.parent.insertImageSettings.maxWidth

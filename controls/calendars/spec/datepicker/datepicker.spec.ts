@@ -2406,6 +2406,75 @@ describe('Datepicker', () => {
             expect(datepicker.popupObj).toBe(null);
         });
     });
+    describe('HTML attribute API at inital rendering and dynamic rendering', () => {
+        let datePicker: any;
+        beforeEach((): void => {
+            datePicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Html attributes at initial rendering', () => {
+            datePicker = new DatePicker({ htmlAttributes:{placeholder:"Choose the date", class: "sample" } });
+            datePicker.appendTo('#date');
+            expect(datePicker.element.getAttribute('placeholder')).toBe('Choose the date');
+            expect(datePicker.inputWrapper.container.classList.contains('sample')).toBe(true);
+        });
+        it('Pass multiple attributes dynamically', () => {
+            datePicker = new DatePicker({ value: new Date("12/12/2016") });
+            datePicker.appendTo('#date');
+            datePicker.htmlAttributes = { class:"sample", readonly: "true", disabled: "true"};
+            datePicker.dataBind();
+            expect(datePicker.element.value).toBe('12/12/2016');
+            expect(datePicker.inputWrapper.container.classList.contains('sample')).toBe(true);
+            expect(datePicker.element.hasAttribute('readonly')).toBe(true);
+            expect(datePicker.element.hasAttribute('disabled')).toBe(true);
+        });
+        it('Dynamically change attributes through htmlAttributes API', () => {
+            datePicker = new DatePicker({ value: new Date("12/12/2016") });
+            datePicker.appendTo('#date');
+            datePicker.inputElement.value = "10/12/2016";
+            datePicker.htmlAttributes = { class:"sample" };
+            datePicker.dataBind();
+            expect(datePicker.element.value).toBe('10/12/2016');
+        });
+        it('Dynamically change multiple attributes through htmlAttributes API', () => {
+            datePicker = new DatePicker({ value: new Date("12/12/2019") });
+            datePicker.appendTo('#date');
+            datePicker.htmlAttributes = { class:"sample" , max:'10/20/19', min:'10/5/19'};
+            datePicker.dataBind();
+            expect(datePicker.element.value).toBe("12/12/2019");
+            expect(datePicker.element.getAttribute('max')).toBe('10/20/19');
+            expect(datePicker.element.getAttribute('min')).toBe('10/5/19');
+        });
+        it('Pass null value in htmlAttributes', () => {
+            datePicker = new DatePicker({ value: new Date("12/12/2016") });
+            datePicker.appendTo('#date');
+            datePicker.htmlAttributes = { null: "null"};
+            datePicker.dataBind();
+            expect(datePicker.element.value).toBe('12/12/2016');
+        });
+        it('Pass undefined in htmlAttributes', () => {
+            datePicker = new DatePicker({ value: new Date("12/12/2016") });
+            datePicker.appendTo('#date');
+            datePicker.htmlAttributes = { undefined: "undefined"};
+            datePicker.dataBind();
+            expect(datePicker.element.value).toBe('12/12/2016');
+        });
+        it('Pass empty value in htmlAttributes', () => {
+            datePicker = new DatePicker({ value: new Date("12/12/2016") });
+            datePicker.appendTo('#date');
+            datePicker.inputElement.value = "10/12/2016";
+            datePicker.htmlAttributes = {};
+            datePicker.dataBind();
+            expect(datePicker.element.value).toBe('10/12/2016');
+        });
+    });
     describe('keyboard events', () => {
         let datePicker: any;
         let keyEventArgs: any = {

@@ -1056,9 +1056,11 @@ class ToolBase {
     }
     endAction() {
         //remove helper  
-        this.commandHandler.tool = '';
-        if (this.helper) {
-            this.commandHandler.remove(this.helper);
+        if (this.commandHandler) {
+            this.commandHandler.tool = '';
+            if (this.helper) {
+                this.commandHandler.remove(this.helper);
+            }
         }
         this.commandHandler = null;
         this.currentElement = null;
@@ -12422,6 +12424,8 @@ class PdfViewerBase {
         }
         if (this.pageCount > 0) {
             this.unloadDocument(this);
+            // tslint:disable-next-line
+            this.textLayer.characterBound = new Array();
         }
         this.windowSessionStorageClear();
         if (this.pinchZoomStorage) {
@@ -13687,6 +13691,8 @@ class PdfViewerBase {
             // tslint:disable-next-line
             textContent: data['textContent'], textBounds: data['textBounds'], pageText: data['pageText'], rotation: data['rotation'], scaleFactor: data['scaleFactor']
         };
+        // tslint:disable-next-line
+        this.textLayer.characterBound[pageIndex] = data['characterBounds'];
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.magnificationModule ? this.pdfViewer.magnificationModule.checkZoomFactor() : true) {
             this.manageSessionStorage(pageIndex, storeObject);
@@ -14508,6 +14514,11 @@ class TextLayer {
     constructor(pdfViewer, pdfViewerBase) {
         // tslint:disable-next-line
         this.textBoundsArray = [];
+        /**
+         * @private
+         */
+        // tslint:disable-next-line
+        this.characterBound = [];
         this.closeNotification = () => {
             this.notifyDialog.hide();
         };
@@ -14582,6 +14593,9 @@ class TextLayer {
                 // tslint:disable-next-line
                 let bounds;
                 let textDiv = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + i);
+                if (isNullOrUndefined(textDiv)) {
+                    break;
+                }
                 if (textBounds) {
                     bounds = textBounds[i];
                     if (bounds) {
@@ -14610,6 +14624,9 @@ class TextLayer {
         }
         else {
             textLayer.parentElement.removeChild(textLayer);
+        }
+        if (this.pdfViewer.textSearch) {
+            this.pdfViewer.textSearch.resizeSearchElements(pageNumber);
         }
     }
     applyTextRotation(scale, textDiv, rotation, textRotation) {
@@ -15836,6 +15853,9 @@ class Magnification {
         this.clearRerenderTimer();
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.clearTextSelection();
+        }
+        if (this.pdfViewer.textSearchModule) {
+            this.pdfViewer.textSearchModule.clearAllOccurrences();
         }
         let scrollValue = this.pdfViewerBase.viewerContainer.scrollTop;
         this.isAutoZoom = false;
@@ -25033,8 +25053,9 @@ class TextSearch {
         }
         this.clearAllOccurrences();
         if (inputString !== '') {
-            if (this.searchCollection[this.searchPageIndex] && inputString === this.searchString) {
-                if (this.searchCollection[this.searchPageIndex].length === 0) {
+            // tslint:disable-next-line
+            if (this.searchMatches[this.searchPageIndex] && inputString === this.searchString) {
+                if (this.searchMatches[this.searchPageIndex].length === 0) {
                     this.initSearch(this.searchPageIndex, false);
                 }
                 else {
@@ -25063,9 +25084,9 @@ class TextSearch {
         if (this.searchString) {
             this.clearAllOccurrences();
             this.searchIndex = this.searchIndex + 1;
-            if (this.searchCollection[this.searchPageIndex]) {
+            if (this.searchMatches[this.searchPageIndex]) {
                 // tslint:disable-next-line:max-line-length
-                if (this.searchIndex >= this.searchCollection[this.searchPageIndex].length || this.searchPageIndex !== this.pdfViewerBase.currentPageNumber - 1) {
+                if (this.searchIndex >= this.searchMatches[this.searchPageIndex].length || this.searchPageIndex !== this.pdfViewerBase.currentPageNumber - 1) {
                     this.searchIndex = 0;
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
                     this.initSearch(this.searchPageIndex, false);
@@ -25110,13 +25131,16 @@ class TextSearch {
         let storedData = this.pdfViewerBase.getStoredData(pageIndex);
         let pageText = null;
         let textContents = null;
+        // tslint:disable-next-line
+        let characterBounds = null;
         if (storedData) {
             // tslint:disable-next-line
             pageText = storedData['pageText'];
             // tslint:disable-next-line
             textContents = storedData['textContent'];
+            characterBounds = this.pdfViewerBase.textLayer.characterBound[pageIndex];
             this.textContents[pageIndex] = textContents;
-            this.getPossibleMatches(pageIndex, this.searchString, pageText, textContents, isSinglePageSearch);
+            this.getPossibleMatches(pageIndex, this.searchString, pageText, textContents, isSinglePageSearch, characterBounds);
         }
         else {
             if (!isSinglePageSearch) {
@@ -25124,8 +25148,8 @@ class TextSearch {
             }
         }
     }
-    // tslint:disable-next-line:max-line-length
-    getPossibleMatches(pageIndex, searchString, pageString, textContents, isSinglePageSearch) {
+    // tslint:disable-next-line
+    getPossibleMatches(pageIndex, searchString, pageString, textContents, isSinglePageSearch, characterBounds) {
         let pageText = pageString;
         let searchText = searchString;
         let queryLength = searchString.length;
@@ -25135,15 +25159,30 @@ class TextSearch {
         }
         let matches = [];
         let matchIndex = -queryLength;
+        let newIndex = -queryLength;
         while (matchIndex !== 0) {
             if (searchText === '' || searchText === ' ' || !searchText) {
                 break;
             }
             matchIndex = pageText.indexOf(searchText, matchIndex + queryLength);
-            if (matchIndex === -1) {
+            if (searchText.indexOf(' ') !== -1) {
+                let newString = searchString.replace(' ', '\r\n');
+                newIndex = pageText.indexOf(newString, newIndex + queryLength);
+                if (!(newIndex <= -1)) {
+                    if (newIndex < matchIndex) {
+                        matches.push(newIndex);
+                    }
+                }
+            }
+            if (matchIndex <= -1 && newIndex <= -1) {
                 break;
             }
-            matches.push(matchIndex);
+            if (!(matchIndex <= -1)) {
+                matches.push(matchIndex);
+            }
+            if (newIndex > matchIndex && !(newIndex <= -1)) {
+                matches.push(newIndex);
+            }
         }
         this.searchMatches[pageIndex] = matches;
         if (!isSinglePageSearch) {
@@ -25159,7 +25198,7 @@ class TextSearch {
                 }
                 if ((this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
                     // tslint:disable-next-line:max-line-length
-                    if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
+                    if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
@@ -25169,7 +25208,7 @@ class TextSearch {
                     this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
                 }
             }
-            this.convertMatches(pageIndex, queryLength, textContents, isSinglePageSearch);
+            this.highlightSearchedTexts(pageIndex, isSinglePageSearch);
         }
         else {
             if (!isSinglePageSearch) {
@@ -25185,20 +25224,20 @@ class TextSearch {
                 else {
                     let searchPageIndex = this.getSearchPage(pageIndex);
                     // tslint:disable-next-line:max-line-length
-                    if (!this.searchCollection[this.searchPageIndex] && this.searchCollection.length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
+                    if (!this.searchMatches[this.searchPageIndex] && this.searchMatches.length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         // tslint:disable-next-line:max-line-length
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
                         // tslint:disable-next-line:max-line-length
                     }
-                    else if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
+                    else if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
                         if (this.isPrevSearch) {
                             // tslint:disable-next-line:max-line-length
                             if (!this.isMessagePopupOpened) {
                                 this.onMessageBoxOpen();
                             }
-                            this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
+                            this.searchPageIndex = searchPageIndex;
                             this.searchedPages = [];
                             this.searchIndex = -1;
                         }
@@ -25206,7 +25245,7 @@ class TextSearch {
                             if (!this.isMessagePopupOpened) {
                                 this.onMessageBoxOpen();
                             }
-                            this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
+                            this.searchPageIndex = searchPageIndex;
                             this.searchedPages = [];
                             this.searchIndex = 0;
                         }
@@ -25220,14 +25259,14 @@ class TextSearch {
         let pageNumber = null;
         if (this.isPrevSearch) {
             for (let i = pageIndex; i >= 0; i--) {
-                if (i !== pageIndex && this.searchCollection[i]) {
+                if (i !== pageIndex && this.searchMatches[i]) {
                     pageNumber = i;
                     break;
                 }
             }
             if (!pageNumber) {
                 for (let j = this.pdfViewerBase.pageCount - 1; j > pageIndex; j--) {
-                    if (this.searchCollection[j]) {
+                    if (this.searchMatches[j]) {
                         pageNumber = j;
                         break;
                     }
@@ -25236,14 +25275,14 @@ class TextSearch {
         }
         else {
             for (let i = pageIndex; i < this.pdfViewerBase.pageCount; i++) {
-                if (i !== pageIndex && this.searchCollection[i]) {
+                if (i !== pageIndex && this.searchMatches[i]) {
                     pageNumber = i;
                     break;
                 }
             }
             if (!pageNumber) {
                 for (let j = 0; j < pageIndex; j++) {
-                    if (this.searchCollection[j]) {
+                    if (this.searchMatches[j]) {
                         pageNumber = j;
                         break;
                     }
@@ -25252,142 +25291,106 @@ class TextSearch {
         }
         return pageNumber;
     }
-    convertMatches(pageIndex, queryLength, textContents, isSinglePageSearch) {
-        let m = 0;
-        let matches = this.searchMatches[pageIndex];
-        let divIndex = 0;
-        let end = textContents.length - 1;
-        let matchCollection = [];
-        for (let i = 0; i < matches.length; i++) {
-            let matchIndex = matches[i];
-            while (m !== end && matchIndex >= (divIndex + textContents[m].split('\r\n')[0].length)) {
-                divIndex += textContents[m].split('\r\n')[0].length;
-                m++;
-            }
-            let match = {
-                begin: {
-                    divId: m,
-                    offsetValue: matchIndex - divIndex,
-                }
-            };
-            matchIndex += queryLength;
-            while (m !== end && matchIndex > (divIndex + textContents[m].length)) {
-                divIndex += textContents[m].length;
-                m++;
-            }
-            match.end = {
-                divId: m,
-                offsetValue: matchIndex - divIndex,
-            };
-            matchCollection.push(match);
-        }
-        if (this.searchCollection.length === 0) {
-            this.currentSearchIndex = pageIndex;
-        }
-        this.searchCollection[pageIndex] = matchCollection;
-        this.highlightSearchedTexts(pageIndex, isSinglePageSearch);
-    }
     highlightSearchedTexts(pageIndex, isSinglePageSearch) {
-        let matches = this.searchCollection[pageIndex];
-        let prevEnd = null;
         // tslint:disable-next-line
+        let matches = this.searchMatches[pageIndex];
         let scrollPoint = { y: -100, x: -100 };
-        let startId;
         let className;
-        for (let i = 0; i < matches.length; i++) {
-            let match = matches[i];
-            // tslint:disable-next-line
-            let start = match.begin;
-            // tslint:disable-next-line
-            let end = match.end;
-            if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
-                className = 'e-pv-search-text-highlight';
-                startId = start.divId;
-            }
-            else {
-                className = 'e-pv-search-text-highlightother';
-            }
-            if (!prevEnd || start.divId !== prevEnd.divId) {
-                if (prevEnd !== null) {
-                    // tslint:disable-next-line:max-line-length
-                    this.addSpanForSearch(pageIndex, parseFloat(prevEnd.divId.toString()), parseFloat(prevEnd.offsetValue.toString()), undefined, null);
+        // tslint:disable-next-line
+        let characterBounds = this.pdfViewerBase.textLayer.characterBound[pageIndex];
+        if (characterBounds) {
+            for (let i = 0; i < matches.length; i++) {
+                if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
+                    className = 'e-pv-search-text-highlight';
                 }
-                this.beginText(start, pageIndex, null);
-            }
-            else {
-                // tslint:disable-next-line:max-line-length
-                this.addSpanForSearch(pageIndex, parseFloat(prevEnd.divId.toString()), parseFloat(prevEnd.offsetValue.toString()), parseFloat(start.offsetValue.toString()), null);
-            }
-            if (start.divId === end.divId) {
-                this.addSpanForSearch(pageIndex, start.divId, start.offsetValue, end.offsetValue, className);
-            }
-            else {
-                this.addSpanForSearch(pageIndex, start.divId, start.offsetValue, undefined, className);
-                for (let k = start.divId + 1; k < end.divId; k++) {
-                    this.addSpanForSearch(pageIndex, k, 0, undefined, className + ' middle');
+                else {
+                    className = 'e-pv-search-text-highlightother';
                 }
-                this.beginText(end, pageIndex, className);
+                this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className);
             }
-            prevEnd = end;
-        }
-        if (prevEnd) {
-            // tslint:disable-next-line:max-line-length
-            this.addSpanForSearch(pageIndex, parseFloat(prevEnd.divId.toString()), parseFloat(prevEnd.offsetValue.toString()), undefined, null);
-        }
-        if (pageIndex === this.searchPageIndex && !isSinglePageSearch) {
-            let element = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + startId);
-            if (element) {
-                let targetScrollElement = this.getScrollElement(element);
-                this.scrollToSearchStr(targetScrollElement, scrollPoint);
-            }
-            else {
-                this.pdfViewerBase.updateScrollTop(pageIndex);
-                let element = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + startId);
-                let targetScrollElement = this.getScrollElement(element);
-                this.scrollToSearchStr(targetScrollElement, scrollPoint);
+            if (pageIndex === this.searchPageIndex && !isSinglePageSearch) {
+                let element = this.pdfViewerBase.getElement('_searchtext_' + pageIndex + '_' + this.searchIndex);
+                if (element) {
+                    let targetScrollElement = this.getScrollElement(element);
+                    this.scrollToSearchStr(targetScrollElement, scrollPoint);
+                }
+                else {
+                    this.pdfViewerBase.updateScrollTop(pageIndex);
+                    let element = this.pdfViewerBase.getElement('_searchtext_' + pageIndex + '_' + this.searchIndex);
+                    if (element) {
+                        let targetScrollElement = this.getScrollElement(element);
+                        this.scrollToSearchStr(targetScrollElement, scrollPoint);
+                    }
+                }
             }
         }
     }
     // tslint:disable-next-line
-    beginText(start, pageIndex, className) {
-        let divIndex = parseFloat(start.divId);
-        let textDiv = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + divIndex);
-        if (textDiv) {
-            // tslint:disable-next-line
-            this.tempElementStorage = new Array();
-            for (let i = 0; i < textDiv.childNodes.length; i++) {
-                // tslint:disable-next-line:max-line-length
-                let ele = { text: textDiv.childNodes[i].textContent, classString: textDiv.childNodes[i].className };
-                this.tempElementStorage.push(ele);
-            }
-            textDiv.textContent = '';
-            this.addSpanForSearch(pageIndex, divIndex, 0, start.offsetValue, className);
+    addDivForSearch(index, pageIndex, characterBounds, queryLength, className) {
+        let textLayer = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
+        if (isNullOrUndefined(textLayer) && className === 'e-pv-search-text-highlight') {
+            this.pdfViewer.navigation.goToPage(pageIndex + 1);
+        }
+        let count = this.searchMatches[pageIndex][index];
+        let initial = count;
+        let divCount = 0;
+        while (count < initial + queryLength) {
+            count = this.addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount);
+            divCount++;
         }
     }
-    // tslint:disable-next-line:max-line-length
-    addSpanForSearch(pageIndex, divIndex, fromOffset, toOffset, className) {
-        let divTextContent;
-        let textDiv = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + divIndex);
-        if (textDiv) {
-            let textContent = this.textContents[pageIndex];
-            divTextContent = textContent[divIndex].substring(fromOffset, toOffset);
-            let node = document.createTextNode(divTextContent);
-            if (className) {
-                let spanElement = document.createElement('span');
-                spanElement.className = className;
-                if (spanElement.classList.contains('middle')) {
-                    textDiv.textContent = '';
-                }
-                spanElement.appendChild(node);
-                textDiv.appendChild(spanElement);
+    // tslint:disable-next-line
+    addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount) {
+        let height = 0;
+        let width = 0;
+        let top = 0;
+        let left = 0;
+        left = characterBounds[count].X;
+        top = characterBounds[count].Y;
+        let v = 0;
+        if ((count - initial) !== 0) {
+            v = count - initial;
+            queryLength += 1;
+        }
+        for (v = v; v < queryLength; v++) {
+            // tslint:disable-next-line
+            let charBound = characterBounds[count];
+            if (left > charBound.X) {
+                break;
             }
-            else {
-                if (this.pdfViewer.textSelectionModule.isTextSelection) {
-                    this.searchOnSelection(textDiv, node, divTextContent);
-                }
-                else {
-                    textDiv.appendChild(node);
-                }
+            top = (top < charBound.Y) ? top : charBound.Y;
+            let topDifference = (top < charBound.Y) ? (charBound.Y - top) : (top - charBound.Y);
+            height = (height > (topDifference + charBound.Height)) ? height : (topDifference + charBound.Height);
+            count++;
+        }
+        let isContinuation = false;
+        if (initial + queryLength !== count) {
+            isContinuation = true;
+            width = (characterBounds[count - 1].X - left);
+        }
+        else {
+            isContinuation = false;
+            width = (characterBounds[count].X - left);
+        }
+        this.createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount);
+        return count;
+    }
+    // tslint:disable-next-line
+    createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount) {
+        let idString = '_searchtext_' + pageIndex + '_' + index;
+        if (isContinuation) {
+            idString += '_' + divCount;
+        }
+        if (!this.pdfViewerBase.getElement(idString)) {
+            let textDiv = createElement('div', { id: this.pdfViewer.element.id + idString });
+            textDiv.style.height = height * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.classList.add(className);
+            let textLayer = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
+            if (textLayer) {
+                textLayer.appendChild(textDiv);
             }
         }
     }
@@ -25403,179 +25406,6 @@ class TextSearch {
             }
         }
         return isClass;
-    }
-    addSpan(text, textDiv) {
-        let newNode = document.createTextNode(text);
-        let spanElement = document.createElement('span');
-        spanElement.className = 'e-pv-maintaincontent';
-        spanElement.appendChild(newNode);
-        textDiv.appendChild(spanElement);
-    }
-    searchOnSelection(textDiv, node, divTextContent) {
-        if (this.tempElementStorage.length === 1) {
-            if (this.tempElementStorage[0].classString) {
-                if (this.tempElementStorage[0].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                    this.addSpan(node.textContent, textDiv);
-                }
-            }
-            else {
-                textDiv.appendChild(node);
-            }
-        }
-        else {
-            if (this.tempElementStorage.length > 1) {
-                for (let i = 0; i < this.tempElementStorage.length; i++) {
-                    if (this.tempElementStorage[i].classString) {
-                        if (this.tempElementStorage[i].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                            if (this.tempElementStorage[i].text === node.textContent) {
-                                this.addSpan(node.textContent, textDiv);
-                                break;
-                            }
-                            else {
-                                if (this.tempElementStorage[i].text !== node.textContent) {
-                                    let currentString = node.textContent;
-                                    let isClassAvailable = this.isClassAvailable();
-                                    let subString;
-                                    if (isClassAvailable) {
-                                        subString = divTextContent.substring(0, this.tempElementStorage[i].text.length);
-                                    }
-                                    else {
-                                        subString = divTextContent.substring(0, this.tempElementStorage[i].text.length);
-                                    } // tslint:disable-next-line
-                                    if (this.tempElementStorage[i].text.indexOf(currentString) !== -1 && !this.tempElementStorage[i].classString) {
-                                        this.addSpan(currentString, textDiv);
-                                        break; // tslint:disable-next-line
-                                    }
-                                    else if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && this.tempElementStorage[i].classString && subString !== '') {
-                                        if (this.tempElementStorage[i].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                                            this.addSpan(subString, textDiv); // tslint:disable-next-line
-                                            let nextSubString = divTextContent.substring(this.tempElementStorage[i].text.length, divTextContent.length);
-                                            if (this.tempElementStorage[i + 1]) { // tslint:disable-next-line
-                                                if (this.tempElementStorage[i + 1].text.indexOf(nextSubString) !== -1 && !this.tempElementStorage[i + 1].classString && nextSubString !== "") {
-                                                    node.textContent = nextSubString;
-                                                    textDiv.appendChild(node);
-                                                }
-                                            }
-                                            break;
-                                        }
-                                    }
-                                    else if (this.tempElementStorage[i + 1]) {
-                                        if (divTextContent === (this.tempElementStorage[i].text + this.tempElementStorage[i + 1].text)) {
-                                            this.addSpan(this.tempElementStorage[i].text, textDiv);
-                                            node.textContent = this.tempElementStorage[i + 1].text;
-                                            textDiv.appendChild(node);
-                                            break;
-                                        }
-                                        else if (this.tempElementStorage[i].text.indexOf(divTextContent) !== -1) {
-                                            this.addSpan(divTextContent, textDiv);
-                                            break;
-                                        }
-                                        else { // tslint:disable-next-line
-                                            let subString = this.tempElementStorage[i].text.substring(textDiv.textContent.length, currentString.length);
-                                            if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && this.tempElementStorage[i].classString && // tslint:disable-next-line
-                                                subString !== '' && !this.tempElementStorage[i + 1].classString && divTextContent.indexOf(subString) !== -1) {
-                                                this.addSpan(subString, textDiv);
-                                                continue;
-                                            }
-                                        }
-                                    }
-                                    else {
-                                        if (this.tempElementStorage[i].text.indexOf(divTextContent) !== -1) {
-                                            this.addSpan(node.textContent, textDiv);
-                                            break;
-                                        }
-                                        else if (this.tempElementStorage[i].text.indexOf(divTextContent.replace('\r\n', '')) !== -1) {
-                                            this.addSpan(divTextContent, textDiv);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else {
-                        if (this.tempElementStorage[i].text !== node.textContent) {
-                            let currentString = node.textContent;
-                            if (currentString !== '') {
-                                let isClassAvailable = this.isClassAvailable();
-                                let subString;
-                                if (isClassAvailable) {
-                                    subString = divTextContent.substring(0, this.tempElementStorage[i].text.length);
-                                }
-                                else { // tslint:disable-next-line
-                                    subString = divTextContent.substring(0, this.tempElementStorage[i].text.length - textDiv.textContent.length);
-                                } // tslint:disable-next-line
-                                if (subString === currentString && !this.tempElementStorage[i].classString && this.tempElementStorage[i].text.indexOf(subString) !== -1) {
-                                    node.textContent = subString;
-                                    textDiv.appendChild(node);
-                                    break;
-                                }
-                                else { // tslint:disable-next-line
-                                    if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && this.tempElementStorage[i].classString) {
-                                        if (this.tempElementStorage[i].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                                            this.addSpan(subString, textDiv);
-                                            break;
-                                        }
-                                    }
-                                    else if (this.tempElementStorage[i + 1]) { // tslint:disable-next-line
-                                        let balanceString = currentString.substring(this.tempElementStorage[i].text.length, currentString.length);
-                                        let nextString = this.tempElementStorage[i + 1].text.substring(0, balanceString.length);
-                                        if (currentString === (subString + this.tempElementStorage[i + 1].text)) {
-                                            node.textContent = subString;
-                                            textDiv.appendChild(node);
-                                            this.addSpan(this.tempElementStorage[i + 1].text, textDiv);
-                                            break;
-                                        }
-                                        else if (currentString === (subString + nextString) && nextString !== '') {
-                                            node.textContent = subString;
-                                            textDiv.appendChild(node);
-                                            this.addSpan(balanceString, textDiv);
-                                            break;
-                                        }
-                                        else { // tslint:disable-next-line
-                                            if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && !this.tempElementStorage[i].classString && subString !== '') {
-                                                let newSubString = divTextContent.substring(0, subString.length);
-                                                node.textContent = newSubString;
-                                                textDiv.appendChild(node); // tslint:disable-next-line
-                                                let nextNewSubString = divTextContent.substring(subString.length, divTextContent.length);
-                                                if (nextNewSubString !== '' && this.tempElementStorage[i + 1].text.indexOf(nextNewSubString) !== -1 && this.tempElementStorage[i + 1].classString) {
-                                                    this.addSpan(nextNewSubString, textDiv);
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    else { // tslint:disable-next-line
-                                        if (this.tempElementStorage[i].text.indexOf(currentString) !== -1 && !this.tempElementStorage[i].classString) {
-                                            node.textContent = currentString;
-                                            textDiv.appendChild(node);
-                                            break; // tslint:disable-next-line
-                                        }
-                                        else if (this.tempElementStorage[i].text.indexOf(currentString.replace('\r\n', '')) !== -1 && !this.tempElementStorage[i].classString) {
-                                            node.textContent = currentString;
-                                            textDiv.appendChild(node);
-                                            break;
-                                        }
-                                        else {
-                                            if (divTextContent.indexOf(this.tempElementStorage[i].text) !== -1) {
-                                                node.textContent = this.tempElementStorage[i].text;
-                                                textDiv.appendChild(node);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            textDiv.appendChild(node);
-                        }
-                    }
-                }
-            }
-            else {
-                textDiv.appendChild(node);
-            }
-        }
     }
     getScrollElement(element) {
         let targetElement = element;
@@ -25618,6 +25448,23 @@ class TextSearch {
     /**
      * @private
      */
+    resizeSearchElements(pageIndex) {
+        let searchDivs = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_searchtext_' + pageIndex + '"]');
+        for (let i = 0; i < searchDivs.length; i++) {
+            let textDiv = searchDivs[i];
+            // tslint:disable-next-line
+            textDiv.style.width = (parseFloat(textDiv.style.width) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            // tslint:disable-next-line
+            textDiv.style.height = (parseFloat(textDiv.style.height) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            // tslint:disable-next-line
+            textDiv.style.top = (parseFloat(textDiv.style.top) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            // tslint:disable-next-line
+            textDiv.style.left = (parseFloat(textDiv.style.left) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+        }
+    }
+    /**
+     * @private
+     */
     highlightOtherOccurrences(pageNumber) {
         this.initSearch(pageNumber, true);
     }
@@ -25629,9 +25476,14 @@ class TextSearch {
             this.highlightOtherOccurrences(i);
         }
     }
+    /**
+     * @private
+     */
     clearAllOccurrences() {
-        this.pdfViewerBase.textLayer.clearDivSelection();
-        this.applyTextSelection();
+        let searchTextDivs = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_searchtext_"]');
+        for (let i = 0; i < searchTextDivs.length; i++) {
+            searchTextDivs[i].parentElement.removeChild(searchTextDivs[i]);
+        }
     }
     /**
      * @private
@@ -25751,8 +25603,6 @@ class TextSearch {
         this.searchedPages = [];
         // tslint:disable-next-line
         this.searchMatches = new Array();
-        // tslint:disable-next-line
-        this.searchCollection = new Array();
     }
     /**
      * @private
@@ -25828,7 +25678,7 @@ class TextSearch {
      * @private
      */
     destroy() {
-        this.searchCollection = undefined;
+        this.searchMatches = undefined;
     }
     /**
      * @private

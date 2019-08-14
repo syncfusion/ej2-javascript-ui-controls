@@ -312,5 +312,27 @@ describe('Toolbar - view html', () => {
             expect((rteObj as any).inputElement.innerHTML === '<p><br></p>').toBe(true);
         });
     });
+    describe('Checking the placeholder for Iframe mode', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                placeholder: 'Type something',
+                iframeSettings: { enable: true }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        });
+        it('If the placeholder is null or set', () => {
+            expect((rteObj as any).value).toBe(null);
+            expect((rteObj as any).placeholder).toBe("Type something");
+            rteObj.showSourceCode();
+            expect((rteObj as any).element.querySelector("rte-placeholder")).toBe(null);
+        });
+    });
 
 });

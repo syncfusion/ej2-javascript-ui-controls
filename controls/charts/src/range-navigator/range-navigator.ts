@@ -731,14 +731,6 @@ export class RangeNavigator extends Component<HTMLElement> {
                     clearTimeout(this.resizeTo);
                     return;
                 }
-                if (this.stockChart) {
-                    for (let i: number = 0; i < arg.rangeNavigator.series.length; i++) {
-                        arg.rangeNavigator.series[i].dataSource = this.stockChart.tempDataSource[i] || this.stockChart.blazorDataSource[i];
-                    }
-                    if (this.stockChart.dataSource) {
-                        arg.rangeNavigator.dataSource = this.stockChart.tempDataSource[0];
-                    }
-                }
                 this.createRangeSvg();
                 arg.currentSize = this.availableSize;
                 this.trigger('resized', arg);

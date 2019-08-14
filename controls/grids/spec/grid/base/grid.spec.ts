@@ -11,9 +11,10 @@ import { Column } from '../../../src/grid/models/column';
 import { Page } from '../../../src/grid/actions/page';
 import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { createGrid, destroy } from '../base/specutil.spec';
+import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
 import { keyPressed, KeyboardEventArgs } from '../../../src';
+import { Selection } from '../../../src/grid/actions/selection';
 Grid.Inject(Page);
 
 describe('Grid base module', () => {
@@ -23,7 +24,6 @@ describe('Grid base module', () => {
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
                 this.skip(); //Skips test (in Chai)
             }
             gridObj = createGrid(
@@ -861,7 +861,6 @@ describe('Grid base module', () => {
             beforeAll((done: Function) => {
                 const isDef = (o: any) => o !== undefined && o !== null;
                     if (!isDef(window.performance)) {
-                        console.log("Unsupported environment, window.performance.memory is unavailable");
                         this.skip(); //Skips test (in Chai)
                     }
                 gridObj = createGrid(
@@ -891,8 +890,6 @@ describe('Grid base module', () => {
         });
     });
 
-
-});
     describe('Capturing keypress events', () => {
         let gridObj: Grid;
         let preventDefault: Function = new Function();
@@ -943,5 +940,255 @@ describe('Grid base module', () => {
         });
     });
 
+   describe('Grouping functionalites => ', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                this.skip(); //Skips test (in Chai)
+            }
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'Freight', headerText: 'Freight' },
+                    { field: 'ShipCity', headerText: 'Ship City' },
+                    { field: 'ShipCountry', headerText: 'Ship Country' }],
+                    allowGrouping: true,
+                    allowSelection: true,
+                    groupSettings: { showGroupedColumn: true },
+                    allowPaging: true,
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete,
+                }, done);
+        });
 
+        it('collapseAll method testing', () => {
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordplusexpand');
+            gridObj.groupModule.expandCollapseRows(expandElem[1]);
+            gridObj.groupModule.expandCollapseRows(expandElem[0]);
+            gridObj.groupCollapseAll();
+            expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(0);
+        });
+        
+        it('expandAll method testing', () => {
+            gridObj.groupExpandAll();
+            expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(12);
+        });
 
+        it('expandCollapse rows method testing', () => {
+            let expandElem = gridObj.getContent().querySelectorAll('.e-recordplusexpand');
+            gridObj.groupModule.expandCollapseRows(expandElem[1]);
+            expect(gridObj.getContent().querySelectorAll('tr:not([style*="display: none"])').length).toBe(12);
+          
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
+        });
+    });
+
+    describe('Open column chooser', () => {
+        let gridObj: Grid;
+        let beforeOpenColumnChooser: () => void;
+
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [{ field: 'OrderID' }, { field: 'CustomerID', visible: false },
+                    { field: 'EmployeeID' }, { field: 'Freight' },
+                    { field: 'ShipCity', showInColumnChooser: false }],
+                    allowPaging: true,
+                    showColumnChooser: true,
+                    toolbar: ['ColumnChooser'],
+                    pageSettings: { pageSize: 5 },
+                    beforeOpenColumnChooser: beforeOpenColumnChooser,
+                }, done);
+        });
+        it('openColumnChooser testing', (done: Function) => {
+            setTimeout(() => {
+                gridObj.openColumnChooser();
+                let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
+                let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+                cheEle.click();
+                cheEle1.click();
+                (<HTMLElement>gridObj.element.querySelector('.e-cc_okbtn')).click();
+                gridObj.openColumnChooser();
+                gridObj.openColumnChooser();
+                done();
+            }, 500);
+
+        });
+
+        afterAll(() => {
+            (<any>gridObj).columnChooserModule.destroy();
+            destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
+        });
+
+    });
+      
+        describe('Detail Module Functionalities', () => {
+            let gridObj: Grid;
+    
+            beforeAll((done: Function) => {
+                const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    this.skip(); //Skips test (in Chai)
+                }
+                gridObj = createGrid(
+                    {
+                        dataSource: filterData,
+                        allowPaging: true,
+                        detailTemplate: '#detailtemplate1',
+                        allowGrouping: true,
+                        selectionSettings: { type: 'Multiple', mode: 'Row' },
+                        allowFiltering: true,
+                        allowSorting: true,
+                        allowReordering: true,
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                            { field: 'CustomerID', headerText: 'Customer ID', width: 125 },
+                            { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+                            { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                        ]
+                    }, done);
+            });
+    
+            it('Collapse method testing', () => {
+                gridObj.detailRowModule.collapse(gridObj.getDataRows()[1].querySelector('.e-detailrowexpand'));
+                expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(0);
+            });
+
+            it('Expand method testing', () => {
+                gridObj.detailRowModule.expand(gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse'));
+                expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(0);
+            });
+    
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = null;
+            });
+        });
+
+        describe('expandAll and collapseAll in detail module ', () => {
+            let gridObj: Grid;
+            let actionComplete: () => void;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: filterData,
+                        detailTemplate: '#detailtemplate',
+                        allowPaging: true,
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                            { field: 'CustomerID', headerText: 'Customer ID', width: 125 },
+                            { field: 'Freight', width: 120, format: 'C', textAlign: 'Right' },
+                            { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                        ],
+                        actionComplete: actionComplete
+                        }, done);
+                });
+            it('actionComplete event triggerred for expandAll action complete', () => {
+                actionComplete = (args?: any): void => {
+                    expect(args.requestType).toBe('expandAllComplete');
+                }
+                gridObj.actionComplete = actionComplete;
+                gridObj.detailExpandAll();
+            });
+            it('actionComplete event triggerred for collapseAll action complete', () => {
+                actionComplete = (args?: any): void => {
+                    expect(args.requestType).toBe('collapseAllComplete');
+                }
+                gridObj.actionComplete = actionComplete;
+                gridObj.detailCollapseAll();
+            });
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = actionComplete = null;
+            });
+        });
+
+        describe('grid selection functionalities', () => {
+            let gridObj: Grid;
+            let selectionModule: Selection;
+            let rows: Element[];
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        frozenColumns: 2,
+                        frozenRows: 2,
+                        dataSource: data,
+                        columns: [
+                            { headerText: 'OrderID', field: 'OrderID' },
+                            { headerText: 'CustomerID', field: 'CustomerID' },
+                            { headerText: 'EmployeeID', field: 'EmployeeID' },
+                            { headerText: 'ShipCountry', field: 'ShipCountry' },
+                            { headerText: 'ShipCity', field: 'ShipCity' },
+                        ],
+                        allowSelection: true,
+                        selectionSettings: { type: 'Single', mode: 'Both' },
+                    }, done);
+            });
+
+            it('clear cell selection testing', () => {
+                gridObj.clearCellSelection();
+                expect(gridObj.element.querySelectorAll('.e-cellselectionbackground').length).toBe(0);
+              });
+
+            it('clear row selection testing', () => {
+                gridObj.clearRowSelection();
+                expect(gridObj.element.querySelectorAll('.e-selectionbackground').length).toBe(0);
+              });
+
+            it('selectCells testing', () => {
+                gridObj.selectCells([{ rowIndex: 0, cellIndexes: [0] }, { rowIndex: 1, cellIndexes: [1] }]);
+                expect(gridObj.element.querySelectorAll('.e-cellselectionbackground').length).toBe(0);
+              });
+
+            it('selectRowsByRange  testing', () => {
+                //selectionModule.clearRowSelection();
+                selectionModule = gridObj.selectionModule;
+                rows = gridObj.getRows();
+                gridObj.selectRowsByRange(3, 4);
+                selectionModule.selectCells([{ rowIndex: 0, cellIndexes: [0] }]);
+                //expect(rows[3].hasAttribute('aria-selected')).toBeFalsy();
+                expect(rows[0].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
+                });
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = selectionModule = rows = null;
+            });
+        });
+
+        describe('Ensure column properties while calling the getPersistData', () => {
+            let gridObj: Grid;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: data,
+                        height: 500,
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID' },
+                            { field: 'EmployeeID', headerText: 'Employee ID', foreignKeyField: 'EmployeeID', foreignKeyValue: 'ShipName' },
+                            { field: 'CustomerID', headerText: 'Customer ID', filter: { type: 'checkbox' } }
+                        ]
+                    }, done);
+            });
+            it('Collect persist data', (done: Function) => {
+                let persistData: Grid = JSON.parse(gridObj.getPersistData());
+                expect((persistData.columns[1] as Column).dataSource).toBe(undefined);
+                expect((persistData.columns[2] as Column).filter).toBe(undefined);
+                done();
+            });
+            afterAll(() => {
+                destroy(gridObj);
+            });
+        });
+    });

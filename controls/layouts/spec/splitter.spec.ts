@@ -2286,6 +2286,63 @@ describe('Splitter Control', () => {
             expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
             });
             });
+            describe('Expand Action -Check return state', () => {
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                element.style.width ='300px';
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '110px',
+                paneSettings: [
+                    { size: '75px' , collapsible : true},{ collapsible: true}
+                ],
+                width: '100%',
+                separatorSize: 4});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('Check flexGrow style', () => {
+                    (document.querySelector('.e-navigate-arrow.e-arrow-left') as HTMLElement).click();
+                    expect(splitterObj.allPanes[0].style.flexGrow === '0').toBe(true);
+                    expect(splitterObj.allPanes[1].style.flexGrow === '1').toBe(true);               
+                    (document.querySelector('.e-navigate-arrow.e-arrow-right') as HTMLElement).click();                   
+                    expect(splitterObj.allPanes[0].style.flexGrow === '0').toBe(true);               
+                });
+            });
+            
+            describe('Expand icon check- collapsible false', () => { 
+                let splitterObj: any;
+                beforeAll((): void => {
+                let element: HTMLElement = createElement('div', { id: 'default'});
+                element.style.width ='300px';
+                let child1: HTMLElement = createElement('div');
+                let child2: HTMLElement = createElement('div');
+                element.appendChild(child1);
+                element.appendChild(child2);
+                document.body.appendChild(element);
+                splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%', collapsible: true }, { size: '50%', collapsible: false }]});
+                splitterObj.appendTo(document.getElementById('default'));
+                });
+                afterAll((): void => {
+                document.body.innerHTML = '';
+                });
+                it('onRight arrow', () => {
+                expect(document.querySelector('.e-navigate-arrow.e-arrow-right').classList.contains('e-icon-hidden')).toBe(true);               
+                (document.querySelector('.e-navigate-arrow.e-arrow-left') as HTMLElement).click();
+                expect(document.querySelector('.e-navigate-arrow.e-arrow-right').classList.contains('e-icon-hidden')).toBe(false);               
+                expect(splitterObj.previousPane.classList.contains('e-collapsed')).toBe(true);
+                expect(splitterObj.nextPane.classList.contains('e-expanded')).toBe(true);
+                expect(splitterObj.previousPane.classList.contains('e-collapsible')).toBe(true);
+                (document.querySelector('.e-navigate-arrow.e-arrow-right') as HTMLElement).click();
+                expect(document.querySelector('.e-navigate-arrow.e-arrow-right').classList.contains('e-icon-hidden')).toBe(true);              
+                });
+            });
     
             describe('Expand Action with more than 2 panes', () => {
                 let splitterObj: any;

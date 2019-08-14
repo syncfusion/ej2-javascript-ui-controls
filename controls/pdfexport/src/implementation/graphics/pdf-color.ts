@@ -116,21 +116,28 @@ export class PdfColor {
             this.grayColor = color1.gray;
             this.alpha = color1.alpha;
             this.filled = (this.alpha !== 0);
-        } else if (typeof color1 === 'number' && typeof color2 === 'number' && typeof color3 === 'number' &&
-                   typeof color4 === 'undefined') {
-            this.constructor(PdfColor.maxColourChannelValue, color1, color2, color3);    //doubt-byte/float
-        } else if (typeof color1 === 'number' && typeof color2 === 'number' && typeof color3 === 'number' && typeof color4 === 'number') {
-            this.redColor = color2;
+        } else {
             this.cyanColor = 0;
-            this.greenColor = color3;
             this.magentaColor = 0;
-            this.blueColor = color4;
             this.yellowColor = 0;
             this.blackColor = 0;
             this.grayColor = 0;
-            this.alpha = color1;
-            this.filled = true;
-            this.assignCMYK(color2, color3, color4);
+            if ( typeof color4 === 'undefined') {
+                //doubt-byte/float
+               this.redColor = color1;
+               this.greenColor = color2;
+               this.blueColor = color3;
+               this.alpha = PdfColor.maxColourChannelValue;
+               this.filled = true;
+               this.assignCMYK(color1, color2, color3);
+           } else {
+               this.redColor = color2;
+               this.greenColor = color3;
+               this.blueColor = color4;
+               this.alpha = color1;
+               this.filled = true;
+               this.assignCMYK(color2, color3, color4);
+           }
         }
     }
     /**

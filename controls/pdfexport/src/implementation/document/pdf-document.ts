@@ -102,24 +102,26 @@ export class PdfDocument extends PdfDocumentBase {
     public constructor(isMerging? : boolean) {
         super();
         this.document = this;
-        if (isMerging === true || isMerging === false || typeof isMerging !== 'undefined') {
-            let objects : PdfMainObjectCollection = new PdfMainObjectCollection();
-            this.setMainObjectCollection(objects);
-            let crossTable : PdfCrossTable = new PdfCrossTable();
-            crossTable.isMerging = isMerging;
-            crossTable.document = this;
-            this.setCrossTable(crossTable);
-            let catalog : PdfCatalog = new PdfCatalog();
-            this.setCatalog(catalog);
-            objects.add(catalog);
-            catalog.position = -1;
-            this.sectionCollection = new PdfSectionCollection(this);
-            this.documentPageCollection = new PdfDocumentPageCollection(this);
-            catalog.pages = this.sectionCollection;
-        } else {
+        let isMerge : boolean = false;
+        if (typeof isMerging === 'undefined') {
             PdfDocument.cacheCollection = new PdfCacheCollection();
-            this.constructor(false);
+            isMerge = false;
+        } else {
+            isMerge = isMerging;
         }
+        let objects : PdfMainObjectCollection = new PdfMainObjectCollection();
+        this.setMainObjectCollection(objects);
+        let crossTable : PdfCrossTable = new PdfCrossTable();
+        crossTable.isMerging = isMerge;
+        crossTable.document = this;
+        this.setCrossTable(crossTable);
+        let catalog : PdfCatalog = new PdfCatalog();
+        this.setCatalog(catalog);
+        objects.add(catalog);
+        catalog.position = -1;
+        this.sectionCollection = new PdfSectionCollection(this);
+        this.documentPageCollection = new PdfDocumentPageCollection(this);
+        catalog.pages = this.sectionCollection;
     }
     //Properties
     /**

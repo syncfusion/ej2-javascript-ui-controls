@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, setValue, getValue, Ajax } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, setValue, getValue, Ajax, isBlazor, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption } from '@syncfusion/ej2-data';
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
@@ -60,7 +60,6 @@ export class DataManipulation {
       this.parent.off('dataProcessor', this.dataProcessor);
       this.parent.grid.off('sorting-begin', this.beginSorting);
     }
-
     /**
      * To destroy the dataModule
      * @return {void}
@@ -85,7 +84,8 @@ public isRemote(): boolean {
  * @hidden
  */
   public convertToFlatData(data: Object): void {
-    this.parent.flatData = <Object[]>(Object.keys(data).length === 0 ? this.parent.dataSource : []);
+    this.parent.flatData = <Object[]>(Object.keys(data).length === 0 && !(this.parent.dataSource instanceof DataManager) ?
+                           this.parent.dataSource : []);
     this.parent.parentData = [];
     let adaptorName: string = 'adaptorName';
     if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager && !(data instanceof Array)) {
@@ -152,7 +152,7 @@ public isRemote(): boolean {
         this.hierarchyData = this.selfReferenceUpdate(selfData);
       }
       if (!Object.keys(this.hierarchyData).length) {
-        this.parent.flatData = <Object[]>(this.parent.dataSource);
+        this.parent.flatData = <Object[]>(!(this.parent.dataSource instanceof DataManager) ? this.parent.dataSource : []);
       } else {
         this.createRecords(this.hierarchyData);
       }
@@ -193,11 +193,12 @@ public isRemote(): boolean {
   private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
     let records: ITreeData[] = args.result;
     let adaptorName: string = 'adaptorName';
-    if (!this.parent.hasChildMapping && !this.parentItems.length && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
+    if (!this.parent.hasChildMapping && !this.parentItems.length &&
+      (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor') && !this.parent.loadChildOnDemand)) {
       this.zerothLevelData = args;
       setValue('cancel', true, args);
     } else {
-      if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
+      if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor') && !this.parent.loadChildOnDemand) {
         for (let rec: number = 0; rec < records.length; rec++) {
           if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
             && (isNullOrUndefined(records[rec].index))) {
@@ -210,7 +211,7 @@ public isRemote(): boolean {
         this.convertToFlatData(records);
       }
     }
-    args.result = this.parent.dataSource[adaptorName] === 'BlazorAdaptor' ? this.parent.flatData : records;
+    args.result = this.parent.dataSource[adaptorName] === 'BlazorAdaptor' || this.parent.loadChildOnDemand ? this.parent.flatData : records;
     this.parent.notify('updateResults', args);
   }
   /**
@@ -219,17 +220,35 @@ public isRemote(): boolean {
    */
   private collectExpandingRecs(rowDetails: {record: ITreeData,
     rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement}): void {
+    let gridRows: HTMLTableRowElement[] = this.parent.getRows();
+    let adaptorName: string = 'adaptorName';
     let args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
     if (rowDetails.rows.length > 0) {
       rowDetails.record.expanded = true;
       for (let i: number = 0; i < rowDetails.rows.length; i++) {
         rowDetails.rows[i].style.display = 'table-row';
+        if ((isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') || !this.parent.loadChildOnDemand) {
+          let targetEle: Element = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
+          if (!isNullOrUndefined(targetEle)) {
+            addClass([targetEle], 'e-treegridexpand');
+            removeClass([targetEle], 'e-treegridcollapse');
+          }
+          let childRecord: ITreeData = this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
+          let childRows: HTMLTableRowElement[] = gridRows.filter(
+            (r: HTMLTableRowElement) =>
+              r.classList.contains(
+                'e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1)
+              )
+          );
+          if (childRows.length) {
+            this.collectExpandingRecs({ record: childRecord, rows: childRows, parentRow: rowDetails.parentRow });
+          }
+        }
         let expandingTd: Element = rowDetails.rows[i].querySelector('.e-detailrowcollapse');
         if (!isNullOrUndefined(expandingTd)) {
           this.parent.grid.detailRowModule.expand(expandingTd);
         }
       }
-      this.parent.trigger(events.expanded, args);
     } else {
       let dm: DataManager = <DataManager>this.parent.dataSource;
       let qry: Query = this.parent.grid.getDataModule().generateQuery();
@@ -271,14 +290,16 @@ public isRemote(): boolean {
   private beginSorting(): void {
     this.isSortAction = true;
   }
-  private createRecords(data: Object, parentRecords?: ITreeData): void {
+
+  private createRecords(data: Object, parentRecords?: ITreeData): ITreeData[] {
+    let treeGridData: ITreeData[] = [];
     for (let i: number = 0, len: number = Object.keys(data).length; i < len; i++) {
-      let currentData: ITreeData = data[i];
+      let currentData: ITreeData = extend({}, data[i]);
+      currentData.taskData = data[i];
       let level: number = 0;
       this.storedIndex++;
       currentData.index = this.storedIndex;
       if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
-        currentData.childRecords = currentData[this.parent.childMapping];
         currentData.hasChildRecords = true;
         if (this.parent.enableCollapseAll) {
           currentData.expanded = false;
@@ -297,6 +318,9 @@ public isRemote(): boolean {
         let parentData: ITreeData = extend({}, parentRecords);
         delete parentData.childRecords;
         delete parentData[this.parent.childMapping];
+        if (this.isSelfReference) {
+          delete parentData.taskData[this.parent.childMapping];
+        }
         currentData.parentItem = parentData;
         currentData.parentUniqueID = parentData.uniqueID;
         level = parentRecords.level + 1;
@@ -310,12 +334,13 @@ public isRemote(): boolean {
         this.parent.parentData.push(currentData);
       }
       if (!isNullOrUndefined(currentData[this.parent.childMapping] && currentData[this.parent.childMapping].length )) {
-        this.createRecords(currentData[this.parent.childMapping], currentData);
+          let record: ITreeData[] = this.createRecords(currentData[this.parent.childMapping], currentData);
+          currentData.childRecords = record;
       }
+      treeGridData.push(currentData);
     }
+    return treeGridData;
   }
-
-
 
   /**
    * Function to perform filtering/sorting action for local data

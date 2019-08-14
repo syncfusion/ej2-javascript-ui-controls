@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -974,7 +974,7 @@ let ListView = class ListView extends Component {
             element.classList.add(classNames.disable);
         }
     }
-    //Suport Component Functions
+    // Support Component Functions
     header(text, showBack) {
         if (this.headerEle === undefined && this.showHeader) {
             this.headerEle = this.createElement('div', { className: classNames.header });
@@ -991,7 +991,7 @@ let ListView = class ListView extends Component {
                 let headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
                 append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                 append([headerTemplateEle], this.headerEle);
-                this.updateBlazorTemplates(false, true);
+                this.updateBlazorTemplates(false, true, true);
             }
             if (this.headerTemplate && this.headerTitle) {
                 textEle.classList.add('header');
@@ -1817,15 +1817,15 @@ let ListView = class ListView extends Component {
             resetBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
         }
     }
-    updateBlazorTemplates(template = false, headerTemplate = false) {
+    updateBlazorTemplates(template = false, headerTemplate = false, resetExistingElements = false) {
         if (this.template && template && !this.enableVirtualization) {
-            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this, resetExistingElements);
         }
         if (this.groupTemplate && template && !this.enableVirtualization) {
-            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this, resetExistingElements);
         }
         if (this.headerTemplate && headerTemplate) {
-            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this, resetExistingElements);
         }
     }
     renderSubList(li) {
@@ -1837,7 +1837,6 @@ let ListView = class ListView extends Component {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 let data = this.curViewDS;
-                this.resetBlazorTemplates();
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
                 ele.setAttribute('pID', uID);
                 ele.style.display = 'none';
@@ -2041,15 +2040,21 @@ let ListView = class ListView extends Component {
     /**
      * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
+     * @blazorType ListSelectedItem<TValue>
      */
     getSelectedItems() {
+        // tslint:disable-next-line:no-any
+        let finalValue;
+        let isCompleted = false;
         this.selectedId = [];
         let dataSource = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
-        if (this.enableVirtualization) {
-            return this.virtualizationModule.getSelectedItems();
+        if (this.enableVirtualization && !isCompleted) {
+            finalValue = this.virtualizationModule.getSelectedItems();
+            isCompleted = true;
         }
-        else if (this.showCheckBox) {
+        else if (this.showCheckBox && !isCompleted) {
+            // tslint:disable-next-line:no-any
             let liCollection = this.curUL.getElementsByClassName(classNames.selected);
             let liTextCollection = [];
             let liDataCollection = [];
@@ -2078,42 +2083,96 @@ let ListView = class ListView extends Component {
                     }
                 }
             }
-            if (typeof dataSource[0] === 'string' || typeof dataSource[0] === 'number') {
-                return { item: liCollection, data: dataSource, text: liTextCollection };
+            if ((typeof dataSource[0] === 'string'
+                || typeof dataSource[0] === 'number')
+                && !isCompleted) {
+                finalValue = { item: liCollection, data: dataSource, text: liTextCollection };
+                isCompleted = true;
             }
-            if (this.isNestedList) {
-                return { item: liCollection, data: dataParent, text: liTextCollection };
+            if (this.isNestedList && !isCompleted) {
+                finalValue = { item: liCollection, data: dataParent, text: liTextCollection };
+                isCompleted = true;
             }
-            else {
-                return { item: liCollection, data: liDataCollection, text: liTextCollection };
+            else if (!isCompleted) {
+                finalValue = { item: liCollection, data: liDataCollection, text: liTextCollection };
+                isCompleted = true;
             }
         }
-        else {
+        else if (!isCompleted) {
             let liElement = this.element.getElementsByClassName(classNames.selected)[0];
             let fieldData = getFieldValues(this.getItemData(liElement), this.listBaseOption.fields);
-            if (typeof dataSource[0] === 'string' || typeof dataSource[0] === 'number') {
-                return (!isNullOrUndefined(liElement)) ? {
+            if ((typeof dataSource[0] === 'string'
+                || typeof dataSource[0] === 'number')
+                && !isCompleted) {
+                finalValue = (!isNullOrUndefined(liElement)) ? {
                     item: liElement, data: dataSource,
                     text: liElement.innerText.trim()
                 } : undefined;
+                isCompleted = true;
             }
-            else {
+            else if (!isCompleted) {
                 if (isNullOrUndefined(fieldData) || isNullOrUndefined(liElement)) {
-                    return undefined;
+                    finalValue = undefined;
+                    isCompleted = true;
                 }
                 else {
                     this.selectedId.push(fieldData[this.listBaseOption.fields.id]);
-                    return {
+                    finalValue = {
                         text: fieldData[this.listBaseOption.fields.text], item: liElement,
                         data: this.getItemData(liElement)
                     };
+                    isCompleted = true;
                 }
             }
         }
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            return this.blazorGetSelectedItems(finalValue);
+        }
+        else {
+            return finalValue;
+        }
+    }
+    // tslint:disable-next-line:no-any
+    blazorGetSelectedItems(finalGetSelectedItem) {
+        let blazorSelectedItem = {
+            data: [],
+            index: [],
+            parentId: [],
+            text: []
+        };
+        if (!isNullOrUndefined(finalGetSelectedItem)) {
+            if (!isNullOrUndefined(finalGetSelectedItem.data)) {
+                if (this.showCheckBox && this.isNestedList) {
+                    finalGetSelectedItem.data.forEach((currentData) => {
+                        blazorSelectedItem.data.push(currentData.data);
+                    });
+                    if (!isNullOrUndefined(finalGetSelectedItem.data[0])
+                        && !isNullOrUndefined(finalGetSelectedItem.data[0].parentId)) {
+                        blazorSelectedItem.parentId = finalGetSelectedItem.data[0].parentId;
+                    }
+                }
+                else {
+                    blazorSelectedItem.data = this.convertItemsToArray(finalGetSelectedItem.data);
+                }
+            }
+            if (!isNullOrUndefined(finalGetSelectedItem.text)) {
+                blazorSelectedItem.text = this.convertItemsToArray(finalGetSelectedItem.text);
+            }
+            if (!isNullOrUndefined(finalGetSelectedItem.index)) {
+                blazorSelectedItem.index = this.convertItemsToArray(finalGetSelectedItem.index);
+            }
+        }
+        return blazorSelectedItem;
+    }
+    // tslint:disable-next-line:no-any
+    convertItemsToArray(items) {
+        return Array.isArray(items) ? [...items] : [items];
     }
     /**
      * It is used to find out an item details from the current list.
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * @blazorType TValue
      */
     findItem(obj) {
         return this.getItemData(obj);
@@ -2216,7 +2275,6 @@ let ListView = class ListView extends Component {
                     }
                     child = child.concat(data);
                     if (ds instanceof Array) {
-                        this.resetBlazorTemplates();
                         data.forEach((dataSource) => {
                             this.dataSource.push(dataSource);
                             this.setViewDataSource(this.dataSource);
@@ -2261,7 +2319,6 @@ let ListView = class ListView extends Component {
                 this.virtualizationModule.removeItem(obj);
             }
             else {
-                this.resetBlazorTemplates();
                 this.removeItemFromList(obj);
                 this.updateBlazorTemplates(true);
             }
@@ -2306,7 +2363,6 @@ let ListView = class ListView extends Component {
     removeMultipleItems(obj) {
         if (!(this.dataSource instanceof DataManager)) {
             if (obj.length) {
-                this.resetBlazorTemplates();
                 for (let i = 0; i < obj.length; i++) {
                     if (this.enableVirtualization) {
                         this.removeItem(obj[i]);
@@ -2732,17 +2788,21 @@ class Virtualization {
                         textCollection.push(curViewDS[index][text]);
                         dataCollection.push(curViewDS[index]);
                     });
+                    let dataSource = this.listViewInstance.dataSource instanceof DataManager
+                        ? curViewDS : this.listViewInstance.dataSource;
                     return {
                         text: textCollection,
                         data: dataCollection,
-                        index: this.uiIndices.activeIndices.map((index) => (this.listViewInstance.dataSource).indexOf(curViewDS[index]))
+                        index: this.uiIndices.activeIndices.map((index) => dataSource.indexOf(curViewDS[index]))
                     };
                 }
                 else {
+                    let dataSource = this.listViewInstance.dataSource instanceof DataManager
+                        ? curViewDS : this.listViewInstance.dataSource;
                     return {
                         text: curViewDS[this.activeIndex][this.listViewInstance.fields.text],
                         data: curViewDS[this.activeIndex],
-                        index: this.listViewInstance.dataSource.indexOf(curViewDS[this.activeIndex])
+                        index: dataSource.indexOf(curViewDS[this.activeIndex])
                     };
                 }
             }
@@ -3085,11 +3145,13 @@ class Virtualization {
         let commonTemplate = '<div class="e-text-content" role="presentation"> ' +
             '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
         template.innerHTML = this.listViewInstance.template || commonTemplate;
+        // tslint:disable-next-line:no-any
         let templateElements = template.getElementsByTagName('*');
         let groupTemplate = this.listViewInstance.createElement('div');
         if (this.listViewInstance.fields.groupBy) {
             groupTemplate.innerHTML = this.listViewInstance.groupTemplate || commonTemplate;
         }
+        // tslint:disable-next-line:no-any
         let groupTemplateElements = groupTemplate.getElementsByTagName('*');
         if (args.curData.isHeader) {
             this.headerData = args.curData;
@@ -3310,11 +3372,10 @@ class Virtualization {
             detach(this.listViewInstance.contentContainer);
         }
         this.listViewInstance.preRender();
-        this.listViewInstance.localData = this.listViewInstance.dataSource;
         // resetting the dom count to 0, to avoid edge case of dataSource suddenly becoming zero
         // and then manually adding item using addItem API
         this.domItemCount = 0;
-        this.listViewInstance.renderList();
+        this.listViewInstance.setLocalData();
     }
     updateUI(element, index, targetElement) {
         let onChange = this.isNgTemplate() ? this.onNgChange : this.onChange;

@@ -460,7 +460,7 @@ export class DateTimePicker extends DatePicker {
         this.dateTimeFormat = this.cldrDateTimeFormat();
         this.initValue = this.value;
         super.updateHtmlAttributeToElement();
-        this.checkAttributes(true);
+        this.checkAttributes(false);
         let localeText: { placeholder: string } = { placeholder: this.placeholder };
         this.l10n = new L10n('datetimepicker', localeText, this.locale);
         this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -1223,7 +1223,8 @@ export class DateTimePicker extends DatePicker {
     }
 
     protected checkAttributes(isDynamic: boolean): void {
-        let attributes: string[] = ['style', 'name', 'step', 'disabled', 'readonly', 'value', 'min', 'max', 'placeholder', 'type'];
+        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['style', 'name', 'step', 'disabled', 'readonly', 'value', 'min', 'max', 'placeholder', 'type'];
         let value: Date;
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
@@ -1236,50 +1237,52 @@ export class DateTimePicker extends DatePicker {
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
-                                this.inputElement.getAttribute(prop) === '';
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                                this.inputElement.getAttribute(prop) === '' ||
+                                this.inputElement.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, isDynamic);
+                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.inputElement.getAttribute(prop) }, !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['min'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ min: value }, isDynamic);
+                                this.setProperties({ min: value }, !isDynamic);
                             }
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled: boolean = this.inputElement.getAttribute(prop) === 'disabled' ||
-                                this.inputElement.getAttribute(prop) === '';
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                                this.inputElement.getAttribute(prop) === 'true' ||
+                                this.inputElement.getAttribute(prop) === '' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['value'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ value: value }, isDynamic);
+                                this.setProperties({ value: value }, !isDynamic);
                             }
                        }
                        break;
                     case 'max':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.dateTimeOptions) || (this.dateTimeOptions['max'] === undefined)) || isDynamic) {
                             value = new Date(this.inputElement.getAttribute(prop));
                             if (!this.isNullOrEmpty(value) && !isNaN(+value)) {
-                                this.setProperties({ max: value }, isDynamic);
+                                this.setProperties({ max: value }, !isDynamic);
                             }
                         }
                         break;
@@ -1522,7 +1525,7 @@ export class DateTimePicker extends DatePicker {
                 case 'htmlAttributes':
                     this.updateHtmlAttributeToElement();
                     this.updateHtmlAttributeToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'format':
                     this.setProperties({ format: newProp.format }, true);

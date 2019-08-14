@@ -22,6 +22,7 @@ import { Alignment, SeriesCategories } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
 import { sort } from '../../common/utils/helper';
 import { Browser } from '@syncfusion/ej2-base';
+import { StockSeries } from '../../stock-chart/index';
 
 /**
  * Configures the data label in the series.
@@ -1095,16 +1096,19 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.chart = chart;
         let dateSource: Object | DataManager = this.dataSource || chart.dataSource;
         if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
-            this.dataManagerSuccess({ result: dateSource, count: (dateSource as Object[]).length }, chart, false);
+            this.dataManagerSuccess({ result: dateSource, count: (dateSource as Object[]).length }, false);
             return;
         }
         let dataManager: Promise<Object> = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
-        dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e, chart));
+        dataManager.then((e: { result: Object, count: number }) => this.dataManagerSuccess(e));
     }
 
-    private dataManagerSuccess(e: { result: Object, count: number }, chart: Chart, isRemoteData: boolean = true): void {
+    private dataManagerSuccess(e: { result: Object, count: number }, isRemoteData: boolean = true): void {
         this.currentViewData = e.count ? e.result : [];
         if (this instanceof Series) {
+            if (this.chart.stockChart) {
+                (this.chart.stockChart.series[this.index] as StockSeries).localData = this.currentViewData;
+            }
             let argsData: ISeriesRenderEventArgs = {
                 name: seriesRender, series: this, data: this.currentViewData, fill: this.interior
             };
@@ -1112,14 +1116,15 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             this.interior = argsData.fill;
             this.currentViewData = argsData.data;
         }
+        if (this.chart.stockChart && !(this instanceof Series)) {
+            this.currentViewData = this.chart.stockChart.findCurrentData(
+                (this.chart.stockChart.series[0] as StockSeries).localData,
+                (this.chart.stockChart.series[0] as StockSeries).xName
+            );
+        }
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
-        if (chart.stockChart) {
-            if (isNullOrUndefined(chart.stockChart.blazorDataSource[this.index])) {
-                chart.stockChart.blazorDataSource.splice(this.index, 0, this.currentViewData);
-            }
-        }
         this.currentViewData = null;
     }
 
@@ -1137,7 +1142,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         //if (chart.visibleSeries.length === (chart.visibleSeriesCount - chart.indicators.length)) {
         if (chart.visibleSeries.length === (chart.visibleSeriesCount)) {
             chart.refreshBound();
-            chart.trigger('loaded', { chart: chart });
+            chart.trigger('loaded', { chart: chart.isBlazor ? {} : chart });
             if (this.chart.stockChart && this.chart.stockChart.initialRender) {
                 this.chart.stockChart.stockChartDataManagerSuccess();
                 this.chart.stockChart.initialRender = false;

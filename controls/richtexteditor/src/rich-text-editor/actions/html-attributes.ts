@@ -23,6 +23,8 @@ export function setAttributes(htmlAttributes: { [key: string]: string }, rte: IR
                 rte.setReadOnly(initial);
             } else if (htmlAttr === 'style') {
                 target.setAttribute('style', htmlAttributes[htmlAttr]);
+            } else if (htmlAttr === 'tabindex') {
+                rte.inputElement.setAttribute('tabindex', htmlAttributes[htmlAttr]);
             } else if (htmlAttr === 'placeholder') {
                 rte.placeholder = htmlAttributes[htmlAttr];
                 rte.setPlaceHolder();

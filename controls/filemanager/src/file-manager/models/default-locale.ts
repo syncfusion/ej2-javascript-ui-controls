@@ -78,6 +78,8 @@ export let defaultLocale: Object = {
     'File-Upload': 'Drag files here to upload',
     'Search-Empty': 'No results found',
     'Search-Key': 'Try with different keywords',
+    'Filter-Empty': 'No results found',
+    'Filter-Key': 'Try with different filter',
     'Sub-Folder-Error': 'The destination folder is the subfolder of the source folder.',
     'Access-Denied': 'Access Denied',
     'Access-Details': 'You don"t have permission to access this folder.',

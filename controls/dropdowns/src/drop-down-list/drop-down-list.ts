@@ -772,7 +772,7 @@ export class DropDownList extends DropDownBase implements IInput {
 
     protected updateIconState(): void {
         if (this.showClearButton) {
-            if (this.inputElement.value !== '') {
+            if (this.inputElement.value !== '' && !this.readonly) {
                 removeClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);
             } else {
                 addClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);

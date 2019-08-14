@@ -857,7 +857,7 @@ export class Layout {
             if (currentListLevel.followCharacter === 'Tab') {
                 element.text = '\t';
                 let index: number = lineWidget.children.indexOf(element);
-                element.width = this.getTabWidth(paragraph, viewer, index, lineWidget, undefined);
+                element.width = this.getTabWidth(paragraph, viewer, index, lineWidget, element);
             } else {
                 element.text = ' ';
                 viewer.textHelper.updateTextSize(element, paragraph);
@@ -1862,7 +1862,7 @@ export class Layout {
      * @param viewer 
      */
     // tslint:disable-next-line:max-line-length
-    private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox): number {
+    private getTabWidth(paragraph: ParagraphWidget, viewer: LayoutViewer, index: number, lineWidget: LineWidget, element: TabElementBox | ListTextElementBox): number {
         let elementWidth: number = element ? this.viewer.textHelper.getTextSize(element as TextElementBox, element.characterFormat) : 0;
         let fPosition: number = 0;
         let isCustomTab: boolean = false;
@@ -1881,7 +1881,10 @@ export class Layout {
         let position: number = viewer.clientActiveArea.x -
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
-        if (tabs.length === 0 && (position === 0 || defaultTabWidth === 0)) {
+        if (tabs.length === 0) {
+            if (position > 0 && defaultTabWidth > position) {
+                return defaultTabWidth - position;
+            }
             return defaultTabWidth;
         } else {
             if (tabs.length > 0) {
@@ -1890,9 +1893,9 @@ export class Layout {
                     let tabPosition: number = HelperMethods.convertPointToPixel(tabs[i].position);
                     if ((position + elementWidth) < tabPosition) {
                         isCustomTab = true;
-                        if (tabStop.tabJustification === 'Left') {
+                        if (tabStop.tabJustification === 'Left' || tabStop.tabJustification === 'List') {
                             fPosition = tabPosition;
-                            if (!isNullOrUndefined(element)) {
+                            if (element instanceof TabElementBox) {
                                 element.tabLeader = tabs[i].tabLeader;
                                 element.tabText = '';
                             }
@@ -1902,11 +1905,13 @@ export class Layout {
                             let width: number = this.getRightTabWidth(element.indexInOwner + 1, lineWidget, paragraph);
                             if (width < tabWidth) {
                                 if (tabStop.tabJustification === 'Right') {
-                                    let exceedWidth: number = 0;
-                                    if (position + tabWidth > this.viewer.clientArea.width) {
-                                        exceedWidth = (position + tabWidth) - this.viewer.clientArea.width;
+                                    defaultTabWidth = tabWidth - width;
+                                    let areaWidth: number = this.viewer.clientActiveArea.width - defaultTabWidth;
+                                    if (areaWidth < 0) {
+                                        defaultTabWidth += areaWidth - width;
+                                    } else if (width > areaWidth) {
+                                        defaultTabWidth -= width - areaWidth;
                                     }
-                                    defaultTabWidth = tabWidth - width - exceedWidth;
                                 } else {
                                     defaultTabWidth = tabWidth - width / 2;
                                 }
@@ -1916,7 +1921,7 @@ export class Layout {
                                 defaultTabWidth = tabStop.tabJustification === 'Right' ? 0 : elementWidth;
                             }
                             fPosition = position;
-                            if (!isNullOrUndefined(element)) {
+                            if (element instanceof TabElementBox) {
                                 element.tabLeader = tabs[i].tabLeader;
                                 element.tabText = '';
                             }

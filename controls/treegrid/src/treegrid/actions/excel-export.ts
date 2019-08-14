@@ -113,7 +113,7 @@ export class ExcelExport {
         if (!this.isLocal()) {
           this.parent.flatData = [];
         }
-        if (property.dataSource) {
+        if (property && property.dataSource) {
           this.parent.dataModule.convertToFlatData(property.dataSource);
           dtSrc = this.parent.flatData;
         }

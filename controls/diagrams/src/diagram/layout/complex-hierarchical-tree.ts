@@ -43,9 +43,11 @@ export class ComplexHierarchicalTree {
 
     public getLayoutNodesCollection(nodes: INode[]): INode[] {
         let nodesCollection: INode[] = []; let node: INode;
+        let parentId: string = 'parentId';
+        let processId: string = 'processId';
         for (let i: number = 0; i < nodes.length; i++) {
             node = nodes[i];
-            if (node.inEdges.length + node.outEdges.length > 0) {
+            if ((node.inEdges.length + node.outEdges.length > 0) && !node[parentId] && !node[processId]) {
                 nodesCollection.push(node);
             }
         }

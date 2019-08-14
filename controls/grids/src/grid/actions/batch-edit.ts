@@ -1,5 +1,5 @@
 import { extend, addClass, removeClass, setValue, isBlazor } from '@syncfusion/ej2-base';
-import { remove, classList } from '@syncfusion/ej2-base';
+import { remove, classList, updateBlazorTemplate, blazorTemplates, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IGrid, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs } from '../base/interface';
@@ -180,6 +180,7 @@ export class BatchEdit {
         this.editCell(rowIdx, (this.parent.getColumns() as Column[])[cellIdx].field, this.isAddRow(rowIdx));
     }
 
+    // tslint:disable-next-line:max-func-body-length
     public closeEdit(): void {
         let gObj: IGrid = this.parent;
         let rows: Row<Column>[] = this.parent.getRowsObject();
@@ -190,6 +191,15 @@ export class BatchEdit {
         }
         if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2) {
             rows.push.apply(rows, this.parent.getMovableRowsObject());
+        }
+        let cols: Column[] = this.parent.getColumns();
+        if (isBlazor()) {
+            for (let i: number = 0; i < cols.length; i++) {
+                let col: Column = cols[i];
+                if (col.template) {
+                    updateBlazorTemplate(this.parent.element.id + col.uid, 'Template', col, false);
+                }
+            }
         }
         let rowRenderer: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         let tr: HTMLElement;
@@ -313,6 +323,16 @@ export class BatchEdit {
             if (checkAllBox.classList.contains('e-checkbox-disabled') &&
                 gObj.pageSettings.totalRecordsCount > gObj.currentViewData.length) {
                 removeClass([checkAllBox], ['e-checkbox-disabled']);
+            }
+        }
+        let cols: Column[] = this.parent.getColumns();
+        if (isBlazor()) {
+            for (let i: number = 0; i < cols.length; i++) {
+                let col: Column = cols[i];
+                if (col.template) {
+                    blazorTemplates[this.parent.element.id + col.uid] = [];
+                    resetBlazorTemplate(this.parent.element.id + col.uid, 'Template');
+                }
             }
         }
         this.saveCell();
@@ -680,6 +700,9 @@ export class BatchEdit {
         let gObj: IGrid = this.parent;
         let col: Column = gObj.getColumnByField(field);
         let keys: string[] = gObj.getPrimaryKeyFieldNames();
+        if (isBlazor() && col.template && !isAdd) {
+            resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
+        }
         if (gObj.editSettings.allowEditing && col.allowEditing) {
             if (gObj.isEdit && !(this.cellDetails.column.field === field
                 && (this.cellDetails.rowIndex === index && this.parent.getDataRows().length - 1 !== index))) {
@@ -895,35 +918,38 @@ export class BatchEdit {
 
     private successCallBack(cellSaveArgs: CellSaveArgs, tr: Element, column: Column): Function {
         return (cellSaveArgs: CellSaveArgs) => {
-        let gObj: IGrid = this.parent;
-        cellSaveArgs.cell = cellSaveArgs.cell ? cellSaveArgs.cell : this.form.parentElement;
-        if (cellSaveArgs.cancel) {
-            return;
-        }
-        gObj.editModule.destroyForm();
-        gObj.isEdit = false;
-        gObj.editModule.destroyWidgets([column]);
-        this.parent.notify(events.tooltipDestroy, {});
-        this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
-        removeClass([tr], ['e-editedrow', 'e-batchrow']);
-        removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
-        if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
-            (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
-            || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
-                !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
-                    cellSaveArgs.cell.classList.remove('e-updatedtd');
-        }
-        gObj.trigger(events.cellSaved, cellSaveArgs);
-        gObj.notify(events.toolbarRefresh, {});
-        this.isColored = false;
-        if (this.parent.aggregates.length > 0) {
-            this.parent.notify(events.refreshFooterRenderer, {});
-            if (this.parent.groupSettings.columns.length > 0 && !this.isAddRow(this.cellDetails.rowIndex)) {
-                this.parent.notify(events.groupAggregates, {});
+            let gObj: IGrid = this.parent;
+            cellSaveArgs.cell = cellSaveArgs.cell ? cellSaveArgs.cell : this.form.parentElement;
+            if (cellSaveArgs.cancel) {
+                return;
             }
-        }
-    };
-}
+            gObj.editModule.destroyForm();
+            gObj.isEdit = false;
+            gObj.editModule.destroyWidgets([column]);
+            if (isBlazor() && column.template && !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow')) {
+                updateBlazorTemplate(gObj.element.id + column.uid, 'Template', column, false);
+            }
+            this.parent.notify(events.tooltipDestroy, {});
+            this.refreshTD(cellSaveArgs.cell, column, gObj.getRowObjectFromUID(tr.getAttribute('data-uid')), cellSaveArgs.value);
+            removeClass([tr], ['e-editedrow', 'e-batchrow']);
+            removeClass([cellSaveArgs.cell], ['e-editedbatchcell', 'e-boolcell']);
+            if (!isNullOrUndefined(cellSaveArgs.value) && cellSaveArgs.value.toString() ===
+                (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString() && !this.isColored
+                || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
+                    !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
+                cellSaveArgs.cell.classList.remove('e-updatedtd');
+            }
+            gObj.trigger(events.cellSaved, cellSaveArgs);
+            gObj.notify(events.toolbarRefresh, {});
+            this.isColored = false;
+            if (this.parent.aggregates.length > 0) {
+                this.parent.notify(events.refreshFooterRenderer, {});
+                if (this.parent.groupSettings.columns.length > 0 && !this.isAddRow(this.cellDetails.rowIndex)) {
+                    this.parent.notify(events.groupAggregates, {});
+                }
+            }
+        };
+    }
 
     protected getDataByIndex(index: number): Object {
         let row: Row<Column> = this.parent.getRowObjectFromUID(this.parent.getDataRows()[index].getAttribute('data-uid'));

@@ -2,7 +2,7 @@ import { Animation, Browser, ChildProperty, Collection, Complex, Component, Drag
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Toolbar, TreeView } from '@syncfusion/ej2-navigations';
 import { Calendar, DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
-import { DataManager, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { FormValidator, Input, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
@@ -107,10 +107,10 @@ function lastDateOfMonth(dt) {
     return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
 }
 function getWeekNumber(dt) {
-    let currentDate = new Date('' + dt).valueOf();
     let date = new Date(dt.getFullYear(), 0, 1).valueOf();
-    let a = (currentDate - date);
-    return Math.ceil((((a) / MS_PER_DAY) + new Date(date).getDay() + 1) / 7);
+    let currentDate = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).valueOf();
+    let dayOfYear = ((currentDate - date + MS_PER_DAY) / MS_PER_DAY);
+    return Math.ceil(dayOfYear / 7);
 }
 function setTime(date, time) {
     let tzOffsetBefore = date.getTimezoneOffset();
@@ -7729,6 +7729,7 @@ class EventWindow {
         if (this.cellClickAction) {
             eventProp.duration = this.getSlotDuration();
         }
+        let callBackPromise = new Deferred();
         this.parent.trigger(popupOpen, eventProp, (popupArgs) => {
             args.cancel = popupArgs.cancel;
             this.duration = this.cellClickAction ? popupArgs.duration : null;
@@ -7742,7 +7743,9 @@ class EventWindow {
             if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
                 this.recurrenceEditor = this.getInstance('e-recurrenceeditor');
             }
+            callBackPromise.resolve(args);
         });
+        return callBackPromise;
     }
     onBeforeClose() {
         this.resetForm();
@@ -11457,6 +11460,10 @@ let Schedule = class Schedule extends Component {
             this.initializeView(this.currentView);
         }
         else if (state.isDataManager && this.renderModule) {
+            if (this.dragAndDropModule) {
+                this.dragAndDropModule.actionObj.action = '';
+                removeClass([this.element], EVENT_ACTION_CLASS);
+            }
             this.renderModule.refreshDataManager();
         }
     }
@@ -11944,6 +11951,7 @@ let Schedule = class Schedule extends Component {
     refreshEvents() {
         if (this.dragAndDropModule) {
             this.dragAndDropModule.actionObj.action = '';
+            removeClass([this.element], EVENT_ACTION_CLASS);
         }
         this.renderModule.refreshDataManager();
     }
@@ -12021,7 +12029,9 @@ let Schedule = class Schedule extends Component {
         if (action === 'Add' && !isEventData) {
             data.startTime = this.getDateTime(data.startTime);
             data.endTime = this.getDateTime(data.endTime);
-            data.element = getElement(data.element);
+            if (!isNullOrUndefined(data.element)) {
+                data.element = getElement(data.element);
+            }
         }
         else {
             data[this.eventFields.startTime] =
@@ -18077,7 +18087,7 @@ class TimelineHeaderRow {
                         viewTemplate = `<span class="e-header-month">${dateParser(dates[0], 'MMMM')}</span>`;
                         break;
                     case 'Week':
-                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates[0])}</span>`;
+                        viewTemplate = `<span class="e-header-week">${getWeekNumber(dates.slice(-1)[0])}</span>`;
                 }
                 let headerWrapper = createElement('div', { innerHTML: viewTemplate });
                 htmlCol = headerWrapper.childNodes;

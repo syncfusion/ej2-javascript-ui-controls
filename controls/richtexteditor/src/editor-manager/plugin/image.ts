@@ -101,7 +101,7 @@ export class ImageCommand {
                     editorMode: 'HTML',
                     event: e.event,
                     range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                    elements: imgElement
+                    elements: [imgElement]
                 });
             } else {
                 InsertHtml.Insert(this.parent.currentDocument, imgElement, this.parent.editableElement);

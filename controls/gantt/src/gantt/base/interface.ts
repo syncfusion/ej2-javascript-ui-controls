@@ -30,7 +30,9 @@ export interface IGanttData {
     parentItem?: IParent;
     /** Defines the parent unique id of task. */
     parentUniqueID?: string;
-    /** Defines the data which specified in data source. */
+    /** Defines the data which specified in data source.
+     * @isGenericType true
+     */
     taskData?: Object;
     /** Defines the unique id of task. */
     uniqueID?: string;

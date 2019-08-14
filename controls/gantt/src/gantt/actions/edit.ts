@@ -1400,7 +1400,7 @@ export class Edit {
                     recordIndex = currentItemIndex + dataChildCount + 1;
                     //Expand Add record's parent item 
                     if (!this.addRowSelectedItem.expanded) {
-                        this.parent.expandByID(this.addRowSelectedItem.ganttProperties.taskId);
+                        this.parent.expandByID(Number(this.addRowSelectedItem.ganttProperties.taskId));
                     }
                     updatedCollectionIndex = currentViewData.indexOf(this.addRowSelectedItem) +
                         this.getVisibleChildRecordCount(this.addRowSelectedItem, 0, currentViewData) + 1;

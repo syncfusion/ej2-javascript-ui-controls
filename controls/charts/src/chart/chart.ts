@@ -1328,6 +1328,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         this.calculateBounds();
 
+        //this prevents the initial rendering of stock chart
+        if (this.stockChart && !this.stockChart.rangeFound) {
+            if (this.stockChart.enablePeriodSelector || this.stockChart.enableSelector) {
+                return null;
+            }
+        }
+
         this.renderElements();
 
         removeElement('chartmeasuretext');

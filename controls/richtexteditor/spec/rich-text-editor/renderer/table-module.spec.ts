@@ -2509,32 +2509,47 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
             destroy(rteObj);
             Browser.userAgent = currentBrowserUA;
         });
-        it(' insert table ', () => {
+        it(' insert table ', (done) => {
             let clickEvent: MouseEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent('mousedown', false, true);
             (rteObj as any).inputElement.dispatchEvent(clickEvent);
-            let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
-            setCursorPoint(node, 0);
-            node.focus();
-            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
-            let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
-            clickEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent("click", false, true);
-            target.dispatchEvent(clickEvent);
-            expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
-            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
-            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
-            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
-            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
-            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
-            target.dispatchEvent(clickEvent);
-            expect(rteEle.querySelectorAll('p').length).toBe(0);
-            expect(rteEle.querySelectorAll('.e-content > p').length).toBe(0);
-            expect(rteEle.querySelectorAll('.e-content > table').length).toBe(1);
-            expect(rteEle.querySelector('.e-content').childNodes.length).toBe(1);
-            let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
-            expect(table.querySelectorAll('tr').length === 3).toBe(true);
-            expect(table.querySelectorAll('td').length === 9).toBe(true);
+            setTimeout(function () {
+                let node: HTMLElement = (rteObj as any).inputElement.querySelector("p");
+                setCursorPoint(node, 0);
+                node.focus();
+                setTimeout(function () {
+                    (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+                    setTimeout(function () {
+                        let target: HTMLElement = (rteObj as any).tableModule.popupObj.element.querySelector('.e-insert-table-btn');
+                        clickEvent = document.createEvent("MouseEvents");
+                        clickEvent.initEvent("click", false, true);
+                        target.dispatchEvent(clickEvent);
+                        setTimeout(() => {
+                            expect(document.body.querySelector('.e-rte-edit-table.e-dialog')).not.toBe(null);
+                            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn')).not.toBe(null);
+                            expect(rteObj.tableModule.editdlgObj.element.querySelector('#tableRow')).not.toBe(null);
+                            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableRow') as any).value === '3').toBe(true);
+                            expect((rteObj.tableModule.editdlgObj.element.querySelector('#tableColumn') as any).value === '3').toBe(true);
+                            target = rteObj.tableModule.editdlgObj.element.querySelector('.e-insert-table') as HTMLElement;
+                            target.dispatchEvent(clickEvent);
+                            setTimeout(() => {
+                                expect(rteEle.querySelectorAll('p').length).toBe(0);
+                                expect(rteEle.querySelectorAll('.e-content > p').length).toBe(0);
+                                expect(rteEle.querySelectorAll('.e-content > table').length).toBe(1);
+                                expect(rteEle.querySelector('.e-content').childNodes.length).toBe(1);
+                                let table: HTMLElement = rteObj.contentModule.getEditPanel().querySelector('table') as HTMLElement;
+                                expect(table.querySelectorAll('tr').length === 3).toBe(true);
+                                expect(table.querySelectorAll('td').length === 9).toBe(true);
+                                done();
+                            }, 500);
+                            done();
+                        }, 500);
+                        done();
+                    }, 500);
+                    done();
+                }, 500);
+                done();
+            }, 500);
         });
     });
 });

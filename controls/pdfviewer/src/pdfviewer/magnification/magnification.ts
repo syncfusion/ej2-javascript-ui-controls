@@ -457,6 +457,9 @@ export class Magnification {
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.clearTextSelection();
         }
+        if (this.pdfViewer.textSearchModule) {
+            this.pdfViewer.textSearchModule.clearAllOccurrences();
+        }
         let scrollValue: number = this.pdfViewerBase.viewerContainer.scrollTop;
         this.isAutoZoom = false;
         this.updatePageLocation();

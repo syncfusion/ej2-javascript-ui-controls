@@ -1,4 +1,4 @@
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
 
@@ -180,8 +180,9 @@ export class TextSearch {
         }
         this.clearAllOccurrences();
         if (inputString !== '') {
-            if (this.searchCollection[this.searchPageIndex] && inputString === this.searchString) {
-                if (this.searchCollection[this.searchPageIndex].length === 0) {
+            // tslint:disable-next-line
+            if (this.searchMatches[this.searchPageIndex] && inputString === this.searchString) {
+                if (this.searchMatches[this.searchPageIndex].length === 0) {
                     this.initSearch(this.searchPageIndex, false);
                 } else {
                     this.nextSearch();
@@ -210,9 +211,9 @@ export class TextSearch {
         if (this.searchString) {
             this.clearAllOccurrences();
             this.searchIndex = this.searchIndex + 1;
-            if (this.searchCollection[this.searchPageIndex]) {
+            if (this.searchMatches[this.searchPageIndex]) {
                 // tslint:disable-next-line:max-line-length
-                if (this.searchIndex >= this.searchCollection[this.searchPageIndex].length || this.searchPageIndex !== this.pdfViewerBase.currentPageNumber - 1) {
+                if (this.searchIndex >= this.searchMatches[this.searchPageIndex].length || this.searchPageIndex !== this.pdfViewerBase.currentPageNumber - 1) {
                     this.searchIndex = 0;
                     this.searchPageIndex = ((this.searchPageIndex + 1) < this.pdfViewerBase.pageCount) ? (this.searchPageIndex + 1) : 0;
                     this.initSearch(this.searchPageIndex, false);
@@ -254,13 +255,16 @@ export class TextSearch {
         let storedData: any = this.pdfViewerBase.getStoredData(pageIndex);
         let pageText: string = null;
         let textContents: string[] = null;
+        // tslint:disable-next-line
+        let characterBounds: any[] = null;
         if (storedData) {
             // tslint:disable-next-line
             pageText = storedData['pageText'];
             // tslint:disable-next-line
             textContents = storedData['textContent'];
+            characterBounds = this.pdfViewerBase.textLayer.characterBound[pageIndex];
             this.textContents[pageIndex] = textContents;
-            this.getPossibleMatches(pageIndex, this.searchString, pageText, textContents, isSinglePageSearch);
+            this.getPossibleMatches(pageIndex, this.searchString, pageText, textContents, isSinglePageSearch, characterBounds);
         } else {
             if (!isSinglePageSearch) {
                 this.createRequestForSearch(pageIndex);
@@ -268,8 +272,8 @@ export class TextSearch {
         }
     }
 
-    // tslint:disable-next-line:max-line-length
-    private getPossibleMatches(pageIndex: number, searchString: string, pageString: string, textContents: string[], isSinglePageSearch: boolean): void {
+    // tslint:disable-next-line
+    private getPossibleMatches(pageIndex: number, searchString: string, pageString: string, textContents: string[], isSinglePageSearch: boolean, characterBounds: any[]): void {
         let pageText: string = pageString;
         let searchText: string = searchString;
         let queryLength: number = searchString.length;
@@ -279,15 +283,30 @@ export class TextSearch {
         }
         let matches: number[] = [];
         let matchIndex: number = -queryLength;
+        let newIndex: number = -queryLength;
         while (matchIndex !== 0) {
             if (searchText === '' || searchText === ' ' || !searchText) {
                 break;
             }
             matchIndex = pageText.indexOf(searchText, matchIndex + queryLength);
-            if (matchIndex === -1) {
+            if (searchText.indexOf(' ') !== -1) {
+                let newString: string = searchString.replace(' ', '\r\n');
+                newIndex = pageText.indexOf(newString, newIndex + queryLength);
+                if (!(newIndex <= -1)) {
+                    if (newIndex < matchIndex) {
+                        matches.push(newIndex);
+                    }
+                }
+            }
+            if (matchIndex <= -1 && newIndex <= -1) {
                 break;
             }
-            matches.push(matchIndex);
+            if (!(matchIndex <= -1)) {
+                matches.push(matchIndex);
+            }
+            if (newIndex > matchIndex && !(newIndex <= -1)) {
+                matches.push(newIndex);
+            }
         }
         this.searchMatches[pageIndex] = matches;
         if (!isSinglePageSearch) {
@@ -303,7 +322,7 @@ export class TextSearch {
                 }
                 if ((this.pdfViewerBase.currentPageNumber - 1) !== this.searchPageIndex) {
                     // tslint:disable-next-line:max-line-length
-                    if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
+                    if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (this.searchPageIndex) === this.currentSearchIndex) {
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
@@ -313,7 +332,7 @@ export class TextSearch {
                     this.pdfViewerBase.updateScrollTop(this.searchPageIndex);
                 }
             }
-            this.convertMatches(pageIndex, queryLength, textContents, isSinglePageSearch);
+            this.highlightSearchedTexts(pageIndex, isSinglePageSearch);
         } else {
             if (!isSinglePageSearch) {
                 if (this.isPrevSearch) {
@@ -326,26 +345,26 @@ export class TextSearch {
                 } else {
                     let searchPageIndex: number = this.getSearchPage(pageIndex);
                     // tslint:disable-next-line:max-line-length
-                    if (!this.searchCollection[this.searchPageIndex] && this.searchCollection.length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
+                    if (!this.searchMatches[this.searchPageIndex] && this.searchMatches.length === 0 && this.searchedPages.length === this.pdfViewerBase.pageCount) {
                         // tslint:disable-next-line:max-line-length
                         if (!this.isMessagePopupOpened) {
                             this.onMessageBoxOpen();
                         }
                         // tslint:disable-next-line:max-line-length
-                    } else if (this.searchCollection.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
+                    } else if (this.searchMatches.length > 0 && (this.searchIndex === 0 || this.searchIndex === -1) && (searchPageIndex) === this.currentSearchIndex) {
                         if (this.isPrevSearch) {
                             // tslint:disable-next-line:max-line-length
                             if (!this.isMessagePopupOpened) {
                                 this.onMessageBoxOpen();
                             }
-                            this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
+                            this.searchPageIndex = searchPageIndex;
                             this.searchedPages = [];
                             this.searchIndex = -1;
                         } else {
                             if (!this.isMessagePopupOpened) {
                                 this.onMessageBoxOpen();
                             }
-                            this.searchPageIndex = this.getSearchPage(this.pdfViewerBase.currentPageNumber - 1);
+                            this.searchPageIndex = searchPageIndex;
                             this.searchedPages = [];
                             this.searchIndex = 0;
                         }
@@ -360,14 +379,14 @@ export class TextSearch {
         let pageNumber: number = null;
         if (this.isPrevSearch) {
             for (let i: number = pageIndex; i >= 0; i--) {
-                if (i !== pageIndex && this.searchCollection[i]) {
+                if (i !== pageIndex && this.searchMatches[i]) {
                     pageNumber = i;
                     break;
                 }
             }
             if (!pageNumber) {
                 for (let j: number = this.pdfViewerBase.pageCount - 1; j > pageIndex; j--) {
-                    if (this.searchCollection[j]) {
+                    if (this.searchMatches[j]) {
                         pageNumber = j;
                         break;
                     }
@@ -375,14 +394,14 @@ export class TextSearch {
             }
         } else {
             for (let i: number = pageIndex; i < this.pdfViewerBase.pageCount; i++) {
-                if (i !== pageIndex && this.searchCollection[i]) {
+                if (i !== pageIndex && this.searchMatches[i]) {
                     pageNumber = i;
                     break;
                 }
             }
             if (!pageNumber) {
                 for (let j: number = 0; j < pageIndex; j++) {
-                    if (this.searchCollection[j]) {
+                    if (this.searchMatches[j]) {
                         pageNumber = j;
                         break;
                     }
@@ -392,139 +411,109 @@ export class TextSearch {
         return pageNumber;
     }
 
-    private convertMatches(pageIndex: number, queryLength: number, textContents: string[], isSinglePageSearch: boolean): void {
-        let m: number = 0;
-        let matches: number[] = this.searchMatches[pageIndex];
-        let divIndex: number = 0;
-        let end: number = textContents.length - 1;
-        let matchCollection: { [key: string]: object }[] = [];
-        for (let i: number = 0; i < matches.length; i++) {
-            let matchIndex: number = matches[i];
-            while (m !== end && matchIndex >= (divIndex + textContents[m].split('\r\n')[0].length)) {
-                divIndex += textContents[m].split('\r\n')[0].length;
-                m++;
-            }
-            let match: { [key: string]: object } = {
-                begin: {
-                    divId: m,
-                    offsetValue: matchIndex - divIndex,
-                }
-            };
-            matchIndex += queryLength;
-            while (m !== end && matchIndex > (divIndex + textContents[m].length)) {
-                divIndex += textContents[m].length;
-                m++;
-            }
-            match.end = {
-                divId: m,
-                offsetValue: matchIndex - divIndex,
-            };
-            matchCollection.push(match);
-        }
-        if (this.searchCollection.length === 0) {
-            this.currentSearchIndex = pageIndex;
-        }
-        this.searchCollection[pageIndex] = matchCollection;
-        this.highlightSearchedTexts(pageIndex, isSinglePageSearch);
-    }
-
     private highlightSearchedTexts(pageIndex: number, isSinglePageSearch: boolean): void {
-        let matches: { [key: string]: object }[] = this.searchCollection[pageIndex];
+        // tslint:disable-next-line
+        let matches: any[] = this.searchMatches[pageIndex];
         let prevEnd: { [key: string]: object } = null;
         // tslint:disable-next-line
         let scrollPoint: any = { y: -100, x: -100 };
         let startId: number;
         let className: string;
-        for (let i: number = 0; i < matches.length; i++) {
-            let match: { [key: string]: object } = matches[i];
-            // tslint:disable-next-line
-            let start: any = match.begin;
-            // tslint:disable-next-line
-            let end: any = match.end;
-            if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
-                className = 'e-pv-search-text-highlight';
-                startId = start.divId;
-            } else {
-                className = 'e-pv-search-text-highlightother';
-            }
-            if (!prevEnd || start.divId !== prevEnd.divId) {
-                if (prevEnd !== null) {
-                    // tslint:disable-next-line:max-line-length
-                    this.addSpanForSearch(pageIndex, parseFloat(prevEnd.divId.toString()), parseFloat(prevEnd.offsetValue.toString()), undefined, null);
+        // tslint:disable-next-line
+        let characterBounds: any[] = this.pdfViewerBase.textLayer.characterBound[pageIndex];
+        if (characterBounds) {
+            for (let i: number = 0; i < matches.length; i++) {
+                if (i === this.searchIndex && pageIndex === this.searchPageIndex) {
+                    className = 'e-pv-search-text-highlight';
+                } else {
+                    className = 'e-pv-search-text-highlightother';
                 }
-                this.beginText(start, pageIndex, null);
-            } else {
-                // tslint:disable-next-line:max-line-length
-                this.addSpanForSearch(pageIndex, parseFloat(prevEnd.divId.toString()), parseFloat(prevEnd.offsetValue.toString()), parseFloat(start.offsetValue.toString()), null);
+                this.addDivForSearch(i, pageIndex, characterBounds, this.searchString.length, className);
             }
-            if (start.divId === end.divId) {
-                this.addSpanForSearch(pageIndex, start.divId, start.offsetValue, end.offsetValue, className);
-            } else {
-                this.addSpanForSearch(pageIndex, start.divId, start.offsetValue, undefined, className);
-                for (let k: number = start.divId + 1; k < end.divId; k++) {
-                    this.addSpanForSearch(pageIndex, k, 0, undefined, className + ' middle');
+            if (pageIndex === this.searchPageIndex && !isSinglePageSearch) {
+                let element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + pageIndex + '_' + this.searchIndex);
+                if (element) {
+                    let targetScrollElement: HTMLElement = this.getScrollElement(element);
+                    this.scrollToSearchStr(targetScrollElement, scrollPoint);
+                } else {
+                    this.pdfViewerBase.updateScrollTop(pageIndex);
+                    let element: HTMLElement = this.pdfViewerBase.getElement('_searchtext_' + pageIndex + '_' + this.searchIndex);
+                    if (element) {
+                        let targetScrollElement: HTMLElement = this.getScrollElement(element);
+                        this.scrollToSearchStr(targetScrollElement, scrollPoint);
+                    }
                 }
-                this.beginText(end, pageIndex, className);
-            }
-            prevEnd = end;
-        }
-        if (prevEnd) {
-            // tslint:disable-next-line:max-line-length
-            this.addSpanForSearch(pageIndex, parseFloat(prevEnd.divId.toString()), parseFloat(prevEnd.offsetValue.toString()), undefined, null);
-        }
-        if (pageIndex === this.searchPageIndex && !isSinglePageSearch) {
-            let element: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + startId);
-            if (element) {
-                let targetScrollElement: HTMLElement = this.getScrollElement(element);
-                this.scrollToSearchStr(targetScrollElement, scrollPoint);
-            } else {
-                this.pdfViewerBase.updateScrollTop(pageIndex);
-                let element: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + startId);
-                let targetScrollElement: HTMLElement = this.getScrollElement(element);
-                this.scrollToSearchStr(targetScrollElement, scrollPoint);
             }
         }
     }
 
     // tslint:disable-next-line
-    private beginText(start: any, pageIndex: number, className: string): void {
-        let divIndex: number = parseFloat(start.divId);
-        let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + divIndex);
-        if (textDiv) {
-            // tslint:disable-next-line
-            this.tempElementStorage = new Array();
-            for (let i: number = 0; i < textDiv.childNodes.length; i++) {
-                // tslint:disable-next-line:max-line-length
-                let ele: { [key: string]: string } = { text: textDiv.childNodes[i].textContent, classString: (textDiv.childNodes[i] as HTMLElement).className };
-                this.tempElementStorage.push(ele);
-            }
-            textDiv.textContent = '';
-            this.addSpanForSearch(pageIndex, divIndex, 0, start.offsetValue, className);
+    private addDivForSearch(index: number, pageIndex: number, characterBounds: any, queryLength: number, className: string): void {
+        let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
+        if (isNullOrUndefined(textLayer) && className === 'e-pv-search-text-highlight') {
+            this.pdfViewer.navigation.goToPage(pageIndex + 1);
+        }
+        let count: number = this.searchMatches[pageIndex][index];
+        let initial: number = count;
+        let divCount: number = 0;
+        while (count < initial + queryLength) {
+            count = this.addDivElement(count, characterBounds, queryLength, className, index, pageIndex, initial, divCount);
+            divCount++;
         }
     }
 
-    // tslint:disable-next-line:max-line-length
-    private addSpanForSearch(pageIndex: number, divIndex: number, fromOffset: number, toOffset: number, className: string): void {
-        let divTextContent: string;
-        let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageIndex + '_' + divIndex);
-        if (textDiv) {
-            let textContent: string[] = this.textContents[pageIndex];
-            divTextContent = textContent[divIndex].substring(fromOffset, toOffset);
-            let node: Node = document.createTextNode(divTextContent);
-            if (className) {
-                let spanElement: HTMLElement = document.createElement('span');
-                spanElement.className = className;
-                if (spanElement.classList.contains('middle')) {
-                    textDiv.textContent = '';
-                }
-                spanElement.appendChild(node);
-                textDiv.appendChild(spanElement);
-            } else {
-                if (this.pdfViewer.textSelectionModule.isTextSelection) {
-                    this.searchOnSelection(textDiv, node, divTextContent);
-                } else {
-                    textDiv.appendChild(node);
-                }
+    // tslint:disable-next-line
+    private addDivElement(count: number, characterBounds: any, queryLength: number, className: string, index: number, pageIndex: number, initial: number, divCount: number): number {
+        let height: number = 0;
+        let width: number = 0;
+        let top: number = 0;
+        let left: number = 0;
+        left = characterBounds[count].X;
+        top = characterBounds[count].Y;
+        let v: number = 0;
+        if ((count - initial) !== 0) {
+            v = count - initial;
+            queryLength += 1;
+        }
+        for (v = v; v < queryLength; v++) {
+            // tslint:disable-next-line
+            let charBound: any = characterBounds[count];
+            if (left > charBound.X) {
+                break;
+            }
+            top = (top < charBound.Y) ? top : charBound.Y;
+            let topDifference: number = (top < charBound.Y) ? (charBound.Y - top) : (top - charBound.Y);
+            height = (height > (topDifference + charBound.Height)) ? height : (topDifference + charBound.Height);
+            count++;
+        }
+        let isContinuation: boolean = false;
+        if (initial + queryLength !== count) {
+            isContinuation = true;
+            width = (characterBounds[count - 1].X - left);
+        } else {
+            isContinuation = false;
+            width = (characterBounds[count].X - left);
+        }
+        this.createSearchTextDiv(index, pageIndex, height, width, top, left, className, isContinuation, divCount);
+        return count;
+    }
+
+    // tslint:disable-next-line
+    private createSearchTextDiv(index: number, pageIndex: number, height: number, width: number, top: number, left: number, className: string, isContinuation: boolean, divCount: number): void {
+        let idString: string = '_searchtext_' + pageIndex + '_' + index;
+        if (isContinuation) {
+            idString += '_' + divCount;
+        }
+        if (!this.pdfViewerBase.getElement(idString)) {
+            let textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + idString });
+            textDiv.style.height = height * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.width = width * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.top = top * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.style.left = left * this.pdfViewerBase.getZoomFactor() + 'px';
+            textDiv.classList.add(className);
+            let textLayer: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageIndex);
+            if (textLayer) {
+                textLayer.appendChild(textDiv);
             }
         }
     }
@@ -541,160 +530,6 @@ export class TextSearch {
             }
         }
         return isClass;
-    }
-
-    private addSpan(text: string, textDiv: HTMLElement): void {
-        let newNode: Node = document.createTextNode(text);
-        let spanElement: HTMLElement = document.createElement('span');
-        spanElement.className = 'e-pv-maintaincontent';
-        spanElement.appendChild(newNode);
-        textDiv.appendChild(spanElement);
-    }
-
-    private searchOnSelection(textDiv: HTMLElement, node: Node, divTextContent: string): void {
-        if (this.tempElementStorage.length === 1) {
-            if (this.tempElementStorage[0].classString) {
-                if (this.tempElementStorage[0].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                    this.addSpan(node.textContent, textDiv);
-                }
-            } else {
-                textDiv.appendChild(node);
-            }
-        } else {
-            if (this.tempElementStorage.length > 1) {
-                for (let i: number = 0; i < this.tempElementStorage.length; i++) {
-                    if (this.tempElementStorage[i].classString) {
-                        if (this.tempElementStorage[i].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                            if (this.tempElementStorage[i].text === node.textContent) {
-                                this.addSpan(node.textContent, textDiv);
-                                break;
-                            } else {
-                                if (this.tempElementStorage[i].text !== node.textContent) {
-                                    let currentString: string = node.textContent;
-                                    let isClassAvailable: boolean = this.isClassAvailable();
-                                    let subString: string;
-                                    if (isClassAvailable) {
-                                        subString = divTextContent.substring(0, this.tempElementStorage[i].text.length);
-                                    } else {
-                                        subString = divTextContent.substring(0, this.tempElementStorage[i].text.length);
-                                    } // tslint:disable-next-line
-                                    if (this.tempElementStorage[i].text.indexOf(currentString) !== -1 && !this.tempElementStorage[i].classString) {
-                                        this.addSpan(currentString, textDiv);
-                                        break; // tslint:disable-next-line
-                                    } else if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && this.tempElementStorage[i].classString && subString !== '') {
-                                        if (this.tempElementStorage[i].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                                            this.addSpan(subString, textDiv); // tslint:disable-next-line
-                                            let nextSubString: string = divTextContent.substring(this.tempElementStorage[i].text.length, divTextContent.length);
-                                            if (this.tempElementStorage[i + 1]) { // tslint:disable-next-line
-                                                if (this.tempElementStorage[i + 1].text.indexOf(nextSubString) !== -1 && !this.tempElementStorage[i + 1].classString && nextSubString !== "") {
-                                                    node.textContent = nextSubString;
-                                                    textDiv.appendChild(node);
-                                                }
-                                            }
-                                            break;
-                                        }
-                                    } else if (this.tempElementStorage[i + 1]) {
-                                        if (divTextContent === (this.tempElementStorage[i].text + this.tempElementStorage[i + 1].text)) {
-                                            this.addSpan(this.tempElementStorage[i].text, textDiv);
-                                            node.textContent = this.tempElementStorage[i + 1].text;
-                                            textDiv.appendChild(node);
-                                            break;
-                                        } else if (this.tempElementStorage[i].text.indexOf(divTextContent) !== -1) {
-                                            this.addSpan(divTextContent, textDiv);
-                                            break;
-                                        } else { // tslint:disable-next-line
-                                            let subString: string = this.tempElementStorage[i].text.substring(textDiv.textContent.length, currentString.length);
-                                            if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && this.tempElementStorage[i].classString && // tslint:disable-next-line
-                                                subString !== '' && !this.tempElementStorage[i + 1].classString && divTextContent.indexOf(subString) !== -1) {
-                                                this.addSpan(subString, textDiv);
-                                                continue;
-                                            }
-                                        }
-                                    } else {
-                                        if (this.tempElementStorage[i].text.indexOf(divTextContent) !== -1) {
-                                            this.addSpan(node.textContent, textDiv);
-                                            break;
-                                        } else if (this.tempElementStorage[i].text.indexOf(divTextContent.replace('\r\n', '')) !== -1) {
-                                            this.addSpan(divTextContent, textDiv);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        if (this.tempElementStorage[i].text !== node.textContent) {
-                            let currentString: string = node.textContent;
-                            if (currentString !== '') {
-                                let isClassAvailable: boolean = this.isClassAvailable();
-                                let subString: string;
-                                if (isClassAvailable) {
-                                    subString = divTextContent.substring(0, this.tempElementStorage[i].text.length);
-                                } else { // tslint:disable-next-line
-                                    subString = divTextContent.substring(0, this.tempElementStorage[i].text.length - textDiv.textContent.length);
-                                } // tslint:disable-next-line
-                                if (subString === currentString && !this.tempElementStorage[i].classString && this.tempElementStorage[i].text.indexOf(subString) !== -1) {
-                                    node.textContent = subString;
-                                    textDiv.appendChild(node);
-                                    break;
-                                } else { // tslint:disable-next-line
-                                    if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && this.tempElementStorage[i].classString) {
-                                        if (this.tempElementStorage[i].classString.indexOf('e-pv-maintaincontent') !== -1) {
-                                            this.addSpan(subString, textDiv);
-                                            break;
-                                        }
-                                    } else if (this.tempElementStorage[i + 1]) { // tslint:disable-next-line
-                                        let balanceString: string = currentString.substring(this.tempElementStorage[i].text.length, currentString.length);
-                                        let nextString: string = this.tempElementStorage[i + 1].text.substring(0, balanceString.length);
-                                        if (currentString === (subString + this.tempElementStorage[i + 1].text)) {
-                                            node.textContent = subString;
-                                            textDiv.appendChild(node);
-                                            this.addSpan(this.tempElementStorage[i + 1].text, textDiv);
-                                            break;
-                                        } else if (currentString === (subString + nextString) && nextString !== '') {
-                                            node.textContent = subString;
-                                            textDiv.appendChild(node);
-                                            this.addSpan(balanceString, textDiv);
-                                            break;
-                                        } else { // tslint:disable-next-line
-                                            if (this.tempElementStorage[i].text.indexOf(subString) !== -1 && !this.tempElementStorage[i].classString && subString !== '') {
-                                                let newSubString: string = divTextContent.substring(0, subString.length);
-                                                node.textContent = newSubString;
-                                                textDiv.appendChild(node); // tslint:disable-next-line
-                                                let nextNewSubString: string = divTextContent.substring(subString.length, divTextContent.length);
-                                                if (nextNewSubString !== '' && this.tempElementStorage[i + 1].text.indexOf(nextNewSubString) !== -1 && this.tempElementStorage[i + 1].classString) {
-                                                    this.addSpan(nextNewSubString, textDiv);
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    } else { // tslint:disable-next-line
-                                        if (this.tempElementStorage[i].text.indexOf(currentString) !== -1 && !this.tempElementStorage[i].classString) {
-                                            node.textContent = currentString;
-                                            textDiv.appendChild(node);
-                                            break; // tslint:disable-next-line
-                                        } else if (this.tempElementStorage[i].text.indexOf(currentString.replace('\r\n', '')) !== -1 && !this.tempElementStorage[i].classString) {
-                                            node.textContent = currentString;
-                                            textDiv.appendChild(node);
-                                            break;
-                                        } else {
-                                            if (divTextContent.indexOf(this.tempElementStorage[i].text) !== -1) {
-                                                node.textContent = this.tempElementStorage[i].text;
-                                                textDiv.appendChild(node);
-                                                break;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        } else {
-                            textDiv.appendChild(node);
-                        }
-                    }
-                }
-            } else {
-                textDiv.appendChild(node);
-            }
-        }
     }
 
     private getScrollElement(element: HTMLElement): HTMLElement {
@@ -739,6 +574,24 @@ export class TextSearch {
     /**
      * @private
      */
+    public resizeSearchElements(pageIndex: number): void {
+        let searchDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_searchtext_' + pageIndex + '"]');
+        for (let i: number = 0; i < searchDivs.length; i++) {
+            let textDiv: HTMLElement = searchDivs[i] as HTMLElement;
+            // tslint:disable-next-line
+            textDiv.style.width = (parseFloat(textDiv.style.width) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            // tslint:disable-next-line
+            textDiv.style.height = (parseFloat(textDiv.style.height) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            // tslint:disable-next-line
+            textDiv.style.top = (parseFloat(textDiv.style.top) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            // tslint:disable-next-line
+            textDiv.style.left = (parseFloat(textDiv.style.left) / this.pdfViewer.magnificationModule.previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+        }
+    }
+
+    /**
+     * @private
+     */
     public highlightOtherOccurrences(pageNumber: number): void {
         this.initSearch(pageNumber, true);
     }
@@ -752,9 +605,14 @@ export class TextSearch {
         }
     }
 
-    private clearAllOccurrences(): void {
-        this.pdfViewerBase.textLayer.clearDivSelection();
-        this.applyTextSelection();
+    /**
+     * @private
+     */
+    public clearAllOccurrences(): void {
+        let searchTextDivs: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_searchtext_"]');
+        for (let i: number = 0; i < searchTextDivs.length; i++) {
+            searchTextDivs[i].parentElement.removeChild(searchTextDivs[i]);
+        }
     }
 
     /**
@@ -802,7 +660,7 @@ export class TextSearch {
     }
 
     private createRequestForSearch(pageIndex: number): void {
-        let proxy: TextSearch =  this;
+        let proxy: TextSearch = this;
         let jsonObject: object;
         // tslint:disable-next-line:max-line-length
         jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), action: 'RenderPdfPages' };
@@ -815,7 +673,7 @@ export class TextSearch {
         this.searchRequestHandler.responseType = 'json';
         this.searchRequestHandler.send(jsonObject);
         // tslint:disable-next-line
-        this.searchRequestHandler.onSuccess = function(result: any) {
+        this.searchRequestHandler.onSuccess = function (result: any) {
             // tslint:disable-next-line
             let data: any = result.data;
             if (typeof data !== 'object') {
@@ -834,11 +692,11 @@ export class TextSearch {
             }
         };
         // tslint:disable-next-line
-        this.searchRequestHandler.onFailure = function(result: any) {
+        this.searchRequestHandler.onFailure = function (result: any) {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderPages);
         };
         // tslint:disable-next-line
-        this.searchRequestHandler.onError = function(result: any) {
+        this.searchRequestHandler.onError = function (result: any) {
             proxy.pdfViewerBase.openNotificationPopup();
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderPages);
         };
@@ -895,8 +753,6 @@ export class TextSearch {
         this.searchedPages = [];
         // tslint:disable-next-line
         this.searchMatches = new Array();
-        // tslint:disable-next-line
-        this.searchCollection = new Array();
     }
 
     private searchKeypressHandler = (event: KeyboardEvent): void => {
@@ -1000,7 +856,7 @@ export class TextSearch {
      * @private
      */
     public destroy(): void {
-        this.searchCollection = undefined;
+        this.searchMatches = undefined;
     }
     /**
      * @private

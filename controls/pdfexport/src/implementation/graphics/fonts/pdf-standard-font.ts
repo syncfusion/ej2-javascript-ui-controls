@@ -57,6 +57,7 @@ export class PdfStandardFont extends PdfFont {
     private encodings : string[] = ['Unknown', 'StandardEncoding', 'MacRomanEncoding', 'MacExpertEncoding',
                                          'WinAnsiEncoding', 'PDFDocEncoding', 'IdentityH'];
     //Constructors
+    /* tslint:disable */
     /**
      * Initializes a new instance of the `PdfStandardFont` class with font family and it`s size.
      * ```typescript
@@ -113,20 +114,18 @@ export class PdfStandardFont extends PdfFont {
      */
     public constructor(prototype : PdfStandardFont, size : number, style : PdfFontStyle)
     public constructor(fontFamilyPrototype : PdfFontFamily|PdfStandardFont, size : number, style? : PdfFontStyle) {
-        super(size, style);
-        if ((typeof fontFamilyPrototype === 'number') && (typeof style === 'undefined')) {
-            this.constructor(fontFamilyPrototype, size, PdfFontStyle.Regular);
-        } else if ((typeof fontFamilyPrototype === 'number') && (typeof style !== 'undefined')) {
-            super(size, style);
+        super(size, (typeof style === 'undefined') ? ((fontFamilyPrototype instanceof PdfStandardFont) ? fontFamilyPrototype.style : PdfFontStyle.Regular) : style);
+        if (typeof fontFamilyPrototype === 'undefined') {
+            this.pdfFontFamily = PdfFontFamily.Helvetica;
+        } else if ((fontFamilyPrototype instanceof PdfStandardFont)) {
+            this.pdfFontFamily = fontFamilyPrototype.fontFamily;
+        } else {
             this.pdfFontFamily = fontFamilyPrototype;
-            this.checkStyle();
-            this.initializeInternals();
-        } else if ((fontFamilyPrototype instanceof PdfStandardFont) && (typeof style === 'undefined')) {
-            this.constructor(fontFamilyPrototype.fontFamily, size, fontFamilyPrototype.style);
-        } else if ((fontFamilyPrototype instanceof PdfStandardFont) && (typeof style !== 'undefined')) {
-            this.constructor(fontFamilyPrototype.fontFamily, size, style);
         }
+        this.checkStyle();
+        this.initializeInternals();
     }
+    /* tslint:enable */
     //Properties
     /**
      * Gets the `FontFamily`.

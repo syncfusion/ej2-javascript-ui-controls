@@ -145,6 +145,7 @@ export class AxisRenderer extends Animations {
         let range: VisibleRange = axis.visibleRange;
         let anchor: string; let baseline: string;
         let padding: number = 5;
+        let fontColor: string = this.gauge.themeStyle.labelColor;
         let labelColor: string;
         let offset: number = axis.labelStyle.offset;
         let labelElement: Element = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup' });
@@ -152,7 +153,7 @@ export class AxisRenderer extends Animations {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, <Range[]>axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? this.gauge.themeStyle.labelColor : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? (axis.labelStyle.font.color || fontColor) : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;

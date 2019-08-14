@@ -852,7 +852,7 @@ export class DateProcessor {
         } else if (date instanceof Date) {
             return new Date(date.getTime());
         } else {
-            let dateObject: Date = this.parent.globalize.parseDate(date, { format: 'MM/dd/yyyy hh:mm a', type: 'dateTime' });
+            let dateObject: Date = this.parent.globalize.parseDate(date, { format: this.parent.dateFormat, type: 'dateTime' });
             return isNullOrUndefined(dateObject) ? new Date(date) : dateObject;
         }
     }

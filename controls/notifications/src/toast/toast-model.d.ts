@@ -1,4 +1,4 @@
-import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler } from '@syncfusion/ej2-base';import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';import { SwipeEventArgs, Touch } from '@syncfusion/ej2-base';import { ButtonModel, Button  } from '@syncfusion/ej2-buttons';import { getZindexPartial } from '@syncfusion/ej2-popups';
+import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler, isBlazor } from '@syncfusion/ej2-base';import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';import { SwipeEventArgs, Touch } from '@syncfusion/ej2-base';import { ButtonModel, Button  } from '@syncfusion/ej2-buttons';import { getZindexPartial } from '@syncfusion/ej2-popups';
 import {PositionX,PositionY,ToastOpenArgs,ToastBeforeOpenArgs,ToastCloseArgs,ToastClickEventArgs} from "./toast";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -124,13 +124,15 @@ export interface ToastModel extends ComponentModel{
     height?: string | number;
 
     /**
-     * Specifies the title to be displayed on the Toast.
+     * Specifies the title to be displayed on the Toast. 
+     * Works only with string values.
      * @default null
      */
     title?: string;
 
     /**
-     * Specifies the content to be displayed on the Toast.
+     * Specifies the content to be displayed on the Toast. 
+     * Accepts selectors, string values and HTML elements.
      * @default null
      * @blazorType string
      */

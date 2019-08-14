@@ -3227,9 +3227,6 @@ var Canvas = /** @__PURE__ @class */ (function (_super) {
                         availableSize.width = availableSize.width || this.maxWidth || this.minWidth;
                         child.measure(availableSize);
                     }
-                    else {
-                        break;
-                    }
                 }
                 else if (!(child instanceof TextElement)) {
                     child.measure(availableSize);
@@ -12053,8 +12050,8 @@ function gridSelection(diagram, selectorModel, id, isSymbolDrag) {
     }
     return canvas;
 }
-function removeLaneChildNode(diagram, swimLaneNode, currentObj, isChildNode) {
-    var laneIndex = findLaneIndex(swimLaneNode, currentObj);
+function removeLaneChildNode(diagram, swimLaneNode, currentObj, isChildNode, laneIndex) {
+    laneIndex = (laneIndex !== undefined) ? laneIndex : findLaneIndex(swimLaneNode, currentObj);
     var preventHistory = false;
     var lanenode = swimLaneNode.shape.lanes[laneIndex];
     for (var j = lanenode.children.length - 1; j >= 0; j--) {
@@ -12127,64 +12124,69 @@ function deleteNode(diagram, node) {
     delete diagram.nameTable[node.id];
     diagram.removeElements(node);
 }
-function removeLane(diagram, lane, swimLane) {
-    var shape = swimLane.shape;
-    if (shape.lanes.length === 1) {
-        diagram.remove(swimLane);
-    }
-    else {
-        var x = swimLane.wrapper.bounds.x;
-        var y = swimLane.wrapper.bounds.y;
-        var row = void 0;
-        var i = void 0;
-        var cell = void 0;
-        var j = void 0;
-        var child = void 0;
-        var grid = swimLane.wrapper.children[0];
-        var laneIndex = findLaneIndex(swimLane, lane);
-        var undoObj = cloneObject(shape.lanes[laneIndex]);
-        removeLaneChildNode(diagram, swimLane, lane);
-        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-            var entry = {
-                type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
-                redoObject: cloneObject(lane), category: 'Internal'
-            };
-            diagram.addHistoryEntry(entry);
-        }
-        shape.lanes.splice(laneIndex, 1);
-        if (shape.orientation === 'Horizontal') {
-            row = grid.rows[lane.rowIndex];
-            for (i = 0; i < row.cells.length; i++) {
-                cell = row.cells[i];
-                if (cell && cell.children.length > 0) {
-                    for (j = 0; j < cell.children.length; j++) {
-                        child = cell.children[j];
-                        removeChildren(diagram, child);
-                    }
-                }
-            }
-            grid.removeRow(lane.rowIndex);
+function removeLane(diagram, lane, swimLane, lanes) {
+    if (swimLane.shape.type === 'SwimLane') {
+        var shape = swimLane.shape;
+        var laneIndex = void 0;
+        if (shape.lanes.length === 1) {
+            diagram.remove(swimLane);
         }
         else {
-            swimLane.width = (swimLane.width !== undefined) ?
-                swimLane.width - grid.rows[0].cells[lane.columnIndex].actualSize.width : swimLane.width;
-            for (i = 0; i < grid.rows.length; i++) {
-                cell = grid.rows[i].cells[lane.columnIndex];
-                if (cell && cell.children.length > 0) {
-                    for (j = 0; j < cell.children.length; j++) {
-                        child = cell.children[j];
-                        removeChildren(diagram, child);
+            var x = swimLane.wrapper.bounds.x;
+            var y = swimLane.wrapper.bounds.y;
+            var row = void 0;
+            var i = void 0;
+            var cell = void 0;
+            var j = void 0;
+            var child = void 0;
+            var grid = swimLane.wrapper.children[0];
+            laneIndex = (lanes) ? (shape.lanes.indexOf(lanes)) : findLaneIndex(swimLane, lane);
+            var undoObj = cloneObject(shape.lanes[laneIndex]);
+            removeLaneChildNode(diagram, swimLane, lane, undefined, laneIndex);
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                var entry = {
+                    type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
+                    redoObject: cloneObject(lane), category: 'Internal'
+                };
+                diagram.addHistoryEntry(entry);
+            }
+            shape.lanes.splice(laneIndex, 1);
+            var index = (lane) ? (shape.orientation === 'Horizontal' ? lane.rowIndex : lane.columnIndex) :
+                (findStartLaneIndex(swimLane) + laneIndex);
+            if (shape.orientation === 'Horizontal') {
+                row = grid.rows[index];
+                for (i = 0; i < row.cells.length; i++) {
+                    cell = row.cells[i];
+                    if (cell && cell.children.length > 0) {
+                        for (j = 0; j < cell.children.length; j++) {
+                            child = cell.children[j];
+                            removeChildren(diagram, child);
+                        }
                     }
                 }
+                grid.removeRow(index);
             }
-            grid.removeColumn(lane.columnIndex);
+            else {
+                swimLane.width = (swimLane.width !== undefined) ?
+                    swimLane.width - grid.rows[0].cells[index].actualSize.width : swimLane.width;
+                for (i = 0; i < grid.rows.length; i++) {
+                    cell = grid.rows[i].cells[index];
+                    if (cell && cell.children.length > 0) {
+                        for (j = 0; j < cell.children.length; j++) {
+                            child = cell.children[j];
+                            removeChildren(diagram, child);
+                        }
+                    }
+                }
+                grid.removeColumn(index);
+            }
+            swimLane.width = swimLane.wrapper.width = grid.width;
+            swimLane.height = swimLane.wrapper.height = grid.height;
+            swimLaneMeasureAndArrange(swimLane);
+            ChangeLaneIndex(diagram, swimLane, index);
+            diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
+            diagram.updateDiagramObject(swimLane);
         }
-        swimLane.width = swimLane.wrapper.width = grid.width;
-        swimLane.height = swimLane.wrapper.height = grid.height;
-        swimLaneMeasureAndArrange(swimLane);
-        ChangeLaneIndex(diagram, swimLane, lane.rowIndex);
-        diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
-        diagram.updateDiagramObject(swimLane);
     }
 }
 function removeChildren(diagram, canvas) {
@@ -12202,7 +12204,7 @@ function removeChildren(diagram, canvas) {
         deleteNode(diagram, node);
     }
 }
-function removePhase(diagram, phase, swimLane) {
+function removePhase(diagram, phase, swimLane, swimLanePhases) {
     diagram.protectPropertyChange(true);
     var x = swimLane.wrapper.bounds.x;
     var y = swimLane.wrapper.bounds.y;
@@ -12210,7 +12212,7 @@ function removePhase(diagram, phase, swimLane) {
     var previousPhase;
     var shape = swimLane.shape;
     var grid = swimLane.wrapper.children[0];
-    var phaseIndex = findPhaseIndex(phase, swimLane);
+    var phaseIndex = swimLanePhases ? shape.phases.indexOf(swimLanePhases) : findPhaseIndex(phase, swimLane);
     var phaseLength = shape.phases.length;
     if (shape.phases.length > 1) {
         if (phaseIndex === phaseLength - 1) {
@@ -12227,7 +12229,7 @@ function removePhase(diagram, phase, swimLane) {
             diagram.addHistoryEntry(entry);
         }
         if (shape.orientation === 'Horizontal') {
-            removeHorizontalPhase(diagram, grid, phase);
+            removeHorizontalPhase(diagram, grid, phase, phaseIndex);
         }
         else {
             removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane);
@@ -12239,13 +12241,14 @@ function removePhase(diagram, phase, swimLane) {
         diagram.updateDiagramObject(swimLane);
     }
 }
-function removeHorizontalPhase(diagram, grid, phase) {
+function removeHorizontalPhase(diagram, grid, phase, phaseIndex) {
     var row;
     var cell;
     var prevCell;
     var actualChild;
     var prevCanvas;
     var width;
+    phaseIndex = (phaseIndex !== undefined) ? phaseIndex : phase.columnIndex;
     var i;
     var j;
     var k;
@@ -12255,9 +12258,9 @@ function removeHorizontalPhase(diagram, grid, phase) {
     for (i = 0; i < grid.rows.length; i++) {
         row = grid.rows[i];
         if (row.cells.length > 1) {
-            cell = row.cells[phase.columnIndex];
-            prevCell = (row.cells.length - 1 === phase.columnIndex) ? row.cells[phase.columnIndex - 1] :
-                row.cells[phase.columnIndex + 1];
+            cell = row.cells[phaseIndex];
+            prevCell = (row.cells.length - 1 === phaseIndex) ? row.cells[phaseIndex - 1] :
+                row.cells[phaseIndex + 1];
             prevCanvas = prevCell.children[0];
             if (cell.children.length > 0) {
                 actualChild = cell.children[0];
@@ -12274,7 +12277,7 @@ function removeHorizontalPhase(diagram, grid, phase) {
                             if (!object.isLane) {
                                 object.parentId = prevCanvas.id;
                             }
-                            if ((row.cells.length - 1 === phase.columnIndex)) {
+                            if ((row.cells.length - 1 === phaseIndex)) {
                                 object.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
                                 child.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
                             }
@@ -12292,7 +12295,7 @@ function removeHorizontalPhase(diagram, grid, phase) {
                                 node.children.splice(node.children.indexOf(object.id), 1);
                             }
                         }
-                        if ((row.cells.length - 1 !== phase.columnIndex)) {
+                        if ((row.cells.length - 1 !== phaseIndex)) {
                             for (k = 0; k < prevCanvas.children.length; k++) {
                                 var prevChild_1 = prevCanvas.children[k];
                                 if (prevChild_1 instanceof Canvas) {
@@ -12314,16 +12317,17 @@ function removeHorizontalPhase(diagram, grid, phase) {
             }
         }
     }
-    grid.removeColumn(phase.columnIndex);
-    if ((phase.columnIndex < grid.columnDefinitions().length)) {
-        width = grid.columnDefinitions()[phase.columnIndex].width;
-        width += phase.wrapper.actualSize.width;
-        grid.updateColumnWidth(phase.columnIndex, width, true);
+    var prevWidth = grid.columnDefinitions()[phaseIndex].width;
+    grid.removeColumn(phaseIndex);
+    if ((phaseIndex < grid.columnDefinitions().length)) {
+        width = grid.columnDefinitions()[phaseIndex].width;
+        width += prevWidth;
+        grid.updateColumnWidth(phaseIndex, width, true);
     }
     else {
-        width = grid.columnDefinitions()[phase.columnIndex - 1].width;
-        width += phase.wrapper.actualSize.width;
-        grid.updateColumnWidth(phase.columnIndex - 1, width, true);
+        width = grid.columnDefinitions()[phaseIndex - 1].width;
+        width += prevWidth;
+        grid.updateColumnWidth(phaseIndex - 1, width, true);
     }
 }
 function removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane) {
@@ -12334,18 +12338,19 @@ function removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane) {
     var i;
     var j;
     var k;
-    row = grid.rows[phase.rowIndex];
     var prevCell;
     var prevChild;
     var shape = swimLane.shape;
     var child;
     var object;
+    var phaseRowIndex = (phaseIndex !== undefined) ? ((shape.header) ? phaseIndex + 1 : phaseIndex) : phase.rowIndex;
+    row = grid.rows[phaseRowIndex];
     var top = swimLane.wrapper.bounds.y;
     var phaseCount = shape.phases.length;
     if (shape.header !== undefined && shape.hasHeader) {
         top += grid.rowDefinitions()[0].height;
     }
-    prevRow = (phaseIndex === phaseCount) ? grid.rows[phase.rowIndex - 1] : grid.rows[phase.rowIndex + 1];
+    prevRow = (phaseIndex === phaseCount) ? grid.rows[phaseRowIndex - 1] : grid.rows[phaseRowIndex + 1];
     for (i = 0; i < row.cells.length; i++) {
         cell = row.cells[i];
         prevCell = prevRow.cells[i];
@@ -12383,16 +12388,17 @@ function removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane) {
             deleteNode(diagram, node);
         }
     }
-    grid.removeRow(phase.rowIndex);
-    if ((phase.rowIndex < grid.rowDefinitions().length)) {
-        height = grid.rowDefinitions()[phase.rowIndex].height;
-        height += phase.wrapper.actualSize.height;
-        grid.updateRowHeight(phase.rowIndex, height, true);
+    var prevHeight = grid.rowDefinitions()[phaseRowIndex].height;
+    grid.removeRow(phaseRowIndex);
+    if ((phaseRowIndex < grid.rowDefinitions().length)) {
+        height = grid.rowDefinitions()[phaseRowIndex].height;
+        height += prevHeight;
+        grid.updateRowHeight(phaseRowIndex, height, true);
     }
     else {
-        height = grid.rowDefinitions()[phase.rowIndex - 1].height;
-        height += phase.wrapper.actualSize.height;
-        grid.updateRowHeight(phase.rowIndex - 1, height, true);
+        height = grid.rowDefinitions()[phaseRowIndex - 1].height;
+        height += prevHeight;
+        grid.updateRowHeight(phaseRowIndex - 1, height, true);
     }
 }
 /**
@@ -16200,8 +16206,14 @@ var ChildContainer = /** @__PURE__ @class */ (function () {
  * Defines the functionalities that need to access DOM
  */
 /** @private */
-function removeElementsByClass(className) {
-    var elements = document.getElementsByClassName(className);
+function removeElementsByClass(className, id) {
+    var elements;
+    if (id) {
+        elements = document.getElementById(id).getElementsByClassName(className);
+    }
+    else {
+        elements = document.getElementsByClassName(className);
+    }
     while (elements.length > 0) {
         elements[0].parentNode.removeChild(elements[0]);
     }
@@ -24634,6 +24646,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                 };
                 this.diagram.add(temp);
                 this.diagram.updateConnectorEdges(node);
+                this.diagram.clearSelection();
                 this.diagram.select([this.diagram.nameTable[temp.id]]);
                 this.diagram.endGroupAction();
                 this.diagram.startTextEdit();
@@ -26065,7 +26078,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     CommandHandler.prototype.selectObjects = function (obj, multipleSelection, oldValue) {
         var arg = {
-            oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
+            oldValue: oldValue ? oldValue : this.getSelectedObject(),
+            newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
         var select = true;
@@ -26115,7 +26129,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 }
             }
             arg = {
-                oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
+                oldValue: oldValue ? oldValue : arg.oldValue,
+                newValue: this.getSelectedObject(), cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Addition', cancel: false
             };
             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
@@ -31980,6 +31995,19 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         connector.wrapper.measure(new Size(connector.wrapper.width, connector.wrapper.height));
         connector.wrapper.arrange(connector.wrapper.desiredSize);
     };
+    Diagram.prototype.removeChildrenFromLayout = function (nodes) {
+        var nodesCollection = [];
+        var node;
+        var parentId = 'parentId';
+        var processId = 'processId';
+        for (var i = 0; i < nodes.length; i++) {
+            node = nodes[i];
+            if (!node[parentId] && !node[processId]) {
+                nodesCollection.push(node);
+            }
+        }
+        return nodesCollection;
+    };
     /**
      * Automatically updates the diagram objects based on the type of the layout
      */
@@ -31988,41 +32016,43 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         var layout;
         var propChange = this.isProtectedOnChange;
         this.protectPropertyChange(true);
+        var nodes = this.removeChildrenFromLayout(this.nodes);
         var viewPort = { x: this.scroller.viewPortWidth, y: this.scroller.viewPortHeight };
         if (this.organizationalChartModule) {
-            layout = this.organizationalChartModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
+            layout = this.organizationalChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.diagramActions);
             update = true;
             if (this.layoutAnimateModule && layout.rootNode && !this.diagramActions) {
                 this.updateNodeExpand(layout.rootNode, layout.rootNode.isExpanded);
             }
         }
         else if (this.mindMapChartModule) {
-            this.mindMapChartModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
+            this.mindMapChartModule.updateLayout(nodes, this.nameTable, this.layout, viewPort, this.dataSourceSettings.id, this.dataSourceSettings.root);
             update = true;
         }
         else if (this.radialTreeModule) {
-            this.radialTreeModule.updateLayout(this.nodes, this.nameTable, this.layout, viewPort);
+            this.radialTreeModule.updateLayout(nodes, this.nameTable, this.layout, viewPort);
             update = true;
         }
         else if (this.symmetricalLayoutModule) {
             this.symmetricalLayoutModule.maxIteration = this.layout.maxIteration;
             this.symmetricalLayoutModule.springLength = this.layout.springLength;
             this.symmetricalLayoutModule.springFactor = this.layout.springFactor;
-            this.symmetricalLayoutModule.updateLayout(this.nodes, this.connectors, this.symmetricalLayoutModule, this.nameTable, this.layout, viewPort);
+            this.symmetricalLayoutModule.updateLayout(nodes, this.connectors, this.symmetricalLayoutModule, this.nameTable, this.layout, viewPort);
             update = true;
         }
         else if (this.complexHierarchicalTreeModule) {
-            var nodes = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes);
-            if (nodes.length > 0) {
-                this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout, viewPort);
+            var nodes_1 = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes);
+            if (nodes_1.length > 0) {
+                this.complexHierarchicalTreeModule.doLayout(nodes_1, this.nameTable, this.layout, viewPort);
             }
             update = true;
         }
         if (update) {
             this.preventUpdate = true;
             var connectors = {};
-            for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
-                var obj = _a[_i];
+            var updatedNodes = nodes;
+            for (var _i = 0, updatedNodes_1 = updatedNodes; _i < updatedNodes_1.length; _i++) {
+                var obj = updatedNodes_1[_i];
                 var node = obj;
                 if (!this.preventNodesUpdate && (!this.diagramActions || !(this.diagramActions & DiagramAction.PreventIconsUpdate))) {
                     this.updateIcon(node);
@@ -32047,8 +32077,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            for (var _b = 0, _c = Object.keys(connectors); _b < _c.length; _b++) {
-                var conn = _c[_b];
+            for (var _a = 0, _b = Object.keys(connectors); _a < _b.length; _a++) {
+                var conn = _b[_a];
                 var connector = connectors[conn];
                 var points = this.getPoints(connector);
                 updateConnector(connector, points);
@@ -32287,6 +32317,18 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < phases.length; i++) {
             addPhase(this, node, phases[i]);
         }
+    };
+    /**
+     * Remove dynamic Lanes to swimLane at runtime
+     */
+    Diagram.prototype.removeLane = function (node, lane) {
+        removeLane(this, undefined, node, lane);
+    };
+    /**
+     * Remove a phase to a swimLane at runtime
+     */
+    Diagram.prototype.removePhase = function (node, phase) {
+        removePhase(this, undefined, node, phase);
     };
     Diagram.prototype.removelabelExtension = function (obj, labels, j, wrapper) {
         for (var i = 0; i < wrapper.children.length; i++) {
@@ -33079,8 +33121,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     this.realActions |= RealAction.PreventScale;
                     var diffX = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
+                    var diffY = (node1.offsetY - node.wrapper.offsetY);
+                    node1.offsetY = node.wrapper.offsetY;
                     if (node.flip === 'None') {
-                        this.drag(node1, diffX, 0);
+                        this.drag(node1, diffX, diffY);
                     }
                     this.realActions &= ~RealAction.PreventScale;
                 }
@@ -33647,8 +33691,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     Diagram.prototype.updateVirtualObjects = function (collection, remove$$1, tCollection) {
-        var diagramElementsLayer = document.getElementById('diagram_diagramLayer');
-        var htmlLayer = getHTMLLayer('diagram');
+        var diagramElementsLayer = document.getElementById(this.element.id + '_diagramLayer');
+        var htmlLayer = getHTMLLayer(this.element.id);
         if (this.mode === 'SVG') {
             for (var i = 0; i < collection.length; i++) {
                 var index = this.scroller.removeCollection.indexOf(collection[i]);
@@ -35140,6 +35184,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments)
             && this.diagramActions === DiagramAction.Render) {
             updateSelector = true;
+        }
+        if (actualObject.shape.type === 'Bpmn' && actualObject.shape.sequence === 'Default') {
+            this.commandHandler.updatePathElementOffset(actualObject);
         }
         if (!disableBridging) {
             this.updateBridging();
@@ -43853,7 +43900,11 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
                 layoutInfo.tree.hasSubTree = false;
                 if (!layout.nameTable[layout.root]) {
                     if (!node.inEdges || !node.inEdges.length) {
-                        rootNodes.push(node);
+                        var parentId = 'parentId';
+                        var processId = 'processId';
+                        if (!node[parentId] && !node[processId]) {
+                            rootNodes.push(node);
+                        }
                         if (node.data && String(node.data[uniqueId]) === layout.root) {
                             layout.firstLevelNodes.push(node);
                         }
@@ -46539,9 +46590,11 @@ var ComplexHierarchicalTree = /** @__PURE__ @class */ (function () {
     ComplexHierarchicalTree.prototype.getLayoutNodesCollection = function (nodes) {
         var nodesCollection = [];
         var node;
+        var parentId = 'parentId';
+        var processId = 'processId';
         for (var i = 0; i < nodes.length; i++) {
             node = nodes[i];
-            if (node.inEdges.length + node.outEdges.length > 0) {
+            if ((node.inEdges.length + node.outEdges.length > 0) && !node[parentId] && !node[processId]) {
                 nodesCollection.push(node);
             }
         }
@@ -48220,7 +48273,8 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         _this.info = 'info';
         _this.laneTable = {};
         _this.isExpand = false;
-        _this.isCollapsed = false;
+        _this.isExpandMode = false;
+        _this.isMethod = false;
         /**
          * helper method for draggable
          * @return {void}
@@ -48303,18 +48357,13 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                         if (newProp.palettes[index].expanded !== undefined) {
                             if (!this.palettes[index].isInteraction) {
                                 this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
-                                refresh = true;
+                                this.isExpand = true;
                             }
                             else {
                                 this.palettes[index].isInteraction = false;
                             }
-                            this.isExpand = true;
-                            this.accordionElement.items[index].expanded = newProp.palettes[index].expanded;
-                            if (index === 0) {
-                                this.isCollapsed = true;
-                            }
-                            else {
-                                this.isCollapsed = false;
+                            if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
+                                this.isExpand = true;
                             }
                         }
                     }
@@ -48330,6 +48379,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                 case 'expandMode':
                     this.accordionElement.expandMode = this.expandMode;
                     refresh = true;
+                    this.isExpandMode = true;
                     break;
                 case 'allowDrag':
                     this.allowDrag = newProp.allowDrag;
@@ -48347,8 +48397,9 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         if (refresh) {
             this.refreshPalettes();
         }
-        if (this.isExpand && !refresh && this.isCollapsed) {
+        if (this.isExpand && !refresh) {
             this.refresh();
+            this.isExpand = false;
             for (var p = 0; p < this.palettes.length; p++) {
                 var paletteElement = this.palettes[p].id;
                 if (window[paletteElement]) {
@@ -48359,6 +48410,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        this.isMethod = false;
     };
     /**
      * Get the properties to be maintained in the persisted state.
@@ -49075,6 +49127,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         e.preventDefault();
     };
     SymbolPalette.prototype.mouseUp = function (evt) {
+        this.isMethod = true;
         if (evt && evt.target) {
             if (evt.srcElement.id === 'iconSearch') {
                 var element = document.getElementById('iconSearch');
@@ -49312,7 +49365,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
     };
     SymbolPalette.prototype.refreshPalettes = function () {
         this.accordionElement.items = [];
-        removeElementsByClass('e-remove-palette');
+        removeElementsByClass('e-remove-palette', this.element.id);
         this.updatePalettes();
         this.accordionElement.dataBind();
     };

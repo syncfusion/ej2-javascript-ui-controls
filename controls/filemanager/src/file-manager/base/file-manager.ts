@@ -17,7 +17,7 @@ import { UploadSettingsModel } from '../models/upload-settings-model';
 import { UploadSettings } from '../models/upload-settings';
 import * as events from './constant';
 import * as CLS from './classes';
-import { read } from '../common/operations';
+import { read, filter } from '../common/operations';
 import { FileManagerModel } from './file-manager-model';
 import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs } from './interface';
 import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';
@@ -67,6 +67,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /* Internal variables */
     private keyboardModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
+    public filterData: Object = null;
     public originalPath: string;
     public filterPath: string;
     public filterId: string;
@@ -96,6 +97,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public nextPath: string[] = [];
     public fileAction: string;
     public pasteNodes: string[];
+    public isLayoutChange: boolean = false;
     public replaceItems: string[];
     public createdItem: { [key: string]: Object; };
     public layoutSelectedItems: string[] = [];
@@ -121,6 +123,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public isSameAction: boolean = false;
     public currentItemText: string;
     public renameText: string;
+    public isFiltered: boolean = false;
     public enablePaste: boolean = false;
     public splitterObj: Splitter;
     public persistData: boolean = false;
@@ -1164,6 +1167,23 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (!isNOU(items)) {
             this.toolbarModule.enableItems(items, true);
         }
+    }
+
+    /**
+     * Display the custom filtering files in file manager.
+     * @param {filterData: Object} filterData - Specifies the custom filter details along with custom file action name,
+     * which needs to be sent to the server side. If you do not specify the details, then default action name will be `filter`.
+     * @returns void
+     */
+    public filterFiles(filterData?: Object): void {
+        this.filterData = filterData ? filterData : null;
+        this.setProperties({ selectedItems: [] }, true);
+        this.notify(events.selectionChanged, {});
+        this.isFiltered = true;
+        if (this.breadcrumbbarModule.searchObj.element.value !== '') {
+            this.breadcrumbbarModule.searchObj.element.value = '';
+        }
+        filter(this, events.filterEnd);
     }
 
     /**

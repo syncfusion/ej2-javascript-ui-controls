@@ -224,6 +224,7 @@ export class BreadCrumbBar {
     }
     private searchChangeHandler(args?: ChangedEventArgs): void {
         if (!isNullOrUndefined(args.value)) {
+            this.parent.isFiltered = false;
             if (this.parent.searchSettings.allowSearchOnTyping) {
                 window.clearTimeout(this.searchTimer);
                 this.searchTimer = window.setTimeout(() => { searchWordHandler(this.parent, args.value, false); }, 300);
@@ -237,6 +238,7 @@ export class BreadCrumbBar {
         if (li.nodeName === 'LI' || li.nodeName === 'A') {
             let node: Element = li.nodeName === 'LI' ? li.children[0] : li;
             if (!isNullOrUndefined(node)) {
+                this.parent.isFiltered = false;
                 let currentPath: string = this.updatePath((<HTMLElement>node));
                 this.liClick(currentPath);
                 let treeNodeId: string = this.parent.pathId[this.parent.pathId.length - 1];
@@ -298,6 +300,7 @@ export class BreadCrumbBar {
 
     /* istanbul ignore next */
     private removeSearchValue(): void {
+        this.parent.isFiltered = false;
         if (this.searchObj && (this.searchObj.value !== '' || this.searchObj.element.value !== '')) {
             this.searchObj.value = '';
             this.searchObj.element.value = '';

@@ -4,6 +4,7 @@ import * as cls from '../base/css-constants';
 import { Splitter as SplitterLayout, ResizeEventArgs, ResizingEventArgs } from '@syncfusion/ej2-layouts';
 import { SplitterSettingsModel } from '../models/models';
 import { ISplitterResizedEventArgs } from '../base/interface';
+import { Deferred } from '@syncfusion/ej2-data';
 /**
  * Splitter module is used to define the splitter position in Gantt layout.
  */
@@ -49,19 +50,27 @@ export class Splitter {
             resizeStart: (args: ResizeEventArgs) => {
                 this.splitterPreviousPositionGrid = args.pane[0].scrollWidth + 1 + 'px';
                 this.splitterPreviousPositionChart = args.pane[1].scrollWidth + 1 + 'px';
-                this.parent.trigger('splitterResizeStart', args);
+                let callBackPromise: Deferred = new Deferred();
+                this.parent.trigger('splitterResizeStart', args, (resizeStartArgs: ResizeEventArgs) => {
+                    callBackPromise.resolve(resizeStartArgs);
+                });
+                return callBackPromise;
             },
             resizing: (args: ResizingEventArgs) => {
                 this.parent.trigger('splitterResizing', args);
             },
             resizeStop: (args: ISplitterResizedEventArgs) => {
-                this.parent.trigger('splitterResized', args);
-                if (args.cancel === true) {
-                    this.splitterObject.paneSettings[0].size = null;
-                    this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
-                    this.splitterObject.paneSettings[1].size = null;
-                    this.splitterObject.paneSettings[1].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionChart);
-                }
+                let callBackPromise: Deferred = new Deferred();
+                this.parent.trigger('splitterResized', args, (splitterResizedArgs: ISplitterResizedEventArgs) => {
+                    if (splitterResizedArgs.cancel === true) {
+                        this.splitterObject.paneSettings[0].size = null;
+                        this.splitterObject.paneSettings[0].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionGrid);
+                        this.splitterObject.paneSettings[1].size = null;
+                        this.splitterObject.paneSettings[1].size = this.getSpliterPositionInPercentage(this.splitterPreviousPositionChart);
+                    }
+                    callBackPromise.resolve(splitterResizedArgs);
+                });
+                return callBackPromise;
             }
         });
         this.parent.element.appendChild(this.parent.splitterElement);

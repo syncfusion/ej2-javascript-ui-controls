@@ -76,6 +76,7 @@ describe('UI virtualization', () => {
                 let data = { text: '55', id: '55' };
                 listObj.selectItem(data);
                 let selectedItem = listObj.getSelectedItems();
+                listObj.blazorGetSelectedItems(selectedItem);
                 expect(selectedItem.index).toBe(55);
                 expect(selectedItem.text).toBe('55');
                 expect(selectedItem.data.text).toBe(data.text);

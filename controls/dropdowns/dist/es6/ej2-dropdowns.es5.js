@@ -1678,7 +1678,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownList.prototype.updateIconState = function () {
         if (this.showClearButton) {
-            if (this.inputElement.value !== '') {
+            if (this.inputElement.value !== '' && !this.readonly) {
                 removeClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);
             }
             else {
@@ -6897,16 +6897,16 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var text = this.getTextByValue(value);
         if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
-            var temp = li.cloneNode(true);
-            var data = this.getDataByValue(value);
-            append([temp], this.mainList);
-            this.mainData.push(data);
+            var temp_1 = li.cloneNode(true);
+            var data_1 = this.getDataByValue(value);
             var eventArgs = {
-                newData: data,
+                newData: data_1,
                 cancel: false
             };
             this.trigger('customValueSelection', eventArgs, function (eventArgs) {
                 if (!eventArgs.cancel) {
+                    append([temp_1], _this.mainList);
+                    _this.mainData.push(data_1);
                     _this.remoteCustomValue = false;
                     _this.addValue(value, text, e);
                 }

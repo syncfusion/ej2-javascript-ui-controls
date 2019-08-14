@@ -2198,6 +2198,82 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    describe('Inserting Image as Base64 - ', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveFormat: "Base64"
+                }
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Test the inserted image in the component ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            (document.querySelector('.e-insertImage') as HTMLElement).click();
+            setTimeout(() => {
+                expect(rteObj.getContent().querySelector(".e-rte-image.e-imginline").getAttribute("src").indexOf("blob") == -1).toBe(true);
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).imageModule.deleteImg(evnArg);
+                (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+                done();
+            }, 4000);
+        });
+    });
+
+    describe('Inserting Image as Blob - ', () => {
+        let rteObj: RichTextEditor;
+        beforeEach((done: Function) => {
+            rteObj = renderRTE({
+                insertImageSettings: {
+                    saveFormat: "Blob"
+                }
+            });
+            done();
+        })
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Test the inserted image in the component ', (done) => {
+            let rteEle: HTMLElement = rteObj.element;
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args = { preventDefault: function () { } };
+            let range = new NodeSelection().getRange(document);
+            let save = new NodeSelection().save(range, document);
+            let evnArg = { args: MouseEvent, self: (<any>rteObj).imageModule, selection: save, selectNode: new Array(), };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item button")[8] as HTMLElement).click();
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "overide/mimetype" });
+            let eventArgs = { type: 'click', target: { files: [fileObj] }, preventDefault: (): void => { } };
+            (<any>rteObj).imageModule.uploadObj.onSelectFiles(eventArgs);
+            (document.querySelector('.e-insertImage') as HTMLElement).click();
+            setTimeout(() => {
+                expect(rteObj.getContent().querySelector(".e-rte-image.e-imginline").getAttribute("src").indexOf("base64") == -1).toBe(true);
+                evnArg.selectNode = [rteObj.element];
+                (<any>rteObj).imageModule.deleteImg(evnArg);
+                (<any>rteObj).imageModule.uploadObj.upload((<any>rteObj).imageModule.uploadObj.filesData[0]);
+                done();
+            }, 4000);
+        });
+    });
+
     describe(' Caption image with link insert testing', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

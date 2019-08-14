@@ -35,10 +35,10 @@ export function lastDateOfMonth(dt: Date): Date {
     return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
 }
 export function getWeekNumber(dt: Date): number {
-    let currentDate: number = new Date('' + dt).valueOf();
     let date: number = new Date(dt.getFullYear(), 0, 1).valueOf();
-    let a: number = (currentDate - date);
-    return Math.ceil((((a) / MS_PER_DAY) + new Date(date).getDay() + 1) / 7);
+    let currentDate: number = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate()).valueOf();
+    let dayOfYear: number = ((currentDate - date + MS_PER_DAY) / MS_PER_DAY);
+    return Math.ceil(dayOfYear / 7);
 }
 export function setTime(date: Date, time: number): Date {
     let tzOffsetBefore: number = date.getTimezoneOffset();

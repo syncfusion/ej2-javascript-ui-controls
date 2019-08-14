@@ -101,14 +101,126 @@
       opacity: 0;
       position: absolute;
       width: 0;
-    }.e-detailheadercell,
-    .e-headercontent .e-table  .e-detail-intent,
-    .e-gridcontent .e-table  .e-detail-intent,
+    }
+
+    .e-detailheadercell,
+    .e-headercontent .e-table .e-detail-intent,
+    .e-gridcontent .e-table .e-detail-intent,
     .e-table .e-detailrow .e-detailindentcell,
     .e-table .e-detailrowexpand,
     .e-table .e-detailrowcollapse,
     .e-filterbarcell.e-mastercell {
       display: none;
+    }
+
+    .e-icons.e-errorelem {
+      display: inline-block;
+      padding-left: 10px;
+      vertical-align: middle;
+    }
+
+    .e-errorelem::before {
+      color: $error-elem-color;
+      content: '\e22a';
+      transform: rotate(180deg);
+    }
+
+    .e-gridcontent {
+      td.e-childborder {
+        border-color: $childborder-color;
+        border-width: 1px 0 0;
+        box-shadow: 0 1px 0 0 $childborder-color;
+        position: relative;
+        z-index: 1;
+      }
+
+      td.e-rowcell.e-childborder.e-dragborder,
+      td.e-rowcell.e-dropbottom.e-dragborder td.e-rowdragdrop.e-dropbottom.e-dragborder {
+        box-shadow: 0 1px 0 0 $childborder-color;
+      }
+
+      td.e-rowcell.e-dragborder,
+      tr.e-row:first-child .e-rowcell.e-dragborder,
+      .e-rowdragdrop.e-dragborder {
+        box-shadow: 0 0 0 0;
+      }
+
+      td.e-childborder:first-child {
+        border-left: $treegrid-rowdrag-childborder-border;
+        box-shadow: 0 1px 0 0 $childborder-color;
+        position: relative;
+        z-index: 1;
+      }
+
+      td.e-rowcell.e-childborder:last-child {
+        border-right: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-lastrowcell.e-childborder {
+        border-width: 1px 0;
+      }
+
+      td.e-lastrowcell.e-childborder:last-child {
+        border-right: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-lastrowcell.e-childborder:first-child {
+        border-left: $treegrid-rowdrag-childborder-border;
+      }
+
+      td.e-dropbottom:first-child,
+      td.e-rowcell.e-dropbottom,
+      td.e-dropbottom {
+        box-shadow: 0 1px 0 0 $childborder-color;
+        position: relative;
+        z-index: 1;
+      }
+
+      td.e-droptop:first-child,
+      td.e-rowcell.e-droptop {
+        border-top-color: $childborder-color;
+      }
+
+      td.e-lastrowcell.e-dropbottom {
+        border-bottom-color: $childborder-color;
+      }
+
+      td.e-rowdragdrop.e-droptop.e-dragborder {
+        box-shadow: 0 0 0 0;
+      }
+
+      .e-gridheader .e-firstrow-dragborder {
+        height: 1px;
+      }
+
+      .e-lastrow-dragborder {
+        height: 0;
+      }
+    }
+
+    .e-gridheader .e-firstrow-dragborder {
+      height: 0;
+    }
+
+    .e-droptop .e-lastrow-dragborder {
+      height: 0;
+    }
+
+    .e-treegrid-relative {
+      position: relative;
+    }
+
+    .e-gridheader .e-firstrow-dragborder tr:first-child.e-dropbottom {
+      height: 0;
+    }
+
+    .e-gridheader .e-firstrow-border,
+    .e-gridcontent .e-lastrow-border {
+      background-color: $childborder-color;
+      bottom: 0;
+      height: 1px;
+      position: absolute;
+      z-index: 1;
     }
   }
 }

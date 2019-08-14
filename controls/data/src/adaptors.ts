@@ -1994,7 +1994,8 @@ export class CacheAdaptor extends UrlAdaptor {
      * @param  {Ajax} settings?
      */
     public beforeSend(dm: DataManager, request: XMLHttpRequest, settings?: Ajax): void {
-        if (DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch) && settings.type.toLowerCase() === 'post') {
+        if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
+            && settings.type.toLowerCase() === 'post') {
             request.setRequestHeader('Accept', this.cacheAdaptor.options.multipartAccept);
         }
 

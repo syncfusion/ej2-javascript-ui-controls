@@ -101,7 +101,7 @@ describe('Linear gauge control', () => {
                 svg = document.getElementById('container_AxisLabelsGroup');
                 expect(svg.childElementCount).toBe(10);
                 svg = document.getElementById('container_AxisLabel_5');
-                expect(svg.style.fill).toBe('rgb(104, 104, 104)');
+                expect(svg.style.fill).toBe('violet');
                 done();
             };
             gauge.axes[0].opposedPosition = false;

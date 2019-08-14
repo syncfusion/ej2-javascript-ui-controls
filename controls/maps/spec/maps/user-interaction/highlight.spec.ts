@@ -250,11 +250,13 @@ describe('Highlight Settings', () => {
                 legendSettings: {
                     visible: true,
                     position: 'Top',
+                    shapeBorder: { color: 'orange', width: 1}
                 },
                 layers: [{
                     highlightSettings: {
                         enable: true,
-                        fill: 'red'
+                        fill: 'red',
+                        border: { color: 'green', width: 3}
                     },
                     selectionSettings: {
                         enable: true,
@@ -265,6 +267,7 @@ describe('Highlight Settings', () => {
                     dataSource: Population_Density,
                     shapeSettings: {
                         colorValuePath: 'density',
+                        border: { color: 'lime', width: 2},
                         fill: '#E5E5E5',
                         colorMapping: [
                             {
@@ -303,6 +306,7 @@ describe('Highlight Settings', () => {
             highlight.loaded = (args: ILoadedEventArgs) => {
             spec = getElement('container_Legend_Shape_Index_0');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+          
             done();
         };
             highlight.refresh();
@@ -354,6 +358,13 @@ describe('Highlight Settings', () => {
         it('Legend selection and highlight in interactive legend', (done: Function) => {
             highlight.loaded = (args: ILoadedEventArgs) => {
             spec = getElement('container_Legend_Index_0');
+            trigger.mousemoveEvent(spec, 0, 0, 0, 0);
+            expect(spec.getAttribute('stroke') === 'green').toBe(true);
+            let shapeEle = getElement('container_LayerIndex_0_shapeIndex_4_dataIndex_4');
+            expect(shapeEle.getAttribute('stroke') === 'green').toBe(true);
+            trigger.mousemoveEvent(getElement('container_Legend_Index_1'), 0, 0, 0, 0);
+            expect(spec.getAttribute('stroke') === 'orange').toBe(true);
+            expect(shapeEle.getAttribute('stroke') === 'lime').toBe(true);
             trigger.clickEvent(spec);
             spec = getElement('container_Legend_Index_1');
             trigger.mousemoveEvent(spec, 0, 0, 0, 0);
@@ -440,7 +451,6 @@ describe('Highlight Settings', () => {
             });
             it('Highlight checking if highlight fill color as null', (done: Function) => {
                 highlight.loaded = (args: ILoadedEventArgs) => {
-                    debugger
                 spec = getElement('container_LayerIndex_0_shapeIndex_72_dataIndex_65');
                 trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
                 expect(spec.getAttribute('fill')).toBe('rgb(38,82,168)');

@@ -5635,16 +5635,19 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         this.chart = chart;
         var dateSource = this.dataSource || chart.dataSource;
         if (!(dateSource instanceof DataManager) && isNullOrUndefined(this.query)) {
-            this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, chart, false);
+            this.dataManagerSuccess({ result: dateSource, count: dateSource.length }, false);
             return;
         }
         var dataManager = this.dataModule.getData(this.dataModule.generateQuery().requiresCount());
-        dataManager.then(function (e) { return _this.dataManagerSuccess(e, chart); });
+        dataManager.then(function (e) { return _this.dataManagerSuccess(e); });
     };
-    SeriesBase.prototype.dataManagerSuccess = function (e, chart, isRemoteData) {
+    SeriesBase.prototype.dataManagerSuccess = function (e, isRemoteData) {
         if (isRemoteData === void 0) { isRemoteData = true; }
         this.currentViewData = e.count ? e.result : [];
         if (this instanceof Series) {
+            if (this.chart.stockChart) {
+                this.chart.stockChart.series[this.index].localData = this.currentViewData;
+            }
             var argsData = {
                 name: seriesRender, series: this, data: this.currentViewData, fill: this.interior
             };
@@ -5652,14 +5655,12 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
             this.interior = argsData.fill;
             this.currentViewData = argsData.data;
         }
+        if (this.chart.stockChart && !(this instanceof Series)) {
+            this.currentViewData = this.chart.stockChart.findCurrentData(this.chart.stockChart.series[0].localData, this.chart.stockChart.series[0].xName);
+        }
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
-        if (chart.stockChart) {
-            if (isNullOrUndefined(chart.stockChart.blazorDataSource[this.index])) {
-                chart.stockChart.blazorDataSource.splice(this.index, 0, this.currentViewData);
-            }
-        }
         this.currentViewData = null;
     };
     SeriesBase.prototype.refreshChart = function (isRemoteData) {
@@ -5677,7 +5678,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         //if (chart.visibleSeries.length === (chart.visibleSeriesCount - chart.indicators.length)) {
         if (chart.visibleSeries.length === (chart.visibleSeriesCount)) {
             chart.refreshBound();
-            chart.trigger('loaded', { chart: chart });
+            chart.trigger('loaded', { chart: chart.isBlazor ? {} : chart });
             if (this.chart.stockChart && this.chart.stockChart.initialRender) {
                 this.chart.stockChart.stockChartDataManagerSuccess();
                 this.chart.stockChart.initialRender = false;
@@ -7774,6 +7775,12 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         }
         this.calculateStackValues();
         this.calculateBounds();
+        //this prevents the initial rendering of stock chart
+        if (this.stockChart && !this.stockChart.rangeFound) {
+            if (this.stockChart.enablePeriodSelector || this.stockChart.enableSelector) {
+                return null;
+            }
+        }
         this.renderElements();
         removeElement$1('chartmeasuretext');
     };
@@ -23857,7 +23864,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
     AccumulationSeries.prototype.findSumOfPoints = function (result) {
         var length = Object.keys(result).length;
         for (var i = 0; i < length; i++) {
-            if (!isNullOrUndefined(result[i][this.yName])) {
+            if (!isNullOrUndefined(result[i]) && !isNullOrUndefined(result[i][this.yName]) && !isNaN(result[i][this.yName])) {
                 this.sumOfPoints += Math.abs(result[i][this.yName]);
             }
         }
@@ -23959,7 +23966,7 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     AccumulationSeries.prototype.setAccEmptyPoint = function (point, i, data, colors) {
-        if (!isNullOrUndefined(point.y)) {
+        if (!(isNullOrUndefined(point.y) || isNaN(point.y))) {
             return null;
         }
         point.color = this.emptyPointSettings.fill || point.color;
@@ -29450,14 +29457,6 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
                 clearTimeout(_this.resizeTo);
                 return;
             }
-            if (_this.stockChart) {
-                for (var i = 0; i < arg.rangeNavigator.series.length; i++) {
-                    arg.rangeNavigator.series[i].dataSource = _this.stockChart.tempDataSource[i] || _this.stockChart.blazorDataSource[i];
-                }
-                if (_this.stockChart.dataSource) {
-                    arg.rangeNavigator.dataSource = _this.stockChart.tempDataSource[0];
-                }
-            }
             _this.createRangeSvg();
             arg.currentSize = _this.availableSize;
             _this.trigger('resized', arg);
@@ -29911,7 +29910,8 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.setControlValues(this.rootControl);
         var enableCustom = true;
-        var selectorElement = createElement('div', { id: this.control.element.id + '_selector' });
+        var controlId = this.control.element.id;
+        var selectorElement = createElement('div', { id: controlId + '_selector' });
         this.periodSelectorDiv.appendChild(selectorElement);
         var buttons = this.control.periods;
         var selector = this.updateCustomElement();
@@ -29924,23 +29924,23 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
         }
         var selctorArgs;
         if (enableCustom) {
-            this.calendarId = this.control.element.id + '_calendar';
+            this.calendarId = controlId + '_calendar';
             selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
             selctorArgs = {
                 selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
             };
         }
         if (this.rootControl.getModuleName() === 'stockChart') {
-            selector.push({ template: createElement('button', { id: 'resetClick', innerHTML: 'Reset',
+            selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
                     styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
                 align: 'Right' });
             if (this.rootControl.exportType.indexOf('Print') > -1) {
-                selector.push({ template: createElement('button', { id: 'print', innerHTML: 'Print', styles: buttonStyles,
+                selector.push({ template: createElement('button', { id: controlId + '_print', innerHTML: 'Print', styles: buttonStyles,
                         className: 'e-dropdown-btn e-btn' }),
                     align: 'Right' });
             }
             if (this.rootControl.exportType.length) {
-                selector.push({ template: createElement('button', { id: 'export', innerHTML: 'Export', styles: buttonStyles,
+                selector.push({ template: createElement('button', { id: controlId + '_export', innerHTML: 'Export', styles: buttonStyles,
                         className: 'e-dropdown-btn e-btn' }),
                     align: 'Right' });
             }
@@ -30018,18 +30018,22 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
     };
     PeriodSelector.prototype.updateCustomElement = function () {
         var selector = [];
+        var controlId = this.rootControl.element.id;
         var buttonStyles = 'text-transform: none; text-overflow: unset';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if (this.rootControl.seriesType.length) {
-                selector.push({ template: createElement('button', { id: 'seriesType', innerHTML: 'Series', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: controlId + '_seriesType', innerHTML: 'Series',
+                        styles: buttonStyles }),
                     align: 'Left' });
             }
             if (this.rootControl.indicatorType.length) {
-                selector.push({ template: createElement('button', { id: 'indicatorType', innerHTML: 'Indicators', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: controlId + '_indicatorType', innerHTML: 'Indicators',
+                        styles: buttonStyles }),
                     align: 'Left' });
             }
             if (this.rootControl.trendlineType.length) {
-                selector.push({ template: createElement('button', { id: 'trendType', innerHTML: 'Trendline', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: controlId + '_trendType', innerHTML: 'Trendline',
+                        styles: buttonStyles }),
                     align: 'Left' });
             }
         }
@@ -30368,7 +30372,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
     function CartesianChart(chart) {
         this.stockChart = chart;
     }
-    CartesianChart.prototype.initializeChart = function () {
+    CartesianChart.prototype.initializeChart = function (chartArgsData) {
         var _this = this;
         var stockChart = this.stockChart;
         if (!stockChart.chartObject) {
@@ -30399,6 +30403,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
                         args.chart.tooltip.format += '<br/>Volume : <b>${point.volume}</b>';
                     }
                 }
+                args.chart.animateSeries = false;
             },
             chartArea: stockChart.chartArea,
             margin: this.findMargin(stockChart),
@@ -30414,6 +30419,15 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
                 _this.stockChart.trigger('axisLabelRender', args);
             },
             seriesRender: function (args) {
+                if (args.data && _this.stockChart.startValue && _this.stockChart.endValue) {
+                    args.data = args.data
+                        .filter(function (data) {
+                        return (new Date(Date.parse(data[args.series.xName])).getTime() >= _this.stockChart.startValue &&
+                            new Date(Date.parse(data[args.series.xName])).getTime() <= _this.stockChart.endValue);
+                    });
+                }
+                args.data = chartArgsData ? chartArgsData : args.data;
+                //args.data = this.stockChart.findCurrentData(args.data ,args.series.xName);
                 _this.stockChart.trigger('seriesRender', args);
             },
             pointClick: function (args) {
@@ -30472,6 +30486,10 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
             chartSeries[i].close = series[i].close;
             chartSeries[i].xName = series[i].xName;
             chartSeries[i].volume = series[i].volume;
+            chartSeries[i].animation = series[i].animation;
+            if (series[i].localData) {
+                chartSeries[i].dataSource = series[i].localData;
+            }
             if (chartSeries[i].type !== 'HiloOpenClose' && chartSeries[i].type !== 'Candle' && chartSeries[i].yName === 'volume') {
                 chartSeries[i].enableTooltip = false;
             }
@@ -30511,31 +30529,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
      * @param end
      */
     CartesianChart.prototype.cartesianChartRefresh = function (stockChart, start, end, data) {
-        var _this = this;
-        stockChart.chart.series.forEach(function (series) {
-            series.dataSource = data ? data : (stockChart.blazorDataSource[series.index] ||
-                _this.checkDataSource(stockChart.tempDataSource[series.index]) || _this.checkDataSource(stockChart.dataSource))
-                .filter(function (data) {
-                return (new Date(Date.parse(data[series.xName])).getTime() >= start &&
-                    new Date(Date.parse(data[series.xName])).getTime() <= end);
-            });
-            series.animation.enable = false;
-            if (series.trendlines.length !== 0) {
-                for (var _i = 0, _a = series.trendlines; _i < _a.length; _i++) {
-                    var trendLine = _a[_i];
-                    trendLine.animation.enable = false;
-                }
-            }
-        });
-        stockChart.cartesianChart.initializeChart();
-    };
-    CartesianChart.prototype.checkDataSource = function (data) {
-        if (data instanceof DataManager) {
-            return (data.dataSource.json);
-        }
-        else {
-            return data;
-        }
+        stockChart.cartesianChart.initializeChart(data);
     };
     CartesianChart.prototype.copyObject = function (originalObject) {
         return (extend({}, originalObject, {}, true));
@@ -30656,7 +30650,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
         this.selectedSeries = this.stockChart.series[0].type;
     }
     ToolBarSelector.prototype.initializePeriodSelector = function () {
-        var periods = this.stockChart.periods.length ? this.stockChart.periods : this.calculateAutoPeriods();
+        var periods = this.stockChart.tempPeriods;
         this.stockChart.periods = periods;
         this.stockChart.periodSelector.rootControl = this.stockChart;
         var rect = this.stockChart.chart.chartAxisLayoutPanel.seriesClipRect;
@@ -30733,13 +30727,13 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 _this.stockChart.cartesianChart.initializeChart();
             },
         });
-        seriesType.appendTo('#seriesType');
+        seriesType.appendTo('#' + this.stockChart.element.id + '_seriesType');
     };
     ToolBarSelector.prototype.resetButton = function () {
         var _this = this;
         var reset = new Button();
-        reset.appendTo('#resetClick');
-        document.getElementById('resetClick').onclick = function () {
+        reset.appendTo('#' + this.stockChart.element.id + '_reset');
+        document.getElementById(this.stockChart.element.id + '_reset').onclick = function () {
             var indicatorlength = _this.indicators.length;
             while (indicatorlength) {
                 _this.stockChart.indicators.pop();
@@ -30771,9 +30765,6 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
             _this.stockChart.indicatorElements = null;
             _this.stockChart.resizeTo = null;
             _this.stockChart.zoomChange = false;
-            for (var j = 0; j < _this.stockChart.series.length; j++) {
-                _this.stockChart.series[j].dataSource = _this.stockChart.tempDataSource[j] || _this.stockChart.blazorDataSource[j];
-            }
             _this.stockChart.refresh();
         };
     };
@@ -30818,7 +30809,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 }
             },
         });
-        this.trendlineDropDown.appendTo('#trendType');
+        this.trendlineDropDown.appendTo('#' + this.stockChart.element.id + '_trendType');
     };
     ToolBarSelector.prototype.initializeIndicatorSelector = function () {
         var _this = this;
@@ -30863,18 +30854,19 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 }
             },
         });
-        this.indicatorDropDown.appendTo('#indicatorType');
+        this.indicatorDropDown.appendTo('#' + this.stockChart.element.id + '_indicatorType');
     };
     ToolBarSelector.prototype.getIndicator = function (type, yAxisName) {
+        var currentSeries = this.stockChart.series[0];
         var indicator = [{
                 type: type, period: 3, yAxisName: yAxisName,
-                dataSource: this.stockChart.series[0].dataSource,
-                xName: this.stockChart.series[0].xName,
-                open: this.stockChart.series[0].open,
-                close: this.stockChart.series[0].close,
-                high: this.stockChart.series[0].high,
-                low: this.stockChart.series[0].low,
-                volume: this.stockChart.series[0].volume,
+                dataSource: currentSeries.localData,
+                xName: currentSeries.xName,
+                open: currentSeries.open,
+                close: currentSeries.close,
+                high: currentSeries.high,
+                low: currentSeries.low,
+                volume: currentSeries.volume,
                 fill: type === 'Sma' ? '#32CD32' : '#6063ff',
                 animation: { enable: false }, upperLine: { color: '#FFE200', width: 1 },
                 periodLine: { width: 2 }, lowerLine: { color: '#FAA512', width: 1 },
@@ -30972,8 +30964,8 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
         var _this = this;
         if (this.stockChart.exportType.indexOf('Print') > -1) {
             var print_1 = new Button();
-            print_1.appendTo('#print');
-            document.getElementById('print').onclick = function () {
+            print_1.appendTo('#' + this.stockChart.element.id + '_print');
+            document.getElementById(this.stockChart.element.id + '_print').onclick = function () {
                 _this.stockChart.chart.print(_this.stockChart.element.id);
             };
         }
@@ -31010,21 +31002,11 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 }
             }
         });
-        exportChart.appendTo('#export');
+        exportChart.appendTo('#' + this.stockChart.element.id + '_export');
     };
     ToolBarSelector.prototype.calculateAutoPeriods = function () {
         var defaultPeriods = [];
-        var chart = this.stockChart.chart;
-        var axisMin = Infinity;
-        var axisMax = -Infinity;
-        for (var _i = 0, _a = chart.axisCollections; _i < _a.length; _i++) {
-            var axis = _a[_i];
-            if (axis.orientation === 'Horizontal') {
-                axisMin = Math.min(axisMin, axis.visibleRange.min);
-                axisMax = Math.max(axisMax, axis.visibleRange.max);
-            }
-        }
-        defaultPeriods = this.findRange(axisMin, axisMax);
+        defaultPeriods = this.findRange(this.stockChart.seriesXMin, this.stockChart.seriesXMax);
         defaultPeriods.push({ text: 'YTD', selected: true }, { text: 'All' });
         return defaultPeriods;
     };
@@ -31306,7 +31288,7 @@ var Animation$2 = /** @__PURE__ @class */ (function (_super) {
         Property(0)
     ], Animation$$1.prototype, "delay", void 0);
     __decorate$12([
-        Property(true)
+        Property(false)
     ], Animation$$1.prototype, "enable", void 0);
     __decorate$12([
         Property(1000)
@@ -31357,7 +31339,15 @@ var StockChartConnector = /** @__PURE__ @class */ (function (_super) {
 var StockSeries = /** @__PURE__ @class */ (function (_super) {
     __extends$76(StockSeries, _super);
     function StockSeries() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        /**
+         * The DataSource field that contains the x value.
+         * It is applicable for series and technical indicators
+         * @default ''
+         */
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        /** @private */
+        _this.localData = undefined;
+        return _this;
     }
     __decorate$12([
         Property('date')
@@ -32168,11 +32158,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.isSingleAxis = false;
         _this.chartid = 57723;
-        /** @private */
-        _this.tempDataSource = [];
-        /** @private */
-        _this.blazorDataSource = [];
-        /** @private */
         _this.tempSeriesType = [];
         /** private */
         _this.zoomChange = false;
@@ -32186,6 +32171,10 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         _this.toolbarHeight = _this.enablePeriodSelector ? (Browser.isDevice ? 56 : 42) : 0;
         /** @private */
         _this.initialRender = true;
+        /** @private */
+        _this.rangeFound = false;
+        /** @private */
+        _this.tempPeriods = [];
         return _this;
     }
     /**
@@ -32199,7 +32188,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             var property = _a[_i];
             switch (property) {
                 case 'series':
-                    this.tempDataSource = this.blazorDataSource = [];
+                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -32209,15 +32198,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      * To change the range for chart
      */
     StockChart.prototype.rangeChanged = function (updatedStart, updatedEnd) {
-        var _this = this;
         // manage chart refresh
-        this.chart.series.forEach(function (series) {
-            series.dataSource = _this.tempDataSource[series.index].filter(function (data) {
-                return (new Date(Date.parse(data[series.xName])).getTime() >= updatedStart &&
-                    new Date(Date.parse(data[series.xName])).getTime() <= updatedEnd);
-            });
-            series.animation.enable = false;
-        });
         var chartElement = document.getElementById(this.chartObject.id);
         if (chartElement) {
             while (chartElement.firstChild) {
@@ -32277,6 +32258,11 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             var collection = document.getElementsByClassName('e-stockChart').length;
             this.element.id = 'stockChart_' + this.chartid + '_' + collection;
         }
+        this.seriesXMax = null;
+        this.seriesXMin = null;
+        this.startValue = null;
+        this.endValue = null;
+        this.currentEnd = null;
     };
     /**
      * Method to set culture for chart
@@ -32287,7 +32273,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     StockChart.prototype.storeDataSource = function () {
         var _this = this;
         this.series.forEach(function (series) {
-            _this.tempDataSource.push(series.dataSource);
             _this.tempSeriesType.push(series.type);
         });
     };
@@ -32360,6 +32345,18 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         var height = (this.enablePeriodSelector ? this.toolbarHeight : 0) + this.titleSize.height;
         tooltipDiv.setAttribute('style', 'position: relative; height:' + height + 'px');
         appendChildElement(false, this.element, tooltipDiv, false);
+    };
+    StockChart.prototype.findCurrentData = function (totalData, xName) {
+        var _this = this;
+        var tempData;
+        if (totalData && this.startValue && this.endValue) {
+            tempData = totalData
+                .filter(function (data) {
+                return (new Date(Date.parse(data[xName])).getTime() >= _this.startValue &&
+                    new Date(Date.parse(data[xName])).getTime() <= _this.endValue);
+            });
+        }
+        return tempData;
     };
     /**
      * Render period selector
@@ -32448,33 +32445,32 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.seriesXMin = Infinity;
         this.seriesXMax = -Infinity;
-        for (var _i = 0, _a = this.chart.axisCollections; _i < _a.length; _i++) {
-            var axis = _a[_i];
-            if (axis.orientation === 'Horizontal') {
-                this.seriesXMin = Math.min(this.seriesXMin, axis.visibleRange.min);
-                this.seriesXMax = Math.max(this.seriesXMax, axis.visibleRange.max);
-            }
-            this.endValue = this.currentEnd = this.seriesXMax;
-            if (this.enablePeriodSelector) {
-                this.toolbarSelector = new ToolBarSelector(this);
-                this.periodSelector = new PeriodSelector(this);
-                this.periods = this.periods.length ? this.periods : this.toolbarSelector.calculateAutoPeriods();
-                this.periods.map(function (period, index) {
-                    if (period.selected && period.text.toLowerCase() === 'ytd') {
-                        _this.startValue = new Date(new Date(_this.currentEnd).getFullYear().toString()).getTime();
-                    }
-                    else if (period.selected && period.text.toLowerCase() === 'all') {
-                        _this.startValue = _this.seriesXMin;
-                    }
-                    else if (period.selected) {
-                        _this.startValue = _this.periodSelector.changedRange(period.intervalType, _this.endValue, period.interval).getTime();
-                    }
-                });
-            }
-            else {
-                this.startValue = this.seriesXMin;
-            }
+        for (var _i = 0, _a = this.chart.series; _i < _a.length; _i++) {
+            var value = _a[_i];
+            this.seriesXMin = Math.min(this.seriesXMin, value.xMin);
+            this.seriesXMax = Math.max(this.seriesXMax, value.xMax);
         }
+        this.endValue = this.currentEnd = this.seriesXMax;
+        if (this.enablePeriodSelector) {
+            this.toolbarSelector = new ToolBarSelector(this);
+            this.periodSelector = new PeriodSelector(this);
+            this.tempPeriods = this.periods.length ? this.periods : this.toolbarSelector.calculateAutoPeriods();
+            this.tempPeriods.map(function (period, index) {
+                if (period.selected && period.text.toLowerCase() === 'ytd') {
+                    _this.startValue = new Date(new Date(_this.currentEnd).getFullYear().toString()).getTime();
+                }
+                else if (period.selected && period.text.toLowerCase() === 'all') {
+                    _this.startValue = _this.seriesXMin;
+                }
+                else if (period.selected) {
+                    _this.startValue = _this.periodSelector.changedRange(period.intervalType, _this.endValue, period.interval).getTime();
+                }
+            });
+        }
+        else {
+            this.startValue = this.seriesXMin;
+        }
+        this.rangeFound = true;
     };
     /**
      * Handles the chart resize.
@@ -32635,12 +32631,16 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             var diff = Math.abs(this.mouseUpXPoint - this.mouseDownXPoint);
             if (this.mouseDownXPoint < this.mouseUpXPoint) {
                 if (this.seriesXMin <= this.referenceXAxis.visibleRange.min - diff) {
+                    this.startValue = this.referenceXAxis.visibleRange.min - diff;
+                    this.endValue = this.referenceXAxis.visibleRange.max - diff;
                     this.cartesianChart.cartesianChartRefresh(this, this.referenceXAxis.visibleRange.min - diff, this.referenceXAxis.visibleRange.max - diff);
                     this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min - diff, this.referenceXAxis.visibleRange.max - diff);
                 }
             }
             else {
                 if (this.seriesXMax >= this.referenceXAxis.visibleRange.max + diff) {
+                    this.startValue = this.referenceXAxis.visibleRange.min + diff;
+                    this.endValue = this.referenceXAxis.visibleRange.max + diff;
                     this.cartesianChart.cartesianChartRefresh(this, this.referenceXAxis.visibleRange.min + diff, this.referenceXAxis.visibleRange.max + diff);
                     this.rangeSelector.sliderChange(this.referenceXAxis.visibleRange.min + diff, this.referenceXAxis.visibleRange.max + diff);
                 }
@@ -35841,12 +35841,10 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
                     clipRect.setAttribute('x', x.toString());
                 }
                 var event = {
-                    cancel: false, name: animationComplete$1, smithchart: smithchart
+                    cancel: false, name: animationComplete$1,
+                    smithchart: smithchart.isBlazor ? null : smithchart
                 };
-                var blazorEvent = {
-                    cancel: false, name: animationComplete$1, smithchart: smithchart
-                };
-                smithchart.trigger(animationComplete$1, smithchart.isBlazor ? blazorEvent : event);
+                smithchart.trigger(animationComplete$1, event);
             }
         });
     };
@@ -36131,6 +36129,8 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'background':
+                case 'border':
+                case 'series':
                     renderer = true;
                     break;
                 case 'size':
@@ -36139,9 +36139,6 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'theme':
                     this.animateSeries = true;
-                    renderer = true;
-                    break;
-                case 'border':
                     renderer = true;
                     break;
             }
@@ -36195,7 +36192,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
-        this.trigger('loaded', this.isBlazor ? {} : { smithchart: this });
+        this.trigger('loaded', { smithchart: this.isBlazor ? null : this });
     };
     Smithchart.prototype.createSecondaryElement = function () {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
@@ -38409,12 +38406,11 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
      */
     SparklineRenderer.prototype.triggerPointRender = function (name, i, fill, border) {
         var args = {
-            name: name, cancel: false, border: border, fill: fill, sparkline: this.sparkline, pointIndex: i
+            name: name, cancel: false, border: border,
+            fill: fill, sparkline: this.sparkline.isBlazor ? null : this.sparkline,
+            pointIndex: i
         };
-        var blazorArgs = {
-            name: name, cancel: false, border: border, fill: fill, pointIndex: i
-        };
-        this.sparkline.trigger(name, this.sparkline.isBlazor ? blazorArgs : args);
+        this.sparkline.trigger(name, args);
         return args;
     };
     return SparklineRenderer;
@@ -38491,7 +38487,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
-        this.trigger('loaded', this.isBlazor ? {} : { sparkline: this });
+        this.trigger('loaded', { sparkline: this.isBlazor ? null : this });
     };
     /**
      * To render sparkline elements
@@ -38624,7 +38620,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         var args = {
             name: 'resize',
             previousSize: this.availableSize,
-            sparkline: this,
+            sparkline: this.isBlazor ? null : this,
             currentSize: new Size$1(0, 0)
         };
         if (this.resizeTo) {
@@ -38640,7 +38636,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
             _this.refreshing = true;
             _this.wireEvents();
             args.currentSize = _this.availableSize;
-            _this.trigger('resize', _this.isBlazor ? {} : args);
+            _this.trigger('resize', args);
             _this.render();
         }, 500);
         return false;
@@ -38654,21 +38650,18 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         this.setSparklineMouseXY(e);
         this.notify(Browser.touchMoveEvent, e);
         var args = {
-            name: 'sparklineMouseMove', cancel: false, sparkline: this, event: e
+            name: 'sparklineMouseMove', cancel: false,
+            sparkline: this.isBlazor ? null : this, event: e
         };
-        var blazorArgs = {
-            name: 'sparklineMouseMove', cancel: false, event: e
-        };
-        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
+        this.trigger(args.name, args);
         var pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             var pointArgs = {
-                name: 'pointRegionMouseMove', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
+                name: 'pointRegionMouseMove', cancel: false,
+                event: e, sparkline: this.isBlazor ? null : this,
+                pointIndex: pointClick.pointIndex
             };
-            var pointBlazorArgs = {
-                name: 'pointRegionMouseMove', cancel: false, event: e, pointIndex: pointClick.pointIndex
-            };
-            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
+            this.trigger(pointArgs.name, pointArgs);
         }
         return false;
     };
@@ -38680,21 +38673,18 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
     Sparkline.prototype.sparklineClick = function (e) {
         this.setSparklineMouseXY(e);
         var args = {
-            name: 'sparklineMouseClick', cancel: false, sparkline: this, event: e
+            name: 'sparklineMouseClick', cancel: false,
+            sparkline: this.isBlazor ? null : this, event: e
         };
-        var blazorArgs = {
-            name: 'sparklineMouseClick', cancel: false, event: e
-        };
-        this.trigger(args.name, this.isBlazor ? blazorArgs : args);
+        this.trigger(args.name, args);
         var pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             var pointArgs = {
-                name: 'pointRegionMouseClick', cancel: false, event: e, sparkline: this, pointIndex: pointClick.pointIndex
+                name: 'pointRegionMouseClick', cancel: false,
+                event: e, sparkline: this.isBlazor ? null : this,
+                pointIndex: pointClick.pointIndex
             };
-            var pointBlazorArgs = {
-                name: 'pointRegionMouseClick', cancel: false, event: e, pointIndex: pointClick.pointIndex
-            };
-            this.trigger(pointArgs.name, this.isBlazor ? pointBlazorArgs : pointArgs);
+            this.trigger(pointArgs.name, pointArgs);
         }
         return false;
     };

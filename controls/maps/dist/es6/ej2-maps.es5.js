@@ -1,4 +1,4 @@
-import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
@@ -4399,6 +4399,9 @@ var Annotations = /** @__PURE__ @class */ (function () {
         });
         if (annotationGroup.childElementCount > 0 && !(isNullOrUndefined(getElementByID(secondaryID)))) {
             getElementByID(secondaryID).appendChild(annotationGroup);
+            for (var i = 0; i < this.map.annotations.length; i++) {
+                updateBlazorTemplate(this.map.element.id + '_ContentTemplate_' + i, 'ContentTemplate', this.map.annotations[i]);
+            }
         }
     };
     /**
@@ -4421,9 +4424,10 @@ var Annotations = /** @__PURE__ @class */ (function () {
             annotation: annotation
         };
         this.map.trigger(annotationRendering, argsData, function (annotationArgs) {
+            var blazor = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
-            if (templateFn && templateFn(_this.map).length) {
-                templateElement = Array.prototype.slice.call(templateFn(_this.map));
+            if (templateFn && (!window[blazor] ? templateFn(_this.map, null, null, _this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
+                templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? _this.map : {}, null, null, _this.map.element.id + '_ContentTemplate_' + annotationIndex));
                 var length_1 = templateElement.length;
                 for (var i = 0; i < length_1; i++) {
                     childElement.appendChild(templateElement[i]);
@@ -5053,6 +5057,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * To Remove the SVG
      */
     Maps.prototype.removeSvg = function () {
+        for (var i = 0; i < this.annotations.length; i++) {
+            resetBlazorTemplate(this.element.id + '_ContentTemplate_' + i, 'ContentTemplate');
+        }
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
         if (document.getElementsByClassName('e-tooltip-wrap')[0]) {
@@ -5415,12 +5422,14 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 case 'height':
                 case 'width':
                 case 'layers':
-                    this.createSVG();
+                case 'projectionType':
+                case 'legendSettings':
                     render = true;
                     break;
             }
         }
         if (render) {
+            this.createSVG();
             this.render();
         }
     };
@@ -7033,7 +7042,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                                 if (value === 'highlight' && this.shapeElement !== targetElement) {
                                     if (j === 0) {
                                         this.legendHighlightCollection = [];
-                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], shapeEle.getAttribute('opacity'));
+                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], layer.shapeSettings);
                                     }
                                     length = this.legendHighlightCollection.length;
                                     var legendHighlightColor = this.legendHighlightCollection[length - 1]['legendOldFill'];
@@ -7044,7 +7053,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                                 else if (value === 'selection' && this.shapeSelection) {
                                     this.legendHighlightCollection = [];
                                     if (j === 0) {
-                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], shapeEle.getAttribute('opacity'));
+                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], layer.shapeSettings);
                                     }
                                     selectLength = this.legendSelectionCollection.length;
                                     var legendSelectionColor = this.legendSelectionCollection[selectLength - 1]['legendOldFill'];
@@ -7069,10 +7078,12 @@ var Legend = /** @__PURE__ @class */ (function () {
         element.setAttribute('stroke', borderColor);
         element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
     };
-    Legend.prototype.pushCollection = function (targetElement, collection, oldElement, shapeOpacity) {
+    Legend.prototype.pushCollection = function (targetElement, collection, oldElement, shapeSettings) {
         collection.push({
             legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
-            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'], shapeOpacity: shapeOpacity
+            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'],
+            shapeOpacity: shapeSettings.opacity, shapeOldBorderColor: shapeSettings.border.color,
+            shapeOldBorderWidth: shapeSettings.border.width
         });
         length = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
@@ -7083,7 +7094,7 @@ var Legend = /** @__PURE__ @class */ (function () {
             this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
             var dataCount = item['MapShapeCollection']['Elements'].length;
             for (var j = 0; j < dataCount; j++) {
-                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'], item['shapeOldBorderColor'], item['shapeOldBorderWidth']);
             }
         }
     };
@@ -7137,7 +7148,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 if (getValue === 'highlight' && shapeElement['LegendEle'] !== this.legendElement) {
                     var selectionEle = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
                     if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index]);
+                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
                     }
                     if (length_1 > 0) {
                         for (var j = 0; j < length_1; j++) {
@@ -7176,7 +7187,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                     }
                     if (targetElement.getAttribute('class') !== 'ShapeselectionMapStyle' && this.legendSelection) {
                         if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index]);
+                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index], this.maps.layers[layerIndex].shapeSettings);
                         }
                         this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                         this.shapeElement = shapeElement['LegendEle'];
@@ -7417,7 +7428,7 @@ var Legend = /** @__PURE__ @class */ (function () {
             if (!isDuplicate) {
                 this.legendCollection.push({
                     text: legendText, fill: legendFill, data: newColllection, opacity: legend.opacity,
-                    borderColor: legend.border.color, borderWidth: legend.border.width
+                    borderColor: legend.shapeBorder.color, borderWidth: legend.shapeBorder.width
                 });
             }
         }
@@ -7754,7 +7765,7 @@ var Legend = /** @__PURE__ @class */ (function () {
     };
     Legend.prototype.legendGradientColor = function (colorMap, legendIndex) {
         var legendFillColor;
-        var xmlns = 'https://www.w3.org/2000/svg';
+        var xmlns = 'http://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
             var linerGradientEle = document.createElementNS(xmlns, 'linearGradient');
             var opacity = 1;
@@ -8302,7 +8313,7 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                 });
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
-            if (option.template !== null && Object.keys(option.template).length === 1) {
+            if (option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
                 option.template = option.template[Object.keys(option.template)[0]];
             }
             templateData = this.setTooltipContent(option, templateData);
@@ -8394,7 +8405,7 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
     };
     MapsTooltip.prototype.removeTooltip = function () {
         if (document.getElementsByClassName('EJ2-maps-Tooltip').length > 0) {
-            document.getElementsByClassName('EJ2-maps-Tooltip')[0].remove();
+            remove(document.getElementsByClassName('EJ2-maps-Tooltip')[0]);
         }
     };
     /**

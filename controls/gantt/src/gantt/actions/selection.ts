@@ -4,6 +4,7 @@ import { CellDeselectEventArgs, ISelectedCell, setCssInGridPopUp, Grid } from '@
 import { CellSelectingEventArgs, CellSelectEventArgs, IIndex } from '@syncfusion/ej2-grids';
 import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, Browser, extend } from '@syncfusion/ej2-base';
 import { IGanttData } from '../base/interface';
+import { Deferred } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from './taskbar-edit';
 
 /** 
@@ -126,8 +127,12 @@ export class Selection {
         this.parent.trigger('rowDeselected', args);
         this.isInteracted = false;
     }
-    private cellSelecting(args: CellSelectingEventArgs): void {
-        this.parent.trigger('cellSelecting', args);
+    private cellSelecting(args: CellSelectingEventArgs): void | Deferred {
+        let callBackPromise: Deferred = new Deferred();
+        this.parent.trigger('cellSelecting', args, (cellselectingArgs: CellSelectingEventArgs) => {
+            callBackPromise.resolve(cellselectingArgs);
+        });
+        return callBackPromise;
     }
     private cellSelected(args: CellSelectEventArgs): void {
         this.parent.trigger('cellSelected', args);

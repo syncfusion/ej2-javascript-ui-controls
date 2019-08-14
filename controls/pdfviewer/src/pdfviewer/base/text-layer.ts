@@ -1,4 +1,4 @@
-import { createElement } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfViewer, PdfViewerBase } from '../index';
 
@@ -14,6 +14,11 @@ export class TextLayer {
     private isMessageBoxOpen: boolean;
     // tslint:disable-next-line
     private textBoundsArray: any[] = [];
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public characterBound: any[] = [];
     /** 
      * @private
      */
@@ -89,6 +94,9 @@ export class TextLayer {
                 // tslint:disable-next-line
                 let bounds: any;
                 let textDiv: HTMLElement = this.pdfViewerBase.getElement('_text_' + pageNumber + '_' + i);
+                if (isNullOrUndefined(textDiv)) {
+                    break;
+                }
                 if (textBounds) {
                     bounds = textBounds[i];
                     if (bounds) {
@@ -115,6 +123,9 @@ export class TextLayer {
             }
         } else {
             textLayer.parentElement.removeChild(textLayer);
+        }
+        if (this.pdfViewer.textSearch) {
+            this.pdfViewer.textSearch.resizeSearchElements(pageNumber);
         }
     }
 

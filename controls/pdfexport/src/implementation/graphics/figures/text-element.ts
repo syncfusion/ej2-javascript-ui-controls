@@ -102,28 +102,23 @@ export class PdfTextElement extends PdfLayoutElement {
         if (typeof arg1 === 'undefined') {
             //
         } else if (typeof arg1 === 'string' && typeof arg2 === 'undefined') {
-            super();
             this.content = arg1;
             this.elementValue = arg1;
         } else if (typeof arg1 === 'string' && arg2 instanceof PdfFont && typeof arg3 === 'undefined') {
-            super();
             this.content = arg1;
             this.elementValue = arg1;
             this.pdfFont = arg2;
         } else if (typeof arg1 === 'string' && arg2 instanceof PdfFont && arg3 instanceof PdfPen && typeof arg4 === 'undefined') {
-            super();
             this.content = arg1;
             this.elementValue = arg1;
             this.pdfFont = arg2;
             this.pdfPen = arg3;
         } else if (typeof arg1 === 'string' && arg2 instanceof PdfFont && arg3 instanceof PdfBrush && typeof arg4 === 'undefined') {
-            super();
             this.content = arg1;
             this.elementValue = arg1;
             this.pdfFont = arg2;
             this.pdfBrush = arg3;
         } else {
-            super();
             this.content = arg1;
             this.elementValue = arg1;
             this.pdfFont = arg2;

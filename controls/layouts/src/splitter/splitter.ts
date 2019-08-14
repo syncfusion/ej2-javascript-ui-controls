@@ -886,8 +886,12 @@ export class Splitter extends Component<HTMLElement> {
         let eventArgs: BeforeExpandEventArgs = this.beforeAction(e);
         this.trigger('beforeExpand', eventArgs, (beforeExpandArgs: BeforeExpandEventArgs) => {
             if (!beforeExpandArgs.cancel) {
-                this.previousPane.style.flexGrow = '1';
                 this.nextPane.style.flexGrow = '0';
+                if (this.previousPane.classList.contains('e-collapsed') && this.previousPane.style.flexGrow === '0') {
+                    this.previousPane.style.flexGrow = '0';
+                } else {
+                    this.previousPane.style.flexGrow = '1';
+                }
                 if (!this.previousPane.classList.contains(COLLAPSE_PANE)) {
                     removeClass([this.nextPane], EXPAND_PANE);
                     removeClass([this.previousPane], collapseClass);
@@ -1030,7 +1034,6 @@ export class Splitter extends Component<HTMLElement> {
             } else {
                 if (this.paneSettings[this.currentBarIndex].collapsible && !this.paneSettings[this.currentBarIndex + 1].collapsible) {
                     this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
-                    this.showTargetBarIcon(this.prevBar, this.rightArrow);
                 } else {
                     this.showTargetBarIcon(this.prevBar, this.rightArrow);
                 }

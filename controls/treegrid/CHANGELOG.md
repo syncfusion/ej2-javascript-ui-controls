@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.41 (2019-08-14)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#243065` - `expandAll` and `collapseAll` method works fine for remote data with `loadChildOnDemand` property as true.
+
 ## 17.2.40 (2019-08-06)
 
 ### TreeGrid

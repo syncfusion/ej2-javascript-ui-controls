@@ -161,21 +161,12 @@ export class Toolbar {
         let restrictDropDown: DropDownButton = new DropDownButton(lockItems, restrictEditing as HTMLButtonElement);
     }
     private showHidePropertiesPane(): void {
-        if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
-            this.documentEditor.focusIn();
-            return;
-        } else if (this.container.tocProperties.element.style.display === 'block' && this.container.showPropertiesPaneInternal) {
-            this.enableDisablePropertyPaneButton(true);
-            this.container.showPropertiesPaneOnSelection();
-            return;
-        }
-        if (this.container.previousContext.indexOf('Header') >= 0
-            || this.container.previousContext.indexOf('Footer') >= 0) {
-            this.container.showHeaderProperties = !this.container.showHeaderProperties;
+        if (this.container.propertiesPaneContainer.style.display === 'none') {
+            this.container.showPropertiesPane = true;
         } else {
-            this.container.showPropertiesPaneInternal = !this.container.showPropertiesPaneInternal;
+            this.container.showPropertiesPane = false;
         }
-        this.enableDisablePropertyPaneButton(this.container.showPropertiesPaneInternal);
+        this.enableDisablePropertyPaneButton(this.container.showPropertiesPane);
         this.container.showPropertiesPaneOnSelection();
         this.documentEditor.focusIn();
     }
@@ -472,7 +463,8 @@ export class Toolbar {
         this.toolbar.enableItems(document.getElementById(id + REDO_ID).parentElement, this.container.documentEditor.editorHistory.canRedo());
     }
     private onToc(): void {
-        if (this.container.previousContext === 'TableOfContents' && this.container.showPropertiesPaneInternal) {
+        if (this.container.previousContext === 'TableOfContents' && this.container.propertiesPaneContainer.style.display === 'none') {
+            this.container.showPropertiesPane = false;
             this.documentEditor.focusIn();
             return;
         }
@@ -480,7 +472,6 @@ export class Toolbar {
             this.documentEditor.selection.closeHeaderFooter();
         }
         this.enableDisablePropertyPaneButton(false);
-        this.container.showPropertiesPaneInternal = true;
         this.container.showProperties('toc');
     }
     /**

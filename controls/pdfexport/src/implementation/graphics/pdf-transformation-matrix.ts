@@ -157,7 +157,7 @@ export class Matrix {
         if (typeof arg1 === 'undefined') {
             this.metrixElements = [];
         } else if (typeof arg1 === 'number') {
-            this.constructor();
+            this.metrixElements = [];
             this.metrixElements.push(arg1);
             this.metrixElements.push(arg2);
             this.metrixElements.push(arg3);

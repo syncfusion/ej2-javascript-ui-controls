@@ -2854,6 +2854,12 @@ export class WordExport {
         this.serializeCellWidth(writer, cell);
         // serialize cell margins
         this.serializeCellMargins(writer, cellFormat);
+        if (ensureMerge) {
+            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
+            this.serializeGridSpan(writer, cell);
+            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
+            this.serializeCellMerge(writer, cellFormat);
+        }
         //w:tcBorders -    Table Cell Borders
         writer.writeStartElement(undefined, 'tcBorders', this.wNamespace);
         this.serializeBorders(writer, cellFormat.borders, 8);
@@ -2914,12 +2920,6 @@ export class WordExport {
         //     m_writer.WriteEndElement();
         //     m_isAlternativeCellFormat = false;
         // }
-        if (ensureMerge) {
-            //w:gridSpan -   Grid Columns Spanned by Current Table Cell
-            this.serializeGridSpan(writer, cell);
-            //w:hMerge -    Horizontally Merged Cell and w:vMerge -    Vertically Merged Cell
-            this.serializeCellMerge(writer, cellFormat);
-        }
         if (endProperties) {
             writer.writeEndElement();
         }

@@ -1,5 +1,5 @@
 import { Component, createElement, Complex, addClass, removeClass, Event, EmitType, formatUnit, Browser } from '@syncfusion/ej2-base';
-import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined } from '@syncfusion/ej2-base';
+import { Internationalization, extend, getValue, isObjectArray, isObject, setValue, isUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, L10n, ModuleDeclaration, remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, Collection, append } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner, Dialog } from '@syncfusion/ej2-popups';
@@ -301,6 +301,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * It is used to render Gantt chart rows and tasks.
      * `dataSource` value was defined as array of JavaScript objects or instances of `DataManager`.
+     * @isGenericType true
      * @default []
      */
     @Property([])
@@ -724,8 +725,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered taskbar was dragged and dropped on new position.
-     * @deprecated
-     * @event 
+     * @event
      */
     @Event()
     public taskbarEdited: EmitType<ITaskbarEditedEventArgs>;
@@ -794,23 +794,22 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when splitter resizing starts.
-     * @deprecated
      * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Layouts.ResizeEventArgs
      */
     @Event()
     public splitterResizeStart: EmitType<ResizeEventArgs>;
 
     /**
      * Triggers when splitter bar was dragging.
-     * @deprecated
      * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Layouts.ResizingEventArgs
      */
     @Event()
     public splitterResizing: EmitType<ResizingEventArgs>;
 
     /**
      * Triggers when splitter resizing action completed.
-     * @deprecated
      * @event
      */
     @Event()
@@ -880,8 +879,8 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers before any cell selection occurs.
-     * @deprecated
-     * @event 
+     * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs<TValue>
      */
     @Event()
     public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -1408,7 +1407,15 @@ export class Gantt extends Component<HTMLElement>
         this.treeGridModule.renderTreeGrid();
     }
     private updateCurrentViewData(): void {
-        this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
+        if (isBlazor()) {
+            let records: IGanttData[] = this.treeGrid.getCurrentViewRecords().slice();
+            this.currentViewData = [];
+            for ( let i: number = 0; i < records.length; i++ ) {
+                this.currentViewData.push(this.getTaskByUniqueID(records[i].uniqueID));
+            }
+        } else {
+            this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
+        }
     }
     /**
      * @private
@@ -1444,6 +1451,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Get expanded records from given record collection.
      * @param {IGanttData[]} records - Defines record collection.
+     * @isGenericType true
      */
     public getExpandedRecords(records: IGanttData[]): IGanttData[] {
         let expandedRecords: IGanttData[] = records.filter((record: IGanttData) => {
@@ -2279,6 +2287,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Get parent task by clone parent item.
      * @param {IParent} cloneParent - Defines the clone parent item.
+     * @isGenericType true
      */
     public getParentTask(cloneParent: IParent): IGanttData {
         if (!isNullOrUndefined(cloneParent)) {
@@ -2489,6 +2498,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Method to get task by uniqueId value.
      * @param {string} id - Defines the task id.
+     * @isGenericType true
      */
     public getTaskByUniqueID(id: string): IGanttData {
         let value: IGanttData[] = this.flatData.filter((val: IGanttData) => {
@@ -2503,6 +2513,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Method to get record by id value.
      * @param {string} id - Defines the id of record.
+     * @isGenericType true
      */
     public getRecordByID(id: string): IGanttData {
         if (isNullOrUndefined(id)) {
@@ -2540,11 +2551,11 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Expand the record by task id.
-     * @param {string | number} id - Defines the id of task.
+     * @param {number} id - Defines the id of task.
      * @return {void}
      * @public
      */
-    public expandByID(id: string | number): void {
+    public expandByID(id: number): void {
         let args: object = this.contructExpandCollapseArgs(id);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
@@ -2562,11 +2573,11 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Collapse the record by id value.
-     * @param {string | number} id - Defines the id of task.
+     * @param {number} id - Defines the id of task.
      * @return {void}
      * @public
      */
-    public collapseByID(id: string | number): void {
+    public collapseByID(id: number): void {
         let args: object = this.contructExpandCollapseArgs(id);
         this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
@@ -2644,12 +2655,12 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * To add dependency for Task.
-     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to add.
      * @return {void}
      * @public
      */
-    public addPredecessor(id: String | number, predecessorString: string): void {
+    public addPredecessor(id: number, predecessorString: string): void {
         let ganttRecord: IGanttData = this.getRecordByID(id.toString());
         if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
@@ -2657,11 +2668,11 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * To remove dependency from task.
-     * @param  {String|number} id - Defines the ID of task to modify.
+     * @param  {number} id - Defines the ID of task to modify.
      * @return {void}
      * @public
      */
-    public removePredecessor(id: String | number): void {
+    public removePredecessor(id: number): void {
         let ganttRecord: IGanttData = this.getRecordByID(id.toString());
         if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.removePredecessor(ganttRecord);
@@ -2669,12 +2680,12 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * To modify current dependency values of Task by task id.
-     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {number} id - Defines the ID of data to modify.
      * @param  {string} predecessorString - Defines the predecessor string to update.
      * @return {void}
      * @public
      */
-    public updatePredecessor(id: String | number, predecessorString: string): void {
+    public updatePredecessor(id: number, predecessorString: string): void {
         let ganttRecord: IGanttData = this.getRecordByID(id.toString());
         if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
@@ -2694,11 +2705,11 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Method to open Edit dialog.
-     * @param {number | string | Object} taskId - Defines the id of task.
+     * @param {number } taskId - Defines the id of task.
      * @return {void}
      * @public
      */
-    public openEditDialog(taskId: number | string | Object): void {
+    public openEditDialog(taskId: number): void {
         if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
             this.editModule.dialogModule.openEditDialog(taskId);
         }

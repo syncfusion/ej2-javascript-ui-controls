@@ -1,4 +1,4 @@
-import { Ajax, createElement, select } from '@syncfusion/ej2-base';
+import { Ajax, createElement, select, extend } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, setValue, getValue } from '@syncfusion/ej2-base';
 import { IFileManager, ReadArgs, BeforeSendEventArgs } from '../base/interface';
 import * as events from '../base/constant';
@@ -30,13 +30,24 @@ export function createFolder(parent: IFileManager, itemName: string): void {
 }
 
 /**
+ * Function to filter the files in File Manager.
+ * @private
+ */
+export function filter(parent: IFileManager, event: string): void {
+    let data: Object = { action: 'filter', path: parent.path, showHiddenItems: parent.showHiddenItems, data: [getPathObject(parent)] };
+    let filterData: Object;
+    filterData = parent.filterData ? extend(filterData, data, parent.filterData) : data;
+    createAjax(parent, filterData, filterSuccess, event, getValue('action', filterData));
+}
+
+/**
  * Function to rename the folder/file in File Manager.
  * @private
  */
 export function rename(parent: IFileManager, path: string, itemNewName: string): void {
     let name: string;
     let newName: string;
-    if (parent.breadcrumbbarModule.searchObj.element.value === '') {
+    if (parent.breadcrumbbarModule.searchObj.element.value === '' && !parent.isFiltered) {
         name = parent.currentItemText;
         newName = itemNewName;
     } else {
@@ -123,18 +134,11 @@ function createAjax(
                         result = JSON.parse(result);
                     }
                     parent.notify(events.afterRequest, { action: 'success' });
-                    if (!isNOU(result.files)) {
-                        // tslint:disable-next-line
-                        setDateObject(result.files);
-                        for (let i: number = 0, len: number = result.files.length; i < len; i++) {
-                            let item: Object = result.files[i];
-                            setValue('_fm_iconClass', fileType(item), item);
-                        }
-                        if (getValue('action', data) === 'read') {
-                            let id: string = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
-                            setNodeId(result, id);
-                            setValue(id, result.files, parent.feFiles);
-                            setValue(id, result.cwd, parent.feParent);
+                    let id: string = parent.expandedId ? parent.expandedId : parent.pathId[parent.pathId.length - 1];
+                    if (!isNOU(result.cwd) && (getValue('action', data) === 'read')) {
+                        setValue('_fm_id', id, result.cwd);
+                        setValue(id, result.cwd, parent.feParent);
+                        if (!isNOU(result.files) || result.error.code === '401') {
                             if ((event === 'finalize-end' || event === 'initial-end') && parent.pathNames.length === 0) {
                                 let root: Object = getValue(parent.pathId[0], parent.feParent);
                                 parent.pathNames[0] = getValue('name', root);
@@ -143,6 +147,18 @@ function createAjax(
                             if (event === 'finalize-end') {
                                 generatePath(parent);
                             }
+                        }
+                    }
+                    if (!isNOU(result.files)) {
+                        // tslint:disable-next-line
+                        setDateObject(result.files);
+                        for (let i: number = 0, len: number = result.files.length; i < len; i++) {
+                            let item: Object = result.files[i];
+                            setValue('_fm_iconClass', fileType(item), item);
+                        }
+                        if (getValue('action', data) === 'read') {
+                            setNodeId(result, id);
+                            setValue(id, result.files, parent.feFiles);
                         }
                     }
                     fn(parent, result, event, operation, targetPath);
@@ -196,6 +212,17 @@ function readSuccess(parent: IFileManager, result: ReadArgs, event: string): voi
         parent.isDropEnd = parent.isDragDrop = false;
     }
 }
+
+function filterSuccess(parent: IFileManager, result: ReadArgs, event: string, action: string): void {
+    if (!isNOU(result.files)) {
+        parent.notify(event, result);
+        let args: SuccessEventArgs = { action: action, result: result };
+        parent.trigger('success', args);
+    } else {
+        onFailure(parent, result, action);
+    }
+}
+
 /* istanbul ignore next */
 function createSuccess(parent: IFileManager, result: ReadArgs): void {
     if (!isNOU(result.files)) {
@@ -238,7 +265,11 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
             if (parent.breadcrumbbarModule.searchObj.value !== '') {
                 Search(parent, events.renameEnd, parent.path, parent.searchWord, parent.showHiddenItems, !parent.searchSettings.ignoreCase);
             } else {
-                read(parent, events.renameEnd, parent.path);
+                if (parent.isFiltered) {
+                    filter(parent, events.renameEnd);
+                } else {
+                    read(parent, events.renameEnd, parent.path);
+                }
             }
         }
     } else {
@@ -291,8 +322,12 @@ function deleteSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
         parent.setProperties({ path: path }, true);
         parent.itemData = [getPathObject(parent)];
         read(parent, events.deleteEnd, parent.path);
-        let args: SuccessEventArgs = { action: 'delete', result: result };
-        parent.trigger('success', args);
+        if (result.error) {
+            onFailure(parent, result, 'delete');
+        } else {
+            let args: SuccessEventArgs = { action: 'delete', result: result };
+            parent.trigger('success', args);
+        }
     } else {
         onFailure(parent, result, 'delete');
     }

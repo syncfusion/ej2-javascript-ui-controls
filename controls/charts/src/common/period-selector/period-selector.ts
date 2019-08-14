@@ -99,7 +99,8 @@ export class PeriodSelector {
     public renderSelector(): void {
         this.setControlValues(this.rootControl);
         let enableCustom: boolean = true;
-        let selectorElement: Element = createElement('div', { id: this.control.element.id + '_selector' });
+        let controlId: string = this.control.element.id;
+        let selectorElement: Element = createElement('div', { id: controlId + '_selector' });
         this.periodSelectorDiv.appendChild(selectorElement); let buttons: PeriodsModel[] = this.control.periods;
         let selector: ItemModel[] = this.updateCustomElement();
         let buttonStyles: string = 'text-transform: none; text-overflow: unset';
@@ -111,23 +112,23 @@ export class PeriodSelector {
         }
         let selctorArgs: IRangeSelectorRenderEventArgs;
         if (enableCustom) {
-            this.calendarId = this.control.element.id + '_calendar';
+            this.calendarId = controlId + '_calendar';
             selector.push({ template: '<button id=' + this.calendarId + '></button>', align: 'Right' });
             selctorArgs = {
                 selector: selector, name: 'RangeSelector', cancel: false, enableCustomFormat: true, content: 'Date Range'
             };
         }
         if (this.rootControl.getModuleName() === 'stockChart') {
-            selector.push({ template: createElement('button', { id: 'resetClick', innerHTML: 'Reset',
+            selector.push({ template: createElement('button', { id: controlId + '_reset', innerHTML: 'Reset',
                                         styles: buttonStyles, className: 'e-dropdown-btn e-btn' }),
                             align: 'Right'});
             if ((<StockChart>this.rootControl).exportType.indexOf('Print') > -1) {
-                selector.push({ template: createElement('button', { id: 'print', innerHTML: 'Print', styles: buttonStyles,
+                selector.push({ template: createElement('button', { id: controlId + '_print', innerHTML: 'Print', styles: buttonStyles,
                                  className: 'e-dropdown-btn e-btn' }),
                             align: 'Right'});
             }
             if ((<StockChart>this.rootControl).exportType.length) {
-                selector.push({ template: createElement('button', { id: 'export', innerHTML: 'Export', styles: buttonStyles,
+                selector.push({ template: createElement('button', { id: controlId + '_export', innerHTML: 'Export', styles: buttonStyles,
                                     className: 'e-dropdown-btn e-btn' }),
                                 align: 'Right'});
             }
@@ -209,18 +210,22 @@ export class PeriodSelector {
     }
     private updateCustomElement(): ItemModel[] {
         let selector: ItemModel[] = [];
+        let controlId: string = this.rootControl.element.id;
         let buttonStyles: string = 'text-transform: none; text-overflow: unset';
         if (this.rootControl.getModuleName() === 'stockChart') {
             if ((<StockChart>this.rootControl).seriesType.length) {
-                selector.push({ template: createElement('button', { id: 'seriesType', innerHTML: 'Series', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: controlId + '_seriesType', innerHTML: 'Series',
+                                                                    styles: buttonStyles }),
                             align: 'Left'});
             }
             if ((<StockChart>this.rootControl).indicatorType.length) {
-                selector.push({ template: createElement('button', { id: 'indicatorType', innerHTML: 'Indicators', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: controlId + '_indicatorType', innerHTML: 'Indicators',
+                                                                    styles: buttonStyles }),
                             align: 'Left'});
             }
             if ((<StockChart>this.rootControl).trendlineType.length) {
-                selector.push({ template: createElement('button', { id: 'trendType', innerHTML: 'Trendline', styles: buttonStyles }),
+                selector.push({ template: createElement('button', { id: controlId + '_trendType', innerHTML: 'Trendline',
+                                                                    styles: buttonStyles }),
                             align: 'Left'});
             }
         }

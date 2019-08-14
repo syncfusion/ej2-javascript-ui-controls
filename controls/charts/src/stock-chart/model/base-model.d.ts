@@ -298,7 +298,7 @@ export interface StockChartStripLineSettingsModel {
 
     /**
      * If set to true, series gets animated on initial loading.
-     * @default true
+     * @default false
      */
 
     enable?: boolean;

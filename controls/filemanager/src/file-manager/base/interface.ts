@@ -398,6 +398,9 @@ export interface IFileManager extends Component<HTMLElement> {
     activeRecords: Object[];
     pasteNodes: string[];
     isCut: boolean;
+    filterData: Object;
+    isFiltered: boolean;
+    isLayoutChange: boolean;
     isSearchCut: boolean;
     isPasteError: boolean;
     isSameAction: boolean;

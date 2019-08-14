@@ -17,6 +17,7 @@ import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, Aggregat
 import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs } from '../../common/base/interface';
 import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, CellTemplateArgs } from '../../common/base/interface';
 import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs } from '../../common/base/interface';
+import { FieldListRefreshedEventArgs } from '../../common/base/interface';
 import { Render } from '../renderer/render';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { Common } from '../../common/actions/common';
@@ -55,6 +56,7 @@ import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfu
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ClickEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { NumberFormatting } from '../../common/popups/formatting-dialog';
 
 /** 
  * It holds the settings of Grouping Bar.
@@ -385,6 +387,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public toolbarModule: Toolbar;
     /** @hidden */
     public chartModule: PivotChart;
+    /** @hidden */
+    public numberFormattingModule: NumberFormatting;
 
     private defaultLocale: Object;
     /* tslint:disable-next-line:no-any */
@@ -557,6 +561,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(false)
     public allowConditionalFormatting: boolean;
+
+    /** 
+     * It allows to enable number formatting popup in pivot table.
+     * @default false
+     */
+    @Property(false)
+    public allowNumberFormatting: boolean;
 
     /** 
      * Pivot widget. (Note change all occurrences) 
@@ -996,6 +1007,15 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public aggregateCellInfo: EmitType<AggregateEventArgs>;
 
     /**
+     * This allows to identify each field list update.
+     * @event
+     * @blazorproperty 'FieldListRefreshed'
+     * @deprecated
+     */
+    @Event()
+    public fieldListRefreshed: EmitType<FieldListRefreshedEventArgs>;
+
+    /**
      * Constructor for creating the widget
      * @param  {PivotViewModel} options?
      * @param  {string|HTMLElement} element?
@@ -1018,6 +1038,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         modules.push({ args: [this], member: 'grouping' });
         if (this.allowConditionalFormatting) {
             modules.push({ args: [this], member: 'conditionalformatting' });
+        }
+        if (this.allowNumberFormatting) {
+            isCommonRequire = true;
+            modules.push({ args: [this], member: 'numberformatting' });
         }
         if (this.allowCalculatedField) {
             isCommonRequire = true;
@@ -1063,7 +1087,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.initProperties();
         this.isAdaptive = Browser.isDevice;
         this.renderToolTip();
-        this.renderContextMenu();
         this.keyboardModule = new KeyboardInteraction(this);
         this.contextMenuModule = new PivotContextMenu(this);
         this.globalize = new Internationalization(this.locale);
@@ -1177,6 +1200,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             PercentageOfDifferenceFrom: '% of Difference From',
             PercentageOfGrandTotal: '% of Grand Total',
             PercentageOfColumnTotal: '% of Column Total',
+            MoreOption: 'More...',
             /* tslint:enable */
             NotEquals: 'Not Equals',
             AllValues: 'All Values',
@@ -1243,9 +1267,27 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             qtr: 'Qtr',
             null: 'null',
             undefined: 'undefined',
-            groupOutOfRange: 'Out of Range'
+            groupOutOfRange: 'Out of Range',
+            aggregate: 'Aggregate',
+            drillThrough: 'Drill Through',
+            ascending: 'Ascending',
+            descending: 'Descending',
+            number: 'Number',
+            currency: 'Currency',
+            percentage: 'Percentage',
+            formatType: 'Format Type',
+            customText: 'Currency Symbol',
+            symbolPosition: 'Symbol Position',
+            left: 'Left',
+            right: 'Right',
+            grouping: 'Grouping',
+            true: 'True',
+            false: 'False',
+            decimalPlaces: 'Decimal Places',
+            numberFormat: 'Number Formatting'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
+        this.renderContextMenu();
         this.isDragging = false;
         this.addInternalEvents();
         //setCurrencyCode(this.currencyCode);
@@ -1284,14 +1326,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 if (typeof item === 'string' && this.getDefaultItems().indexOf(item) !== -1) {
                     if ((item as string).toString().toLowerCase().indexOf('aggregate') !== -1) {
                         aggregateItems = [
-                            { text: 'Sum', id: 'AggSum' },
-                            { text: 'Distinct Count', id: 'AggDistinctCount' },
-                            { text: 'Count', id: 'AggCount' },
-                            { text: 'Product', id: 'AggProduct' },
-                            { text: 'Avg', id: 'AggAvg' },
-                            { text: 'Max', id: 'AggMax' },
-                            { text: 'Min', id: 'AggMin' },
-                            { text: 'More...', id: 'AggMoreOption' }
+                            { text: this.localeObj.getConstant('Sum'), id: this.element.id + '_AggSum' },
+                            { text: this.localeObj.getConstant('DistinctCount'), id: this.element.id + '_AggDistinctCount' },
+                            { text: this.localeObj.getConstant('Count'), id: this.element.id + '_AggCount' },
+                            { text: this.localeObj.getConstant('Product'), id: this.element.id + '_AggProduct' },
+                            { text: this.localeObj.getConstant('Avg'), id: this.element.id + '_AggAvg' },
+                            { text: this.localeObj.getConstant('Max'), id: this.element.id + '_AggMax' },
+                            { text: this.localeObj.getConstant('Min'), id: this.element.id + '_AggMin' },
+                            { text: this.localeObj.getConstant('MoreOption'), id: this.element.id + '_AggMoreOption' }
                         ];
                     } else if ((item as string).toString().toLowerCase().indexOf('export') !== -1) {
                         exportItems.push(this.buildDefaultItems(item));
@@ -1318,7 +1360,6 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, expItems);
             Array.prototype.push.apply(this.gridSettings.contextMenuItems, customItems);
         }
-
     }
     private getDefaultItems(): string[] {
         return ['Drillthrough', 'Expand',
@@ -1329,54 +1370,69 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         let menuItem: ContextMenuItemModel;
         switch (item) {
             case 'Aggregate':
-                menuItem = { text: 'Aggregate', target: 'th.e-valuesheader,td.e-valuescontent,.e-stot', id: 'aggregate' };
+                menuItem = {
+                    text: this.localeObj.getConstant('aggregate'), target: 'th.e-valuesheader,td.e-valuescontent,.e-stot',
+                    id: this.element.id + '_aggregate'
+                };
                 break;
             case 'CalculatedField':
-                menuItem = { text: 'Calculated Field', target: 'td.e-valuescontent', id: 'CalculatedField' };
+                menuItem = {
+                    text: this.localeObj.getConstant('calculatedField'), target: 'td.e-valuescontent',
+                    id: this.element.id + '_CalculatedField'
+                };
                 break;
             case 'Drillthrough':
                 menuItem = {
-                    text: 'Drill Through', target: 'td.e-valuescontent',
-                    id: 'drillthrough', iconCss: cls.PIVOTVIEW_GRID + ' ' + cls.ICON
+                    text: this.localeObj.getConstant('drillThrough'), target: 'td.e-valuescontent',
+                    id: this.element.id + '_drillthrough_menu', iconCss: cls.PIVOTVIEW_GRID + ' ' + cls.ICON
                 };
                 break;
             case 'export':
                 menuItem = {
-                    text: 'Export', target: 'td.e-valuescontent',
-                    id: 'exporting', iconCss: cls.PIVOTVIEW_EXPORT + ' ' + cls.ICON
+                    text: this.localeObj.getConstant('export'), target: 'td.e-valuescontent',
+                    id: this.element.id + '_exporting', iconCss: cls.PIVOTVIEW_EXPORT + ' ' + cls.ICON
                 };
                 break;
             case 'Pdf Export':
-                menuItem = { text: 'PDF', id: 'pdf', iconCss: cls.GRID_PDF_EXPORT + ' ' + cls.ICON };
+                menuItem = {
+                    text: this.localeObj.getConstant('pdf'), id: this.element.id + '_pdf',
+                    iconCss: cls.GRID_PDF_EXPORT + ' ' + cls.ICON
+                };
                 break;
             case 'Excel Export':
-                menuItem = { text: 'Excel', id: 'excel', iconCss: cls.GRID_EXCEL_EXPORT + ' ' + cls.ICON };
+                menuItem = {
+                    text: this.localeObj.getConstant('excel'), id: this.element.id + '_excel',
+                    iconCss: cls.GRID_EXCEL_EXPORT + ' ' + cls.ICON
+                };
                 break;
             case 'Csv Export':
-                menuItem = { text: 'CSV', id: 'csv', iconCss: cls.GRID_CSV_EXPORT + ' ' + cls.ICON, };
+                menuItem = {
+                    text: this.localeObj.getConstant('csv'), id: this.element.id + '_csv',
+                    iconCss: cls.GRID_CSV_EXPORT + ' ' + cls.ICON,
+                };
                 break;
             case 'Expand':
                 menuItem = {
-                    text: 'Expand', target: 'td.e-rowsheader,.e-columnsheader',
-                    id: 'expand', iconCss: cls.PIVOTVIEW_EXPAND + ' ' + cls.ICON
+                    text: this.localeObj.getConstant('expand'), target: 'td.e-rowsheader,.e-columnsheader',
+                    id: this.element.id + '_expand', iconCss: cls.PIVOTVIEW_EXPAND + ' ' + cls.ICON
                 };
                 break;
             case 'Collapse':
                 menuItem = {
-                    text: 'Collapse', target: 'td.e-rowsheader,.e-columnsheader',
-                    id: 'collapse', iconCss: cls.PIVOTVIEW_COLLAPSE + ' ' + cls.ICON
+                    text: this.localeObj.getConstant('collapse'), target: 'td.e-rowsheader,.e-columnsheader',
+                    id: this.element.id + '_collapse', iconCss: cls.PIVOTVIEW_COLLAPSE + ' ' + cls.ICON
                 };
                 break;
             case 'Sort Ascending':
                 menuItem = {
-                    text: 'Ascending', target: 'th.e-valuesheader,.e-stot',
-                    id: 'sortasc', iconCss: cls.ICON_ASC + ' ' + cls.ICON
+                    text: this.localeObj.getConstant('ascending'), target: 'th.e-valuesheader,.e-stot',
+                    id: this.element.id + '_sortasc', iconCss: cls.ICON_ASC + ' ' + cls.ICON
                 };
                 break;
             case 'Sort Descending':
                 menuItem = {
-                    text: 'Descending', target: 'th.e-valuesheader,.e-stot',
-                    id: 'sortdesc', iconCss: cls.ICON_DESC + ' ' + cls.ICON
+                    text: this.localeObj.getConstant('descending'), target: 'th.e-valuesheader,.e-stot',
+                    id: this.element.id + '_sortdesc', iconCss: cls.ICON_DESC + ' ' + cls.ICON
                 };
                 break;
         }
@@ -1775,8 +1831,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
             this.engineModule.pivotValues = observedArgs.pivotValues;
-            this.pivotCommon.engineModule = this.engineModule;
-            this.pivotCommon.dataSourceSettings = this.dataSourceSettings;
+            if (this.pivotCommon) {
+                this.pivotCommon.engineModule = this.engineModule;
+                this.pivotCommon.dataSourceSettings = this.dataSourceSettings;
+            }
             this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
             this.renderPivotGrid();
         });
@@ -1799,6 +1857,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
         if (this.allowConditionalFormatting && this.conditionalFormattingModule) {
             this.conditionalFormattingModule.destroy();
+        }
+        if (this.allowNumberFormatting && this.numberFormattingModule) {
+            this.numberFormattingModule.destroy();
         }
         if (this.isAdaptive && this.contextMenuModule) {
             this.contextMenuModule.destroy();
@@ -2064,7 +2125,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 '</p></br><p class=' + cls.TOOLTIP_HEADER + '>' +
                 this.localeObj.getConstant('column') + ':</p><p class=' + cls.TOOLTIP_CONTENT + '>' +
                 this.getColText(0, colIndex, rowIndex) + '</p></br>' + (cell.actualText !== '' ? ('<p class=' + cls.TOOLTIP_HEADER + '>' +
-                    this.engineModule.fieldList[cell.actualText].aggregateType + ' ' + this.localeObj.getConstant('of') + ' ' +
+                    this.localeObj.getConstant(this.engineModule.fieldList[cell.actualText].aggregateType) + ' ' +
+                    this.localeObj.getConstant('of') + ' ' +
                     this.engineModule.fieldList[cell.actualText].caption + ':</p><p class=' + cls.TOOLTIP_CONTENT + '>' +
                     (((cell.formattedText === '0' || cell.formattedText === '') ?
                         this.localeObj.getConstant('noValue') : cell.formattedText)) + '</p></div>') : '');

@@ -304,7 +304,7 @@ export class PointerRenderer {
             end: (model: AnimationOptions) => {
                 this.setPointerValue(axis, pointer, end);
                 if (pointer.type === 'Marker' || (element.id.indexOf('_Pointer_NeedleCap') >= 0)) {
-                    this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                    this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
                 }
             }
         });

@@ -8,7 +8,7 @@ import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
 import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
-import { FieldDroppedEventArgs } from '../../common/base/interface';
+import { FieldDroppedEventArgs, FieldListRefreshedEventArgs } from '../../common/base/interface';
 import { Mode } from '../../common/base/enum';
 import { PivotCommon } from '../../common/base/pivot-common';
 import { CommonArgs } from '../../common/base/interface';
@@ -357,6 +357,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             PercentageOfParentTotal: '% of Parent Total',
             PercentageOfParentColumnTotal: '% of Parent Column Total',
             PercentageOfParentRowTotal: '% of Parent Row Total',
+            MoreOption: 'More...',
             Years: 'Years',
             Quarters: 'Quarters',
             Months: 'Months',
@@ -735,6 +736,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             control.setProperties({ dataSourceSettings: this.dataSourceSettings }, true);
             control.engineModule = this.engineModule;
             control.pivotValues = this.engineModule.pivotValues;
+            let eventArgs: FieldListRefreshedEventArgs = {
+                dataSourceSettings: this.dataSourceSettings,
+                pivotValues: this.engineModule.pivotValues
+            };
+            control.trigger(events.fieldListRefreshed, eventArgs);
             control.dataBind();
         }
     }

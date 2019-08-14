@@ -1632,7 +1632,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     }
     updateIconState() {
         if (this.showClearButton) {
-            if (this.inputElement.value !== '') {
+            if (this.inputElement.value !== '' && !this.readonly) {
                 removeClass([this.inputWrapper.clearButton], dropDownListClasses.clearIconHide);
             }
             else {
@@ -6777,14 +6777,14 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if ((this.allowCustomValue || this.allowFiltering) && !this.findListElement(this.mainList, 'li', 'data-value', value)) {
             let temp = li.cloneNode(true);
             let data = this.getDataByValue(value);
-            append([temp], this.mainList);
-            this.mainData.push(data);
             let eventArgs = {
                 newData: data,
                 cancel: false
             };
             this.trigger('customValueSelection', eventArgs, (eventArgs) => {
                 if (!eventArgs.cancel) {
+                    append([temp], this.mainList);
+                    this.mainData.push(data);
                     this.remoteCustomValue = false;
                     this.addValue(value, text, e);
                 }

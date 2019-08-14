@@ -1126,7 +1126,8 @@ export class CommandHandler {
         obj: (NodeModel | ConnectorModel)[], multipleSelection?: boolean, oldValue?: (NodeModel | ConnectorModel)[]
     ): void {
         let arg: ISelectionChangeEventArgs = {
-            oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
+            oldValue: oldValue ? oldValue : this.getSelectedObject(),
+            newValue: obj, cause: this.diagram.diagramActions,
             state: 'Changing', type: 'Addition', cancel: false
         };
         let select: boolean = true;
@@ -1175,7 +1176,8 @@ export class CommandHandler {
                 }
             }
             arg = {
-                oldValue: oldValue ? oldValue : [], newValue: obj, cause: this.diagram.diagramActions,
+                oldValue: oldValue ? oldValue : arg.oldValue,
+                newValue: this.getSelectedObject(), cause: this.diagram.diagramActions,
                 state: 'Changed', type: 'Addition', cancel: false
             };
             this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);

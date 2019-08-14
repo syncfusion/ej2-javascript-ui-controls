@@ -246,7 +246,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
                     let attributes: NamedNodeMap = this.element.attributes;
-                    this.checkAttributes(attributes, false);
+                    this.checkAttributes(true);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -322,8 +322,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        let attributes: NamedNodeMap = this.element.attributes;
-        this.checkAttributes(attributes, true);
+        this.checkAttributes(false);
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
@@ -360,44 +359,46 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
     }
 
-    private checkAttributes(attrs: NamedNodeMap, isDynamic: boolean): void {
-        for (let i: number = 0; i < attrs.length; i++) {
-            let key: string = attrs[i].nodeName;
+    private checkAttributes(isDynamic: boolean): void {
+        let attrs: string[]  = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        for (let key of attrs) {
+            if (!isNullOrUndefined(this.element.getAttribute(key))) {
             switch (key) {
                 case 'disabled':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || !isDynamic) {
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
                         let enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                             this.element.getAttribute(key) === 'true' ? false : true;
-                        this.setProperties({enabled: enabled}, isDynamic);
+                        this.setProperties({enabled: enabled}, !isDynamic);
                     }
                     break;
                 case 'readonly':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || !isDynamic) {
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
                         let readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                             || this.element.getAttribute(key) === 'true' ? true : false;
-                        this.setProperties({readonly: readonly}, isDynamic);
+                        this.setProperties({readonly: readonly}, !isDynamic);
                     }
                     break;
                 case 'placeholder':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || !isDynamic) {
-                        this.setProperties({placeholder: attrs[i].nodeValue}, isDynamic);
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
+                        this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                     }
                     break;
                 case 'value':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || !isDynamic) {
-                        this.setProperties({value: attrs[i].nodeValue}, isDynamic);
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
+                        this.setProperties({value: this.element.value}, !isDynamic);
                     }
                     break;
                 case 'type':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || !isDynamic) {
-                        this.setProperties({type: attrs[i].nodeValue}, isDynamic);
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
+                        this.setProperties({type: this.element.type}, !isDynamic);
                     }
                     break;
+                }
             }
         }
     }

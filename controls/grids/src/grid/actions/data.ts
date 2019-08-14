@@ -422,8 +422,8 @@ export class Data implements IDataProcessor {
 
 
     /** @hidden */
-    public saveChanges(changes: Object, key: string, original: Object): Promise<Object> {
-        let query: Query = this.generateQuery().requiresCount();
+    public saveChanges(changes: Object, key: string, original: Object, query: Query = this.generateQuery()): Promise<Object> {
+        query.requiresCount();
         if ('result' in this.parent.dataSource) {
             let state: DataStateChangeEventArgs;
             state = this.getStateEventArgument(query);
@@ -551,7 +551,7 @@ export class Data implements IDataProcessor {
     }
 
     private refreshFilteredCols(): void {
-        if (this.parent.filterSettings.columns.length) {
+        if (this.parent.allowFiltering && this.parent.filterSettings.columns.length) {
             refreshFilteredColsUid(this.parent, this.parent.filterSettings.columns);
         }
     }

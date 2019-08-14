@@ -1,4 +1,4 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs } from '../base/interface';import { TableStyleItems } from '../models/items';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { ToolbarType, ActionOnScroll, ToolbarItems } from '../base/enum';import { IToolbarItems, IDropDownItemModel, ColorModeType, IToolsItemConfigs } from '../base/interface';import { TableStyleItems } from '../models/items';import { SaveFormat } from '../../common';
 
 /**
  * Interface for a class ToolbarSettings
@@ -47,25 +47,31 @@ export interface ToolbarSettingsModel {
 export interface ImageSettingsModel {
 
     /**
-     * Specifies whether to allowType based file select
+     * Specifies whether to allowType based file select.
      * @default ['.jpeg', '.jpg', '.png']
      */
     allowedTypes?: string[];
 
     /**
-     * Specifies whether insert image inline or break
+     * Specifies whether insert image inline or break.
      * @default 'inline'
      */
     display?: string;
 
     /**
-     * Specifies whether image width
+     * Specifies whether the inserted image is saved as blob or base64.
+     * @default 'Blob'
+     */
+    saveFormat?: SaveFormat;
+
+    /**
+     * Specifies whether image width.
      * @default 'auto'
      */
     width?: string;
 
     /**
-     * Specifies whether image height
+     * Specifies whether image height.
      * @default 'auto'
      */
     height?: string;

@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -998,7 +998,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             element.classList.add(classNames.disable);
         }
     };
-    //Suport Component Functions
+    // Support Component Functions
     ListView.prototype.header = function (text, showBack) {
         if (this.headerEle === undefined && this.showHeader) {
             this.headerEle = this.createElement('div', { className: classNames.header });
@@ -1015,7 +1015,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 var headerTemplateEle = this.createElement('div', { className: classNames.headerTemplateText });
                 append(compiledString({}, null, null, this.LISTVIEW_HEADERTEMPLATE_ID), headerTemplateEle);
                 append([headerTemplateEle], this.headerEle);
-                this.updateBlazorTemplates(false, true);
+                this.updateBlazorTemplates(false, true, true);
             }
             if (this.headerTemplate && this.headerTitle) {
                 textEle.classList.add('header');
@@ -1851,17 +1851,18 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             resetBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY);
         }
     };
-    ListView.prototype.updateBlazorTemplates = function (template, headerTemplate) {
+    ListView.prototype.updateBlazorTemplates = function (template, headerTemplate, resetExistingElements) {
         if (template === void 0) { template = false; }
         if (headerTemplate === void 0) { headerTemplate = false; }
+        if (resetExistingElements === void 0) { resetExistingElements = false; }
         if (this.template && template && !this.enableVirtualization) {
-            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY, this, resetExistingElements);
         }
         if (this.groupTemplate && template && !this.enableVirtualization) {
-            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY, this, resetExistingElements);
         }
         if (this.headerTemplate && headerTemplate) {
-            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this);
+            updateBlazorTemplate(this.LISTVIEW_HEADERTEMPLATE_ID, LISTVIEW_HEADERTEMPLATE_PROPERTY, this, resetExistingElements);
         }
     };
     ListView.prototype.renderSubList = function (li) {
@@ -1873,7 +1874,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
                 var data = this.curViewDS;
-                this.resetBlazorTemplates();
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
                 ele.setAttribute('pID', uID);
                 ele.style.display = 'none';
@@ -2077,15 +2077,21 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     /**
      * It is used to get the currently [here](./api-selectedItem)
      *  item details from the list items.
+     * @blazorType ListSelectedItem<TValue>
      */
     ListView.prototype.getSelectedItems = function () {
+        // tslint:disable-next-line:no-any
+        var finalValue;
+        var isCompleted = false;
         this.selectedId = [];
         var dataSource = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
-        if (this.enableVirtualization) {
-            return this.virtualizationModule.getSelectedItems();
+        if (this.enableVirtualization && !isCompleted) {
+            finalValue = this.virtualizationModule.getSelectedItems();
+            isCompleted = true;
         }
-        else if (this.showCheckBox) {
+        else if (this.showCheckBox && !isCompleted) {
+            // tslint:disable-next-line:no-any
             var liCollection = this.curUL.getElementsByClassName(classNames.selected);
             var liTextCollection = [];
             var liDataCollection = [];
@@ -2114,42 +2120,96 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
-            if (typeof dataSource[0] === 'string' || typeof dataSource[0] === 'number') {
-                return { item: liCollection, data: dataSource, text: liTextCollection };
+            if ((typeof dataSource[0] === 'string'
+                || typeof dataSource[0] === 'number')
+                && !isCompleted) {
+                finalValue = { item: liCollection, data: dataSource, text: liTextCollection };
+                isCompleted = true;
             }
-            if (this.isNestedList) {
-                return { item: liCollection, data: dataParent, text: liTextCollection };
+            if (this.isNestedList && !isCompleted) {
+                finalValue = { item: liCollection, data: dataParent, text: liTextCollection };
+                isCompleted = true;
             }
-            else {
-                return { item: liCollection, data: liDataCollection, text: liTextCollection };
+            else if (!isCompleted) {
+                finalValue = { item: liCollection, data: liDataCollection, text: liTextCollection };
+                isCompleted = true;
             }
         }
-        else {
+        else if (!isCompleted) {
             var liElement = this.element.getElementsByClassName(classNames.selected)[0];
             var fieldData = getFieldValues(this.getItemData(liElement), this.listBaseOption.fields);
-            if (typeof dataSource[0] === 'string' || typeof dataSource[0] === 'number') {
-                return (!isNullOrUndefined(liElement)) ? {
+            if ((typeof dataSource[0] === 'string'
+                || typeof dataSource[0] === 'number')
+                && !isCompleted) {
+                finalValue = (!isNullOrUndefined(liElement)) ? {
                     item: liElement, data: dataSource,
                     text: liElement.innerText.trim()
                 } : undefined;
+                isCompleted = true;
             }
-            else {
+            else if (!isCompleted) {
                 if (isNullOrUndefined(fieldData) || isNullOrUndefined(liElement)) {
-                    return undefined;
+                    finalValue = undefined;
+                    isCompleted = true;
                 }
                 else {
                     this.selectedId.push(fieldData[this.listBaseOption.fields.id]);
-                    return {
+                    finalValue = {
                         text: fieldData[this.listBaseOption.fields.text], item: liElement,
                         data: this.getItemData(liElement)
                     };
+                    isCompleted = true;
                 }
             }
         }
+        if (isBlazor()) {
+            // tslint:disable-next-line:no-any
+            return this.blazorGetSelectedItems(finalValue);
+        }
+        else {
+            return finalValue;
+        }
+    };
+    // tslint:disable-next-line:no-any
+    ListView.prototype.blazorGetSelectedItems = function (finalGetSelectedItem) {
+        var blazorSelectedItem = {
+            data: [],
+            index: [],
+            parentId: [],
+            text: []
+        };
+        if (!isNullOrUndefined(finalGetSelectedItem)) {
+            if (!isNullOrUndefined(finalGetSelectedItem.data)) {
+                if (this.showCheckBox && this.isNestedList) {
+                    finalGetSelectedItem.data.forEach(function (currentData) {
+                        blazorSelectedItem.data.push(currentData.data);
+                    });
+                    if (!isNullOrUndefined(finalGetSelectedItem.data[0])
+                        && !isNullOrUndefined(finalGetSelectedItem.data[0].parentId)) {
+                        blazorSelectedItem.parentId = finalGetSelectedItem.data[0].parentId;
+                    }
+                }
+                else {
+                    blazorSelectedItem.data = this.convertItemsToArray(finalGetSelectedItem.data);
+                }
+            }
+            if (!isNullOrUndefined(finalGetSelectedItem.text)) {
+                blazorSelectedItem.text = this.convertItemsToArray(finalGetSelectedItem.text);
+            }
+            if (!isNullOrUndefined(finalGetSelectedItem.index)) {
+                blazorSelectedItem.index = this.convertItemsToArray(finalGetSelectedItem.index);
+            }
+        }
+        return blazorSelectedItem;
+    };
+    // tslint:disable-next-line:no-any
+    ListView.prototype.convertItemsToArray = function (items) {
+        return Array.isArray(items) ? items.slice() : [items];
     };
     /**
      * It is used to find out an item details from the current list.
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * @blazorType TValue
      */
     ListView.prototype.findItem = function (obj) {
         return this.getItemData(obj);
@@ -2254,7 +2314,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     }
                     child = child.concat(data);
                     if (ds instanceof Array) {
-                        this.resetBlazorTemplates();
                         data.forEach(function (dataSource) {
                             _this.dataSource.push(dataSource);
                             _this.setViewDataSource(_this.dataSource);
@@ -2299,7 +2358,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 this.virtualizationModule.removeItem(obj);
             }
             else {
-                this.resetBlazorTemplates();
                 this.removeItemFromList(obj);
                 this.updateBlazorTemplates(true);
             }
@@ -2344,7 +2402,6 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     ListView.prototype.removeMultipleItems = function (obj) {
         if (!(this.dataSource instanceof DataManager)) {
             if (obj.length) {
-                this.resetBlazorTemplates();
                 for (var i = 0; i < obj.length; i++) {
                     if (this.enableVirtualization) {
                         this.removeItem(obj[i]);
@@ -2778,19 +2835,23 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                         textCollection_1.push(curViewDS_2[index][text_1]);
                         dataCollection_1.push(curViewDS_2[index]);
                     });
+                    var dataSource_1 = this.listViewInstance.dataSource instanceof DataManager
+                        ? curViewDS_2 : this.listViewInstance.dataSource;
                     return {
                         text: textCollection_1,
                         data: dataCollection_1,
                         index: this.uiIndices.activeIndices.map(function (index) {
-                            return (_this.listViewInstance.dataSource).indexOf(curViewDS_2[index]);
+                            return dataSource_1.indexOf(curViewDS_2[index]);
                         })
                     };
                 }
                 else {
+                    var dataSource = this.listViewInstance.dataSource instanceof DataManager
+                        ? curViewDS_2 : this.listViewInstance.dataSource;
                     return {
                         text: curViewDS_2[this.activeIndex][this.listViewInstance.fields.text],
                         data: curViewDS_2[this.activeIndex],
-                        index: this.listViewInstance.dataSource.indexOf(curViewDS_2[this.activeIndex])
+                        index: dataSource.indexOf(curViewDS_2[this.activeIndex])
                     };
                 }
             }
@@ -3136,11 +3197,13 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         var commonTemplate = '<div class="e-text-content" role="presentation"> ' +
             '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
         template.innerHTML = this.listViewInstance.template || commonTemplate;
+        // tslint:disable-next-line:no-any
         var templateElements = template.getElementsByTagName('*');
         var groupTemplate = this.listViewInstance.createElement('div');
         if (this.listViewInstance.fields.groupBy) {
             groupTemplate.innerHTML = this.listViewInstance.groupTemplate || commonTemplate;
         }
+        // tslint:disable-next-line:no-any
         var groupTemplateElements = groupTemplate.getElementsByTagName('*');
         if (args.curData.isHeader) {
             this.headerData = args.curData;
@@ -3364,11 +3427,10 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             detach(this.listViewInstance.contentContainer);
         }
         this.listViewInstance.preRender();
-        this.listViewInstance.localData = this.listViewInstance.dataSource;
         // resetting the dom count to 0, to avoid edge case of dataSource suddenly becoming zero
         // and then manually adding item using addItem API
         this.domItemCount = 0;
-        this.listViewInstance.renderList();
+        this.listViewInstance.setLocalData();
     };
     Virtualization.prototype.updateUI = function (element, index, targetElement) {
         var onChange = this.isNgTemplate() ? this.onNgChange : this.onChange;

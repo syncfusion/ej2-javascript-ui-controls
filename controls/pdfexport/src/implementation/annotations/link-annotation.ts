@@ -18,11 +18,7 @@ export abstract class PdfLinkAnnotation extends PdfAnnotation {
      */
     public constructor(rectangle : RectangleF)
     public constructor(rectangle ?: RectangleF) {
-        if (typeof rectangle === 'undefined') {
-            super();
-        } else {
-            super(rectangle);
-        }
+        super(rectangle);
     }
     // Implementation
     /**

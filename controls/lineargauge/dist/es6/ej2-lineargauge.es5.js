@@ -1445,7 +1445,7 @@ var Animations = /** @__PURE__ @class */ (function () {
                 markerElement.setAttribute('d', currentPath);
                 pointer.startValue = pointer.currentValue;
                 pointer.animationComplete = true;
-                _this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                _this.gauge.trigger(animationComplete, _this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     };
@@ -1564,7 +1564,7 @@ var Animations = /** @__PURE__ @class */ (function () {
                     }
                 }
                 pointer.startValue = pointer.currentValue;
-                _this.gauge.trigger(animationComplete, { axis: axis, pointer: pointer });
+                _this.gauge.trigger(animationComplete, _this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
             }
         });
     };
@@ -1721,6 +1721,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
         var anchor;
         var baseline;
         var padding = 5;
+        var fontColor = this.gauge.themeStyle.labelColor;
         var labelColor;
         var offset = axis.labelStyle.offset;
         var labelElement = this.gauge.renderer.createGroup({ id: this.gauge.element.id + '_AxisLabelsGroup' });
@@ -1728,7 +1729,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? this.gauge.themeStyle.labelColor : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? (axis.labelStyle.font.color || fontColor) : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;

@@ -13,6 +13,7 @@ import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol, che
 import { isNullOrUndefined, Browser, EventHandler, remove } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { LayerSettingsModel, HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
+import { ShapeSettings } from '../model/base';
 /**
  * Legend module is used to render legend for the maps
  */
@@ -281,7 +282,7 @@ export class Legend {
         }
     }
     /**
-     * 
+     *
      */
     private getLegends(
         layerIndex: number, layerData: object[], colorMapping: ColorMappingSettings[], dataSource: object[],
@@ -501,7 +502,7 @@ export class Legend {
                                         this.legendHighlightCollection = [];
                                         this.pushCollection(
                                             targetElement, this.legendHighlightCollection, collection[i],
-                                            shapeEle.getAttribute('opacity'));
+                                            layer.shapeSettings as ShapeSettings);
                                     }
                                     length = this.legendHighlightCollection.length;
                                     let legendHighlightColor : string = this.legendHighlightCollection[length - 1]['legendOldFill'];
@@ -517,7 +518,7 @@ export class Legend {
                                     if (j === 0) {
                                         this.pushCollection(
                                             targetElement, this.legendSelectionCollection, collection[i],
-                                            shapeEle.getAttribute('opacity'));
+                                            layer.shapeSettings as ShapeSettings);
                                     }
                                     selectLength = this.legendSelectionCollection.length;
                                     let legendSelectionColor : string = this.legendSelectionCollection[selectLength - 1]['legendOldFill'];
@@ -546,10 +547,12 @@ export class Legend {
         element.setAttribute('stroke-width', (Number(borderWidth) / this.maps.scale).toString());
     }
 
-    private pushCollection(targetElement: Element, collection: object[], oldElement: object, shapeOpacity?: string): void {
+    private pushCollection(targetElement: Element, collection: object[], oldElement: object, shapeSettings: ShapeSettings): void {
         collection.push({
             legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
-            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'], shapeOpacity: shapeOpacity
+            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'],
+            shapeOpacity: shapeSettings.opacity, shapeOldBorderColor: shapeSettings.border.color,
+            shapeOldBorderWidth: shapeSettings.border.width
         });
         length = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
@@ -565,7 +568,7 @@ export class Legend {
             for (let j: number = 0; j < dataCount; j++) {
                 this.setColor(
                     item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'],
-                    item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                    item['shapeOldBorderColor'], item['shapeOldBorderWidth']);
             }
         }
     }
@@ -625,7 +628,10 @@ export class Legend {
                 if (getValue === 'highlight' && shapeElement['LegendEle'] !== this.legendElement) {
                     let selectionEle: object = this.isTargetSelected(shapeElement, this.shapeHighlightCollection);
                     if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                        this.pushCollection(legendShape, this.shapeHighlightCollection, collection[index]);
+                        this.pushCollection(
+                            legendShape, this.shapeHighlightCollection, collection[index],
+                            this.maps.layers[layerIndex].shapeSettings as ShapeSettings
+                        );
                     }
                     if (length > 0) {
                         for (let j: number = 0; j < length; j++) {
@@ -670,7 +676,10 @@ export class Legend {
                     }
                     if (targetElement.getAttribute('class') !== 'ShapeselectionMapStyle' && this.legendSelection) {
                         if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
-                            this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index]);
+                            this.pushCollection(
+                                legendShape, this.shapeSelectionCollection, collection[index],
+                                this.maps.layers[layerIndex].shapeSettings as ShapeSettings
+                            );
                         }
                         this.setColor(
                             legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'),
@@ -920,7 +929,7 @@ export class Legend {
             if (!isDuplicate) {
                 this.legendCollection.push({
                     text: legendText, fill: legendFill, data: newColllection, opacity: legend.opacity,
-                    borderColor: legend.border.color, borderWidth: legend.border.width
+                    borderColor: legend.shapeBorder.color, borderWidth: legend.shapeBorder.width
                 });
             }
         }
@@ -1266,7 +1275,7 @@ export class Legend {
 
     public legendGradientColor(colorMap: ColorMappingSettings, legendIndex: number): string {
         let legendFillColor: string;
-        let xmlns: string = 'https://www.w3.org/2000/svg';
+        let xmlns: string = 'http://www.w3.org/2000/svg';
         if (!isNullOrUndefined(colorMap.color) && typeof (colorMap.color) === 'object') {
             let linerGradientEle: Element = document.createElementNS(xmlns, 'linearGradient');
             let opacity: number = 1; let position: LegendPosition = this.maps.legendSettings.position;
@@ -1303,7 +1312,7 @@ export class Legend {
     }
 
     /**
-     * To destroy the legend. 
+     * To destroy the legend.
      * @return {void}
      * @private
      */
