@@ -3,8 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { BezierSegment } from '../../../src/diagram/objects/connector';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
-import { Segments, ConnectorConstraints } from '../../../src/diagram/enum/enum';
-import { SelectorModel } from '../../../src/diagram/interaction/selector-model';
+import { Segments, ConnectorConstraints } from '../../../src/diagram/enum/enum'; 
 import { MouseEvents } from './mouseevents.spec';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 /**

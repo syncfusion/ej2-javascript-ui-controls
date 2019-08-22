@@ -4161,14 +4161,35 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
     GanttTreeGrid.prototype.getContentDiv = function () {
         return this.treeGridElement.querySelector('.e-content');
     };
+    GanttTreeGrid.prototype.getHeaderDiv = function () {
+        return this.treeGridElement.querySelector('.e-headercontent');
+    };
+    GanttTreeGrid.prototype.getScrollbarWidth = function () {
+        var outer = document.createElement('div');
+        outer.style.visibility = 'hidden';
+        outer.style.overflow = 'scroll';
+        outer.style.msOverflowStyle = 'scrollbar';
+        var inner = document.createElement('div');
+        outer.appendChild(inner);
+        this.parent.element.appendChild(outer);
+        var scrollbarWidth = (outer.offsetWidth - inner.offsetWidth);
+        outer.parentNode.removeChild(outer);
+        return scrollbarWidth;
+    };
     GanttTreeGrid.prototype.ensureScrollBar = function () {
         var content = this.getContentDiv();
-        //let isScroll: boolean = content.scrollHeight > content.offsetHeight;
-        //if (isScroll) {
-        content.classList.add('e-gantt-scroll-padding');
-        //} else {
-        // content.classList.remove('e-gantt-scroll-padding');
-        //}
+        var headerDiv = this.getHeaderDiv();
+        var scrollWidth = this.getScrollbarWidth();
+        var isMobile = /Android|Mac|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (scrollWidth !== 0) {
+            content.style.cssText += 'width: calc(100% + ' + scrollWidth + 'px);';
+        }
+        else {
+            content.classList.add('e-gantt-scroll-padding');
+        }
+        if (scrollWidth === 0 && isMobile) {
+            headerDiv.style.cssText += 'width: calc(100% + 17px);';
+        }
     };
     GanttTreeGrid.prototype.bindEvents = function () {
         this.parent.treeGrid.dataBound = this.dataBound.bind(this);
@@ -4208,14 +4229,22 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
     };
     GanttTreeGrid.prototype.collapsed = function (args) {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            this.updateExpandStatus(args);
             var collapsedArgs = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     };
     GanttTreeGrid.prototype.expanded = function (args) {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            this.updateExpandStatus(args);
             var expandedArgs = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
+        }
+    };
+    GanttTreeGrid.prototype.updateExpandStatus = function (args) {
+        if (getValue('data', args) && isBlazor()) {
+            var record = this.parent.getTaskByUniqueID(getValue('data', args).uniqueID);
+            record.expanded = getValue('data', args).expanded;
         }
     };
     GanttTreeGrid.prototype.actionBegin = function (args) {
@@ -4231,7 +4260,14 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
     GanttTreeGrid.prototype.createExpandCollapseArgs = function (args) {
         var record = getValue('data', args);
         var gridRow = getValue('row', args);
-        var chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
+        var chartRow;
+        if (isBlazor()) {
+            /* tslint:disable-next-line */
+            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(this.parent.getTaskByUniqueID(record.uniqueID))];
+        }
+        else {
+            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
+        }
         var eventArgs = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         return eventArgs;
     };
@@ -6214,7 +6250,8 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                     taskIndicatorTextNode = text.childNodes;
                 }
                 taskIndicatorNode[0].appendChild([].slice.call(taskIndicatorTextNode)[0]);
-                taskIndicatorNode[0].title = taskIndicatorNode[0].innerText;
+                taskIndicatorNode[0].title =
+                    !isNullOrUndefined(indicators[indicatorIndex].tooltip) ? indicators[indicatorIndex].tooltip : '';
                 parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskIndicatorNode)[0]);
             }
         }
@@ -8727,8 +8764,10 @@ var Splitter$1 = /** @__PURE__ @class */ (function () {
             ],
             orientation: 'Horizontal',
             resizeStart: function (args) {
-                _this.splitterPreviousPositionGrid = args.pane[0].scrollWidth + 1 + 'px';
-                _this.splitterPreviousPositionChart = args.pane[1].scrollWidth + 1 + 'px';
+                var leftPane = isBlazor() ? args.element.querySelectorAll('.e-pane')[0] : args.pane[0];
+                var rightPane = isBlazor() ? args.element.querySelectorAll('.e-pane')[1] : args.pane[1];
+                _this.splitterPreviousPositionGrid = leftPane.scrollWidth + 1 + 'px';
+                _this.splitterPreviousPositionChart = rightPane.scrollWidth + 1 + 'px';
                 var callBackPromise = new Deferred();
                 _this.parent.trigger('splitterResizeStart', args, function (resizeStartArgs) {
                     callBackPromise.resolve(resizeStartArgs);
@@ -8944,6 +8983,9 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                 else if (args.target.classList.contains('e-indicator-span')) {
                     argsData.content = this.toolTipObj.content =
                         parent.tooltipModule.getTooltipContent('indicator', data, parent, args);
+                    if (isNullOrUndefined(argsData.content)) {
+                        args.cancel = true;
+                    }
                 }
                 else if (args.target.classList.contains('e-notes-info')) {
                     var ganttData = this.parent.ganttChartModule.getRecordByTarget(args.event);
@@ -9097,7 +9139,9 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                     parent.tooltipModule.predecessorTooltipData.offsetString + '</td></tr></tbody></table>';
                 break;
             case 'indicator':
-                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';
+                if (args.target.title.length) {
+                    content$$1 = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';
+                }
                 break;
             case 'timeline':
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';
@@ -9653,10 +9697,21 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             for (var i = 0; i < records.length; i++) {
                 this.currentViewData.push(this.getTaskByUniqueID(records[i].uniqueID));
             }
+            this.treeGrid.grid.currentViewData = this.currentViewData;
         }
         else {
             this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
         }
+    };
+    /**
+     * @private
+     */
+    Gantt.prototype.getRecordFromFlatdata = function (records) {
+        var updatedRecord = [];
+        for (var i = 0; i < records.length; i++) {
+            updatedRecord.push(this.getTaskByUniqueID(records[i].uniqueID));
+        }
+        return updatedRecord;
     };
     /**
      * @private
@@ -9923,6 +9978,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             this.notify('tree-grid-created', {});
             this.createGanttPopUpElement();
             this.hideSpinner();
+            this.renderComplete();
         }
         if (this.taskFields.dependency) {
             this.connectorLineIds = [];
@@ -15692,7 +15748,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.deleteSuccess = function (args) {
         var flatData = this.parent.flatData;
         var currentData = this.parent.currentViewData;
-        var deletedRecords = args.deletedRecordCollection;
+        var deletedRecords = this.parent.getRecordFromFlatdata(args.deletedRecordCollection);
         var deleteRecordIDs = [];
         for (var i = 0; i < deletedRecords.length; i++) {
             var deleteRecord = deletedRecords[i];
@@ -16755,7 +16811,12 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
      * @return {Object[]}
      */
     Selection$$1.prototype.getSelectedRecords = function () {
-        return this.parent.treeGrid.getSelectedRecords();
+        if (isBlazor()) {
+            return this.parent.getRecordFromFlatdata(this.parent.treeGrid.getSelectedRecords());
+        }
+        else {
+            return this.parent.treeGrid.getSelectedRecords();
+        }
     };
     /**
      * Get the selected records for cell selection.
@@ -16767,7 +16828,12 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < cellDetails.length; i++) {
             cellSelectedRecords.push(this.parent.currentViewData[cellDetails[i].rowIndex]);
         }
-        return cellSelectedRecords;
+        if (isBlazor()) {
+            return this.parent.getRecordFromFlatdata(cellSelectedRecords);
+        }
+        else {
+            return cellSelectedRecords;
+        }
     };
     /**
      * Gets the collection of selected rows.
@@ -16848,9 +16914,11 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
     Selection$$1.prototype.removeClass = function (records) {
         if (!this.parent.selectionSettings.persistSelection) {
             var ganttRow = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
-            for (var i = 0; i < records.length; i++) {
-                removeClass([ganttRow[records[i]]], 'e-active');
-                ganttRow[records[i]].removeAttribute('aria-selected');
+            /* tslint:disable-next-line:no-any */
+            var rowIndex = isBlazor() && isNullOrUndefined(records.length) ? [records] : records;
+            for (var i = 0; i < rowIndex.length; i++) {
+                removeClass([ganttRow[rowIndex[i]]], 'e-active');
+                ganttRow[rowIndex[i]].removeAttribute('aria-selected');
             }
         }
     };

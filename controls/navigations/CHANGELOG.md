@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### Accordion
+
+#### Breaking Changes
+
+- The `expanded` event type changed from `ExpandEventArgs` to `ExpandedEventArgs`.
+
 ## 17.2.41 (2019-08-14)
 
 ### TreeView

@@ -2,6 +2,39 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### PDF Viewer
+
+#### Breaking Changes
+
+- The following API is renamed.
+
+| Existing API name| New API Name |
+|------|-------------|
+| toolbarItem| toolbarItems|
+
+#### New Features
+
+- ‘#223065’, ‘#234860’, ‘#241770’, ‘#241487’, ‘#229426’, ‘#244801’ – Provided the support for importing and exporting the annotation details as a JSON object.
+
+#### Bug Fixes
+
+- ‘#243837’ – Exception will no longer be thrown while loading the PDF document as FileStream.
+
+## 17.2.41 (2019-08-14)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- #241487, #243077 - Annotation author name is now updated properly in the comment panel.
+- #242804 - The Bookmark's destination value is now maintained properly during navigation.
+- #241487 - The provided PDF document will now be loaded properly in the PDF Viewer control.
+- #244437 - Resolved the typo errors in the PDF Viewer toolbar content.
+- #244654 - The editAnnotation API is now working properly.
+- #243134 - The PDF documents load properly when render the PDF Viewer control under multiple tab with fitToPage view mode during initial loading.
+
 ## 17.2.40 (2019-08-06)
 
 ### PDF Viewer

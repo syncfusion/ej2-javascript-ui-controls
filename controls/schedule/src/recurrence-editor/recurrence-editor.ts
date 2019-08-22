@@ -1000,7 +1000,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        this.element.innerHTML = '';
+        while (this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
+        }
     }
 
     /**

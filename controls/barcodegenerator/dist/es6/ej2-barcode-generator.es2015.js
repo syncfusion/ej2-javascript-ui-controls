@@ -2881,6 +2881,7 @@ class BarcodeGenerator extends Component {
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     }
     /**
      * Returns the module name of the barcode
@@ -6596,6 +6597,7 @@ class QRCodeGenerator extends Component {
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     }
     triggerEvent(eventName, message) {
         let arg = {
@@ -7705,6 +7707,7 @@ class DataMatrixGenerator extends Component {
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     }
 }
 __decorate$5([

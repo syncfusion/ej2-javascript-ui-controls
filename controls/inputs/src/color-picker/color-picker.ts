@@ -275,6 +275,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (!this.enableOpacity) {
             addClass([this.container.parentElement], HIDEOPACITY);
         }
+        this.renderComplete();
     }
 
     private initWrapper(): void {

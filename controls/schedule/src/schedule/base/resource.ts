@@ -434,7 +434,7 @@ export class ResourceBase {
         headerCollection.pop();
         let target: HTMLElement = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
         let headerWrapper: Element = target.querySelector('.' + cls.RESOURCE_LEVEL_TITLE);
-        headerWrapper.innerHTML = '';
+        util.removeChildren(headerWrapper);
         headerCollection.forEach((element: Element) => headerWrapper.appendChild(element));
         if (this.lastResourceLevel.length === 1) {
             addClass([this.parent.element.querySelector('.' + cls.RESOURCE_MENU)], cls.DISABLE_CLASS);

@@ -506,6 +506,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.anchor = this.inputElement;
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputEleValue = this.getDateObject(this.inputElement.value);
+        this.renderComplete();
     }
     private setTimeAllowEdit(): void {
         if (this.allowEdit) {

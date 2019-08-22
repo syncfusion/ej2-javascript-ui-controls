@@ -19,14 +19,14 @@ import { Snap } from './../objects/snapping';
 import { NodeConstraints, DiagramEvent, ObjectTypes, PortConstraints } from './../enum/enum';
 import { PointPortModel, PortModel } from './../objects/port-model';
 import { ITouches } from '../objects/interface/interfaces';
-import { SelectorModel } from './selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { MouseEventArgs } from './event-handlers';
 import { TextElement } from '../core/elements/text-element';
 import { PathElement } from '../core/elements/path-element';
 import { Container } from '../core/containers/container';
 import { contains, Actions } from './actions';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
-import { Selector } from './selector';
+import { Selector } from '../objects/node';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { getInOutConnectPorts } from '../utility/diagram-util';
 /**

@@ -684,6 +684,7 @@ export class DateRangePicker extends CalendarBase {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
+        this.renderComplete();
     }
     /**
      * Initialize the event handler

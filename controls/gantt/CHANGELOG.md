@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### Gantt
+
+#### Bug Fixes
+
+- `F145733` -  Alignment issue with header and rows on splitter resizing has been fixed.
+- `F146641` - Issue with indicators tooltip support has been fixed.
+
 ## 17.2.41 (2019-08-14)
 
 ### Gantt

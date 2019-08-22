@@ -869,5 +869,42 @@ describe('RTE CR issues', () => {
         afterEach(() => {
             destroy(rteObj);
         });
+    }); 
+    describe('Check maxLength while showCharCount in false', () => {
+        let rteObj: RichTextEditor;
+      
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion</p>',
+                maxLength: 10  ,
+                toolbarSettings: {
+                    items: ['Undo', 'Redo']
+                },
+            });
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Adding letter K when maxLength is reached', () => {
+            let keyboardEventArgs : any = {
+                preventDefault: function () { },
+                altKey: false,
+                ctrlKey: false,
+                shiftKey: false,
+                char: '',
+                key: '',
+                charCode: 75,
+                keyCode: 75,
+                which: 75,
+                code: 75,
+                currentTarget: rteObj.inputElement
+            };
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            rteObj.keyDown(keyboardEventArgs);
+            expect(rteObj.inputElement.innerText).toBe('syncfusion');
+        });
+        it('Check public method -getCharCount', () => {
+            expect(rteObj.getCharCount()).toBe(10);
+        });
     });
 })

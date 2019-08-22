@@ -2102,6 +2102,7 @@ export class Calendar extends CalendarBase {
                 EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
             }
         }
+        this.renderComplete();
     }
     protected formResetHandler(): void {
         this.setProperties({ value: null }, true);

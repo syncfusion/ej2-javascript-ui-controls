@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved template Engine support is not working while using Special characters `(@)` in `if` condition.
+
 ## 17.2.40 (2019-08-06)
 
 ### Common
@@ -9,6 +17,7 @@
 #### Bug Fixes
 
 - `#I240696` - Resolved drag issue for actual drag element for scrolled parent element.
+- `#I237495` - Fixed template engine support is not working while passing an array of value within the object.
 
 ## 17.2.39 (2019-07-30)
 

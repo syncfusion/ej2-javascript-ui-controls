@@ -1861,11 +1861,12 @@ describe('Uploader Control', () => {
         it('Pass multiple attributes dynamically', () => {
             uploadObj = new Uploader({ });
             uploadObj.appendTo('#upload');
-            uploadObj.htmlAttributes = { class:"sample", disabled: "true"};
+            uploadObj.htmlAttributes = { class:"sample", disabled: "true", style:"height:5px"};
             uploadObj.dataBind();
             expect(uploadObj.uploadWrapper.classList.contains('sample')).toBe(true);
             expect(uploadObj.uploadWrapper.classList.contains('e-disabled')).toBe(true);
             expect(uploadObj.browseButton.hasAttribute('disabled')).toBe(true);
+            expect(uploadObj.uploadWrapper.getAttribute('style')).toBe('height:5px');
         });
         it('Pass null value in htmlAttributes', () => {
             uploadObj = new Uploader({ htmlAttributes:{class: "sample" } });

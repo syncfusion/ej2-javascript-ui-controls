@@ -768,10 +768,11 @@ let NumericTextBox = class NumericTextBox extends Component {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     }
     checkAttributes(isDynamic) {
-        let attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) :
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
@@ -892,26 +893,30 @@ let NumericTextBox = class NumericTextBox extends Component {
         }
     }
     updateHTMLAttrToElement() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) < 0) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     updateHTMLAttrToWrapper() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) > -1) {
-                if (pro === 'class') {
-                    addClass([this.container], this.htmlAttributes[pro].split(' '));
-                }
-                else if (pro === 'style') {
-                    let numericStyle = this.container.getAttribute(pro);
-                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
-                        this.htmlAttributes[pro];
-                    this.container.setAttribute(pro, numericStyle);
-                }
-                else {
-                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                    }
+                    else if (pro === 'style') {
+                        let numericStyle = this.container.getAttribute(pro);
+                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.container.setAttribute(pro, numericStyle);
+                    }
+                    else {
+                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -2964,29 +2969,34 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     }
     updateHTMLAttrToElement() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) < 0) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
     updateHTMLAttrToWrapper() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    let maskStyle = this.inputObj.container.getAttribute(key);
-                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.inputObj.container.setAttribute(key, maskStyle);
-                }
-                else {
-                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        let maskStyle = this.inputObj.container.getAttribute(key);
+                        maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.inputObj.container.setAttribute(key, maskStyle);
+                    }
+                    else {
+                        this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
@@ -3032,7 +3042,8 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         }
     }
     checkHtmlAttributes(isDynamic) {
-        let attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
+            : ['placeholder', 'disabled', 'value', 'readonly'];
         for (let key of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
@@ -4218,6 +4229,7 @@ let Slider = class Slider extends Component {
         }
         return tickCount;
     }
+    // tslint:disable-next-line:max-func-body-length
     renderScale() {
         let orien = this.orientation === 'Vertical' ? 'v' : 'h';
         this.noOfDecimals = this.numberOfDecimals(this.step);
@@ -4292,7 +4304,12 @@ let Slider = class Slider extends Component {
                 else {
                     let largestep = this.fractionalToInteger(this.ticks.largeStep);
                     let startValue = this.fractionalToInteger(start);
-                    islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    if (orien === 'h') {
+                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    }
+                    else {
+                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
+                    }
                 }
             }
             if (islargeTick) {
@@ -7067,6 +7084,7 @@ let Uploader = class Uploader extends Component {
         this.renderPreLoadFiles();
         this.setControlStatus();
         this.setCSSClass();
+        this.renderComplete();
     }
     renderBrowseButton() {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
@@ -7237,26 +7255,30 @@ let Uploader = class Uploader extends Component {
         this.bindDropEvents();
     }
     updateHTMLAttrToElement() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr$1.indexOf(pro) < 0) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr$1.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     updateHTMLAttrToWrapper() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr$1.indexOf(pro) > -1) {
-                if (pro === 'class') {
-                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
-                }
-                else if (pro === 'style') {
-                    let uploadStyle = this.uploadWrapper.getAttribute(pro);
-                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
-                        this.htmlAttributes[pro];
-                    this.uploadWrapper.setAttribute(pro, uploadStyle);
-                }
-                else {
-                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr$1.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                    }
+                    else if (pro === 'style') {
+                        let uploadStyle = this.uploadWrapper.getAttribute(pro);
+                        uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.uploadWrapper.setAttribute(pro, uploadStyle);
+                    }
+                    else {
+                        this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -7952,10 +7974,9 @@ let Uploader = class Uploader extends Component {
         for (let listItem of fileData) {
             let liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            let fromElements = [].slice.call(this.uploadTemplateFn(listItem));
+            let fromElements = [].slice.call(this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
             let index = fileData.indexOf(listItem);
             append(fromElements, liElement);
-            updateBlazorTemplate(this.element.id + 'Template', 'Template');
             let eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -7973,6 +7994,7 @@ let Uploader = class Uploader extends Component {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
     }
     createParentUL() {
         if (isNullOrUndefined(this.listParent)) {
@@ -8485,7 +8507,8 @@ let Uploader = class Uploader extends Component {
         }
     }
     checkHTMLAttributes(isDynamic) {
-        let attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['accept', 'multiple', 'disabled'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['accept', 'multiple', 'disabled'];
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
@@ -9592,6 +9615,7 @@ let ColorPicker = class ColorPicker extends Component {
         if (!this.enableOpacity) {
             addClass([this.container.parentElement], HIDEOPACITY);
         }
+        this.renderComplete();
     }
     initWrapper() {
         let wrapper = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
@@ -11463,7 +11487,8 @@ let TextBox = class TextBox extends Component {
         }
     }
     checkAttributes(isDynamic) {
-        let attrs = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        let attrs = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
         for (let key of attrs) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
@@ -11540,29 +11565,34 @@ let TextBox = class TextBox extends Component {
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        this.renderComplete();
     }
     updateHTMLAttrToWrapper() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    let setStyle = this.textboxWrapper.container.getAttribute(key);
-                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.textboxWrapper.container.setAttribute(key, setStyle);
-                }
-                else {
-                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        let setStyle = this.textboxWrapper.container.getAttribute(key);
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.textboxWrapper.container.setAttribute(key, setStyle);
+                    }
+                    else {
+                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
     updateHTMLAttrToElement() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) < 0) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }

@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### Pivot Table
+
+#### New Features
+
+- `#F144352` – Introduced an event `fieldListRefreshed` which fires on each UI operations performed in field list.
+- `#F144382` – Localization text for aggregation types included.
+- `#232925`, `#234552` - Can able to apply the number formatting through built-in UI.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### Pivot Table

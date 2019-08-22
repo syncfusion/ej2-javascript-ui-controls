@@ -2519,6 +2519,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         this.setTheme();
         this.calculateBounds();
         this.renderElements();
+        this.renderComplete();
     };
     CircularGauge.prototype.setTheme = function () {
         this.themeStyle = getThemeStyle(this.theme);

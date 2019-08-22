@@ -84,7 +84,6 @@ export class TextMarkupAnnotation {
      */
     public currentTextMarkupAnnotation: ITextMarkupAnnotation = null;
     private currentAnnotationIndex: number = null;
-    private author: string;
 
     /**
      * @private
@@ -98,7 +97,6 @@ export class TextMarkupAnnotation {
         this.highlightOpacity = pdfViewer.highlightSettings.opacity;
         this.underlineOpacity = pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = pdfViewer.strikethroughSettings.opacity;
-        this.author = pdfViewer.highlightSettings.author;
     }
 
     /**
@@ -136,11 +134,12 @@ export class TextMarkupAnnotation {
                 for (let i: number = 0; i < annotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = annotations[i];
+                    annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.Subject);
                     let annotationObject: ITextMarkupAnnotation = null;
                     if (annotation.TextMarkupAnnotationType) {
                         // tslint:disable-next-line:max-line-length
-                        annotationObject = { textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: this.author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
-                        annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation), review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: this.author}, shapeAnnotationType: 'textMarkup' };
+                        annotationObject = { textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+                        annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author}, shapeAnnotationType: 'textMarkup' };
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
                     }
                     // tslint:disable-next-line:max-line-length
@@ -228,7 +227,7 @@ export class TextMarkupAnnotation {
             }
             this.pdfViewerBase.isDocumentEdited = true;
             // tslint:disable-next-line
-            let settings: any = { opacity: annotation.opacity, color: annotation.color, author: this.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate };
+            let settings: any = { opacity: annotation.opacity, color: annotation.color, author: annotation.author, subject: annotation.subject, modifiedDate: annotation.modifiedDate };
             let index: number = this.pdfViewer.annotationModule.actionCollection[this.pdfViewer.annotationModule.actionCollection.length - 1].index;
             this.pdfViewer.fireAnnotationAdd(pageNumber, index, (type as AnnotationType), annotation.rect, settings);
         }
@@ -299,7 +298,7 @@ export class TextMarkupAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any): string {
+    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any, measureShapeData: any,stickyData: any): string {
         let canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
         canvas.style.width = 816 + 'px';
         canvas.style.height = 1056 + 'px';
@@ -310,13 +309,17 @@ export class TextMarkupAnnotation {
         // tslint:disable-next-line
         let shapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape');
         // tslint:disable-next-line
+        let measureShapeAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_shape_measure');
+        // tslint:disable-next-line
         let stampAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_stamp');
-
-        if (stampAnnotation || shapeAnnotation) {
+        // tslint:disable-next-line
+        let stickyNoteAnnotation: any = this.getAnnotations(pageIndex, null, '_annotations_sticky');
+        if (stampAnnotation || shapeAnnotation || stickyNoteAnnotation || measureShapeAnnotation) {
             this.pdfViewer.renderDrawing(canvas, pageIndex);
         } else {
-            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, null, null, canvas);
+            this.pdfViewer.annotation.renderAnnotations(pageIndex, shapeData, measureShapeData, null, canvas);
             this.pdfViewer.annotation.stampAnnotationModule.renderStampAnnotations(stampData, pageIndex, canvas);
+            this.pdfViewer.annotation.stickyNotesAnnotationModule.renderStickyNotesAnnotations(stickyData, pageIndex, canvas);
         }
         if (textMarkupannotations) {
             this.renderTextMarkupAnnotations(null, pageIndex, canvas, 1);
@@ -884,7 +887,7 @@ export class TextMarkupAnnotation {
     private showPopupNote(event: any, annotation: ITextMarkupAnnotation): void {
         if (annotation.note) {
             // tslint:disable-next-line:max-line-length
-            this.pdfViewer.annotationModule.showPopupNote(event, annotation.color, this.author, annotation.note, annotation.textMarkupAnnotationType);
+            this.pdfViewer.annotationModule.showPopupNote(event, annotation.color, annotation.author, annotation.note, annotation.textMarkupAnnotationType);
         }
     }
 
@@ -1139,7 +1142,7 @@ export class TextMarkupAnnotation {
         let annotation: ITextMarkupAnnotation = {
             // tslint:disable-next-line:max-line-length
             textMarkupAnnotationType: type, color: color, opacity: opacity, bounds: bounds, author: author, subject: subject, modifiedDate: modifiedDate, note: note, rect: rect,
-            annotName: annotationName, comments: [], review: {state: '', stateModel: '', author: 'Author', modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup'
+            annotName: annotationName, comments: [], review: {state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup'
         };
         if (document.getElementById(annotationName)) {
             document.getElementById(annotationName).addEventListener('mouseup', this.annotationDivSelect(annotation, pageNumber));
@@ -1181,6 +1184,19 @@ export class TextMarkupAnnotation {
 
     private getMagnifiedValue(value: number, factor: number): number {
         return value * factor;
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public saveImportedTextMarkupAnnotations(annotation: any, pageNumber: number): any {
+        let annotationObject: ITextMarkupAnnotation = null;
+        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.Subject);
+        // tslint:disable-next-line:max-line-length
+        annotationObject = { textMarkupAnnotationType: annotation.TextMarkupAnnotationType, color: annotation.Color, opacity: annotation.Opacity, bounds: annotation.Bounds, author: annotation.Author, subject: annotation.Subject, modifiedDate: annotation.ModifiedDate, note: annotation.Note, rect: annotation.Rect,
+        annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup' };
+        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
     }
 
     /**

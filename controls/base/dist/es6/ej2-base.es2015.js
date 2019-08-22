@@ -3714,7 +3714,9 @@ var IntlBase;
      * @returns {string}
      */
     function getCurrencySymbol(numericObject, currencyCode) {
-        return getValue('currencies.' + currencyCode + '.symbol', numericObject) || '$';
+        let getCurrency = getValue('currencies.' + currencyCode + '.symbol', numericObject) ||
+            getValue('currencies.' + currencyCode + '.symbol-alt-narrow', numericObject) || '$';
+        return getCurrency;
     }
     IntlBase.getCurrencySymbol = getCurrencySymbol;
     /**
@@ -5086,6 +5088,7 @@ let Component = class Component extends Base {
          */
         this.isStringTemplate = false;
         this.needsID = false;
+        this.isRendered = false;
         /**
          * This is a instance method to create an element.
          * @private
@@ -5174,6 +5177,17 @@ let Component = class Component extends Base {
             this.render();
             this.trigger('created');
         }
+    }
+    /**
+     * It is used to process the post rendering functionalities to a component.
+     */
+    renderComplete(wrapperElement) {
+        if (isBlazor()) {
+            let ejsInterop = 'ejsInterop';
+            // tslint:disable-next-line:no-any
+            window[ejsInterop].renderComplete(this.element, wrapperElement);
+        }
+        this.isRendered = true;
     }
     /**
      * When invoked, applies the pending property changes immediately to the component.
@@ -6636,6 +6650,7 @@ const NOT_NUMBER = new RegExp('^[0-9]+$', 'g');
 const WORD = new RegExp('[\\w"\'.\\s+]+', 'g');
 const DBL_QUOTED_STR = new RegExp('"(.*?)"', 'g');
 const SPECIAL_CHAR = /\@|\#|\$/g;
+const WORDIF = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
 let exp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
 let ARR_OBJ = /^\..*/gm;
@@ -6704,8 +6719,12 @@ function evalExp(str, nameSpace, helper) {
             }
             else if (IF_STMT.test(cnt)) {
                 //handling if condition
-                cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORD, (strs) => {
+                cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs) => {
                     strs = strs.trim();
+                    let regExAt = /\@|\$|\#/gm;
+                    if (regExAt.test(strs)) {
+                        strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
+                    }
                     if (ARR_OBJ.test(strs)) {
                         return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
                     }
@@ -6808,7 +6827,7 @@ function compile$$1(templateString, helper) {
             if (!isNullOrUndefined(index)) {
                 let keys = Object.keys(blazorTemplates[templateId][index]);
                 for (let key of keys) {
-                    if (data[key]) {
+                    if (key !== blazorTemplateId && data[key]) {
                         blazorTemplates[templateId][index][key] = data[key];
                     }
                     if (key === blazorTemplateId) {

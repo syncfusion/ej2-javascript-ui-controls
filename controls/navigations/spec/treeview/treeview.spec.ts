@@ -5100,6 +5100,38 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
+            it('hasChildren property value updated after removeNodes with loadOnDemand disabled', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData3, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", selected: 'nodeSelected1', expanded: 'nodeExpanded1' },
+                    loadOnDemand: false
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.getTreeData().length).toBe(29);
+                    expect(treeObj.getTreeData("01")[0]["hasChild"]).toBe(true);
+                    treeObj.removeNodes(['01-01']);
+                    expect(treeObj.getTreeData().length).toBe(28);
+                    expect(treeObj.getTreeData("01")[0]["hasChild"]).toBe(false);
+                    expect(treeObj.getTreeData("01")[0]["hasChild"]).not.toBe(null);
+                    done();
+                }, 100);
+            });
+            it('hasChildren property value updated after removeNodes with loadOnDemand enabled', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData3, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", selected: 'nodeSelected1', expanded: 'nodeExpanded1' },
+                    loadOnDemand: false
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.getTreeData().length).toBe(29);
+                    treeObj.removeNodes(['04-01-01', '04-01-02', '04-01-03']);
+                    expect(treeObj.getTreeData().length).toBe(26);
+                    expect(treeObj.getTreeData("04-01")[0]["hasChild"]).toBe(false);
+                    expect(treeObj.getTreeData("01")[0]["hasChild"]).not.toBe(null);
+                    done();
+                }, 100);
+            });
+
         });
         describe('property change testing', () => {
             let treeObj: any;

@@ -1701,7 +1701,7 @@ export interface CommandModel {
     title?: string;
     /**
      * Define the command Button type
-     * @blazorDefaultValue null
+     * @blazorDefaultValue none
      */
     type?: CommandButtonType;
     /**

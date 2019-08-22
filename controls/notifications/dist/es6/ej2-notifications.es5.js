@@ -170,6 +170,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         if (this.isDevice && screen.width < 768) {
             new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
         }
+        this.renderComplete();
     };
     /**
      * To show Toast element on a document with the relative position.

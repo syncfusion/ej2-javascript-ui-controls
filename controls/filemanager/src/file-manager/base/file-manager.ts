@@ -574,6 +574,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             bar.classList.add(CLS.DISPLAY_NONE);
         }
         this.wireEvents();
+        this.renderComplete();
     }
 
     private ensurePath(): void {

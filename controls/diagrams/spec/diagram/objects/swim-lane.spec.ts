@@ -11,7 +11,7 @@ import { Margin } from '../../../src/diagram/core/appearance';
 import { NodeModel, SwimLaneModel } from '../../../src/diagram/objects/node-model';
 import { Node, Html } from '../../../src/diagram/objects/node';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { Selector } from '../../../src/diagram/interaction/selector';
+import { Selector } from '../../../src/diagram/objects/node';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';

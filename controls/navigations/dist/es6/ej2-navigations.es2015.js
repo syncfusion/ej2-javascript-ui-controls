@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -988,6 +988,7 @@ let MenuBase = class MenuBase extends Component {
         this.navIdx = [];
         this.animation = new Animation({});
         this.isTapHold = false;
+        this.tempItem = [];
     }
     /**
      * Initialized third party configuration settings.
@@ -1042,12 +1043,16 @@ let MenuBase = class MenuBase extends Component {
     render() {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template) {
+        if (this.isMenu && this.template && this.isBlazor()) {
             let menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
             resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            if (Object.keys(blazorTemplates).length) {
+                extend(this.tempItem, blazorTemplates[menuTemplateId], [], true);
+            }
             updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
         this.wireEvents();
+        this.renderComplete();
     }
     initialize() {
         let wrapper = this.getWrapper();
@@ -1077,7 +1082,12 @@ let MenuBase = class MenuBase extends Component {
         if (!this.items.length) {
             let items = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
             this.setProperties({ items: items }, true);
-            this.element.innerHTML = '';
+            if (this.isBlazor()) {
+                this.element = this.removeChildElement(this.element);
+            }
+            else {
+                this.element.innerHTML = '';
+            }
         }
         let ul = this.createItems(this.items);
         append(Array.prototype.slice.call(ul.children), this.element);
@@ -1497,6 +1507,15 @@ let MenuBase = class MenuBase extends Component {
             this.uList = this.element;
             this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
             this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
+        }
+        if (this.isMenu && this.template && this.isBlazor()) {
+            let menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
+            if (Object.keys(blazorTemplates).length) {
+                let itemFromBlazorTemplate = blazorTemplates[menuTemplateId];
+                this.tempItem = this.tempItem.concat(itemFromBlazorTemplate);
+                blazorTemplates[menuTemplateId] = this.tempItem;
+            }
+            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
     }
     calculateIndentSize(ul, li) {
@@ -2074,7 +2093,13 @@ let MenuBase = class MenuBase extends Component {
         return items;
     }
     getIdx(ul, li, skipHdr = true) {
-        let idx = Array.prototype.indexOf.call(ul.children, li);
+        let idx = Array.prototype.indexOf.call(ul.querySelectorAll('li'), li);
+        if (this.isMenu && this.template && this.isBlazor()) {
+            idx = Array.prototype.indexOf.call(ul.querySelectorAll(li.tagName), li);
+        }
+        else {
+            idx = Array.prototype.indexOf.call(ul.children, li);
+        }
         if (skipHdr && ul.children[0].classList.contains(HEADER)) {
             idx--;
         }
@@ -2085,6 +2110,15 @@ let MenuBase = class MenuBase extends Component {
             return elem;
         }
         return closest(elem, 'li.e-menu-item');
+    }
+    isBlazor() {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
+    }
+    removeChildElement(elem) {
+        while (elem.firstElementChild) {
+            elem.removeChild(elem.firstElementChild);
+        }
+        return elem;
     }
     /**
      * Called internally if any of the property value changed
@@ -2143,7 +2177,12 @@ let MenuBase = class MenuBase extends Component {
                     let item;
                     if (!Object.keys(oldProp.items).length) {
                         let ul = this.element;
-                        ul.innerHTML = '';
+                        if (this.isBlazor()) {
+                            ul = this.removeChildElement(this.element);
+                        }
+                        else {
+                            ul.innerHTML = '';
+                        }
                         let lis = [].slice.call(this.createItems(this.items).children);
                         lis.forEach((li) => {
                             ul.appendChild(li);
@@ -2560,7 +2599,12 @@ let MenuBase = class MenuBase extends Component {
                         let refEle = this.clonedElement.nextElementSibling;
                         refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
                             this.clonedElement.parentElement.appendChild(this.element);
-                        this.element.innerHTML = '';
+                        if (this.isBlazor()) {
+                            this.element = this.removeChildElement(this.element);
+                        }
+                        else {
+                            this.element.innerHTML = '';
+                        }
                         append([].slice.call(this.clonedElement.children), this.element);
                         detach(this.clonedElement);
                         this.removeAttributes();
@@ -2570,7 +2614,12 @@ let MenuBase = class MenuBase extends Component {
             }
             else {
                 this.closeMenu();
-                this.element.innerHTML = '';
+                if (this.isBlazor()) {
+                    this.element = this.removeChildElement(this.element);
+                }
+                else {
+                    this.element.innerHTML = '';
+                }
                 this.removeAttributes();
                 wrapper.parentNode.insertBefore(this.element, wrapper);
             }
@@ -3198,6 +3247,9 @@ let Toolbar = class Toolbar extends Component {
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     initialize() {
         let width = formatUnit(this.width);
@@ -4780,6 +4832,9 @@ let Accordion = class Accordion extends Component {
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     initialize() {
         let width = formatUnit(this.width);
@@ -6251,6 +6306,9 @@ let Tab = class Tab extends Component {
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     renderContainer() {
         let ele = this.element;
@@ -7941,6 +7999,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.setDragAndDrop(this.allowDragAndDrop);
         this.wireEvents();
         this.initialRender = false;
+        this.renderComplete();
     }
     initialize() {
         this.element.setAttribute('role', 'tree');
@@ -8303,6 +8362,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     beforeNodeCreate(e) {
         if (this.showCheckBox) {
             let checkboxEle = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
+            checkboxEle.setAttribute('role', 'checkbox');
             let icon = select('div.' + ICON, e.item);
             let id = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNullOrUndefined(icon) ? 0 : 1]);
@@ -10159,7 +10219,12 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     reRenderNodes() {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        this.element.innerHTML = '';
+        if (this.isBlazorPlatform && this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
+        }
+        else {
+            this.element.innerHTML = '';
+        }
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             this.destroyTemplate(this.nodeTemplate);
         }
@@ -10741,7 +10806,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             detach(dragParentUl);
             detach(dragIcon);
             let parentId = this.getId(dragParentLi);
-            this.updateField(this.treeData, this.fields, parentId, 'hasChildren', null);
+            this.updateField(this.treeData, this.fields, parentId, 'hasChildren', false);
             this.removeExpand(dragParentLi, true);
         }
     }
@@ -12114,6 +12179,7 @@ let Sidebar = class Sidebar extends Component {
     render() {
         this.initialize();
         this.wireEvents();
+        this.renderComplete();
     }
     initialize() {
         this.setTarget();

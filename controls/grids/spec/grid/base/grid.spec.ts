@@ -329,6 +329,13 @@ describe('Grid base module', () => {
             expect(gridObj.element.classList.contains('e-hidelines')).toBeTruthy();
         });
 
+        it('dblClickHandler testing', () => {
+            let ele: HTMLElement = gridObj.element.querySelector('.e-content');
+            let args: object = {target: ele};
+            (gridObj as any).dblClickHandler(args);
+            expect(1).toBe(1);
+        });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = null;

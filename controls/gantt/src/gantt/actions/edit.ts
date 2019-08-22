@@ -1092,7 +1092,7 @@ export class Edit {
     private deleteSuccess(args: ITaskDeletedEventArgs): void {
         let flatData: IGanttData[] = this.parent.flatData;
         let currentData: IGanttData[] = this.parent.currentViewData;
-        let deletedRecords: IGanttData[] = args.deletedRecordCollection;
+        let deletedRecords: IGanttData[] = this.parent.getRecordFromFlatdata(args.deletedRecordCollection);
         let deleteRecordIDs: string[] = [];
         for (let i: number = 0; i < deletedRecords.length; i++) {
             let deleteRecord: IGanttData = deletedRecords[i];

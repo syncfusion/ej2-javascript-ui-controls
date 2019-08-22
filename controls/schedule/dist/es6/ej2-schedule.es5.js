@@ -207,6 +207,11 @@ function getOuterHeight(element) {
     var style = getComputedStyle(element);
     return element.offsetHeight + (parseInt(style.marginTop, 10) || 0) + (parseInt(style.marginBottom, 10) || 0);
 }
+function removeChildren(element) {
+    while (element.firstElementChild) {
+        element.removeChild(element.firstElementChild);
+    }
+}
 
 /**
  * CSS Constants
@@ -1328,7 +1333,7 @@ var ScheduleTouch = /** @__PURE__ @class */ (function () {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
-        this.element.innerHTML = '';
+        removeChildren(this.element);
         removeClass([this.element], TRANSLATE_CLASS);
     };
     /**
@@ -6295,7 +6300,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                     _this.quickPopupClose();
                 }
                 _this.resetQuickPopupTemplates();
-                _this.quickPopup.element.innerHTML = '';
+                removeChildren(_this.quickPopup.element);
             }
             else {
                 var display = _this.quickPopup.element.style.display;
@@ -6414,7 +6419,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.quickPopup.relateTo = WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
         this.destroyButtons();
-        this.quickPopup.element.innerHTML = '';
+        removeChildren(this.quickPopup.element);
     };
     QuickPopups.prototype.morePopupOpen = function () {
         this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS).focus();
@@ -7599,7 +7604,9 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        this.element.innerHTML = '';
+        while (this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
+        }
     };
     /**
      * Get component name.
@@ -10460,7 +10467,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         headerCollection.pop();
         var target = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
         var headerWrapper = target.querySelector('.' + RESOURCE_LEVEL_TITLE);
-        headerWrapper.innerHTML = '';
+        removeChildren(headerWrapper);
         headerCollection.forEach(function (element) { return headerWrapper.appendChild(element); });
         if (this.lastResourceLevel.length === 1) {
             addClass([this.parent.element.querySelector('.' + RESOURCE_MENU)], DISABLE_CLASS);
@@ -12462,7 +12469,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.scheduleTouchModule = null;
         }
         _super.prototype.destroy.call(this);
-        this.element.innerHTML = '';
+        removeChildren(this.element);
         var removeClasses = [ROOT];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
@@ -17787,7 +17794,7 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                     templateEle = this_1.createAppointment(listData[li]);
                 }
                 append([].slice.call(templateEle), appWrapper);
-                listElement.children[li].innerHTML = '';
+                removeChildren(listElement.children[li]);
                 listElement.children[li].appendChild(appWrapper);
                 var args = { data: listData[li], element: listElement.children[li], cancel: false };
                 this_1.parent.trigger(eventRendered, args, function (eventArgs) {
@@ -18159,7 +18166,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         this.parent.eventsProcessed = this.agendaBase.processAgendaEvents(eventCollection);
         var agendaDate = resetTime(this.parent.selectedDate);
         var tBody = this.parent.getContentTable();
-        tBody.innerHTML = '';
+        removeChildren(tBody);
         this.renderInitialContent(tBody, agendaDate);
         this.agendaBase.wireEventActions();
         var contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
@@ -18626,7 +18633,7 @@ var MonthAgenda = /** @__PURE__ @class */ (function (_super) {
     };
     MonthAgenda.prototype.onEventRender = function (events, date) {
         var appWrap = this.element.querySelector('.' + APPOINTMENT_WRAP_CLASS);
-        appWrap.innerHTML = '';
+        removeChildren(appWrap);
         if (this.parent.activeViewOptions.group.resources.length === 0 || this.parent.uiStateValues.isGroupAdaptive) {
             if (events.length > 0) {
                 var appContainer = createElement('div', { className: APPOINTMENT_CONTAINER_CLASS });
@@ -18668,7 +18675,7 @@ var MonthAgenda = /** @__PURE__ @class */ (function (_super) {
         var app = createElement('div', { className: APPOINTMENT_CONTAINER_CLASS });
         addClass([app], AGENDA_NO_EVENT_CLASS);
         app.innerHTML = this.parent.localeObj.getConstant('noEvents');
-        appWrap.innerHTML = '';
+        removeChildren(appWrap);
         appWrap.appendChild(app);
     };
     /**
@@ -19675,5 +19682,5 @@ var Print = /** @__PURE__ @class */ (function () {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es5.js.map

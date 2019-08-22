@@ -255,7 +255,7 @@ export class AnnotationToolbar {
                         ]
                     },
                     {
-                        text: 'Standarad Business',
+                        text: 'Standard Business',
                         items: [
                             { text: 'Approved' },
                             { text: 'Not Approved' },
@@ -282,7 +282,7 @@ export class AnnotationToolbar {
             showItemOnClick: true,
             enableScrolling: true,
             beforeOpen: (args: Menuopen): void => {
-                if (args.parentItem.text === 'Standarad Business') {
+                if (args.parentItem.text === 'Standard Business') {
                     (closest(args.element, '.e-menu-wrapper') as HTMLElement).style.height = '320px';
                 }
                 this.stampParentID = args.parentItem.text;
@@ -290,7 +290,7 @@ export class AnnotationToolbar {
             },
             beforeClose: (args: Menuopen) => {
                 // tslint:disable-next-line:max-line-length
-                if ((args.parentItem && args.parentItem.text !== 'Custom Stamp' && args.parentItem.text !== 'Standarad Business' && args.parentItem.text !== 'Dynamic' && args.parentItem.text !== 'Sign Here') || !args.parentItem) {
+                if ((args.parentItem && args.parentItem.text !== 'Custom Stamp' && args.parentItem.text !== 'Standard Business' && args.parentItem.text !== 'Dynamic' && args.parentItem.text !== 'Sign Here') || !args.parentItem) {
                     this.menuItems.showItemOnClick = true;
                 }
             },
@@ -310,7 +310,7 @@ export class AnnotationToolbar {
                     stampImage.addEventListener('change', this.addStampImage);
                     document.body.removeChild(stampImage);
                     // tslint:disable-next-line:max-line-length
-                } else if (args.item.text !== 'Dynamic' && args.item.text !== '' && args.item.text !== 'Standarad Business' && (this.stampParentID === 'Sign Here' || args.item.text !== 'Sign Here')) {
+                } else if (args.item.text !== 'Dynamic' && args.item.text !== '' && args.item.text !== 'Standard Business' && (this.stampParentID === 'Sign Here' || args.item.text !== 'Sign Here')) {
                     this.updateInteractionTools();
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
                     this.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
@@ -1295,7 +1295,10 @@ export class AnnotationToolbar {
         }
     }
 
-    private adjustViewer(isAdjust: boolean): void {
+    /**
+     * @private
+     */
+    public adjustViewer(isAdjust: boolean): void {
         let splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
         let toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
         let toolbarHeight: number = this.getToolbarHeight(toolbarContainer);
@@ -1316,9 +1319,9 @@ export class AnnotationToolbar {
                 commentsContainer.style.top = (annotationToolbarHeight) + 'px';
             }
             // tslint:disable-next-line:max-line-length
-            this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (annotationToolbarHeight)) + 'px';
-            sideBarToolbar.style.height = sideBarToolbar.getBoundingClientRect().height - annotationToolbarHeight + 'px';
-            splitterElement.style.height = splitterElement.getBoundingClientRect().height - annotationToolbarHeight + 'px';
+            this.pdfViewerBase.viewerContainer.style.height = this.updateViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), (annotationToolbarHeight + toolbarHeight)) + 'px';
+            sideBarToolbar.style.height = this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight) + 'px';
+            splitterElement.style.height = this.getNavigationToolbarHeight(annotationToolbarHeight + toolbarHeight) + 'px';
         } else {
             if (this.pdfViewer.enableToolbar) {
                 // tslint:disable-next-line:max-line-length
@@ -1338,8 +1341,8 @@ export class AnnotationToolbar {
             }
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.viewerContainer.style.height = this.resetViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), annotationToolbarHeight) + 'px';
-            sideBarToolbar.style.height = this.getHeight(sideBarToolbar, annotationToolbarHeight);
-            splitterElement.style.height = this.getHeight(splitterElement, annotationToolbarHeight);
+            sideBarToolbar.style.height = this.getNavigationToolbarHeight(toolbarHeight);
+            splitterElement.style.height = this.getNavigationToolbarHeight(toolbarHeight);
         }
         this.updateContentContainerHeight(isAdjust);
     }
@@ -1368,9 +1371,9 @@ export class AnnotationToolbar {
         return toolbarHeight;
     }
 
-    private getHeight(element: HTMLElement, toolbarHeight: number): string {
-        let height: number = element.getBoundingClientRect().height;
-        return (height !== 0) ? height + toolbarHeight + 'px' : '';
+    private getNavigationToolbarHeight(toolbarHeight: number): string {
+        let height: number = this.pdfViewer.element.getBoundingClientRect().height;
+        return (height !== 0) ? height - toolbarHeight + 'px' : '';
     }
 
     private handleHighlight(): void {
@@ -1636,7 +1639,7 @@ export class AnnotationToolbar {
     }
 
     private updateViewerHeight(viewerHeight: number, toolbarHeight: number): number {
-        return viewerHeight - toolbarHeight;
+        return this.getElementHeight(this.pdfViewer.element) - toolbarHeight;
     }
 
     private resetViewerHeight(viewerHeight: number, toolbarHeight: number): number {

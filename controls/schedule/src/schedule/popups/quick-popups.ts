@@ -945,7 +945,7 @@ export class QuickPopups {
                     this.quickPopupClose();
                 }
                 this.resetQuickPopupTemplates();
-                this.quickPopup.element.innerHTML = '';
+                util.removeChildren(this.quickPopup.element);
             } else {
                 let display: string = this.quickPopup.element.style.display;
                 this.quickPopup.element.style.display = 'block';
@@ -1063,7 +1063,7 @@ export class QuickPopups {
         this.quickPopup.relateTo = cls.WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
         this.destroyButtons();
-        this.quickPopup.element.innerHTML = '';
+        util.removeChildren(this.quickPopup.element);
     }
 
     private morePopupOpen(): void {

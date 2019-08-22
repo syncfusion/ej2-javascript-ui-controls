@@ -360,7 +360,8 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private checkAttributes(isDynamic: boolean): void {
-        let attrs: string[]  = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        let attrs: string[]  = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
         for (let key of attrs) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
             switch (key) {
@@ -438,29 +439,34 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        this.renderComplete();
     }
 
     private updateHTMLAttrToWrapper(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) > -1 ) {
-                if (key === 'class') {
-                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
-                } else if (key === 'style') {
-                    let setStyle: string = this.textboxWrapper.container.getAttribute(key);
-                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                    this.htmlAttributes[key];
-                    this.textboxWrapper.container.setAttribute(key, setStyle);
-                } else {
-                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) > -1 ) {
+                    if (key === 'class') {
+                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                    } else if (key === 'style') {
+                        let setStyle: string = this.textboxWrapper.container.getAttribute(key);
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                        this.textboxWrapper.container.setAttribute(key, setStyle);
+                    } else {
+                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
 
     private updateHTMLAttrToElement(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) < 0 ) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) < 0 ) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }

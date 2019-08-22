@@ -2292,6 +2292,7 @@ let TreeMap = class TreeMap extends Component {
             this.defaultLevelData = this.levelsOfData;
         }
         this.processDataManager();
+        this.renderComplete();
     }
     /* tslint:disable:no-string-literal */
     /* tslint:disable:no-eval */
@@ -3039,6 +3040,10 @@ let TreeMap = class TreeMap extends Component {
         }
         return modules;
     }
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
     onPropertyChanged(newProp, oldProp) {
         let render = false;
         for (let prop of Object.keys(newProp)) {

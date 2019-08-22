@@ -381,6 +381,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     }
 
 

@@ -150,7 +150,7 @@ describe('Count module', () => {
                 currentTarget: rteObj.contentModule.getEditPanel(),
                 which: 22
             };
-            (<any>rteObj).countModule.restrict({ args: keyboardEventArgs });
+            (<any>rteObj).restrict(keyboardEventArgs);
             expect(flag).toBe(true);
             flag = false;
             keyboardEventArgs = {
@@ -158,7 +158,7 @@ describe('Count module', () => {
                 currentTarget: rteObj.contentModule.getEditPanel(),
                 which: 8
             };
-            (<any>rteObj).countModule.restrict({ args: keyboardEventArgs });
+            (<any>rteObj).restrict(keyboardEventArgs);
             expect(flag).toBe(false);
             flag = false;
             let kArgs = {
@@ -167,7 +167,7 @@ describe('Count module', () => {
                 which: 65,
                 ctrlKey: true
             };
-            (<any>rteObj).countModule.restrict({ args: kArgs });
+            (<any>rteObj).restrict(keyboardEventArgs);
             expect(flag).toBe(false);
             flag = false;
             keyboardEventArgs = {
@@ -175,7 +175,7 @@ describe('Count module', () => {
                 currentTarget: rteObj.contentModule.getEditPanel(),
                 which: 65
             };
-            (<any>rteObj).countModule.restrict({ args: keyboardEventArgs });
+            (<any>rteObj).restrict(keyboardEventArgs);
             expect(flag).toBe(true);
             flag = false;
             keyboardEventArgs = {
@@ -183,7 +183,7 @@ describe('Count module', () => {
                 currentTarget: rteObj.contentModule.getEditPanel(),
                 which: 46
             };
-            (<any>rteObj).countModule.restrict({ args: keyboardEventArgs });
+            (<any>rteObj).restrict(keyboardEventArgs);
             expect(flag).toBe(false);
         });
         it('maximum length exceeded', () => {

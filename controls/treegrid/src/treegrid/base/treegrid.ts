@@ -1462,6 +1462,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.element.appendChild(gridContainer);
     this.grid.appendTo(gridContainer as HTMLElement);
     this.wireEvents();
+    this.renderComplete();
   }
   private convertTreeData(data: Object): void {
     if (data instanceof Array && data.length > 0 && (<Object>data[0]).hasOwnProperty('level')) {
@@ -1549,6 +1550,13 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.rowDeselected = (args: RowDeselectEventArgs): void => {
       this.selectedRowIndex = this.grid.selectedRowIndex;
+      if (isBlazor()) {
+        let data: string = 'data'; let rowIndex: string = 'rowIndex';
+        let row: string = 'row';
+        args[data] = args[data][args[data].length - 1];
+        args[rowIndex] = args[rowIndex][args[rowIndex].length - 1];
+        args[row] = args[row][args[row].length - 1];
+      }
       this.trigger(events.rowDeselected, args);
     };
     this.grid.resizeStop = (args: ResizeArgs): void => {
@@ -1590,10 +1598,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.cellEdit = this.triggerEvents.bind(this);
     this.grid.actionFailure = this.triggerEvents.bind(this);
     this.grid.dataBound = (args: Object): void => {
-      this.updateRowTemplate(args);
-      this.updateColumnModel();
-      this.updateAltRow(this.getRows());
-      this.notify('dataBoundArg', args);
+      this.updateRowTemplate(args); this.updateColumnModel();
+      this.updateAltRow(this.getRows()); this.notify('dataBoundArg', args);
       this.trigger(events.dataBound, args);
       if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
         let req: number = getObject('dataSource.requests', this).filter((e: Ajax) => {
@@ -1605,8 +1611,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.initialRender = false;
     };
     this.grid.beforeDataBound = function (args: BeforeDataBoundArgs): void | Deferred  {
-      let dataSource: string = 'dataSource';
-      let requestType: string = getObject('action', args);
+      let dataSource: string = 'dataSource'; let requestType: string = getObject('action', args);
       if (isRemoteData(treeGrid) && !isOffline(treeGrid) && requestType !== 'edit') {
         treeGrid.notify('updateRemoteLevel', args);
         args = <BeforeDataBoundArgs>(treeGrid.dataResults);
@@ -1616,6 +1621,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         args.result = treeGrid.grid.dataSource[dataSource].json = treeGrid.flatData;
       }
       if (!isRemoteData(treeGrid)) {
+        if ((<IGrid>this).isPrinting) {
+          setValue('isPrinting',  true, args);
+        }
         treeGrid.notify('dataProcessor', args);
         //args = this.dataModule.dataProcessor(args);
       }
@@ -2838,7 +2846,9 @@ private getGridEditSettings(): GridEditModel {
           e.expanded = action === 'collapse' ? false : true;
         }
       });
-      action === 'collapse' ? this.collapseRow(rows[0]) :  this.expandRow(rows[0]);
+      if (rows.length) {
+        action === 'collapse' ? this.collapseRow(rows[0]) :  this.expandRow(rows[0]);
+      }
     } else {
         for (let i: number = 0; i < rows.length; i++) {
             action === 'collapse' ? this.collapseRow(rows[i]) : this.expandRow(rows[i]);

@@ -4,6 +4,7 @@ import { Schedule } from '../base/schedule';
 import { ActionEventArgs, NavigatingEventArgs, LayoutData } from '../base/interface';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
+import * as util from '../base/util';
 
 /**
  * `touch` module is used to handle touch interactions.
@@ -219,7 +220,7 @@ export class ScheduleTouch {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
-        this.element.innerHTML = '';
+        util.removeChildren(this.element);
         removeClass([this.element], cls.TRANSLATE_CLASS);
     }
     /**

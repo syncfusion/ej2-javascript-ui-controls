@@ -2141,7 +2141,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.scheduleTouchModule = null;
         }
         super.destroy();
-        this.element.innerHTML = '';
+        util.removeChildren(this.element);
         let removeClasses: string[] = [cls.ROOT];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));

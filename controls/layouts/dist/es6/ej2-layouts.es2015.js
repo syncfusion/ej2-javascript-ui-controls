@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -228,6 +228,7 @@ let Splitter = class Splitter extends Component {
         this.setRTL(this.enableRtl);
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
+        this.renderComplete();
     }
     onDocumentClick(e) {
         if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
@@ -445,8 +446,8 @@ let Splitter = class Splitter extends Component {
         this.addSeparator(this.element);
     }
     checkSplitPane(currentBar, elementIndex) {
-        let paneEle = currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
-        return paneEle ? paneEle : null;
+        let paneEle = currentBar.parentElement.children[elementIndex];
+        return paneEle;
     }
     getPrevPane(currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -618,8 +619,23 @@ let Splitter = class Splitter extends Component {
             this.currentCoordinates = coordinates;
         }
     }
+    reportWindowSize() {
+        let paneCount = this.allPanes.length;
+        for (let i = 0; i < paneCount; i++) {
+            if (isNullOrUndefined(this.paneSettings[i].size)) {
+                this.allPanes[i].classList.remove(STATIC_PANE);
+            }
+            if (paneCount - 1 === i) {
+                let staticPaneCount = this.element.querySelectorAll('.' + STATIC_PANE).length;
+                if (staticPaneCount === paneCount) {
+                    removeClass([this.allPanes[i]], STATIC_PANE);
+                }
+            }
+        }
+    }
     wireResizeEvents() {
         EventHandler.add(document, 'mousemove', this.onMouseMove, this);
+        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         let touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -627,6 +643,7 @@ let Splitter = class Splitter extends Component {
         EventHandler.add(document, touchEndEvent, this.onMouseUp, this);
     }
     unwireResizeEvents() {
+        window.removeEventListener('resize', this.reportWindowSize.bind(this));
         let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         let touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
         EventHandler.remove(document, 'mousemove', this.onMouseMove);
@@ -753,7 +770,13 @@ let Splitter = class Splitter extends Component {
         });
     }
     beforeAction(e) {
-        let eventArgs = {
+        let eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator,
+            cancel: false
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -824,7 +847,12 @@ let Splitter = class Splitter extends Component {
         }
     }
     afterAction(e) {
-        let eventArgs = {
+        let eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -874,7 +902,13 @@ let Splitter = class Splitter extends Component {
         addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
         this.updateCursorPosition(e, 'previous');
         this.getPaneDetails();
-        let eventArgs = {
+        let eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
+            separator: this.currentSeparator,
+            cancel: false
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -1075,7 +1109,13 @@ let Splitter = class Splitter extends Component {
         }
         this.getPaneDetails();
         this.getPaneDimensions();
-        let eventArgs = {
+        let eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -1264,7 +1304,13 @@ let Splitter = class Splitter extends Component {
     onMouseUp(e) {
         removeClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
         this.unwireResizeEvents();
-        let eventArgs = {
+        let eventArgs = isBlazor() ? {
+            event: e,
+            element: this.element,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator,
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension]
+        } : {
             event: e,
             element: this.element,
             pane: [this.previousPane, this.nextPane],

@@ -4946,6 +4946,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
             bar.classList.add(DISPLAY_NONE);
         }
         this.wireEvents();
+        this.renderComplete();
     };
     FileManager.prototype.ensurePath = function () {
         var currentPath = this.path;

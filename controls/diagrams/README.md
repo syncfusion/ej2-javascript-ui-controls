@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-diagrams/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-diagrams)
+
 # ej2-diagrams
 
 The diagram component visually represents information. It is also used to create diagrams like flow charts, organizational charts, mind maps, and BPMN either through code or a visual interface.

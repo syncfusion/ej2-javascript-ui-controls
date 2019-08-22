@@ -2409,6 +2409,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             this.defaultLevelData = this.levelsOfData;
         }
         this.processDataManager();
+        this.renderComplete();
     };
     /* tslint:disable:no-string-literal */
     /* tslint:disable:no-eval */
@@ -3168,6 +3169,10 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         }
         return modules;
     };
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
     TreeMap.prototype.onPropertyChanged = function (newProp, oldProp) {
         var render = false;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {

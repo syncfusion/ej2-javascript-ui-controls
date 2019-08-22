@@ -2240,6 +2240,57 @@ describe('WebApi Adaptor', () => {
             jasmine.Ajax.uninstall();
         })
     });
+    describe('webapi batchRequst method', () => {
+        let result: string;
+        let changes: any = { changedRecords: [], addedRecords: [], deletedRecords: [] };
+        let request: JasmineAjaxRequest;
+        beforeAll((done: Function) => {
+            jasmine.Ajax.install();
+            changes.changedRecords.push({ RegionID: 1, RegionDescription: 'Southern' });
+            changes.addedRecords.push({ RegionID: 5, RegionDescription: 'Southern' });
+            changes.deletedRecords.push({ RegionID: 2, RegionDescription: 'Western' });
+            dataManager = new DataManager({
+                url: '/api/Employees',
+                adaptor: new WebApiAdaptor
+            });
+            let promise: Promise<Object> = (<Promise<Object>>dataManager.saveChanges(changes, 'RegionID', new Query()));
+            request = jasmine.Ajax.requests.mostRecent();
+            request.respondWith({
+                'status': 200,
+                'contentType': 'multipart/mixed; ',
+                'responseText': `{'--batch_ee12e00b-27bd-47d9-b18e-fd051825b7e7',
+                        'Content-Type': 'application/http; msgtype=request',
+                        'POST /api/Employees HTTP/1.1',
+                        'Content-Type': 'application/json; charset=utf-8',
+                        'Host': 'localhost:59166',
+                        {RegionID: 1, RegionDescription: 'Southern'},
+                        '--batch_8e883834-48b5-47f8-9c1c-5dd421c361bb'
+                        'Content-Type': 'application/http; msgtype=request',
+                        'PUT /api/Employees HTTP/1.1',
+                        'Content-Type': 'application/json; charset=utf-8',
+                        'Host': 'localhost:59166',
+                        { RegionID: 5, RegionDescription: 'Southern' },
+                        'DELETE /api/Employees/10006 HTTP/1.1',
+                        'Content-Type': 'application/json'; 'charset=utf-8',
+                        'Host':  'localhost:59166',
+                        { RegionID: 2, RegionDescription: 'Western' },   
+                        '--batch_ee12e00b-27bd-47d9-b18e-fd051825b7e7--'}`
+            })
+            promise.then((e: any) => {
+                result = 'Batch request successfully';
+                done();
+            });
+        });
+        afterAll(() => {
+            jasmine.Ajax.uninstall();
+        });
+        it('check data updated properly', () => {
+            expect(result).toBe('Batch request successfully');
+        });
+        it('check type of the request', () => {
+            expect(request.method).toEqual('POST');
+        });
+    });
     describe('group method', () => {
         beforeAll((done: Function) => {
             dataManager = new DataManager({
@@ -3422,4 +3473,4 @@ describe('WebApi Adaptor', () => {
 
     });
 
-});    
+}); 

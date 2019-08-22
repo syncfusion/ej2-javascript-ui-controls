@@ -250,9 +250,14 @@ export class BookmarkView {
      */
     public goToBookmark(pageIndex: number, y: number): boolean {
         let proxy: BookmarkView = this;
-        let destPage: number = (this.pdfViewerBase.pageSize[pageIndex - 1].height);
-        // tslint:disable-next-line:max-line-length
-        let scrollValue: number = this.pdfViewerBase.pageSize[pageIndex].top * this.pdfViewerBase.getZoomFactor() + ((destPage - y) * this.pdfViewerBase.getZoomFactor());
+        let destPage: number = (this.pdfViewerBase.pageSize[pageIndex].height);
+        let scrollValue: number;
+        if (y === 0) {
+            scrollValue = this.pdfViewerBase.pageSize[pageIndex].top * this.pdfViewerBase.getZoomFactor();
+        } else {
+            // tslint:disable-next-line:max-line-length
+            scrollValue = this.pdfViewerBase.pageSize[pageIndex].top * this.pdfViewerBase.getZoomFactor() + ((destPage - y) * this.pdfViewerBase.getZoomFactor());
+        }
         let scroll: string = scrollValue.toString();
         // tslint:disable-next-line:radix
         proxy.pdfViewerBase.viewerContainer.scrollTop = parseInt(scroll);

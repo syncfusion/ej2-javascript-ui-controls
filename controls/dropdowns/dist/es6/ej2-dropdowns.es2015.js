@@ -8166,7 +8166,7 @@ class CheckBoxSelection {
                 }
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
-            if (this.parent.list.classList.contains('e-nodata') || this.parent.listData.length <= 1) {
+            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1)) {
                 this.checkAllParent.style.display = 'none';
             }
             else {
@@ -8497,7 +8497,6 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
-const ITEMTEMPLATE_PROPERTY$1 = 'ItemTemplate';
 class SelectionSettings extends ChildProperty {
 }
 __decorate$5([
@@ -8569,6 +8568,7 @@ let ListBox = class ListBox extends DropDownBase {
         this.initLoad = true;
         this.initialSelectedOptions = this.value;
         super.render();
+        this.renderComplete();
     }
     initWrapper() {
         let hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
@@ -8589,14 +8589,6 @@ let ListBox = class ListBox extends DropDownBase {
             }
             this.list.insertBefore(this.element, this.list.firstChild);
             this.element.style.display = 'none';
-        }
-        if (this.itemTemplate) {
-            let listBoxProxy = this;
-            resetBlazorTemplate(this.element.id + ITEMTEMPLATE_PROPERTY$1, ITEMTEMPLATE_PROPERTY$1);
-            this.isStringTemplate = true;
-            setTimeout(() => {
-                updateBlazorTemplate(listBoxProxy.element.id + ITEMTEMPLATE_PROPERTY$1, ITEMTEMPLATE_PROPERTY$1, listBoxProxy);
-            }, 500);
         }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName(cssClass.li)[0]) {
@@ -8962,6 +8954,9 @@ let ListBox = class ListBox extends DropDownBase {
                     let ele = li.getElementsByClassName('e-check')[0];
                     if ((!ele && state) || (ele && !state)) {
                         this.notify('updatelist', { li: li });
+                        if (this.maximumSelectionLength >= this.list.querySelectorAll('.e-list-item span.e-check').length) {
+                            this.checkMaxSelection();
+                        }
                     }
                 }
                 else {
@@ -9143,7 +9138,9 @@ let ListBox = class ListBox extends DropDownBase {
                 });
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
-            if (!isKey) {
+            if (!isKey && (this.maximumSelectionLength > this.value.length || !isSelect) &&
+                (this.maximumSelectionLength >= this.value.length || !isSelect) &&
+                !(this.maximumSelectionLength < this.value.length)) {
                 this.notify('updatelist', { li: li, e: e });
             }
             if (this.allowFiltering && !isKey) {
@@ -9160,6 +9157,7 @@ let ListBox = class ListBox extends DropDownBase {
             }
             this.updateSelectedOptions();
             this.triggerChange(this.getSelectedItems(), e);
+            this.checkMaxSelection();
         }
     }
     triggerChange(selectedLis, event) {
@@ -9171,6 +9169,24 @@ let ListBox = class ListBox extends DropDownBase {
             data.push(this.getDataByValue(ele.getAttribute('data-value')));
         });
         return data;
+    }
+    checkMaxSelection() {
+        let limit = this.list.querySelectorAll('.e-list-item span.e-check').length;
+        if (this.selectionSettings.showCheckbox) {
+            let index = 0;
+            let liCollElem;
+            liCollElem = this.list.getElementsByClassName('e-list-item');
+            for (index; index < liCollElem.length; index++) {
+                if (!liCollElem[index].querySelector('.e-frame.e-check')) {
+                    if (limit === this.maximumSelectionLength) {
+                        liCollElem[index].classList.add('e-disable');
+                    }
+                    else if (liCollElem[index].classList.contains('e-disable')) {
+                        liCollElem[index].classList.remove('e-disable');
+                    }
+                }
+            }
+        }
     }
     toolbarClickHandler(e) {
         let btn = closest(e.target, 'button');
@@ -9887,11 +9903,20 @@ __decorate$5([
     Property(false)
 ], ListBox.prototype, "allowDragAndDrop", void 0);
 __decorate$5([
+    Property(1000)
+], ListBox.prototype, "maximumSelectionLength", void 0);
+__decorate$5([
     Property(false)
 ], ListBox.prototype, "allowFiltering", void 0);
 __decorate$5([
     Property('')
 ], ListBox.prototype, "scope", void 0);
+__decorate$5([
+    Property('StartsWith')
+], ListBox.prototype, "filterType", void 0);
+__decorate$5([
+    Property(true)
+], ListBox.prototype, "ignoreCase", void 0);
 __decorate$5([
     Event()
 ], ListBox.prototype, "beforeItemRender", void 0);

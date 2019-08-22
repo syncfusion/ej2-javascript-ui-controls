@@ -2350,6 +2350,7 @@ let CircularGauge = class CircularGauge extends Component {
         this.setTheme();
         this.calculateBounds();
         this.renderElements();
+        this.renderComplete();
     }
     setTheme() {
         this.themeStyle = getThemeStyle(this.theme);

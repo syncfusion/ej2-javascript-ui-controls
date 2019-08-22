@@ -642,7 +642,9 @@ export namespace IntlBase {
      * @returns {string}
      */
     export function getCurrencySymbol(numericObject: Object, currencyCode: string): string {
-        return getValue('currencies.' + currencyCode + '.symbol', numericObject) || '$';
+        let getCurrency: string = getValue('currencies.' + currencyCode + '.symbol', numericObject) ||
+            getValue('currencies.' + currencyCode + '.symbol-alt-narrow', numericObject) || '$';
+        return getCurrency;
     }
     /**
      * Returns formatting options for custom number format

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### TreeGrid
+
+#### New Features
+
+- `#231649` - Support for Row Drag and Drop has been provided that allows to reorder rows within grid and also to drag and drop rows between two treegrid.
+
 ## 17.2.41 (2019-08-14)
 
 ### TreeGrid

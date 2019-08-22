@@ -556,6 +556,55 @@ describe('Splitter Control', () => {
             document.dispatchEvent(mouseEvent);
         });
     });
+    
+    describe('Mouse Move with pixel and percentage combination for Horizontal splitter', () => {
+        appendSplitterStyles();
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            element.style.width ='300px';
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ paneSettings: [{ size: '50%', min: '10px' }, { size: '50%', min: '20px', }]});
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+
+        it('on split bar', () => {
+            let mouseEvent = document.createEvent ('MouseEvents');
+            mouseEvent.initEvent ('mousedown', true, true);
+            (document.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent (mouseEvent);
+            mouseEvent.initEvent ('mousemove', true, true);
+            document.dispatchEvent (mouseEvent);
+            mouseEvent.initEvent ('mouseup', true, true);
+            document.dispatchEvent(mouseEvent);
+            expect(splitterObj.allPanes[0].classList.contains('e-static-pane')).toBe(true);
+            expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(false);
+            let eventArgs: any = {
+                target: document,
+                pageX: 350,
+                pageY: 400,
+                type: 'mousemove',
+                which: 1,
+                x: 0,
+                y: 0
+            }
+            splitterObj.onMouseMove(eventArgs);
+            expect(splitterObj.allPanes[0].classList.contains('e-static-pane')).toBe(true);
+            expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(true);
+            let resizeEvent  : any= window.document.createEvent('UIEvents'); 
+            resizeEvent.initUIEvent('resize', true, false, window, 0); 
+            window.dispatchEvent(resizeEvent);
+            expect(splitterObj.allPanes[0].classList.contains('e-static-pane')).toBe(true);         
+            expect(splitterObj.allPanes[1].classList.contains('e-static-pane')).toBe(false);
+         
+        });
+    });
 
     describe('Mouse Move with pixel and percentage combination for Horizontal splitter', () => {
         appendSplitterStyles();

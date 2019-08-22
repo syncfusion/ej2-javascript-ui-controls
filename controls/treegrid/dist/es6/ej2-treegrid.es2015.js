@@ -1483,6 +1483,7 @@ class DataManipulation {
         let isExport = getObject('isExport', args);
         let expresults = getObject('expresults', args);
         let exportType = getObject('exportType', args);
+        let isPrinting = getObject('isPrinting', args);
         let dataObj;
         let actionArgs = getObject('actionArgs', args);
         let requestType = getObject('requestType', args);
@@ -1575,15 +1576,16 @@ class DataManipulation {
             }
         }
         count = results.length;
-        let temp = this.paging(results, count, isExport, exportType, args);
+        let temp = this.paging(results, count, isExport, isPrinting, exportType, args);
         results = temp.result;
         count = temp.count;
         args.result = results;
         args.count = count;
         this.parent.notify('updateResults', args);
     }
-    paging(results, count, isExport, exportType, args) {
-        if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
+    paging(results, count, isExport, isPrinting, exportType, args) {
+        if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
+            && (!isPrinting || this.parent.printMode === 'CurrentPage')) {
             this.parent.notify(pagingActions, { result: results, count: count });
             results = this.dataResults.result;
             count = this.dataResults.count;
@@ -3445,6 +3447,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.element.appendChild(gridContainer);
         this.grid.appendTo(gridContainer);
         this.wireEvents();
+        this.renderComplete();
     }
     convertTreeData(data) {
         if (data instanceof Array && data.length > 0 && data[0].hasOwnProperty('level')) {
@@ -3532,6 +3535,14 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.rowDeselected = (args) => {
             this.selectedRowIndex = this.grid.selectedRowIndex;
+            if (isBlazor()) {
+                let data = 'data';
+                let rowIndex = 'rowIndex';
+                let row = 'row';
+                args[data] = args[data][args[data].length - 1];
+                args[rowIndex] = args[rowIndex][args[rowIndex].length - 1];
+                args[row] = args[row][args[row].length - 1];
+            }
             this.trigger(rowDeselected, args);
         };
         this.grid.resizeStop = (args) => {
@@ -3599,6 +3610,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 args.result = treeGrid.grid.dataSource[dataSource].json = treeGrid.flatData;
             }
             if (!isRemoteData(treeGrid)) {
+                if (this.isPrinting) {
+                    setValue('isPrinting', true, args);
+                }
                 treeGrid.notify('dataProcessor', args);
                 //args = this.dataModule.dataProcessor(args);
             }
@@ -4802,7 +4816,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                     e.expanded = action === 'collapse' ? false : true;
                 }
             });
-            action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
+            if (rows.length) {
+                action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
+            }
         }
         else {
             for (let i = 0; i < rows.length; i++) {
@@ -6078,6 +6094,11 @@ class Page$1 {
      */
     collapseExpandPagedchilds(rowDetails) {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
+        if (isBlazor()) {
+            this.parent.flatData.filter((e) => {
+                return e.uniqueID === rowDetails.record.uniqueID;
+            })[0].expanded = rowDetails.action === 'collapse' ? false : true;
+        }
         let ret = {
             result: this.parent.flatData,
             row: rowDetails.row,

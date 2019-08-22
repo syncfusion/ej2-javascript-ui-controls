@@ -8,11 +8,16 @@ export interface DayWorkingTimeModel {
     /**
      * Defines start time of working time range.
      * @default null
+     * @blazorType double?
+     * @blazorDefaultValue null
      */
     from?: number;
 
     /**
      * Defines end time of working time range.
+     * @default null
+     * @blazorType double?
+     * @blazorDefaultValue null
      */
     to?: number;
 

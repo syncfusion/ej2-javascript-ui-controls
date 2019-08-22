@@ -354,7 +354,7 @@ export class ColumnMenu implements IAction {
     private columnMenuOnClose(args: OpenCloseMenuEventArgs): void {
         let parent: string = 'parentObj';
         if (args.items.length > 0 && args.items[0][parent] instanceof Menu) {
-            this.columnMenu.enableItems(this.disableItems);
+            this.columnMenu.enableItems(this.disableItems, false);
             this.disableItems = [];
             this.columnMenu.showItems(this.hiddenItems);
             this.hiddenItems = [];

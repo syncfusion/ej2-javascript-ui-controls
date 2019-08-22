@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### Slider
+
+#### Bug Fixes
+
+- `I240495` - Ticks rendering issue in the vertical slider has been fixed.
+
 ## 17.2.41 (2019-08-14)
 
 ### NumericTextBox

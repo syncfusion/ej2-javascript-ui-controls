@@ -132,6 +132,18 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
      */
     @Property('RenderAnnotationComments')
     public renderComments: string;
+
+    /**
+     * specifies the imports annotations action of PdfViewer.
+     */
+    @Property('ImportAnnotations')
+    public importAnnotations: string;
+
+    /**
+     * specifies the export annotations action of PdfViewer.
+     */
+    @Property('ExportAnnotations')
+    public exportAnnotations: string;
 }
 
 /**
@@ -1172,7 +1184,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer service.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments' })
+    @Property({ load: 'Load', renderPages: 'RenderPdfPages', unload: 'Unload', download: 'Download', renderThumbnail: 'RenderThumbnailImages', print: 'PrintImages', renderComments: 'RenderAnnotationComments', importAnnotations: 'ImportAnnotations', exportAnnotations: 'ExportAnnotations' })
     public serverActionSettings: ServerActionSettingsModel;
 
     /**
@@ -1600,6 +1612,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.viewerBase.disableTextSelectionMode();
         }
         this.drawing.renderLabels(this);
+        this.renderComplete();
     }
 
     public getModuleName(): string {
@@ -1622,6 +1635,38 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 case 'enableToolbar':
                     this.notify('', { module: 'toolbar', enable: this.enableToolbar });
                     requireRefresh = true;
+                    break;
+                case 'documentPath':
+                    this.load(newProp.documentPath, null);
+                    break;
+                case 'interactionMode':
+                    this.interactionMode = newProp.interactionMode;
+                    if (newProp.interactionMode === 'Pan') {
+                        this.viewerBase.initiatePanning();
+                        if (this.toolbar) {
+                            this.toolbar.updateInteractionTools(false);
+                        }
+                    } else if (newProp.interactionMode === 'TextSelection') {
+                        this.viewerBase.initiateTextSelectMode();
+                        if (this.toolbar) {
+                            this.toolbar.updateInteractionTools(true);
+                        }
+                    }
+                    break;
+                case 'height':
+                    this.height = newProp.height;
+                    this.viewerBase.updateHeight();
+                    this.viewerBase.onWindowResize();
+                    if (this.toolbar.annotationToolbarModule.isToolbarHidden) {
+                        this.toolbar.annotationToolbarModule.adjustViewer(false);
+                    } else {
+                        this.toolbar.annotationToolbarModule.adjustViewer(true);
+                    }
+                    break;
+                case 'width':
+                    this.width = newProp.width;
+                    this.viewerBase.updateWidth();
+                    this.viewerBase.onWindowResize();
                     break;
             }
         }
@@ -1803,7 +1848,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Post': 'Post',
         'Page': 'Page',
         'Add a comment': 'Add a comment',
-        'Add a reply': 'Add a reply'
+        'Add a reply': 'Add a reply',
+        'Import Annotations': 'Import Annotations',
+        'Export Annotations': 'Export Annotations'
     };
 
     /**
@@ -1902,6 +1949,29 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.element.innerHTML = '';
         }
         this.viewerBase.destroy();
+    }
+
+    // tslint:disable-next-line
+    /**
+     * Perform imports annotations action in the PDF Viewer
+     * @param  {any} importData - Specifies the data for annotation imports
+     * @returns void
+     */
+    // tslint:disable-next-line
+    public importAnnotations(importData: any): void {
+        if (this.annotationModule) {
+            this.viewerBase.importAnnotations(importData);
+        }
+    }
+
+    /**
+     * Perform export annotations action in the PDF Viewer
+     * @returns void
+     */
+    public exportAnnotations(): void {
+        if (this.annotationModule) {
+            this.viewerBase.exportAnnotations();
+        }
     }
 
     /**

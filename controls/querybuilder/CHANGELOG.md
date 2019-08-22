@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided Null and Empty operator support.
+
 ## 17.2.36 (2019-07-24)
 
 ### QueryBuilder

@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -1061,6 +1061,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         _this.navIdx = [];
         _this.animation = new Animation({});
         _this.isTapHold = false;
+        _this.tempItem = [];
         return _this;
     }
     /**
@@ -1116,12 +1117,16 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     MenuBase.prototype.render = function () {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template) {
+        if (this.isMenu && this.template && this.isBlazor()) {
             var menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
             resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            if (Object.keys(blazorTemplates).length) {
+                extend(this.tempItem, blazorTemplates[menuTemplateId], [], true);
+            }
             updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
         this.wireEvents();
+        this.renderComplete();
     };
     MenuBase.prototype.initialize = function () {
         var wrapper = this.getWrapper();
@@ -1151,7 +1156,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         if (!this.items.length) {
             var items = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
             this.setProperties({ items: items }, true);
-            this.element.innerHTML = '';
+            if (this.isBlazor()) {
+                this.element = this.removeChildElement(this.element);
+            }
+            else {
+                this.element.innerHTML = '';
+            }
         }
         var ul = this.createItems(this.items);
         append(Array.prototype.slice.call(ul.children), this.element);
@@ -1581,6 +1591,15 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             this.uList = this.element;
             this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
             this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
+        }
+        if (this.isMenu && this.template && this.isBlazor()) {
+            var menuTemplateId = this.element.id + TEMPLATE_PROPERTY;
+            if (Object.keys(blazorTemplates).length) {
+                var itemFromBlazorTemplate = blazorTemplates[menuTemplateId];
+                this.tempItem = this.tempItem.concat(itemFromBlazorTemplate);
+                blazorTemplates[menuTemplateId] = this.tempItem;
+            }
+            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
     };
     MenuBase.prototype.calculateIndentSize = function (ul, li) {
@@ -2169,7 +2188,13 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     };
     MenuBase.prototype.getIdx = function (ul, li, skipHdr) {
         if (skipHdr === void 0) { skipHdr = true; }
-        var idx = Array.prototype.indexOf.call(ul.children, li);
+        var idx = Array.prototype.indexOf.call(ul.querySelectorAll('li'), li);
+        if (this.isMenu && this.template && this.isBlazor()) {
+            idx = Array.prototype.indexOf.call(ul.querySelectorAll(li.tagName), li);
+        }
+        else {
+            idx = Array.prototype.indexOf.call(ul.children, li);
+        }
         if (skipHdr && ul.children[0].classList.contains(HEADER)) {
             idx--;
         }
@@ -2180,6 +2205,15 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             return elem;
         }
         return closest(elem, 'li.e-menu-item');
+    };
+    MenuBase.prototype.isBlazor = function () {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
+    };
+    MenuBase.prototype.removeChildElement = function (elem) {
+        while (elem.firstElementChild) {
+            elem.removeChild(elem.firstElementChild);
+        }
+        return elem;
     };
     /**
      * Called internally if any of the property value changed
@@ -2239,7 +2273,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     var item = void 0;
                     if (!Object.keys(oldProp.items).length) {
                         var ul_4 = this_1.element;
-                        ul_4.innerHTML = '';
+                        if (this_1.isBlazor()) {
+                            ul_4 = this_1.removeChildElement(this_1.element);
+                        }
+                        else {
+                            ul_4.innerHTML = '';
+                        }
                         var lis = [].slice.call(this_1.createItems(this_1.items).children);
                         lis.forEach(function (li) {
                             ul_4.appendChild(li);
@@ -2672,7 +2711,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         var refEle = this.clonedElement.nextElementSibling;
                         refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
                             this.clonedElement.parentElement.appendChild(this.element);
-                        this.element.innerHTML = '';
+                        if (this.isBlazor()) {
+                            this.element = this.removeChildElement(this.element);
+                        }
+                        else {
+                            this.element.innerHTML = '';
+                        }
                         append([].slice.call(this.clonedElement.children), this.element);
                         detach(this.clonedElement);
                         this.removeAttributes();
@@ -2682,7 +2726,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.closeMenu();
-                this.element.innerHTML = '';
+                if (this.isBlazor()) {
+                    this.element = this.removeChildElement(this.element);
+                }
+                else {
+                    this.element.innerHTML = '';
+                }
                 this.removeAttributes();
                 wrapper.parentNode.insertBefore(this.element, wrapper);
             }
@@ -3333,6 +3382,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Toolbar.prototype.initialize = function () {
         var width = formatUnit(this.width);
@@ -4962,6 +5014,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Accordion.prototype.initialize = function () {
         var width = formatUnit(this.width);
@@ -6513,6 +6568,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Tab.prototype.renderContainer = function () {
         var ele = this.element;
@@ -8245,6 +8303,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.setDragAndDrop(this.allowDragAndDrop);
         this.wireEvents();
         this.initialRender = false;
+        this.renderComplete();
     };
     TreeView.prototype.initialize = function () {
         this.element.setAttribute('role', 'tree');
@@ -8610,6 +8669,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     TreeView.prototype.beforeNodeCreate = function (e) {
         if (this.showCheckBox) {
             var checkboxEle = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
+            checkboxEle.setAttribute('role', 'checkbox');
             var icon = select('div.' + ICON, e.item);
             var id = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNullOrUndefined(icon) ? 0 : 1]);
@@ -10478,7 +10538,12 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.reRenderNodes = function () {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        this.element.innerHTML = '';
+        if (this.isBlazorPlatform && this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
+        }
+        else {
+            this.element.innerHTML = '';
+        }
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             this.destroyTemplate(this.nodeTemplate);
         }
@@ -11062,7 +11127,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             detach(dragParentUl);
             detach(dragIcon);
             var parentId = this.getId(dragParentLi);
-            this.updateField(this.treeData, this.fields, parentId, 'hasChildren', null);
+            this.updateField(this.treeData, this.fields, parentId, 'hasChildren', false);
             this.removeExpand(dragParentLi, true);
         }
     };
@@ -12456,6 +12521,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
     Sidebar.prototype.render = function () {
         this.initialize();
         this.wireEvents();
+        this.renderComplete();
     };
     Sidebar.prototype.initialize = function () {
         this.setTarget();

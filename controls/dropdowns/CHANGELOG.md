@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### ListBox
+
+#### New Features
+
+- `#237694` - provided maximum selection limit option for ListBox.
+
 ## 17.2.41 (2019-08-14)
 
 ### MultiSelect

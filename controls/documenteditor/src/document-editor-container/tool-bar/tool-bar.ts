@@ -81,11 +81,11 @@ export class Toolbar {
      * @private
      */
     public initToolBar(): void {
-        this.render();
+        this.renderToolBar();
         this.wireEvent();
     }
     // tslint:disable-next-line:max-func-body-length
-    private render(): void {
+    private renderToolBar(): void {
         if (isNullOrUndefined(this.container)) {
             return;
         }

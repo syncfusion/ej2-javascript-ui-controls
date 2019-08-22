@@ -1353,6 +1353,7 @@ export class Series extends SeriesBase {
      * * Polar
      * * Radar
      * * BoxAndWhisker
+     * * Pareto
      * @default 'Line'
      */
 

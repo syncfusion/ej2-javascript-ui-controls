@@ -381,6 +381,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
         this.renderElements();
 
+        this.renderComplete();
     }
 
     private setTheme(): void {

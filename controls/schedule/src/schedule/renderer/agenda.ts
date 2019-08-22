@@ -77,7 +77,7 @@ export class Agenda extends ViewBase implements IRenderer {
         this.parent.eventsProcessed = this.agendaBase.processAgendaEvents(eventCollection);
         let agendaDate: Date = util.resetTime(this.parent.selectedDate);
         let tBody: Element = this.parent.getContentTable();
-        tBody.innerHTML = '';
+        util.removeChildren(tBody);
         this.renderInitialContent(tBody, agendaDate);
         this.agendaBase.wireEventActions();
         let contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;

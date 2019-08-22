@@ -112,6 +112,9 @@ export class Tooltip {
                 } else if (args.target.classList.contains('e-indicator-span')) {
                     argsData.content = this.toolTipObj.content =
                         parent.tooltipModule.getTooltipContent('indicator', data, parent, args);
+                    if (isNullOrUndefined(argsData.content)) {
+                        args.cancel = true;
+                    }
                 } else if (args.target.classList.contains('e-notes-info')) {
                     let ganttData: IGanttData = this.parent.ganttChartModule.getRecordByTarget(args.event as PointerEvent);
                     argsData.content = this.toolTipObj.content = ganttData.ganttProperties.notes;
@@ -264,7 +267,9 @@ export class Tooltip {
                     parent.tooltipModule.predecessorTooltipData.offsetString + '</td></tr></tbody></table>';
                 break;
             case 'indicator':
-                content = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';
+                if (args.target.title.length) {
+                    content = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';
+                }
                 break;
             case 'timeline':
                 content = '<table class = "e-gantt-tooltiptable"><tbody><tr>' + args.target.title + '</tr></tbody></table>';

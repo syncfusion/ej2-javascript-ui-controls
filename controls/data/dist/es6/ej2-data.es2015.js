@@ -3994,6 +3994,82 @@ class WebApiAdaptor extends ODataAdaptor {
             data: JSON.stringify(value)
         };
     }
+    batchRequest(dm, changes, e) {
+        let initialGuid = e.guid = DataUtil.getGuid(this.options.batchPre);
+        let url = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
+        let req = [];
+        //insertion
+        for (let i = 0, x = changes.addedRecords.length; i < x; i++) {
+            changes.addedRecords.forEach((j, d) => {
+                let stat = {
+                    'method': 'POST ',
+                    'url': (data, i, key) => '',
+                    'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('POST ' + '/api/' + (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.addedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //updation 
+        for (let i = 0, x = changes.changedRecords.length; i < x; i++) {
+            changes.changedRecords.forEach((j, d) => {
+                let stat = {
+                    'method': this.options.updateType + ' ',
+                    'url': (data, i, key) => '',
+                    'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('PUT ' + '/api/' + (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.changedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //deletion
+        for (let i = 0, x = changes.deletedRecords.length; i < x; i++) {
+            changes.deletedRecords.forEach((j, d) => {
+                let state = {
+                    'mtd': 'DELETE ',
+                    'url': (data, i, key) => {
+                        let url = DataUtil.getObject(key, data[i]);
+                        if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                            return '/' + url;
+                        }
+                        else if (url instanceof Date) {
+                            let datTime = data[i][key];
+                            return '/' + datTime.toJSON();
+                        }
+                        else {
+                            return `/'${url}'`;
+                        }
+                    },
+                    'data': (data, i) => ''
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('DELETE ' + '/api/' + (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url)
+                    + state.url(changes.deletedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        req.push('--' + initialGuid + '--', '');
+        return {
+            type: 'POST',
+            url: url,
+            contentType: 'multipart/mixed; boundary=' + initialGuid,
+            data: req.join('\r\n')
+        };
+    }
     /**
      * Method will trigger before send the request to server side.
      * Used to set the custom header or modify the request options.

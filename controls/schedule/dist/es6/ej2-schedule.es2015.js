@@ -207,6 +207,11 @@ function getOuterHeight(element) {
     let style = getComputedStyle(element);
     return element.offsetHeight + (parseInt(style.marginTop, 10) || 0) + (parseInt(style.marginBottom, 10) || 0);
 }
+function removeChildren(element) {
+    while (element.firstElementChild) {
+        element.removeChild(element.firstElementChild);
+    }
+}
 
 /**
  * CSS Constants
@@ -1324,7 +1329,7 @@ class ScheduleTouch {
         this.nextPanel = null;
         this.timeStampStart = null;
         this.element.style.transform = '';
-        this.element.innerHTML = '';
+        removeChildren(this.element);
         removeClass([this.element], TRANSLATE_CLASS);
     }
     /**
@@ -6213,7 +6218,7 @@ class QuickPopups {
                     this.quickPopupClose();
                 }
                 this.resetQuickPopupTemplates();
-                this.quickPopup.element.innerHTML = '';
+                removeChildren(this.quickPopup.element);
             }
             else {
                 let display = this.quickPopup.element.style.display;
@@ -6332,7 +6337,7 @@ class QuickPopups {
         this.quickPopup.relateTo = WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
         this.destroyButtons();
-        this.quickPopup.element.innerHTML = '';
+        removeChildren(this.quickPopup.element);
     }
     morePopupOpen() {
         this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS).focus();
@@ -7484,7 +7489,9 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
         }
         removeClass([this.element], removeClasses);
-        this.element.innerHTML = '';
+        while (this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
+        }
     }
     /**
      * Get component name.
@@ -10150,7 +10157,7 @@ class ResourceBase {
         headerCollection.pop();
         let target = (this.parent.currentView === 'MonthAgenda') ? this.parent.activeView.getPanel() : this.parent.element;
         let headerWrapper = target.querySelector('.' + RESOURCE_LEVEL_TITLE);
-        headerWrapper.innerHTML = '';
+        removeChildren(headerWrapper);
         headerCollection.forEach((element) => headerWrapper.appendChild(element));
         if (this.lastResourceLevel.length === 1) {
             addClass([this.parent.element.querySelector('.' + RESOURCE_MENU)], DISABLE_CLASS);
@@ -12089,7 +12096,7 @@ let Schedule = class Schedule extends Component {
             this.scheduleTouchModule = null;
         }
         super.destroy();
-        this.element.innerHTML = '';
+        removeChildren(this.element);
         let removeClasses = [ROOT];
         if (this.cssClass) {
             removeClasses = removeClasses.concat(this.cssClass.split(' '));
@@ -17180,7 +17187,7 @@ class AgendaBase {
                     templateEle = this.createAppointment(listData[li]);
                 }
                 append([].slice.call(templateEle), appWrapper);
-                listElement.children[li].innerHTML = '';
+                removeChildren(listElement.children[li]);
                 listElement.children[li].appendChild(appWrapper);
                 let args = { data: listData[li], element: listElement.children[li], cancel: false };
                 this.parent.trigger(eventRendered, args, (eventArgs) => {
@@ -17528,7 +17535,7 @@ class Agenda extends ViewBase {
         this.parent.eventsProcessed = this.agendaBase.processAgendaEvents(eventCollection);
         let agendaDate = resetTime(this.parent.selectedDate);
         let tBody = this.parent.getContentTable();
-        tBody.innerHTML = '';
+        removeChildren(tBody);
         this.renderInitialContent(tBody, agendaDate);
         this.agendaBase.wireEventActions();
         let contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
@@ -17976,7 +17983,7 @@ class MonthAgenda extends Month {
     }
     onEventRender(events, date) {
         let appWrap = this.element.querySelector('.' + APPOINTMENT_WRAP_CLASS);
-        appWrap.innerHTML = '';
+        removeChildren(appWrap);
         if (this.parent.activeViewOptions.group.resources.length === 0 || this.parent.uiStateValues.isGroupAdaptive) {
             if (events.length > 0) {
                 let appContainer = createElement('div', { className: APPOINTMENT_CONTAINER_CLASS });
@@ -18017,7 +18024,7 @@ class MonthAgenda extends Month {
         let app = createElement('div', { className: APPOINTMENT_CONTAINER_CLASS });
         addClass([app], AGENDA_NO_EVENT_CLASS);
         app.innerHTML = this.parent.localeObj.getConstant('noEvents');
-        appWrap.innerHTML = '';
+        removeChildren(appWrap);
         appWrap.appendChild(app);
     }
     /**
@@ -18961,5 +18968,5 @@ class Print {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

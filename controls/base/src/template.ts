@@ -14,6 +14,7 @@ const NOT_NUMBER: RegExp = new RegExp('^[0-9]+$', 'g');
 const WORD: RegExp = new RegExp('[\\w"\'.\\s+]+', 'g');
 const DBL_QUOTED_STR: RegExp = new RegExp('"(.*?)"', 'g');
 const SPECIAL_CHAR: RegExp = /\@|\#|\$/g;
+const WORDIF: RegExp = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
 let exp: RegExp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
 let ARR_OBJ: RegExp = /^\..*/gm;
@@ -100,8 +101,12 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                     })) + '{ \n str = str + "';
                 } else if (IF_STMT.test(cnt)) {
                     //handling if condition
-                    cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORD, (strs: string): string => {
+                    cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, (strs: string): string => {
                         strs = strs.trim();
+                        let regExAt: RegExp = /\@|\$|\#/gm;
+                        if (regExAt.test(strs)) {
+                            strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
+                        }
                         if (ARR_OBJ.test(strs)) {
                             return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
                         } else {

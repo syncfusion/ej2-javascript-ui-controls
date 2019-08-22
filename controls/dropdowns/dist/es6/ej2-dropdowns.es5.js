@@ -8295,7 +8295,7 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
                 }
                 EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
             }
-            if (this.parent.list.classList.contains('e-nodata') || this.parent.listData.length <= 1) {
+            if (this.parent.list.classList.contains('e-nodata') || (this.parent.listData && this.parent.listData.length <= 1)) {
                 this.checkAllParent.style.display = 'none';
             }
             else {
@@ -8641,7 +8641,6 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
-var ITEMTEMPLATE_PROPERTY$1 = 'ItemTemplate';
 var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$5(SelectionSettings, _super);
     function SelectionSettings() {
@@ -8725,6 +8724,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         this.initLoad = true;
         this.initialSelectedOptions = this.value;
         _super.prototype.render.call(this);
+        this.renderComplete();
     };
     ListBox.prototype.initWrapper = function () {
         var hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
@@ -8745,14 +8745,6 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
             this.list.insertBefore(this.element, this.list.firstChild);
             this.element.style.display = 'none';
-        }
-        if (this.itemTemplate) {
-            var listBoxProxy_1 = this;
-            resetBlazorTemplate(this.element.id + ITEMTEMPLATE_PROPERTY$1, ITEMTEMPLATE_PROPERTY$1);
-            this.isStringTemplate = true;
-            setTimeout(function () {
-                updateBlazorTemplate(listBoxProxy_1.element.id + ITEMTEMPLATE_PROPERTY$1, ITEMTEMPLATE_PROPERTY$1, listBoxProxy_1);
-            }, 500);
         }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName(cssClass.li)[0]) {
@@ -9127,6 +9119,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     var ele = li.getElementsByClassName('e-check')[0];
                     if ((!ele && state) || (ele && !state)) {
                         _this.notify('updatelist', { li: li });
+                        if (_this.maximumSelectionLength >= _this.list.querySelectorAll('.e-list-item span.e-check').length) {
+                            _this.checkMaxSelection();
+                        }
                     }
                 }
                 else {
@@ -9316,7 +9311,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 });
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
-            if (!isKey) {
+            if (!isKey && (this.maximumSelectionLength > this.value.length || !isSelect) &&
+                (this.maximumSelectionLength >= this.value.length || !isSelect) &&
+                !(this.maximumSelectionLength < this.value.length)) {
                 this.notify('updatelist', { li: li, e: e });
             }
             if (this.allowFiltering && !isKey) {
@@ -9335,6 +9332,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
             this.updateSelectedOptions();
             this.triggerChange(this.getSelectedItems(), e);
+            this.checkMaxSelection();
         }
     };
     ListBox.prototype.triggerChange = function (selectedLis, event) {
@@ -9347,6 +9345,24 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             data.push(_this.getDataByValue(ele.getAttribute('data-value')));
         });
         return data;
+    };
+    ListBox.prototype.checkMaxSelection = function () {
+        var limit = this.list.querySelectorAll('.e-list-item span.e-check').length;
+        if (this.selectionSettings.showCheckbox) {
+            var index = 0;
+            var liCollElem = void 0;
+            liCollElem = this.list.getElementsByClassName('e-list-item');
+            for (index; index < liCollElem.length; index++) {
+                if (!liCollElem[index].querySelector('.e-frame.e-check')) {
+                    if (limit === this.maximumSelectionLength) {
+                        liCollElem[index].classList.add('e-disable');
+                    }
+                    else if (liCollElem[index].classList.contains('e-disable')) {
+                        liCollElem[index].classList.remove('e-disable');
+                    }
+                }
+            }
+        }
     };
     ListBox.prototype.toolbarClickHandler = function (e) {
         var btn = closest(e.target, 'button');
@@ -10078,11 +10094,20 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], ListBox.prototype, "allowDragAndDrop", void 0);
     __decorate$5([
+        Property(1000)
+    ], ListBox.prototype, "maximumSelectionLength", void 0);
+    __decorate$5([
         Property(false)
     ], ListBox.prototype, "allowFiltering", void 0);
     __decorate$5([
         Property('')
     ], ListBox.prototype, "scope", void 0);
+    __decorate$5([
+        Property('StartsWith')
+    ], ListBox.prototype, "filterType", void 0);
+    __decorate$5([
+        Property(true)
+    ], ListBox.prototype, "ignoreCase", void 0);
     __decorate$5([
         Event()
     ], ListBox.prototype, "beforeItemRender", void 0);

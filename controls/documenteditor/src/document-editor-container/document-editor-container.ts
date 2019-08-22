@@ -22,31 +22,37 @@ import { ContainerServerActionSettingsModel } from '../document-editor/document-
 export class DocumentEditorContainer extends Component<HTMLElement> implements INotifyPropertyChanged {
     /**
      * Show or hide properties pane.
+     * @default true
      */
     @Property(true)
     public showPropertiesPane: boolean;
     /**
      * Enable or disable toolbar in document editor container.
+     * @default true
      */
     @Property(true)
     public enableToolbar: boolean;
     /**
      * Restrict editing operation.
+     * @default false
      */
     @Property(false)
     public restrictEditing: boolean;
     /**
      * Enable or disable spell checker in document editor container.
+     * @default false
      */
     @Property(false)
     public enableSpellCheck: boolean;
     /**
      * Enable local paste
+     * @default true
      */
     @Property(true)
     public enableLocalPaste: boolean;
     /**
      * Sfdt service URL.
+     * @default ''
      */
     @Property()
     public serviceUrl: string;
@@ -404,7 +410,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
-
+        this.renderComplete();
     }
 
     private setserverActionSettings(): void {

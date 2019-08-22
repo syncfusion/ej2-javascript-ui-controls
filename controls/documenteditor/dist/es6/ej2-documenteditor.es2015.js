@@ -12433,6 +12433,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
             container.style.minHeight = '200px';
             container.style.minWidth = '200px';
         }
+        this.renderComplete();
     }
     /**
      * Get component name
@@ -13305,7 +13306,7 @@ __decorate([
     Property('')
 ], DocumentEditor.prototype, "documentName", void 0);
 __decorate([
-    Property()
+    Property('')
 ], DocumentEditor.prototype, "serviceUrl", void 0);
 __decorate([
     Property(1)
@@ -70344,11 +70345,11 @@ class Toolbar$1 {
      * @private
      */
     initToolBar() {
-        this.render();
+        this.renderToolBar();
         this.wireEvent();
     }
     // tslint:disable-next-line:max-func-body-length
-    render() {
+    renderToolBar() {
         if (isNullOrUndefined(this.container)) {
             return;
         }
@@ -74118,6 +74119,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
+        this.renderComplete();
     }
     setserverActionSettings() {
         if (this.serviceUrl) {

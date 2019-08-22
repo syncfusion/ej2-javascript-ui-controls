@@ -172,7 +172,7 @@ describe('Gantt spec for tooltip', () => {
         it('Indicator Tooltip', () => {
             let indicator: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(1) > td > label:nth-child(3)') as HTMLElement;
             triggerMouseEvent(indicator, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr> Custom String</tr></tbody></table>');
+            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr>Follow up</tr></tbody></table>');
         });
         it('Milestone Tooltip', () => {
             let milestone: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(7) > td > div.e-taskbar-main-container > div.e-gantt-milestone') as HTMLElement;

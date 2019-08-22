@@ -442,6 +442,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         super(options, <HTMLElement | string>element);
     }
 
+    /**
+     * @private
+     */
     public onPropertyChanged(newProp: ListViewModel, oldProp: ListViewModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1506,6 +1509,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.rippleFn = rippleEffect(this.element, {
             selector: '.' + classNames.listItem
         });
+        this.renderComplete();
     }
 
     /**

@@ -5394,6 +5394,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         if (this.tooltipModule) {
             this.tooltipModule.showHideTooltip(false);
         }
+        this.renderComplete();
     };
     /**
      * To re-calculate the datasource while changing datasource property dynamically.

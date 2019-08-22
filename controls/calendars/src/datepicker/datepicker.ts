@@ -390,6 +390,7 @@ export class DatePicker extends Calendar implements IInput {
     public render(): void {
         this.initialize();
         this.bindEvents();
+        this.renderComplete();
     }
 
     protected setAllowEdit(): void {

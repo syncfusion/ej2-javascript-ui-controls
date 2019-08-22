@@ -4064,6 +4064,92 @@ var WebApiAdaptor = /** @__PURE__ @class */ (function (_super) {
             data: JSON.stringify(value)
         };
     };
+    WebApiAdaptor.prototype.batchRequest = function (dm, changes, e) {
+        var _this = this;
+        var initialGuid = e.guid = DataUtil.getGuid(this.options.batchPre);
+        var url = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
+        var req = [];
+        var _loop_1 = function (i, x) {
+            changes.addedRecords.forEach(function (j, d) {
+                var stat = {
+                    'method': 'POST ',
+                    'url': function (data, i, key) { return ''; },
+                    'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('POST ' + '/api/' + (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.addedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        };
+        //insertion
+        for (var i = 0, x = changes.addedRecords.length; i < x; i++) {
+            _loop_1(i, x);
+        }
+        var _loop_2 = function (i, x) {
+            changes.changedRecords.forEach(function (j, d) {
+                var stat = {
+                    'method': _this.options.updateType + ' ',
+                    'url': function (data, i, key) { return ''; },
+                    'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('PUT ' + '/api/' + (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.changedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        };
+        //updation 
+        for (var i = 0, x = changes.changedRecords.length; i < x; i++) {
+            _loop_2(i, x);
+        }
+        var _loop_3 = function (i, x) {
+            changes.deletedRecords.forEach(function (j, d) {
+                var state = {
+                    'mtd': 'DELETE ',
+                    'url': function (data, i, key) {
+                        var url = DataUtil.getObject(key, data[i]);
+                        if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                            return '/' + url;
+                        }
+                        else if (url instanceof Date) {
+                            var datTime = data[i][key];
+                            return '/' + datTime.toJSON();
+                        }
+                        else {
+                            return "/'" + url + "'";
+                        }
+                    },
+                    'data': function (data, i) { return ''; }
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('DELETE ' + '/api/' + (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url)
+                    + state.url(changes.deletedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        };
+        //deletion
+        for (var i = 0, x = changes.deletedRecords.length; i < x; i++) {
+            _loop_3(i, x);
+        }
+        req.push('--' + initialGuid + '--', '');
+        return {
+            type: 'POST',
+            url: url,
+            contentType: 'multipart/mixed; boundary=' + initialGuid,
+            data: req.join('\r\n')
+        };
+    };
     /**
      * Method will trigger before send the request to server side.
      * Used to set the custom header or modify the request options.

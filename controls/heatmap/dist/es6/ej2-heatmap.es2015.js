@@ -5157,6 +5157,7 @@ let HeatMap = class HeatMap extends Component {
         if (this.tooltipModule) {
             this.tooltipModule.showHideTooltip(false);
         }
+        this.renderComplete();
     }
     /**
      * To re-calculate the datasource while changing datasource property dynamically.

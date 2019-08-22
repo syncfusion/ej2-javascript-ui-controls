@@ -192,6 +192,16 @@ var quickToolbarOpen = 'quickToolbarOpen';
 var quickToolbarClose = 'quickToolbarClose';
 /** @hidden */
 var popupHide = 'popupHide';
+/** @hidden */
+var imageSelected = 'imageSelected';
+/** @hidden */
+var imageUploading = 'imageUploading';
+/** @hidden */
+var imageUploadSuccess = 'imageUploadSuccess';
+/** @hidden */
+var imageUploadFailed = 'imageUploadFailed';
+/** @hidden */
+var imageRemoving = 'imageRemoving';
 
 /**
  * RichTextEditor classes defined here.
@@ -4158,27 +4168,6 @@ var Count = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Count.prototype.restrict = function (e) {
-        if (this.parent.showCharCount) {
-            var element = e.args.currentTarget.textContent.trim();
-            var array = [8, 16, 17, 37, 38, 39, 40, 46, 65];
-            var arrayKey = void 0;
-            for (var i = 0; i <= array.length - 1; i++) {
-                if (e.args.which === array[i]) {
-                    if (e.args.ctrlKey && e.args.which === 65) {
-                        return;
-                    }
-                    else if (e.args.which !== 65) {
-                        arrayKey = array[i];
-                        return;
-                    }
-                }
-            }
-            if ((element.length >= this.parent.maxLength && this.parent.maxLength !== -1) && e.args.which !== arrayKey) {
-                e.args.preventDefault();
-            }
-        }
-    };
     /**
      * Destroys the Count.
      * @method destroy
@@ -4198,7 +4187,6 @@ var Count = /** @__PURE__ @class */ (function () {
         if (this.parent.showCharCount) {
             this.parent.on(initialEnd, this.renderCount, this);
             this.parent.on(keyUp, this.refresh, this);
-            this.parent.on(keyDown, this.restrict, this);
             this.parent.on(count, this.refresh, this);
             this.parent.on(refreshBegin, this.refresh, this);
             this.parent.on(mouseDown, this.refresh, this);
@@ -4211,11 +4199,12 @@ var Count = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        detach(this.element);
+        if (this.element) {
+            detach(this.element);
+        }
         this.parent.off(initialEnd, this.renderCount);
         this.parent.off(keyUp, this.refresh);
         this.parent.off(refreshBegin, this.refresh);
-        this.parent.off(keyDown, this.restrict);
         this.parent.off(count, this.refresh);
         this.parent.off(mouseDown, this.refresh);
         this.parent.off(destroy, this.destroy);
@@ -14001,8 +13990,7 @@ var Image = /** @__PURE__ @class */ (function () {
         var imgUpMsg = this.i10n.getConstant('imageUploadMessage');
         var span = this.parent.createElement('span', { className: 'e-droptext' });
         var spanMsg = this.parent.createElement('span', {
-            className: 'e-rte-upload-text',
-            innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
+            className: 'e-rte-upload-text', innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
         });
         span.appendChild(spanMsg);
         var btnEle = this.parent.createElement('button', {
@@ -14027,52 +14015,62 @@ var Image = /** @__PURE__ @class */ (function () {
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
             },
-            dropArea: span,
-            multiple: false,
-            enableRtl: this.parent.enableRtl,
+            dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: function (e) {
-                altText = e.filesData[0].name;
-                if (_this.parent.editorMode === 'HTML' && isNullOrUndefined(_this.parent.insertImageSettings.path)) {
-                    var reader_1 = new FileReader();
-                    reader_1.addEventListener('load', function (e) {
-                        var url = _this.parent.insertImageSettings.saveFormat === 'Base64' ? reader_1.result :
-                            URL.createObjectURL(proxy.url(reader_1.result));
+                _this.parent.trigger(imageSelected, e, function (e) {
+                    altText = e.filesData[0].name;
+                    if (_this.parent.editorMode === 'HTML' && isNullOrUndefined(_this.parent.insertImageSettings.path)) {
+                        var reader_1 = new FileReader();
+                        reader_1.addEventListener('load', function (e) {
+                            var url = _this.parent.insertImageSettings.saveFormat === 'Base64' ? reader_1.result :
+                                URL.createObjectURL(proxy.url(reader_1.result));
+                            proxy.uploadUrl = {
+                                url: url, selection: save, altText: altText, selectParent: selectParent,
+                                width: {
+                                    width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
+                                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                }, height: {
+                                    height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
+                                    maxHeight: proxy.parent.insertImageSettings.maxHeight
+                                }
+                            };
+                            proxy.inputUrl.setAttribute('disabled', 'true');
+                        });
+                        reader_1.readAsDataURL(e.filesData[0].rawFile);
+                    }
+                });
+            },
+            uploading: function (e) {
+                _this.parent.trigger(imageUploading, e);
+            },
+            success: function (e) {
+                _this.parent.trigger(imageUploadSuccess, e, function (e) {
+                    if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
+                        var url = _this.parent.insertImageSettings.path + e.file.name;
                         proxy.uploadUrl = {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
-                            }, height: {
+                            },
+                            height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
                             }
                         };
                         proxy.inputUrl.setAttribute('disabled', 'true');
-                    });
-                    reader_1.readAsDataURL(e.filesData[0].rawFile);
-                }
+                    }
+                });
             },
-            success: function (e) {
-                if (!isNullOrUndefined(_this.parent.insertImageSettings.path)) {
-                    var url = _this.parent.insertImageSettings.path + e.file.name;
-                    proxy.uploadUrl = {
-                        url: url, selection: save, altText: altText, selectParent: selectParent,
-                        width: {
-                            width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                            maxWidth: proxy.parent.insertImageSettings.maxWidth
-                        },
-                        height: {
-                            height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
-                            maxHeight: proxy.parent.insertImageSettings.maxHeight
-                        }
-                    };
-                    proxy.inputUrl.setAttribute('disabled', 'true');
-                }
+            failure: function (e) {
+                _this.parent.trigger(imageUploadFailed, e);
             },
             removing: function () {
-                proxy.inputUrl.removeAttribute('disabled');
-                proxy.uploadUrl.url = '';
+                _this.parent.trigger(imageRemoving, e, function (e) {
+                    proxy.inputUrl.removeAttribute('disabled');
+                    proxy.uploadUrl.url = '';
+                });
             }
         });
         this.uploadObj.isStringTemplate = true;
@@ -16510,6 +16508,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             }
         }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        this.renderComplete();
     };
     /**
      * For internal use only - Initialize the event handler
@@ -16524,6 +16523,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      */
     RichTextEditor.prototype.keyDown = function (e) {
         this.notify(keyDown, { member: 'keydown', args: e });
+        this.restrict(e);
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
@@ -17307,6 +17307,15 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         this.notify(sourceCode, {});
     };
     /**
+     * Returns the maximum number of characters in the Rich Text Editor.
+     * @public
+     */
+    RichTextEditor.prototype.getCharCount = function () {
+        var htmlText = this.editorMode === 'Markdown' ? this.inputElement.value.trim() :
+            this.inputElement.textContent.trim();
+        return htmlText.length;
+    };
+    /**
      * @hidden
      */
     RichTextEditor.prototype.getBaseToolbarObject = function () {
@@ -17581,6 +17590,27 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
         this.bindEvents();
     };
+    RichTextEditor.prototype.restrict = function (e) {
+        if (this.maxLength >= 0) {
+            var element = e.currentTarget.textContent.trim();
+            var array = [8, 16, 17, 37, 38, 39, 40, 46, 65];
+            var arrayKey = void 0;
+            for (var i = 0; i <= array.length - 1; i++) {
+                if (e.which === array[i]) {
+                    if (e.ctrlKey && e.which === 65) {
+                        return;
+                    }
+                    else if (e.which !== 65) {
+                        arrayKey = array[i];
+                        return;
+                    }
+                }
+            }
+            if ((element.length >= this.maxLength && this.maxLength !== -1) && e.which !== arrayKey) {
+                e.preventDefault();
+            }
+        }
+    };
     RichTextEditor.prototype.bindEvents = function () {
         this.keyboardModule = new KeyboardEvents$1(this.inputElement, {
             keyAction: this.keyDown.bind(this), keyConfigs: __assign({}, this.formatter.keyConfig, this.keyConfig), eventName: 'keydown'
@@ -17786,6 +17816,21 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     ], RichTextEditor.prototype, "toolbarStatusUpdate", void 0);
     __decorate$1([
         Event()
+    ], RichTextEditor.prototype, "imageSelected", void 0);
+    __decorate$1([
+        Event()
+    ], RichTextEditor.prototype, "imageUploading", void 0);
+    __decorate$1([
+        Event()
+    ], RichTextEditor.prototype, "imageUploadSuccess", void 0);
+    __decorate$1([
+        Event()
+    ], RichTextEditor.prototype, "imageUploadFailed", void 0);
+    __decorate$1([
+        Event()
+    ], RichTextEditor.prototype, "imageRemoving", void 0);
+    __decorate$1([
+        Event()
     ], RichTextEditor.prototype, "created", void 0);
     __decorate$1([
         Event()
@@ -17867,5 +17912,5 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
  * RichTextEditor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es5.js.map

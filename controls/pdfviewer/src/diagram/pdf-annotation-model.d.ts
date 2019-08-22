@@ -140,7 +140,7 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents the path data of the annotation 
-     * @default 'string'
+     * @default ''
      */
     data?: string;
 
@@ -188,7 +188,7 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents the height of the leader of distance shapes
-     * @default 0
+     * @default 40
      */
     leaderHeight?: number;
 
@@ -212,25 +212,25 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default null
      */
     sourcePoint?: PointModel;
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default None
      */
     sourceDecoraterShapes?: DecoratorShapes;
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default None
      */
     taregetDecoraterShapes?: DecoratorShapes;
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default null
      */
     targetPoint?: PointModel;
 
@@ -242,7 +242,7 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents bounds of the annotation
-     * @default ''
+     * @default new Point(0,0)
      */
     bounds?: PdfBoundsModel;
 
@@ -261,19 +261,19 @@ export interface PdfAnnotationBaseModel {
 
     /**
      * Represents the cloud intensity
-     * @default -1
+     * @default null
      */
     wrapper?: Container;
 
     /**
      * Represents the dynamic stamp
-     * @default -1
+     * @default false
      */
     isDynamicStamp?: boolean;
 
     /**
      * Represents the dynamic text.
-     * @default -1
+     * @default ''
      */
     dynamicText?: string;
 

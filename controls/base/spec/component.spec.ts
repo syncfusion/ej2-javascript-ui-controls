@@ -110,7 +110,7 @@ export class Styler extends Component<HTMLElement> implements INotifyPropertyCha
 export class Styler1 extends Styler implements INotifyPropertyChanged {
     @Event()
     public destroyed: Function;
-    constructor(fontObj: { size: string, enablePersistence?: boolean, destroyed?: Function}, id?: string | HTMLElement) {
+    constructor(fontObj: { size: string, enablePersistence?: boolean, destroyed?: Function }, id?: string | HTMLElement) {
         super(fontObj, id);
     }
 
@@ -201,7 +201,7 @@ describe('Component', () => {
     it('Check wheter changing currencyCode will not trigger threw error on property change', () => {
         let elem: HTMLElement = createElement('div', { id: 'myStyleDiv0' });
         document.body.appendChild(elem);
-        let currencyStyler: any = new ObserveComponent('#myStyleDiv0',{});
+        let currencyStyler: any = new ObserveComponent('#myStyleDiv0', {});
         let curSpy: jasmine.Spy = jasmine.createSpy('curChange');
         currencyStyler.__proto__.onPropertyChanged = curSpy;
         setCurrencyCode('EUR');
@@ -211,7 +211,7 @@ describe('Component', () => {
         document.body.innerHTML = '';
         setCurrencyCode('USD');
     });
-    
+
     it('Injecting dependent modules with required modules', () => {
         Styler1.Inject(Touch);
         let elem: HTMLElement = createElement('div', { id: 'myStyleDiv0' });
@@ -821,6 +821,32 @@ describe('Component', () => {
             Obj.touchModule.destroy = spy;
             Obj.refresh();
             expect(spy).toHaveBeenCalled();
+        });
+    });
+
+    describe('renderComplete method ', () => {
+        it(' - isRendered property as false', () => {
+            let obj: any = new Styler();
+            expect(obj.isRendered).toBe(false);
+        });
+        it(' - isRendered property as true after renderComplete call', () => {
+            let obj: any = new Styler();
+            delete window['Blazor'];
+            obj.renderComplete();
+            expect(obj.isRendered).toBe(true);
+        });
+        it(' - wrapper element and blazor testing', () => {
+            window['Blazor'] = {};
+            window['ejsInterop'] = {
+                renderComplete: function (wrapper: any) {
+                    return wrapper;
+                }
+            };
+            let elem: HTMLElement = createElement('div');
+            let obj: any = new Styler({ size: '10px' }, elem);
+            let wrapper: HTMLElement = createElement('div');
+            obj.renderComplete(wrapper);
+            expect(obj.isRendered).toBe(true);
         });
     });
 });

@@ -135,7 +135,7 @@ export interface FileInfo {
     name: string;
     /**
      * Returns the details about upload file.
-     * @blazorType string
+     * @blazorType object
      */
     rawFile: string | Blob;
     /**
@@ -1191,6 +1191,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.renderPreLoadFiles();
         this.setControlStatus();
         this.setCSSClass();
+        this.renderComplete();
     }
 
     private renderBrowseButton(): void {
@@ -1366,24 +1367,28 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private updateHTMLAttrToElement(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(pro) < 0 ) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(pro) < 0 ) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     private updateHTMLAttrToWrapper(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(pro) > -1 ) {
-                if (pro === 'class') {
-                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
-                } else if (pro === 'style') {
-                    let uploadStyle: string = this.uploadWrapper.getAttribute(pro);
-                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
-                    this.htmlAttributes[pro];
-                    this.uploadWrapper.setAttribute(pro, uploadStyle);
-                } else {
-                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(pro) > -1 ) {
+                    if (pro === 'class') {
+                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                    } else if (pro === 'style') {
+                        let uploadStyle: string = this.uploadWrapper.getAttribute(pro);
+                        uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                        this.uploadWrapper.setAttribute(pro, uploadStyle);
+                    } else {
+                        this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -2052,16 +2057,16 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         return isPreload;
     }
 
-    private createCustomfileList (fileData : FileInfo[]) : void {
+    private createCustomfileList(fileData: FileInfo[]): void {
         this.createParentUL();
         resetBlazorTemplate(this.element.id + 'Template', 'Template');
         for (let listItem of fileData) {
-            let liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: {'data-file-name': listItem.name}});
+            let liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            let fromElements: HTMLElement[] = [].slice.call(this.uploadTemplateFn(listItem));
+            let fromElements: HTMLElement[] = [].slice.call(
+                this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
             let index: number = fileData.indexOf(listItem);
             append(fromElements, liElement);
-            updateBlazorTemplate(this.element.id + 'Template', 'Template');
             let eventArgs: RenderingEventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -2079,6 +2084,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
     }
 
     private createParentUL() : void {
@@ -2594,7 +2600,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private checkHTMLAttributes(isDynamic: boolean) : void {
-        let attributes: string[] = isDynamic ? Object.keys(this.htmlAttributes) : ['accept', 'multiple', 'disabled'];
+        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['accept', 'multiple', 'disabled'];
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {

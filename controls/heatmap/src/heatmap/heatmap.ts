@@ -437,6 +437,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.tooltipModule) {
             this.tooltipModule.showHideTooltip(false);
         }
+        this.renderComplete();
     }
 
     /**

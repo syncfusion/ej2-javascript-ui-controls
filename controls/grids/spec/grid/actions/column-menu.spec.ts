@@ -307,6 +307,7 @@ describe('column menu module', () => {
             colMenu.columnMenuOnClose({items: colMenuObj.items});
             expect(colMenu.hiddenItems.length).toBe(0);
             expect(colMenu.disableItems.length).toBe(0);
+            expect(colMenu.element.querySelectorAll('.e-disabled').length).not.toBe(0);
         });
 
         it('icon check', () => {

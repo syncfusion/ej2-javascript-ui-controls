@@ -7,6 +7,7 @@ import {  createElement} from '../src/dom';
 let arrayOfObj = [
     {
         "IDPRATICA": 700,
+        "@DRNT": 0,
         "Giorni": [
             {
                 "Data": "2019-05-01T00:00:00",
@@ -15,6 +16,16 @@ let arrayOfObj = [
             {
                 "Data": "2019-05-02T00:00:00",
                 "IDSTATO": 99,
+            }
+        ],
+        "@Prior": [
+            {
+                "IDTAG": 0,
+                "Date": "2019-05-02T00:00:00",
+            },
+            {
+                "IDTAG": 10,
+                "Date": "2019-05-02T00:00:00",
             }
         ]
     }
@@ -58,15 +69,29 @@ describe('Template', () => {
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
     });
 
-    it('JSON Array Input With Template Stringn which has special charactor', () => {
+    it('JSON Array Input With Template String which has special character', () => {
         let templateStr: string = '<div>${@ShipCountry}</div>';
         let result: Element[] = [];
         result.push(createElement('div', { innerHTML: 'France' }));
         expect(outDOM(template.compile(templateStr), specialCharValue)).toEqual(result);
     });
+
+    it('JSON Array Input With IF Condition which has special character', () => {
+        let templateStr: string = '${if(@DRNT==0)}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
     
     it('JSON Array Input With Template String with array of value within object', () => {
         let templateStr: string = '${if(Giorni[0].IDSTATO==99)}<div>true</div>${else}<div>false</div>${/if}';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'true' }));
+        expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
+    });
+
+    it('JSON Array Input With IF Condition which has special character with array of value within object', () => {
+        let templateStr: string = '${if(@Prior[0].IDTAG==0)}<div>true</div>${else}<div>false</div>${/if}';
         let result: Element[] = [];
         result.push(createElement('div', { innerHTML: 'true' }));
         expect(outDOM(template.compile(templateStr), arrayOfObj)).toEqual(result);
@@ -104,7 +129,6 @@ describe('Template', () => {
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
     });
 
-   
     it('JSON Array Input With two space in first class name and multiple space between three class names', () => {
         let templateStr: string = '<div class="  class1    class2   class3">${name}</div>';
         let result: Element[] = [];

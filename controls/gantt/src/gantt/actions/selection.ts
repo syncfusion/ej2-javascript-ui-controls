@@ -2,7 +2,7 @@ import { Gantt } from '../base/gantt';
 import { RowSelectEventArgs, RowSelectingEventArgs, RowDeselectEventArgs, parentsUntil, getActualProperties } from '@syncfusion/ej2-grids';
 import { CellDeselectEventArgs, ISelectedCell, setCssInGridPopUp, Grid } from '@syncfusion/ej2-grids';
 import { CellSelectingEventArgs, CellSelectEventArgs, IIndex } from '@syncfusion/ej2-grids';
-import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, Browser, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, Browser, extend, isBlazor } from '@syncfusion/ej2-base';
 import { IGanttData } from '../base/interface';
 import { Deferred } from '@syncfusion/ej2-data';
 import { TaskbarEdit } from './taskbar-edit';
@@ -206,7 +206,11 @@ export class Selection {
      * @return {Object[]}
      */
     public getSelectedRecords(): Object[] {
-        return this.parent.treeGrid.getSelectedRecords();
+        if (isBlazor()) {
+            return this.parent.getRecordFromFlatdata(this.parent.treeGrid.getSelectedRecords());
+        } else {
+            return this.parent.treeGrid.getSelectedRecords();
+        }
     }
 
     /**
@@ -219,7 +223,11 @@ export class Selection {
         for (let i: number = 0; i < cellDetails.length; i++) {
             cellSelectedRecords.push(this.parent.currentViewData[cellDetails[i].rowIndex]);
         }
-        return cellSelectedRecords;
+        if (isBlazor()) {
+            return this.parent.getRecordFromFlatdata(cellSelectedRecords);
+        } else {
+            return cellSelectedRecords;
+        }
     }
 
     /**
@@ -305,9 +313,11 @@ export class Selection {
     private removeClass(records: number | number[]): void {
         if (!this.parent.selectionSettings.persistSelection) {
             let ganttRow: HTMLCollection = document.getElementById(this.parent.element.id + 'GanttTaskTableBody').children;
-            for (let i: number = 0; i < (records as number[]).length; i++) {
-                removeClass([ganttRow[records[i]]], 'e-active');
-                ganttRow[records[i]].removeAttribute('aria-selected');
+             /* tslint:disable-next-line:no-any */
+            let rowIndex: any | number | number[] = isBlazor() && isNullOrUndefined((records as number[]).length) ? [records] : records;
+            for (let i: number = 0; i < (rowIndex as number[]).length; i++) {
+                removeClass([ganttRow[rowIndex[i]]], 'e-active');
+                ganttRow[rowIndex[i]].removeAttribute('aria-selected');
             }
         }
     }

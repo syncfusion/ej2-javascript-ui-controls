@@ -44,7 +44,7 @@ export function compile(templateString: string, helper?: Object): (data: Object 
             if (!isNullOrUndefined(index)) {
                 let keys: string[] = Object.keys(blazorTemplates[templateId][index]);
                 for (let key of keys) {
-                    if (data[key]) {
+                    if (key !== blazorTemplateId && data[key]) {
                         blazorTemplates[templateId][index][key] = data[key];
                     }
                     if (key === blazorTemplateId) {

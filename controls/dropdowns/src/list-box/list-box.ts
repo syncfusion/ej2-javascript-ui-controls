@@ -1,18 +1,16 @@
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 import { Input, InputObject } from '@syncfusion/ej2-inputs';
-import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';
+import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs, FilterType } from '../drop-down-base/drop-down-base';
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
-import { getUniqueID, Browser, formatUnit, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { getUniqueID, Browser, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { prepend, append } from '@syncfusion/ej2-base';
 import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-
-const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
 
 export type SelectionMode = 'Multiple' | 'Single';
 
@@ -149,6 +147,14 @@ export class ListBox extends DropDownBase {
     @Property(false)
     public allowDragAndDrop: boolean;
 
+    /**
+     * Sets limitation to the value selection.
+     * based on the limitation, list selection will be prevented.
+     * @default 1000
+     */
+    @Property(1000)
+    public maximumSelectionLength: number;
+
     /** 
      * To enable the filtering option in this component. 
      * Filter action performs when type in search box and collect the matched item through `filtering` event.
@@ -165,6 +171,25 @@ export class ListBox extends DropDownBase {
      */
     @Property('')
     public scope: string;
+
+    /**   
+     * Determines on which filter type, the component needs to be considered on search action. 
+     * The `FilterType` and its supported data types are 
+     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * @default 'StartsWith'
+     * @private
+     */
+    @Property('StartsWith')
+    public filterType: FilterType;
+
+    /**
+     * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
+     * By default consider the casing.
+     * @default true
+     * @private
+     */
+    @Property(true)
+    public ignoreCase: boolean;
 
     /**
      * Triggers while rendering each list item.
@@ -311,6 +336,7 @@ export class ListBox extends DropDownBase {
         this.initLoad = true;
         this.initialSelectedOptions = this.value;
         super.render();
+        this.renderComplete();
     }
 
     private initWrapper(): void {
@@ -331,16 +357,6 @@ export class ListBox extends DropDownBase {
             }
             this.list.insertBefore(this.element, this.list.firstChild);
             this.element.style.display = 'none';
-        }
-        if (this.itemTemplate) {
-            let listBoxProxy: ListBox = this;
-            resetBlazorTemplate(this.element.id + ITEMTEMPLATE_PROPERTY, ITEMTEMPLATE_PROPERTY);
-            this.isStringTemplate = true;
-            setTimeout(
-                () => {
-                    updateBlazorTemplate(listBoxProxy.element.id + ITEMTEMPLATE_PROPERTY, ITEMTEMPLATE_PROPERTY, listBoxProxy);
-                },
-                500);
         }
         this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName(cssClass.li)[0]) {
@@ -736,6 +752,9 @@ export class ListBox extends DropDownBase {
                     let ele: Element = li.getElementsByClassName('e-check')[0];
                     if ((!ele && state) || (ele && !state)) {
                         this.notify('updatelist', { li: li });
+                        if (this.maximumSelectionLength >= this.list.querySelectorAll('.e-list-item span.e-check').length) {
+                            this.checkMaxSelection();
+                        }
                     }
                 } else {
                     if (state) {
@@ -921,7 +940,9 @@ export class ListBox extends DropDownBase {
                 });
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
-            if (!isKey) {
+            if (!isKey && (this.maximumSelectionLength > this.value.length || !isSelect) &&
+                (this.maximumSelectionLength >= this.value.length || !isSelect) &&
+                !(this.maximumSelectionLength < this.value.length)) {
                 this.notify('updatelist', { li: li, e: e });
             }
             if (this.allowFiltering && !isKey) {
@@ -938,6 +959,7 @@ export class ListBox extends DropDownBase {
             }
             this.updateSelectedOptions();
             this.triggerChange(this.getSelectedItems(), e as MouseEvent);
+            this.checkMaxSelection();
         }
     }
 
@@ -951,6 +973,24 @@ export class ListBox extends DropDownBase {
             data.push(this.getDataByValue(ele.getAttribute('data-value')));
         });
         return data;
+    }
+
+    private checkMaxSelection(): InputObject | void {
+        let limit: number = this.list.querySelectorAll('.e-list-item span.e-check').length;
+        if (this.selectionSettings.showCheckbox) {
+            let index: number = 0;
+            let liCollElem: HTMLCollectionOf<HTMLLIElement>;
+            liCollElem = this.list.getElementsByClassName('e-list-item') as HTMLCollectionOf<HTMLLIElement>;
+            for (index; index < liCollElem.length; index++) {
+                if (!liCollElem[index].querySelector('.e-frame.e-check')) {
+                    if (limit === this.maximumSelectionLength) {
+                        liCollElem[index].classList.add('e-disable');
+                    } else if (liCollElem[index].classList.contains('e-disable')) {
+                        liCollElem[index].classList.remove('e-disable');
+                    }
+                }
+            }
+        }
     }
 
     private toolbarClickHandler(e: MouseEvent): void {

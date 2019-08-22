@@ -20,7 +20,7 @@ import { RectAttributes, ImageAttributes, BaseAttributes } from './canvas-interf
 import { Stretch, WhiteSpace, TextAlign, TextWrap, SnapConstraints, RendererAction, FlipDirection } from '../enum/enum';
 import { ThumbsConstraints, SelectorConstraints, ElementAction } from '../enum/enum';
 import { TransformFactor as Transforms } from '../interaction/scroller';
-import { SelectorModel } from '../interaction/selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { IRenderer } from './../rendering/IRenderer';
 import { SvgRenderer } from './svg-renderer';
 import { CanvasRenderer } from './canvas-renderer';

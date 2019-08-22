@@ -1,6 +1,6 @@
 import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
-import { isVisible, closest, attributes, detach, select } from '@syncfusion/ej2-base';
+import { isVisible, closest, attributes, detach, select, isBlazor } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
@@ -72,6 +72,19 @@ export interface ExpandEventArgs extends BaseEventArgs {
   isExpanded?: boolean;
   /** Defines the prevent action. */
   cancel?: boolean;
+  /** Defines the Accordion Item Index */
+  index?: number;
+  /** Defines the Accordion Item Content */
+  content?: HTMLElement;
+}
+
+export interface ExpandedEventArgs extends BaseEventArgs {
+  /** Defines the current Accordion Item Object. */
+  item?: AccordionItemModel;
+  /** Defines the current Accordion Item Element. */
+  element?: HTMLElement;
+  /** Defines the expand/collapse state. */
+  isExpanded?: boolean;
   /** Defines the Accordion Item Index */
   index?: number;
   /** Defines the Accordion Item Content */
@@ -263,26 +276,26 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     @Complex<AccordionAnimationSettingsModel>({}, AccordionAnimationSettings)
     public animation: AccordionAnimationSettingsModel;
     /**
-     * The eventÂ willÂ beÂ firedÂ while clicking anywhere within the Accordion.
+     * The event will be fired while clicking anywhere within the Accordion.
      * @event
      * @blazorProperty 'Clicked'
      */
     @Event()
     public clicked: EmitType<AccordionClickArgs>;
     /**
-     * The eventÂ willÂ beÂ firedÂ before the item gets collapsed/expanded.
+     * The event will be fired before the item gets collapsed/expanded.
      * @event
      * @blazorProperty 'Expanding'
      */
     @Event()
     public expanding: EmitType<ExpandEventArgs>;
     /**
-     * The eventÂ willÂ beÂ firedÂ after the item gets collapsed/expanded.
+     * The event will be fired after the item gets collapsed/expanded.
      * @event
      * @blazorProperty 'Expanded'
      */
     @Event()
-    public expanded: EmitType<ExpandEventArgs>;
+    public expanded: EmitType<ExpandedEventArgs>;
     /**
      * The event will be fired once the control rendering is completed.
      * @event
@@ -359,6 +372,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        if (isBlazor()) {
+          this.renderComplete();
+        }
     }
     private initialize(): void {
         let width: Str = formatUnit(this.width);

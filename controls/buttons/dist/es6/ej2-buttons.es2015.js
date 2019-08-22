@@ -872,7 +872,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      */
     constructor(options, element) {
         super(options, element);
-        this.isKeyPressed = false;
+        this.isFocused = false;
     }
     changeHandler(event) {
         this.checked = true;
@@ -924,9 +924,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         }
     }
     focusHandler() {
-        if (this.isKeyPressed) {
-            this.getLabel().classList.add('e-focus');
-        }
+        this.isFocused = true;
     }
     focusOutHandler() {
         this.getLabel().classList.remove('e-focus');
@@ -1009,15 +1007,14 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             this.setText(this.label);
         }
     }
-    keyDownHandler() {
-        this.isKeyPressed = true;
+    keyUpHandler() {
+        if (this.isFocused) {
+            this.getLabel().classList.add('e-focus');
+        }
     }
     labelRippleHandler(e) {
         let ripple = this.getLabel().getElementsByClassName(RIPPLE$1)[0];
         rippleMouseHandler(e, ripple);
-    }
-    mouseDownHandler() {
-        this.isKeyPressed = false;
     }
     formResetHandler() {
         this.checked = this.initialCheckedValue;
@@ -1142,10 +1139,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     unWireEvents() {
         let label = this.getLabel();
         EventHandler.remove(this.element, 'change', this.changeHandler);
-        EventHandler.remove(document, 'keydown', this.keyDownHandler);
-        EventHandler.remove(label, 'mousedown', this.mouseDownHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
+        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         let rippleLabel = label.getElementsByClassName(LABEL$1)[0];
         if (rippleLabel) {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
@@ -1158,8 +1154,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     wireEvents() {
         let label = this.getLabel();
         EventHandler.add(this.element, 'change', this.changeHandler, this);
-        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
-        EventHandler.add(label, 'mousedown', this.mouseDownHandler, this);
+        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         let rippleLabel = label.getElementsByClassName(LABEL$1)[0];
@@ -1252,7 +1247,7 @@ let Switch = class Switch extends Component {
      */
     constructor(options, element) {
         super(options, element);
-        this.isKeyPressed = false;
+        this.isFocused = false;
         this.isDrag = false;
     }
     changeState(state) {
@@ -1304,9 +1299,7 @@ let Switch = class Switch extends Component {
         destroy(this, this.getWrapper(), this.tagName);
     }
     focusHandler() {
-        if (this.isKeyPressed) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isFocused = true;
     }
     focusOutHandler() {
         this.getWrapper().classList.remove('e-focus');
@@ -1456,7 +1449,7 @@ let Switch = class Switch extends Component {
         rippleMouseHandler(e, rippleSpan);
         if (e.type === 'mousedown' && e.currentTarget.classList.contains('e-switch-wrapper') && e.which === 1) {
             this.isDrag = true;
-            this.isKeyPressed = false;
+            this.isFocused = false;
         }
     }
     rippleTouchHandler(eventType) {
@@ -1483,7 +1476,9 @@ let Switch = class Switch extends Component {
         }
     }
     switchFocusHandler() {
-        this.isKeyPressed = true;
+        if (this.isFocused) {
+            this.getWrapper().classList.add('e-focus');
+        }
     }
     switchMouseUp(e) {
         let target = e.target;
@@ -1518,12 +1513,12 @@ let Switch = class Switch extends Component {
         let wrapper = this.getWrapper();
         let handle = wrapper.querySelector('.e-switch-handle');
         this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
-        this.delegateKeyDownHandler = this.switchFocusHandler.bind(this);
+        this.delegateKeyUpHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(document, 'mouseup', this.delegateMouseUpHandler, this);
-        EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
+        EventHandler.add(this.element, 'mouseup', this.delegateMouseUpHandler, this);
+        EventHandler.add(this.element, 'keyup', this.delegateKeyUpHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
         if (this.formElement) {
@@ -1536,8 +1531,8 @@ let Switch = class Switch extends Component {
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(document, 'mouseup', this.delegateMouseUpHandler);
-        EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
+        EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {

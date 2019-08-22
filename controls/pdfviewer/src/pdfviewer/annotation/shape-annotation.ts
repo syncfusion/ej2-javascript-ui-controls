@@ -154,7 +154,6 @@ export class ShapeAnnotation {
      * @private
      */
     public arrowEndHead: LineHeadStyle;
-    private author: string;
 
     constructor(pdfviewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfviewer;
@@ -185,7 +184,6 @@ export class ShapeAnnotation {
         this.polygonStrokeColor = this.pdfViewer.polygonSettings.strokeColor ? this.pdfViewer.polygonSettings.strokeColor : '#ff0000';
         this.polygonThickness = this.pdfViewer.polygonSettings.thickness ? this.pdfViewer.polygonSettings.thickness : 1;
         this.polygonOpacity = this.pdfViewer.polygonSettings.opacity ? this.pdfViewer.polygonSettings.opacity : 1;
-        this.author = this.pdfViewer.lineSettings.author;
     }
 
     /**
@@ -200,6 +198,11 @@ export class ShapeAnnotation {
                     let annotation: any = shapeAnnotations[i];
                     let annotationObject: IShapeAnnotation = null;
                     if (annotation.ShapeAnnotationType) {
+                        if (annotation.Subject === 'Line' && annotation.ShapeAnnotationType === 'Polygon') {
+                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', 'Polygon');
+                        } else {
+                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotation.Subject);
+                        }
                         let vertexPoints: IPoint[] = null;
                         if (annotation.VertexPoints) {
                             vertexPoints = [];
@@ -210,12 +213,12 @@ export class ShapeAnnotation {
                         }
                         // tslint:disable-next-line:max-line-length
                         annotationObject = {
-                            id: 'shape' + i, shapeAnnotationType: annotation.ShapeAnnotationType, author: this.author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                            id: 'shape' + i, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
                             // tslint:disable-next-line:max-line-length
                             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
                             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
                             // tslint:disable-next-line:max-line-length
-                            cloudIntensity: annotation.CloudIntensity, vertexPoints: vertexPoints, lineHeadStart: annotation.LineHeadStart, lineHeadEnd: annotation.LineHeadEnd, isLocked: annotation.IsLocked, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation), review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: this.author }, annotName: annotation.AnnotName,
+                            cloudIntensity: annotation.CloudIntensity, vertexPoints: vertexPoints, lineHeadStart: annotation.LineHeadStart, lineHeadEnd: annotation.LineHeadEnd, isLocked: annotation.IsLocked, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, annotName: annotation.AnnotName,
                             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom }
                         };
                         let annot: PdfAnnotationBaseModel;
@@ -226,7 +229,7 @@ export class ShapeAnnotation {
                         }
                         annot = {
                             // tslint:disable-next-line:max-line-length
-                            id: 'shape' + i, shapeAnnotationType: this.getShapeType(annotationObject), author: this.author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
+                            id: 'shape' + i, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
                             subject: annotationObject.subject, notes: annotationObject.note, fillColor: annotationObject.fillColor, strokeColor: annotationObject.strokeColor, opacity: annotationObject.opacity,
                             // tslint:disable-next-line:max-line-length
                             thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: annotationObject.borderDashArray.toString(), rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]), comments: annotationObject.comments, review: annotationObject.review,
@@ -552,14 +555,19 @@ export class ShapeAnnotation {
         } else {
             bound = { left: 0, top: 0, height: 0, width: 0, right: 0, bottom: 0 };
         }
+        if (annotationModel.subject === 'Line' && annotationModel.shapeAnnotationType === 'Polygon') {
+            annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', 'Polygon');
+        } else {
+            annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotationModel.subject);
+        }
         // tslint:disable-next-line:radix
         let borderDashArray: number = parseInt(annotationModel.borderDashArray);
         borderDashArray = isNaN(borderDashArray) ? 0 : borderDashArray;
         let date: Date = new Date();
         return {
             // tslint:disable-next-line:max-line-length
-            id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.shapeAnnotationType), author: this.author, subject: annotationModel.subject, note: annotationModel.notes,
-            strokeColor: annotationModel.strokeColor, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: this.author},
+            id: annotationModel.id, shapeAnnotationType: this.getShapeAnnotType(annotationModel.shapeAnnotationType), author: annotationModel.author, subject: annotationModel.subject, note: annotationModel.notes,
+            strokeColor: annotationModel.strokeColor, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: date.toLocaleString(), author: annotationModel.author},
             fillColor: annotationModel.fillColor, opacity: annotationModel.opacity, thickness: annotationModel.thickness,
             // tslint:disable-next-line:max-line-length
             borderStyle: annotationModel.borderStyle, borderDashArray: borderDashArray, bounds: bound, modifiedDate: date.toLocaleString(),
@@ -607,5 +615,33 @@ export class ShapeAnnotation {
         // tslint:disable-next-line:radix
         let a: number = parseInt(stringArray[3]);
         return { r: r, g: g, b: b, a: a };
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public saveImportedShapeAnnotations(annotation: any, pageNumber: number): any {
+        let annotationObject: IShapeAnnotation = null;
+        let vertexPoints: IPoint[] = null;
+        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotation.Subject);
+        if (annotation.VertexPoints) {
+            vertexPoints = [];
+            for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
+                let point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                vertexPoints.push(point);
+            }
+        }
+        // tslint:disable-next-line:max-line-length
+        annotationObject = {
+            id: 'shape', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+            // tslint:disable-next-line:max-line-length
+            note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
+            borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
+            // tslint:disable-next-line:max-line-length
+            cloudIntensity: annotation.CloudIntensity, vertexPoints: vertexPoints, lineHeadStart: annotation.LineHeadStart, lineHeadEnd: annotation.LineHeadEnd, isLocked: annotation.IsLocked, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, annotName: annotation.AnnotName,
+            bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom }
+        };
+        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
     }
 }

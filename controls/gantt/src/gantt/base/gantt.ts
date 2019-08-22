@@ -1413,9 +1413,20 @@ export class Gantt extends Component<HTMLElement>
             for ( let i: number = 0; i < records.length; i++ ) {
                 this.currentViewData.push(this.getTaskByUniqueID(records[i].uniqueID));
             }
+            this.treeGrid.grid.currentViewData = this.currentViewData;
         } else {
             this.currentViewData = this.treeGrid.getCurrentViewRecords().slice();
         }
+    }
+    /**
+     * @private
+     */
+    public getRecordFromFlatdata(records: IGanttData[]): IGanttData[] {
+        let updatedRecord: IGanttData[] = [];
+        for ( let i: number = 0; i < records.length; i++ ) {
+            updatedRecord.push(this.getTaskByUniqueID(records[i].uniqueID));
+        }
+        return updatedRecord;
     }
     /**
      * @private
@@ -1674,6 +1685,7 @@ export class Gantt extends Component<HTMLElement>
             this.notify('tree-grid-created', {});
             this.createGanttPopUpElement();
             this.hideSpinner();
+            this.renderComplete();
         }
         if (this.taskFields.dependency) {
             this.connectorLineIds = [];

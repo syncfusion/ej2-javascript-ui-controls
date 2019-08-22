@@ -259,6 +259,7 @@ export class MeasureAnnotation {
                     let annotation: any = shapeAnnotations[i];
                     let annotationObject: IMeasureShapeAnnotation = null;
                     if (annotation.ShapeAnnotationType) {
+                        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotation.Subject);
                         let vertexPoints: IPoint[] = null;
                         if (annotation.VertexPoints) {
                             vertexPoints = [];
@@ -286,7 +287,7 @@ export class MeasureAnnotation {
                             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
                             caption: annotation.Caption, captionPosition: annotation.CaptionPosition, calibrate: measureObject, leaderLength: annotation.LeaderLength, leaderLineExtension: annotation.LeaderLineExtension,
                             // tslint:disable-next-line:max-line-length
-                            leaderLineOffset: annotation.LeaderLineOffset, indent: annotation.Indent, annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation),
+                            leaderLineOffset: annotation.LeaderLineOffset, indent: annotation.Indent, annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
                             review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }
                         };
                         let annot: PdfAnnotationBaseModel;
@@ -398,6 +399,7 @@ export class MeasureAnnotation {
             document.getElementById(commentsDivid).id = annotationName;
         }
         annotationModel.annotName = annotationName;
+        annotationModel.author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotationModel.subject);
         this.pdfViewer.annotation.stickyNotesAnnotationModule.addTextToComments(annotationName, annotationModel.notes);
         if (annotationModel.wrapper.bounds) {
             bound = {
@@ -514,9 +516,11 @@ export class MeasureAnnotation {
     private getNumberFormatArray(list: any[]): INumberFormat[] {
         // tslint:disable-next-line
         let numberFormatArray: Array<any> = new Array();
-        for (let i: number = 0; i < list.length; i++) {
-            // tslint:disable-next-line:max-line-length
-            numberFormatArray[i] = { unit: list[i].Unit, fractionalType: list[i].FractionalType, conversionFactor: list[i].ConversionFactor, denominator: list[i].Denominator, formatDenominator: list[i].FormatDenominator };
+        if (list) {
+            for (let i: number = 0; i < list.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                numberFormatArray[i] = { unit: list[i].Unit, fractionalType: list[i].FractionalType, conversionFactor: list[i].ConversionFactor, denominator: list[i].Denominator, formatDenominator: list[i].FormatDenominator };
+            }
         }
         return numberFormatArray;
     }
@@ -1019,5 +1023,45 @@ export class MeasureAnnotation {
         // tslint:disable-next-line:radix
         let a: number = parseInt(stringArray[3]);
         return { r: r, g: g, b: b, a: a };
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public saveImportedMeasureAnnotations(annotation: any, pageNumber: number): any {
+        let annotationObject: IMeasureShapeAnnotation = null;
+        let vertexPoints: IPoint[] = null;
+        if (annotation.VertexPoints) {
+            vertexPoints = [];
+            for (let j: number = 0; j < annotation.VertexPoints.length; j++) {
+                let point: IPoint = { x: annotation.VertexPoints[j].X, y: annotation.VertexPoints[j].Y };
+                vertexPoints.push(point);
+            }
+        }
+        let measureObject: IMeasure = {
+            // tslint:disable-next-line:max-line-length
+            ratio: annotation.Calibrate.Ratio, x: this.getNumberFormatArray(annotation.Calibrate.X), distance: this.getNumberFormatArray(annotation.Calibrate.Distance), area: this.getNumberFormatArray(annotation.Calibrate.Area), angle: this.getNumberFormatArray(annotation.Calibrate.Angle), volume: this.getNumberFormatArray(annotation.Calibrate.Volume),
+            targetUnitConversion: annotation.Calibrate.TargetUnitConversion
+        };
+        if (annotation.Calibrate.Depth) {
+            measureObject.depth = annotation.Calibrate.Depth;
+        }
+        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotation.Subject);
+        annotationObject = {
+            // tslint:disable-next-line:max-line-length
+            id: 'measure', shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+            note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
+            // tslint:disable-next-line:max-line-length
+            borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
+            cloudIntensity: annotation.CloudIntensity, vertexPoints: vertexPoints, lineHeadStart: annotation.LineHeadStart, lineHeadEnd: annotation.LineHeadEnd, isLocked: annotation.IsLocked,
+            // tslint:disable-next-line:max-line-length
+            bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
+            caption: annotation.Caption, captionPosition: annotation.CaptionPosition, calibrate: measureObject, leaderLength: annotation.LeaderLength, leaderLineExtension: annotation.LeaderLineExtension,
+            // tslint:disable-next-line:max-line-length
+            leaderLineOffset: annotation.LeaderLineOffset, indent: annotation.Indent, annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author),
+            review: {state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }
+        };
+        this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
     }
 }

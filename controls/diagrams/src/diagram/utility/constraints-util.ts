@@ -7,8 +7,8 @@ import { AnnotationConstraints, PortConstraints } from '../enum/enum';
 import { Connector } from './../objects/connector';
 import { AnnotationModel, PathAnnotationModel, ShapeAnnotationModel } from './../objects/annotation-model';
 import { PointPortModel } from './../objects/port-model';
-import { Selector } from './../interaction/selector';
-import { SelectorModel } from './../interaction/selector-model';
+import { Selector } from './../objects/node';
+import { SelectorModel } from './../objects/node-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 
 /**

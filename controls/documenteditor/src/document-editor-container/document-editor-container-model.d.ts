@@ -8,31 +8,37 @@ export interface DocumentEditorContainerModel extends ComponentModel{
 
     /**
      * Show or hide properties pane.
+     * @default true
      */
     showPropertiesPane?: boolean;
 
     /**
      * Enable or disable toolbar in document editor container.
+     * @default true
      */
     enableToolbar?: boolean;
 
     /**
      * Restrict editing operation.
+     * @default false
      */
     restrictEditing?: boolean;
 
     /**
      * Enable or disable spell checker in document editor container.
+     * @default false
      */
     enableSpellCheck?: boolean;
 
     /**
      * Enable local paste
+     * @default true
      */
     enableLocalPaste?: boolean;
 
     /**
      * Sfdt service URL.
+     * @default ''
      */
     serviceUrl?: string;
 

@@ -3859,7 +3859,9 @@ var IntlBase;
      * @returns {string}
      */
     function getCurrencySymbol(numericObject, currencyCode) {
-        return getValue('currencies.' + currencyCode + '.symbol', numericObject) || '$';
+        var getCurrency = getValue('currencies.' + currencyCode + '.symbol', numericObject) ||
+            getValue('currencies.' + currencyCode + '.symbol-alt-narrow', numericObject) || '$';
+        return getCurrency;
     }
     IntlBase.getCurrencySymbol = getCurrencySymbol;
     /**
@@ -5270,6 +5272,7 @@ var Component = /** @__PURE__ @class */ (function (_super) {
          */
         _this.isStringTemplate = false;
         _this.needsID = false;
+        _this.isRendered = false;
         /**
          * This is a instance method to create an element.
          * @private
@@ -5359,6 +5362,17 @@ var Component = /** @__PURE__ @class */ (function (_super) {
             this.render();
             this.trigger('created');
         }
+    };
+    /**
+     * It is used to process the post rendering functionalities to a component.
+     */
+    Component.prototype.renderComplete = function (wrapperElement) {
+        if (isBlazor()) {
+            var ejsInterop = 'ejsInterop';
+            // tslint:disable-next-line:no-any
+            window[ejsInterop].renderComplete(this.element, wrapperElement);
+        }
+        this.isRendered = true;
     };
     /**
      * When invoked, applies the pending property changes immediately to the component.
@@ -6916,6 +6930,7 @@ var NOT_NUMBER = new RegExp('^[0-9]+$', 'g');
 var WORD = new RegExp('[\\w"\'.\\s+]+', 'g');
 var DBL_QUOTED_STR = new RegExp('"(.*?)"', 'g');
 var SPECIAL_CHAR = /\@|\#|\$/g;
+var WORDIF = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
 var exp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
 var ARR_OBJ = /^\..*/gm;
@@ -6984,8 +6999,12 @@ function evalExp(str, nameSpace, helper) {
             }
             else if (IF_STMT.test(cnt)) {
                 //handling if condition
-                cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORD, function (strs) {
+                cnt = '"; ' + cnt.replace(matches[1], rlStr.replace(WORDIF, function (strs) {
                     strs = strs.trim();
+                    var regExAt = /\@|\$|\#/gm;
+                    if (regExAt.test(strs)) {
+                        strs = NameSpaceForspecialChar(strs, (localKeys.indexOf(strs) === -1), nameSpace, localKeys) + '"]';
+                    }
                     if (ARR_OBJ.test(strs)) {
                         return NameSpaceArrObj(strs, !(QUOTES.test(strs)) && (localKeys.indexOf(strs) === -1), nameSpace, localKeys);
                     }
@@ -7089,7 +7108,7 @@ function compile$$1(templateString, helper) {
                 var keys = Object.keys(blazorTemplates[templateId][index]);
                 for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
                     var key = keys_1[_i];
-                    if (data[key]) {
+                    if (key !== blazorTemplateId && data[key]) {
                         blazorTemplates[templateId][index][key] = data[key];
                     }
                     if (key === blazorTemplateId) {

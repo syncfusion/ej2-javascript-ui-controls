@@ -776,6 +776,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * * Polar
      * * Radar
      * * BoxAndWhisker
+     * * Pareto
      * @default 'Line'
      */
 

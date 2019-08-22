@@ -168,15 +168,17 @@ export class Magnification {
      */
     public fitToPage(): void {
         let zoomValue: number = this.calculateFitZoomFactor('fitToPage');
-        this.isAutoZoom = false;
-        this.onZoomChanged(zoomValue);
-        if (Browser.isDevice) {
-            this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
-        } else {
-            this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+        if (zoomValue !== null) {
+            this.isAutoZoom = false;
+            this.onZoomChanged(zoomValue);
+            if (Browser.isDevice) {
+                this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+            } else {
+                this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+            }
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewerBase.viewerContainer.scrollTop = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top * this.zoomFactor;
         }
-        // tslint:disable-next-line:max-line-length
-        this.pdfViewerBase.viewerContainer.scrollTop = this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top * this.zoomFactor;
     }
 
     /**
@@ -188,6 +190,9 @@ export class Magnification {
         if (viewerWidth === 0 && viewerHeight === 0) {
             viewerWidth = parseFloat(this.pdfViewer.width.toString());
             viewerHeight = parseFloat(this.pdfViewer.height.toString());
+        }
+        if (isNaN(viewerHeight) || isNaN(viewerWidth)) {
+            return null;
         }
         let highestWidth: number = 0;
         let highestHeight: number = 0;

@@ -1886,6 +1886,7 @@ let Calendar = class Calendar extends CalendarBase {
                 EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
             }
         }
+        this.renderComplete();
     }
     formResetHandler() {
         this.setProperties({ value: null }, true);
@@ -2843,6 +2844,7 @@ let DatePicker = class DatePicker extends Calendar {
     render() {
         this.initialize();
         this.bindEvents();
+        this.renderComplete();
     }
     setAllowEdit() {
         if (this.allowEdit) {
@@ -4458,6 +4460,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
+        this.renderComplete();
     }
     /**
      * Initialize the event handler
@@ -8670,6 +8673,7 @@ let TimePicker = class TimePicker extends Component {
         this.anchor = this.inputElement;
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputEleValue = this.getDateObject(this.inputElement.value);
+        this.renderComplete();
     }
     setTimeAllowEdit() {
         if (this.allowEdit) {
@@ -10832,6 +10836,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                 this.inputElement.tabIndex = -1;
             }
         }
+        this.renderComplete();
     }
     setValue() {
         this.initValue = this.validateMinMaxRange(this.value);

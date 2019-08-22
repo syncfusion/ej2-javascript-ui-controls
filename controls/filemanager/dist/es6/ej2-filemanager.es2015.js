@@ -4793,6 +4793,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             bar.classList.add(DISPLAY_NONE);
         }
         this.wireEvents();
+        this.renderComplete();
     }
     ensurePath() {
         let currentPath = this.path;

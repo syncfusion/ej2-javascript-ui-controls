@@ -136,3 +136,9 @@ export function getOuterHeight(element: HTMLElement): number {
     let style: CSSStyleDeclaration = getComputedStyle(element);
     return element.offsetHeight + (parseInt(style.marginTop, 10) || 0) + (parseInt(style.marginBottom, 10) || 0);
 }
+
+export function removeChildren(element: HTMLElement | Element): void {
+    while (element.firstElementChild) {
+        element.removeChild(element.firstElementChild);
+    }
+}

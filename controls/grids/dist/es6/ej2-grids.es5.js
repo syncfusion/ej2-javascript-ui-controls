@@ -14017,6 +14017,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Grid.prototype.addListener = function () {
+        var _this = this;
         if (this.isDestroyed) {
             return;
         }
@@ -14027,6 +14028,13 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         this.addEventListener(dataBound, this.dataBoundFunction);
         this.on(keyPressed, this.onKeyPressed, this);
         this.on(contentReady, this.blazorTemplate, this);
+        if (isBlazor()) {
+            var fn_2 = function () {
+                _this.renderComplete();
+                _this.off(contentReady, fn_2);
+            };
+            this.on(contentReady, fn_2, this);
+        }
     };
     /**
      * @hidden
@@ -14125,8 +14133,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(e.target, '.e-unboundcelldiv')) {
             return;
         }
-        var dataRow = !isNullOrUndefined(closest(e.target, 'tr').getAttribute('data-uid')) &&
-            this.getRowObjectFromUID(closest(e.target, 'tr').getAttribute('data-uid')).isDataRow;
+        var dataRow = false;
+        var tr = closest(e.target, 'tr');
+        if (tr && tr.getAttribute('data-uid')) {
+            var rowObj = this.getRowObjectFromUID(tr.getAttribute('data-uid'));
+            dataRow = rowObj ? rowObj.isDataRow : false;
+        }
         var args = this.getRowInfo(e.target);
         args.target = e.target;
         if (dataRow) {
@@ -31107,7 +31119,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     ColumnMenu.prototype.columnMenuOnClose = function (args) {
         var parent = 'parentObj';
         if (args.items.length > 0 && args.items[0][parent] instanceof ContextMenu) {
-            this.columnMenu.enableItems(this.disableItems);
+            this.columnMenu.enableItems(this.disableItems, false);
             this.disableItems = [];
             this.columnMenu.showItems(this.hiddenItems);
             this.hiddenItems = [];

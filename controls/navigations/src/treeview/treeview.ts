@@ -981,6 +981,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.setDragAndDrop(this.allowDragAndDrop);
         this.wireEvents();
         this.initialRender = false;
+        this.renderComplete();
     }
 
     private initialize(): void {
@@ -1344,6 +1345,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private beforeNodeCreate(e: ItemCreatedArgs): void {
         if (this.showCheckBox) {
             let checkboxEle: Element = createCheckBox(this.createElement, true, { cssClass: this.touchClass });
+            checkboxEle.setAttribute('role', 'checkbox');
             let icon: Element = select('div.' + ICON, e.item);
             let id: string = e.item.getAttribute('data-uid');
             e.item.childNodes[0].insertBefore(checkboxEle, e.item.childNodes[0].childNodes[isNOU(icon) ? 0 : 1]);
@@ -3206,7 +3208,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private reRenderNodes(): void {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        this.element.innerHTML = '';
+        if (this.isBlazorPlatform && this.element.firstElementChild) {
+            this.element.removeChild(this.element.firstElementChild);
+        } else {
+            this.element.innerHTML = '';
+        }
         if (!isNOU(this.nodeTemplateFn)) {
             this.destroyTemplate(this.nodeTemplate);
         }
@@ -3773,7 +3779,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             detach(dragParentUl);
             detach(dragIcon);
             let parentId: string = this.getId(dragParentLi);
-            this.updateField(this.treeData, this.fields, parentId, 'hasChildren', null);
+            this.updateField(this.treeData, this.fields, parentId, 'hasChildren', false);
             this.removeExpand(dragParentLi, true);
         }
     }

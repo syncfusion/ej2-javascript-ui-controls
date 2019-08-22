@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#245696`,`#245047`,`#244836` - Now, the Angular diagram will be rendered properly when we set the target as es6/es2015 in ts.config file.
+
 ## 17.2.41 (2019-08-14)
 
 ### Diagram

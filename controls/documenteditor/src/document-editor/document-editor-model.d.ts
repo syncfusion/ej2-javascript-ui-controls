@@ -8,16 +8,19 @@ export interface DocumentEditorModel extends ComponentModel{
 
     /**
      * Default Paste Formatting Options
+     * @default KeepSourceFormatting
      */
     defaultPasteOption?: PasteOptions;
 
     /**
      * Current User
+     * @default ''
      */
     currentUser?: string;
 
     /**
      * User Selection Highlight Color
+     * @default '#FFFF00'
      */
     userColor?: string;
 
@@ -28,12 +31,14 @@ export interface DocumentEditorModel extends ComponentModel{
     pageGap?: number;
 
     /**
-     * Gets or sets the name of the document.    
+     * Gets or sets the name of the document.
+     * @default ''
      */
     documentName?: string;
 
     /**
      * Sfdt Service URL
+     * @default ''
      */
     serviceUrl?: string;
 
@@ -207,6 +212,7 @@ export interface DocumentEditorModel extends ComponentModel{
 
     /**
      * Gets or sets the page outline color.
+     * @default '#000000'
      */
     pageOutline?: string;
 
@@ -320,17 +326,20 @@ export interface DocumentEditorModel extends ComponentModel{
 export interface ServerActionSettingsModel {
 
     /**
-     * specifies the system clipboard action of Document Editor.
+     * Specifies the system clipboard action of Document Editor.
+     * @default 'SystemClipboard'
      */
     systemClipboard?: string;
 
     /**
-     * specifies the spell check action of Document Editor.
+     * Specifies the spell check action of Document Editor.
+     * @default 'SpellCheck'
      */
     spellCheck?: string;
 
     /**
-     * specifies the restrict editing encryption/decryption action of Document Editor.
+     * Specifies the restrict editing encryption/decryption action of Document Editor.
+     * @default 'RestrictEditing'
      */
     restrictEditing?: string;
 
@@ -342,7 +351,8 @@ export interface ServerActionSettingsModel {
 export interface ContainerServerActionSettingsModel extends ServerActionSettingsModel{
 
     /**
-     * specifies the load action of Document Editor.
+     * Specifies the load action of Document Editor.
+     * @default 'Import'
      */
     import?: string;
 

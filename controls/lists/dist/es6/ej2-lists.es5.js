@@ -884,6 +884,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     function ListView(options, element) {
         return _super.call(this, options, element) || this;
     }
+    /**
+     * @private
+     */
     ListView.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -1938,6 +1941,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.rippleFn = rippleEffect(this.element, {
             selector: '.' + classNames.listItem
         });
+        this.renderComplete();
     };
     /**
      * It is used to destroy the ListView component.

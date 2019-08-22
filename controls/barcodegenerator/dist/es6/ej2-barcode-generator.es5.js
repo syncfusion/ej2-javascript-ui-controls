@@ -3230,6 +3230,7 @@ var BarcodeGenerator = /** @__PURE__ @class */ (function (_super) {
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     };
     /**
      * Returns the module name of the barcode
@@ -7053,6 +7054,7 @@ var QRCodeGenerator = /** @__PURE__ @class */ (function (_super) {
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     };
     QRCodeGenerator.prototype.triggerEvent = function (eventName, message) {
         var arg = {
@@ -8184,6 +8186,7 @@ var DataMatrixGenerator = /** @__PURE__ @class */ (function (_super) {
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     };
     __decorate$5([
         Property('Auto')

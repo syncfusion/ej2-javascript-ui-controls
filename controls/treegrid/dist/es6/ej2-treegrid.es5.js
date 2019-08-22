@@ -1571,6 +1571,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         var isExport = getObject('isExport', args);
         var expresults = getObject('expresults', args);
         var exportType = getObject('exportType', args);
+        var isPrinting = getObject('isPrinting', args);
         var dataObj;
         var actionArgs = getObject('actionArgs', args);
         var requestType = getObject('requestType', args);
@@ -1663,15 +1664,16 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             }
         }
         count = results.length;
-        var temp = this.paging(results, count, isExport, exportType, args);
+        var temp = this.paging(results, count, isExport, isPrinting, exportType, args);
         results = temp.result;
         count = temp.count;
         args.result = results;
         args.count = count;
         this.parent.notify('updateResults', args);
     };
-    DataManipulation.prototype.paging = function (results, count, isExport, exportType, args) {
-        if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
+    DataManipulation.prototype.paging = function (results, count, isExport, isPrinting, exportType, args) {
+        if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
+            && (!isPrinting || this.parent.printMode === 'CurrentPage')) {
             this.parent.notify(pagingActions, { result: results, count: count });
             results = this.dataResults.result;
             count = this.dataResults.count;
@@ -3639,6 +3641,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.element.appendChild(gridContainer);
         this.grid.appendTo(gridContainer);
         this.wireEvents();
+        this.renderComplete();
     };
     TreeGrid.prototype.convertTreeData = function (data) {
         var _this = this;
@@ -3728,6 +3731,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         };
         this.grid.rowDeselected = function (args) {
             _this.selectedRowIndex = _this.grid.selectedRowIndex;
+            if (isBlazor()) {
+                var data = 'data';
+                var rowIndex = 'rowIndex';
+                var row = 'row';
+                args[data] = args[data][args[data].length - 1];
+                args[rowIndex] = args[rowIndex][args[rowIndex].length - 1];
+                args[row] = args[row][args[row].length - 1];
+            }
             _this.trigger(rowDeselected, args);
         };
         this.grid.resizeStop = function (args) {
@@ -3795,6 +3806,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 args.result = treeGrid.grid.dataSource[dataSource].json = treeGrid.flatData;
             }
             if (!isRemoteData(treeGrid)) {
+                if (this.isPrinting) {
+                    setValue('isPrinting', true, args);
+                }
                 treeGrid.notify('dataProcessor', args);
                 //args = this.dataModule.dataProcessor(args);
             }
@@ -5011,7 +5025,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     e.expanded = action === 'collapse' ? false : true;
                 }
             });
-            action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
+            if (rows.length) {
+                action === 'collapse' ? this.collapseRow(rows[0]) : this.expandRow(rows[0]);
+            }
         }
         else {
             for (var i = 0; i < rows.length; i++) {
@@ -6320,6 +6336,11 @@ var Page$1 = /** @__PURE__ @class */ (function () {
      */
     Page$$1.prototype.collapseExpandPagedchilds = function (rowDetails) {
         rowDetails.record.expanded = rowDetails.action === 'collapse' ? false : true;
+        if (isBlazor()) {
+            this.parent.flatData.filter(function (e) {
+                return e.uniqueID === rowDetails.record.uniqueID;
+            })[0].expanded = rowDetails.action === 'collapse' ? false : true;
+        }
         var ret = {
             result: this.parent.flatData,
             row: rowDetails.row,

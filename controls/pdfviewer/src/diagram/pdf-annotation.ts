@@ -168,7 +168,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the path data of the annotation 
-     * @default 'string'
+     * @default ''
      */
     @Property('')
     public data: string;
@@ -224,7 +224,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the height of the leader of distance shapes
-     * @default 0
+     * @default 40
      */
     @Property(40)
     public leaderHeight: number;
@@ -252,28 +252,28 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default null
      */
     @Property(null)
     public sourcePoint: PointModel;
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default None
      */
     @Property('None')
     public sourceDecoraterShapes: DecoratorShapes;
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default None
      */
     @Property('None')
     public taregetDecoraterShapes: DecoratorShapes;
 
     /**
      * Represents vertex points in the line annotation or shape annotation.
-     * @default []
+     * @default null
      */
     @Property(null)
     public targetPoint: PointModel;
@@ -287,7 +287,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents bounds of the annotation
-     * @default ''
+     * @default new Point(0,0)
      */
     @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
     public bounds: PdfBoundsModel;
@@ -309,20 +309,20 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
 
     /**
      * Represents the cloud intensity
-     * @default -1
+     * @default null
      */
     @Property(null)
     public wrapper: Container;
 
     /**
      * Represents the dynamic stamp
-     * @default -1
+     * @default false
      */
     @Property(false)
     public isDynamicStamp: boolean;
     /**
      * Represents the dynamic text.
-     * @default -1
+     * @default ''
      */
     @Property('')
     public dynamicText: string;

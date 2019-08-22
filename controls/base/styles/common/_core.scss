@@ -44,6 +44,10 @@
     display: none;
   }
 
+  #{&} .e-blazor-hidden {
+    visibility: hidden;
+  }
+
   #{&} .e-disabled {
     background-image: none;
     cursor: default;

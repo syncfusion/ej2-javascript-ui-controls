@@ -1906,6 +1906,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
                 EventHandler.add(form, 'reset', this.formResetHandler.bind(this));
             }
         }
+        this.renderComplete();
     };
     Calendar.prototype.formResetHandler = function () {
         this.setProperties({ value: null }, true);
@@ -2882,6 +2883,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.render = function () {
         this.initialize();
         this.bindEvents();
+        this.renderComplete();
     };
     DatePicker.prototype.setAllowEdit = function () {
         if (this.allowEdit) {
@@ -4525,6 +4527,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ startDate: this.startValue }, true);
         this.setProperties({ endDate: this.endValue }, true);
         this.setModelValue();
+        this.renderComplete();
     };
     /**
      * Initialize the event handler
@@ -8775,6 +8778,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.anchor = this.inputElement;
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputEleValue = this.getDateObject(this.inputElement.value);
+        this.renderComplete();
     };
     TimePicker.prototype.setTimeAllowEdit = function () {
         if (this.allowEdit) {
@@ -10961,6 +10965,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                 this.inputElement.tabIndex = -1;
             }
         }
+        this.renderComplete();
     };
     DateTimePicker.prototype.setValue = function () {
         this.initValue = this.validateMinMaxRange(this.value);

@@ -477,6 +477,7 @@ export class DateTimePicker extends DatePicker {
                 this.inputElement.tabIndex = -1;
             }
         }
+        this.renderComplete();
     }
     private setValue(): void {
         this.initValue = this.validateMinMaxRange(this.value);

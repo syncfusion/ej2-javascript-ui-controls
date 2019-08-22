@@ -180,18 +180,21 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Default Paste Formatting Options
+     * @default KeepSourceFormatting
      */
     @Property('KeepSourceFormatting')
     public defaultPasteOption: PasteOptions;
 
     /**
      * Current User
+     * @default ''
      */
     @Property('')
     public currentUser: string;
 
     /**
      * User Selection Highlight Color
+     * @default '#FFFF00'
      */
     @Property('#FFFF00')
     public userColor: string;
@@ -203,7 +206,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     @Property(20)
     public pageGap: number;
     /**
-     * Gets or sets the name of the document.    
+     * Gets or sets the name of the document.
+     * @default ''
      */
     @Property('')
     public documentName: string;
@@ -214,8 +218,9 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 
     /**
      * Sfdt Service URL
+     * @default ''
      */
-    @Property()
+    @Property('')
     public serviceUrl: string;
     // Public Implementation Starts
     /**
@@ -393,6 +398,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public useCtrlClickToFollowHyperlink: boolean;
     /**
      * Gets or sets the page outline color.
+     * @default '#000000'
      */
     @Property('#000000')
     public pageOutline: string;
@@ -659,6 +665,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
             container.style.minHeight = '200px';
             container.style.minWidth = '200px';
         }
+        this.renderComplete();
     }
     /**
      * Get component name
@@ -1810,19 +1817,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
 export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 
     /**
-     * specifies the system clipboard action of Document Editor.
+     * Specifies the system clipboard action of Document Editor.
+     * @default 'SystemClipboard'
      */
     @Property('SystemClipboard')
     public systemClipboard: string;
 
     /**
-     * specifies the spell check action of Document Editor.
+     * Specifies the spell check action of Document Editor.
+     * @default 'SpellCheck'
      */
     @Property('SpellCheck')
     public spellCheck: string;
 
     /**
-     * specifies the restrict editing encryption/decryption action of Document Editor.
+     * Specifies the restrict editing encryption/decryption action of Document Editor.
+     * @default 'RestrictEditing'
      */
     @Property('RestrictEditing')
     public restrictEditing: string;
@@ -1833,7 +1843,8 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
  */
 export class ContainerServerActionSettings extends ServerActionSettings {
     /**
-     * specifies the load action of Document Editor.
+     * Specifies the load action of Document Editor.
+     * @default 'Import'
      */
     @Property('Import')
     public import: string;

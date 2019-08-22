@@ -5,7 +5,7 @@ import { Browser, Collection, setValue, getValue, getUniqueID, getInstance, isNu
 import { select, selectAll, closest, detach, append, rippleEffect, isVisible, Complex, addClass, removeClass } from '@syncfusion/ej2-base';
 import { ListBase, ListBaseOptions } from '@syncfusion/ej2-lists';
 import { getZindexPartial, calculatePosition, OffsetPosition, isCollide, flip, fit, Popup } from '@syncfusion/ej2-popups';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates, extend } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { MenuItemModel, MenuBaseModel, FieldSettingsModel, MenuAnimationSettingsModel } from './menu-base-model';
 import { HScroll } from '../common/h-scroll';
@@ -229,6 +229,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private isCMenu: boolean;
     private pageX: number;
     private pageY: number;
+    private tempItem: objColl = [];
     /**
      * Triggers while rendering each menu item.
      * @event
@@ -419,12 +420,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     protected render(): void {
         this.initialize();
         this.renderItems();
-        if (this.isMenu && this.template) {
+        if (this.isMenu && this.template && this.isBlazor()) {
             let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
             resetBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY);
+            if (Object.keys(blazorTemplates).length) {
+                extend(this.tempItem, (<{ [key: string]: Object }>blazorTemplates)[menuTemplateId], [], true);
+            }
             updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
         this.wireEvents();
+        this.renderComplete();
     }
 
     protected initialize(): void {
@@ -455,7 +460,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         if (!(this.items as objColl).length) {
             let items: { [key: string]: Object; }[] = ListBase.createJsonFromElement(this.element, { fields: { child: 'items' } });
             this.setProperties({ items: items }, true);
-            this.element.innerHTML = '';
+            if (this.isBlazor()) {
+                this.element = this.removeChildElement(this.element);
+            } else {
+                this.element.innerHTML = '';
+            }
         }
         let ul: Element = this.createItems(this.items as objColl);
         append(Array.prototype.slice.call(ul.children), this.element);
@@ -872,6 +881,15 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.uList = this.element;
             this.uList.style.zIndex = getZindexPartial(target ? target : this.element).toString();
             this.triggerBeforeOpen(li, this.uList, item, e, top, left, 'none');
+        }
+        if (this.isMenu && this.template && this.isBlazor()) {
+            let menuTemplateId: string = this.element.id + TEMPLATE_PROPERTY;
+            if (Object.keys(blazorTemplates).length) {
+                let itemFromBlazorTemplate: objColl = (<obj>blazorTemplates)[menuTemplateId] as objColl;
+                this.tempItem = this.tempItem.concat(itemFromBlazorTemplate);
+                (<{ [key: string]: Object }>blazorTemplates)[menuTemplateId] = this.tempItem;
+            }
+            updateBlazorTemplate(menuTemplateId, TEMPLATE_PROPERTY, this);
         }
     }
 
@@ -1447,7 +1465,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private getIdx(ul: Element, li: Element, skipHdr: boolean = true): number {
-        let idx: number = Array.prototype.indexOf.call(ul.children, li);
+        let idx: number = Array.prototype.indexOf.call(ul.querySelectorAll('li'), li);
+        if (this.isMenu && this.template && this.isBlazor()) {
+            idx = Array.prototype.indexOf.call(ul.querySelectorAll(li.tagName), li);
+        } else {
+            idx = Array.prototype.indexOf.call(ul.children, li);
+        }
         if (skipHdr && ul.children[0].classList.contains(HEADER)) {
             idx--;
         }
@@ -1461,6 +1484,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         return closest(elem, 'li.e-menu-item');
     }
 
+    private isBlazor(): boolean {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
+    }
+
+    private removeChildElement(elem: HTMLUListElement): HTMLUListElement {
+        while (elem.firstElementChild) {
+            elem.removeChild(elem.firstElementChild);
+          }
+        return elem;
+    }
     /**
      * Called internally if any of the property value changed
      * @private
@@ -1517,7 +1550,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     let item: MenuItemModel[];
                     if (!Object.keys(oldProp.items).length) {
                         let ul: HTMLElement = this.element;
-                        ul.innerHTML = '';
+                        if (this.isBlazor()) {
+                            ul = this.removeChildElement(this.element);
+                        } else {
+                            ul.innerHTML = '';
+                        }
                         let lis: HTMLElement[] = [].slice.call(this.createItems(this.items).children);
                         lis.forEach((li: HTMLElement): void => {
                             ul.appendChild(li);
@@ -1933,8 +1970,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (document.getElementById(this.clonedElement.id)) {
                         let refEle: Element = this.clonedElement.nextElementSibling;
                         refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
-                            this.clonedElement.parentElement.appendChild(this.element);
-                        this.element.innerHTML = '';
+                        this.clonedElement.parentElement.appendChild(this.element);
+                        if (this.isBlazor()) {
+                            this.element = this.removeChildElement(this.element);
+                        } else {
+                            this.element.innerHTML = '';
+                        }
                         append([].slice.call(this.clonedElement.children), this.element);
                         detach(this.clonedElement);
                         this.removeAttributes();
@@ -1943,7 +1984,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.clonedElement = null;
             } else {
                 this.closeMenu();
-                this.element.innerHTML = '';
+                if (this.isBlazor()) {
+                    this.element = this.removeChildElement(this.element);
+                } else {
+                    this.element.innerHTML = '';
+                }
                 this.removeAttributes();
                 wrapper.parentNode.insertBefore(this.element, wrapper);
             }

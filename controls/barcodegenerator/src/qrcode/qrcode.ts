@@ -149,6 +149,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     }
 
     private triggerEvent(eventName: BarcodeEvent, message: string): void {

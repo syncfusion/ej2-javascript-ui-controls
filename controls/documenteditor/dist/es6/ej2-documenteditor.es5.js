@@ -13631,6 +13631,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
             container.style.minHeight = '200px';
             container.style.minWidth = '200px';
         }
+        this.renderComplete();
     };
     /**
      * Get component name
@@ -14505,7 +14506,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], DocumentEditor.prototype, "documentName", void 0);
     __decorate([
-        Property()
+        Property('')
     ], DocumentEditor.prototype, "serviceUrl", void 0);
     __decorate([
         Property(1)
@@ -72415,11 +72416,11 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Toolbar$$1.prototype.initToolBar = function () {
-        this.render();
+        this.renderToolBar();
         this.wireEvent();
     };
     // tslint:disable-next-line:max-func-body-length
-    Toolbar$$1.prototype.render = function () {
+    Toolbar$$1.prototype.renderToolBar = function () {
         if (isNullOrUndefined(this.container)) {
             return;
         }
@@ -76296,6 +76297,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         // Waiting popup
         createSpinner({ target: this.containerTarget, cssClass: 'e-spin-overlay' });
         this.setserverActionSettings();
+        this.renderComplete();
     };
     DocumentEditorContainer.prototype.setserverActionSettings = function () {
         if (this.serviceUrl) {

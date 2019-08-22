@@ -317,33 +317,38 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
             this.setWidth(this.width);
             this.preEleVal = this.element.value;
             if (!Browser.isDevice && (Browser.info.version === '11.0' || Browser.info.name === 'edge')) {
-                 this.element.blur();
-             }
+                this.element.blur();
+            }
             if (this.element.getAttribute('value') || this.value) {
-                 this.element.setAttribute('value', this.element.value);
-             }
+                this.element.setAttribute('value', this.element.value);
+            }
+            this.renderComplete();
         }
     }
     private updateHTMLAttrToElement(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) < 0 ) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) < 0 ) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
 
     private updateHTMLAttrToWrapper(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) > -1 ) {
-                if (key === 'class') {
-                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
-                } else if (key === 'style') {
-                    let maskStyle: string = this.inputObj.container.getAttribute(key);
-                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
-                    this.htmlAttributes[key];
-                    this.inputObj.container.setAttribute(key, maskStyle);
-                } else {
-                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) > -1 ) {
+                    if (key === 'class') {
+                        addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                    } else if (key === 'style') {
+                        let maskStyle: string = this.inputObj.container.getAttribute(key);
+                        maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                        this.inputObj.container.setAttribute(key, maskStyle);
+                    } else {
+                        this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
@@ -390,7 +395,8 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
         }
     }
     private checkHtmlAttributes(isDynamic: boolean): void {
-        let attributes: string[] = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly'];
+        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
+            : ['placeholder', 'disabled', 'value', 'readonly'];
         for (let key of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {

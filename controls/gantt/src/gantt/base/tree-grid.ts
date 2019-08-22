@@ -1,6 +1,6 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
-import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, setValue } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { FilterEventArgs, SortEventArgs, FailureEventArgs, IEditCell, EJ2Intance, IFilterMUI } from '@syncfusion/ej2-grids';
 import { DataManager } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
@@ -75,14 +75,37 @@ export class GanttTreeGrid {
     private getContentDiv(): HTMLElement {
         return this.treeGridElement.querySelector('.e-content');
     }
+
+    private getHeaderDiv(): HTMLElement {
+        return this.treeGridElement.querySelector('.e-headercontent');
+    }
+
+    private getScrollbarWidth(): number {
+        const outer: HTMLElement = document.createElement('div');
+        outer.style.visibility = 'hidden';
+        outer.style.overflow = 'scroll';
+        outer.style.msOverflowStyle = 'scrollbar';
+        const inner: HTMLElement = document.createElement('div');
+        outer.appendChild(inner);
+        this.parent.element.appendChild(outer);
+        const scrollbarWidth: number = (outer.offsetWidth - inner.offsetWidth);
+        outer.parentNode.removeChild(outer);
+        return scrollbarWidth;
+    }
+
     private ensureScrollBar(): void {
         let content: HTMLElement = this.getContentDiv();
-        //let isScroll: boolean = content.scrollHeight > content.offsetHeight;
-        //if (isScroll) {
-        content.classList.add('e-gantt-scroll-padding');
-        //} else {
-        // content.classList.remove('e-gantt-scroll-padding');
-        //}
+        let headerDiv: HTMLElement = this.getHeaderDiv();
+        let scrollWidth: number = this.getScrollbarWidth();
+        let isMobile: boolean = /Android|Mac|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (scrollWidth !== 0) {
+            content.style.cssText += 'width: calc(100% + ' + scrollWidth + 'px);';
+        } else {
+            content.classList.add('e-gantt-scroll-padding');
+        }
+        if (scrollWidth === 0 && isMobile) {
+            headerDiv.style.cssText += 'width: calc(100% + 17px);';
+        }
     }
     private bindEvents(): void {
         this.parent.treeGrid.dataBound = this.dataBound.bind(this);
@@ -123,15 +146,23 @@ export class GanttTreeGrid {
     }
     private collapsed(args: object): void {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            this.updateExpandStatus(args);
             let collapsedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.collapsedGanttRow(collapsedArgs);
         }
     }
     private expanded(args: object): void {
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
+            this.updateExpandStatus(args);
             let expandedArgs: object = this.createExpandCollapseArgs(args);
             this.parent.ganttChartModule.expandedGanttRow(expandedArgs);
         }
+    }
+    private updateExpandStatus(args: object): void {
+        if (getValue('data', args) && isBlazor()) {
+            let record: IGanttData = this.parent.getTaskByUniqueID(getValue('data', args).uniqueID);
+            record.expanded = getValue('data', args).expanded;
+         }
     }
     private actionBegin(args: FilterEventArgs | SortEventArgs): void {
         this.parent.notify('actionBegin', args);
@@ -162,7 +193,13 @@ export class GanttTreeGrid {
     private createExpandCollapseArgs(args: object): object {
         let record: IGanttData = getValue('data', args);
         let gridRow: Node = getValue('row', args);
-        let chartRow: Node = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
+        let chartRow: Node;
+        if (isBlazor()) {
+            /* tslint:disable-next-line */
+            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(this.parent.getTaskByUniqueID(record.uniqueID))];
+        } else {
+            chartRow = this.parent.ganttChartModule.getChartRows()[this.parent.currentViewData.indexOf(record)];
+        }
         let eventArgs: object = { data: record, gridRow: gridRow, chartRow: chartRow, cancel: false };
         return eventArgs;
     }

@@ -812,7 +812,8 @@ export class ChartRows {
                     taskIndicatorTextNode = text.childNodes;
                 }
                 taskIndicatorNode[0].appendChild([].slice.call(taskIndicatorTextNode)[0]);
-                (taskIndicatorNode[0] as HTMLElement).title = (taskIndicatorNode[0] as HTMLElement).innerText;
+                (taskIndicatorNode[0] as HTMLElement).title =
+                    !isNullOrUndefined(indicators[indicatorIndex].tooltip) ? indicators[indicatorIndex].tooltip : '';
                 parentTrNode[0].childNodes[0].childNodes[0].appendChild([].slice.call(taskIndicatorNode)[0]);
             }
         }

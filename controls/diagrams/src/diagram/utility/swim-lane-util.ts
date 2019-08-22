@@ -16,7 +16,7 @@ import { HistoryEntry } from '../diagram/history';
 import { StackEntryObject } from '../objects/interface/IElement';
 import { Connector } from '../objects/connector';
 import { ConnectorModel } from '../objects/connector-model';
-import { SelectorModel } from '../interaction/selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { checkParentAsContainer, findBounds } from '../interaction/container-interaction';
 import { IElement } from '../objects/interface/IElement';
 import { ClipBoardObject } from '../interaction/command-manager';

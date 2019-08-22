@@ -381,11 +381,12 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     }
 
     private checkAttributes(isDynamic: boolean): void {
-        let attributes: string[] = isDynamic ? Object.keys(this.htmlAttributes) :
+        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
@@ -509,24 +510,28 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (this.inputStyle !== null) { attributes(this.container, { 'style': this.inputStyle }); }
     }
     private updateHTMLAttrToElement(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) < 0 ) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) < 0 ) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     private updateHTMLAttrToWrapper(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) > -1 ) {
-                if (pro === 'class') {
-                    addClass([this.container], this.htmlAttributes[pro].split(' '));
-                } else if (pro === 'style') {
-                    let numericStyle: string = this.container.getAttribute(pro);
-                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
-                    this.htmlAttributes[pro];
-                    this.container.setAttribute(pro, numericStyle);
-                } else {
-                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) > -1 ) {
+                    if (pro === 'class') {
+                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                    } else if (pro === 'style') {
+                        let numericStyle: string = this.container.getAttribute(pro);
+                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                        this.container.setAttribute(pro, numericStyle);
+                    } else {
+                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }

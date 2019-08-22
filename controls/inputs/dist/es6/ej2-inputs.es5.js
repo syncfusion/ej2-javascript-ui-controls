@@ -786,10 +786,11 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     };
     NumericTextBox.prototype.checkAttributes = function (isDynamic) {
-        var attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) :
+        var attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
@@ -911,28 +912,32 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     NumericTextBox.prototype.updateHTMLAttrToElement = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var pro = _a[_i];
-            if (wrapperAttributes.indexOf(pro) < 0) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttributes.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     };
     NumericTextBox.prototype.updateHTMLAttrToWrapper = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var pro = _a[_i];
-            if (wrapperAttributes.indexOf(pro) > -1) {
-                if (pro === 'class') {
-                    addClass([this.container], this.htmlAttributes[pro].split(' '));
-                }
-                else if (pro === 'style') {
-                    var numericStyle = this.container.getAttribute(pro);
-                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
-                        this.htmlAttributes[pro];
-                    this.container.setAttribute(pro, numericStyle);
-                }
-                else {
-                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttributes.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                    }
+                    else if (pro === 'style') {
+                        var numericStyle = this.container.getAttribute(pro);
+                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.container.setAttribute(pro, numericStyle);
+                    }
+                    else {
+                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -3017,31 +3022,36 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     };
     MaskedTextBox.prototype.updateHTMLAttrToElement = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var key = _a[_i];
-            if (wrapperAttr.indexOf(key) < 0) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (wrapperAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     };
     MaskedTextBox.prototype.updateHTMLAttrToWrapper = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var key = _a[_i];
-            if (wrapperAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    var maskStyle = this.inputObj.container.getAttribute(key);
-                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.inputObj.container.setAttribute(key, maskStyle);
-                }
-                else {
-                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (wrapperAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        var maskStyle = this.inputObj.container.getAttribute(key);
+                        maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.inputObj.container.setAttribute(key, maskStyle);
+                    }
+                    else {
+                        this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
@@ -3087,7 +3097,8 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MaskedTextBox.prototype.checkHtmlAttributes = function (isDynamic) {
-        var attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly'];
+        var attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
+            : ['placeholder', 'disabled', 'value', 'readonly'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var key = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
@@ -4311,6 +4322,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
         return tickCount;
     };
+    // tslint:disable-next-line:max-func-body-length
     Slider.prototype.renderScale = function () {
         var orien = this.orientation === 'Vertical' ? 'v' : 'h';
         this.noOfDecimals = this.numberOfDecimals(this.step);
@@ -4385,7 +4397,12 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 else {
                     var largestep = this.fractionalToInteger(this.ticks.largeStep);
                     var startValue = this.fractionalToInteger(start);
-                    islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    if (orien === 'h') {
+                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    }
+                    else {
+                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
+                    }
                 }
             }
             if (islargeTick) {
@@ -7254,6 +7271,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.renderPreLoadFiles();
         this.setControlStatus();
         this.setCSSClass();
+        this.renderComplete();
     };
     Uploader.prototype.renderBrowseButton = function () {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
@@ -7425,28 +7443,32 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.bindDropEvents();
     };
     Uploader.prototype.updateHTMLAttrToElement = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var pro = _a[_i];
-            if (wrapperAttr$1.indexOf(pro) < 0) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttr$1.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     };
     Uploader.prototype.updateHTMLAttrToWrapper = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var pro = _a[_i];
-            if (wrapperAttr$1.indexOf(pro) > -1) {
-                if (pro === 'class') {
-                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
-                }
-                else if (pro === 'style') {
-                    var uploadStyle = this.uploadWrapper.getAttribute(pro);
-                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
-                        this.htmlAttributes[pro];
-                    this.uploadWrapper.setAttribute(pro, uploadStyle);
-                }
-                else {
-                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttr$1.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                    }
+                    else if (pro === 'style') {
+                        var uploadStyle = this.uploadWrapper.getAttribute(pro);
+                        uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.uploadWrapper.setAttribute(pro, uploadStyle);
+                    }
+                    else {
+                        this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -8178,10 +8200,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var listItem = fileData_1[_i];
             var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            var fromElements = [].slice.call(this.uploadTemplateFn(listItem));
+            var fromElements = [].slice.call(this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
             var index = fileData.indexOf(listItem);
             append(fromElements, liElement);
-            updateBlazorTemplate(this.element.id + 'Template', 'Template');
             var eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -8199,6 +8220,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
     };
     Uploader.prototype.createParentUL = function () {
         if (isNullOrUndefined(this.listParent)) {
@@ -8718,7 +8740,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.checkHTMLAttributes = function (isDynamic) {
-        var attributes$$1 = isDynamic ? Object.keys(this.htmlAttributes) : ['accept', 'multiple', 'disabled'];
+        var attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['accept', 'multiple', 'disabled'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
@@ -9860,6 +9883,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         if (!this.enableOpacity) {
             addClass([this.container.parentElement], HIDEOPACITY);
         }
+        this.renderComplete();
     };
     ColorPicker.prototype.initWrapper = function () {
         var wrapper = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
@@ -11766,7 +11790,8 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TextBox.prototype.checkAttributes = function (isDynamic) {
-        var attrs = isDynamic ? Object.keys(this.htmlAttributes) : ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        var attrs = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
         for (var _i = 0, attrs_1 = attrs; _i < attrs_1.length; _i++) {
             var key = attrs_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
@@ -11844,31 +11869,36 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        this.renderComplete();
     };
     TextBox.prototype.updateHTMLAttrToWrapper = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var key = _a[_i];
-            if (containerAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    var setStyle = this.textboxWrapper.container.getAttribute(key);
-                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.textboxWrapper.container.setAttribute(key, setStyle);
-                }
-                else {
-                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (containerAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        var setStyle = this.textboxWrapper.container.getAttribute(key);
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.textboxWrapper.container.setAttribute(key, setStyle);
+                    }
+                    else {
+                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     };
     TextBox.prototype.updateHTMLAttrToElement = function () {
-        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-            var key = _a[_i];
-            if (containerAttr.indexOf(key) < 0) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (containerAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     };

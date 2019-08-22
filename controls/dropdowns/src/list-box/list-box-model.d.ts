@@ -1,4 +1,4 @@
-import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { prepend, append } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
+import { Input, InputObject } from '@syncfusion/ej2-inputs';import { DropDownBase, dropDownBaseClasses, FilteringEventArgs, SelectEventArgs, FilterType } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';import { prepend, append } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { DataManager, Query } from '@syncfusion/ej2-data';
 import {SelectionMode,CheckBoxPosition,ToolBarPosition,BeforeItemRenderEventArgs,ListBoxChangeEventArgs,DragEventArgs} from "./list-box";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
@@ -92,6 +92,13 @@ export interface ListBoxModel extends DropDownBaseModel{
     allowDragAndDrop?: boolean;
 
     /**
+     * Sets limitation to the value selection.
+     * based on the limitation, list selection will be prevented.
+     * @default 1000
+     */
+    maximumSelectionLength?: number;
+
+    /**
      * To enable the filtering option in this component. 
      * Filter action performs when type in search box and collect the matched item through `filtering` event.
      * If searching character does not match, `noRecordsTemplate` property value will be shown.
@@ -105,6 +112,23 @@ export interface ListBoxModel extends DropDownBaseModel{
      * @default ''
      */
     scope?: string;
+
+    /**
+     * Determines on which filter type, the component needs to be considered on search action. 
+     * The `FilterType` and its supported data types are 
+     * The default value set to `StartsWith`, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * @default 'StartsWith'
+     * @private
+     */
+    filterType?: FilterType;
+
+    /**
+     * When set to ‘false’, consider the `case-sensitive` on performing the search to find suggestions.
+     * By default consider the casing.
+     * @default true
+     * @private
+     */
+    ignoreCase?: boolean;
 
     /**
      * Triggers while rendering each list item.

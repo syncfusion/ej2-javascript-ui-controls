@@ -238,6 +238,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     protected render(): void {
         this.initialize();
         this.wireEvents();
+        this.renderComplete();
     }
 
     protected initialize(): void {

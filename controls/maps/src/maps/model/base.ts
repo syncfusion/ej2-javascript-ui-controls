@@ -1159,6 +1159,7 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
     /**
      * To configure the dataSource of the marker.
      * @isdatamanager false
+     * @isObservable true
      * @default []
      */
     @Property([])

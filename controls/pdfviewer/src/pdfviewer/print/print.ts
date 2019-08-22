@@ -94,8 +94,39 @@ export class Print {
             if (printImage.textMarkupAnnotation && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
                 // tslint:disable-next-line
                 let stampData: any = printImage['stampAnnotations'];
-                // tslint:disable-next-line:max-line-length
-                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printImage.textMarkupAnnotation, pageIndex, stampData, printImage.shapeAnnotation);
+                if (proxy.pdfViewerBase.isImportAction) {
+                    let importAnnotationList: number[] = proxy.pdfViewerBase.importedAnnotation;
+                    // tslint:disable-next-line
+                    let importAnnotation: any = importAnnotationList[printImage.pageNumber];
+                    let textMarkupAnnotation: number[] = printImage.textMarkupAnnotation;
+                    let shapeAnnotation: number[] = printImage.shapeAnnotation;
+                    let measureShapeAnnotation: number[] = printImage.measureShapeAnnotation;
+                    let stampAnnotation: number[] = stampData;
+                    // tslint:disable-next-line
+                    let stickyNoteAnnotation: any = printImage.stickyNotesAnnotation;
+                    if (importAnnotation) {
+                        if (importAnnotation.textMarkupAnnotation.length !== 0) {
+                            textMarkupAnnotation = printImage.textMarkupAnnotation.concat(importAnnotation.textMarkupAnnotation);
+                        }
+                        if (importAnnotation.shapeAnnotation.length !== 0) {
+                            shapeAnnotation = printImage.shapeAnnotation.concat(importAnnotation.shapeAnnotation);
+                        }
+                        if (importAnnotation.measureShapeAnnotation.length !== 0) {
+                            measureShapeAnnotation = printImage.measureShapeAnnotation.concat(importAnnotation.measureShapeAnnotation);
+                        }
+                        if (importAnnotation.stampAnnotations.length !== 0) {
+                            stampAnnotation = stampData.concat(importAnnotation.stampAnnotations);
+                        }
+                        if (importAnnotation.stickyNotesAnnotation.length !== 0) {
+                            stickyNoteAnnotation = printImage.stickyNotesAnnotation.concat(importAnnotation.stickyNotesAnnotation);
+                        }
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(textMarkupAnnotation, pageIndex, stampAnnotation, shapeAnnotation, measureShapeAnnotation, stickyNoteAnnotation);
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printImage.textMarkupAnnotation, pageIndex, stampData, printImage.shapeAnnotation, printImage.measureShapeAnnotation, printImage.stickyNoteAnnotation);
+                }
             }
             let currentPageNumber: number = printImage.pageNumber;
             // tslint:disable-next-line:max-line-length

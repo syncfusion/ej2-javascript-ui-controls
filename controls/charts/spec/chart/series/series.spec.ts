@@ -173,11 +173,11 @@ describe('Chart Control', () => {
         //     chartEle1.loaded = loaded;
         //     chartEle1.refresh();
         // });
-        it('Checking with query', (done: Function) => {
+        it('Checking with query', () => {
             loaded = (args: Object): void => {
                 let text: HTMLElement = document.getElementById('container0_AxisLabel_0');
                 //expect(text.textContent != null).toBe(true);
-                done();
+                //done();
             };
             chartEle1.series[0].query = query;
             chartEle1.loaded = loaded;

@@ -15,7 +15,7 @@ import { NodeModel, BpmnShapeModel, BasicShapeModel, SwimLaneModel, LaneModel, P
 import { ToolBase, SelectTool, MoveTool, ResizeTool, RotateTool, ConnectTool, ExpandTool, LabelTool, ZoomPanTool } from './tool';
 import { LabelDragTool, LabelResizeTool, LabelRotateTool } from './tool';
 import { ConnectorEditing } from './connector-editing';
-import { Selector } from './selector';
+import { Selector } from '../objects/node';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
 import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction } from '../enum/enum';
@@ -41,7 +41,7 @@ import { LayerModel } from '../diagram/layer-model';
 import { ITouches } from '../objects/interface/interfaces';
 import { removeRulerMarkers, drawRulerMarkers, getRulerSize, updateRuler } from '../ruler/ruler';
 import { canContinuousDraw, canDrawOnce } from '../utility/constraints-util';
-import { SelectorModel } from './selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { getFunction, cornersPointsBeforeRotation } from '../utility/base-util';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';

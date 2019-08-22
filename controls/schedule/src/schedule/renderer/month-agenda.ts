@@ -90,7 +90,7 @@ export class MonthAgenda extends Month {
 
     private onEventRender(events: Object[], date?: Date): void {
         let appWrap: Element = this.element.querySelector('.' + cls.APPOINTMENT_WRAP_CLASS);
-        appWrap.innerHTML = '';
+        util.removeChildren(appWrap);
         if (this.parent.activeViewOptions.group.resources.length === 0 || this.parent.uiStateValues.isGroupAdaptive) {
             if (events.length > 0) {
                 let appContainer: Element = createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS });
@@ -131,7 +131,7 @@ export class MonthAgenda extends Month {
         let app: HTMLElement = createElement('div', { className: cls.APPOINTMENT_CONTAINER_CLASS });
         addClass([app], cls.AGENDA_NO_EVENT_CLASS);
         app.innerHTML = this.parent.localeObj.getConstant('noEvents');
-        appWrap.innerHTML = '';
+        util.removeChildren(appWrap);
         appWrap.appendChild(app);
     }
 

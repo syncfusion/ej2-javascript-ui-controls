@@ -433,6 +433,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private sqlParser;
     private parseSqlStrings;
     private getOperator;
+    private getTypeFromColumn;
     private processParser;
 }
 export interface Level {

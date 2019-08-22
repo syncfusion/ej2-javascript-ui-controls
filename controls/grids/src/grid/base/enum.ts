@@ -361,6 +361,8 @@ export type ClipMode =
  * * Cancel - Cancel the edited state.
  */
 export type CommandButtonType =
+    /** Default enum type */
+    'None' |
     /** Edit the current row */
     'Edit' |
     /** Delete the current row */

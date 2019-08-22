@@ -44,6 +44,7 @@ import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
+import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 
 export interface ChangeEventArgs {
     /**
@@ -611,6 +612,41 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     private toolbarStatusUpdate: EmitType<Object>;
+    /**
+     * Event triggers when the image is selected or dragged into the insert image dialog.
+     * @event
+     * @blazorProperty 'OnImageSelected'
+     */
+    @Event()
+    public imageSelected: EmitType<SelectedEventArgs>;
+    /**
+     * Event triggers when the selected image begins to upload in the insert image dialog.
+     * @event
+     * @blazorProperty 'OnImageUploading'
+     */
+    @Event()
+    public imageUploading: EmitType<UploadingEventArgs>;
+    /**
+     * Event triggers when the image is successfully uploaded to the server side.
+     * @event
+     * @blazorProperty 'OnImageUploadSuccess'
+     */
+    @Event()
+    public imageUploadSuccess: EmitType<Object>;
+    /**
+     * Event triggers when there is an error in the image upload.
+     * @event
+     * @blazorProperty 'OnImageUploadFailed'
+     */
+    @Event()
+    public imageUploadFailed: EmitType<Object>;
+    /**
+     * Event triggers when the selected image is cleared from the insert image dialog.
+     * @event
+     * @blazorProperty 'OnImageRemoving'
+     */
+    @Event()
+    public imageRemoving: EmitType<RemovingEventArgs>;
     /** 
      * Triggers when the RichTextEditor is rendered.
      * @event 
@@ -998,6 +1034,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        this.renderComplete();
     }
 
     /**
@@ -1014,6 +1051,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public keyDown(e: KeyboardEvent): void {
         this.notify(events.keyDown, { member: 'keydown', args: e });
+        this.restrict(e);
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
@@ -1772,6 +1810,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.sourceCode, {});
     }
 
+     /**
+      * Returns the maximum number of characters in the Rich Text Editor.
+      * @public
+      */
+    public getCharCount(): number {
+        let htmlText : string = this.editorMode === 'Markdown' ? (this.inputElement as HTMLTextAreaElement).value.trim() :
+            (this.inputElement as HTMLTextAreaElement).textContent.trim();
+        return htmlText.length;
+    }
+
     /**
      * @hidden
      */
@@ -2046,6 +2094,27 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.element.addEventListener('focusout', this.onBlurHandler, true);
         if (this.readonly && this.enabled) { return; }
         this.bindEvents();
+    }
+
+    private restrict(e: MouseEvent | KeyboardEvent): void {
+        if (this.maxLength >= 0 ) {
+            let element: string = ((e as MouseEvent).currentTarget as HTMLElement).textContent.trim();
+            let array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
+            let arrayKey: number;
+            for (let i: number = 0; i <= array.length - 1; i++) {
+                if ((e as MouseEvent).which === array[i]) {
+                    if ((e as MouseEvent).ctrlKey && (e as MouseEvent).which === 65) {
+                        return;
+                    } else if ((e as MouseEvent).which !== 65) {
+                        arrayKey = array[i];
+                        return;
+                    }
+                }
+            }
+            if ((element.length >= this.maxLength && this.maxLength !== -1) && (e as MouseEvent).which !== arrayKey) {
+                (e as MouseEvent).preventDefault();
+            }
+        }
     }
 
     private bindEvents(): void {

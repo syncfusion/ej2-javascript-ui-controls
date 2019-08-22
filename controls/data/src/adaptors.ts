@@ -1637,6 +1637,80 @@ export class WebApiAdaptor extends ODataAdaptor {
         };
     }
 
+    public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs): Object {
+        let initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
+        let url: string = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
+        let req: string[] = [];
+        //insertion
+        for (let i: number = 0, x: number = changes.addedRecords.length; i < x; i++) {
+            changes.addedRecords.forEach((j: number, d: number) => {
+                let stat: { method: string, url: Function, data: Function } = {
+                    'method': 'POST ',
+                    'url': (data: Object[], i: number, key: string): string => '',
+                    'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('POST ' + '/api/' + (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.addedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //updation 
+        for (let i: number = 0, x: number = changes.changedRecords.length; i < x; i++) {
+            changes.changedRecords.forEach((j: number, d: number) => {
+                let stat: { method: string, url: Function, data: Function } = {
+                    'method': this.options.updateType + ' ',
+                    'url': (data: Object[], i: number, key: string): string => '',
+                    'data': (data: Object[], i: number): string => JSON.stringify(data[i]) + '\n\n'
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('PUT ' + '/api/' + (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.changedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        //deletion
+        for (let i: number = 0, x: number = changes.deletedRecords.length; i < x; i++) {
+            changes.deletedRecords.forEach((j: number, d: number) => {
+                let state: { mtd: string, url: Function, data: Function } = {
+                    'mtd': 'DELETE ',
+                    'url': (data: Object[], i: number, key: string): string => {
+                        let url: object = DataUtil.getObject(key, data[i]);
+                        if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                            return '/' + url as string;
+                        } else if (url instanceof Date) {
+                            let datTime: Date = data[i][key];
+                            return '/' + datTime.toJSON();
+                        } else {
+                            return `/'${url}'`;
+                        }
+                    },
+                    'data': (data: Object[], i: number): string => ''
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('DELETE ' + '/api/' + (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url)
+                    + state.url(changes.deletedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        }
+        req.push('--' + initialGuid + '--', '');
+        return {
+            type: 'POST',
+            url: url,
+            contentType: 'multipart/mixed; boundary=' + initialGuid,
+            data: req.join('\r\n')
+        };
+    }
     /**
      * Method will trigger before send the request to server side. 
      * Used to set the custom header or modify the request options.

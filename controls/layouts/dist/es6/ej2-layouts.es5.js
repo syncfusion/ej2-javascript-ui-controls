@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isBlazor, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -249,6 +249,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.setRTL(this.enableRtl);
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
+        this.renderComplete();
     };
     Splitter.prototype.onDocumentClick = function (e) {
         if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
@@ -466,8 +467,8 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.addSeparator(this.element);
     };
     Splitter.prototype.checkSplitPane = function (currentBar, elementIndex) {
-        var paneEle = currentBar.parentElement.getElementsByClassName('e-pane')[elementIndex];
-        return paneEle ? paneEle : null;
+        var paneEle = currentBar.parentElement.children[elementIndex];
+        return paneEle;
     };
     Splitter.prototype.getPrevPane = function (currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -640,8 +641,23 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             this.currentCoordinates = coordinates;
         }
     };
+    Splitter.prototype.reportWindowSize = function () {
+        var paneCount = this.allPanes.length;
+        for (var i = 0; i < paneCount; i++) {
+            if (isNullOrUndefined(this.paneSettings[i].size)) {
+                this.allPanes[i].classList.remove(STATIC_PANE);
+            }
+            if (paneCount - 1 === i) {
+                var staticPaneCount = this.element.querySelectorAll('.' + STATIC_PANE).length;
+                if (staticPaneCount === paneCount) {
+                    removeClass([this.allPanes[i]], STATIC_PANE);
+                }
+            }
+        }
+    };
     Splitter.prototype.wireResizeEvents = function () {
         EventHandler.add(document, 'mousemove', this.onMouseMove, this);
+        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         var touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         var touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -649,6 +665,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(document, touchEndEvent, this.onMouseUp, this);
     };
     Splitter.prototype.unwireResizeEvents = function () {
+        window.removeEventListener('resize', this.reportWindowSize.bind(this));
         var touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         var touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
         EventHandler.remove(document, 'mousemove', this.onMouseMove);
@@ -777,7 +794,13 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         });
     };
     Splitter.prototype.beforeAction = function (e) {
-        var eventArgs = {
+        var eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator,
+            cancel: false
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -848,7 +871,12 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Splitter.prototype.afterAction = function (e) {
-        var eventArgs = {
+        var eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -899,7 +927,13 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         addClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
         this.updateCursorPosition(e, 'previous');
         this.getPaneDetails();
-        var eventArgs = {
+        var eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.getPreviousPaneIndex(), this.getNextPaneIndex()],
+            separator: this.currentSeparator,
+            cancel: false
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -1100,7 +1134,13 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
         this.getPaneDetails();
         this.getPaneDimensions();
-        var eventArgs = {
+        var eventArgs = isBlazor() ? {
+            element: this.element,
+            event: e,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension],
+            separator: this.currentSeparator
+        } : {
             element: this.element,
             event: e,
             pane: [this.previousPane, this.nextPane],
@@ -1289,7 +1329,13 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     Splitter.prototype.onMouseUp = function (e) {
         removeClass([this.currentSeparator], SPLIT_BAR_ACTIVE);
         this.unwireResizeEvents();
-        var eventArgs = {
+        var eventArgs = isBlazor() ? {
+            event: e,
+            element: this.element,
+            index: [this.prevPaneIndex, this.nextPaneIndex],
+            separator: this.currentSeparator,
+            paneSize: [this.prePaneDimenson, this.nextPaneDimension]
+        } : {
             event: e,
             element: this.element,
             pane: [this.previousPane, this.nextPane],

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.46 (2019-08-22)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#243475` - Now, you can validate max-length even showCharCount property as false.
+
 ## 17.2.41 (2019-08-14)
 
 ### RichTextEditor
@@ -10,6 +18,9 @@
 
 - **Support for saving images in base64**
     - `#240002`, `#242405` - This feature allows users to save the images in the RichTextEditor in base64 format along with the existing blob format.
+
+- **Image upload events**
+    - `#240002`, `#236690`, `#241238`, `#244320` - This feature allows images to be customized on uploading and inserting them into the editor by using the upload events image selected, image uploading, image upload success, and image upload failed. Users can rename the images before inserting them into the editor using these events.
 
 - `#242771` - Provided the support to handle both absolute and relative path links.
 

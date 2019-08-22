@@ -1,6 +1,6 @@
 import { detach, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
-import { IRichTextEditor, IRenderer, NotifyArgs } from '../base/interface';
+import { IRichTextEditor, IRenderer } from '../base/interface';
 import { RenderType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -73,27 +73,6 @@ export class Count {
         }
     }
 
-    private restrict(e: NotifyArgs): void {
-        if (this.parent.showCharCount) {
-            let element: string = ((e.args as MouseEvent).currentTarget as HTMLElement).textContent.trim();
-            let array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
-            let arrayKey: number;
-            for (let i: number = 0; i <= array.length - 1; i++) {
-                if ((e.args as MouseEvent).which === array[i]) {
-                    if ((e.args as MouseEvent).ctrlKey && (e.args as MouseEvent).which === 65) {
-                        return;
-                    } else if ((e.args as MouseEvent).which !== 65) {
-                        arrayKey = array[i];
-                        return;
-                    }
-                }
-            }
-            if ((element.length >= this.parent.maxLength && this.parent.maxLength !== -1) && (e.args as MouseEvent).which !== arrayKey) {
-                (e.args as MouseEvent).preventDefault();
-            }
-        }
-    }
-
     /**
      * Destroys the Count.
      * @method destroy
@@ -114,7 +93,6 @@ export class Count {
         if (this.parent.showCharCount) {
             this.parent.on(events.initialEnd, this.renderCount, this);
             this.parent.on(events.keyUp, this.refresh, this);
-            this.parent.on(events.keyDown, this.restrict, this);
             this.parent.on(events.count, this.refresh, this);
             this.parent.on(events.refreshBegin, this.refresh, this);
             this.parent.on(events.mouseDown, this.refresh, this);
@@ -126,11 +104,12 @@ export class Count {
 
     protected removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        detach(this.element);
+        if (this.element) {
+            detach(this.element);
+        }
         this.parent.off(events.initialEnd, this.renderCount);
         this.parent.off(events.keyUp, this.refresh);
         this.parent.off(events.refreshBegin, this.refresh);
-        this.parent.off(events.keyDown, this.restrict);
         this.parent.off(events.count, this.refresh);
         this.parent.off(events.mouseDown, this.refresh);
         this.parent.off(events.destroy, this.destroy);

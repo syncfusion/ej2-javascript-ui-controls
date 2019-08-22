@@ -13497,6 +13497,13 @@ let Grid = Grid_1 = class Grid extends Component {
         this.addEventListener(dataBound, this.dataBoundFunction);
         this.on(keyPressed, this.onKeyPressed, this);
         this.on(contentReady, this.blazorTemplate, this);
+        if (isBlazor()) {
+            let fn = () => {
+                this.renderComplete();
+                this.off(contentReady, fn);
+            };
+            this.on(contentReady, fn, this);
+        }
     }
     /**
      * @hidden
@@ -13595,8 +13602,12 @@ let Grid = Grid_1 = class Grid extends Component {
         if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(e.target, '.e-unboundcelldiv')) {
             return;
         }
-        let dataRow = !isNullOrUndefined(closest(e.target, 'tr').getAttribute('data-uid')) &&
-            this.getRowObjectFromUID(closest(e.target, 'tr').getAttribute('data-uid')).isDataRow;
+        let dataRow = false;
+        let tr = closest(e.target, 'tr');
+        if (tr && tr.getAttribute('data-uid')) {
+            let rowObj = this.getRowObjectFromUID(tr.getAttribute('data-uid'));
+            dataRow = rowObj ? rowObj.isDataRow : false;
+        }
         let args = this.getRowInfo(e.target);
         args.target = e.target;
         if (dataRow) {
@@ -30215,7 +30226,7 @@ class ColumnMenu {
     columnMenuOnClose(args) {
         let parent = 'parentObj';
         if (args.items.length > 0 && args.items[0][parent] instanceof ContextMenu) {
-            this.columnMenu.enableItems(this.disableItems);
+            this.columnMenu.enableItems(this.disableItems, false);
             this.disableItems = [];
             this.columnMenu.showItems(this.hiddenItems);
             this.hiddenItems = [];

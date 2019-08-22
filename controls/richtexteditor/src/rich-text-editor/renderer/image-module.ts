@@ -7,6 +7,7 @@ import * as classes from '../base/classes';
 import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
 import { Uploader, SelectedEventArgs, MetaData, NumericTextBox } from '@syncfusion/ej2-inputs';
+import { RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
@@ -1217,8 +1218,7 @@ export class Image {
     }
 
     private imgUpload(e: IImageNotifyArgs): HTMLElement {
-        let save: NodeSelection;
-        let selectParent: Node[]; let proxy: this = this;
+        let save: NodeSelection; let selectParent: Node[]; let proxy: this = this;
         let iframe: boolean = proxy.parent.iframeSettings.enable;
         if (proxy.parent.editorMode === 'HTML' &&
             (!iframe && isNullOrUndefined(closest(e.selection.range.startContainer.parentNode, '#' + this.contentModule.getPanel().id))
@@ -1229,93 +1229,94 @@ export class Image {
                 range, this.parent.contentModule.getDocument());
             selectParent = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range);
         } else {
-            save = e.selection;
-            selectParent = e.selectParent;
+            save = e.selection; selectParent = e.selectParent;
         }
         let uploadParentEle: HTMLElement = this.parent.createElement('div', { className: 'e-img-uploadwrap e-droparea' });
         let deviceImgUpMsg: string = this.i10n.getConstant('imageDeviceUploadMessage');
         let imgUpMsg: string = this.i10n.getConstant('imageUploadMessage');
         let span: HTMLElement = this.parent.createElement('span', { className: 'e-droptext' });
         let spanMsg: HTMLElement = this.parent.createElement('span', {
-            className: 'e-rte-upload-text',
-            innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
+            className: 'e-rte-upload-text', innerHTML: ((Browser.isDevice) ? deviceImgUpMsg : imgUpMsg)
         });
         span.appendChild(spanMsg);
         let btnEle: HTMLElement = this.parent.createElement('button', {
             className: 'e-browsebtn', id: this.rteID + '_insertImage',
             attrs: { autofocus: 'true', type: 'button' }
         });
-        span.appendChild(btnEle);
-        uploadParentEle.appendChild(span);
+        span.appendChild(btnEle); uploadParentEle.appendChild(span);
         let browserMsg: string = this.i10n.getConstant('browse');
         let button: Button = new Button({ content: browserMsg, enableRtl: this.parent.enableRtl });
-        button.isStringTemplate = true;
-        button.createElement = this.parent.createElement;
-        button.appendTo(btnEle);
-        let btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
+        button.isStringTemplate = true; button.createElement = this.parent.createElement;
+        button.appendTo(btnEle); let btnClick: HTMLElement = (Browser.isDevice) ? span : btnEle;
         EventHandler.add(btnClick, 'click', this.fileSelect, this);
         let uploadEle: HTMLInputElement | HTMLElement = this.parent.createElement('input', {
             id: this.rteID + '_upload', attrs: { type: 'File', name: 'UploadFiles' }
         });
-        uploadParentEle.appendChild(uploadEle);
-        let altText: string;
+        uploadParentEle.appendChild(uploadEle); let altText: string;
         this.uploadObj = new Uploader({
             asyncSettings: {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
             },
-            dropArea: span,
-            multiple: false,
-            enableRtl: this.parent.enableRtl,
+            dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
-                altText = e.filesData[0].name;
-                if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                    let reader: FileReader = new FileReader();
-                    reader.addEventListener('load', (e: MouseEvent) => {
-                        let url: string = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
-                            URL.createObjectURL(proxy.url(reader.result as string));
+                this.parent.trigger(events.imageSelected, e, (e: SelectedEventArgs) => {
+                    altText = e.filesData[0].name;
+                    if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                        let reader: FileReader = new FileReader();
+                        reader.addEventListener('load', (e: MouseEvent) => {
+                            let url: string = this.parent.insertImageSettings.saveFormat === 'Base64' ? reader.result as string :
+                                URL.createObjectURL(proxy.url(reader.result as string));
+                            proxy.uploadUrl = {
+                                url: url, selection: save, altText: altText, selectParent: selectParent,
+                                width: {
+                                    width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
+                                    maxWidth: proxy.parent.insertImageSettings.maxWidth
+                                }, height: {
+                                    height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
+                                    maxHeight: proxy.parent.insertImageSettings.maxHeight
+                                }
+                            };
+                            proxy.inputUrl.setAttribute('disabled', 'true');
+                        });
+                        reader.readAsDataURL(e.filesData[0].rawFile as Blob);
+                    }
+                });
+            },
+            uploading: (e: UploadingEventArgs) => {
+                this.parent.trigger(events.imageUploading, e);
+            },
+            success: (e: Object) => {
+                this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
+                    if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+                        let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+                        let value: IImageCommandsArgs = { url: url, selection: save };
                         proxy.uploadUrl = {
                             url: url, selection: save, altText: altText, selectParent: selectParent,
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
-                            }, height: {
+                            },
+                            height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
                             }
                         };
                         proxy.inputUrl.setAttribute('disabled', 'true');
-                    });
-                    reader.readAsDataURL(e.filesData[0].rawFile as Blob);
-                }
+                    }
+                });
             },
-            success: (e: Object) => {
-                if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
-                    let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
-                    let value: IImageCommandsArgs = { url: url, selection: save };
-                    proxy.uploadUrl = {
-                        url: url, selection: save, altText: altText, selectParent: selectParent,
-                        width: {
-                            width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
-                            maxWidth: proxy.parent.insertImageSettings.maxWidth
-                        },
-                        height: {
-                            height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
-                            maxHeight: proxy.parent.insertImageSettings.maxHeight
-                        }
-                    };
-                    proxy.inputUrl.setAttribute('disabled', 'true');
-                }
+            failure: (e: object) => {
+                this.parent.trigger(events.imageUploadFailed, e);
             },
             removing: () => {
-                proxy.inputUrl.removeAttribute('disabled');
-                proxy.uploadUrl.url = '';
+                this.parent.trigger(events.imageRemoving, e, (e: RemovingEventArgs) => {
+                    proxy.inputUrl.removeAttribute('disabled'); proxy.uploadUrl.url = '';
+                });
             }
         });
-        this.uploadObj.isStringTemplate = true;
-        this.uploadObj.createElement = this.parent.createElement;
-        this.uploadObj.appendTo(uploadEle);
-        return uploadParentEle;
+        this.uploadObj.isStringTemplate = true; this.uploadObj.createElement = this.parent.createElement;
+        this.uploadObj.appendTo(uploadEle); return uploadParentEle;
     }
     private fileSelect(): boolean {
         this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();

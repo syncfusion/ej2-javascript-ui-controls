@@ -8525,191 +8525,6 @@ function updateRulerDiv(diagram, rulerGeometry, isHorizontal) {
     }
 }
 
-var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * A collection of frequently used commands that will be added around the selector
- * ```html
- * <div id='diagram'></div>
- * ```
- * ```typescript
- * let nodes: NodeModel[] = [{
- *           id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
- *           annotations: [{ content: 'Default Shape' }]
- *       },
- *       {
- *           id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
- *           shape: {
- *               type: 'Basic', shape: 'Ellipse'
- *           },
- *           annotations: [{ content: 'Path Element' }]
- *       }
- *       ];
- *       let connectors: ConnectorModel[] = [{
- *           id: 'connector1',
- *           type: 'Straight',
- *           sourcePoint: { x: 100, y: 300 },
- *           targetPoint: { x: 200, y: 400 },
- *       }];
- * let handle: UserHandleModel[] = [
- * { name: 'handle', margin: { top: 0, bottom: 0, left: 0, right: 0 }, offset: 0,
- * pathData: 'M 376.892,225.284L 371.279,211.95L 376.892,198.617L 350.225,211.95L 376.892,225.284 Z',
- * side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center',
- * pathColor: 'yellow' }];
- * let diagram: Diagram = new Diagram({
- * ...
- *     connectors: connectors, nodes: nodes,
- *     selectedItems: { constraints: SelectorConstraints.All, userHandles: handle },
- * ...
- * });
- * diagram.appendTo('#diagram');
- * ```
- * @default {}
- */
-class UserHandle extends ChildProperty {
-    /**
-     * @private
-     * Returns the name of class UserHandle
-     */
-    getClassName() {
-        return 'UserHandle';
-    }
-}
-__decorate$11([
-    Property('')
-], UserHandle.prototype, "name", void 0);
-__decorate$11([
-    Property('')
-], UserHandle.prototype, "pathData", void 0);
-__decorate$11([
-    Property('')
-], UserHandle.prototype, "content", void 0);
-__decorate$11([
-    Property('')
-], UserHandle.prototype, "source", void 0);
-__decorate$11([
-    Property('#000000')
-], UserHandle.prototype, "backgroundColor", void 0);
-__decorate$11([
-    Property('top')
-], UserHandle.prototype, "side", void 0);
-__decorate$11([
-    Property('')
-], UserHandle.prototype, "borderColor", void 0);
-__decorate$11([
-    Property(0.5)
-], UserHandle.prototype, "borderWidth", void 0);
-__decorate$11([
-    Property(25)
-], UserHandle.prototype, "size", void 0);
-__decorate$11([
-    Property('white')
-], UserHandle.prototype, "pathColor", void 0);
-__decorate$11([
-    Property(10)
-], UserHandle.prototype, "displacement", void 0);
-__decorate$11([
-    Property(true)
-], UserHandle.prototype, "visible", void 0);
-__decorate$11([
-    Property(0)
-], UserHandle.prototype, "offset", void 0);
-__decorate$11([
-    Complex({}, Margin)
-], UserHandle.prototype, "margin", void 0);
-__decorate$11([
-    Property('Center')
-], UserHandle.prototype, "horizontalAlignment", void 0);
-__decorate$11([
-    Property('Center')
-], UserHandle.prototype, "verticalAlignment", void 0);
-/**
- * Defines the size and position of selected items and defines the appearance of selector
- */
-class Selector extends ChildProperty {
-    /**
-     * Initializes the UI of the container
-     */
-    init(diagram) {
-        let container = new Container();
-        container.measureChildren = false;
-        container.children = [];
-        if (this.annotation) {
-            let object = (this.nodes.length > 0) ? diagram.nameTable[this.nodes[0].id].wrapper :
-                diagram.nameTable[this.connectors[0].id].wrapper;
-            let wrapper = diagram.getWrapper(object, this.annotation.id);
-            container.children.push(wrapper);
-        }
-        else {
-            if (this.nodes || this.connectors) {
-                for (let i = 0; i < this.nodes.length; i++) {
-                    let node = diagram.nameTable[this.nodes[i].id];
-                    let wrapper = node.wrapper;
-                    // this.width = wrapper.actualSize.width; 
-                    // this.height = wrapper.actualSize.height;
-                    // this.rotateAngle = wrapper.rotateAngle;
-                    // this.offsetX = wrapper.offsetX;
-                    // this.offsetY = wrapper.offsetY;
-                    container.children.push(wrapper);
-                }
-                for (let j = 0; j < this.connectors.length; j++) {
-                    let connector = diagram.nameTable[this.connectors[j].id];
-                    let wrapper = connector.wrapper;
-                    // this.width = wrapper.actualSize.width; this.height = wrapper.actualSize.height;
-                    // this.rotateAngle = wrapper.rotateAngle; this.offsetX = wrapper.offsetX;
-                    // this.offsetY = wrapper.offsetY;
-                    container.children.push(wrapper);
-                }
-            }
-        }
-        this.wrapper = container;
-        return container;
-    }
-}
-__decorate$11([
-    Property(null)
-], Selector.prototype, "wrapper", void 0);
-__decorate$11([
-    Collection([], Node)
-], Selector.prototype, "nodes", void 0);
-__decorate$11([
-    Collection([], Connector)
-], Selector.prototype, "connectors", void 0);
-__decorate$11([
-    Property()
-], Selector.prototype, "width", void 0);
-__decorate$11([
-    Property()
-], Selector.prototype, "height", void 0);
-__decorate$11([
-    Property(0)
-], Selector.prototype, "rotateAngle", void 0);
-__decorate$11([
-    Property(0)
-], Selector.prototype, "offsetX", void 0);
-__decorate$11([
-    Property(0)
-], Selector.prototype, "offsetY", void 0);
-__decorate$11([
-    Complex({ x: 0.5, y: 0.5 }, Point)
-], Selector.prototype, "pivot", void 0);
-__decorate$11([
-    Property('CompleteIntersect')
-], Selector.prototype, "rubberBandSelectionMode", void 0);
-__decorate$11([
-    Collection([], UserHandle)
-], Selector.prototype, "userHandles", void 0);
-__decorate$11([
-    Property(SelectorConstraints.All)
-], Selector.prototype, "constraints", void 0);
-__decorate$11([
-    Property()
-], Selector.prototype, "setTooltipTemplate", void 0);
-
 /**
  * constraints-util module contains the common constraints
  */
@@ -9035,6 +8850,109 @@ function avoidDrawSelector(rendererActions) {
         return false;
     }
 }
+
+var __decorate$11 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * A collection of frequently used commands that will be added around the selector
+ * ```html
+ * <div id='diagram'></div>
+ * ```
+ * ```typescript
+ * let nodes: NodeModel[] = [{
+ *           id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100,
+ *           annotations: [{ content: 'Default Shape' }]
+ *       },
+ *       {
+ *           id: 'node2', width: 100, height: 100, offsetX: 300, offsetY: 100,
+ *           shape: {
+ *               type: 'Basic', shape: 'Ellipse'
+ *           },
+ *           annotations: [{ content: 'Path Element' }]
+ *       }
+ *       ];
+ *       let connectors: ConnectorModel[] = [{
+ *           id: 'connector1',
+ *           type: 'Straight',
+ *           sourcePoint: { x: 100, y: 300 },
+ *           targetPoint: { x: 200, y: 400 },
+ *       }];
+ * let handle: UserHandleModel[] = [
+ * { name: 'handle', margin: { top: 0, bottom: 0, left: 0, right: 0 }, offset: 0,
+ * pathData: 'M 376.892,225.284L 371.279,211.95L 376.892,198.617L 350.225,211.95L 376.892,225.284 Z',
+ * side: 'Top', horizontalAlignment: 'Center', verticalAlignment: 'Center',
+ * pathColor: 'yellow' }];
+ * let diagram: Diagram = new Diagram({
+ * ...
+ *     connectors: connectors, nodes: nodes,
+ *     selectedItems: { constraints: SelectorConstraints.All, userHandles: handle },
+ * ...
+ * });
+ * diagram.appendTo('#diagram');
+ * ```
+ * @default {}
+ */
+class UserHandle extends ChildProperty {
+    /**
+     * @private
+     * Returns the name of class UserHandle
+     */
+    getClassName() {
+        return 'UserHandle';
+    }
+}
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "name", void 0);
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "pathData", void 0);
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "content", void 0);
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "source", void 0);
+__decorate$11([
+    Property('#000000')
+], UserHandle.prototype, "backgroundColor", void 0);
+__decorate$11([
+    Property('top')
+], UserHandle.prototype, "side", void 0);
+__decorate$11([
+    Property('')
+], UserHandle.prototype, "borderColor", void 0);
+__decorate$11([
+    Property(0.5)
+], UserHandle.prototype, "borderWidth", void 0);
+__decorate$11([
+    Property(25)
+], UserHandle.prototype, "size", void 0);
+__decorate$11([
+    Property('white')
+], UserHandle.prototype, "pathColor", void 0);
+__decorate$11([
+    Property(10)
+], UserHandle.prototype, "displacement", void 0);
+__decorate$11([
+    Property(true)
+], UserHandle.prototype, "visible", void 0);
+__decorate$11([
+    Property(0)
+], UserHandle.prototype, "offset", void 0);
+__decorate$11([
+    Complex({}, Margin)
+], UserHandle.prototype, "margin", void 0);
+__decorate$11([
+    Property('Center')
+], UserHandle.prototype, "horizontalAlignment", void 0);
+__decorate$11([
+    Property('Center')
+], UserHandle.prototype, "verticalAlignment", void 0);
 
 /**
  * UMLActivityShapeDictionary defines the shape of the built-in uml activity shapes
@@ -15429,6 +15347,88 @@ __decorate$2([
 __decorate$2([
     Property('Vertical')
 ], ChildContainer.prototype, "orientation", void 0);
+/**
+ * Defines the size and position of selected items and defines the appearance of selector
+ */
+class Selector extends ChildProperty {
+    /**
+     * Initializes the UI of the container
+     */
+    init(diagram) {
+        let container = new Container();
+        container.measureChildren = false;
+        container.children = [];
+        if (this.annotation) {
+            let object = (this.nodes.length > 0) ? diagram.nameTable[this.nodes[0].id].wrapper :
+                diagram.nameTable[this.connectors[0].id].wrapper;
+            let wrapper = diagram.getWrapper(object, this.annotation.id);
+            container.children.push(wrapper);
+        }
+        else {
+            if (this.nodes || this.connectors) {
+                for (let i = 0; i < this.nodes.length; i++) {
+                    let node = diagram.nameTable[this.nodes[i].id];
+                    let wrapper = node.wrapper;
+                    // this.width = wrapper.actualSize.width; 
+                    // this.height = wrapper.actualSize.height;
+                    // this.rotateAngle = wrapper.rotateAngle;
+                    // this.offsetX = wrapper.offsetX;
+                    // this.offsetY = wrapper.offsetY;
+                    container.children.push(wrapper);
+                }
+                for (let j = 0; j < this.connectors.length; j++) {
+                    let connector = diagram.nameTable[this.connectors[j].id];
+                    let wrapper = connector.wrapper;
+                    // this.width = wrapper.actualSize.width; this.height = wrapper.actualSize.height;
+                    // this.rotateAngle = wrapper.rotateAngle; this.offsetX = wrapper.offsetX;
+                    // this.offsetY = wrapper.offsetY;
+                    container.children.push(wrapper);
+                }
+            }
+        }
+        this.wrapper = container;
+        return container;
+    }
+}
+__decorate$2([
+    Property(null)
+], Selector.prototype, "wrapper", void 0);
+__decorate$2([
+    Collection([], Node)
+], Selector.prototype, "nodes", void 0);
+__decorate$2([
+    Collection([], Connector)
+], Selector.prototype, "connectors", void 0);
+__decorate$2([
+    Property()
+], Selector.prototype, "width", void 0);
+__decorate$2([
+    Property()
+], Selector.prototype, "height", void 0);
+__decorate$2([
+    Property(0)
+], Selector.prototype, "rotateAngle", void 0);
+__decorate$2([
+    Property(0)
+], Selector.prototype, "offsetX", void 0);
+__decorate$2([
+    Property(0)
+], Selector.prototype, "offsetY", void 0);
+__decorate$2([
+    Complex({ x: 0.5, y: 0.5 }, Point)
+], Selector.prototype, "pivot", void 0);
+__decorate$2([
+    Property('CompleteIntersect')
+], Selector.prototype, "rubberBandSelectionMode", void 0);
+__decorate$2([
+    Collection([], UserHandle)
+], Selector.prototype, "userHandles", void 0);
+__decorate$2([
+    Property(SelectorConstraints.All)
+], Selector.prototype, "constraints", void 0);
+__decorate$2([
+    Property()
+], Selector.prototype, "setTooltipTemplate", void 0);
 
 /**
  * Defines the functionalities that need to access DOM
@@ -49141,5 +49141,5 @@ __decorate$21([
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, findPath, findDistance, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, findPath, findDistance, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es2015.js.map

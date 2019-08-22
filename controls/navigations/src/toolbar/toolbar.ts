@@ -3,7 +3,7 @@ import { addClass, removeClass, isVisible, closest, attributes, detach, classLis
 import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { calculatePosition } from '@syncfusion/ej2-popups';
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
@@ -741,6 +741,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     private initialize(): void {
         let width: Str = formatUnit(this.width);

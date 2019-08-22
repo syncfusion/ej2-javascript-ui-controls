@@ -187,3 +187,13 @@ export const quickToolbarOpen: string = 'quickToolbarOpen';
 export const quickToolbarClose: string = 'quickToolbarClose';
 /** @hidden */
 export const popupHide: string = 'popupHide';
+/** @hidden */
+export const imageSelected: string = 'imageSelected';
+/** @hidden */
+export const imageUploading: string = 'imageUploading';
+/** @hidden */
+export const imageUploadSuccess: string = 'imageUploadSuccess';
+/** @hidden */
+export const imageUploadFailed: string = 'imageUploadFailed';
+/** @hidden */
+export const imageRemoving: string = 'imageRemoving';

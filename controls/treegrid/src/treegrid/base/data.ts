@@ -350,6 +350,7 @@ public isRemote(): boolean {
     let isExport: boolean = getObject('isExport', args);
     let expresults: Object = getObject('expresults', args);
     let exportType: string = getObject('exportType', args);
+    let isPrinting: boolean = getObject('isPrinting', args);
     let dataObj: Object; let actionArgs: NotifyArgs = getObject('actionArgs', args);
     let requestType: string = getObject('requestType', args);
     let actionData: Object = getObject('data', args); let action: string = getObject('action', args);
@@ -439,14 +440,16 @@ public isRemote(): boolean {
       }
     }
     count = results.length;
-    let temp: BeforeDataBoundArgs = this.paging(results, count, isExport, exportType, args);
+    let temp: BeforeDataBoundArgs = this.paging(results, count, isExport, isPrinting, exportType, args);
     results = temp.result;
     count = temp.count;
     args.result = results; args.count = count;
     this.parent.notify('updateResults', args);
   }
-  private paging(results: ITreeData[], count: number, isExport: boolean, exportType: string, args: object): BeforeDataBoundArgs {
-    if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
+  private paging(results: ITreeData[], count: number, isExport: boolean,
+                 isPrinting: boolean, exportType: string, args: object): BeforeDataBoundArgs {
+    if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
+     && (!isPrinting || this.parent.printMode === 'CurrentPage'))  {
       this.parent.notify(events.pagingActions, {result: results, count: count});
       results = <ITreeData[]>this.dataResults.result; count = this.dataResults.count;
     } else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')) {

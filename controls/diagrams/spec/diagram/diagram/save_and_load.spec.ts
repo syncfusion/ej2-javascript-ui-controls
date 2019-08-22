@@ -9,8 +9,7 @@ import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { ShapeAnnotationModel, AnnotationModel } from '../../../src/diagram/objects/annotation-model';
 import { Container } from '../../../src/diagram/core/containers/container';
-import { Node } from '../../../src/diagram/objects/node';
-import { SelectorModel } from '../../../src/diagram/interaction/selector-model';
+import { Node } from '../../../src/diagram/objects/node'; 
 import { Keys, KeyModifiers } from '../../../src/diagram/enum/enum';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 

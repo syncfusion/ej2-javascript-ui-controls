@@ -1,7 +1,7 @@
 import { Diagram } from '../diagram';
 import { DiagramModel } from '../diagram-model';
 import { HistoryEntry, History, } from '../diagram/history';
-import { SelectorModel } from '../interaction/selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { NodeModel, PhaseModel, LaneModel } from '../objects/node-model';
 import { SwimLane } from '../objects/node';
 import { Node, BpmnAnnotation } from './node';

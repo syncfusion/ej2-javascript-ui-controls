@@ -88,6 +88,16 @@ export interface ServerActionSettingsModel {
      */
     renderComments?: string;
 
+    /**
+     * specifies the imports annotations action of PdfViewer.
+     */
+    importAnnotations?: string;
+
+    /**
+     * specifies the export annotations action of PdfViewer.
+     */
+    exportAnnotations?: string;
+
 }
 
 /**

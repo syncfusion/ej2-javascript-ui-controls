@@ -1108,6 +1108,7 @@ export interface MarkerBaseModel {
     /**
      * To configure the dataSource of the marker.
      * @isdatamanager false
+     * @isObservable true
      * @default []
      */
     dataSource?: Object[];

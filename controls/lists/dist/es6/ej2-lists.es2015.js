@@ -861,6 +861,9 @@ let ListView = class ListView extends Component {
     constructor(options, element) {
         super(options, element);
     }
+    /**
+     * @private
+     */
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1901,6 +1904,7 @@ let ListView = class ListView extends Component {
         this.rippleFn = rippleEffect(this.element, {
             selector: '.' + classNames.listItem
         });
+        this.renderComplete();
     }
     /**
      * It is used to destroy the ListView component.

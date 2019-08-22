@@ -4376,6 +4376,13 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.addEventListener(events.dataBound, this.dataBoundFunction);
         this.on(events.keyPressed, this.onKeyPressed, this);
         this.on(events.contentReady, this.blazorTemplate, this);
+        if (isBlazor()) {
+            let fn: Function = () => {
+                this.renderComplete();
+                this.off(events.contentReady, fn);
+            };
+            this.on(events.contentReady, fn, this);
+        }
     }
     /**
      * @hidden
@@ -4480,8 +4487,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(<Node>e.target, '.e-unboundcelldiv')) {
             return;
         }
-        let dataRow: boolean = !isNullOrUndefined(closest(<Node>e.target, 'tr').getAttribute('data-uid')) &&
-                               this.getRowObjectFromUID(closest(<Node>e.target, 'tr').getAttribute('data-uid')).isDataRow;
+        let dataRow: boolean = false;
+        let tr: Element = closest(<Node>e.target, 'tr');
+        if (tr && tr.getAttribute('data-uid')) {
+            let rowObj: Row<Column> = this.getRowObjectFromUID(tr.getAttribute('data-uid'))
+            dataRow = rowObj ? rowObj.isDataRow : false;
+        }
         let args: RecordDoubleClickEventArgs = this.getRowInfo(e.target as Element) as RecordDoubleClickEventArgs;
         args.target = e.target as Element;
         if (dataRow) {

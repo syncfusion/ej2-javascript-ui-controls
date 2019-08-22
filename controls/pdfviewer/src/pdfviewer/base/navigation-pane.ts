@@ -1,7 +1,7 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { Toolbar as Tool, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context, } from '@syncfusion/ej2-navigations';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Toast, ToastCloseArgs } from '@syncfusion/ej2-notifications';
 
@@ -34,6 +34,9 @@ export class NavigationPane {
     private toastObject: Toast;
     private isTooltipCreated: boolean = false;
     private isThumbnail: boolean = false;
+    private annotationInputElement: HTMLElement;
+    private annotationContextMenu: MenuItemModel[] = [];
+    private annotationMenuObj: Context;
     /**
      * @private
      */
@@ -212,6 +215,7 @@ export class NavigationPane {
         // tslint:disable-next-line:max-line-length
         this.commentsContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_commentscontentcontainer', className: 'e-pv-comments-content-container' });
         this.commentPanelContainer.appendChild(this.commentsContentContainer);
+        this.createFileElement(this.commentPanelContainer);
     }
 
     private createCommentPanelTitleContainer(): void {
@@ -220,17 +224,101 @@ export class NavigationPane {
         // tslint:disable-next-line:max-line-length
         let commentpanelTilte: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_commentPanelTitle', className: 'e-pv-comment-panel-title', attrs: { 'tabindex': '-1' } });
         commentpanelTilte.innerText = this.pdfViewer.localeObj.getConstant('Comments');
-        let closeButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_close_btn' });
-        closeButton.className = 'e-btn e-pv-tbar-btn e-pv-comment-panel-title-close-div e-btn';
+        let annotationButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_annotations_btn' });
+        annotationButton.className = 'e-btn e-pv-tbar-btn e-pv-comment-panel-title-close-div e-btn';
         // tslint:disable-next-line:max-line-length
-        let closeButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_close' + '_icon', className: 'e-pv-title-close-icon e-pv-icon' });
-        closeButton.appendChild(closeButtonSpan);
+        let moreOptionButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_annotation_more_icon', className: 'e-pv-more-icon e-pv-icon' });
+        annotationButton.appendChild(moreOptionButtonSpan);
         commentPanelTitleContainer.appendChild(commentpanelTilte);
-        commentPanelTitleContainer.appendChild(closeButton);
+        commentPanelTitleContainer.appendChild(annotationButton);
         this.commentPanelContainer.appendChild(commentPanelTitleContainer);
-        closeButton.addEventListener('click', this.closeCommentPanelContainer.bind(this, NavigationPane));
+        this.createAnnotationContextMenu();
+        annotationButton.addEventListener('click', this.openAnnotationContextMenu.bind(this));
     }
 
+    // tslint:disable-next-line
+    private openAnnotationContextMenu(event: any): void {
+        this.annotationMenuObj.open(event.clientY, event.clientX, event.currentTarget);
+    }
+
+    /**
+     * @private
+     */
+    public createAnnotationContextMenu(): void {
+        // tslint:disable-next-line:max-line-length
+        this.annotationContextMenu = [
+            { text: this.pdfViewer.localeObj.getConstant('Export Annotations') },
+            { text: this.pdfViewer.localeObj.getConstant('Import Annotations') }];
+        let annotationMenuElement: HTMLElement = createElement('ul', { id: this.pdfViewer.element.id + '_annotation_context_menu' });
+        this.pdfViewer.element.appendChild(annotationMenuElement);
+        this.annotationMenuObj = new Context({
+            target: '#' + this.pdfViewer.element.id + '_annotations_btn', items: this.annotationContextMenu,
+            select: this.annotationMenuItemSelect.bind(this),
+        });
+        if (this.pdfViewer.enableRtl) {
+            this.annotationMenuObj.enableRtl = true;
+        }
+        this.annotationMenuObj.appendTo(annotationMenuElement);
+        if (Browser.isDevice) {
+            this.annotationMenuObj.animationSettings.effect = 'ZoomIn';
+        } else {
+            this.annotationMenuObj.animationSettings.effect = 'SlideDown';
+        }
+    }
+
+    // tslint:disable-next-line
+    private annotationMenuItemSelect(args: any): void {
+        if (args.item) {
+            switch (args.item.text) {
+                case this.pdfViewer.localeObj.getConstant('Export Annotations'):
+                    this.pdfViewerBase.exportAnnotations();
+                    break;
+                case this.pdfViewer.localeObj.getConstant('Import Annotations'):
+                    this.importAnnotationIconClick(args);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private createFileElement(toolbarElement: HTMLElement): void {
+        // tslint:disable-next-line:max-line-length
+        this.annotationInputElement = createElement('input', { id: this.pdfViewer.element.id + '_annotationUploadElement', styles: 'position:fixed; left:-100em', attrs: { 'type': 'file' } });
+        this.annotationInputElement.setAttribute('accept', '.json');
+        toolbarElement.appendChild(this.annotationInputElement);
+        this.annotationInputElement.addEventListener('change', this.loadImportAnnotation);
+    }
+
+    private importAnnotationIconClick(args: ClickEventArgs): void {
+        this.annotationInputElement.click();
+        if (Browser.isDevice) {
+            (args.originalEvent.target as HTMLElement).blur();
+            this.pdfViewerBase.focusViewerContainer();
+        }
+    }
+
+    // tslint:disable-next-line
+    private loadImportAnnotation = (args: any): void => {
+        // tslint:disable-next-line
+        let upoadedFiles: any = args.target.files;
+        if (args.target.files[0] !== null) {
+            let uploadedFile: File = upoadedFiles[0];
+            if (uploadedFile) {
+                let reader: FileReader = new FileReader();
+                reader.readAsDataURL(uploadedFile);
+                // tslint:disable-next-line
+                reader.onload = (e: any): void => {
+                    if (e.currentTarget.result) {
+                        let importFile: string =  e.currentTarget.result.split(',')[1];
+                        // tslint:disable-next-line
+                        let annotationData: any =  atob(importFile);
+                        this.pdfViewerBase.importAnnotations(JSON.parse(annotationData));
+                    }
+                };
+            }
+        }
+    }
     /**
      * @private
      */
@@ -931,6 +1019,13 @@ export class NavigationPane {
         if (this.commentsContentContainer) {
             this.commentsContentContainer.innerHTML = '';
         }
+    }
+
+    /**
+     * @private
+     */
+    public destroy(): void {
+        this.annotationMenuObj.destroy();
     }
 
     public getModuleName(): string {

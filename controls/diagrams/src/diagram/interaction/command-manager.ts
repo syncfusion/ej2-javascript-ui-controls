@@ -18,8 +18,8 @@ import { cloneObject as clone, cloneObject, getBounds, getFunction } from './../
 import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition } from './../utility/diagram-util';
 import { updatePathElement } from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
-import { SelectorModel } from './selector-model';
-import { Selector } from './selector';
+import { SelectorModel } from '../objects/node-model';
+import { Selector } from '../objects/node';
 import { hasSelection, isSelected, hasSingleConnection } from './actions';
 import { AlignmentOptions, DistributeOptions, SizingOptions, DiagramEvent, BoundaryConstraints, AlignmentMode } from '../enum/enum';
 import { HistoryEntry } from '../diagram/history';
