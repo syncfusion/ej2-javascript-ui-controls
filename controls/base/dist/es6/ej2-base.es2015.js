@@ -6649,11 +6649,12 @@ const CALL_FUNCTION = new RegExp('\\((.*)\\)', '');
 const NOT_NUMBER = new RegExp('^[0-9]+$', 'g');
 const WORD = new RegExp('[\\w"\'.\\s+]+', 'g');
 const DBL_QUOTED_STR = new RegExp('"(.*?)"', 'g');
-const SPECIAL_CHAR = /\@|\#|\$/g;
 const WORDIF = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
 let exp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
 let ARR_OBJ = /^\..*/gm;
+let SINGLE_SLASH = /\\/gi;
+let DOUBLE_SLASH = /\\\\/gi;
 /**
  * The function to set regular expression for template expression string.
  * @param  {RegExp} value - Value expression.
@@ -6706,6 +6707,7 @@ function evalExp(str, nameSpace, helper) {
         });
     }
     return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(exp, (match, cnt, offset, matchStr) => {
+        const SPECIAL_CHAR = /\@|\#|\$/gm;
         let matches = cnt.match(CALL_FUNCTION);
         // matches to detect any function calls
         if (matches) {
@@ -6761,7 +6763,7 @@ function evalExp(str, nameSpace, helper) {
             }
         }
         else if (ELSE_STMT.test(cnt)) {
-            //handling else condition
+            // handling else condition
             cnt = '"; ' + cnt.replace(ELSE_STMT, '} else { \n str = str + "');
         }
         else if (!!cnt.match(IF_OR_FOR)) {
@@ -6769,12 +6771,22 @@ function evalExp(str, nameSpace, helper) {
             cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
         }
         else if (SPECIAL_CHAR.test(cnt)) {
-            // evaluate normal expression with special character
+            // template string with double slash with special character
+            if (cnt.match(SINGLE_SLASH)) {
+                cnt = SlashReplace(cnt);
+            }
             cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
         }
         else {
-            // evaluate normal expression
-            cnt = '"+' + addNameSpace(cnt.replace(/\,/gi, '+' + nameSpace + '.'), (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+            // template string with double slash
+            if (cnt.match(SINGLE_SLASH)) {
+                cnt = SlashReplace(cnt);
+                cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
+            }
+            else {
+                // evaluate normal expression
+                cnt = '"+' + addNameSpace(cnt.replace(/\,/gi, '+' + nameSpace + '.'), (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+            }
         }
         return cnt;
     });
@@ -6793,6 +6805,18 @@ function NameSpaceArrObj(str, addNS, nameSpace, ignoreList) {
 // }
 function NameSpaceForspecialChar(str, addNS, nameSpace, ignoreList) {
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '["' + str : str);
+}
+// tslint:disable-next-line
+function SlashReplace(tempStr) {
+    // tslint:disable-next-line
+    let double = `\\\\`;
+    if (tempStr.match(DOUBLE_SLASH)) {
+        tempStr = tempStr;
+    }
+    else {
+        tempStr = tempStr.replace(SINGLE_SLASH, double);
+    }
+    return tempStr;
 }
 
 /**
@@ -6875,17 +6899,23 @@ function resetBlazorTemplate(templateId, templateName, index) {
         // tslint:disable-next-line:no-any
         let innerTemplates = templateDiv.getElementsByClassName('blazor-inner-template');
         for (let i = 0; i < innerTemplates.length; i++) {
-            let tempId = innerTemplates[i].getAttribute('data-templateId');
+            let tempId = ' ';
+            if (!isNullOrUndefined(index)) {
+                tempId = innerTemplates[index].getAttribute('data-templateId');
+            }
+            else {
+                tempId = innerTemplates[i].getAttribute('data-templateId');
+            }
             let tempElement = document.getElementById(tempId);
             if (tempElement) {
-                let length = tempElement.children.length;
+                let length = tempElement.childNodes.length;
                 for (let j = 0; j < length; j++) {
                     if (!isNullOrUndefined(index)) {
-                        innerTemplates[index].appendChild(tempElement.children[0]);
-                        return;
+                        innerTemplates[index].appendChild(tempElement.childNodes[0]);
+                        i = innerTemplates.length;
                     }
                     else {
-                        innerTemplates[i].appendChild(tempElement.children[0]);
+                        innerTemplates[i].appendChild(tempElement.childNodes[0]);
                     }
                 }
             }

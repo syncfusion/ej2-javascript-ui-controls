@@ -37,7 +37,9 @@ export class SplineBase extends LineBase {
                         this.splinePoints[point.index], series
                     );
                     series.drawPoints.push(value);
-                    if (point.yValue && value.controlPoint1.y && value.controlPoint2.y) {
+                    // fix for Y-Axis of Spline chart not adjusting scale to suit dataSource issue 
+                    let delta: number = series.yMax - series.yMin;
+                    if (point.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
                         series.yMin = Math.floor(Math.min(series.yMin, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
                         series.yMax = Math.ceil(Math.max(series.yMax, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
                     }

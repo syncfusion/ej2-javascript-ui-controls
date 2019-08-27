@@ -66,7 +66,8 @@ export class EditRender {
         gObj.element.querySelector('.e-gridform');
         if (frzCols && gObj.editSettings.mode === 'Normal') {
             let rowIndex: number = parseInt(args.row.getAttribute('aria-rowindex'), 10);
-            if (gObj.frozenRows && (args.requestType === 'add' || rowIndex < gObj.frozenRows)) {
+            if (gObj.frozenRows && ((args.requestType === 'add' && gObj.editSettings.newRowPosition === 'Top')
+                || rowIndex < gObj.frozenRows)) {
                 fForm = gObj.element.querySelector('.e-movableheader').querySelector('.e-gridform');
             } else {
                 fForm = gObj.element.querySelector('.e-movablecontent').querySelector('.e-gridform');
@@ -114,6 +115,16 @@ export class EditRender {
                     this.focusElement(cell as HTMLInputElement, args.type);
                     isFocused = true;
                 }
+            }
+        }
+        if (frzCols !== 0 && !this.parent.allowTextWrap && ((args.requestType === 'add') || args.requestType === 'beginEdit')
+            && this.parent.editSettings.mode !== 'Dialog' && !isNullOrUndefined(form) && !isNullOrUndefined(fForm)) {
+            let mTdElement: Element = (fForm.querySelector('tr').children[0]);
+            let fTdElement: Element = (form.querySelector('tr').children[0]);
+            if ((<HTMLElement>fTdElement).offsetHeight > (<HTMLElement>mTdElement).offsetHeight) {
+                (<HTMLElement>mTdElement).style.height = (<HTMLElement>fTdElement).offsetHeight + 'px';
+            } else {
+                (<HTMLElement>fTdElement).style.height = (<HTMLElement>mTdElement).offsetHeight + 'px';
             }
         }
     }

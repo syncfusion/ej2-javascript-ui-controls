@@ -136,6 +136,16 @@ export interface HyperlinkClickEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about hyperlink hover event.
+ */
+export interface HyperlinkMouseOverArgs extends BaseEventArgs {
+    /**
+     * Defines the current hyperlink element.
+     */
+    hyperlinkElement: HTMLAnchorElement;
+}
+
+/**
  * This event arguments provides the necessary information about annotation add event.
  */
 export interface AnnotationAddEventArgs extends BaseEventArgs {

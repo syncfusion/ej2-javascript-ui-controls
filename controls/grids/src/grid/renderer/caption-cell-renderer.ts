@@ -6,6 +6,7 @@ import { CellRenderer } from './cell-renderer';
 import { IGrid } from '../base/interface';
 import { appendChildren, templateCompiler } from '../base/util';
 import { GroupedData } from '../services/group-model-generator';
+import { blazorId } from '../base/constant';
 
 /**
  * GroupCaptionCellRenderer class which responsible for building group caption cell. 
@@ -38,6 +39,8 @@ export class GroupCaptionCellRenderer extends CellRenderer implements ICellRende
             if (isBlazor()) {
                 let tempID: string = gObj.element.id + 'captionTemplate';
                 result = templateCompiler(gObj.groupSettings.captionTemplate)(data, null, null, tempID);
+                window[tempID] = window[tempID] || {};
+                window[tempID][data[blazorId]] = node;
             } else {
                 result = templateCompiler(gObj.groupSettings.captionTemplate)(data);
             }

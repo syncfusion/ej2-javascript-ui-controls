@@ -54,6 +54,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     private sidebarEle: Touch;
     private sidebarEleCopy: HTMLElement;
     protected tabIndex: string;
+    private windowWidth: number;
 
     /**
      * Specifies the size of the Sidebar in dock state.
@@ -257,6 +258,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
+        if (Browser.isDevice) {
+            this.windowWidth = window.innerWidth;
+        }
     }
 
     private setEnableRTL(): void {
@@ -536,9 +540,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 media = (this.mediaQuery).matches;
             }
-            if (media) {
+            if (media && this.windowWidth !== window.innerWidth) {
                 this.show();
-            } else if (this.getState()) {
+            } else if (this.getState() && this.windowWidth !== window.innerWidth) {
                 this.hide();
             }
         }
@@ -552,7 +556,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         this.setMediaQuery();
-
+        if (Browser.isDevice) {
+            this.windowWidth = window.innerWidth;
+        }
     }
 
     private documentclickHandler(e: MouseEvent): void {
@@ -749,6 +755,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         this.element.style.width = '';
         this.element.style.zIndex = '';
         this.element.style.transform = '';
+        this.windowWidth = null;
         (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content')

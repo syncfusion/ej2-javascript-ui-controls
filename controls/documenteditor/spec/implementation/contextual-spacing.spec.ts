@@ -290,7 +290,14 @@ describe('Contextual spacing word export validation', () => {
         (editor.wordExportModule as any).serializeParagraphFormat(writer, write.sections[0].blocks[1].paragraphFormat, write.sections[0].blocks[1]);
         expect((writer as any).bufferText.indexOf('<w:contextualSpacing')).not.toBe(-1);
     });
-    it('export without Contextual spacing', () => {
+    it('export with Contextual spacing as false', () => {
+        let write = editor.sfdtExportModule.write();
+        write.sections[0].blocks[1].paragraphFormat.contextualSpacing = false;
+        let writer: XmlWriter = new XmlWriter();
+        (editor.wordExportModule as any).serializeParagraphFormat(writer, write.sections[0].blocks[1].paragraphFormat, write.sections[0].blocks[1]);
+        expect((writer as any).bufferText.indexOf('<w:contextualSpacing w:val="0"')).not.toBe(-1);
+    });
+    it('export with Contextual spacing as undefined', () => {
         let write = editor.sfdtExportModule.write();
         expect(write.sections[0].blocks[1].paragraphFormat.contextualSpacing).toBe(true);
         let writer: XmlWriter = new XmlWriter();

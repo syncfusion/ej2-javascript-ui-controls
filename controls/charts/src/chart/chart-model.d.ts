@@ -512,7 +512,6 @@ export interface ChartModel extends ComponentModel{
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
-     * @deprecated
      */
 
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;

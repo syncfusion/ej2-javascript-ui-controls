@@ -2696,8 +2696,8 @@ function findlElement(elements, id) {
 }
 /** @private */
 function getPoint(x, y, xAxis, yAxis, isInverted, series) {
-    x = ((xAxis.valueType === 'Logarithmic') ? logBase(((x > 1) ? x : 1), xAxis.logBase) : x);
-    y = ((yAxis.valueType === 'Logarithmic') ? logBase(((y > 1) ? y : 1), yAxis.logBase) : y);
+    x = ((xAxis.valueType === 'Logarithmic') ? logBase(((x > 0) ? x : 1), xAxis.logBase) : x);
+    y = ((yAxis.valueType === 'Logarithmic') ? logBase(((y > 0) ? y : 1), yAxis.logBase) : y);
     x = valueToCoefficient(x, xAxis);
     y = valueToCoefficient(y, yAxis);
     let xLength = (isInverted ? xAxis.rect.height : xAxis.rect.width);
@@ -7297,6 +7297,7 @@ let Chart = class Chart extends Component {
         this.initTrendLines();
         this.calculateVisibleAxis();
         this.processData();
+        this.renderComplete();
     }
     /**
      * Gets the localized label by locale keyword.
@@ -9878,15 +9879,29 @@ class DateTimeCategory extends Category {
         });
         for (let i = 0; i < axis.labels.length; i++) {
             labelStyle = (extend({}, getValue('properties', axis.labelStyle), null, true));
-            if (!this.sameInterval(axis.labels.map(Number)[i], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)) {
+            if (!this.sameInterval(axis.labels.map(Number)[i], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
+                || axis.isIndexed) {
                 if (withIn(i - padding, axis.visibleRange)) {
-                    triggerLabelRender(this.chart, i, axis.format(new Date(axis.labels.map(Number)[i])), labelStyle, axis);
+                    triggerLabelRender(this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i], axis.format) :
+                        axis.format(new Date(axis.labels.map(Number)[i]))), labelStyle, axis);
                 }
             }
         }
         if (axis.getMaxLabelWidth) {
             axis.getMaxLabelWidth(this.chart);
         }
+    }
+    /**
+     * To get the Indexed axis label text with axis format for DateTimeCategory axis
+     * @param value
+     * @param format
+     */
+    getIndexedAxisLabel(value, format) {
+        let texts = value.split(',');
+        for (let i = 0; i < texts.length; i++) {
+            texts[i] = format(new Date(parseInt(texts[i], 10)));
+        }
+        return texts.join(', ');
     }
     /**
      * get same interval
@@ -13422,7 +13437,9 @@ class SplineBase extends LineBase {
                     let previous = this.getPreviousIndex(points, point.index - 1, series);
                     value = this.getControlPoints(points[previous], point, this.splinePoints[previous], this.splinePoints[point.index], series);
                     series.drawPoints.push(value);
-                    if (point.yValue && value.controlPoint1.y && value.controlPoint2.y) {
+                    // fix for Y-Axis of Spline chart not adjusting scale to suit dataSource issue 
+                    let delta = series.yMax - series.yMin;
+                    if (point.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
                         series.yMin = Math.floor(Math.min(series.yMin, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
                         series.yMax = Math.ceil(Math.max(series.yMax, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
                     }
@@ -15881,6 +15898,9 @@ class Crosshair {
         else if (axis.valueType === 'Category') {
             return axis.labels[Math.floor(value)];
         }
+        else if (axis.valueType === 'DateTimeCategory') {
+            return this.chart.dateTimeCategoryModule.getIndexedAxisLabel(axis.labels[Math.floor(value)], axis.format);
+        }
         else if (axis.valueType === 'Logarithmic') {
             return value = axis.format(Math.pow(axis.logBase, value));
         }
@@ -16122,13 +16142,13 @@ class BaseTooltip extends ChartData {
             }
         }
     }
-    createTooltip(chart, isFirst, header, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null) {
+    createTooltip(chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints = null, templatePoint = null) {
         let series = this.currentPoints[0].series;
         let module = chart.tooltipModule || chart.accumulationTooltipModule;
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: header, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
+                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
                 enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
                 shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                 areaBounds: bounds, palette: this.findPalette(), template: chart.tooltip.template, data: templatePoint,
@@ -16154,7 +16174,7 @@ class BaseTooltip extends ChartData {
             if (this.svgTooltip) {
                 this.svgTooltip.location = location;
                 this.svgTooltip.content = this.text;
-                this.svgTooltip.header = header;
+                this.svgTooltip.header = this.headerText;
                 this.svgTooltip.offset = offset;
                 this.svgTooltip.palette = this.findPalette();
                 this.svgTooltip.shapes = shapes;
@@ -16218,22 +16238,22 @@ class BaseTooltip extends ChartData {
         }
         this.previousPoints = [];
     }
-    triggerEvent(point, isFirst, textCollection, firstText = true) {
-        let argsData = {
-            cancel: false, name: tooltipRender, text: textCollection,
-            point: point.point, series: point.series, textStyle: this.textStyle
-        };
-        this.chart.trigger(tooltipRender, argsData);
-        if (!argsData.cancel) {
-            if (point.series.type === 'BoxAndWhisker') {
-                this.removeText();
-                isFirst = true;
-            }
-            this.formattedText = this.formattedText.concat(argsData.text);
-            this.text = this.formattedText;
-        }
-        return !argsData.cancel;
-    }
+    // public triggerEvent(point: PointData | AccPointData, isFirst: boolean, textCollection: string, firstText: boolean = true): boolean {
+    //     let argsData: ITooltipRenderEventArgs = {
+    //         cancel: false, name: tooltipRender, text: textCollection,
+    //         point: point.point, series: point.series, textStyle: this.textStyle
+    //     };
+    //     this.chart.trigger(tooltipRender, argsData);
+    //     if (!argsData.cancel) {
+    //         if (point.series.type === 'BoxAndWhisker') {
+    //             this.removeText();
+    //             isFirst = true;
+    //         }
+    //         this.formattedText = this.formattedText.concat(argsData.text);
+    //         this.text = this.formattedText;
+    //     }
+    //     return !argsData.cancel;
+    // }
     removeText() {
         this.textElements = [];
         let element = this.getElement(this.element.id + '_tooltip_group');
@@ -16389,14 +16409,7 @@ class Tooltip$1 extends BaseTooltip {
         this.currentPoints = [];
         if (this.findData(data, this.previousPoints[0])) {
             if (this.pushData(data, isFirst, tooltipDiv, true)) {
-                if (this.triggerEvent(data, isFirst, this.getTooltipText(data))) {
-                    this.createTooltip(chart, isFirst, this.findHeader(data), this.getSymbolLocation(data), data.series.clipRect, data.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(data));
-                }
-                else {
-                    this.removeHighlight(this.control);
-                    remove(this.getElement(this.element.id + '_tooltip'));
-                }
-                this.isRemove = true;
+                this.triggerTooltipRender(data, isFirst, this.getTooltipText(data), this.findHeader(data));
             }
         }
         else {
@@ -16415,6 +16428,33 @@ class Tooltip$1 extends BaseTooltip {
         if (data && data.point) {
             this.findMouseValue(data, chart);
         }
+    }
+    triggerTooltipRender(point, isFirst, textCollection, headerText, firstText = true) {
+        let argsData = {
+            cancel: false, name: tooltipRender, text: textCollection, headerText: headerText,
+            series: this.chart.isBlazor ? {} : point.series, textStyle: this.textStyle, point: point.point,
+            data: { pointX: point.point.x, pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
+                pointIndex: point.point.index, pointText: point.point.text }
+        };
+        let chartTooltipSuccess = (argsData) => {
+            if (!argsData.cancel) {
+                if (point.series.type === 'BoxAndWhisker') {
+                    this.removeText();
+                    isFirst = true;
+                }
+                this.headerText = argsData.headerText;
+                this.formattedText = this.formattedText.concat(argsData.text);
+                this.text = this.formattedText;
+                this.createTooltip(this.chart, isFirst, this.getSymbolLocation(point), point.series.clipRect, point.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), this.chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(point));
+            }
+            else {
+                this.removeHighlight(this.control);
+                remove(this.getElement(this.element.id + '_tooltip'));
+            }
+            this.isRemove = true;
+        };
+        chartTooltipSuccess.bind(this, point);
+        this.chart.trigger(tooltipRender, argsData, chartTooltipSuccess);
     }
     findMarkerHeight(pointData) {
         if (!this.chart.tooltip.enableMarker) {
@@ -16532,7 +16572,7 @@ class Tooltip$1 extends BaseTooltip {
         }
         this.removeText();
         for (let series of chart.visibleSeries) {
-            if (!series.enableTooltip) {
+            if (!series.enableTooltip || !series.visible) {
                 continue;
             }
             if (chart.chartAreaType === 'Cartesian' && series.visible) {
@@ -16544,21 +16584,50 @@ class Tooltip$1 extends BaseTooltip {
             if (data && this.header !== '' && this.currentPoints.length === 0) {
                 headerContent = this.findHeader(data);
             }
-            if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data))) {
-                this.findMouseValue(data, chart);
-                this.currentPoints.push(data);
-                data = null;
+            if (data) {
+                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
             }
-            else if (data) {
-                extraPoints.push(data);
-            }
+            // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
+            //     this.findMouseValue(data, chart);
+            //     (<PointData[]>this.currentPoints).push(data);
+            //     data = null;
+            // } else if (data) {
+            //     extraPoints.push(data);
+            // }
         }
         if (this.currentPoints.length > 0) {
-            this.createTooltip(chart, isFirst, headerContent, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
+            this.createTooltip(chart, isFirst, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
         }
         else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
+    }
+    triggerSharedTooltip(point, isFirst, textCollection, headerText, extraPoints) {
+        let argsData = {
+            cancel: false, name: tooltipRender, text: textCollection, headerText: headerText,
+            point: point.point, series: this.chart.isBlazor ? {} : point.series, textStyle: this.textStyle,
+            data: { pointX: point.point.x, pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
+                pointIndex: point.point.index, pointText: point.point.text }
+        };
+        let sharedTooltipSuccess = (argsData) => {
+            if (!argsData.cancel) {
+                if (point.series.type === 'BoxAndWhisker') {
+                    this.removeText();
+                    isFirst = true;
+                }
+                this.formattedText = this.formattedText.concat(argsData.text);
+                this.text = this.formattedText;
+                this.headerText = argsData.headerText;
+                this.findMouseValue(point, this.chart);
+                this.currentPoints.push(point);
+                point = null;
+            }
+            else {
+                extraPoints.push(point);
+            }
+        };
+        sharedTooltipSuccess.bind(this, point, extraPoints);
+        this.chart.trigger(tooltipRender, argsData, sharedTooltipSuccess);
     }
     findSharedLocation() {
         let stockChart = this.chart.stockChart;
@@ -17824,6 +17893,7 @@ class Selection extends BaseSelection {
      */
     constructor(chart) {
         super(chart);
+        this.isdrawRect = true;
         this.chart = chart;
         this.renderer = chart.renderer;
         this.addEventListener();
@@ -18185,6 +18255,13 @@ class Selection extends BaseSelection {
                     let yValue = series.type !== 'RangeArea' ? points[j].yValue :
                         points[j].regions[0].y;
                     let isCurrentPoint;
+                    let selectedPointX = points[j].xValue;
+                    if (chart.primaryXAxis.valueType === 'Category') {
+                        selectedPointX = points[j].x.toLocaleString();
+                    }
+                    else if (chart.primaryXAxis.valueType === 'DateTime') {
+                        selectedPointX = new Date(points[j].xValue);
+                    }
                     if (series.type === 'BoxAndWhisker') {
                         isCurrentPoint = points[j].regions.some((region) => {
                             return withInBounds(region.x + xAxisOffset, region.y + yAxisOffset, rect);
@@ -18198,10 +18275,10 @@ class Selection extends BaseSelection {
                     if (isCurrentPoint && series.category !== 'Indicator') {
                         index = new Index(series.index, points[j].index);
                         this.selection(chart, index, this.findElements(chart, series, index));
-                        selectedPointValues.push({ x: points[j].xValue.toString(), y: yValue });
+                        selectedPointValues.push({ x: selectedPointX, y: yValue });
                     }
                     if (isCurrentPoint && series.type === 'RangeArea') {
-                        selectedPointValues.push({ x: points[j].xValue.toString(), y: points[j].regions[0].y });
+                        selectedPointValues.push({ x: selectedPointX, y: points[j].regions[0].y });
                     }
                 }
                 selectedSeriesValues.push(selectedPointValues);
@@ -18228,6 +18305,14 @@ class Selection extends BaseSelection {
      */
     drawDraggingRect(chart, dragRect) {
         let cartesianLayout = chart.chartAxisLayoutPanel.seriesClipRect;
+        let border = chart.chartArea.border.width;
+        if (this.isdrawRect) {
+            cartesianLayout.x = cartesianLayout.x - border / 2;
+            cartesianLayout.y = cartesianLayout.y - border / 2;
+            cartesianLayout.width = cartesianLayout.width + border;
+            cartesianLayout.height = cartesianLayout.height + border;
+            this.isdrawRect = false;
+        }
         switch (chart.selectionMode) {
             case 'DragX':
                 dragRect.y = cartesianLayout.y;
@@ -23348,6 +23433,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         this.pieSeriesModule = new PieSeries(this);
         this.calculateVisibleSeries();
         this.processData();
+        this.renderComplete();
     }
     /**
      * Method to unbind events for accumulation chart
@@ -25613,14 +25699,7 @@ class AccumulationTooltip extends BaseTooltip {
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
             if (this.pushData(data, isFirst, tooltipDiv, false)) {
-                if (this.triggerEvent(data, isFirst, this.getTooltipText(data, chart.tooltip))) {
-                    this.createTooltip(chart, isFirst, this.findHeader(data), data.point.symbolLocation, data.series.clipRect, data.point, ['Circle'], 0, rect, null, data.point);
-                }
-                else {
-                    this.removeHighlight(this.control);
-                    remove(this.getElement(this.element.id + '_tooltip'));
-                }
-                this.isRemove = true;
+                this.triggerTooltipRender(data, isFirst, this.getTooltipText(data, chart.tooltip), this.findHeader(data));
             }
         }
         else {
@@ -25629,6 +25708,29 @@ class AccumulationTooltip extends BaseTooltip {
                 this.isRemove = false;
             }
         }
+    }
+    triggerTooltipRender(point, isFirst, textCollection, headerText, firstText = true) {
+        let argsData = {
+            cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
+            series: this.accumulation.isBlazor ? {} : point.series, headerText: headerText,
+            data: { pointX: point.point.x, pointY: point.point.y, seriesIndex: point.series.index,
+                pointIndex: point.point.index, pointText: point.point.text, seriesName: point.series.name }
+        };
+        let tooltipSuccess = (argsData) => {
+            if (!argsData.cancel) {
+                this.formattedText = this.formattedText.concat(argsData.text);
+                this.text = this.formattedText;
+                this.headerText = argsData.headerText;
+                this.createTooltip(this.chart, isFirst, point.point.symbolLocation, point.series.clipRect, point.point, ['Circle'], 0, this.chart.initialClipRect, null, point.point);
+            }
+            else {
+                this.removeHighlight(this.control);
+                remove(this.getElement(this.element.id + '_tooltip'));
+            }
+            this.isRemove = true;
+        };
+        tooltipSuccess.bind(this, point);
+        this.chart.trigger(tooltipRender, argsData, tooltipSuccess);
     }
     getPieData(e, chart, x, y) {
         let target = e.target;
@@ -27443,6 +27545,7 @@ let RangeNavigator = class RangeNavigator extends Component {
         this.calculateBounds();
         this.chartSeries.renderChart(this);
         removeElement$1('chartmeasuretext');
+        this.renderComplete();
     }
     /**
      * Theming for rangeNavigator
@@ -30211,7 +30314,6 @@ class StockChart extends Component {
         for (let property of Object.keys(newProp)) {
             switch (property) {
                 case 'series':
-                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -30296,7 +30398,13 @@ class StockChart extends Component {
     storeDataSource() {
         this.series.forEach((series) => {
             this.tempSeriesType.push(series.type);
+            series.localData = undefined;
         });
+        this.initialRender = true;
+        this.rangeFound = false;
+        this.resizeTo = null;
+        this.startValue = null;
+        this.endValue = null;
     }
     /**
      * To Initialize the control rendering.
@@ -30312,6 +30420,7 @@ class StockChart extends Component {
             this.stockChartDataManagerSuccess();
             this.initialRender = false;
         }
+        this.renderComplete();
     }
     /**
      * DataManager Success
@@ -33866,13 +33975,14 @@ let Smithchart = class Smithchart extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        this.animateSeries = false;
         let renderer = false;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'background':
                 case 'border':
                 case 'series':
+                case 'legendSettings':
+                case 'radius':
                     renderer = true;
                     break;
                 case 'size':
@@ -33880,6 +33990,7 @@ let Smithchart = class Smithchart extends Component {
                     renderer = true;
                     break;
                 case 'theme':
+                case 'renderType':
                     this.animateSeries = true;
                     renderer = true;
                     break;
@@ -33934,6 +34045,7 @@ let Smithchart = class Smithchart extends Component {
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
+        this.renderComplete();
         this.trigger('loaded', { smithchart: this.isBlazor ? null : this });
     }
     createSecondaryElement() {
@@ -36087,6 +36199,7 @@ let Sparkline = class Sparkline extends Component {
     render() {
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
+        this.renderComplete();
     }
     /**
      * @private

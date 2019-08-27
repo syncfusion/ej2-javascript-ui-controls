@@ -55,6 +55,7 @@ describe('HTML - Parent based selection', () => {
                             'FontName']
                     },
                     value: innerHTMLStr,
+                    placeholder : 'Syncfusion RichTextEditor',
                     actionComplete: (): void => {
                         action = true;
                     }
@@ -244,7 +245,7 @@ describe('HTML - Parent based selection', () => {
                 let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[5];
                 (trgEle.childNodes[0] as HTMLElement).click();
                 selectNode = editNode.querySelector('.first-p-node');
-                expect(selectNode.tagName === 'OL').toBe(true);
+                expect(selectNode.parentElement.tagName === 'OL').toBe(true);
             });
             it("Lists - UL", () => {
                 selectNode = editNode.querySelector('.second-p-node');
@@ -252,7 +253,7 @@ describe('HTML - Parent based selection', () => {
                 let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[6];
                 (trgEle.childNodes[0] as HTMLElement).click();
                 selectNode = editNode.querySelector('.second-p-node');
-                expect(selectNode.tagName === 'UL').toBe(true);
+                expect(selectNode.parentElement.tagName === 'UL').toBe(true);
             });
 
             it(' tab key navigation from second li start point', () => {
@@ -279,6 +280,15 @@ describe('HTML - Parent based selection', () => {
                 (trgEle.childNodes[0] as HTMLElement).click();
                 selectNode = editNode.querySelector('.third-p-node');
                 expect((selectNode as HTMLElement).style.marginLeft === '20px').toBe(true);
+            });
+            it("check-placeholder", function () {
+                rteObj.value='';
+                rteObj.dataBind();
+                expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).style.display).toBe('block');
+                var trgEle = rteEle.querySelectorAll(".e-toolbar-item")[5];
+                (trgEle.childNodes[0] as HTMLElement).click();
+                expect((document.getElementsByClassName('rte-placeholder')[0] as HTMLElement).style.display).toBe('none');
+                expect((rteObj.inputElement.firstChild as HTMLElement).tagName).toBe('OL');
             });
             afterAll(() => {
                 destroy(rteObj);
@@ -452,7 +462,7 @@ describe('HTML - Parent based selection', () => {
                 let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[5];
                 (trgEle.childNodes[0] as HTMLElement).click();
                 selectNode = editNode.querySelector('.first-p-node');
-                expect(selectNode.tagName === 'OL').toBe(true);
+                expect(selectNode.parentElement.tagName === 'OL').toBe(true);
             });
             it("Lists - UL", () => {
                 selectNode = editNode.querySelector('.second-p-node');
@@ -460,7 +470,7 @@ describe('HTML - Parent based selection', () => {
                 let trgEle: HTMLElement = <HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[6];
                 (trgEle.childNodes[0] as HTMLElement).click();
                 selectNode = editNode.querySelector('.second-p-node');
-                expect(selectNode.tagName === 'UL').toBe(true);
+                expect(selectNode.parentElement.tagName === 'UL').toBe(true);
             });
 
             it("Indents - Indent", () => {

@@ -3545,8 +3545,11 @@ export class WordExport {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
-        if (paragraphFormat.contextualSpacing) {
+        if (!isNullOrUndefined(paragraphFormat.contextualSpacing)) {
             writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
+            if (!paragraphFormat.contextualSpacing) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, '0');
+            }
             writer.writeEndElement();
         }
         this.serializeParagraphSpacing(writer, paragraphFormat);

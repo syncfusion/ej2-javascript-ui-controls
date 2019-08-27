@@ -540,6 +540,16 @@ describe('RTE base module', () => {
             expect(actionBegin).toBe(false);
             actionBegin = false;
         });
+        it('Enter key quicktoolbar hide testing', function () {
+            rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.com';
+            let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
+            let sel = new NodeSelection().setSelectionText(document, nodetext, nodetext, nodetext.textContent.length, nodetext.textContent.length);
+            keyboardEventArgs.action = 'enter';
+            keyboardEventArgs.keyCode = 13;
+            (<any>rteObj).keyDown(keyboardEventArgs);
+            let popupElement: HTMLCollectionOf<Element> = document.getElementsByClassName('e-rte-quick-popup');
+            expect(popupElement.length === 0).toBe(true);            
+        });
         it('space key', function () {
             rteObj.contentModule.getEditPanel().innerHTML = 'datamanager https://www.google.com';
             let nodetext: any = rteObj.contentModule.getEditPanel().childNodes[0];
@@ -2110,7 +2120,7 @@ describe('RTE base module', () => {
             keyBoardEvent.action = 'ordered-list';
             (rteObj as any).keyDown(keyBoardEvent);
             selectNode = editNode.querySelector('.first-p');
-            expect((selectNode as HTMLElement).tagName === 'OL').toBe(true);
+            expect((selectNode as HTMLElement).parentElement.tagName === 'OL').toBe(true);
         });
 
         it('unordered-list: ctrl+alt+o', () => {
@@ -2122,7 +2132,7 @@ describe('RTE base module', () => {
             keyBoardEvent.action = 'unordered-list';
             (rteObj as any).keyDown(keyBoardEvent);
             selectNode = editNode.querySelector('.first-p');
-            expect((selectNode as HTMLElement).tagName === 'UL').toBe(true);
+            expect((selectNode as HTMLElement).parentElement.tagName === 'UL').toBe(true);
         });
 
         it('html-source: ctrl+shift+h - Preview mode', () => {
@@ -3222,6 +3232,39 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
         setCursorPoint(curDocument, selectNode, 0);
         (rteObj as any).keyDown(keyBoardEvent);
         expect(editNode.textContent.length === 0).toBe(true);
+    });
+});
+
+describe('Tab key navigation with empty RTE content and enableTabKey is set true', () => {
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab', keyCode: 9 };
+    let rteObj: RichTextEditor;
+    let curDocument: Document;
+    let editNode: Element;
+    let rteEle: Element;
+    let selectNode: Element;
+    let isChanged: boolean = false;
+    beforeAll(() => {
+        rteObj = renderRTE({
+            toolbarSettings: {
+                items: ['|', 'Formats', '|', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|', 'Indent', 'Outdent', '|',
+                    'FontName']
+            },
+            enableTabKey: true
+        });
+        rteEle = rteObj.element;
+        editNode = rteObj.contentModule.getEditPanel();
+        curDocument = rteObj.contentModule.getDocument();
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        detach(rteEle);
+    });
+    it(' tab key navigation from RTE with empty content', () => {
+        selectNode = editNode.querySelector('p');
+        setCursorPoint(curDocument, selectNode, 0);
+        (rteObj as any).keyDown(keyBoardEvent);
+        let expectedInnerHTML: string = `&nbsp;&nbsp;&nbsp;&nbsp;<br>`;
+        expect(selectNode.innerHTML === expectedInnerHTML).toBe(true);
     });
 });
 

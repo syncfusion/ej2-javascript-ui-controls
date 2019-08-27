@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs  } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -28,6 +28,23 @@ export interface AjaxRequestSettingsModel {
      * set the ajax Header values in the PdfViewer.
      */
     ajaxHeaders?: IAjaxHeaders[];
+
+}
+
+/**
+ * Interface for a class CustomStampItem
+ */
+export interface CustomStampItemModel {
+
+    /**
+     * specifies the stamp Name of the PdfViewer.
+     */
+    customStampName?: string;
+
+    /**
+     * specifies the stamp ImageSource of the PdfViewer.
+     */
+    customStampImageSource?: string;
 
 }
 
@@ -498,6 +515,11 @@ export interface CustomStampSettingsModel {
      */
     top?: number;
 
+    /**
+     * Specifies to maintain the newly added custom stamp element in the menu items.
+     */
+    isAddToSubMenu?: boolean;
+
 }
 
 /**
@@ -966,6 +988,13 @@ export interface PdfViewerModel extends ComponentModel{
     ajaxRequestSettings?: AjaxRequestSettingsModel;
 
     /**
+     * Defines the stamp items of the PdfViewer.
+     */
+    // tslint:disable-next-line:max-line-length
+
+    customStampItems?: CustomStampItemModel[];
+
+    /**
      * Defines the settings of the PdfViewer annotation toolbar.
      */
     // tslint:disable-next-line:max-line-length
@@ -1128,6 +1157,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'OnHyperlinkClick'
      */
     hyperlinkClick?: EmitType<HyperlinkClickEventArgs>;
+
+    /**
+     * Triggers when hyperlink in the PDF Document is hovered
+     * @event
+     * @blazorProperty 'OnHyperlinkMouseOver'
+     */
+    hyperlinkMouseOver?: EmitType<HyperlinkMouseOverArgs>;
 
     /**
      * Triggers when there is change in the magnification value.

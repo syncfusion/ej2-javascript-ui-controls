@@ -41,7 +41,7 @@ export class BookmarkView {
     public createRequestForBookmarks(): void {
         let proxy: BookmarkView = this;
         // tslint:disable-next-line:max-line-length
-        let jsonObject: object = { hashId: this.pdfViewerBase.hashId, action: 'Bookmarks' };
+        let jsonObject: object = { hashId: this.pdfViewerBase.hashId, action: 'Bookmarks', elementId: this.pdfViewer.element.id };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
@@ -194,13 +194,22 @@ export class BookmarkView {
 
     // tslint:disable-next-line
     private setHeight(element: any): void {
-        if (this.treeObj.fullRowSelect) {
+        if (this.treeObj.fullRowSelect && element.classList) {
             if (element.classList.contains('e-treeview')) {
                 element = element.querySelector('.e-node-focus').querySelector('.e-fullrow');
             } else if (element.classList.contains('e-list-parent')) {
                 element = element.querySelector('.e-fullrow');
-            } else if (element.classList.value !== ('e-fullrow') && element.closest('.e-list-item')) {
-                element = element.closest('.e-list-item').querySelector('.e-fullrow');
+            } else if (element.classList.value !== ('e-fullrow')) {
+                if (element.closest && element.closest('.e-list-item')) {
+                    element = element.closest('.e-list-item').querySelector('.e-fullrow');
+                } else {
+                    if (element.classList.contains('e-list-item')) {
+                        element = element.querySelector('.e-fullrow');
+                    } else if (element.classList.contains('e-icons') && element.classList.contains('interaction')
+                        && element.parentElement.parentElement.classList.contains('e-list-item')) {
+                        element = element.parentElement.parentElement.querySelector('.e-fullrow');
+                    }
+                }
             }
             if (element.nextElementSibling) {
                 element.style.height = element.nextElementSibling.offsetHeight + 'px';

@@ -162,7 +162,7 @@ export class SelectionCommands {
                     liElement = parentElement;
                 }
                 if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                    liElement.textContent === nodes[index].textContent) {
+                    liElement.textContent.trim() === nodes[index].textContent.trim()) {
                     liElement.style.fontSize = value;
                 }
             }
@@ -199,7 +199,7 @@ export class SelectionCommands {
                             liElement = parentElement;
                         }
                         if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                            liElement.textContent === nodes[index].textContent) {
+                            liElement.textContent.trim() === nodes[index].textContent.trim()) {
                             liElement.style.fontSize = value;
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);

@@ -566,6 +566,11 @@ class HierarchicalLayoutUtil {
             if (numConnectedNeighbours > 0) {
                 cellMedian = (medianNextLevel * nextConnectedCount + medianPreviousLevel * prevConnectedCount) / numConnectedNeighbours;
             }
+            if (nextConnectedCount === 1 && prevConnectedCount === 1) {
+                cellMedian = (medianPreviousLevel * prevConnectedCount) / prevConnectedCount;
+            } else if (nextConnectedCount === 1) {
+                cellMedian = (medianNextLevel * nextConnectedCount) / nextConnectedCount;
+            }
             let positionChanged: boolean = false;
             let tempValue: number = undefined;
             if (cellMedian < currentPosition - tolerance) {

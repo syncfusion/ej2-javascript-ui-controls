@@ -15,7 +15,7 @@ import { InlineEdit } from './inline-edit';
 import { BatchEdit } from './batch-edit';
 import { DialogEdit } from './dialog-edit';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { parentsUntil, getComplexFieldID, setComplexFieldID } from '../base/util';
+import { parentsUntil, getComplexFieldID, setComplexFieldID, getScrollBarWidth } from '../base/util';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { DatePickerEditCell } from '../renderer/datepicker-edit-cell';
 import { calculateRelativeBasedPosition, OffsetPosition } from '@syncfusion/ej2-popups';
@@ -868,7 +868,14 @@ export class Edit implements IAction {
             div.style.top = pos.top + inputClient.height + 9 + 'px';
         }
         if (validationForBottomRowPos) {
-            div.style.bottom = inputClient.height + 9  + 'px';
+            if (isScroll) {
+                let scrollElem: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
+                let scrollWidth: number = scrollElem.scrollWidth > scrollElem.offsetWidth ? getScrollBarWidth() : 0;
+                div.style.bottom = ((this.parent.height as number) - (this.parent.getContentTable() as HTMLElement).offsetHeight
+                    - scrollWidth) + inputClient.height + 9 + 'px';
+            } else {
+                div.style.bottom = inputClient.height + 9 + 'px';
+            }
             div.style.top = null;
         }
     }

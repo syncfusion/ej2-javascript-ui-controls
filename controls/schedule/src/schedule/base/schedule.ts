@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, Property, Event, Animation, Collection } from '@syncfusion/ej2-base';
+import { Component, ModuleDeclaration, Property, Event, Animation, Collection, isBlazor } from '@syncfusion/ej2-base';
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
 import { getElement, removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
@@ -43,6 +43,7 @@ import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, Dra
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
 import { ViewsData } from '../base/interface';
 import { ResourceBase } from '../base/resource';
+import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
@@ -650,6 +651,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
+    }
+
+    public renderCompleted(): void {
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
 
     public updateLayoutTemplates(): void {
@@ -1982,6 +1989,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Update the recurrence editor instance from custom editor template.
+     * @method updateRecurrenceEditor
+     */
+    public updateRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
+        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
+    }
+
+    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -2032,7 +2047,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let eventStart: Date;
         let eventEnd: Date;
         let eventObj: { [key: string]: Object } = this.activeEventData.event as { [key: string]: Object };
-        if (startTime instanceof Date || typeof(startTime) === 'string') {
+        if (startTime instanceof Date || typeof (startTime) === 'string') {
             eventStart = startTime as Date;
             eventEnd = endTime;
         } else {

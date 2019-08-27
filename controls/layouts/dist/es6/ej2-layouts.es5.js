@@ -467,8 +467,17 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.addSeparator(this.element);
     };
     Splitter.prototype.checkSplitPane = function (currentBar, elementIndex) {
-        var paneEle = currentBar.parentElement.children[elementIndex];
+        var paneEle = this.collectPanes(currentBar.parentElement.children)[elementIndex];
         return paneEle;
+    };
+    Splitter.prototype.collectPanes = function (childNodes) {
+        var elements = [];
+        for (var i = 0; i < childNodes.length; i++) {
+            if (childNodes[i].classList.contains('e-pane')) {
+                elements.push(childNodes[i]);
+            }
+        }
+        return elements;
     };
     Splitter.prototype.getPrevPane = function (currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -1797,6 +1806,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
+        this.renderComplete();
     };
     DashboardLayout.prototype.initGridLines = function () {
         this.table = document.createElement('table');

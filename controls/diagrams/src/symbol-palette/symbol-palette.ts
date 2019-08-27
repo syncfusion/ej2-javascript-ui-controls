@@ -513,6 +513,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         this.svgRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), true);
         this.updatePalettes();
         this.accordionElement.appendTo('#' + this.element.id + '_container');
+        this.renderComplete();
     }
 
     /**

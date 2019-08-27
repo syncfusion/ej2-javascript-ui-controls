@@ -35,7 +35,11 @@ export class Crud {
     }
 
     private refreshData(args: CrudArgs): void {
-        let actionArgs: ActionEventArgs = { requestType: args.requestType, cancel: false, data: args.data };
+        let actionArgs: ActionEventArgs = {
+            requestType: args.requestType, cancel: false, data: args.data,
+            addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
+            deletedRecords: args.editParms.deletedRecords
+        };
         if (this.parent.dataModule.dataManager.dataSource.offline) {
             this.parent.trigger(events.actionComplete, actionArgs);
             this.parent.renderModule.refreshDataManager();
@@ -82,9 +86,12 @@ export class Crud {
                 this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
         } else {
             this.processCrudTimezone(eventData as { [key: string]: Object });
+            editParms.addedRecords.push(eventData);
             promise = this.parent.dataModule.dataManager.insert(eventData, this.getTable(), this.getQuery()) as Promise<Object>;
         }
-        let crudArgs: CrudArgs = { requestType: 'eventCreated', cancel: false, data: eventData, promise: promise };
+        let crudArgs: CrudArgs = {
+            requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+        };
         this.refreshData(crudArgs);
     }
 
@@ -111,6 +118,7 @@ export class Crud {
                 editParms.changedRecords = event;
                 this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
             } else {
+                editParms.changedRecords.push(event);
                 promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<Object>;
             }
         } else {
@@ -158,7 +166,7 @@ export class Crud {
         // if (!this.parent.activeView.isTimelineView()) {
         //     this.parent.eventBase.selectWorkCellByTime(dataObj);
         // }
-        let crudArgs: CrudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise };
+        let crudArgs: CrudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise, editParms: editParms };
         this.refreshData(crudArgs);
     }
 
@@ -460,7 +468,7 @@ export class Crud {
                 this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
         }
         this.parent.eventBase.selectWorkCellByTime(dataObj);
-        let crudArgs: CrudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise };
+        let crudArgs: CrudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise, editParms: editParms };
         this.refreshData(crudArgs);
     }
 

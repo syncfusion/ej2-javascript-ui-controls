@@ -141,8 +141,6 @@ export interface IWorkingTimeRange {
 }
 
 export interface IQueryTaskbarInfoEventArgs {
-    /** Defines the gantt model. */
-    ganttModel: Gantt;
     /** Defines the data. */
     data: IGanttData;
     /** Defines the row element. */
@@ -424,6 +422,14 @@ export interface ContextMenuOpenEventArgs extends ContextMenuOpenEventArgs {
     hideItems?: string[];
     /** Defines the disabled items collection */
     disableItems?: string[];
+    /**
+     * @blazorType double?
+     */
+    top?: number;
+    /**
+     * @blazorType double?
+     */
+    left?: number;
 }
 
 export interface ContextMenuClickEventArgs extends ContextMenuClickEventArgs {
@@ -501,4 +507,31 @@ export interface RowSelectEventArgs extends GridRowSelectEventArgs {
 export interface RowDataBoundEventArgs extends GridRowDataBoundEventArgs {
     /** Defines the data collections. */
     data: IGanttData;
+}
+
+export interface CellEditArgs  {
+    /** Defines the cancel option value. */
+    cancel?: boolean;
+    /** Defines the current row. */
+    row?: Element;
+    /** Defines the validation rules. */
+    validationRules?: Object;
+    /** Defines the name of the event. */
+    type?: string;
+    /** Defines foreign data object */
+    foreignKeyData?: Object;
+    /** Defines the row data object. */
+    rowData?: IGanttData;
+    /** Defines the column name. */
+    columnName?: string;
+    /** Defines the cell object. */
+    cell?: Element;
+    /** Defines the column object. */
+    columnObject?: Column;
+    /** Defines the cell value. */
+    value?: string;
+    /** Defines isForeignKey option value. */
+    isForeignKey?: boolean;
+    /** Defines the primaryKey. */
+    primaryKey?: string[];
 }

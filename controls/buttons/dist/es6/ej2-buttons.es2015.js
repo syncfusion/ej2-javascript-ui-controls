@@ -157,6 +157,7 @@ let Button = class Button extends Component {
      */
     render() {
         this.initialize();
+        this.renderComplete();
     }
     initialize() {
         if (this.cssClass) {
@@ -726,6 +727,7 @@ let CheckBox = class CheckBox extends Component {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
     setDisabled() {
         let wrapper = this.getWrapper();
@@ -1115,6 +1117,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
     setDisabled() {
         this.element.disabled = true;
@@ -1443,6 +1446,7 @@ let Switch = class Switch extends Component {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
     rippleHandler(e) {
         let rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE$2)[0];
@@ -1643,6 +1647,7 @@ let ChipList = class ChipList extends Component {
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
+        this.renderComplete();
     }
     createChip() {
         this.innerText = this.element.innerText.trim();

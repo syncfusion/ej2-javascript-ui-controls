@@ -2816,10 +2816,16 @@ class Toolbar$1 {
     }
     scrollHandler(e) {
         if (!this.parent.inlineMode.enable) {
-            if (this.parent.toolbarSettings.enableFloating) {
+            if (this.parent.toolbarSettings.enableFloating && this.getDOMVisibility(this.tbElement)) {
                 this.toggleFloatClass(e.args);
             }
         }
+    }
+    getDOMVisibility(el) {
+        if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) {
+            return false;
+        }
+        return true;
     }
     mouseDownHandler() {
         if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
@@ -3457,7 +3463,7 @@ class BaseQuickToolbar {
                         x = e.windowWidth - (e.popWidth + e.bodyRightSpace + 10);
                     }
                     else {
-                        x = e.x - (e.popWidth + e.parentData.left);
+                        x = e.x - e.popWidth;
                     }
                     break;
                 case 'left':
@@ -3475,7 +3481,8 @@ class BaseQuickToolbar {
         this.popupObj.dataBind();
     }
     showPopup(x, y, target) {
-        let eventArgs = { popup: this.popupObj, cancel: false, targetElement: target };
+        let eventArgs = isBlazor() ? { cancel: false, targetElement: target } :
+            { popup: this.popupObj, cancel: false, targetElement: target };
         this.parent.trigger(beforeQuickToolbarOpen, eventArgs, (beforeQuickToolbarArgs) => {
             if (!beforeQuickToolbarArgs.cancel) {
                 let editPanelTop;
@@ -3588,7 +3595,8 @@ class BaseQuickToolbar {
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [CLS_POP]);
             detach(element);
-            this.parent.trigger(quickToolbarClose, this.popupObj);
+            let args = isBlazor() ? null : this.popupObj;
+            this.parent.trigger(quickToolbarClose, args);
         }
     }
     updateStatus(args) {
@@ -3671,7 +3679,8 @@ class PopupRenderer {
         this.parent = parent;
     }
     quickToolbarOpen() {
-        this.parent.trigger(quickToolbarOpen, this.popupObj);
+        let args = isBlazor() ? null : this.popupObj;
+        this.parent.trigger(quickToolbarOpen, args);
     }
     renderPopup(args) {
         this.setPanel(args.element);
@@ -4520,6 +4529,10 @@ class Formatter {
                     itemCollection: value
                 };
                 extend(args, args, items, true);
+                if (isBlazor()) {
+                    delete args.item;
+                    delete args.itemCollection;
+                }
                 self.trigger(actionBegin, args, (actionBeginArgs) => {
                     if (actionBeginArgs.cancel) {
                         if (action === 'paste' || action === 'cut' || action === 'copy') {
@@ -4584,7 +4597,11 @@ class Formatter {
             this.enableUndo(self);
             self.notify(execCommandCallBack, events);
         }
+        if (isBlazor()) {
+            delete events.elements;
+        }
         self.trigger(actionComplete, events, (callbackArgs) => {
+            self.setPlaceHolder();
             if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {
                 let args = callbackArgs;
                 if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
@@ -4943,7 +4960,8 @@ class MDLists {
                     }
                 }
             }
-            textArea.value = textArea.value.substr(0, parents[0].start) + curTabSpace + prefix + changedList;
+            textArea.value = textArea.value.substr(0, parents[0].start) + curTabSpace +
+                prefix + this.selection.getLine(textArea, parents[0].line) + changedList;
             start = start + prefix.length + tabSpace.length;
             addedLength += prefix.length + tabSpace.length;
         }
@@ -4951,7 +4969,8 @@ class MDLists {
             prevLine.trim().replace(regex, '') !== '' || this.currentAction === 'OL' && !listFormat) {
             let tabSpace = this.getTabSpace(prevLine);
             let prefix = this.syntax[this.currentAction];
-            parents[0].text = tabSpace + prefix + parents[0].text;
+            parents[0].text = tabSpace + prefix + parents[0].text +
+                (parents[0].text.trim().length > 0 ? '\n' : '');
             textArea.value = textArea.value.substr(0, parents[0].start) + parents[0].text +
                 textArea.value.substr(parents[0].end, textArea.value.length);
             start = start + prefix.length + tabSpace.length;
@@ -7213,6 +7232,12 @@ class DOMNode {
             markerStart.appendChild(start);
         }
         else {
+            if (start.tagName === 'IMG') {
+                let parNode = document.createElement('p');
+                start.parentElement.insertBefore(parNode, start);
+                parNode.appendChild(start);
+                start = parNode.children[0];
+            }
             for (let i = 0; i < selfClosingTags.length; i++) {
                 start = start.tagName === selfClosingTags[i] ? start.parentNode : start;
             }
@@ -7323,9 +7348,13 @@ class DOMNode {
                         collectionNodes.indexOf(node) < 0 && (node !== endNode || range.endOffset > 0)) {
                         collectionNodes.push(node);
                     }
+                    if (node.nodeName === 'IMG' && node.parentElement.contentEditable === 'true') {
+                        collectionNodes.push(node);
+                    }
                 }
                 parentNode = this.blockParentNode(endNode);
-                if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0) {
+                if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0 &&
+                    parentNode.previousElementSibling.tagName !== 'IMG') {
                     collectionNodes.push(parentNode);
                 }
             }
@@ -7503,6 +7532,9 @@ class Lists {
             }
             else {
                 if (!(e.event.action && e.event.action === 'indent')) {
+                    if (e.event && e.event.shiftKey && e.event.key === 'Tab') {
+                        e.event.action = 'tab';
+                    }
                     this.saveSelection = this.domNode.saveMarker(this.saveSelection, e.event.action);
                     this.saveSelection.restore();
                 }
@@ -7672,16 +7704,15 @@ class Lists {
             this.checkLists(elements, type);
             for (let i = 0; i < elements.length; i++) {
                 if ('LI' !== elements[i].tagName) {
-                    let openTag = '<' + type + this.domNode.attributes(elements[i]) + '>';
+                    let elemAtt = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
+                    let openTag = '<' + type + '>';
                     let closeTag = '</' + type + '>';
-                    let newTag = 'li class="e-rte-replace-tag"';
+                    let newTag = 'li' + elemAtt;
                     let replaceHTML = (elements[i].tagName.toLowerCase() === DEFAULT_TAG ? elements[i].innerHTML :
                         elements[i].outerHTML);
                     let innerHTML = this.domNode.createTagString(newTag, null, replaceHTML);
                     let collectionString = openTag + innerHTML + closeTag;
                     this.domNode.replaceWith(elements[i], collectionString);
-                    let element = this.parent.editableElement.querySelector('.e-rte-replace-tag');
-                    element.removeAttribute('class');
                 }
             }
         }
@@ -7822,12 +7853,10 @@ class Lists {
                 element.parentNode.insertBefore(this.closeTag('LI'), element);
             }
             else {
-                let classAttr = '';
-                if (className) {
-                    classAttr += ' class="' + className + '"';
-                }
                 if (DEFAULT_TAG && 0 === element.querySelectorAll(BLOCK_TAGS.join(', ')).length) {
-                    let wrapper = '<' + DEFAULT_TAG + classAttr + ' class="e-rte-wrap-inner"' +
+                    let wrapperclass = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
+                        ' class="' + className + ' e-rte-wrap-inner"';
+                    let wrapper = '<' + DEFAULT_TAG + wrapperclass +
                         this.domNode.attributes(parentNode) + '></' + DEFAULT_TAG + '>';
                     this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                 }
@@ -8165,12 +8194,16 @@ class InsertHtml {
                 range = nodeSelection.getRange(docElement);
             }
             else {
-                let lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1]);
+                let lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement);
+                lasNode = isNullOrUndefined(lasNode) ? preNode : lasNode;
                 nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
                     lasNode.textContent.length : lasNode.childNodes.length);
                 range = nodeSelection.getRange(docElement);
             }
             range.extractContents();
+            if (insertNode.tagName === 'TABLE') {
+                this.removeEmptyElements(editNode);
+            }
             for (let index = 0; index < nodes.length; index++) {
                 if (nodes[index].nodeType !== 3 && nodes[index].parentNode != null) {
                     if (nodes[index].nodeName === 'IMG') {
@@ -8193,7 +8226,7 @@ class InsertHtml {
                 if (previousNode !== null) {
                     parentNode = previousNode;
                 }
-                if (parentNode.firstChild) {
+                if (parentNode.firstChild && parentNode.contentEditable !== 'true') {
                     if (parentNode.textContent.trim() === '') {
                         InsertMethods.AppendBefore(node, parentNode, false);
                         detach(parentNode);
@@ -8231,6 +8264,32 @@ class InsertHtml {
             }
             else {
                 nodeSelection.setSelectionText(docElement, node, node, node.textContent.length, node.textContent.length);
+            }
+        }
+    }
+    static findDetachEmptyElem(element) {
+        let removableElement;
+        if (!isNullOrUndefined(element.parentElement)) {
+            if (element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true') {
+                removableElement = this.findDetachEmptyElem(element.parentElement);
+            }
+            else {
+                removableElement = element;
+            }
+        }
+        else {
+            removableElement = null;
+        }
+        return removableElement;
+    }
+    static removeEmptyElements(element) {
+        let emptyElements = element.querySelectorAll(':empty');
+        for (let i = 0; i < emptyElements.length; i++) {
+            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
+                let detachableElement = this.findDetachEmptyElem(emptyElements[i]);
+                if (!isNullOrUndefined(detachableElement)) {
+                    detach(detachableElement);
+                }
             }
         }
     }
@@ -9438,7 +9497,7 @@ class SelectionCommands {
                     liElement = parentElement;
                 }
                 if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                    liElement.textContent === nodes[index].textContent) {
+                    liElement.textContent.trim() === nodes[index].textContent.trim()) {
                     liElement.style.fontSize = value;
                 }
             }
@@ -9464,7 +9523,7 @@ class SelectionCommands {
                             liElement = parentElement;
                         }
                         if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                            liElement.textContent === nodes[index].textContent) {
+                            liElement.textContent.trim() === nodes[index].textContent.trim()) {
                             liElement.style.fontSize = value;
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);
@@ -10223,8 +10282,8 @@ class MsWordPaste {
                             }
                         }
                         values[i] = valueSplit.join(';') + ';';
-                        values[i] += styleProperty;
-                        resultElem[j].setAttribute('style', values[i]);
+                        let changedValue = values[i] + styleProperty;
+                        resultElem[j].setAttribute('style', changedValue);
                     }
                     else {
                         resultElem[j].setAttribute('style', values[i]);
@@ -10461,22 +10520,9 @@ class MsWordPaste {
         }
     }
     getListContent(elem) {
-        if (elem.nodeType === 3 && elem.textContent.trim().length > 0) {
-            if (this.blockNode.indexOf(elem.parentElement.tagName.toLowerCase()) === -1 &&
-                elem.parentElement.tagName !== 'SPAN') {
-                this.listContents.push(elem.parentElement.outerHTML);
-            }
-            else {
-                this.listContents.push(elem.textContent.trim());
-            }
-        }
-        if (elem.firstChild) {
-            elem = elem.firstChild;
-            do {
-                this.getListContent(elem);
-                elem = elem.nextSibling;
-            } while (elem);
-        }
+        this.listContents.push(elem.firstElementChild.textContent.trim());
+        detach(elem.firstElementChild);
+        this.listContents.push(elem.innerHTML);
     }
 }
 
@@ -11399,8 +11445,8 @@ class HtmlEditor {
         if (e.args.keyCode === 9 && this.parent.enableTabKey) {
             let range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
             let parentNode = this.nodeSelectionObj.getParentNodeCollection(range);
-            if (!((parentNode[0].nodeName === 'LI' || parentNode[0].nodeName === 'BR' || closest(parentNode[0], 'li')) &&
-                range.startOffset === 0)) {
+            if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0], 'li') ||
+                closest(parentNode[0], 'table')) && range.startOffset === 0)) {
                 e.args.preventDefault();
                 if (!e.args.shiftKey) {
                     InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
@@ -11867,7 +11913,8 @@ class PasteCleanup {
                         if (!dialog.isDestroyed) {
                             this.selectFormatting(value, args);
                             dialog.hide();
-                            this.dialogRenderObj.close(dialog);
+                            let argument = isBlazor() ? null : dialog;
+                            this.dialogRenderObj.close(argument);
                             dialog.destroy();
                         }
                     },
@@ -11881,7 +11928,8 @@ class PasteCleanup {
                     click: () => {
                         if (!dialog.isDestroyed) {
                             dialog.hide();
-                            this.dialogRenderObj.close(dialog);
+                            let args = isBlazor() ? null : dialog;
+                            this.dialogRenderObj.close(args);
                             dialog.destroy();
                         }
                     },
@@ -12136,13 +12184,9 @@ class PasteCleanup {
             let allowedStyleValue = '';
             let allowedStyleValueArray = [];
             let styleValue = styleElement[i].getAttribute('style').split(';');
-            for (let k = 0; k < allowedStyleProps.length; k++) {
-                for (let j = 0; j < styleValue.length; j++) {
-                    if (!styleElement[i].getAttribute('style').split(';')[j]
-                        .trim().indexOf(allowedStyleProps[k] + ':')) {
-                        allowedStyleValueArray.push(styleElement[i].getAttribute('style').split(';')[j]);
-                        k++;
-                    }
+            for (let k = 0; k < styleValue.length; k++) {
+                if (allowedStyleProps.indexOf(styleValue[k].split(':')[0].trim()) >= 0) {
+                    allowedStyleValueArray.push(styleValue[k]);
                 }
             }
             styleElement[i].removeAttribute('style');
@@ -12301,37 +12345,42 @@ class Link {
         }
     }
     showLinkQuickToolbar(e) {
-        let pageX;
-        let pageY;
-        if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
-            isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) {
-            return;
-        }
-        this.quickToolObj = this.parent.quickToolbarModule;
-        let parentTop = this.parent.element.getBoundingClientRect().top;
-        let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-        let target;
-        [].forEach.call(e.elements, (element, index) => {
-            if (index === 0) {
-                target = ((element.nodeName === '#text') ? (element.parentNode) : element);
+        if (e.args.action !== 'enter' && e.args.action !== 'space') {
+            let pageX;
+            let pageY;
+            if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
+                isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) {
+                return;
             }
-        });
-        if (e.isNotify) {
-            pageX = target.getBoundingClientRect().left;
-            let tbElement = this.parent.toolbarModule.getToolbarElement();
-            let linkTop = target.getBoundingClientRect().top;
-            let linkPos = linkTop - parentTop;
-            let tbHeight = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
-            pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ? (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
-        }
-        else {
-            let args;
-            args = e.args.touches ? e.args.changedTouches[0] : args = e.args;
-            pageX = args.pageX;
-            pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
-        }
-        if (this.quickToolObj.linkQTBar) {
-            this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer);
+            this.quickToolObj = this.parent.quickToolbarModule;
+            let parentTop = this.parent.element.getBoundingClientRect().top;
+            let parentLeft = this.parent.element.getBoundingClientRect().left;
+            let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            let target;
+            [].forEach.call(e.elements, (element, index) => {
+                if (index === 0) {
+                    target = ((element.nodeName === '#text') ? (element.parentNode) : element);
+                }
+            });
+            if (e.isNotify) {
+                let tbElement = this.parent.toolbarModule.getToolbarElement();
+                let linkTop = target.getBoundingClientRect().top;
+                let linkLeft = target.getBoundingClientRect().left;
+                let linkPos = linkTop - parentTop;
+                let tbHeight = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
+                pageX = (this.parent.iframeSettings.enable) ? parentLeft + linkLeft : target.getBoundingClientRect().left;
+                pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ?
+                    (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
+            }
+            else {
+                let args;
+                args = e.args.touches ? e.args.changedTouches[0] : args = e.args;
+                pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + parentLeft + args.clientX : args.pageX;
+                pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
+            }
+            if (this.quickToolObj.linkQTBar) {
+                this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer);
+            }
         }
     }
     hideLinkQuickToolbar() {
@@ -12481,7 +12530,8 @@ class Link {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                this.dialogRenderObj.close(this.dialogObj);
+                let args = isBlazor() ? null : this.dialogObj;
+                this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             },
         };
@@ -12637,8 +12687,8 @@ class Link {
         let target = e.target;
         if (!isNullOrUndefined(this.dialogObj) && ((!closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target)) ||
-            (this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target) &&
-                !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
+            (((this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target)) ||
+                this.parent.inlineMode.enable) && !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))) {
             this.dialogObj.hide({ returnValue: true });
             this.parent.isBlur = true;
@@ -12760,7 +12810,7 @@ class Image {
         if (Browser.isDevice) {
             removeClass([e.target.parentElement], 'e-mob-span');
         }
-        let args = { event: e, requestType: 'images' };
+        let args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(resizeStop, args);
         let pageX = this.getPointX(e);
         let pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset +
@@ -12806,7 +12856,7 @@ class Image {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             }
             else {
-                let args = { event: e, requestType: 'images' };
+                let args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
                 this.parent.trigger(resizeStart, args, (resizeStartArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -12972,7 +13022,7 @@ class Image {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
     imgDupMouseMove(width, height, e) {
-        let args = { event: e, requestType: 'images' };
+        let args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(onResize, args, (resizingArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -13667,7 +13717,8 @@ class Image {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                this.dialogRenderObj.close(this.dialogObj);
+                let args = isBlazor() ? null : this.dialogObj;
+                this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             },
         };
@@ -14790,7 +14841,7 @@ class Table {
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             }
             else {
-                let args = { event: e, requestType: 'Table' };
+                let args = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
                 this.parent.trigger(resizeStart, args, (resizeStartArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -14855,7 +14906,7 @@ class Table {
         let mouseY = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
-        let args = { event: e, requestType: 'table' };
+        let args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(onResize, args, (resizingArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -14936,7 +14987,7 @@ class Table {
             this.pageY = null;
             this.moveEle = null;
         }
-        let args = { event: e, requestType: 'table' };
+        let args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(resizeStop, args);
         this.parent.formatter.saveData();
     }
@@ -15189,7 +15240,7 @@ class Table {
                 this.parent.isBlur = false;
                 this.editdlgObj.destroy();
                 detach(this.editdlgObj.element);
-                this.dialogRenderObj.close(this.editdlgObj);
+                this.dialogRenderObj.close(event);
                 this.editdlgObj = null;
             }
         };
@@ -17299,8 +17350,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     contextHandler(e) {
         let closestElem = closest(e.target, 'a, table, img');
-        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && (closestElem.tagName === 'IMG' ||
-            closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && this.inputElement.contains(closestElem)
+            && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
             e.preventDefault();
         }
     }

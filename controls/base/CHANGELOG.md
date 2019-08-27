@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.2.47 (2019-08-27)
+
+### Common
+
+#### Bug Fixes
+
+- `#I234975` - Resolved template Engine support is not working while passing double slash `(\\)`.
+- `#I242062` - Resolved template Engine support is not working while using Special characters `(@)` in more than one occurrence.
+
 ## 17.2.46 (2019-08-22)
 
 ### Common

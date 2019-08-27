@@ -2928,7 +2928,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
         if (this.getModuleName() === 'datepicker') {
-            var l10nLocale = { placeholder: null };
+            var l10nLocale = { placeholder: this.placeholder };
             this.globalize = new Internationalization(this.locale);
             this.l10n = new L10n('datepicker', l10nLocale, this.locale);
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -4547,7 +4547,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
             spacebar: 'space'
         };
         this.defaultConstant = {
-            placeholder: '',
+            placeholder: this.placeholder,
             startLabel: 'Start Date',
             endLabel: 'End Date',
             customRange: 'Custom Range',

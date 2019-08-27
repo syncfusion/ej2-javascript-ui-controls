@@ -1,6 +1,7 @@
 import { isNullOrUndefined, L10n, getDefaultDateObject, getValue, cldrData } from '@syncfusion/ej2-base';
 import { MS_PER_DAY, addDays, resetTime } from '../schedule/base/util';
 import { CalendarUtil, Islamic, Gregorian, CalendarType } from '../common/calendar-util';
+import { Timezone } from '../schedule/timezone/timezone';
 
 /**
  * Date Generator from Recurrence Rule
@@ -74,15 +75,21 @@ export function generate(
     startDayOfWeek: number,
     maximumCount: number = MAXOCCURRENCE,
     viewDate: Date = null,
-    calendarMode: CalendarType = 'Gregorian'): number[] {
+    calendarMode: CalendarType = 'Gregorian',
+    oldTimezone: string = null,
+    newTimezone: string = null): number[] {
     let ruleObject: RecRule = extractObjectFromRule(rule);
     let cacheDate: Date; calendarUtil = getCalendarUtil(calendarMode);
     let data: number[] = [];
     let modifiedDate: Date = new Date(startDate.getTime());
     tempExcludeDate = [];
     let tempDate: string[] = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
+    let tz: Timezone = new Timezone();
     tempDate.forEach((content: string) => {
         let parsedDate: Date = getDateFromRecurrenceDateString(content);
+        if (oldTimezone && newTimezone) {
+            parsedDate = tz.convert(new Date(parsedDate.getTime()), <number & string>oldTimezone, <number & string>newTimezone);
+        }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });
     ruleObject.recExceptionCount = !isNullOrUndefined(ruleObject.count) ? tempExcludeDate.length : 0;

@@ -192,7 +192,7 @@ export class StampAnnotation {
                             image.onload = (): void => {
                                 let currentLocation: IRectCollection = proxy.calculateImagePosition(position);
                                 // tslint:disable-next-line:max-line-length
-                                proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass);
+                                proxy.renderCustomImage(currentLocation, pageIndex, image, currentDate, modifiedDate, rotationAngle, opacity, canvass, true);
                             };
                             image.src = imageData;
                         }
@@ -218,12 +218,20 @@ export class StampAnnotation {
         let annot: PdfAnnotationBaseModel;
         // tslint:disable-next-line
         let annotation: any = this.currentStampAnnotation;
-        annot = {
-            // tslint:disable-next-line:max-line-length
-            id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.width, height: annotation.height }, pageIndex: pageIndex, data: annotation.pathdata,
-            // tslint:disable-next-line:max-line-length
-            shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: 0.5, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, subject: annotation.iconName,
-        };
+        if (annotation.shapeAnnotationType === 'Image') {
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.bounds.width, height: annotation.bounds.height }, pageIndex: pageIndex, data: annotation.data, modifiedDate: annotation.modifiedDate,
+                shapeAnnotationType: 'Image', opacity: annotation.opacity, rotateAngle: annotation.RotationAngle, annotName: annotation.annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: annotation.author }
+            };
+        } else {
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: X, y: Y, width: annotation.width, height: annotation.height }, pageIndex: pageIndex, data: annotation.pathdata,
+                // tslint:disable-next-line:max-line-length
+                shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: 0.5, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, subject: annotation.iconName,
+            };
+        }
         return (annot as PdfAnnotationBase);
     }
     // tslint:disable-next-line
@@ -286,8 +294,6 @@ export class StampAnnotation {
             let modifiedDate: any = this.pdfViewer.stampSettings.modifiedDate !== '' ? this.pdfViewer.stampSettings.modifiedDate : new Date().toLocaleString();
             let rotationAngle: number = 0;
             proxy.renderCustomImage(positions, pageIndex, image, currentDate, modifiedDate, rotationAngle, 1, null);
-            // tslint:disable-next-line:max-line-length
-            this.pdfViewerBase.viewerContainer.scrollTop = (this.pdfViewerBase.pageSize[this.pdfViewerBase.currentPageNumber - 1].top * this.pdfViewerBase.getZoomFactor()) + positions.top;
         };
         image.src = imageSource;
     }
@@ -348,7 +354,7 @@ export class StampAnnotation {
                 annotation.Note = '';
                 annotation.Opacity = 1;
                 annotation.RotateAngle = 0;
-                annotation.ModifiedDate =  new Date().toLocaleString();
+                annotation.ModifiedDate = new Date().toLocaleString();
             }
             // tslint:disable-next-line
             let collectionData: any = processPathData(annotation.pathdata);
@@ -424,7 +430,18 @@ export class StampAnnotation {
             annotation.Opacity = 1;
             annotation.RotateAngle = 0;
         }
-        if (annotation.stampAnnotationType) {
+        if (annotation.shapeAnnotationType === 'Image') {
+            annotationObject = {
+                // tslint:disable-next-line:max-line-length
+                stampAnnotationType: 'image', author: annotation.author, modifiedDate: annotation.modifiedDate, subject: '',
+                note: '', strokeColor: '', fillColor: '', opacity: opacity,
+                // tslint:disable-next-line:max-line-length
+                rotateAngle: '0', creationDate: annotation.currentDate, pageNumber: pageNumber, icon: '', stampAnnotationPath: annotation.data, randomId: 'stamp' + this.pdfViewerBase.customStampCount,
+                // tslint:disable-next-line:max-line-length
+                bounds: { left: annotation.bounds.x, top: annotation.bounds.y, width: annotation.bounds.width, height: annotation.bounds.height }, stampFillcolor: '', isDynamicStamp: false,
+                annotName: annotation.annotName, comments: [], review: { state: '', stateModel: '', author: annotation.author, modifiedDate: annotation.modifiedDate }, shapeAnnotationType: 'stamp'
+            };
+        } else if (annotation.stampAnnotationType) {
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
                 stampAnnotationType: annotation.stampAnnotationType, author: annotation.author, modifiedDate: annotation.modifiedDate, subject: annotation.Subject,
@@ -444,11 +461,13 @@ export class StampAnnotation {
             };
         }
         if (opacity) {
-            // tslint:disable-next-line
-            let collectionData: any = processPathData(annotation.data);
-            // tslint:disable-next-line
-            let csData: any = splitArrayCollection(collectionData);
-            annotationObject.stampAnnotationPath = csData;
+            if (annotation.shapeAnnotationType !== 'Image') {
+                // tslint:disable-next-line
+                let collectionData: any = processPathData(annotation.data);
+                // tslint:disable-next-line
+                let csData: any = splitArrayCollection(collectionData);
+                annotationObject.stampAnnotationPath = csData;
+            }
             annotation.creationDate = new Date().toLocaleDateString();
             annotationObject.bounds.width = annotation.wrapper.actualSize.width;
             annotationObject.bounds.height = annotation.wrapper.actualSize.height;
@@ -466,43 +485,46 @@ export class StampAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public renderCustomImage(position: any, pageIndex: any, image: any, currentDate: any, modifiedDate: any, RotationAngle: any, opacity: any, canvas?: any) {
+    public renderCustomImage(position: any, pageIndex: any, image: any, currentDate: any, modifiedDate: any, RotationAngle: any, opacity: any, canvas?: any, isExistingStamp?: boolean) {
         let annot: PdfAnnotationBaseModel;
         let annotationObject: IStampAnnotation = null;
         let annotationName: string = this.pdfViewer.annotation.createGUID();
-        let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('stamp', pageIndex + 1);
         let author: string = this.pdfViewer.customStampSettings.author;
-        if (commentsDivid) {
-            document.getElementById(commentsDivid).id = annotationName;
-        }
         annot = {
             // tslint:disable-next-line:max-line-length
             id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
             shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author }
         };
-        annotationObject = {
-            // tslint:disable-next-line:max-line-length
-            stampAnnotationType: 'image', author: author, modifiedDate: modifiedDate, subject: '',
-            note: '', strokeColor: '', fillColor: '', opacity: opacity,
-            // tslint:disable-next-line:max-line-length
-            rotateAngle: '0', creationDate: currentDate, pageNumber: pageIndex, icon: '', stampAnnotationPath: image.src, randomId: 'stamp' + this.pdfViewerBase.customStampCount,
-            // tslint:disable-next-line:max-line-length
-            bounds: { left: position.left, top: position.top, width: position.width, height: position.height }, stampFillcolor: '', isDynamicStamp: false,
-            annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'stamp'
-        };
-        this.storeStampInSession(pageIndex, annotationObject);
-        this.pdfViewer.add(annot as PdfAnnotationBase);
-        // tslint:disable-next-line
-        if (canvas != undefined && canvas != null) {
-            canvas = canvas;
-        } else {
-            canvas = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
-        }
-        // tslint:disable-next-line
-        this.pdfViewer.renderDrawing(canvas as any, pageIndex);
-        if (this.pdfViewerBase.stampAdded) {
-            // tslint:disable-next-line:max-line-length
-            this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
+        this.currentStampAnnotation = annot;
+        if (isExistingStamp) {
+            let commentsDivid: string = this.pdfViewer.annotation.stickyNotesAnnotationModule.addComments('stamp', pageIndex + 1);
+            if (commentsDivid) {
+                document.getElementById(commentsDivid).id = annotationName;
+            }
+            annotationObject = {
+                // tslint:disable-next-line:max-line-length
+                stampAnnotationType: 'image', author: author, modifiedDate: modifiedDate, subject: '',
+                note: '', strokeColor: '', fillColor: '', opacity: opacity,
+                // tslint:disable-next-line:max-line-length
+                rotateAngle: '0', creationDate: currentDate, pageNumber: pageIndex, icon: '', stampAnnotationPath: image.src, randomId: 'stamp' + this.pdfViewerBase.customStampCount,
+                // tslint:disable-next-line:max-line-length
+                bounds: { left: position.left, top: position.top, width: position.width, height: position.height }, stampFillcolor: '', isDynamicStamp: false,
+                annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'stamp'
+            };
+            this.storeStampInSession(pageIndex, annotationObject);
+            this.pdfViewer.add(annot as PdfAnnotationBase);
+            // tslint:disable-next-line
+            if (canvas != undefined && canvas != null) {
+                canvas = canvas;
+            } else {
+                canvas = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+            }
+            // tslint:disable-next-line
+            this.pdfViewer.renderDrawing(canvas as any, pageIndex);
+            if (this.pdfViewerBase.stampAdded) {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
+            }
         }
         this.pdfViewerBase.customStampCount += 1;
     }
@@ -888,7 +910,7 @@ export class StampAnnotation {
     public saveImportedStampAnnotations(annotation: any, pageNumber: number): any {
         let annotationObject: IStampAnnotation = null;
         // tslint:disable-next-line
-        let stampAnnotation : any = this.retrievestampAnnotation(annotation.Subject);
+        let stampAnnotation: any = this.retrievestampAnnotation(annotation.Subject);
         annotation.Author = this.pdfViewer.stampSettings.author;
         if (stampAnnotation) {
             annotationObject = {

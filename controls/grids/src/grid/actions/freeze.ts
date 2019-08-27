@@ -3,8 +3,6 @@ import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import * as events from '../base/constant';
 import { RenderType } from '../base/enum';
-import { parentsUntil } from '../base/util';
-import { EventHandler } from '@syncfusion/ej2-base';
 import { FreezeRender, FreezeContentRender } from '../renderer/freeze-renderer';
 
 /**
@@ -27,20 +25,6 @@ export class Freeze implements IAction {
     public addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.initialLoad, this.instantiateRenderer, this);
-        this.parent.on(events.initialEnd, this.wireEvents, this);
-    }
-
-    private wireEvents(): void {
-        if (this.parent.frozenRows) {
-            EventHandler.add(this.parent.getHeaderContent(), 'dblclick', this.dblClickHandler, this);
-        }
-    }
-
-    private dblClickHandler(e: MouseEvent): void {
-        if (parentsUntil(e.target as Element, 'e-grid').id !== this.parent.element.id) {
-            return;
-        }
-        this.parent.notify(events.dblclick, e);
     }
 
     private instantiateRenderer(): void {

@@ -45,6 +45,10 @@ export class Layout {
      * @private
      */
     public isBidiReLayout: boolean = false;
+    /**
+     * @private
+     */
+    public defaultTabWidthPixel: number = 48;
 
     private isSameStyle(currentParagraph: ParagraphWidget, isAfterSpacing: boolean): boolean {
         let nextOrPrevSibling: ParagraphWidget = undefined;
@@ -1867,6 +1871,14 @@ export class Layout {
         let fPosition: number = 0;
         let isCustomTab: boolean = false;
         let tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();
+        let isList: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
+            let listFormat: WParagraphFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
+            if (paragraph.paragraphFormat.leftIndent !== listFormat.leftIndent) {
+                isList = true;
+            }
+        }
         //  Calculate hanging width
         let clientWidth: number = 0;
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
@@ -1882,7 +1894,8 @@ export class Layout {
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
         if (tabs.length === 0) {
-            if (position > 0 && defaultTabWidth > position) {
+            if (position > 0 && defaultTabWidth > position && isList ||
+                defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
                 return defaultTabWidth - position;
             }
             return defaultTabWidth;

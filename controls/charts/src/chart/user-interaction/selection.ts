@@ -25,6 +25,7 @@ export class Selection extends BaseSelection {
 
     private renderer: SvgRenderer | CanvasRenderer;
     private isSeriesMode: boolean;
+    private isdrawRect: boolean = true;
     private resizing: boolean;
     /** @private */
     public rectPoints: Rect;
@@ -383,8 +384,8 @@ export class Selection extends BaseSelection {
         this.removeOffset(rect, axisOffset);
         let points: Points[];
         let index: Index;
-        let selectedPointValues: { x: string, y: number }[] = [];
-        let selectedSeriesValues: { x: string, y: number }[][] = [];
+        let selectedPointValues: { x: string | number | Date, y: number }[] = [];
+        let selectedSeriesValues: { x: string | number | Date, y: number }[][] = [];
         this.isSeriesMode = false;
         let symbolLocation: ChartLocation;
         for (let series of chart.visibleSeries) {
@@ -405,6 +406,12 @@ export class Selection extends BaseSelection {
                     let yValue: number = series.type !== 'RangeArea' ? points[j].yValue :
                         points[j].regions[0].y;
                     let isCurrentPoint: boolean;
+                    let selectedPointX: string | number | Date = points[j].xValue;
+                    if (chart.primaryXAxis.valueType === 'Category') {
+                        selectedPointX = points[j].x.toLocaleString();
+                    } else if (chart.primaryXAxis.valueType === 'DateTime') {
+                        selectedPointX = new Date(points[j].xValue);
+                    }
                     if (series.type === 'BoxAndWhisker') {
                         isCurrentPoint = points[j].regions.some((region: Rect): boolean => {
                             return withInBounds(
@@ -420,10 +427,10 @@ export class Selection extends BaseSelection {
                     if (isCurrentPoint && series.category !== 'Indicator') {
                         index = new Index((<Series>series).index, points[j].index);
                         this.selection(chart, index, this.findElements(chart, series, index));
-                        selectedPointValues.push({ x: points[j].xValue.toString(), y: yValue });
+                        selectedPointValues.push({ x: selectedPointX, y: yValue });
                     }
                     if (isCurrentPoint && series.type === 'RangeArea') {
-                        selectedPointValues.push({ x: points[j].xValue.toString(), y: points[j].regions[0].y });
+                        selectedPointValues.push({ x: selectedPointX, y: points[j].regions[0].y });
                     }
                 }
                 selectedSeriesValues.push(selectedPointValues);
@@ -450,6 +457,14 @@ export class Selection extends BaseSelection {
      */
     public drawDraggingRect(chart: Chart, dragRect: Rect): void {
         let cartesianLayout: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
+        let border: number = chart.chartArea.border.width;
+        if (this.isdrawRect) {
+            cartesianLayout.x = cartesianLayout.x - border / 2;
+            cartesianLayout.y = cartesianLayout.y - border / 2;
+            cartesianLayout.width = cartesianLayout.width + border;
+            cartesianLayout.height = cartesianLayout.height + border;
+            this.isdrawRect = false;
+        }
         switch (chart.selectionMode) {
             case 'DragX':
                 dragRect.y = cartesianLayout.y;

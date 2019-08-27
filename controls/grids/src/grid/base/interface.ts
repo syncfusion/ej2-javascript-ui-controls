@@ -549,7 +549,7 @@ export interface IGrid extends Component<HTMLElement> {
     isDetail?(): boolean;
     updateMediaColumns?(col: Column): void;
     hideScroll?(): void;
-
+    blazorTemplate?(): void;
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 }

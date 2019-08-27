@@ -7,12 +7,12 @@ import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base'
 import { NumericTextBox, Slider, ColorPicker, ColorPickerEventArgs, ChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
-import { DecoratorShapes } from '@syncfusion/ej2-drawings';
+import { DecoratorShapes, PointModel } from '@syncfusion/ej2-drawings';
 import { isLineShapes, cloneObject } from '../../diagram/drawing-util';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 import { NodeDrawingTool, LineTool, MoveTool, ResizeTool, ConnectTool } from '../../diagram/tools';
 import { updateDistanceLabel, updateRadiusLabel } from '../../diagram/connector-util';
-import { AnnotationPropertiesChangeEventArgs } from '../base';
+import { AnnotationPropertiesChangeEventArgs, ISize } from '../base';
 
 /**
  * @hidden
@@ -307,6 +307,7 @@ export class Annotation {
     public initializeCollection(): void {
         this.actionCollection = [];
         this.redoCollection = [];
+        this.pdfViewerBase.customStampCollection = [];
         if (!this.popupNote) {
             this.createNote();
         }
@@ -1685,7 +1686,7 @@ export class Annotation {
      * @private
      */
     // tslint:disable-next-line
-    public renderAnnotations(pageNumber: number, shapeAnnotation: any, measureShapeAnnotation: any, textMarkupAnnotation: any, canvas?: any): void {
+    public renderAnnotations(pageNumber: number, shapeAnnotation: any, measureShapeAnnotation: any, textMarkupAnnotation: any, canvas?: any, isImportTextMarkup?: boolean): void {
         this.clearAnnotationCanvas(pageNumber);
         if (this.shapeAnnotationModule) {
             // tslint:disable-next-line
@@ -1700,8 +1701,13 @@ export class Annotation {
             canvas = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         }
         this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
-        // tslint:disable-next-line
-        this.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(textMarkupAnnotation, pageNumber);
+        if (isImportTextMarkup) {
+            // tslint:disable-next-line
+            this.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(textMarkupAnnotation, pageNumber, true);
+        } else {
+            // tslint:disable-next-line
+            this.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(textMarkupAnnotation, pageNumber);
+        }
     }
     /**
      * @private
@@ -1799,6 +1805,81 @@ export class Annotation {
         }
         return arrowType;
     }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+   public getBounds(bound: any, pageIndex: number): any {
+       let pageDetails: ISize = this.pdfViewerBase.pageSize[pageIndex];
+       if (pageDetails.rotation === 1) {
+           return { left: bound.top, top: pageDetails.width - (bound.left + bound.width), width: bound.height, height: bound.width };
+       } else if (pageDetails.rotation === 2) {
+           // tslint:disable-next-line:max-line-length
+           return { left: pageDetails.width - bound.left - bound.width, top: pageDetails.height - bound.top - bound.height, width: bound.width, height: bound.height };
+       } else if (pageDetails.rotation === 3) {
+           return { left: pageDetails.height - bound.top - bound.height, top: bound.left, width: bound.height, height: bound.width };
+       } else {
+           return bound;
+       }
+   }
+
+   /**
+    * @private
+    */
+    // tslint:disable-next-line
+    public getVertexPoints(points: any[], pageIndex: number): any {
+       if (points) {
+           let pageDetails: ISize = this.pdfViewerBase.pageSize[pageIndex];
+           if (pageDetails.rotation === 1) {
+               let points1: PointModel[] = [];
+               for (let i: number = 0; i < points.length; i++) {
+                   let point: PointModel = { x: points[i].y, y: pageDetails.width - points[i].x };
+                   points1.push(point);
+               }
+               return points1;
+           } else if (pageDetails.rotation === 2) {
+               let points2: PointModel[] = [];
+               for (let i: number = 0; i < points.length; i++) {
+                   let point: PointModel = { x: pageDetails.width - points[i].x, y: pageDetails.height - points[i].y };
+                   points2.push(point);
+               }
+               return points2;
+           } else if (pageDetails.rotation === 3) {
+               let points3: PointModel[] = [];
+               for (let i: number = 0; i < points.length; i++) {
+                   let point: PointModel = { x: pageDetails.height - points[i].y, y: points[i].x };
+                   points3.push(point);
+               }
+               return points3;
+           } else {
+               return points;
+           }
+       }
+   }
+
+   /**
+    * @private
+    */
+   // tslint:disable-next-line
+   public getStoredAnnotations(pageIndex: number, shapeAnnotations: any[], idString: string): any[] {
+      // tslint:disable-next-line
+      let annotationCollection: any[];
+      // tslint:disable-next-line
+      let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + idString);
+      if (storeObject) {
+          let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+          let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
+          if (annotObject[index]) {
+              annotationCollection = annotObject[index].annotations;
+          } else {
+              annotationCollection = null;
+          }
+      } else {
+          annotationCollection = null;
+      }
+      return annotationCollection;
+  }
 
     /**
      * @private
@@ -2081,12 +2162,14 @@ export class Annotation {
                 annotationAuthor = this.pdfViewer.lineSettings.author;
             } else if (annotationSubType === 'LineWidthArrowHead' || annotationSubType === 'Arrow') {
                 annotationAuthor = this.pdfViewer.arrowSettings.author;
-            } else if (annotationSubType === 'Circle' || annotationSubType === 'Ellipse') {
+            } else if (annotationSubType === 'Circle' || annotationSubType === 'Ellipse' || annotationSubType === 'Oval') {
                 annotationAuthor = this.pdfViewer.circleSettings.author;
             } else if (annotationSubType === 'Rectangle' || annotationSubType === 'Square') {
                 annotationAuthor = this.pdfViewer.rectangleSettings.author;
             } else if (annotationSubType === 'Polygon') {
                 annotationAuthor = this.pdfViewer.polygonSettings.author;
+            } else {
+                annotationAuthor = this.pdfViewer.rectangleSettings.author;
             }
         } else if (annotationType === 'measure') {
             if (annotationSubType === 'Distance' || annotationSubType === 'Distance calculation') {
@@ -2099,6 +2182,8 @@ export class Annotation {
                 annotationAuthor = this.pdfViewer.areaSettings.author;
             } else if (annotationSubType === 'Volume' || annotationSubType === 'Volume calculation') {
                 annotationAuthor = this.pdfViewer.volumeSettings.author;
+            } else {
+                annotationAuthor = this.pdfViewer.distanceSettings.author;
             }
         } else if (annotationType === 'textMarkup') {
             if (annotationSubType === 'Highlight') {
@@ -2107,6 +2192,8 @@ export class Annotation {
                 annotationAuthor = this.pdfViewer.underlineSettings.author;
             } else if (annotationSubType === 'Strikethrough') {
                 annotationAuthor = this.pdfViewer.strikethroughSettings.author;
+            } else {
+                annotationAuthor = this.pdfViewer.highlightSettings.author;
             }
         } else {
             annotationAuthor = this.pdfViewer.stickyNotesSettings.author;
@@ -2118,6 +2205,8 @@ export class Annotation {
      * @private
      */
     public clear(): void {
+        this.shapeAnnotationModule.shapeCount = 0;
+        this.measureAnnotationModule.measureShapeCount = 0;
         if (this.textMarkupAnnotationModule) {
             this.textMarkupAnnotationModule.clear();
         }

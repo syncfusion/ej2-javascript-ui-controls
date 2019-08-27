@@ -375,7 +375,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     @Event()
     public resized: EmitType<IResizeRangeNavigatorEventArgs>;
 
-    /** 
+    /**
      * Triggers before the label rendering
      * @event
      * @deprecated
@@ -515,6 +515,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         this.calculateBounds();
         this.chartSeries.renderChart(this);
         removeElement('chartmeasuretext');
+        this.renderComplete();
     }
 
     /**
@@ -631,7 +632,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
 
     /**
-     * To Remove the SVG. 
+     * To Remove the SVG.
      * @return {boolean}
      * @private
      */
@@ -703,7 +704,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
 
     /**
-     * Handles the widget resize. 
+     * Handles the widget resize.
      * @return {boolean}
      * @private
      */
@@ -742,7 +743,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
 
     /**
-     * Handles the mouse move. 
+     * Handles the mouse move.
      * @return {boolean}
      * @private
      */
@@ -752,7 +753,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         return false;
     }
     /**
-     * Handles the mouse leave. 
+     * Handles the mouse leave.
      * @return {boolean}
      * @private
      */
@@ -763,7 +764,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         return false;
     }
     /**
-     * Handles the mouse click on range navigator. 
+     * Handles the mouse click on range navigator.
      * @return {boolean}
      * @private
      */
@@ -780,8 +781,8 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
     /**
      * Handles the export method for range navigator control.
-     * @param type 
-     * @param fileName 
+     * @param type
+     * @param fileName
      */
     public export(
         type: ExportType, fileName: string, orientation?: PdfPageOrientation,
@@ -803,7 +804,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
 
     /**
-     * Handles the mouse down on range navigator. 
+     * Handles the mouse down on range navigator.
      * @return {boolean}
      * @private
      */
@@ -813,7 +814,7 @@ export class RangeNavigator extends Component<HTMLElement> {
         return false;
     }
     /**
-     * Handles the mouse up. 
+     * Handles the mouse up.
      * @return {boolean}
      * @private
      */
@@ -856,8 +857,8 @@ export class RangeNavigator extends Component<HTMLElement> {
     }
     /**
      * OnProperty change method calling here
-     * @param newProp 
-     * @param oldProp 
+     * @param newProp
+     * @param oldProp
      */
     public onPropertyChanged(newProp: RangeNavigatorModel, oldProp: RangeNavigatorModel): void {
         let renderer: boolean = false;
@@ -929,7 +930,7 @@ export class RangeNavigator extends Component<HTMLElement> {
     /**
      * To provide the array of modules needed for control rendering
      * @return {ModuleDeclaration[]}
-     * @private 
+     * @private
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];

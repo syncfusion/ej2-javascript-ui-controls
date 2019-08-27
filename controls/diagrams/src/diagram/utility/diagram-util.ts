@@ -27,7 +27,8 @@ import {
     Lane, Shape, Phase, ChildContainer, SwimLane, Path, Image, Text, BpmnShape, UmlClassifierShape, Header
 } from './../objects/node';
 import { NodeModel } from './../objects/node-model';
-import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment, BpmnFlow } from './../objects/connector';
+import { BpmnFlow, RelationShip } from './../objects/connector';
+import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment } from './../objects/connector';
 import { ConnectorModel } from './../objects/connector-model';
 import { DecoratorModel } from './../objects/connector-model';
 import { getBasicShape } from './../objects/dictionary/basic-shapes';
@@ -172,6 +173,111 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
                 }
                 break;
         }
+    }
+}
+
+/**
+ * @private
+ */
+export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel): void {
+    switch ((child.shape).type) {
+        case 'Bpmn':
+            switch ((child.shape as BpmnFlow).flow) {
+                case 'Sequence':
+                    if (((((child.shape as BpmnFlow).sequence) === 'Normal' && child.type !== 'Bezier')) ||
+                        (((child.shape as BpmnFlow).sequence) === 'Default') || (((child.shape as BpmnFlow).sequence) === 'Conditional')) {
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style
+                                && child.targetDecorator.style.fill) || 'black';
+                        }
+                        if (((child.shape as BpmnFlow).sequence) === 'Conditional' && node.sourceDecorator) {
+                            if (node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                                    child.sourceDecorator.style.fill) || 'white';
+                            }
+                            node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 20;
+                            node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.width) || 10;
+                        }
+                    }
+                    break;
+                case 'Association':
+                    if ((((child.shape as BpmnFlow).association) === 'Default') ||
+                        (((child.shape as BpmnFlow).association) === 'Directional') ||
+                        (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                                child.targetDecorator.style.fill) || 'black';
+                        }
+                        if (((child.shape as BpmnFlow).association) === 'BiDirectional') {
+                            if (node.sourceDecorator && node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                                    child.sourceDecorator.style.fill) || 'white';
+                                node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 5;
+                                node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.height) || 10;
+                            }
+                        }
+                    }
+                    break;
+                case 'Message':
+                    if (node.style && !node.style.strokeDashArray) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlActivity':
+            switch ((child.shape as ActivityFlow).flow) {
+                case 'Exception':
+                    if ((((child.shape as BpmnFlow).association) === 'Directional') ||
+                        (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '2 2';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlClassifier':
+            let hasRelation: boolean = false;
+            if ((child.shape as RelationShip).relationship === 'Association') {
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Inheritance') {
+                if (node.targetDecorator && node.targetDecorator.style) {
+                    node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                        child.targetDecorator.style.fill) || 'white';
+                }
+                if (node.style) {
+                    hasRelation = true;
+                    node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                }
+            } else if ((child.shape as RelationShip).relationship === 'Composition') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'black';
+                }
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Aggregation') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Dependency') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+                node.style.strokeDashArray = '4 4';
+            } else if ((child.shape as RelationShip).relationship === 'Realization') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+            }
+            if (hasRelation) {
+                node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2;
+            }
+            break;
     }
 }
 

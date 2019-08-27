@@ -1,4 +1,4 @@
-import { createElement, Browser } from '@syncfusion/ej2-base';
+import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfViewer, PdfViewerBase } from '../index';
 
 /**
@@ -227,14 +227,18 @@ export class TextSelection {
                     selection.removeAllRanges();
                     selection.addRange(range);
                     this.isTextSelection = true;
+                    // tslint:disable-next-line:max-line-length
+                    let startParent: HTMLElement = isNullOrUndefined(range.startContainer.parentElement) ? (range.startContainer.parentNode as HTMLElement) : range.startContainer.parentElement;
                     // tslint:disable-next-line:radix
-                    this.selectionStartPage = parseInt(range.startContainer.parentElement.id.split('_text_')[1]);
+                    this.selectionStartPage = parseInt(startParent.id.split('_text_')[1]);
                     if (isStoreSelection) {
                         // tslint:disable-next-line:max-line-length
                         this.selectionAnchorTouch = { anchorNode: selection.anchorNode.parentElement.id, anchorOffset: selection.anchorOffset };
                         this.selectionFocusTouch = { focusNode: selection.focusNode.parentElement.id, focusOffset: selection.focusOffset };
                     }
-                    range.detach();
+                    if (!Browser.isIE) {
+                        range.detach();
+                    }
                     break;
                 }
                 currentPosition += 1;
@@ -1162,13 +1166,13 @@ export class TextSelection {
             let selection: Selection = window.getSelection();
             let isBackward: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);
             // tslint:disable-next-line
-            let anchorPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1])) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.anchorNode.parentElement.id.split('_text_')[1]);
+            let anchorPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1])) ? parseInt((selection.anchorNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(this.getNodeElementFromNode(selection.anchorNode).id.split('_text_')[1]);
             if (isNaN(anchorPage)) {
                 // tslint:disable-next-line:radix
                 anchorPage = parseInt((selection.anchorNode as HTMLElement).id.split('_text_')[1]);
             }
             // tslint:disable-next-line
-            let focusPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(selection.focusNode.parentElement.id.split('_text_')[1]);
+            let focusPage: number = isNaN(parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_pageDiv_')[1]) : parseInt(this.getNodeElementFromNode(selection.focusNode).id.split('_text_')[1]);
             if (isNaN(focusPage)) {
                 // tslint:disable-next-line
                 focusPage = isNaN(parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1])) ? parseInt((selection.focusNode as HTMLElement).id.split('_textLayer_')[1]) : parseInt((selection.focusNode as HTMLElement).id.split('_text_')[1]);
@@ -1209,6 +1213,9 @@ export class TextSelection {
      */
     public applySpanForSelection(): void {
         let selection: Selection = window.getSelection();
+        if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset) {
+            selection.removeAllRanges();
+        }
         // tslint:disable-next-line:max-line-length
         if (selection.anchorNode !== null && this.pdfViewerBase.viewerContainer.contains(this.getNodeElementFromNode(selection.anchorNode))) {
             let isBackWardSelection: boolean = this.pdfViewerBase.textLayer.isBackWardSelection(selection);

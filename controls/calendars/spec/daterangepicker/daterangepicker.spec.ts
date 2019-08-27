@@ -4256,6 +4256,46 @@ describe('DateRangePicker', () => {
         //     expect(daterangepicker.l10n.getConstant('startLabel') === daterangepicker.popupObj.element.querySelector('.e-start-label').text).toBe(true);
         // });
     });
+    describe('Check placeholder after load culture', () => {
+        let daterangepicker: any;
+        L10n.load({
+            'en-US': {
+                'daterangepicker': { placeholder: 'Select a range' }
+            },
+            'de': {
+                'daterangepicker': { placeholder: 'Einen Bereich auswählen' }
+            },
+            'vi': {
+                'daterangepicker': { placeholder: 'Chọn một phạm vi' }
+            },
+        });
+        beforeEach((): void => {
+            daterangepicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'daterange' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Pass placeholder through l10n load', () => {
+            daterangepicker = new DateRangePicker({ floatLabelType: 'Auto', locale: 'en-US' });
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toEqual('Select a range');
+        });
+        it('Pass placeholder through l10n load in de culture', () => {
+            daterangepicker = new DateRangePicker({ floatLabelType: 'Auto', locale: 'de' });
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toEqual('Einen Bereich auswählen');
+        });
+        it('Set placeholder through API', () => {
+            daterangepicker = new DateRangePicker({ floatLabelType: 'Auto', locale: 'vi', placeholder: 'Testo daterange' });
+            daterangepicker.appendTo('#daterange');
+            expect(daterangepicker.placeholder).toEqual('Testo daterange');
+        });
+    });
     describe('Special Dates,weekNumber, disabled Dates and firstDayofWeek - Desktop', () => {
         let daterangepicker: any;
         let keyEventArgs: any = {

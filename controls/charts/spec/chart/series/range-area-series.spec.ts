@@ -505,7 +505,7 @@ describe('Chart', () => {
                 element = document.getElementById(draggedRectGroup);
                 expect(element.getAttribute('x') == '292').toBe(true);
                 expect(element.getAttribute('y') == '42.25' || element.getAttribute('y') == '45.25');
-                expect(element.getAttribute('height') == '560.25' || element.getAttribute('height') == '568.25').toBe(true);
+                expect(element.getAttribute('height') == '560.75' || element.getAttribute('height') == '568.75').toBe(true);
                 expect(element.getAttribute('width')).toEqual('200');
                 done();
             };
@@ -519,13 +519,13 @@ describe('Chart', () => {
                 element = document.getElementById('container');
                 trigger.draganddropEvent(element, 300, 100, 500, 240);
                 element = document.getElementById(draggedRectGroup);
-                expect(element.getAttribute('x') == '73.5' || element.getAttribute('x') == '72.5' || element.getAttribute('x') == '53.5'
-                    || element.getAttribute('x') == '68.5' || element.getAttribute('x') == '57.5').toBe(true);
+                expect(element.getAttribute('x') == '73.5' || element.getAttribute('x') == '72.5' || element.getAttribute('x') == '53.25'
+                    || element.getAttribute('x') == '68.5' || element.getAttribute('x') == '57.25').toBe(true);
                 expect(element.getAttribute('y')).toEqual('92');
                 expect(element.getAttribute('height') == '140').toBe(true);
-                expect(element.getAttribute('width') == '1116.5' || element.getAttribute('width') == '1132.5'
+                expect(element.getAttribute('width') == '1116.5' || element.getAttribute('width') == '1133'
                     || element.getAttribute('width') == '1117.5' || element.getAttribute('width') == '1121.5' ||
-                    element.getAttribute('width') == '1136.5').toBe(true);
+                    element.getAttribute('width') == '1137').toBe(true);
                 done();
             };
             chartObj.selectionMode = 'DragY';

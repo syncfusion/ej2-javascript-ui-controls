@@ -367,8 +367,8 @@ describe('Chart Control Selection ', () => {
             trigger.draganddropEvent(chartContainer, 100, 100, 300, 300);
             element = document.getElementById(draggedRectGroup);
             expect(element.getAttribute('x') == '92').toBe(true);
-            expect(element.getAttribute('y')).toEqual('10.25');
-            expect(element.getAttribute('height') == '419.25' || element.getAttribute('height') == '421.25').toBe(true);
+            expect(element.getAttribute('y')).toEqual('10');
+            expect(element.getAttribute('height') == '419.75' || element.getAttribute('height') == '421.75').toBe(true);
             expect(element.getAttribute('width')).toEqual('200');
             done();
         };
@@ -383,10 +383,10 @@ describe('Chart Control Selection ', () => {
             trigger.draganddropEvent(chartContainer, 100, 100, 300, 300);
             element = document.getElementById(draggedRectGroup);
 
-            expect(element.getAttribute('x') == '33.5' || element.getAttribute('x') == '32.5').toBe(true);
+            expect(element.getAttribute('x') == '33.25' || element.getAttribute('x') == '32.25').toBe(true);
             expect(element.getAttribute('y')).toEqual('92');
             expect(element.getAttribute('height')).toEqual('200');
-            expect(element.getAttribute('width') == '756.5' || element.getAttribute('width') == '757.5').toBe(true);
+            expect(element.getAttribute('width') == '757' || element.getAttribute('width') == '758').toBe(true);
             done();
         };
         chartObj.selectionMode = 'DragY';
@@ -736,9 +736,9 @@ describe('Chart Control Selection ', () => {
     });
     it('DragComplete selection event', (done: Function) => {
         let dragCompleted: EmitType<IDragCompleteEventArgs> = (args: IDragCompleteEventArgs) => {
-            expect(args.selectedDataValues[1][0].x).toBe('2008');
+            expect(args.selectedDataValues[1][0].x).toBe(2008);
             expect(args.selectedDataValues[1][0].y).toBe(36);
-            expect(args.selectedDataValues[2][0].x).toBe('2007');
+            expect(args.selectedDataValues[2][0].x).toBe(2007);
             expect(args.selectedDataValues[2][0].y).toBe(34);
         };
         chartObj.dragComplete = dragCompleted;

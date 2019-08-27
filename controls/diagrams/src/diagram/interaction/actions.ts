@@ -48,7 +48,7 @@ export function findToolToActivate(
             for (let obj of handle.userHandles) {
                 if (obj.visible) {
                     let paddedBounds: PointModel = getUserHandlePosition(handle, obj, diagram.scroller.transform);
-                    if (contains(position, paddedBounds, obj.size / 2)) { return obj.name as Actions; }
+                    if (contains(position, paddedBounds, obj.size / (2 * diagram.scroller.transform.scale))) { return obj.name as Actions; }
                 }
             }
         }

@@ -2833,10 +2833,16 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.scrollHandler = function (e) {
         if (!this.parent.inlineMode.enable) {
-            if (this.parent.toolbarSettings.enableFloating) {
+            if (this.parent.toolbarSettings.enableFloating && this.getDOMVisibility(this.tbElement)) {
                 this.toggleFloatClass(e.args);
             }
         }
+    };
+    Toolbar$$1.prototype.getDOMVisibility = function (el) {
+        if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) {
+            return false;
+        }
+        return true;
     };
     Toolbar$$1.prototype.mouseDownHandler = function () {
         if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
@@ -3500,7 +3506,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
                         x = e.windowWidth - (e.popWidth + e.bodyRightSpace + 10);
                     }
                     else {
-                        x = e.x - (e.popWidth + e.parentData.left);
+                        x = e.x - e.popWidth;
                     }
                     break;
                 case 'left':
@@ -3519,7 +3525,8 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
     };
     BaseQuickToolbar.prototype.showPopup = function (x, y, target) {
         var _this = this;
-        var eventArgs = { popup: this.popupObj, cancel: false, targetElement: target };
+        var eventArgs = isBlazor() ? { cancel: false, targetElement: target } :
+            { popup: this.popupObj, cancel: false, targetElement: target };
         this.parent.trigger(beforeQuickToolbarOpen, eventArgs, function (beforeQuickToolbarArgs) {
             if (!beforeQuickToolbarArgs.cancel) {
                 var editPanelTop = void 0;
@@ -3632,7 +3639,8 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [CLS_POP]);
             detach(element);
-            this.parent.trigger(quickToolbarClose, this.popupObj);
+            var args = isBlazor() ? null : this.popupObj;
+            this.parent.trigger(quickToolbarClose, args);
         }
     };
     BaseQuickToolbar.prototype.updateStatus = function (args) {
@@ -3717,7 +3725,8 @@ var PopupRenderer = /** @__PURE__ @class */ (function () {
         this.parent = parent;
     }
     PopupRenderer.prototype.quickToolbarOpen = function () {
-        this.parent.trigger(quickToolbarOpen, this.popupObj);
+        var args = isBlazor() ? null : this.popupObj;
+        this.parent.trigger(quickToolbarOpen, args);
     };
     PopupRenderer.prototype.renderPopup = function (args) {
         this.setPanel(args.element);
@@ -4580,6 +4589,10 @@ var Formatter = /** @__PURE__ @class */ (function () {
                     itemCollection: value
                 };
                 extend(args, args, items, true);
+                if (isBlazor()) {
+                    delete args.item;
+                    delete args.itemCollection;
+                }
                 self.trigger(actionBegin, args, function (actionBeginArgs) {
                     if (actionBeginArgs.cancel) {
                         if (action_1 === 'paste' || action_1 === 'cut' || action_1 === 'copy') {
@@ -4645,7 +4658,11 @@ var Formatter = /** @__PURE__ @class */ (function () {
             this.enableUndo(self);
             self.notify(execCommandCallBack, events);
         }
+        if (isBlazor()) {
+            delete events.elements;
+        }
         self.trigger(actionComplete, events, function (callbackArgs) {
+            self.setPlaceHolder();
             if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {
                 var args = callbackArgs;
                 if (callbackArgs.requestType === 'Links' && callbackArgs.event &&
@@ -5005,7 +5022,8 @@ var MDLists = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            textArea.value = textArea.value.substr(0, parents[0].start) + curTabSpace + prefix + changedList;
+            textArea.value = textArea.value.substr(0, parents[0].start) + curTabSpace +
+                prefix + this.selection.getLine(textArea, parents[0].line) + changedList;
             start = start + prefix.length + tabSpace.length;
             addedLength += prefix.length + tabSpace.length;
         }
@@ -5013,7 +5031,8 @@ var MDLists = /** @__PURE__ @class */ (function () {
             prevLine.trim().replace(regex, '') !== '' || this.currentAction === 'OL' && !listFormat) {
             var tabSpace = this.getTabSpace(prevLine);
             var prefix = this.syntax[this.currentAction];
-            parents[0].text = tabSpace + prefix + parents[0].text;
+            parents[0].text = tabSpace + prefix + parents[0].text +
+                (parents[0].text.trim().length > 0 ? '\n' : '');
             textArea.value = textArea.value.substr(0, parents[0].start) + parents[0].text +
                 textArea.value.substr(parents[0].end, textArea.value.length);
             start = start + prefix.length + tabSpace.length;
@@ -7303,6 +7322,12 @@ var DOMNode = /** @__PURE__ @class */ (function () {
             markerStart.appendChild(start);
         }
         else {
+            if (start.tagName === 'IMG') {
+                var parNode = document.createElement('p');
+                start.parentElement.insertBefore(parNode, start);
+                parNode.appendChild(start);
+                start = parNode.children[0];
+            }
             for (var i = 0; i < selfClosingTags.length; i++) {
                 start = start.tagName === selfClosingTags[i] ? start.parentNode : start;
             }
@@ -7413,9 +7438,13 @@ var DOMNode = /** @__PURE__ @class */ (function () {
                         collectionNodes.indexOf(node) < 0 && (node !== endNode || range.endOffset > 0)) {
                         collectionNodes.push(node);
                     }
+                    if (node.nodeName === 'IMG' && node.parentElement.contentEditable === 'true') {
+                        collectionNodes.push(node);
+                    }
                 }
                 parentNode = this.blockParentNode(endNode);
-                if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0) {
+                if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0 &&
+                    parentNode.previousElementSibling.tagName !== 'IMG') {
                     collectionNodes.push(parentNode);
                 }
             }
@@ -7594,6 +7623,9 @@ var Lists = /** @__PURE__ @class */ (function () {
             }
             else {
                 if (!(e.event.action && e.event.action === 'indent')) {
+                    if (e.event && e.event.shiftKey && e.event.key === 'Tab') {
+                        e.event.action = 'tab';
+                    }
                     this.saveSelection = this.domNode.saveMarker(this.saveSelection, e.event.action);
                     this.saveSelection.restore();
                 }
@@ -7763,16 +7795,15 @@ var Lists = /** @__PURE__ @class */ (function () {
             this.checkLists(elements, type);
             for (var i = 0; i < elements.length; i++) {
                 if ('LI' !== elements[i].tagName) {
-                    var openTag = '<' + type + this.domNode.attributes(elements[i]) + '>';
+                    var elemAtt = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
+                    var openTag = '<' + type + '>';
                     var closeTag = '</' + type + '>';
-                    var newTag = 'li class="e-rte-replace-tag"';
+                    var newTag = 'li' + elemAtt;
                     var replaceHTML = (elements[i].tagName.toLowerCase() === DEFAULT_TAG ? elements[i].innerHTML :
                         elements[i].outerHTML);
                     var innerHTML = this.domNode.createTagString(newTag, null, replaceHTML);
                     var collectionString = openTag + innerHTML + closeTag;
                     this.domNode.replaceWith(elements[i], collectionString);
-                    var element = this.parent.editableElement.querySelector('.e-rte-replace-tag');
-                    element.removeAttribute('class');
                 }
             }
         }
@@ -7913,12 +7944,10 @@ var Lists = /** @__PURE__ @class */ (function () {
                 element.parentNode.insertBefore(this.closeTag('LI'), element);
             }
             else {
-                var classAttr = '';
-                if (className) {
-                    classAttr += ' class="' + className + '"';
-                }
                 if (DEFAULT_TAG && 0 === element.querySelectorAll(BLOCK_TAGS.join(', ')).length) {
-                    var wrapper = '<' + DEFAULT_TAG + classAttr + ' class="e-rte-wrap-inner"' +
+                    var wrapperclass = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
+                        ' class="' + className + ' e-rte-wrap-inner"';
+                    var wrapper = '<' + DEFAULT_TAG + wrapperclass +
                         this.domNode.attributes(parentNode) + '></' + DEFAULT_TAG + '>';
                     this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                 }
@@ -8264,12 +8293,16 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
                 range = nodeSelection.getRange(docElement);
             }
             else {
-                var lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1]);
+                var lasNode = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement);
+                lasNode = isNullOrUndefined(lasNode) ? preNode : lasNode;
                 nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
                     lasNode.textContent.length : lasNode.childNodes.length);
                 range = nodeSelection.getRange(docElement);
             }
             range.extractContents();
+            if (insertNode.tagName === 'TABLE') {
+                this.removeEmptyElements(editNode);
+            }
             for (var index = 0; index < nodes.length; index++) {
                 if (nodes[index].nodeType !== 3 && nodes[index].parentNode != null) {
                     if (nodes[index].nodeName === 'IMG') {
@@ -8292,7 +8325,7 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
                 if (previousNode !== null) {
                     parentNode = previousNode;
                 }
-                if (parentNode.firstChild) {
+                if (parentNode.firstChild && parentNode.contentEditable !== 'true') {
                     if (parentNode.textContent.trim() === '') {
                         InsertMethods.AppendBefore(node, parentNode, false);
                         detach(parentNode);
@@ -8330,6 +8363,32 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
             }
             else {
                 nodeSelection.setSelectionText(docElement, node, node, node.textContent.length, node.textContent.length);
+            }
+        }
+    };
+    InsertHtml.findDetachEmptyElem = function (element) {
+        var removableElement;
+        if (!isNullOrUndefined(element.parentElement)) {
+            if (element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true') {
+                removableElement = this.findDetachEmptyElem(element.parentElement);
+            }
+            else {
+                removableElement = element;
+            }
+        }
+        else {
+            removableElement = null;
+        }
+        return removableElement;
+    };
+    InsertHtml.removeEmptyElements = function (element) {
+        var emptyElements = element.querySelectorAll(':empty');
+        for (var i = 0; i < emptyElements.length; i++) {
+            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
+                var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
+                if (!isNullOrUndefined(detachableElement)) {
+                    detach(detachableElement);
+                }
             }
         }
     };
@@ -9548,7 +9607,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                     liElement = parentElement;
                 }
                 if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                    liElement.textContent === nodes[index].textContent) {
+                    liElement.textContent.trim() === nodes[index].textContent.trim()) {
                     liElement.style.fontSize = value;
                 }
             }
@@ -9574,7 +9633,7 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                             liElement = parentElement;
                         }
                         if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
-                            liElement.textContent === nodes[index].textContent) {
+                            liElement.textContent.trim() === nodes[index].textContent.trim()) {
                             liElement.style.fontSize = value;
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);
@@ -10342,8 +10401,8 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
                             }
                         }
                         values[i] = valueSplit.join(';') + ';';
-                        values[i] += styleProperty;
-                        resultElem[j].setAttribute('style', values[i]);
+                        var changedValue = values[i] + styleProperty;
+                        resultElem[j].setAttribute('style', changedValue);
                     }
                     else {
                         resultElem[j].setAttribute('style', values[i]);
@@ -10580,22 +10639,9 @@ var MsWordPaste = /** @__PURE__ @class */ (function () {
         }
     };
     MsWordPaste.prototype.getListContent = function (elem) {
-        if (elem.nodeType === 3 && elem.textContent.trim().length > 0) {
-            if (this.blockNode.indexOf(elem.parentElement.tagName.toLowerCase()) === -1 &&
-                elem.parentElement.tagName !== 'SPAN') {
-                this.listContents.push(elem.parentElement.outerHTML);
-            }
-            else {
-                this.listContents.push(elem.textContent.trim());
-            }
-        }
-        if (elem.firstChild) {
-            elem = elem.firstChild;
-            do {
-                this.getListContent(elem);
-                elem = elem.nextSibling;
-            } while (elem);
-        }
+        this.listContents.push(elem.firstElementChild.textContent.trim());
+        detach(elem.firstElementChild);
+        this.listContents.push(elem.innerHTML);
     };
     return MsWordPaste;
 }());
@@ -11490,8 +11536,8 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         if (e.args.keyCode === 9 && this.parent.enableTabKey) {
             var range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
             var parentNode = this.nodeSelectionObj.getParentNodeCollection(range);
-            if (!((parentNode[0].nodeName === 'LI' || parentNode[0].nodeName === 'BR' || closest(parentNode[0], 'li')) &&
-                range.startOffset === 0)) {
+            if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0], 'li') ||
+                closest(parentNode[0], 'table')) && range.startOffset === 0)) {
                 e.args.preventDefault();
                 if (!e.args.shiftKey) {
                     InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');
@@ -11961,7 +12007,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                         if (!dialog.isDestroyed) {
                             _this.selectFormatting(value, args);
                             dialog.hide();
-                            _this.dialogRenderObj.close(dialog);
+                            var argument = isBlazor() ? null : dialog;
+                            _this.dialogRenderObj.close(argument);
                             dialog.destroy();
                         }
                     },
@@ -11975,7 +12022,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                     click: function () {
                         if (!dialog.isDestroyed) {
                             dialog.hide();
-                            _this.dialogRenderObj.close(dialog);
+                            var args_1 = isBlazor() ? null : dialog;
+                            _this.dialogRenderObj.close(args_1);
                             dialog.destroy();
                         }
                     },
@@ -12227,13 +12275,9 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
             var allowedStyleValue = '';
             var allowedStyleValueArray = [];
             var styleValue = styleElement[i].getAttribute('style').split(';');
-            for (var k = 0; k < allowedStyleProps.length; k++) {
-                for (var j = 0; j < styleValue.length; j++) {
-                    if (!styleElement[i].getAttribute('style').split(';')[j]
-                        .trim().indexOf(allowedStyleProps[k] + ':')) {
-                        allowedStyleValueArray.push(styleElement[i].getAttribute('style').split(';')[j]);
-                        k++;
-                    }
+            for (var k = 0; k < styleValue.length; k++) {
+                if (allowedStyleProps.indexOf(styleValue[k].split(':')[0].trim()) >= 0) {
+                    allowedStyleValueArray.push(styleValue[k]);
                 }
             }
             styleElement[i].removeAttribute('style');
@@ -12395,37 +12439,42 @@ var Link = /** @__PURE__ @class */ (function () {
         }
     };
     Link.prototype.showLinkQuickToolbar = function (e) {
-        var pageX;
-        var pageY;
-        if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
-            isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) {
-            return;
-        }
-        this.quickToolObj = this.parent.quickToolbarModule;
-        var parentTop = this.parent.element.getBoundingClientRect().top;
-        var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-        var target;
-        [].forEach.call(e.elements, function (element, index) {
-            if (index === 0) {
-                target = ((element.nodeName === '#text') ? (element.parentNode) : element);
+        if (e.args.action !== 'enter' && e.args.action !== 'space') {
+            var pageX = void 0;
+            var pageY = void 0;
+            if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
+                isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) {
+                return;
             }
-        });
-        if (e.isNotify) {
-            pageX = target.getBoundingClientRect().left;
-            var tbElement = this.parent.toolbarModule.getToolbarElement();
-            var linkTop = target.getBoundingClientRect().top;
-            var linkPos = linkTop - parentTop;
-            var tbHeight = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
-            pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ? (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
-        }
-        else {
-            var args = void 0;
-            args = e.args.touches ? e.args.changedTouches[0] : args = e.args;
-            pageX = args.pageX;
-            pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
-        }
-        if (this.quickToolObj.linkQTBar) {
-            this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer);
+            this.quickToolObj = this.parent.quickToolbarModule;
+            var parentTop = this.parent.element.getBoundingClientRect().top;
+            var parentLeft = this.parent.element.getBoundingClientRect().left;
+            var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            var target_1;
+            [].forEach.call(e.elements, function (element, index) {
+                if (index === 0) {
+                    target_1 = ((element.nodeName === '#text') ? (element.parentNode) : element);
+                }
+            });
+            if (e.isNotify) {
+                var tbElement = this.parent.toolbarModule.getToolbarElement();
+                var linkTop = target_1.getBoundingClientRect().top;
+                var linkLeft = target_1.getBoundingClientRect().left;
+                var linkPos = linkTop - parentTop;
+                var tbHeight = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
+                pageX = (this.parent.iframeSettings.enable) ? parentLeft + linkLeft : target_1.getBoundingClientRect().left;
+                pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ?
+                    (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
+            }
+            else {
+                var args = void 0;
+                args = e.args.touches ? e.args.changedTouches[0] : args = e.args;
+                pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + parentLeft + args.clientX : args.pageX;
+                pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
+            }
+            if (this.quickToolObj.linkQTBar) {
+                this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer);
+            }
         }
     };
     Link.prototype.hideLinkQuickToolbar = function () {
@@ -12576,7 +12625,8 @@ var Link = /** @__PURE__ @class */ (function () {
                 }
                 _this.dialogObj.destroy();
                 detach(_this.dialogObj.element);
-                _this.dialogRenderObj.close(_this.dialogObj);
+                var args = isBlazor() ? null : _this.dialogObj;
+                _this.dialogRenderObj.close(args);
                 _this.dialogObj = null;
             },
         };
@@ -12732,8 +12782,8 @@ var Link = /** @__PURE__ @class */ (function () {
         var target = e.target;
         if (!isNullOrUndefined(this.dialogObj) && ((!closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target)) ||
-            (this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target) &&
-                !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
+            (((this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target)) ||
+                this.parent.inlineMode.enable) && !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))) {
             this.dialogObj.hide({ returnValue: true });
             this.parent.isBlur = true;
@@ -12856,7 +12906,7 @@ var Image = /** @__PURE__ @class */ (function () {
         if (Browser.isDevice) {
             removeClass([e.target.parentElement], 'e-mob-span');
         }
-        var args = { event: e, requestType: 'images' };
+        var args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(resizeStop, args);
         var pageX = this.getPointX(e);
         var pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset +
@@ -12903,7 +12953,7 @@ var Image = /** @__PURE__ @class */ (function () {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             }
             else {
-                var args = { event: e, requestType: 'images' };
+                var args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
                 this.parent.trigger(resizeStart, args, function (resizeStartArgs) {
                     if (resizeStartArgs.cancel) {
                         _this.cancelResizeAction();
@@ -13070,7 +13120,7 @@ var Image = /** @__PURE__ @class */ (function () {
     };
     Image.prototype.imgDupMouseMove = function (width, height, e) {
         var _this = this;
-        var args = { event: e, requestType: 'images' };
+        var args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(onResize, args, function (resizingArgs) {
             if (resizingArgs.cancel) {
                 _this.cancelResizeAction();
@@ -13770,7 +13820,8 @@ var Image = /** @__PURE__ @class */ (function () {
                 }
                 _this.dialogObj.destroy();
                 detach(_this.dialogObj.element);
-                _this.dialogRenderObj.close(_this.dialogObj);
+                var args = isBlazor() ? null : _this.dialogObj;
+                _this.dialogRenderObj.close(args);
                 _this.dialogObj = null;
             },
         };
@@ -14898,7 +14949,7 @@ var Table = /** @__PURE__ @class */ (function () {
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             }
             else {
-                var args = { event: e, requestType: 'Table' };
+                var args = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
                 this.parent.trigger(resizeStart, args, function (resizeStartArgs) {
                     if (resizeStartArgs.cancel) {
                         _this.cancelResizeAction();
@@ -14964,7 +15015,7 @@ var Table = /** @__PURE__ @class */ (function () {
         var mouseY = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
-        var args = { event: e, requestType: 'table' };
+        var args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(onResize, args, function (resizingArgs) {
             if (resizingArgs.cancel) {
                 _this.cancelResizeAction();
@@ -15045,7 +15096,7 @@ var Table = /** @__PURE__ @class */ (function () {
             this.pageY = null;
             this.moveEle = null;
         }
-        var args = { event: e, requestType: 'table' };
+        var args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(resizeStop, args);
         this.parent.formatter.saveData();
     };
@@ -15301,7 +15352,7 @@ var Table = /** @__PURE__ @class */ (function () {
                 _this.parent.isBlur = false;
                 _this.editdlgObj.destroy();
                 detach(_this.editdlgObj.element);
-                _this.dialogRenderObj.close(_this.editdlgObj);
+                _this.dialogRenderObj.close(event);
                 _this.editdlgObj = null;
             }
         };
@@ -17550,8 +17601,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.contextHandler = function (e) {
         var closestElem = closest(e.target, 'a, table, img');
-        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && (closestElem.tagName === 'IMG' ||
-            closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && this.inputElement.contains(closestElem)
+            && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
             e.preventDefault();
         }
     };

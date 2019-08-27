@@ -163,7 +163,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
                 this.getMovableHeader().querySelector('thead')
                     .appendChild(renderMovable(filterRow, this.parent.getFrozenColumns()));
             }
-        } else if (obj.case === 'textwrap') {
+        } else if (obj.case === 'textwrap' || obj.case === 'refreshHeight') {
             let fRows: NodeListOf<HTMLElement>;
             let mRows: NodeListOf<HTMLElement>;
             let fHdr: Element = this.getFrozenHeader();
@@ -171,27 +171,35 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             let cont: Element = this.parent.getContent();
             let wrapMode: string = this.parent.textWrapSettings.wrapMode;
             let hdrClassList: DOMTokenList = (this.parent.getHeaderContent().firstChild as Element).classList;
-            if (wrapMode !== 'Header' || obj.isModeChg) {
-                fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
-                mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
-                this.setWrapHeight(fRows, mRows, obj.isModeChg, true);
+            if (obj.case === 'textwrap') {
+                if (wrapMode !== 'Header' || obj.isModeChg) {
+                    fRows = cont.querySelector('.e-frozencontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    mRows = cont.querySelector('.e-movablecontent').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    this.setWrapHeight(fRows, mRows, obj.isModeChg, true);
+                }
+                if (wrapMode === 'Content' && this.parent.allowTextWrap) {
+                    hdrClassList.add('e-wrap');
+                } else {
+                    hdrClassList.remove('e-wrap');
+                }
+                if (wrapMode === 'Both' || obj.isModeChg) {
+                    fRows = fHdr.querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    mRows = mHdr.querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                } else {
+                    fRows = fHdr.querySelector(wrapMode === 'Content' ?
+                        'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                    mRows = mHdr.querySelector(wrapMode === 'Content' ?
+                        'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
+                }
+                if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                    this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+                }
+                this.refreshStackedHdrHgt();
+            } else if (obj.case === 'refreshHeight') {
+            this.setWrapHeight(cont.querySelector('.e-frozencontent').querySelectorAll('tr'),
+                               cont.querySelector('.e-movablecontent').querySelectorAll('tr'), obj.isModeChg);
+            this.setWrapHeight(fHdr.querySelectorAll('tr'), mHdr.querySelectorAll('tr'), obj.isModeChg);
             }
-            if (wrapMode === 'Content' && this.parent.allowTextWrap) {
-                hdrClassList.add('e-wrap');
-            } else {
-                hdrClassList.remove('e-wrap');
-            }
-            if (wrapMode === 'Both' || obj.isModeChg) {
-                fRows = fHdr.querySelectorAll('tr') as NodeListOf<HTMLElement>;
-                mRows = mHdr.querySelectorAll('tr') as NodeListOf<HTMLElement>;
-            } else {
-                fRows = fHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
-                mRows = mHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
-            }
-            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
-                this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
-            }
-            this.refreshStackedHdrHgt();
         }
     }
     private enableAfterRender(e: NotifyArgs): void {
@@ -231,11 +239,11 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             }
             fRowHgt = height[i];
             mRowHgt = width[i];
-            if (fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt > mRowHgt) ||
+            if (fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) || (!isWrap && fRowHgt < mRowHgt) ||
                 (this.parent.allowResizing && this.parent.resizeModule && !this.parent.resizeModule.isFrozenColResized))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
-            if (mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt < mRowHgt) ||
+            if (mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) || (!isWrap && fRowHgt > mRowHgt) ||
                 (this.parent.allowResizing && this.parent.resizeModule && this.parent.resizeModule.isFrozenColResized))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }

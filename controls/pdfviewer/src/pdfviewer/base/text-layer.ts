@@ -1,4 +1,4 @@
-import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { PdfViewer, PdfViewerBase } from '../index';
 
@@ -233,13 +233,24 @@ export class TextLayer {
                 // tslint:disable-next-line:radix
                 let pageNumber: number = parseInt((textLayers[i] as HTMLElement).id.split('_textLayer_')[1]);
                 if (!(((lowerPageValue + 1) <= pageNumber) && (pageNumber <= (higherPageValue - 1)))) {
-                    (textLayers[i] as HTMLElement).remove();
+                    this.removeElement(textLayers[i] as HTMLElement);
                 }
             } else if (this.pdfViewerBase.getPinchZoomed()) {
-                (textLayers[i] as HTMLElement).remove();
+                this.removeElement(textLayers[i] as HTMLElement);
             } else {
-                (textLayers[i] as HTMLElement).remove();
+                this.removeElement(textLayers[i] as HTMLElement);
             }
+        }
+    }
+    private removeElement(element: HTMLElement): void {
+        if (Browser.isIE) {
+            if (element.parentElement) {
+                element.parentElement.removeChild(element);
+            } else if (element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+        } else {
+            element.remove();
         }
     }
     /**

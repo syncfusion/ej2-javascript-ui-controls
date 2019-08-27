@@ -272,7 +272,7 @@ export class AnnotationToolbar {
                         ]
                     },
                     { separator: true },
-                    { text: 'Custom Stamp' }
+                    { text: 'Custom Stamp', items: [] }
                 ],
             },
         ];
@@ -282,6 +282,32 @@ export class AnnotationToolbar {
             showItemOnClick: true,
             enableScrolling: true,
             beforeOpen: (args: Menuopen): void => {
+                if (args.parentItem.text === '' && this.pdfViewer.customStampSettings.isAddToSubMenu && args.items.length > 0) {
+                    // tslint:disable-next-line
+                    let currentElements: any = null;
+                    for (let i: number = 0; i < args.items.length; i++) {
+                        if (args.items[i].text === 'Custom Stamp') {
+                            args.items[i].items = [];
+                            currentElements = args.items[i];
+                            break;
+                        }
+                    }
+                    // tslint:disable-next-line
+                    let elements: any = this.pdfViewerBase.customStampCollection;
+                    // tslint:disable-next-line
+                    let stampElements: any = this.pdfViewer.customStampItems;
+                    if (elements.length === 0 && stampElements && stampElements.length > 0) {
+                        for (let n: number = 0; n < stampElements.length; n++) {
+                            // tslint:disable-next-line:max-line-length
+                            elements.push({ customStampName: stampElements[n].customStampName, customStampImageSource: stampElements[n].customStampImageSource });
+                        }
+                    }
+                    for (let m: number = 0; m < elements.length; m++) {
+                        if (currentElements != null) {
+                            currentElements.items.push({ text: elements[m].customStampName });
+                        }
+                    }
+                }
                 if (args.parentItem.text === 'Standard Business') {
                     (closest(args.element, '.e-menu-wrapper') as HTMLElement).style.height = '320px';
                 }
@@ -295,6 +321,7 @@ export class AnnotationToolbar {
                 }
             },
             select: (args: MenuEventArgs): void => {
+                this.pdfViewerBase.isAlreadyAdded = false;
                 if (args.item.text === 'Custom Stamp') {
                     this.updateInteractionTools();
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
@@ -309,6 +336,21 @@ export class AnnotationToolbar {
                     stampImage.click();
                     stampImage.addEventListener('change', this.addStampImage);
                     document.body.removeChild(stampImage);
+                    // tslint:disable-next-line:max-line-length
+                } else if (this.stampParentID === 'Custom Stamp' && args.item.text !== '') {
+                    // tslint:disable-next-line
+                    let elements: any = this.pdfViewerBase.customStampCollection;
+                    for (let n: number = 0; n < elements.length; n++) {
+                        if (elements[n].customStampName === args.item.text) {
+                            this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
+                            this.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
+                            this.pdfViewerBase.stampAdded = true;
+                            this.pdfViewerBase.isAlreadyAdded = true;
+                            // tslint:disable-next-line:max-line-length
+                            this.pdfViewer.annotationModule.stampAnnotationModule.createCustomStampAnnotation(elements[n].customStampImageSource);
+                            this.pdfViewerBase.stampAdded = false;
+                        }
+                    }
                     // tslint:disable-next-line:max-line-length
                 } else if (args.item.text !== 'Dynamic' && args.item.text !== '' && args.item.text !== 'Standard Business' && (this.stampParentID === 'Sign Here' || args.item.text !== 'Sign Here')) {
                     this.updateInteractionTools();
@@ -342,6 +384,8 @@ export class AnnotationToolbar {
                 // tslint:disable-next-line
                 reader.onload = (e: any): void => {
                     let uploadedFileUrl: string = e.currentTarget.result;
+                    proxy.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = true;
+                    proxy.pdfViewer.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
                     proxy.pdfViewerBase.stampAdded = true;
                     this.pdfViewer.annotationModule.stampAnnotationModule.createCustomStampAnnotation(uploadedFileUrl);
                     proxy.pdfViewerBase.stampAdded = false;
@@ -1091,6 +1135,10 @@ export class AnnotationToolbar {
                 break;
             case this.pdfViewer.element.id + '_annotation_close':
             case this.pdfViewer.element.id + '_annotation_closeIcon':
+                let commentsPanel: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_commantPanel');
+                if (commentsPanel.style.display === 'block') {
+                    this.pdfViewerBase.navigationPane.closeCommentPanelContainer();
+                }
                 this.showAnnotationToolbar(this.primaryToolbar.annotationItem);
                 break;
         }

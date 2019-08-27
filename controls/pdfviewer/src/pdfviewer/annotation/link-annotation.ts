@@ -56,6 +56,9 @@ export class LinkAnnotation {
                         return true;
                     }
                 };
+                aTag.onmouseover = () => {
+                    proxy.triggerHyperlinkEvent(aTag);
+                };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewTab') {
                 aTag.target = '_blank';
                 aTag.onclick = () => {
@@ -65,6 +68,9 @@ export class LinkAnnotation {
                         proxy.pdfViewer.fireHyperlinkClick(hyperlinks[i], aTag);
                         return true;
                     }
+                };
+                aTag.onmouseover = () => {
+                    proxy.triggerHyperlinkEvent(aTag);
                 };
             } else if (this.pdfViewer.hyperlinkOpenState === 'NewWindow') {
                 aTag.onclick = () => {
@@ -76,9 +82,21 @@ export class LinkAnnotation {
                         return false;
                     }
                 };
+                aTag.onmouseover = () => {
+                    proxy.triggerHyperlinkEvent(aTag);
+                };
             }
             let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
             pageDiv.appendChild(aTag);
+        }
+    }
+
+    private triggerHyperlinkEvent(aTag: HTMLAnchorElement): boolean {
+        if (this.pdfViewerBase.tool instanceof LineTool || this.pdfViewerBase.tool instanceof PolygonDrawingTool) {
+            return false;
+        } else {
+            this.pdfViewer.fireHyperlinkHover(aTag);
+            return true;
         }
     }
 

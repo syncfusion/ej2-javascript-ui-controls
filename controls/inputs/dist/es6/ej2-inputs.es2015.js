@@ -1426,10 +1426,15 @@ let NumericTextBox = class NumericTextBox extends Component {
             let formatValue = this.formatNumber();
             this.setElementValue(formatValue);
             if (!this.isPrevFocused) {
-                let delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
-                setTimeout(() => {
+                if (!Browser.isDevice && Browser.info.version === '11.0') {
                     this.element.setSelectionRange(0, formatValue.length);
-                }, delay);
+                }
+                else {
+                    let delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
+                    setTimeout(() => {
+                        this.element.setSelectionRange(0, formatValue.length);
+                    }, delay);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -3543,6 +3548,7 @@ let Slider = class Slider extends Component {
         this.initRender();
         this.wireEvents();
         this.setZindex();
+        this.renderComplete();
     }
     initialize() {
         addClass([this.element], classNames.root);
@@ -11122,7 +11128,7 @@ let ColorPicker = class ColorPicker extends Component {
                 this.element.value = this.roundValue(value).slice(0, 7);
                 let preview = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element);
                 if (preview) {
-                    preview.style.backgroundColor = newProp.value;
+                    preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value));
                 }
             }
             else {

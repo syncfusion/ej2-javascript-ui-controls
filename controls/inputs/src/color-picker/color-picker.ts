@@ -1783,7 +1783,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             if (value.length === 9) {
                 this.element.value = this.roundValue(value).slice(0, 7);
                 let preview: HTMLElement = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element) as HTMLElement;
-                if (preview) { preview.style.backgroundColor = newProp.value; }
+                if (preview) { preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value)); }
             } else {
                 this.value = oldProp.value;
             }

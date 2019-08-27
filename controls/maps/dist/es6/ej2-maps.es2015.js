@@ -4478,6 +4478,7 @@ let Maps = class Maps extends Component {
         this.renderTitle(this.titleSettings, 'title', null, null);
         this.renderArea();
         this.processRequestJsonData();
+        this.renderComplete();
     }
     /* tslint:disable:no-string-literal */
     processRequestJsonData() {

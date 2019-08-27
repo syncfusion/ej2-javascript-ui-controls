@@ -1,3 +1,4 @@
+import { Dictionary } from '../../../src/document-editor/index';
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { PageLayoutViewer, LayoutViewer } from '../../../src/document-editor/implementation/viewer/viewer';;
 import { createElement } from '@syncfusion/ej2-base';
@@ -14,7 +15,7 @@ let restrictExport: any = { "sections": [{ "blocks": [{ "paragraphFormat": { "st
 describe('Restrict editing export validation', () => {
     let editor: DocumentEditor;
     let viewer: LayoutViewer;
-    let json:any;
+    let json: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
@@ -39,7 +40,7 @@ describe('Restrict editing export validation', () => {
         }, 1000);
     });
     it('Formatting and protection type validation', () => {
-      expect(()=>{  editor.wordExportModule.save(editor.viewer, 'RestrictEditing');}).not.toThrowError();
+        expect(() => { editor.wordExportModule.save(editor.viewer, 'RestrictEditing'); }).not.toThrowError();
     });
     it('Permstart and end in paragraph validation', () => {
         json = editor.sfdtExportModule.write();
@@ -47,17 +48,17 @@ describe('Restrict editing export validation', () => {
         (editor.wordExportModule as any).section = (editor.wordExportModule as any).document.sections[0];
         let writer: XmlWriter = new XmlWriter();
         (editor.wordExportModule as any).serializeParagraphItems(writer, json.sections[0].blocks[1].inlines);
-        expect((writer as any).bufferText.indexOf('<w:permStart w:edGrp="everyone"')).not.toBe(-1);      
+        expect((writer as any).bufferText.indexOf('<w:permStart w:edGrp="everyone"')).not.toBe(-1);
     });
 });
 
-let format:any={"sections":[{"blocks":[{"paragraphFormat":{"afterSpacing":30.0,"styleName":"Heading 1"},"inlines":[{"text":"Adventure Work"},{"name":"_GoBack","bookmarkType":0},{"name":"_GoBack","bookmarkType":1},{"text":"s Cycles"}]},{"paragraphFormat":{"firstLineIndent":36.0,"styleName":"Normal"},"inlines":[{"text":"Adventure Works Cycles, the fictitious company on which the "},{"text":"AdventureWorks"},{"text":" sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation "},{"text":"is located in"},{"text":" Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base."}]},{"paragraphFormat":{"styleName":"Normal"},"inlines":[]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":11.0,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"fontFamily":"Calibri","fontSizeBidi":10.0,"fontFamilyBidi":"Times New Roman"},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"}},{"type":"Paragraph","name":"Heading 1","basedOn":"Normal","next":"Normal","link":"Heading 1 Char","characterFormat":{"fontSize":16.0,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontFamilyBidi":"Calibri Light"},"paragraphFormat":{"beforeSpacing":12.0,"outlineLevel":"Level1"}},{"type":"Character","name":"Default Paragraph Font"},{"type":"Character","name":"Heading 1 Char","basedOn":"Default Paragraph Font","characterFormat":{"fontSize":16.0,"fontFamily":"Calibri Light","fontColor":"#2F5496FF","fontSizeBidi":10.0,"fontFamilyBidi":"Times New Roman"}}],"defaultTabWidth":36.0,"formatting":true,"protectionType":"NoProtection","enforcement":true,"hashValue":"eVoNOXijTwRG8BOdeNzDDfHsmd+qOT/aaKgI8NhmnXkKJcCxatJyWYaED+5RG52qgIXFlcAVQvQPp0EqPDskjg==","saltValue":"Qb4b+Mg0aedgk8Al1wNpLQ=="};
+let format: any = { "sections": [{ "blocks": [{ "paragraphFormat": { "afterSpacing": 30.0, "styleName": "Heading 1" }, "inlines": [{ "text": "Adventure Work" }, { "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }, { "text": "s Cycles" }] }, { "paragraphFormat": { "firstLineIndent": 36.0, "styleName": "Normal" }, "inlines": [{ "text": "Adventure Works Cycles, the fictitious company on which the " }, { "text": "AdventureWorks" }, { "text": " sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation " }, { "text": "is located in" }, { "text": " Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base." }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": false } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri", "fontSizeBidi": 11.0, "fontFamilyBidi": "Calibri" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal", "characterFormat": { "fontFamily": "Calibri", "fontSizeBidi": 10.0, "fontFamilyBidi": "Times New Roman" }, "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple" } }, { "type": "Paragraph", "name": "Heading 1", "basedOn": "Normal", "next": "Normal", "link": "Heading 1 Char", "characterFormat": { "fontSize": 16.0, "fontFamily": "Calibri Light", "fontColor": "#2F5496FF", "fontFamilyBidi": "Calibri Light" }, "paragraphFormat": { "beforeSpacing": 12.0, "outlineLevel": "Level1" } }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Heading 1 Char", "basedOn": "Default Paragraph Font", "characterFormat": { "fontSize": 16.0, "fontFamily": "Calibri Light", "fontColor": "#2F5496FF", "fontSizeBidi": 10.0, "fontFamilyBidi": "Times New Roman" } }], "defaultTabWidth": 36.0, "formatting": true, "protectionType": "NoProtection", "enforcement": true, "hashValue": "eVoNOXijTwRG8BOdeNzDDfHsmd+qOT/aaKgI8NhmnXkKJcCxatJyWYaED+5RG52qgIXFlcAVQvQPp0EqPDskjg==", "saltValue": "Qb4b+Mg0aedgk8Al1wNpLQ==" };
 
 
 describe('Format word export validation', () => {
     let editor: DocumentEditor;
     let viewer: LayoutViewer;
-    let json:any;
+    let json: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);
@@ -82,14 +83,14 @@ describe('Format word export validation', () => {
         }, 1000);
     });
     it('Formatting and no protection type validation', () => {
-       expect(()=>{ editor.wordExportModule.save(editor.viewer, 'Format');}).not.toThrowError();
+        expect(() => { editor.wordExportModule.save(editor.viewer, 'Format'); }).not.toThrowError();
     });
     it('Formatting tag validation validation', () => {
         json = editor.sfdtExportModule.write();
         (editor.wordExportModule as any).setDocument(json);
-        
+
         let writer: XmlWriter = new XmlWriter();
         (editor.wordExportModule as any).serializeDocumentProtectionSettings(writer);
-        expect((writer as any).bufferText.indexOf('<w:documentProtection w:formatting="1"')).not.toBe(-1);      
+        expect((writer as any).bufferText.indexOf('<w:documentProtection w:formatting="1"')).not.toBe(-1);
     });
 });

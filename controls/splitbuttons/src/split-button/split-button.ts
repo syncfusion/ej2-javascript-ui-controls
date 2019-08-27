@@ -192,6 +192,7 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         this.setActiveElem([this.element, this.secondaryBtnObj.element]);
         this.setAria();
         this.wireEvents();
+        this.renderComplete();
     }
 
     private initWrapper(): void {

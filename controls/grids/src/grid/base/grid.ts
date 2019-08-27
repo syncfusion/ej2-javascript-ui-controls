@@ -2260,6 +2260,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     protected render(): void {
         this.log(['module_missing', 'promise_enabled', 'locale_missing', 'check_datasource_columns']);
         this.ariaService.setOptions(this.element, { role: 'grid' });
+        if (isBlazor()) {
+            this.renderComplete();
+        }
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this, this.serviceLocator);
         this.searchModule = new Search(this);
@@ -4334,7 +4337,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.element, 'click', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'touchend', this.mouseClickHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(this.getContent(), 'dblclick', this.dblClickHandler, this);
+        EventHandler.add(this.element, 'dblclick', this.dblClickHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyPressHandler, this);
         if (this.allowKeyboard) {
             this.element.tabIndex = this.element.tabIndex === -1 ? 0 : this.element.tabIndex;
@@ -4375,14 +4378,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.dataBoundFunction = this.refreshMediaCol.bind(this);
         this.addEventListener(events.dataBound, this.dataBoundFunction);
         this.on(events.keyPressed, this.onKeyPressed, this);
-        this.on(events.contentReady, this.blazorTemplate, this);
-        if (isBlazor()) {
-            let fn: Function = () => {
-                this.renderComplete();
-                this.off(events.contentReady, fn);
-            };
-            this.on(events.contentReady, fn, this);
-        }
     }
     /**
      * @hidden
@@ -4397,7 +4392,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
 
-    private blazorTemplate(): void {
+    public blazorTemplate(): void {
         if (isBlazor()) {
             for (let i: number = 0; i < this.columnModel.length; i++) {
 
@@ -4661,6 +4656,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public refreshColumns(): void {
         this.isPreventScrollEvent = true;
         this.updateColumnObject();
+        this.checkLockColumns(this.getColumns());
         this.refresh();
     }
     /**

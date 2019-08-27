@@ -1,8 +1,9 @@
 import * as cons from './../base/css-constants';
 import { ContextMenuOpenEventArgs as CMenuOpenEventArgs, ContextMenuClickEventArgs as CMenuClickEventArgs } from './../base/interface';
 import { TreeGrid, ContextMenu as TreeGridContextMenu } from '@syncfusion/ej2-treegrid';
-import { remove, closest, isNullOrUndefined, getValue, extend } from '@syncfusion/ej2-base';
+import { remove, closest, isNullOrUndefined, getValue, extend, getElement, isBlazor } from '@syncfusion/ej2-base';
 import { Gantt } from './../base/gantt';
+import { Deferred } from '@syncfusion/ej2-data';
 import { ContextMenu as Menu, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { NotifyArgs, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { ITaskData, IGanttData, IPredecessor, RowPosition } from '../base/common';
@@ -196,7 +197,7 @@ export class ContextMenu {
         }
     }
 
-    private contextMenuBeforeOpen(args: CMenuOpenEventArgs): void {
+    private contextMenuBeforeOpen(args: CMenuOpenEventArgs): void | Deferred {
         args.gridRow = closest(args.event.target as Element, '.e-row');
         args.chartRow = closest(args.event.target as Element, '.e-chart-row');
         let menuElement: Element = closest(args.event.target as Element, '.e-gantt');
@@ -236,19 +237,28 @@ export class ContextMenu {
             args.type = 'Content';
             args.disableItems = this.disableItems;
             args.hideItems = this.hideItems;
-            this.parent.trigger('contextMenuOpen', args);
-            this.hideItems = args.hideItems;
-            this.disableItems = args.disableItems;
-            if (!args.parentItem && args.hideItems.length === args.items.length) {
-                this.revertItemStatus();
-                args.cancel = true;
-            }
-            if (this.hideItems.length > 0) {
-                this.contextMenu.hideItems(this.hideItems);
-            }
-            if (this.disableItems.length > 0) {
-                this.contextMenu.enableItems(this.disableItems, false);
-            }
+            let callBackPromise: Deferred = new Deferred();
+            this.parent.trigger('contextMenuOpen', args, (args: CMenuOpenEventArgs) => {
+                callBackPromise.resolve(args);
+                if (isBlazor()) {
+                    args.element = !isNullOrUndefined(args.element) ? getElement(args.element) : args.element;
+                    args.gridRow = !isNullOrUndefined(args.gridRow) ? getElement(args.gridRow) : args.gridRow;
+                    args.chartRow = !isNullOrUndefined(args.chartRow) ? getElement(args.chartRow) : args.chartRow;
+                }
+                this.hideItems = args.hideItems;
+                this.disableItems = args.disableItems;
+                if (!args.parentItem && args.hideItems.length === args.items.length) {
+                    this.revertItemStatus();
+                    args.cancel = true;
+                }
+                if (this.hideItems.length > 0) {
+                    this.contextMenu.hideItems(this.hideItems);
+                }
+                if (this.disableItems.length > 0) {
+                    this.contextMenu.enableItems(this.disableItems, false);
+                }
+            });
+            return callBackPromise;
         }
     }
 
@@ -483,6 +493,9 @@ export class ContextMenu {
     }
 
     private revertItemStatus(): void {
+        if (isBlazor() && isNullOrUndefined(this.disableItems)) {
+            this.disableItems = [];
+        }
         this.contextMenu.showItems(this.hideItems);
         this.contextMenu.enableItems(this.disableItems);
         this.hideItems = [];

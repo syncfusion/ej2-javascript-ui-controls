@@ -186,4 +186,19 @@ describe('Insert HTML', () => {
         expect(document.querySelectorAll('#parentDiv > table')[1].id).toEqual('testTable');
         expect(document.querySelectorAll('#parentDiv > #inner4').length).toEqual(1);
     });
+
+    it('Insert table by selecting all the content', () => {
+        let editNode: Element = document.getElementById('divElement');
+        let editNode1: Element = document.getElementById('paragraph1');
+        let editNode2: Element = document.getElementById('inner4');
+        let table: Element = document.getElementById('testTable');
+        let table1: Element = document.createElement('table');
+        table1.id = 'testTable1';
+        let startNode: Node = editNode1.childNodes[0].childNodes[0];
+        let endNode: Node = editNode2.childNodes[2];
+        domSelection.setSelectionText(document, startNode, endNode, 0, 65);
+        InsertHtml.Insert(document, table1, editNode);
+        expect(document.getElementById('divElement').children.length === 1).toBe(true);
+        expect(document.getElementById('divElement').children[0].tagName === 'TABLE').toBe(true);
+    });
 });

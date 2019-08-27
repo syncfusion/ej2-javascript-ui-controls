@@ -6,7 +6,7 @@ import { ICellRenderer, IValueFormatter, ICellFormatter, IGrid, ICell } from '..
 import { doesImplementInterface, setStyleAndAttributes, appendChildren, extendObjWithFn } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { foreignKeyData } from '../base/constant';
+import { foreignKeyData, blazorId } from '../base/constant';
 
 /**
  * CellRenderer class which responsible for building cell content. 
@@ -65,8 +65,10 @@ export class CellRenderer implements ICellRenderer<Column> {
                     updateBlazorTemplate(templateID, 'Template', cell.column, false);
                 }
             } else {
-                result = cell.column.getColumnTemplate()(
-                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
+                let tData: Object = extend({ 'index': attributes[literals[0]] }, dummyData);
+                result = cell.column.getColumnTemplate()(tData, this.parent, 'template', templateID, this.parent[str]);
+                window[templateID] = window[templateID] || {};
+                window[templateID][tData[blazorId]] = node;
             }
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });

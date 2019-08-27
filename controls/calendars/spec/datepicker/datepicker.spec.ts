@@ -2074,6 +2074,44 @@ describe('Datepicker', () => {
             expect((datePicker.popupObj) !== null).toBe(true);
         });
     });
+    describe('Check placeholder after load culture', () => {
+        let datePicker: any;
+        L10n.load({
+            'en': {
+                'datepicker': { placeholder: 'Enter Date' }
+            },
+            'de': {
+                'datepicker': { placeholder: 'Datum eingeben' }
+            },
+            'zh': {
+                'datepicker': { placeholder: '输入日期' }
+            },
+        });
+        beforeEach((): void => {
+            datePicker = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (datePicker) {
+                datePicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Pass placeholder through l10n load', () => {
+            datePicker = new DatePicker({ floatLabelType: 'Auto', locale: 'en' }, '#date');
+            expect(datePicker.placeholder).toEqual('Enter Date');
+        });
+        it('Pass placeholder through l10n load in de culture', () => {
+            datePicker = new DatePicker({ floatLabelType: 'Auto', locale: 'de' }, '#date');
+            expect(datePicker.placeholder).toEqual('Datum eingeben');
+        });
+        it('Set placeholder through API', () => {
+            datePicker = new DatePicker({ floatLabelType: 'Auto', locale: 'zh', placeholder: 'Testo date' }, '#date');
+            expect(datePicker.placeholder).toEqual('Testo date');
+        });
+    });
+
     describe('HTML attributes at inline element testing', () => {
         let datePicker: any;
         beforeEach((): void => {

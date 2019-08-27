@@ -633,10 +633,52 @@ describe('Column chooser module', () => {
             expect(gridObj.element.querySelectorAll('.e-stop.e-selectall').length).toBe(1);
         });
         
-
+        it('enter key disabled', () => {
+            expect(gridObj.element.querySelector('.e-ccdlg').classList.contains('e-popup-close')).toBeTruthy();
+            gridObj.columnChooserModule.openColumnChooser();
+            (gridObj.element.querySelectorAll('.e-cc-chbox')[0] as any).click();
+            let action: any = 'enter';
+            let args: Object = action;
+            (gridObj.columnChooserModule as any).confirmDlgBtnClick(args);
+            expect(gridObj.element.querySelector('.e-ccdlg').classList.contains('e-popup-open')).toBeTruthy();
+        });
+        
         afterAll(() => {
             destroy(gridObj);
         });
     });
-
+    
+    describe('Checkbox column in column chooser =>', function () {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowPaging: true,
+                showColumnChooser: true,
+                toolbar: ['ColumnChooser'],
+                actionComplete: actionComplete,
+                pageSettings: { pageSizes: true, pageSize: 5 },
+                columns: [{ type: 'checkbox', width: 40},
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'Freight', format: 'C2', type: 'number', allowFiltering: false },
+                ],
+            }, done);
+        });
+        it('checkbox type check', function () {
+            let colType: string = 'checkbox';
+            expect(gridObj.getVisibleColumns()[0].type).toBe(colType); 
+            gridObj.columnChooserModule.openColumnChooser();
+            (gridObj.element.querySelectorAll('.e-cc-chbox')[0] as any).click();
+            (gridObj.element.querySelectorAll('.e-cc-chbox')[2] as any).click();
+            let btn: Button = (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
+            btn.click();
+            expect(gridObj.getVisibleColumns()[0].type).toBe(colType);
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

@@ -14509,6 +14509,10 @@ class Layout {
          * @private
          */
         this.isBidiReLayout = false;
+        /**
+         * @private
+         */
+        this.defaultTabWidthPixel = 48;
         this.viewer = viewer;
     }
     isSameStyle(currentParagraph, isAfterSpacing) {
@@ -16380,6 +16384,14 @@ class Layout {
         let fPosition = 0;
         let isCustomTab = false;
         let tabs = paragraph.paragraphFormat.getUpdatedTabs();
+        let isList = false;
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
+            let listFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
+            if (paragraph.paragraphFormat.leftIndent !== listFormat.leftIndent) {
+                isList = true;
+            }
+        }
         //  Calculate hanging width
         let clientWidth = 0;
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
@@ -16396,7 +16408,8 @@ class Layout {
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         let defaultTabWidth = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
         if (tabs.length === 0) {
-            if (position > 0 && defaultTabWidth > position) {
+            if (position > 0 && defaultTabWidth > position && isList ||
+                defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
                 return defaultTabWidth - position;
             }
             return defaultTabWidth;
@@ -28192,6 +28205,10 @@ class HtmlExport {
         let spanClass = '';
         if (spanText.indexOf('\v') !== -1) {
             spanClass += '<br>';
+            return spanClass.toString();
+        }
+        else if (spanText.indexOf('\f') !== -1) {
+            spanClass += '<br style = "page-break-after:always;"/>';
             return spanClass.toString();
         }
         let tagAttributes = [];
@@ -59659,8 +59676,11 @@ class WordExport {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
-        if (paragraphFormat.contextualSpacing) {
+        if (!isNullOrUndefined(paragraphFormat.contextualSpacing)) {
             writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
+            if (!paragraphFormat.contextualSpacing) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, '0');
+            }
             writer.writeEndElement();
         }
         this.serializeParagraphSpacing(writer, paragraphFormat);

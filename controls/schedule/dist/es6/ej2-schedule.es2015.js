@@ -2723,7 +2723,7 @@ function getMonthSummary(ruleObject, cldrObj, localeObj) {
     }
     return summary;
 }
-function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = MAXOCCURRENCE, viewDate = null, calendarMode = 'Gregorian') {
+function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = MAXOCCURRENCE, viewDate = null, calendarMode = 'Gregorian', oldTimezone = null, newTimezone = null) {
     let ruleObject = extractObjectFromRule(rule);
     let cacheDate;
     calendarUtil = getCalendarUtil(calendarMode);
@@ -2731,8 +2731,12 @@ function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = M
     let modifiedDate = new Date(startDate.getTime());
     tempExcludeDate = [];
     let tempDate = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
+    let tz = new Timezone();
     tempDate.forEach((content) => {
         let parsedDate = getDateFromRecurrenceDateString(content);
+        if (oldTimezone && newTimezone) {
+            parsedDate = tz.convert(new Date(parsedDate.getTime()), oldTimezone, newTimezone);
+        }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });
     ruleObject.recExceptionCount = !isNullOrUndefined(ruleObject.count) ? tempExcludeDate.length : 0;
@@ -3841,7 +3845,7 @@ class EventBase {
                 event[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event));
+                processed = processed.concat(this.generateOccurrence(event, null, oldTimezone));
             }
             else {
                 event.Guid = this.generateGuid();
@@ -4447,7 +4451,7 @@ class EventBase {
         }
         this.parent.activeEventData = { event: eventObject, element: target };
     }
-    generateOccurrence(event, viewDate) {
+    generateOccurrence(event, viewDate, oldTimezone) {
         let startDate = event[this.parent.eventFields.startTime];
         let endDate = event[this.parent.eventFields.endTime];
         let eventRule = event[this.parent.eventFields.recurrenceRule];
@@ -4458,7 +4462,10 @@ class EventBase {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        let dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
+        let newTimezone = this.parent.timezone || this.timezone.getLocalTimezoneName();
+        let firstDay = this.parent.firstDayOfWeek;
+        let calendarMode = this.parent.calendarMode;
+        let dates = generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -4676,7 +4683,11 @@ class Crud {
         return null;
     }
     refreshData(args) {
-        let actionArgs = { requestType: args.requestType, cancel: false, data: args.data };
+        let actionArgs = {
+            requestType: args.requestType, cancel: false, data: args.data,
+            addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
+            deletedRecords: args.editParms.deletedRecords
+        };
         if (this.parent.dataModule.dataManager.dataSource.offline) {
             this.parent.trigger(actionComplete, actionArgs);
             this.parent.renderModule.refreshDataManager();
@@ -4728,9 +4739,12 @@ class Crud {
         }
         else {
             this.processCrudTimezone(eventData);
+            editParms.addedRecords.push(eventData);
             promise = this.parent.dataModule.dataManager.insert(eventData, this.getTable(), this.getQuery());
         }
-        let crudArgs = { requestType: 'eventCreated', cancel: false, data: eventData, promise: promise };
+        let crudArgs = {
+            requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+        };
         this.refreshData(crudArgs);
     }
     saveEvent(event, action) {
@@ -4757,6 +4771,7 @@ class Crud {
                 this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
             }
             else {
+                editParms.changedRecords.push(event);
                 promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery());
             }
         }
@@ -4805,7 +4820,7 @@ class Crud {
         // if (!this.parent.activeView.isTimelineView()) {
         //     this.parent.eventBase.selectWorkCellByTime(dataObj);
         // }
-        let crudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise };
+        let crudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise, editParms: editParms };
         this.refreshData(crudArgs);
     }
     processEditFutureOccurence(data, parentEvent, editParms) {
@@ -5089,7 +5104,7 @@ class Crud {
                 this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
         }
         this.parent.eventBase.selectWorkCellByTime(dataObj);
-        let crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise };
+        let crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise, editParms: editParms };
         this.refreshData(crudArgs);
     }
     processDeleteSeries(recEvent, editParms, id) {
@@ -5624,6 +5639,9 @@ class QuickPopups {
         this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
         let guid = target.getAttribute('data-guid');
         let eventObj = this.parent.eventBase.getEventByGuid(guid);
+        if (isNullOrUndefined(eventObj)) {
+            return;
+        }
         let eventTitle = (eventObj[this.parent.eventFields.subject] || this.l10n.getConstant('noTitle'));
         let eventTemplate = `<div class="${MULTIPLE_EVENT_POPUP_CLASS}"><div class="${POPUP_HEADER_CLASS}">` +
             `<button class="${CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button>` +
@@ -7691,6 +7709,11 @@ class EventWindow {
             this.createRecurrenceEditor(recurrenceEditor);
         }
     }
+    updateRecurrenceEditor(recurrenceEditor) {
+        if (this.parent.editorTemplate) {
+            this.recurrenceEditor = recurrenceEditor;
+        }
+    }
     openEditor(data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
@@ -9455,6 +9478,7 @@ class Render {
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
+            this.parent.renderCompleted();
             this.parent.trigger(dataBound, null, () => this.parent.hideSpinner());
         });
     }
@@ -10615,6 +10639,11 @@ let Schedule = class Schedule extends Component {
         this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
+    }
+    renderCompleted() {
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     updateLayoutTemplates() {
         let view = this.views[this.viewIndex];
@@ -11942,6 +11971,13 @@ let Schedule = class Schedule extends Component {
         return this.activeView ? this.activeView.renderDates : [];
     }
     /**
+     * Update the recurrence editor instance from custom editor template.
+     * @method updateRecurrenceEditor
+     */
+    updateRecurrenceEditor(recurrenceEditor) {
+        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
+    }
+    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -12628,6 +12664,11 @@ class MonthEvent extends EventBase {
         this.addEventListener();
     }
     renderAppointments() {
+        let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        if (this.parent.rowAutoHeight) {
+            this.parent.uiStateValues.top = conWrap.scrollTop;
+            this.parent.uiStateValues.left = conWrap.scrollLeft;
+        }
         let appointmentWrapper = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
         for (let wrap of appointmentWrapper) {
             remove(wrap);
@@ -12637,7 +12678,6 @@ class MonthEvent extends EventBase {
             return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
-        let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         let scrollTop = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
@@ -12653,7 +12693,8 @@ class MonthEvent extends EventBase {
             let data = {
                 cssProperties: this.parent.getCssProperties(),
                 module: this.parent.getModuleName(),
-                isPreventScrollUpdate: true
+                isPreventScrollUpdate: true,
+                scrollPosition: { left: this.parent.uiStateValues.left, top: this.parent.uiStateValues.top }
             };
             if (this.parent.virtualScrollModule) {
                 if (this.parent.currentAction) {
@@ -13321,7 +13362,11 @@ class Resize extends ActionBase {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
         let minutes = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        let resizeTime = resetTime(new Date(parseInt(this.actionObj.clone.offsetParent.getAttribute('data-date'), 10)));
+        let element = this.actionObj.clone.offsetParent;
+        if (isNullOrUndefined(element)) {
+            return;
+        }
+        let resizeTime = resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {
@@ -16673,6 +16718,10 @@ class Month extends ViewBase {
         }
         // tslint:enable:no-any
         this.setColWidth(content);
+        if (args.scrollPosition) {
+            content.scrollTop = args.scrollPosition.top;
+            content.scrollLeft = args.scrollPosition.left;
+        }
     }
     setContentHeight(content, leftPanelElement, height) {
         content.style.height = 'auto';

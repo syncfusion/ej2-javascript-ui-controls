@@ -190,6 +190,7 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
 
     private createPopup(): void {

@@ -8,10 +8,10 @@ import { AccumulationChartModel } from './accumulation-model';
 import { Font, Margin, Border, TooltipSettings, Indexes } from '../common/model/base';
 import { AccumulationSeries, AccPoints, PieCenter } from './model/acc-base';
 import { AccumulationType, AccumulationSelectionMode } from './model/enum';
-import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs, IAccTooltipRenderEventArgs } from './model/pie-interface';
+import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs } from './model/pie-interface';
 import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';
 import { Theme, getThemeColor } from '../common/model/theme';
-import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
+import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
 import {  IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick } from '../common/model/constants';
 import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';
@@ -358,10 +358,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
     /**
      * Triggers before the tooltip for series gets rendered.
      * @event
-     * @deprecated
      */
     @Event()
-    public tooltipRender: EmitType<IAccTooltipRenderEventArgs>;
+    public tooltipRender: EmitType<ITooltipRenderEventArgs>;
 
     /**
      * Triggers before each points for series gets rendered.
@@ -638,6 +637,8 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         this.calculateVisibleSeries();
 
         this.processData();
+
+        this.renderComplete();
     }
     /**
      * Method to unbind events for accumulation chart

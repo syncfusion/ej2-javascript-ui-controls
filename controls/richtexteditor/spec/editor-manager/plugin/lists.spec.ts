@@ -86,6 +86,26 @@ describe('Lists plugin', () => {
     <hr/>
     <ol class='ol-four-node'><li style='list-style-type:none;'><ol><li><p class='one-p-node'>one-node</p><ol><li><p class='two-p-node'>two-node</p></li><li><p class='three-p-node'>Third-node</p></li></ol></li><li><p class='four-p-node'>Four-node</p><ol><li><p class='five-p-node'>Five-node</p></li><li><p class='six-p-node'>Six-node</p></li></ol></li></ol></li></ol>
 </div>`;
+
+let revertListHTML: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ol>
+
+    <li>
+    <p class='revertPara-1'>Provide
+    the tool bar support, it’s also customizable.</p>
+    
+    </li>
+    
+    <li>
+    <p>Options
+    to get the HTML elements with styles.</p>
+    </li>
+    
+    <li><p class='revertPara-3'>Support
+    to insert image from a defined path.</p></li>
+    
+    </ol></div>
+    `;
+
 describe ('left indent testing', () => {
     let editorObj: EditorManager;
     let editNode: HTMLElement;
@@ -571,6 +591,36 @@ describe ('left indent testing', () => {
         let endNode: HTMLElement;
         let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9 } };
 
+        describe(' basic OL format apply and revert with content with space', () => {
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: revertListHTML.trim()
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+
+            it(' apply the OL format to selected "p"and revert with content with space', () => {
+                startNode = editNode.querySelector('.revertPara-1');
+                endNode = editNode.querySelector('.revertPara-3');
+                startNode = startNode.childNodes[0] as HTMLElement;
+                endNode = endNode.childNodes[0] as HTMLElement;
+                editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
+                editorObj.execCommand("Lists", 'OL', null);
+                expect((editorObj.listObj as any).saveSelection.range.startContainer.textContent === startNode.textContent).toBe(true);
+                expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
+                startNode = editNode.querySelector('.revertPara-1');
+                endNode = editNode.querySelector('.revertPara-3');
+                expect(startNode.parentElement.tagName !== 'OL').toBe(true);
+                expect(endNode.parentElement.tagName !== 'OL').toBe(true);
+                editorObj.nodeSelection.Clear(document);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe(' basic OL format apply and revert', () => {
             let elem: HTMLElement = createElement('div', {
                 id: 'dom-node', innerHTML: olHTML.trim()
@@ -592,10 +642,10 @@ describe ('left indent testing', () => {
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = editNode.querySelector('.second-p-node');
-                expect(startNode.childNodes.length === 1).toBe(true);
+                expect(startNode.childNodes.length === 2).toBe(true);
                 expect(endNode.childNodes.length === 1).toBe(true);
-                expect(startNode.tagName === 'OL').toBe(true);
-                expect(startNode.tagName === 'OL').toBe(true);
+                expect(startNode.parentElement.tagName === 'OL').toBe(true);
+                expect(endNode.parentElement.tagName === 'OL').toBe(true);
                 editorObj.nodeSelection.Clear(document);
             });
             
@@ -620,17 +670,12 @@ describe ('left indent testing', () => {
             it(' apply the OL format to already applied "OL" format elements', () => {
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = editNode.querySelector('.ol-first-node');
-                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0].childNodes[0], endNode.childNodes[1].childNodes[0].childNodes[0], 0, 4);
+                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode.childNodes[1].childNodes[0].childNodes[0], 0, 4);
                 editorObj.execCommand("Lists", 'OL', null);
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = elem.querySelector('.second-p-node');
-                expect(startNode).toBeNull();
-                expect(endNode).toBeNull();
-
-                startNode = editNode.querySelector('.first-label');
-                endNode = editNode.querySelector('.second-label');
-                expect((startNode.parentNode as Element).tagName === 'P').toBe(true);
-                expect((endNode.parentNode as Element).tagName === 'P').toBe(true);
+                expect((startNode as Element).tagName === 'P').toBe(true);
+                expect((endNode as Element).tagName === 'P').toBe(true);
 
                 let replaceNodes: Element[] = <Element[] & NodeListOf<Element>>editNode.querySelectorAll('p.ol-first-node');
                 let olP3: Element = replaceNodes[0]
@@ -669,7 +714,7 @@ describe ('left indent testing', () => {
                 expect((editorObj.listObj as any).saveSelection.range.endContainer.textContent === endNode.textContent).toBe(true);
                 startNode = editNode.querySelector('.heading-one');
                 expect(!isNullOrUndefined(startNode.querySelector('h1'))).toBe(true);
-                expect(startNode.tagName === 'OL').toBe(true);
+                expect(startNode.parentElement.tagName === 'OL').toBe(true);
                 editorObj.nodeSelection.Clear(document);
             });
             afterAll(() => {
@@ -1244,10 +1289,10 @@ describe ('left indent testing', () => {
 
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = editNode.querySelector('.second-p-node');
-                expect(startNode.childNodes.length === 1).toBe(true);
+                expect(startNode.parentElement.tagName === 'UL').toBe(true);
+                expect(endNode.parentElement.tagName === 'UL').toBe(true);
+                expect(startNode.childNodes.length === 2).toBe(true);
                 expect(endNode.childNodes.length === 1).toBe(true);
-                expect(startNode.tagName === 'UL').toBe(true);
-                expect(startNode.tagName === 'UL').toBe(true);
                 editorObj.nodeSelection.Clear(document);
             });
 
@@ -1272,7 +1317,7 @@ describe ('left indent testing', () => {
             it(' apply the ul format to already applied "ul" format elements', () => {
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = editNode.querySelector('.ul-first-node');
-                startNode = startNode.childNodes[0].childNodes[0] as HTMLElement;
+                startNode = startNode.childNodes[0] as HTMLElement;
                 endNode = endNode.childNodes[1].childNodes[0].childNodes[0] as HTMLElement;
                 editorObj.nodeSelection.setSelectionText(document, startNode, endNode, 0, 4);
                 editorObj.execCommand("Lists", 'UL', null);
@@ -1282,13 +1327,8 @@ describe ('left indent testing', () => {
 
                 startNode = editNode.querySelector('.first-p-node');
                 endNode = elem.querySelector('.second-p-node');
-                expect(startNode).toBeNull();
-                expect(endNode).toBeNull();
-
-                startNode = editNode.querySelector('.first-label');
-                endNode = editNode.querySelector('.second-label');
-                expect((startNode.parentNode as Element).tagName === 'P').toBe(true);
-                expect((endNode.parentNode as Element).tagName === 'P').toBe(true);
+                expect((startNode as Element).tagName === 'P').toBe(true);
+                expect((endNode as Element).tagName === 'P').toBe(true);
 
                 let replaceNodes: Element[] = <Element[] & NodeListOf<Element>>editNode.querySelectorAll('p.ul-first-node');
                 let ulP3: Element = replaceNodes[0]
@@ -1396,7 +1436,7 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.space-two-node').tagName).toBe('OL');
+                expect(editNode.querySelector('.space-two-node').parentElement.tagName).toBe('OL');
             });
 
             it(' space key press after *', () => {
@@ -1409,7 +1449,7 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.space-four-node').tagName).toBe('UL');
+                expect(editNode.querySelector('.space-four-node').parentElement.tagName).toBe('UL');
             });
 
             it(' space key press after 1. when previous element starting with *', () => {
@@ -1422,7 +1462,7 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.space-six-node').tagName).not.toBe('OL');
+                expect(editNode.querySelector('.space-six-node').parentElement.tagName).not.toBe('OL');
                 expect(editNode.querySelector('.space-six-node').tagName).toBe('P');
             });
 
@@ -1436,7 +1476,7 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.space-five-node').tagName).not.toBe('OL');
+                expect(editNode.querySelector('.space-five-node').parentElement.tagName).not.toBe('OL');
                 expect(editNode.querySelector('.space-five-node').tagName).toBe('P');
             });
 
@@ -1450,7 +1490,7 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.space-seven-node').tagName).toBe('OL');
+                expect(editNode.querySelector('.space-seven-node').parentElement.tagName).toBe('OL');
             });
 
             it(' space key press after i.', () => {
@@ -1463,12 +1503,49 @@ describe ('left indent testing', () => {
                 keyBoardEvent.action = 'space';
                 keyBoardEvent.event.which = 32;
                 (editorObj as any).editorKeyDown(keyBoardEvent);
-                expect(editNode.querySelector('.space-eight-node').tagName).toBe('OL');
+                expect(editNode.querySelector('.space-eight-node').parentElement.tagName).toBe('OL');
             });
 
             afterAll(() => {
                 detach(elem);
             });
+        });
+    });
+
+    describe(' EJ2-29800 - Reactive form validation not working properly', () => {
+        let editorObj: EditorManager;
+        let editNode: HTMLElement;
+        let startNode: HTMLElement;
+        let endNode: HTMLElement;
+        let content: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><p><br></p></div>`;
+        let keyBoardEvent: any = { callBack: function () { }, event: { action: null, preventDefault: () => { }, stopPropagation: () => { }, shiftKey: true, which: 9 } };
+        let elem: HTMLElement;
+        beforeEach(() => {
+            elem = createElement('div', {
+                id: 'dom-node', innerHTML: content.trim()
+            });
+            document.body.appendChild(elem);
+            editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+            editNode = editorObj.editableElement as HTMLElement;
+        });
+        afterEach(() => {
+            detach(elem);
+        });
+
+        it(' shift+tab key navigation to focus out of editor', () => {
+            startNode = editNode.querySelector('p');
+            endNode = startNode.childNodes[0] as HTMLElement;
+            setCursorPoint(endNode, 0);
+            keyBoardEvent.event.key = "Tab";
+            keyBoardEvent.event.which = 9;
+            keyBoardEvent.event.shiftKey = true;
+            editNode.focus();
+            (editorObj as any).editorKeyDown(keyBoardEvent);
+            expect(/[^\u0000-\u00ff]/.test(editNode.innerHTML)).toBe(false);
+        });
+
+        afterAll(() => {
+            detach(elem);
         });
     });
 });

@@ -3,7 +3,7 @@ import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from 
 // tslint:disable-next-line:max-line-length
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel } from './pdfviewer-model';
-import { ServerActionSettingsModel, AjaxRequestSettingsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
@@ -18,8 +18,8 @@ import { TextSelection } from './index';
 import { TextSearch } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
-import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs  } from './index';
+import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from '../diagram/drawing';
@@ -68,6 +68,20 @@ export interface IAjaxHeaders {
      * specifies the ajax Header Value of the PdfViewer.
      */
     headerValue: string;
+}
+
+export class CustomStampItem extends ChildProperty<CustomStampItem> {
+    /**
+     * specifies the stamp Name of the PdfViewer.
+     */
+    @Property('')
+    public customStampName: string;
+
+    /**
+     * specifies the stamp ImageSource of the PdfViewer.
+     */
+    @Property('')
+    public customStampImageSource: string;
 }
 
 /**
@@ -590,7 +604,11 @@ export class CustomStampSettings extends ChildProperty<CustomStampSettings> {
      */
     @Property(0)
     public top: number;
-
+    /**
+     * Specifies to maintain the newly added custom stamp element in the menu items.
+     */
+    @Property(false)
+    public isAddToSubMenu: boolean;
 }
 
 /**
@@ -1174,6 +1192,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public ajaxRequestSettings: AjaxRequestSettingsModel;
 
     /**
+     * Defines the stamp items of the PdfViewer.
+     */
+    // tslint:disable-next-line:max-line-length
+
+    @Property({ customStampName: '', customStampImageSource: '' })
+    public customStampItems: CustomStampItemModel[];
+
+    /**
      * Defines the settings of the PdfViewer annotation toolbar.
      */
     // tslint:disable-next-line:max-line-length
@@ -1298,7 +1324,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Defines the settings of measurement annotation.
      */
-    @Property({conversionUnit: 'in', displayUnit: 'in', scaleRatio: 1, depth: 96})
+    @Property({ conversionUnit: 'in', displayUnit: 'in', scaleRatio: 1, depth: 96 })
     public measurementSettings: MeasurementSettingsModel;
 
     /**
@@ -1381,7 +1407,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public annotationModule: Annotation;
-
     /** 
      * Gets the bookmark view object of the pdf viewer.
      * @asptype BookmarkView
@@ -1516,6 +1541,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public hyperlinkClick: EmitType<HyperlinkClickEventArgs>;
+
+    /**
+     * Triggers when hyperlink in the PDF Document is hovered
+     * @event
+     * @blazorProperty 'OnHyperlinkMouseOver'
+     */
+    @Event()
+    public hyperlinkMouseOver: EmitType<HyperlinkMouseOverArgs>;
 
     /**
      * Triggers when there is change in the magnification value.
@@ -1667,6 +1700,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                     this.width = newProp.width;
                     this.viewerBase.updateWidth();
                     this.viewerBase.onWindowResize();
+                    break;
+                case 'customStampItems':
+                    this.annotation.stampAnnotationModule.isStampAddMode = true;
+                    this.annotationModule.stampAnnotationModule.isStampAnnotSelected = true;
+                    this.viewerBase.stampAdded = true;
+                    this.viewerBase.isAlreadyAdded = false;
+                    // tslint:disable-next-line:max-line-length
+                    this.annotation.stampAnnotationModule.createCustomStampAnnotation(this.customStampItems[0].customStampImageSource);
                     break;
             }
         }
@@ -2046,6 +2087,15 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * @private
      */
+    public fireHyperlinkHover(hyperlinkElement: HTMLAnchorElement): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: HyperlinkMouseOverArgs = { name: 'hyperlinkMouseOver', hyperlinkElement: hyperlinkElement };
+        this.trigger('hyperlinkMouseOver', eventArgs);
+    }
+
+    /**
+     * @private
+     */
     // tslint:disable-next-line
     public fireAnnotationAdd(pageNumber: number, index: number, type: AnnotationType, bounds: any, settings: any): void {
         let eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
@@ -2114,6 +2164,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public select(objArray: string[], multipleSelection?: boolean, preventUpdate?: boolean): void {
+        let annotationSelect: number = this.annotationModule.textMarkupAnnotationModule.selectTextMarkupCurrentPage;
+        if (annotationSelect) {
+            this.annotationModule.textMarkupAnnotationModule.clearCurrentAnnotationSelection(annotationSelect, true);
+        }
         this.drawing.select(objArray, multipleSelection, preventUpdate);
     }
     /**

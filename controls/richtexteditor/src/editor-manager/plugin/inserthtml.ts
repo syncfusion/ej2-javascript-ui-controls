@@ -36,12 +36,16 @@ export class InsertHtml {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
             } else {
-                let lasNode: Node = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1] as HTMLElement);
+                let lasNode: Node = nodeCutter.GetSpliceNode(range, nodes[nodes.length - 1].parentElement as HTMLElement);
+                lasNode = isNOU(lasNode) ? preNode : lasNode;
                 nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
                     lasNode.textContent.length : lasNode.childNodes.length);
                 range = nodeSelection.getRange(docElement);
             }
             range.extractContents();
+            if ((insertNode as HTMLElement).tagName === 'TABLE') {
+                this.removeEmptyElements(editNode as HTMLElement);
+            }
             for (let index: number = 0; index < nodes.length; index++) {
                 if (nodes[index].nodeType !== 3 && nodes[index].parentNode != null) {
                     if (nodes[index].nodeName === 'IMG') { continue; }
@@ -61,7 +65,7 @@ export class InsertHtml {
                 if (previousNode !== null) {
                     parentNode = previousNode;
                 }
-                if (parentNode.firstChild) {
+                if (parentNode.firstChild && (parentNode as HTMLElement).contentEditable !== 'true') {
                     if (parentNode.textContent.trim() === '') {
                         InsertMethods.AppendBefore(node as HTMLElement, parentNode as HTMLElement, false);
                         detach(parentNode);
@@ -95,7 +99,28 @@ export class InsertHtml {
             }
         }
     }
-
+    private static findDetachEmptyElem(element: Element): HTMLElement {
+        let removableElement: HTMLElement;
+        if (!isNOU(element.parentElement)) {
+            if (element.parentElement.textContent.trim() === '' && element.parentElement.contentEditable !== 'true') {
+                removableElement = this.findDetachEmptyElem(element.parentElement);
+            } else {
+                removableElement = element as HTMLElement;
+            }
+        } else {
+            removableElement = null;
+        }
+        return removableElement;
+    }
+    private static removeEmptyElements(element: HTMLElement): void {
+        let emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
+        for (let i: number = 0; i < emptyElements.length; i++) {
+            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
+                let detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
+                if (!isNOU(detachableElement)) { detach(detachableElement); }
+            }
+        }
+    }
     private static closestEle(element: Element | Node, editNode: Element): Element {
         let el: Element = <Element>element;
         while (el && el.nodeType === 1) {

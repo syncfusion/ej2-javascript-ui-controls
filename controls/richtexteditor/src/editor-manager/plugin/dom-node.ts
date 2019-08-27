@@ -338,6 +338,12 @@ export class DOMNode {
             let markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
             markerStart.appendChild(start);
         } else {
+            if (start.tagName === 'IMG') {
+                let parNode: HTMLParagraphElement = document.createElement('p');
+                start.parentElement.insertBefore(parNode, start);
+                parNode.appendChild(start);
+                start = parNode.children[0];
+            }
             for (let i: number = 0; i < selfClosingTags.length; i++) {
                 start = start.tagName === selfClosingTags[i] ? start.parentNode as Element : start;
             }
@@ -442,9 +448,13 @@ export class DOMNode {
                         collectionNodes.indexOf(node) < 0 && (node !== endNode || range.endOffset > 0)) {
                         collectionNodes.push(node);
                     }
+                    if (node.nodeName === 'IMG' && node.parentElement.contentEditable === 'true') {
+                        collectionNodes.push(node);
+                    }
                 }
                 parentNode = this.blockParentNode(endNode);
-                if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0) {
+                if (parentNode && this.ignoreTableTag(parentNode) && collectionNodes.indexOf(parentNode) < 0 &&
+                parentNode.previousElementSibling.tagName !== 'IMG') {
                     collectionNodes.push(parentNode);
                 }
             }

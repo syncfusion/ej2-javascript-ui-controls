@@ -543,6 +543,9 @@ let enterTestValueMultiLine: string =
 
 
 Line with more than one break line before`;
+
+let enterMultiValue: string =
+`1. one para`
         let editorObj: MarkdownParser;
         let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
             id: 'markdown-editor',
@@ -633,6 +636,24 @@ Line with more than one break line before`;
             (editorObj as any).editorKeyUp(keyBoardEvent);
             let line = editorObj.markdownSelection.getLine(textArea, 1);
             expect(new RegExp('^(2.)', 'gim').test(line.trim())).toBe(true);
+        });
+        it(' enter key navigation in the middle of the list', () => {
+            textArea.value = enterMultiValue;
+            let line1: string = editorObj.markdownSelection.getLine(textArea, 0);
+            let length: number = line1.length;
+            textArea.value = textArea.value.substr(0, length + 1) + '\n' + textArea.value.substring(length + 1, textArea.value.length)
+            editorObj.markdownSelection.save(length - 4, length - 4);
+            editorObj.markdownSelection.restore(textArea);
+            textArea.value = textArea.value.substr(0, length - 4) + '\n' + textArea.value.substring(length - 4, textArea.value.length)
+            let line2: string = editorObj.markdownSelection.getLine(textArea, 0);
+            let length2: number = line2.length;
+            editorObj.markdownSelection.save(length + 1, length + 1);
+            editorObj.markdownSelection.restore(textArea);
+            keyBoardEvent.event.which = 13;
+            (editorObj as any).editorKeyUp(keyBoardEvent);
+            let line = editorObj.markdownSelection.getLine(textArea, 1);
+            expect(new RegExp('^(2.)', 'gim').test(line.trim())).toBe(true);
+            expect(line === '2. para').toBe(true);
         });
         it(' enter key navigation with text having more than two break line', () => {
             textArea.value = enterTestValueMultiLine;

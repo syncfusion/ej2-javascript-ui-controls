@@ -35,6 +35,11 @@ export class MonthEvent extends EventBase {
     }
 
     public renderAppointments(): void {
+        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+        if (this.parent.rowAutoHeight) {
+            this.parent.uiStateValues.top = conWrap.scrollTop;
+            this.parent.uiStateValues.left = conWrap.scrollLeft;
+        }
         let appointmentWrapper: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.APPOINTMENT_WRAPPER_CLASS));
         for (let wrap of appointmentWrapper) {
             remove(wrap);
@@ -44,7 +49,6 @@ export class MonthEvent extends EventBase {
             return;
         }
         this.eventHeight = util.getElementHeightFromClass(this.element, cls.APPOINTMENT_CLASS);
-        let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let scrollTop: number = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
@@ -59,7 +63,8 @@ export class MonthEvent extends EventBase {
             let data: NotifyEventArgs = {
                 cssProperties: this.parent.getCssProperties(),
                 module: this.parent.getModuleName(),
-                isPreventScrollUpdate: true
+                isPreventScrollUpdate: true,
+                scrollPosition: { left: this.parent.uiStateValues.left, top: this.parent.uiStateValues.top }
             };
             if (this.parent.virtualScrollModule) {
                 if (this.parent.currentAction) {
@@ -497,7 +502,7 @@ export class MonthEvent extends EventBase {
     public getEventData(event: { [key: string]: Object }): { [key: string]: Object } {
         let eventObj: { [key: string]: Object } = extend({}, event, null, true) as { [key: string]: Object };
         eventObj[this.fields.startTime] = (event.data as { [key: string]: Object })[this.fields.startTime];
-        eventObj[this.fields.endTime] = (event.data as { [key: string]: Object })[this.fields.endTime] ;
+        eventObj[this.fields.endTime] = (event.data as { [key: string]: Object })[this.fields.endTime];
         return eventObj;
     }
 
@@ -512,7 +517,7 @@ export class MonthEvent extends EventBase {
     }
 
     private renderWrapperElement(cellTd: HTMLElement): void {
-        let element : HTMLElement = cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
+        let element: HTMLElement = cellTd.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS);
         if (!isNullOrUndefined(element)) {
             this.monthHeaderHeight = element.offsetTop - (<HTMLElement>cellTd).offsetTop;
         } else {

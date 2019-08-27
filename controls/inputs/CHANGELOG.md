@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.47 (2019-08-27)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- `#242949` - Resolved the cursor flickering issue on IE11 browser while focus the input by tab and mouse simultaneously.
+
 ## 17.2.46 (2019-08-22)
 
 ### Slider

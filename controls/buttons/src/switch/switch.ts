@@ -299,6 +299,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
     private rippleHandler(e: MouseEvent): void {
         let rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];

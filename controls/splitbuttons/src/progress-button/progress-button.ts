@@ -229,6 +229,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         this.init();
         this.wireEvents();
         this.setAria();
+        this.renderComplete();
     }
 
     /**

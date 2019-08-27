@@ -446,8 +446,17 @@ let Splitter = class Splitter extends Component {
         this.addSeparator(this.element);
     }
     checkSplitPane(currentBar, elementIndex) {
-        let paneEle = currentBar.parentElement.children[elementIndex];
+        let paneEle = this.collectPanes(currentBar.parentElement.children)[elementIndex];
         return paneEle;
+    }
+    collectPanes(childNodes) {
+        let elements = [];
+        for (let i = 0; i < childNodes.length; i++) {
+            if (childNodes[i].classList.contains('e-pane')) {
+                elements.push(childNodes[i]);
+            }
+        }
+        return elements;
     }
     getPrevPane(currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -1751,6 +1760,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
+        this.renderComplete();
     }
     initGridLines() {
         this.table = document.createElement('table');

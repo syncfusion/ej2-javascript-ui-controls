@@ -13,11 +13,12 @@ const CALL_FUNCTION: RegExp = new RegExp('\\((.*)\\)', '');
 const NOT_NUMBER: RegExp = new RegExp('^[0-9]+$', 'g');
 const WORD: RegExp = new RegExp('[\\w"\'.\\s+]+', 'g');
 const DBL_QUOTED_STR: RegExp = new RegExp('"(.*?)"', 'g');
-const SPECIAL_CHAR: RegExp = /\@|\#|\$/g;
 const WORDIF: RegExp = new RegExp('[\\w"\'@#$.\\s+]+', 'g');
 let exp: RegExp = new RegExp('\\${([^}]*)}', 'g');
 // let cachedTemplate: Object = {};
 let ARR_OBJ: RegExp = /^\..*/gm;
+let SINGLE_SLASH: RegExp = /\\/gi;
+let DOUBLE_SLASH: RegExp = /\\\\/gi;
 
 /**
  * The function to set regular expression for template expression string.
@@ -88,6 +89,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
 
         (match: string, cnt: string, offset: number, matchStr: string): string => {
 
+            const SPECIAL_CHAR: RegExp = /\@|\#|\$/gm;
             let matches: string[] = cnt.match(CALL_FUNCTION);
 
             // matches to detect any function calls
@@ -150,20 +152,29 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                         '+"';
                 }
             } else if (ELSE_STMT.test(cnt)) {
-                //handling else condition
+                // handling else condition
                 cnt = '"; ' + cnt.replace(ELSE_STMT, '} else { \n str = str + "');
 
             } else if (!!cnt.match(IF_OR_FOR)) {
                 // close condition 
                 cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
             } else if (SPECIAL_CHAR.test(cnt)) {
-                // evaluate normal expression with special character
+                // template string with double slash with special character
+                if (cnt.match(SINGLE_SLASH)) {
+                    cnt = SlashReplace(cnt);
+                }
                 cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
             } else {
-                // evaluate normal expression
-                cnt = '"+' + addNameSpace(
-                    cnt.replace(/\,/gi, '+' + nameSpace + '.'),
-                    (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+                // template string with double slash
+                if (cnt.match(SINGLE_SLASH)) {
+                    cnt = SlashReplace(cnt);
+                    cnt = '"+' + NameSpaceForspecialChar(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '"]+"';
+                } else {
+                    // evaluate normal expression
+                    cnt = '"+' + addNameSpace(
+                        cnt.replace(/\,/gi, '+' + nameSpace + '.'),
+                        (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+                }
             }
             return cnt;
         });
@@ -186,4 +197,16 @@ function NameSpaceArrObj(str: string, addNS: Boolean, nameSpace: string, ignoreL
 
 function NameSpaceForspecialChar(str: string, addNS: Boolean, nameSpace: string, ignoreList: string[]): string {
     return ((addNS && !(NOT_NUMBER.test(str)) && ignoreList.indexOf(str.split('.')[0]) === -1) ? nameSpace + '["' + str : str);
+}
+
+// tslint:disable-next-line
+function SlashReplace(tempStr: string): any {
+    // tslint:disable-next-line
+    let double: string = `\\\\`;
+    if (tempStr.match(DOUBLE_SLASH)) {
+        tempStr = tempStr;
+    } else {
+        tempStr = tempStr.replace(SINGLE_SLASH, double as string);
+    }
+    return tempStr;
 }

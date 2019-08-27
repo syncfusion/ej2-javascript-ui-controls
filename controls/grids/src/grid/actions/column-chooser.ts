@@ -350,21 +350,24 @@ export class ColumnChooser implements IAction {
 
     private confirmDlgBtnClick(args: Object): void {
         this.stateChangeColumns = [];
+        let uncheckedLength: number = this.ulElement.querySelectorAll('.e-uncheck').length;
         if (!isNullOrUndefined(args)) {
-            if (this.hideColumn.length) {
-                this.columnStateChange(this.hideColumn, false);
+            if (uncheckedLength < this.parent.getColumns().length) {
+                if (this.hideColumn.length) {
+                    this.columnStateChange(this.hideColumn, false);
+                }
+                if (this.showColumn.length) {
+                    this.columnStateChange(this.showColumn, true);
+                }
+                let params: { requestType: string, element?: Element, position?: Object, columns?: Column[], dialogInstance: Dialog } = {
+                    requestType: 'columnstate', element: this.parent.element,
+                    columns: this.stateChangeColumns as Column[], dialogInstance: this.dlgObj
+                };
+                this.parent.trigger(events.actionComplete, params);
+                this.getShowHideService.setVisible(this.stateChangeColumns);
+                this.clearActions();
+                this.parent.notify(events.tooltipDestroy, { module: 'edit' });
             }
-            if (this.showColumn.length) {
-                this.columnStateChange(this.showColumn, true);
-            }
-            let params: { requestType: string, element?: Element, position?: Object, columns?: Column[], dialogInstance: Dialog } = {
-                requestType: 'columnstate', element: this.parent.element,
-                columns: this.stateChangeColumns as Column[], dialogInstance: this.dlgObj
-            };
-            this.parent.trigger(events.actionComplete, params);
-            this.getShowHideService.setVisible(this.stateChangeColumns);
-            this.clearActions();
-            this.parent.notify(events.tooltipDestroy, { module: 'edit' });
         }
     }
 
@@ -372,7 +375,9 @@ export class ColumnChooser implements IAction {
         for (let index: number = 0; index < stateColumns.length; index++) {
             let colUid: string = stateColumns[index];
             let currentCol: Column = this.parent.getColumnByUid(colUid);
-            currentCol.visible = state;
+            if (currentCol.type !== 'checkbox') {
+                currentCol.visible = state;
+            }
             this.stateChangeColumns.push(currentCol);
         }
     }
@@ -408,6 +413,7 @@ export class ColumnChooser implements IAction {
         let fltrCol: Column[];
         let okButton: Button;
         let buttonEle: HTMLElement = this.dlgDiv.querySelector('.e-footer-content');
+        let selectedCbox: number = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         this.isInitialOpen = true;
         if (buttonEle) {
             okButton = (buttonEle.querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
@@ -430,7 +436,7 @@ export class ColumnChooser implements IAction {
                 this.addcancelIcon();
                 this.refreshCheckboxButton();
             } else {
-                if (okButton) { okButton.disabled = false; }
+                if (okButton && selectedCbox) { okButton.disabled = false; }
             }
         } else {
             let nMatchele: HTMLElement = this.parent.createElement('span', { className: 'e-cc e-nmatch' });

@@ -1,7 +1,7 @@
 /**
  * RTE - Toolbar action spec
  */
-import { selectAll, select, Browser, createElement, detach, EventHandler, isNullOrUndefined } from "@syncfusion/ej2-base";
+import { selectAll, select, Browser, createElement, getUniqueID, detach, EventHandler, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor, ToolbarType, Toolbar, HtmlEditor, MarkdownEditor } from "../../../src/rich-text-editor/index";
 import { IToolbarStatus } from '../../../src/common/interface';
 import { renderRTE, destroy } from "./../render.spec";
@@ -1365,4 +1365,38 @@ describe("Toolbar - Actions Module", () => {
         });
     });
 
+    describe("EJ2-30374 - Issue with toolbar alignment when render Rich Text Editor within Tab", () => {
+        let rteEle: HTMLElement;
+        let rteObj: any;
+        let container: HTMLElement = createElement('div', { id: getUniqueID('container'), styles: 'height:800px;' });
+        let element1: HTMLElement = createElement('div', { id: getUniqueID('rte-wrapper') });
+        let element2: HTMLElement = createElement('div', { id: getUniqueID('rte-test'),  });
+
+        beforeEach(() => {
+            document.body.appendChild(container);
+            container.appendChild(element1);
+            element1.appendChild(element2);
+            rteObj = new RichTextEditor({
+                toolbarSettings: { enableFloating: true }
+            });
+            rteObj.appendTo(element2);
+            rteEle = rteObj.element;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it("Testing scroll with parent element in hidden mode", (done: Function) => {
+            element1.style.display = "none";
+            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
+            window.scrollTo(0, 100);
+            setTimeout(() => {
+                element1.style.display = "";
+                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
+                window.scrollTo(0, 0);
+                done();
+            }, 500);
+        });
+    });
 });

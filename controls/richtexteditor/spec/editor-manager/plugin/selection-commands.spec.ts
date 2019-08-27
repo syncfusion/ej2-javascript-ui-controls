@@ -73,6 +73,10 @@ describe('Selection commands', () => {
         '<li><p id="paragraph25">paragraph25</p></li>'+
         '<li><p id="paragraph26">paragraph26</p></li>'+
         '</ol>'+
+        '<ol>'+
+        '<li><p id="paragraph27">paragraph27&nbsp;</p></li>'+
+        '<li><p id="paragraph28">paragraph28</p></li>'+
+        '</ol>'+
         '</div>';
 
 
@@ -531,6 +535,17 @@ describe('Selection commands', () => {
         expect(document.getElementById('paragraph26').parentElement.style.fontSize).not.toEqual('10px');
         expect((document.getElementById('paragraph26').firstElementChild.tagName.toLowerCase()) === 'span').toBe(true);
         expect((document.getElementById('paragraph26').firstElementChild as HTMLElement).style.fontSize).toEqual('10px');
+    });
+
+    it('Apply fontsize tag for list elements with space', () => {
+        let node1: Node = document.getElementById('paragraph27');
+        let listNode1: Text = node1.childNodes[0] as Text;
+        let node2: Node = document.getElementById('paragraph28');
+        let listNode2: Text = node2.childNodes[0] as Text;
+        domSelection.setSelectionText(document, listNode1, listNode2, 0, 11);
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '36px');
+        expect(document.getElementById('paragraph27').parentElement.style.fontSize).toEqual('36px');
+        expect(document.getElementById('paragraph28').parentElement.style.fontSize).toEqual('36px');
     });
 });
 

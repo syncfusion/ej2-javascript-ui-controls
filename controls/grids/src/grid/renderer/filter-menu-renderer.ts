@@ -165,9 +165,11 @@ export class FilterMenuRenderer {
             new this.colTypes[column.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         if (column.filterTemplate) {
             let fltrData: Object = {};
-            fltrData[column.field] = (<{ values: Object }>fObj).values[column.field];
+            let valueInString: string = 'value';
+            fltrData[column.field] = fltrData[valueInString] = (<{ values: Object }>fObj).values[column.field];
             if (column.foreignKeyValue) {
-                fltrData[column.foreignKeyValue] = (<{ values: Object }>fObj).values[column.foreignKeyValue];
+                fltrData[column.foreignKeyValue] = (<{ values: Object }>fObj).values[column.field];
+                fltrData[column.field] = undefined;
             }
             let col: string = 'column';
             fltrData[col] = column;

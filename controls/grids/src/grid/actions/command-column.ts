@@ -1,5 +1,5 @@
 import { closest, KeyboardEventArgs, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { initialEnd, click, keyPressed, commandClick } from '../base/constant';
+import { click, keyPressed, commandClick } from '../base/constant';
 import { CellType } from '../base/enum';
 import { ServiceLocator } from '../services/service-locator';
 import { IGrid, EJ2Intance, CommandClickEventArgs } from '../base/interface';
@@ -23,6 +23,7 @@ export class CommandColumn {
     constructor(parent: IGrid, locator?: ServiceLocator) {
         this.parent = parent;
         this.locator = locator;
+        this.initiateRender();
         this.addEventListener();
     }
 
@@ -106,13 +107,11 @@ export class CommandColumn {
     private removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(click, this.commandClickHandler);
-        this.parent.off(initialEnd, this.initiateRender);
         this.parent.off(keyPressed, this.keyPressHandler);
     }
     private addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(click, this.commandClickHandler, this);
-        this.parent.on(initialEnd, this.initiateRender, this);
         this.parent.on(keyPressed, this.keyPressHandler, this);
     }
 

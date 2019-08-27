@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isUndefined, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, select, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, select, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
 import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
 import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
@@ -411,7 +411,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         }
     };
     
-    DropDownBase.prototype.DropDownBaseupdateBlazorTemplates = function (item, group, noRecord, action, value, header, footer) {
+    DropDownBase.prototype.DropDownBaseupdateBlazorTemplates = function (item, group, noRecord, action, value, header, footer, isEmpty) {
         if (!this.isStringTemplate) {
             if (this.itemTemplate && item) {
                 updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this);
@@ -426,7 +426,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
                 updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this);
             }
             if (value) {
-                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this, isEmpty);
             }
             if (header) {
                 updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY, this);
@@ -2004,8 +2004,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 this.showPopup();
             }
             var proxy_1 = this;
+            var duration = (isBlazor()) ? 1000 : 100;
             if (!this.isSecondClick) {
-                setTimeout(function () { proxy_1.cloneElements(); proxy_1.isSecondClick = true; }, 100);
+                setTimeout(function () { proxy_1.cloneElements(); proxy_1.isSecondClick = true; }, duration);
             }
         }
         else {
@@ -2145,8 +2146,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.inputElement.style.display = 'none';
         }
         this.valueTempElement.innerHTML = '';
+        var templateData = (isBlazor()) ? JSON.parse(JSON.stringify(this.itemData)) : this.itemData;
         compiledString = compile(this.valueTemplate);
-        for (var _i = 0, _a = compiledString(this.itemData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
+        for (var _i = 0, _a = compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.valueTempElement.appendChild(item);
         }
@@ -2714,6 +2716,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 if (!_this.isDocumentClick) {
                     _this.focusDropDown();
                 }
+                var isResetItem = (_this.getModuleName() === 'autocomplete') ? true : false;
+                _this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
                 _this.isNotSearchList = false;
                 _this.isDocumentClick = false;
                 _this.destroyPopup();
@@ -2881,8 +2885,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
-        var isResetItem = (this.getModuleName() === 'autocomplete') ? true : false;
-        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
@@ -3032,6 +3034,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.text)) {
             this.inputElement.setAttribute('value', this.text);
         }
+        this.renderComplete();
     };
     
     DropDownList.prototype.setFooterTemplate = function (popupEle) {
@@ -4126,6 +4129,7 @@ var ComboBox = /** @__PURE__ @class */ (function (_super) {
         if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
             _super.prototype.renderList.call(this);
         }
+        this.renderComplete();
     };
     
     /**
@@ -6188,8 +6192,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.removeValue = function (value, eve, length, isClearAll) {
         var _this = this;
         var index = this.value.indexOf(this.getFormattedValue(value));
-        var isValueTemp = (this.valueTemplate) ? true : false;
-        this.DropDownBaseresetBlazorTemplates(false, false, false, false, isValueTemp, false, false);
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = this.value.indexOf(value.toString());
         }
@@ -6430,13 +6432,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             itemData = this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
-            this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
             var compiledString = compile(this.valueTemplate);
             for (var _i = 0, _a = compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 chipContent.appendChild(item);
             }
-            this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
+            this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         }
         else {
             chipContent.innerHTML = data;
@@ -6578,8 +6579,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                             if (!_this.isFirstClick) {
                                 var ulElement = _this.list.querySelector('ul');
                                 if (ulElement) {
-                                    var isBlazor = Object.keys(window).indexOf('Blazor') >= 0;
-                                    if (_this.itemTemplate && (_this.mode === 'CheckBox') && isBlazor) {
+                                    var isBlazor$$1 = Object.keys(window).indexOf('Blazor') >= 0;
+                                    if (_this.itemTemplate && (_this.mode === 'CheckBox') && isBlazor$$1) {
                                         setTimeout(function () {
                                             _this.mainList = _this.ulElement;
                                         }, 0);
@@ -7884,6 +7885,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
         this.checkInitialValue();
+        this.renderComplete();
     };
     MultiSelect.prototype.checkInitialValue = function () {
         var _this = this;

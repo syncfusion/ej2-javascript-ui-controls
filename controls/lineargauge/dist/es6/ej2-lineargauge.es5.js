@@ -259,10 +259,10 @@ var Range = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property(null)
+        Property(0)
     ], Range.prototype, "start", void 0);
     __decorate$2([
-        Property(null)
+        Property(0)
     ], Range.prototype, "end", void 0);
     __decorate$2([
         Property('Outside')
@@ -2404,6 +2404,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
+        this.renderComplete();
         this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
     };
     /**

@@ -317,11 +317,16 @@ export class GanttChart {
      * @param args
      * @private
      */
-    public collapseGanttRow(args: object): void {
-        this.parent.trigger('collapsing', args);
-        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+    public collapseGanttRow(args: object, isCancel?: boolean): void {
+        if (isCancel) {
             this.collapsedGanttRow(args);
-        }
+        } else {
+        this.parent.trigger('collapsing', args, (args: object) => {
+            if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+                this.collapsedGanttRow(args);
+            }
+        });
+    }
         this.isExpandCollapseFromChart = false;
     }
 

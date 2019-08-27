@@ -121,6 +121,9 @@ export class HtmlExport {
         if (spanText.indexOf('\v') !== -1) {
             spanClass += '<br>';
             return spanClass.toString();
+         } else if (spanText.indexOf('\f') !== -1) {
+            spanClass += '<br style = "page-break-after:always;"/>';
+            return spanClass.toString();
         }
         let tagAttributes: string[] = [];
         this.serializeInlineStyle(characterFormat, '');

@@ -5865,9 +5865,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         for (var f = 0; f < this.flatFilteredData.length; f++) {
             var rec = this.flatFilteredData[f];
             this.addParentRecord(rec);
-            if (this.parent.filterSettings.hierarchyMode === 'Child' ||
-                this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'Child' ||
-                this.parent.searchSettings.hierarchyMode === 'None') {
+            var hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+                : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'None') &&
+                (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== ''))) {
                 this.isHierarchyFilter = true;
             }
             var ischild = getObject('childRecords', rec);
@@ -5890,7 +5891,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
     Filter$$1.prototype.addParentRecord = function (record) {
         var parent = getParentData(this.parent, record.parentUniqueID);
         //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
-        if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
+        var hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+            : this.parent.searchSettings.hierarchyMode;
+        if (hierarchyMode === 'None' && (this.parent.grid.filterSettings.columns.length !== 0
+            || this.parent.grid.searchSettings.key !== '')) {
             if (isNullOrUndefined(parent)) {
                 if (this.flatFilteredData.indexOf(record) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
@@ -5919,8 +5923,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         }
         else {
             if (!isNullOrUndefined(parent)) {
-                if (this.parent.filterSettings.hierarchyMode === 'Child'
-                    || this.parent.searchSettings.hierarchyMode === 'Child') {
+                var hierarchyMode_1 = this.parent.grid.searchSettings.key === '' ?
+                    this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+                if (hierarchyMode_1 === 'Child' && (this.parent.grid.filterSettings.columns.length !== 0
+                    || this.parent.grid.searchSettings.key !== '')) {
                     if (this.flatFilteredData.indexOf(parent) !== -1) {
                         this.addParentRecord(parent);
                     }
@@ -5940,8 +5946,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         var isExist = false;
         for (var count = 0; count < childRec.length; count++) {
             var ischild = childRec[count].childRecords;
-            if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
-                (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both')) {
+            var hierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'Both') && (this.parent.grid.filterSettings.columns.length !== 0
+                || this.parent.grid.searchSettings.key !== ''))) {
                 var uniqueIDValue = getValue('uniqueIDFilterCollection', this.parent);
                 if (!uniqueIDValue.hasOwnProperty(childRec[count].uniqueID)) {
                     this.filteredResult.push(childRec[count]);
@@ -5949,8 +5957,9 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
                     isExist = true;
                 }
             }
-            if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
-                if (this.flatFilteredData.indexOf(childRec[count] !== -1)) {
+            if ((hierarchyMode === 'None')
+                && (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== '')) {
+                if (this.flatFilteredData.indexOf(childRec[count]) !== -1) {
                     isExist = true;
                     break;
                 }

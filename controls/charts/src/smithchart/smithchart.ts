@@ -407,14 +407,14 @@ public theme: SmithchartTheme;
  * @private
  */
     public onPropertyChanged(newProp: SmithchartModel, oldProp: SmithchartModel): void {
-
-        this.animateSeries = false;
         let renderer: boolean = false;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'background':
                 case 'border':
                 case 'series':
+                case 'legendSettings':
+                case 'radius':
                     renderer = true;
                     break;
                 case 'size':
@@ -422,6 +422,7 @@ public theme: SmithchartTheme;
                     renderer = true;
                     break;
                 case 'theme':
+                case 'renderType':
                     this.animateSeries = true;
                     renderer = true;
                     break;
@@ -487,6 +488,7 @@ public theme: SmithchartTheme;
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
+        this.renderComplete();
         this.trigger('loaded', { smithchart: this.isBlazor ? null : this });
     }
      private createSecondaryElement(): void {

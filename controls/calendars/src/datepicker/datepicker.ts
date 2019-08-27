@@ -434,7 +434,7 @@ export class DatePicker extends Calendar implements IInput {
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
         if (this.getModuleName() === 'datepicker') {
-            let l10nLocale: object = { placeholder: null };
+            let l10nLocale: object = { placeholder: this.placeholder };
             this.globalize = new Internationalization(this.locale);
             this.l10n = new L10n('datepicker', l10nLocale, this.locale);
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);

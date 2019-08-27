@@ -914,7 +914,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * Triggers before the tooltip for series is rendered.
      * @event
-     * @deprecated
      */
 
     @Event()
@@ -1292,6 +1291,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.calculateVisibleAxis();
 
         this.processData();
+
+        this.renderComplete();
 
     }
 

@@ -4103,7 +4103,7 @@ let Toolbar = class Toolbar extends Component {
     }
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the command should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @returns void.
@@ -4111,6 +4111,7 @@ let Toolbar = class Toolbar extends Component {
     enableItems(items, isEnable) {
         let elements = items;
         let len = elements.length;
+        let ele;
         if (isNullOrUndefined(isEnable)) {
             isEnable = true;
         }
@@ -4124,17 +4125,43 @@ let Toolbar = class Toolbar extends Component {
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
-        if (len && len > 1) {
-            for (let ele of [].slice.call(elements)) {
+        if (!isNullOrUndefined(len) && len >= 1) {
+            for (let a = 0, element = [].slice.call(elements); a < len; a++) {
+                let itemElement = element[a];
+                if (typeof (itemElement) === 'number') {
+                    ele = this.getElementByIndex(itemElement);
+                    if (isNullOrUndefined(ele)) {
+                        return;
+                    }
+                    else {
+                        elements[a] = ele;
+                    }
+                }
+                else {
+                    ele = itemElement;
+                }
                 enable(isEnable, ele);
             }
             isEnable ? removeClass(elements, CLS_DISABLE$2) : addClass(elements, CLS_DISABLE$2);
         }
         else {
-            let ele;
-            ele = (len && len === 1) ? elements[0] : items;
+            if (typeof (elements) === 'number') {
+                ele = this.getElementByIndex(elements);
+                if (isNullOrUndefined(ele)) {
+                    return;
+                }
+            }
+            else {
+                ele = items;
+            }
             enable(isEnable, ele);
         }
+    }
+    getElementByIndex(index) {
+        if (this.tbarEle[index]) {
+            return this.tbarEle[index];
+        }
+        return null;
     }
     /**
      * Adds new items to the Toolbar that accepts an array as Toolbar items.
@@ -12198,6 +12225,9 @@ let Sidebar = class Sidebar extends Component {
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
+        if (Browser.isDevice) {
+            this.windowWidth = window.innerWidth;
+        }
     }
     setEnableRTL() {
         this.enableRtl ? (addClass([this.element], RTL$2)) :
@@ -12478,10 +12508,10 @@ let Sidebar = class Sidebar extends Component {
             else {
                 media = (this.mediaQuery).matches;
             }
-            if (media) {
+            if (media && this.windowWidth !== window.innerWidth) {
                 this.show();
             }
-            else if (this.getState()) {
+            else if (this.getState() && this.windowWidth !== window.innerWidth) {
                 this.hide();
             }
         }
@@ -12496,6 +12526,9 @@ let Sidebar = class Sidebar extends Component {
             }
         }
         this.setMediaQuery();
+        if (Browser.isDevice) {
+            this.windowWidth = window.innerWidth;
+        }
     }
     documentclickHandler(e) {
         if (closest(e.target, '.' + CONTROL$1 + '' + '.' + ROOT$1)) {
@@ -12704,6 +12737,7 @@ let Sidebar = class Sidebar extends Component {
         this.element.style.width = '';
         this.element.style.zIndex = '';
         this.element.style.transform = '';
+        this.windowWidth = null;
         (!isNullOrUndefined(this.sidebarEleCopy.getAttribute('tabindex'))) ?
             this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         let sibling = document.querySelector('.e-main-content')

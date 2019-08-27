@@ -416,6 +416,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     protected render(): void {
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
+        this.renderComplete();
     }
 
     /**

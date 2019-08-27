@@ -10,7 +10,7 @@ import { Timeline } from '../renderer/timeline';
 import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
-import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs } from './interface';
+import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs, CellEditArgs } from './interface';
 import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, ZoomEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
@@ -28,8 +28,8 @@ import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column, ColumnModel } from '../models/column';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
-import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
-import { RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';
+import { CellSelectEventArgs, CellSelectingEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
+import { RowDeselectEventArgs, CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';
 import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { Filter } from '../actions/filter';
@@ -665,8 +665,7 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered after the taskbar element is appended to the Gantt element.
-     * @deprecated
-     * @event 
+     * @event 
      */
     @Event()
     public queryTaskbarInfo: EmitType<IQueryTaskbarInfoEventArgs>;
@@ -717,11 +716,12 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when actions are failed.
-     * @deprecated
      * @event
+     * @blazorproperty 'OnActionFailure'
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.FailureEventArgs
      */
     @Event()
-    public actionFailure: EmitType<FilterEventArgs | SortEventArgs>;
+    public actionFailure: EmitType<FailureEventArgs>;
 
     /** 
      * This will be triggered taskbar was dragged and dropped on new position.
@@ -739,9 +739,9 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * This will be triggered a cell get begins to edit.
-     * @deprecated
-     * @event 
-     */
+     * @event
+     * @blazorproperty 'OnCellEdit'
+     */
     @Event()
     public cellEdit: EmitType<CellEditArgs>;
 
@@ -870,9 +870,9 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when a selected row is deselected.
-     * @deprecated
-     * @event
-     */
+     * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.RowDeselectEventArgs<TValue>
+     */
     @Event()
     public rowDeselected: EmitType<RowDeselectEventArgs>;
 
@@ -887,8 +887,8 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers after a cell is selected.
-     * @deprecated
-     * @event 
+     * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectEventArgs<TValue>
      */
     @Event()
     public cellSelected: EmitType<CellSelectEventArgs>;
@@ -957,8 +957,8 @@ export class Gantt extends Component<HTMLElement>
     public columnMenuClick: EmitType<ColumnMenuClickEventArgs>;
     /** 
      * Triggers before context menu opens.
-     * @deprecated
      * @event
+     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ContextMenuOpenEventArgs<TValue>
      */
     @Event()
     public contextMenuOpen: EmitType<CMenuOpenEventArgs>;
@@ -2960,6 +2960,29 @@ export class Gantt extends Component<HTMLElement>
     public selectCells(cellIndex: IIndex, isToggle?: boolean): void {
         if (this.selectionModule) {
             this.selectionModule.selectCell(cellIndex, isToggle);
+        }
+    }
+
+    /**
+     * Selects a row by given index. 
+     * @param  {number} index - Defines the row index. 
+     * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     * @return {void}
+     */
+    public selectRow(index: number, isToggle?: boolean): void {
+        if (this.selectionModule) {
+            this.selectionModule.selectRow(index, isToggle);
+        }
+    }
+
+    /**
+     * Selects a collection of rows by indexes. 
+     * @param  {number[]} records - Defines the collection of row indexes.
+     * @return {void}
+     */
+    public selectRows(records: number[]): void {
+        if (this.selectionModule) {
+            this.selectionModule.selectRows(records);
         }
     }
 }

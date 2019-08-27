@@ -704,7 +704,7 @@ export class DateRangePicker extends CalendarBase {
             spacebar: 'space'
         };
         this.defaultConstant = {
-            placeholder: '',
+            placeholder: this.placeholder,
             startLabel: 'Start Date',
             endLabel: 'End Date',
             customRange: 'Custom Range',

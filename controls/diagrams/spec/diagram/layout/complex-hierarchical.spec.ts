@@ -74,28 +74,28 @@ describe('Diagram Control', () => {
             diagram.layout.verticalSpacing = 40;
             diagram.spatialSearch = new SpatialSearch(diagram.nameTable);
             diagram.dataBind();
-            expect((diagram.nodes[0].offsetX == 1.1238696756863291 || diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 70).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291 || diagram.nodes[0].offsetX == 10.020656008197989) && diagram.nodes[0].offsetY == 70).toBe(true);
             done();
         });
         it('Checking BottomToTop complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'BottomToTop';
             diagram.dataBind();
-            expect((diagram.nodes[0].offsetX == 1.1238696756863291 || diagram.nodes[0].offsetX == 1.257941532653028) && diagram.nodes[0].offsetY == 470).toBe(true);
+            expect((diagram.nodes[0].offsetX == 1.1238696756863291 || diagram.nodes[0].offsetX == 10.020656008197989) && diagram.nodes[0].offsetY == 470).toBe(true);
             done();
         });
         it('Checking LeftToRight complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'LeftToRight';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 200 && (diagram.nodes[0].offsetY == 57.02686734040091 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
+            expect(diagram.nodes[0].offsetX == 200 && (diagram.nodes[0].offsetY == 60.2600739761485 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
             done();
         });
         it('Checking RightToLeft complex tree layout', (done: Function) => {
             diagram.layout.type = 'ComplexHierarchicalTree';
             diagram.layout.orientation = 'RightToLeft';
             diagram.dataBind();
-            expect(diagram.nodes[0].offsetX == 900 && (diagram.nodes[0].offsetY == 57.02686734040091 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
+            expect(diagram.nodes[0].offsetX == 900 && (diagram.nodes[0].offsetY == 60.2600739761485 || diagram.nodes[0].offsetY == 57.09756405520557)).toBe(true);
             done();
         });
         it('Checking Margin layout', (done: Function) => {
@@ -104,7 +104,7 @@ describe('Diagram Control', () => {
             diagram.layout.margin.top = 100;
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.left === 200 && bounds.right === 1000 && bounds.top === 87 && bounds.bottom === 700).toBe(true);
+             expect(bounds.left === 200 && bounds.right === 1000 && bounds.top === 90 && bounds.bottom === 700).toBe(true);
             done();
         });
     });

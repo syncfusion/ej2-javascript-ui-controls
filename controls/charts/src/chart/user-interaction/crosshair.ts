@@ -294,6 +294,8 @@ export class Crosshair {
             return axis.format(new Date(value));
         } else if (axis.valueType === 'Category') {
             return axis.labels[Math.floor(<number>value)];
+        } else if (axis.valueType === 'DateTimeCategory') {
+            return this.chart.dateTimeCategoryModule.getIndexedAxisLabel(axis.labels[Math.floor(<number>value)], axis.format);
         } else if (axis.valueType === 'Logarithmic') {
             return value = axis.format(Math.pow(axis.logBase, value));
         } else {

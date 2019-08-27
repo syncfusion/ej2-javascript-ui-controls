@@ -84,6 +84,7 @@ export class TextMarkupAnnotation {
      */
     public currentTextMarkupAnnotation: ITextMarkupAnnotation = null;
     private currentAnnotationIndex: number = null;
+    private isAnnotationSelect: boolean = false;
 
     /**
      * @private
@@ -117,19 +118,28 @@ export class TextMarkupAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number): void {
+    public renderTextMarkupAnnotationsInPage(textMarkupAnnotations: any, pageNumber: number, isImportTextMarkup?: boolean): void {
         let canvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
-        this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
+        if (isImportTextMarkup) {
+            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor(), true);
+        } else {
+            this.renderTextMarkupAnnotations(textMarkupAnnotations, pageNumber, canvas, this.pdfViewerBase.getZoomFactor());
+        }
     }
 
     // tslint:disable-next-line
-    private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number): void {
+    private renderTextMarkupAnnotations(textMarkupAnnotations: any, pageNumber: number, canvas: HTMLElement, factor: number, isImportAction?: boolean): void {
         if (canvas) {
             let context: CanvasRenderingContext2D = (canvas as HTMLCanvasElement).getContext('2d');
             context.setTransform(1, 0, 0, 1, 0 , 0);
             context.setLineDash([]);
             // tslint:disable-next-line
-            let annotations: any[] = this.getAnnotations(pageNumber, textMarkupAnnotations);
+            let annotations: any[];
+            if (!isImportAction) {
+                annotations = this.getAnnotations(pageNumber, textMarkupAnnotations);
+            } else {
+                annotations = textMarkupAnnotations;
+            }
             if (annotations) {
                 for (let i: number = 0; i < annotations.length; i++) {
                     // tslint:disable-next-line
@@ -162,7 +172,11 @@ export class TextMarkupAnnotation {
                 }
             }
             if (pageNumber === this.selectTextMarkupCurrentPage) {
-                this.maintainAnnotationSelection();
+                if (!this.isAnnotationSelect) {
+                    this.maintainAnnotationSelection();
+                } else {
+                    this.isAnnotationSelect = false;
+                }
             }
         }
     }
@@ -298,7 +312,7 @@ export class TextMarkupAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any, measureShapeData: any,stickyData: any): string {
+    public printTextMarkupAnnotations(textMarkupAnnotations: any, pageIndex: number, stampData: any, shapeData: any, measureShapeData: any, stickyData: any): string {
         let canvas: HTMLCanvasElement = createElement('canvas', { id: this.pdfViewer.element.id + '_print_annotation_layer_' + pageIndex }) as HTMLCanvasElement;
         canvas.style.width = 816 + 'px';
         canvas.style.height = 1056 + 'px';
@@ -581,7 +595,15 @@ export class TextMarkupAnnotation {
         this.enableAnnotationPropertiesTool(false);
     }
 
-    private clearCurrentAnnotationSelection(pageNumber: number): void {
+    /**
+     * @private
+     */
+    public clearCurrentAnnotationSelection(pageNumber: number, isSelect?: boolean): void {
+        if (isSelect) {
+            this.isAnnotationSelect = true;
+        } else {
+            this.isAnnotationSelect = false;
+        }
         let lowerPageIndex: number = (pageNumber - 2) >= 0 ? (pageNumber - 2) : 0;
         // tslint:disable-next-line:max-line-length
         let higherPageIndex: number = (pageNumber + 2) < this.pdfViewerBase.pageCount ? (pageNumber + 2) : this.pdfViewerBase.pageCount - 1;
@@ -977,6 +999,10 @@ export class TextMarkupAnnotation {
      * @private
      */
     public selectAnnotation(annotation: ITextMarkupAnnotation, canvas: HTMLElement, pageNumber?: number): void {
+        if (this.pdfViewer.selectedItems.annotations[0]) {
+            this.pdfViewer.clearSelection(this.pdfViewer.selectedItems.annotations[0].pageIndex);
+            this.pdfViewer.clearSelection(this.selectTextMarkupCurrentPage);
+        }
         let isCurrentTextMarkup: boolean = false;
         if (!this.currentTextMarkupAnnotation) {
             isCurrentTextMarkup = true;

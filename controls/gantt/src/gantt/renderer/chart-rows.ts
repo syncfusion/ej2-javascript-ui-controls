@@ -1,5 +1,5 @@
 import { createElement, isNullOrUndefined, extend, compile } from '@syncfusion/ej2-base';
-import { formatUnit, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { formatUnit, updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { isScheduledTask } from '../base/utils';
 import * as cls from '../base/css-constants';
@@ -852,29 +852,27 @@ export class ChartRows {
     public triggerQueryTaskbarInfoByIndex(trElement: Element, data: IGanttData): void {
         let taskbarElement: Element;
         taskbarElement = trElement.querySelector('.' + cls.taskBarMainContainer);
+        let rowElement: Element;
+        let triggerTaskbarElement: Element;
         let args: IQueryTaskbarInfoEventArgs = {
-            ganttModel: this.parent,
             data: data,
             rowElement: trElement,
             taskbarElement: trElement.querySelector('.' + cls.taskBarMainContainer),
             taskbarType: data.hasChildRecords ? 'ParentTask' : data.ganttProperties.isMilestone ? 'Milestone' : 'ChildTask'
         };
-        let taskbarClass: string = '.' + (args.taskbarType === 'ParentTask' ?
-            cls.traceParentTaskBar : args.taskbarType === 'ChildTask' ? cls.traceChildTaskBar : cls.milestoneTop);
-        let progressBarClass: string = '.' + (args.taskbarType === 'ParentTask' ?
-            cls.traceParentProgressBar : args.taskbarType === 'ChildTask' ? cls.traceChildProgressBar : cls.baselineMilestoneTop);
+        let classCollections: string[] = this.getClassName(args);
         if (args.taskbarType === 'Milestone') {
-            args.milestoneColor = taskbarElement.querySelector(taskbarClass) ?
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderBottomColor : null;
-            args.baselineColor = trElement.querySelector(progressBarClass) ?
-                getComputedStyle(trElement.querySelector(progressBarClass)).borderBottomColor : null;
+            args.milestoneColor = taskbarElement.querySelector(classCollections[0]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor : null;
+            args.baselineColor = trElement.querySelector(classCollections[1]) ?
+                getComputedStyle(trElement.querySelector(classCollections[1])).borderBottomColor : null;
         } else {
-            args.taskbarBgColor = taskbarElement.querySelector(taskbarClass) ?
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).backgroundColor : null;
-            args.taskbarBorderColor = taskbarElement.querySelector(taskbarClass) ?
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor : null;
-            args.progressBarBgColor = taskbarElement.querySelector(progressBarClass) ?
-                getComputedStyle(taskbarElement.querySelector(progressBarClass)).backgroundColor : null;
+            args.taskbarBgColor = taskbarElement.querySelector(classCollections[0]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor : null;
+            args.taskbarBorderColor = taskbarElement.querySelector(classCollections[0]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor : null;
+            args.progressBarBgColor = taskbarElement.querySelector(classCollections[1]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor : null;
             // args.progressBarBorderColor = taskbarElement.querySelector(progressBarClass) ?
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
             args.baselineColor = trElement.querySelector('.' + cls.baselineBar) ?
@@ -888,9 +886,13 @@ export class ChartRows {
         args.leftLabelColor = trElement.querySelector('.' + cls.leftLabelContainer) &&
             (trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label) ?
             getComputedStyle((trElement.querySelector('.' + cls.leftLabelContainer)).querySelector('.' + cls.label)).color : null;
-
-        this.parent.trigger('queryTaskbarInfo', args);
-        this.updateQueryTaskbarInfoArgs(args);
+        if (isBlazor()) {
+            rowElement = args.rowElement;
+            triggerTaskbarElement = args.taskbarElement;
+        }
+        this.parent.trigger('queryTaskbarInfo', args, (taskbarArgs: IQueryTaskbarInfoEventArgs) => {
+        this.updateQueryTaskbarInfoArgs(taskbarArgs, rowElement, triggerTaskbarElement);
+        });
     }
 
     /**
@@ -898,36 +900,33 @@ export class ChartRows {
      * @return {void}
      * @private
      */
-    private updateQueryTaskbarInfoArgs(args: IQueryTaskbarInfoEventArgs): void {
-        let trElement: Element = args.rowElement;
-        let taskbarElement: Element = args.taskbarElement;
-        let taskbarClass: string = '.' + (args.taskbarType === 'ParentTask' ?
-            cls.traceParentTaskBar : args.taskbarType === 'ChildTask' ? cls.traceChildTaskBar : cls.milestoneTop);
-        let progressBarClass: string = '.' + (args.taskbarType === 'ParentTask' ?
-            cls.traceParentProgressBar : args.taskbarType === 'ChildTask' ? cls.traceChildProgressBar : cls.baselineMilestoneTop);
+    private updateQueryTaskbarInfoArgs(args: IQueryTaskbarInfoEventArgs, rowElement?: Element, taskBarElement?: Element): void {
+        let trElement: Element = isBlazor() && rowElement ? rowElement : args.rowElement;
+        let taskbarElement: Element = isBlazor() && taskBarElement ? taskBarElement : args.taskbarElement;
+        let classCollections: string[] = this.getClassName(args);
         if (args.taskbarType === 'Milestone') {
-            if (taskbarElement.querySelector(taskbarClass) &&
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderBottomColor !== args.milestoneColor) {
-                (taskbarElement.querySelector(taskbarClass) as HTMLElement).style.borderBottomColor = args.milestoneColor;
+            if (taskbarElement.querySelector(classCollections[0]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor !== args.milestoneColor) {
+                (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.borderBottomColor = args.milestoneColor;
                 (taskbarElement.querySelector('.' + cls.milestoneBottom) as HTMLElement).style.borderTopColor = args.milestoneColor;
             }
-            if (trElement.querySelector(progressBarClass) &&
-                getComputedStyle(trElement.querySelector(progressBarClass)).borderTopColor !== args.baselineColor) {
-                (trElement.querySelector(progressBarClass) as HTMLElement).style.borderBottomColor = args.baselineColor;
+            if (trElement.querySelector(classCollections[1]) &&
+                getComputedStyle(trElement.querySelector(classCollections[1])).borderTopColor !== args.baselineColor) {
+                (trElement.querySelector(classCollections[1]) as HTMLElement).style.borderBottomColor = args.baselineColor;
                 (trElement.querySelector('.' + cls.baselineMilestoneBottom) as HTMLElement).style.borderTopColor = args.baselineColor;
             }
         } else {
-            if (taskbarElement.querySelector(taskbarClass) &&
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).backgroundColor !== args.taskbarBgColor) {
-                (taskbarElement.querySelector(taskbarClass) as HTMLElement).style.backgroundColor = args.taskbarBgColor;
+            if (taskbarElement.querySelector(classCollections[0]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor !== args.taskbarBgColor) {
+                (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.backgroundColor = args.taskbarBgColor;
             }
-            if (taskbarElement.querySelector(taskbarClass) &&
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor !== args.taskbarBorderColor) {
-                (taskbarElement.querySelector(taskbarClass) as HTMLElement).style.borderColor = args.taskbarBorderColor;
+            if (taskbarElement.querySelector(classCollections[0]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor !== args.taskbarBorderColor) {
+                (taskbarElement.querySelector(classCollections[0]) as HTMLElement).style.borderColor = args.taskbarBorderColor;
             }
-            if (taskbarElement.querySelector(progressBarClass) &&
-                getComputedStyle(taskbarElement.querySelector(progressBarClass)).backgroundColor !== args.progressBarBgColor) {
-                (taskbarElement.querySelector(progressBarClass) as HTMLElement).style.backgroundColor = args.progressBarBgColor;
+            if (taskbarElement.querySelector(classCollections[1]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor !== args.progressBarBgColor) {
+                (taskbarElement.querySelector(classCollections[1]) as HTMLElement).style.backgroundColor = args.progressBarBgColor;
             }
             // if (taskbarElement.querySelector(progressBarClass) &&
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor !== args.progressBarBorderColor) {
@@ -957,7 +956,14 @@ export class ChartRows {
                 '.' + cls.rightLabelContainer)).querySelector('.' + cls.label) as HTMLElement).style.color = args.rightLabelColor;
         }
     }
-
+    private getClassName(args: IQueryTaskbarInfoEventArgs): string[] {
+        let classCollection: string[] = [];
+        classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
+        cls.traceParentTaskBar : args.taskbarType === 'ChildTask' ? cls.traceChildTaskBar : cls.milestoneTop));
+        classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
+        cls.traceParentProgressBar : args.taskbarType === 'ChildTask' ? cls.traceChildProgressBar : cls.baselineMilestoneTop));
+        return classCollection;
+    }
     /**
      * To compile template string.
      * @return {Function}

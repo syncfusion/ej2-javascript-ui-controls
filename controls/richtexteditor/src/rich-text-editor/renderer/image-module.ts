@@ -1,4 +1,4 @@
-import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
+import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass } from '@syncfusion/ej2-base';
 import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
@@ -128,7 +128,7 @@ export class Image {
         this.resizeBtnInit();
         this.imgEle.parentElement.style.cursor = 'auto';
         if (Browser.isDevice) { removeClass([(e.target as HTMLElement).parentElement], 'e-mob-span'); }
-        let args: ResizeArgs = { event: e, requestType: 'images' };
+        let args: ResizeArgs = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(events.resizeStop, args);
         let pageX: number = this.getPointX(e);
         let pageY: number = (this.parent.iframeSettings.enable) ? window.pageYOffset +
@@ -162,7 +162,7 @@ export class Image {
                 !this.imgResizeDiv.classList.contains('e-mob-span')) {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             } else {
-                let args: ResizeArgs = { event: e, requestType: 'images' };
+                let args: ResizeArgs = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
                 this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -319,7 +319,7 @@ export class Image {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
     private imgDupMouseMove(width: string, height: string, e: PointerEvent | TouchEvent): void {
-        let args: ResizeArgs = { event: e, requestType: 'images' };
+        let args: ResizeArgs = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -1011,7 +1011,8 @@ export class Image {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                this.dialogRenderObj.close(this.dialogObj);
+                let args: Dialog = isBlazor() ? null : this.dialogObj;
+                this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             },
         };

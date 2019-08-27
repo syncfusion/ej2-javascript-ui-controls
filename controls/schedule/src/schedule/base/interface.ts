@@ -13,13 +13,25 @@ export interface ActionEventArgs extends BaseEventArgs {
     event?: Event;
     /** Defines the cancel option for the action taking place. */
     cancel: boolean;
-    /** 
-     * Returns the appropriate data based on the action.
-     * @isGenericType true
-     */
+    /** Returns the appropriate data based on the action. */
     data?: Object;
     /** Returns the clicked resource row index. */
     groupIndex?: number;
+    /** 
+     * Returns the appropriate added data based on the action.
+     * @isGenericType true
+     */
+    addedRecords?: Object[];
+    /** 
+     * Returns the appropriate changed data based on the action.
+     * @isGenericType true
+     */
+    changedRecords?: Object[];
+    /** 
+     * Returns the appropriate deleted data based on the action.
+     * @isGenericType true
+     */
+    deletedRecords?: Object[];
 }
 
 export interface ToolbarActionArgs extends BaseEventArgs {
@@ -268,6 +280,7 @@ export interface ResourceDetails {
 /** @hidden */
 export interface CrudArgs extends ActionEventArgs {
     promise?: Promise<Object>;
+    editParms?: SaveChanges;
 }
 
 /** @hidden */
@@ -324,6 +337,7 @@ export interface NotifyEventArgs {
     cssProperties?: ScrollCss;
     processedData?: Object[];
     isPreventScrollUpdate?: boolean;
+    scrollPosition?: { [key: string]: Object };
 }
 
 /** @hidden */

@@ -357,6 +357,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
 
     private setDisabled(): void {

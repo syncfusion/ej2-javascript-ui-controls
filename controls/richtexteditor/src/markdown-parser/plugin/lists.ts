@@ -304,14 +304,16 @@ export class MDLists {
                     }
                 }
             }
-            textArea.value = textArea.value.substr(0, parents[0].start as number) + curTabSpace + prefix + changedList;
+            textArea.value = textArea.value.substr(0, parents[0].start as number) + curTabSpace +
+            prefix + this.selection.getLine(textArea, parents[0].line as number) + changedList;
             start = start + prefix.length + tabSpace.length;
             addedLength += prefix.length + tabSpace.length;
         } else if (this.currentAction === 'UL' && regex.test(prevLine.trim()) &&
         prevLine.trim().replace(regex, '') !== '' ||  this.currentAction === 'OL' && !listFormat) {
             let tabSpace: string = this.getTabSpace(prevLine);
             let prefix: string = this.syntax[this.currentAction];
-            parents[0].text = tabSpace + prefix + parents[0].text;
+            parents[0].text = tabSpace + prefix + parents[0].text +
+            ((parents[0].text as string).trim().length > 0 ? '\n' : '');
             textArea.value = textArea.value.substr(0, parents[0].start as number) + parents[0].text +
                 textArea.value.substr(parents[0].end as number, textArea.value.length);
             start = start + prefix.length + tabSpace.length;

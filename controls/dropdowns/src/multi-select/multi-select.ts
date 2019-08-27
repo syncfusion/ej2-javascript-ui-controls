@@ -1845,8 +1845,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         length?: number,
         isClearAll?: boolean): void {
         let index: number = (this.value as string[]).indexOf(this.getFormattedValue(<string>value) as string);
-        let isValueTemp: boolean = (this.valueTemplate) ? true : false;
-        this.DropDownBaseresetBlazorTemplates(false, false, false, false, isValueTemp, false, false);
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = (this.value as string[]).indexOf(value.toString());
         }
@@ -2089,12 +2087,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             itemData = this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
-            this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
             let compiledString: Function = compile(this.valueTemplate);
             for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
-            this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
+            this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         } else {
             chipContent.innerHTML = data;
         }
@@ -3494,6 +3491,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
         this.checkInitialValue();
+        this.renderComplete();
     }
     private checkInitialValue(): void {
         let isData: boolean = this.dataSource instanceof Array ? (this.dataSource.length > 0)

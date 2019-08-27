@@ -39,6 +39,7 @@ export class BaseTooltip extends ChartData {
     public control: AccumulationChart | Chart;
     public text: string[];
     public svgTooltip: SVGTooltip;
+    public headerText: string;
     /**
      * Constructor for tooltip module.
      * @private.
@@ -137,7 +138,7 @@ export class BaseTooltip extends ChartData {
         }
     }
 
-    public createTooltip(chart: Chart | AccumulationChart, isFirst: boolean, header: string, location: ChartLocation,
+    public createTooltip(chart: Chart | AccumulationChart, isFirst: boolean, location: ChartLocation,
                          clipLocation: ChartLocation, point: Points | AccPoints, shapes : ChartShape[], offset : number,
                          bounds : Rect, extraPoints: PointData[] = null, templatePoint : Points | AccPoints = null ): void {
         let series: Series = <Series>this.currentPoints[0].series;
@@ -146,7 +147,7 @@ export class BaseTooltip extends ChartData {
             this.svgTooltip = new SVGTooltip(
                 {
                 opacity: chart.tooltip.opacity,
-                header: header, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
+                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
                 enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
                 shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                 areaBounds: bounds, palette: this.findPalette(), template: chart.tooltip.template, data: templatePoint,
@@ -172,7 +173,7 @@ export class BaseTooltip extends ChartData {
             if (this.svgTooltip) {
                 this.svgTooltip.location = location;
                 this.svgTooltip.content = this.text;
-                this.svgTooltip.header = header;
+                this.svgTooltip.header = this.headerText;
                 this.svgTooltip.offset = offset;
                 this.svgTooltip.palette = this.findPalette();
                 this.svgTooltip.shapes = shapes;
@@ -243,22 +244,22 @@ export class BaseTooltip extends ChartData {
     }
 
 
-    public triggerEvent(point: PointData | AccPointData, isFirst: boolean, textCollection: string, firstText: boolean = true): boolean {
-        let argsData: ITooltipRenderEventArgs = {
-            cancel: false, name: tooltipRender, text: textCollection,
-            point: point.point, series: point.series, textStyle: this.textStyle
-        };
-        this.chart.trigger(tooltipRender, argsData);
-        if (!argsData.cancel) {
-            if (point.series.type === 'BoxAndWhisker') {
-                this.removeText();
-                isFirst = true;
-            }
-            this.formattedText = this.formattedText.concat(argsData.text);
-            this.text = this.formattedText;
-        }
-        return !argsData.cancel;
-    }
+    // public triggerEvent(point: PointData | AccPointData, isFirst: boolean, textCollection: string, firstText: boolean = true): boolean {
+    //     let argsData: ITooltipRenderEventArgs = {
+    //         cancel: false, name: tooltipRender, text: textCollection,
+    //         point: point.point, series: point.series, textStyle: this.textStyle
+    //     };
+    //     this.chart.trigger(tooltipRender, argsData);
+    //     if (!argsData.cancel) {
+    //         if (point.series.type === 'BoxAndWhisker') {
+    //             this.removeText();
+    //             isFirst = true;
+    //         }
+    //         this.formattedText = this.formattedText.concat(argsData.text);
+    //         this.text = this.formattedText;
+    //     }
+    //     return !argsData.cancel;
+    // }
 
     public removeText(): void {
         this.textElements = [];

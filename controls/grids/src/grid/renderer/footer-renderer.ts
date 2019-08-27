@@ -142,7 +142,11 @@ export class FooterRenderer extends ContentRender implements IRenderer {
         if (this.parent.allowResizing && args.module === 'resize') { this.updateFooterTableWidth(this.getTable() as HTMLElement); }
     }
 
-    private onScroll(e: { left: number } = { left: (<HTMLElement>this.parent.getContent().firstChild).scrollLeft }): void {
+    private onScroll(e: { left: number } =
+        {
+            left: this.parent.getFrozenColumns() ? (<HTMLElement>this.parent.getContent().querySelector('.e-movablecontent')).scrollLeft :
+                (<HTMLElement>this.parent.getContent().firstChild).scrollLeft
+        }): void {
         (<HTMLElement>this.getTable().parentElement).scrollLeft = e.left;
     }
 

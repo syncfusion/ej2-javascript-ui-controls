@@ -1,4 +1,4 @@
-import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, append } from '@syncfusion/ej2-base';
+import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, append, isBlazor } from '@syncfusion/ej2-base';
 import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile } from '@syncfusion/ej2-base';
 import { removeClass, addClass, Event, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -1549,6 +1549,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             }
             this.notify(events.initToolbar, {});
         });
+        if(isBlazor())
+        {
+            this.renderComplete();
+        }
     }
 
     /**

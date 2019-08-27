@@ -4,9 +4,9 @@
  */
 
 /**
- * Defines the rendering mode of the barcode
- * SVG - Renders the barcode objects as SVG elements
- * Canvas - Renders the barcode in a canvas
+ * Defines the rendering mode of the barcode. They are 
+ * * SVG
+ * * Canvas
  */
 export type RenderingMode =
     /** SVG - Renders the barcode objects as SVG elements */
@@ -16,7 +16,7 @@ export type RenderingMode =
 
 /**
  * Defines the event of the barcode
- * BarcodeEvent - Throws when an invalid input was given.
+ * * BarcodeEvent - Throws when an invalid input was given.
  */
 export enum BarcodeEvent {
     'invalid'
@@ -24,10 +24,10 @@ export enum BarcodeEvent {
 
 
 /**
- * Defines the text alignment for the text to be rendered in the barcode
- * Left - Align the text to the left side of the barcode element.
- * Right - Align the text to the right side of the barcode element.
- * Center - Align the text to the center side of the barcode element.
+ * Defines the text alignment for the text to be rendered in the barcode. The text alignment types are 
+ * * Left 
+ * * Right 
+ * * Center 
  */
 export type Alignment =
     /** Left - Align the text to the left side of the barcode element. */
@@ -39,9 +39,9 @@ export type Alignment =
 
 
 /**
- * Defines the text position for the text to be rendered in the barcode.
- * Bottom - Text will be rendered in the bottom of the barcode element.
- * Top - Text will be rendered in the top of the barcode element.
+ * Defines the text position for the text to be rendered in the barcode. The text positions are 
+ * * Bottom 
+ * * Top 
  */
 export type TextPosition =
     /** Bottom - Text will be rendered in the bottom of the barcode element. */
@@ -59,11 +59,11 @@ export enum QuietZone {
 }
 
 /**
- * Defines the encoding type for the datamatrix code.
- * Auto - Encoding type will be automatically assigned for the given input.
- * ASCII - Accept only the ASCII values.
- * ASCIINumeric - Accept only the ASCII numeric values.
- * Base256 -Accept the base256 values.
+ * Defines the encoding type for the datamatrix code. They are 
+ * * Auto 
+ * * ASCII 
+ * * ASCIINumeric 
+ * * Base256 
  */
 export type DataMatrixEncoding =
     /** Auto - Encoding type will be automatically assigned for the given input. */
@@ -78,38 +78,38 @@ export type DataMatrixEncoding =
 
 
 /**
- * * Defines the size for the datamatrix code.
- * * Auto - modules will be generated automatically.
- * * Size10x10 - will generate 10*10 modules.
- * * Size12x12 - will generate 12*12 modules.
- * * Size14x14 - will generate 14*14 modules.
- * * Size16x16 - will generate 16*16 modules.
- * * Size18x18 - will generate 18*18 modules.
- * * Size20x20 - will generate 20*20 modules.
- * * Size22x22 - will generate 22*22 modules.
- * * Size24x24 - will generate 24*24 modules.
- * * Size26x26 - will generate 26*26 modules.
- * * Size32x32 - will generate 32*32 modules.
- * * Size36x36 - will generate 36*36 modules.
- * * Size40x40 - will generate 40*40 modules.
- * * Size44x44 - will generate 44*44 modules.
- * * Size48x48 - will generate 48*48 modules.
- * * Size52x52 - will generate 52*52 modules.
- * * Size64x64 - will generate 64*64 modules.
- * * Size72x72 - will generate 72*72 modules.
- * * Size80x80 - will generate 80*80 modules.
- * * Size88x88 - will generate 88*88 modules.
- * * Size96x96 - will generate 96*86 modules.
- * * Size104x104 - will generate 104*104 modules.
- * * Size120x120 - will generate 120*120 modules.
- * * Size132x132 - will generate 132*132 modules.
- * * Size144x144 - will generate 144*144 modules.
- * * Size8x18 - will generate 8*18 modules.
- * * Size8x32 - will generate 8*32 modules.
- * * Size12x26 - will generate 12*26 modules.
- * * Size12x36 - will generate 12*36 modules.
- * * Size16x36 - will generate 16*36 modules.
- * * Size16x48 - will generate 16*48 modules.
+ * Defines the size for the datamatrix code. The defined size are 
+ * * Auto 
+ * * Size10x10 
+ * * Size12x12 
+ * * Size14x14 
+ * * Size16x16 
+ * * Size18x18 
+ * * Size20x20 
+ * * Size22x22 
+ * * Size24x24 
+ * * Size26x26 
+ * * Size32x32 
+ * * Size36x36 
+ * * Size40x40 
+ * * Size44x44 
+ * * Size48x48 
+ * * Size52x52 
+ * * Size64x64 
+ * * Size72x72 
+ * * Size80x80 
+ * * Size88x88 
+ * * Size96x96 
+ * * Size104x104 
+ * * Size120x120 
+ * * Size132x132 
+ * * Size144x144 
+ * * Size8x18 
+ * * Size8x32 
+ * * Size12x26 
+ * * Size12x36 
+ * * Size16x36 
+ * * Size16x48 
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -248,22 +248,22 @@ export enum DataMatrixSize {
 
 
 /**
- * Defines the type of the barcode to be generated.
- * Code39 - render the code39 barcode.
- * Code128 - render the code128 barcode.
- * Code128A - render the code128A barcode.
- * Code128B - render the code128B barcode.
- * Code128C - render the code128C barcode.
- * Codabar - render the Codabar barcode.
- * Ean8 - render the Ean8 barcode.
- * Ean13 - render the Ean8 barcode.
- * UpcA - render the UpcA barcode.
- * UpcE - render the UpcE barcode.
- * Code11 - render the code11 barcode.
- * Code93 - render the code93 barcode.
- * Code93Extension - render the Code93Extension barcode.
- * Code39Extension - render the Code39Extension barcode.
- * Code32 - render the Code32 barcode.
+ * Defines the type of the barcode to be generated. The barcode types are
+ * * Code39 
+ * * Code128 
+ * * Code128A 
+ * * Code128B 
+ * * Code128C 
+ * * Codabar
+ * * Ean8 
+ * * Ean13 
+ * * UpcA 
+ * * UpcE 
+ * * Code11 
+ * * Code93 
+ * * Code93Extension 
+ * * Code39Extension 
+ * * Code32 
  */
 export type BarcodeType =
     /** code39 - render the code39 barcode */
@@ -300,10 +300,10 @@ export type BarcodeType =
 
 
 /**
- * Defines the Qrcode input mode
- * NumericMode - Changes its mode to numericMode when the given input is numeric.
- * BinaryMode - Changes its mode to BinaryMode when the given input is numeric or smaller case or both.
- * AlphaNumericMode - Changes its mode to AlphaNumericMode when the given is numeric or upper case or both.
+ * Defines the Qrcode input mode. The QR input modes are 
+ * * NumericMode 
+ * * BinaryMode 
+ * * AlphaNumericMode 
  */
 export type QRInputMode =
     /** NumericMode - Changes its mode to numericMode when the given input is numeric. */
@@ -316,48 +316,48 @@ export type QRInputMode =
 
 
 /**
- * Defines the Qrcode QRCodeVersion
- * * Auto - Specifies the default version.
- * * Version01 - Specifies version 1 (21 x 21 modules).
- * * Version02 - Specifies version 2 (25 x 25 modules).
- * * Version03 - Specifies version 3 (29 x 29 modules).
- * * Version04 - Specifies version 4 (33 x 33 modules).
- * * Version05 - Specifies version 5 ( 37 x 37 modules).
- * * Version06 - Specifies version 6 (41 x 41 modules).
- * * Version07 - Specifies version 7 (45 x 45 modules).
- * * Version08 - Specifies version 8 (49 x 49 modules).
- * * Version09 - Specifies version 9 (53 x 53 modules).
- * * Version10 - Specifies version 10 (57 x 57 modules).
- * * Version11 - Specifies version 11(61 x 61 modules).
- * * Version12 - Specifies version 12 (65 x 65 modules).
- * * Version13 - Specifies version 13 (69 x 69 modules).
- * * Version14 - Specifies version 14 (73 x 73 modules).
- * * Version15 - Specifies version 15 (77 x 77 modules).
- * * Version16 - Specifies version 16(85 x 85 modules).
- * * Version17 - Specifies version 17 (85 x 85 modules).
- * * Version18 - Specifies version 18 (89 x 89 modules).
- * * Version19 - Specifies version 19 (93 x 93 modules).
- * * Version20 - Specifies version 20 (97 x 97 modules).
- * * Version21 - Specifies version 21 (101 x 101 modules).
- * * Version22 - Specifies version 22 (105 x 105 modules).
- * * Version23 - Specifies version 23 (109 x 109 modules).
- * * Version24 - Specifies version 24 (113 x 113 modules).
- * * Version25 - Specifies version 25 (117 x 117 modules).
- * * Version26 - Specifies version 26 (121 x 121 modules).
- * * Version27 - Specifies version 27 (125 x 125 modules).
- * * Version28 - Specifies version 28 (129 x 129 modules).
- * * Version29 - Specifies version 29 (133 x 133 modules).
- * * Version30 - Specifies version 30 (137 x 137 modules).
- * * Version31 - Specifies version 31 (141 x 141 modules).
- * * Version32 - Specifies version 32(145 x 145 modules).
- * * Version33 - Specifies version 33(149 x 149 modules).
- * * Version34 - Specifies version 34(153 x 153 modules).
- * * Version35 - Specifies version 35 (157 x 157 modules).
- * * Version36 - Specifies version 36(161 x 161 modules).
- * * Version37 - Specifies version 37(165 x 165 modules).
- * * Version38 - Specifies version 38(169 x 169 modules).
- * * Version39 - Specifies version 39(173 x 173 modules).
- * * Version40 - Specifies version 40(177 x 177 modules).
+ * Defines the Qrcode QRCodeVersion. They are 
+ * * Auto 
+ * * Version01 
+ * * Version02 
+ * * Version03 
+ * * Version04 
+ * * Version05 
+ * * Version06 
+ * * Version07 
+ * * Version08 
+ * * Version09 
+ * * Version10 
+ * * Version11 
+ * * Version12 
+ * * Version13 
+ * * Version14 
+ * * Version15 
+ * * Version16 
+ * * Version17 
+ * * Version18 
+ * * Version19 
+ * * Version20 
+ * * Version21 
+ * * Version22 
+ * * Version23 
+ * * Version24 
+ * * Version25 
+ * * Version26 
+ * * Version27 
+ * * Version28 
+ * * Version29 
+ * * Version30 
+ * * Version31 
+ * * Version32 
+ * * Version33 
+ * * Version34 
+ * * Version35 
+ * * Version36 
+ * * Version37 
+ * * Version38 
+ * * Version39 
+ * * Version40 
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular
@@ -532,11 +532,11 @@ export enum QRCodeVersion {
 
 
 /**
- * * Indicated the recovery capacity of the qrcode
- * * Low - The Recovery capacity is 7%(approx.) 
- * * Medium - The Recovery capacity is 15%(approx.) 
- * * Quartile -The Recovery capacity is 25%(approx.) 
- * * High -The Recovery capacity is 30%(approx.) 
+ * Indicated the recovery capacity of the qrcode. The default capacity levels are 
+ * * Low
+ * * Medium
+ * * Quartile
+ * * High
  * @aspNumberEnum
  * @blazorNumberEnum
  * @IgnoreSingular

@@ -613,7 +613,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
 
     protected DropDownBaseupdateBlazorTemplates(
         item: boolean, group: boolean, noRecord: boolean, action: boolean,
-        value?: boolean, header?: boolean, footer?: boolean): void {
+        value?: boolean, header?: boolean, footer?: boolean, isEmpty?: boolean): void {
         if (!this.isStringTemplate) {
             if (this.itemTemplate && item) {
                 updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this);
@@ -628,7 +628,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
                 updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this);
             }
             if (value) {
-                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this, isEmpty);
             }
             if (header) {
                 updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY, this);

@@ -2920,8 +2920,8 @@ function findlElement(elements, id) {
 }
 /** @private */
 function getPoint(x, y, xAxis, yAxis, isInverted, series) {
-    x = ((xAxis.valueType === 'Logarithmic') ? logBase(((x > 1) ? x : 1), xAxis.logBase) : x);
-    y = ((yAxis.valueType === 'Logarithmic') ? logBase(((y > 1) ? y : 1), yAxis.logBase) : y);
+    x = ((xAxis.valueType === 'Logarithmic') ? logBase(((x > 0) ? x : 1), xAxis.logBase) : x);
+    y = ((yAxis.valueType === 'Logarithmic') ? logBase(((y > 0) ? y : 1), yAxis.logBase) : y);
     x = valueToCoefficient(x, xAxis);
     y = valueToCoefficient(y, yAxis);
     var xLength = (isInverted ? xAxis.rect.height : xAxis.rect.width);
@@ -7747,6 +7747,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.initTrendLines();
         this.calculateVisibleAxis();
         this.processData();
+        this.renderComplete();
     };
     /**
      * Gets the localized label by locale keyword.
@@ -10440,15 +10441,29 @@ var DateTimeCategory = /** @__PURE__ @class */ (function (_super) {
         });
         for (var i = 0; i < axis.labels.length; i++) {
             labelStyle = (extend({}, getValue('properties', axis.labelStyle), null, true));
-            if (!this.sameInterval(axis.labels.map(Number)[i], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)) {
+            if (!this.sameInterval(axis.labels.map(Number)[i], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
+                || axis.isIndexed) {
                 if (withIn(i - padding, axis.visibleRange)) {
-                    triggerLabelRender(this.chart, i, axis.format(new Date(axis.labels.map(Number)[i])), labelStyle, axis);
+                    triggerLabelRender(this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i], axis.format) :
+                        axis.format(new Date(axis.labels.map(Number)[i]))), labelStyle, axis);
                 }
             }
         }
         if (axis.getMaxLabelWidth) {
             axis.getMaxLabelWidth(this.chart);
         }
+    };
+    /**
+     * To get the Indexed axis label text with axis format for DateTimeCategory axis
+     * @param value
+     * @param format
+     */
+    DateTimeCategory.prototype.getIndexedAxisLabel = function (value, format) {
+        var texts = value.split(',');
+        for (var i = 0; i < texts.length; i++) {
+            texts[i] = format(new Date(parseInt(texts[i], 10)));
+        }
+        return texts.join(', ');
     };
     /**
      * get same interval
@@ -14406,7 +14421,9 @@ var SplineBase = /** @__PURE__ @class */ (function (_super) {
                     var previous = this.getPreviousIndex(points, point.index - 1, series);
                     value = this.getControlPoints(points[previous], point, this.splinePoints[previous], this.splinePoints[point.index], series);
                     series.drawPoints.push(value);
-                    if (point.yValue && value.controlPoint1.y && value.controlPoint2.y) {
+                    // fix for Y-Axis of Spline chart not adjusting scale to suit dataSource issue 
+                    var delta = series.yMax - series.yMin;
+                    if (point.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
                         series.yMin = Math.floor(Math.min(series.yMin, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
                         series.yMax = Math.ceil(Math.max(series.yMax, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
                     }
@@ -17128,6 +17145,9 @@ var Crosshair = /** @__PURE__ @class */ (function () {
         else if (axis.valueType === 'Category') {
             return axis.labels[Math.floor(value)];
         }
+        else if (axis.valueType === 'DateTimeCategory') {
+            return this.chart.dateTimeCategoryModule.getIndexedAxisLabel(axis.labels[Math.floor(value)], axis.format);
+        }
         else if (axis.valueType === 'Logarithmic') {
             return value = axis.format(Math.pow(axis.logBase, value));
         }
@@ -17386,7 +17406,7 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    BaseTooltip.prototype.createTooltip = function (chart, isFirst, header, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint) {
+    BaseTooltip.prototype.createTooltip = function (chart, isFirst, location, clipLocation, point, shapes, offset, bounds, extraPoints, templatePoint) {
         if (extraPoints === void 0) { extraPoints = null; }
         if (templatePoint === void 0) { templatePoint = null; }
         var series = this.currentPoints[0].series;
@@ -17394,7 +17414,7 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
-                header: header, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
+                header: this.headerText, content: this.text, fill: chart.tooltip.fill, border: chart.tooltip.border,
                 enableAnimation: chart.tooltip.enableAnimation, location: location, shared: chart.tooltip.shared,
                 shapes: shapes, clipBounds: this.chart.chartAreaType === 'PolarRadar' ? new ChartLocation(0, 0) : clipLocation,
                 areaBounds: bounds, palette: this.findPalette(), template: chart.tooltip.template, data: templatePoint,
@@ -17420,7 +17440,7 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
             if (this.svgTooltip) {
                 this.svgTooltip.location = location;
                 this.svgTooltip.content = this.text;
-                this.svgTooltip.header = header;
+                this.svgTooltip.header = this.headerText;
                 this.svgTooltip.offset = offset;
                 this.svgTooltip.palette = this.findPalette();
                 this.svgTooltip.shapes = shapes;
@@ -17486,23 +17506,22 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
         }
         this.previousPoints = [];
     };
-    BaseTooltip.prototype.triggerEvent = function (point, isFirst, textCollection, firstText) {
-        if (firstText === void 0) { firstText = true; }
-        var argsData = {
-            cancel: false, name: tooltipRender, text: textCollection,
-            point: point.point, series: point.series, textStyle: this.textStyle
-        };
-        this.chart.trigger(tooltipRender, argsData);
-        if (!argsData.cancel) {
-            if (point.series.type === 'BoxAndWhisker') {
-                this.removeText();
-                isFirst = true;
-            }
-            this.formattedText = this.formattedText.concat(argsData.text);
-            this.text = this.formattedText;
-        }
-        return !argsData.cancel;
-    };
+    // public triggerEvent(point: PointData | AccPointData, isFirst: boolean, textCollection: string, firstText: boolean = true): boolean {
+    //     let argsData: ITooltipRenderEventArgs = {
+    //         cancel: false, name: tooltipRender, text: textCollection,
+    //         point: point.point, series: point.series, textStyle: this.textStyle
+    //     };
+    //     this.chart.trigger(tooltipRender, argsData);
+    //     if (!argsData.cancel) {
+    //         if (point.series.type === 'BoxAndWhisker') {
+    //             this.removeText();
+    //             isFirst = true;
+    //         }
+    //         this.formattedText = this.formattedText.concat(argsData.text);
+    //         this.text = this.formattedText;
+    //     }
+    //     return !argsData.cancel;
+    // }
     BaseTooltip.prototype.removeText = function () {
         this.textElements = [];
         var element = this.getElement(this.element.id + '_tooltip_group');
@@ -17676,14 +17695,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         this.currentPoints = [];
         if (this.findData(data, this.previousPoints[0])) {
             if (this.pushData(data, isFirst, tooltipDiv, true)) {
-                if (this.triggerEvent(data, isFirst, this.getTooltipText(data))) {
-                    this.createTooltip(chart, isFirst, this.findHeader(data), this.getSymbolLocation(data), data.series.clipRect, data.point, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, null, this.getTemplateText(data));
-                }
-                else {
-                    this.removeHighlight(this.control);
-                    remove(this.getElement(this.element.id + '_tooltip'));
-                }
-                this.isRemove = true;
+                this.triggerTooltipRender(data, isFirst, this.getTooltipText(data), this.findHeader(data));
             }
         }
         else {
@@ -17703,6 +17715,35 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         if (data && data.point) {
             this.findMouseValue(data, chart);
         }
+    };
+    Tooltip$$1.prototype.triggerTooltipRender = function (point, isFirst, textCollection, headerText, firstText) {
+        var _this = this;
+        if (firstText === void 0) { firstText = true; }
+        var argsData = {
+            cancel: false, name: tooltipRender, text: textCollection, headerText: headerText,
+            series: this.chart.isBlazor ? {} : point.series, textStyle: this.textStyle, point: point.point,
+            data: { pointX: point.point.x, pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
+                pointIndex: point.point.index, pointText: point.point.text }
+        };
+        var chartTooltipSuccess = function (argsData) {
+            if (!argsData.cancel) {
+                if (point.series.type === 'BoxAndWhisker') {
+                    _this.removeText();
+                    isFirst = true;
+                }
+                _this.headerText = argsData.headerText;
+                _this.formattedText = _this.formattedText.concat(argsData.text);
+                _this.text = _this.formattedText;
+                _this.createTooltip(_this.chart, isFirst, _this.getSymbolLocation(point), point.series.clipRect, point.point, _this.findShapes(), _this.findMarkerHeight(_this.currentPoints[0]), _this.chart.chartAxisLayoutPanel.seriesClipRect, null, _this.getTemplateText(point));
+            }
+            else {
+                _this.removeHighlight(_this.control);
+                remove(_this.getElement(_this.element.id + '_tooltip'));
+            }
+            _this.isRemove = true;
+        };
+        chartTooltipSuccess.bind(this, point);
+        this.chart.trigger(tooltipRender, argsData, chartTooltipSuccess);
     };
     Tooltip$$1.prototype.findMarkerHeight = function (pointData) {
         if (!this.chart.tooltip.enableMarker) {
@@ -17821,7 +17862,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         this.removeText();
         for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
             var series = _a[_i];
-            if (!series.enableTooltip) {
+            if (!series.enableTooltip || !series.visible) {
                 continue;
             }
             if (chart.chartAreaType === 'Cartesian' && series.visible) {
@@ -17833,21 +17874,51 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
             if (data && this.header !== '' && this.currentPoints.length === 0) {
                 headerContent = this.findHeader(data);
             }
-            if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data))) {
-                this.findMouseValue(data, chart);
-                this.currentPoints.push(data);
-                data = null;
+            if (data) {
+                this.triggerSharedTooltip(data, isFirst, this.getTooltipText(data), this.findHeader(data), extraPoints);
             }
-            else if (data) {
-                extraPoints.push(data);
-            }
+            // if (data && this.triggerEvent(data, isFirst, this.getTooltipText(data)), this.findHeader(data)) {
+            //     this.findMouseValue(data, chart);
+            //     (<PointData[]>this.currentPoints).push(data);
+            //     data = null;
+            // } else if (data) {
+            //     extraPoints.push(data);
+            // }
         }
         if (this.currentPoints.length > 0) {
-            this.createTooltip(chart, isFirst, headerContent, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
+            this.createTooltip(chart, isFirst, this.findSharedLocation(), this.currentPoints.length === 1 ? this.currentPoints[0].series.clipRect : null, null, this.findShapes(), this.findMarkerHeight(this.currentPoints[0]), chart.chartAxisLayoutPanel.seriesClipRect, extraPoints);
         }
         else if (this.getElement(this.element.id + '_tooltip_path')) {
             this.getElement(this.element.id + '_tooltip_path').setAttribute('d', '');
         }
+    };
+    Tooltip$$1.prototype.triggerSharedTooltip = function (point, isFirst, textCollection, headerText, extraPoints) {
+        var _this = this;
+        var argsData = {
+            cancel: false, name: tooltipRender, text: textCollection, headerText: headerText,
+            point: point.point, series: this.chart.isBlazor ? {} : point.series, textStyle: this.textStyle,
+            data: { pointX: point.point.x, pointY: point.point.y, seriesIndex: point.series.index, seriesName: point.series.name,
+                pointIndex: point.point.index, pointText: point.point.text }
+        };
+        var sharedTooltipSuccess = function (argsData) {
+            if (!argsData.cancel) {
+                if (point.series.type === 'BoxAndWhisker') {
+                    _this.removeText();
+                    isFirst = true;
+                }
+                _this.formattedText = _this.formattedText.concat(argsData.text);
+                _this.text = _this.formattedText;
+                _this.headerText = argsData.headerText;
+                _this.findMouseValue(point, _this.chart);
+                _this.currentPoints.push(point);
+                point = null;
+            }
+            else {
+                extraPoints.push(point);
+            }
+        };
+        sharedTooltipSuccess.bind(this, point, extraPoints);
+        this.chart.trigger(tooltipRender, argsData, sharedTooltipSuccess);
     };
     Tooltip$$1.prototype.findSharedLocation = function () {
         var stockChart = this.chart.stockChart;
@@ -19139,6 +19210,7 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      */
     function Selection(chart) {
         var _this = _super.call(this, chart) || this;
+        _this.isdrawRect = true;
         _this.chart = chart;
         _this.renderer = chart.renderer;
         _this.addEventListener();
@@ -19511,6 +19583,13 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                     var yValue = series.type !== 'RangeArea' ? points[j].yValue :
                         points[j].regions[0].y;
                     var isCurrentPoint = void 0;
+                    var selectedPointX = points[j].xValue;
+                    if (chart.primaryXAxis.valueType === 'Category') {
+                        selectedPointX = points[j].x.toLocaleString();
+                    }
+                    else if (chart.primaryXAxis.valueType === 'DateTime') {
+                        selectedPointX = new Date(points[j].xValue);
+                    }
                     if (series.type === 'BoxAndWhisker') {
                         isCurrentPoint = points[j].regions.some(function (region) {
                             return withInBounds(region.x + xAxisOffset_1, region.y + yAxisOffset_1, rect);
@@ -19524,10 +19603,10 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                     if (isCurrentPoint && series.category !== 'Indicator') {
                         index = new Index(series.index, points[j].index);
                         this_1.selection(chart, index, this_1.findElements(chart, series, index));
-                        selectedPointValues.push({ x: points[j].xValue.toString(), y: yValue });
+                        selectedPointValues.push({ x: selectedPointX, y: yValue });
                     }
                     if (isCurrentPoint && series.type === 'RangeArea') {
-                        selectedPointValues.push({ x: points[j].xValue.toString(), y: points[j].regions[0].y });
+                        selectedPointValues.push({ x: selectedPointX, y: points[j].regions[0].y });
                     }
                 }
                 selectedSeriesValues.push(selectedPointValues);
@@ -19559,6 +19638,14 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      */
     Selection.prototype.drawDraggingRect = function (chart, dragRect) {
         var cartesianLayout = chart.chartAxisLayoutPanel.seriesClipRect;
+        var border = chart.chartArea.border.width;
+        if (this.isdrawRect) {
+            cartesianLayout.x = cartesianLayout.x - border / 2;
+            cartesianLayout.y = cartesianLayout.y - border / 2;
+            cartesianLayout.width = cartesianLayout.width + border;
+            cartesianLayout.height = cartesianLayout.height + border;
+            this.isdrawRect = false;
+        }
         switch (chart.selectionMode) {
             case 'DragX':
                 dragRect.y = cartesianLayout.y;
@@ -24926,6 +25013,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         this.pieSeriesModule = new PieSeries(this);
         this.calculateVisibleSeries();
         this.processData();
+        this.renderComplete();
     };
     /**
      * Method to unbind events for accumulation chart
@@ -27315,14 +27403,7 @@ var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
             if (this.pushData(data, isFirst, tooltipDiv, false)) {
-                if (this.triggerEvent(data, isFirst, this.getTooltipText(data, chart.tooltip))) {
-                    this.createTooltip(chart, isFirst, this.findHeader(data), data.point.symbolLocation, data.series.clipRect, data.point, ['Circle'], 0, rect, null, data.point);
-                }
-                else {
-                    this.removeHighlight(this.control);
-                    remove(this.getElement(this.element.id + '_tooltip'));
-                }
-                this.isRemove = true;
+                this.triggerTooltipRender(data, isFirst, this.getTooltipText(data, chart.tooltip), this.findHeader(data));
             }
         }
         else {
@@ -27331,6 +27412,31 @@ var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
                 this.isRemove = false;
             }
         }
+    };
+    AccumulationTooltip.prototype.triggerTooltipRender = function (point, isFirst, textCollection, headerText, firstText) {
+        var _this = this;
+        if (firstText === void 0) { firstText = true; }
+        var argsData = {
+            cancel: false, name: tooltipRender, text: textCollection, point: point.point, textStyle: this.textStyle,
+            series: this.accumulation.isBlazor ? {} : point.series, headerText: headerText,
+            data: { pointX: point.point.x, pointY: point.point.y, seriesIndex: point.series.index,
+                pointIndex: point.point.index, pointText: point.point.text, seriesName: point.series.name }
+        };
+        var tooltipSuccess = function (argsData) {
+            if (!argsData.cancel) {
+                _this.formattedText = _this.formattedText.concat(argsData.text);
+                _this.text = _this.formattedText;
+                _this.headerText = argsData.headerText;
+                _this.createTooltip(_this.chart, isFirst, point.point.symbolLocation, point.series.clipRect, point.point, ['Circle'], 0, _this.chart.initialClipRect, null, point.point);
+            }
+            else {
+                _this.removeHighlight(_this.control);
+                remove(_this.getElement(_this.element.id + '_tooltip'));
+            }
+            _this.isRemove = true;
+        };
+        tooltipSuccess.bind(this, point);
+        this.chart.trigger(tooltipRender, argsData, tooltipSuccess);
     };
     AccumulationTooltip.prototype.getPieData = function (e, chart, x, y) {
         var target = e.target;
@@ -29272,6 +29378,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
         this.calculateBounds();
         this.chartSeries.renderChart(this);
         removeElement$1('chartmeasuretext');
+        this.renderComplete();
     };
     /**
      * Theming for rangeNavigator
@@ -32188,7 +32295,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             var property = _a[_i];
             switch (property) {
                 case 'series':
-                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -32274,7 +32380,13 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.series.forEach(function (series) {
             _this.tempSeriesType.push(series.type);
+            series.localData = undefined;
         });
+        this.initialRender = true;
+        this.rangeFound = false;
+        this.resizeTo = null;
+        this.startValue = null;
+        this.endValue = null;
     };
     /**
      * To Initialize the control rendering.
@@ -32290,6 +32402,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             this.stockChartDataManagerSuccess();
             this.initialRender = false;
         }
+        this.renderComplete();
     };
     /**
      * DataManager Success
@@ -36123,7 +36236,6 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Smithchart.prototype.onPropertyChanged = function (newProp, oldProp) {
-        this.animateSeries = false;
         var renderer = false;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -36131,6 +36243,8 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
                 case 'background':
                 case 'border':
                 case 'series':
+                case 'legendSettings':
+                case 'radius':
                     renderer = true;
                     break;
                 case 'size':
@@ -36138,6 +36252,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
                     renderer = true;
                     break;
                 case 'theme':
+                case 'renderType':
                     this.animateSeries = true;
                     renderer = true;
                     break;
@@ -36192,6 +36307,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
+        this.renderComplete();
         this.trigger('loaded', { smithchart: this.isBlazor ? null : this });
     };
     Smithchart.prototype.createSecondaryElement = function () {
@@ -38478,6 +38594,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
     Sparkline.prototype.render = function () {
         // Sparkline rendering splitted into rendering and calculations
         this.sparklineRenderer.processDataManager();
+        this.renderComplete();
     };
     /**
      * @private

@@ -8,9 +8,9 @@
 
 #### New Features
 
-- `#F144352` – Introduced an event `fieldListRefreshed` which fires on each UI operations performed in field list.
-- `#F144382` – Localization text for aggregation types included.
-- `#232925`, `#234552` - Can able to apply the number formatting through built-in UI.
+- `#F144352` – The `fieldListRefreshed` event has been introduced; it occurs on each UI operation performed in field list.
+- `#F144382` – Localization text for aggregation types has been included.
+- `#232925`, `#234552` - Number formatting can be applied through built-in UI.
 
 ## 17.2.28-beta (2019-06-27)
 

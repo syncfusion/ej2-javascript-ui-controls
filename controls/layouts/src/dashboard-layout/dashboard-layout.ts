@@ -495,6 +495,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
+        this.renderComplete();
     }
 
     private initGridLines(): void {

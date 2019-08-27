@@ -1450,10 +1450,15 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             var formatValue_1 = this.formatNumber();
             this.setElementValue(formatValue_1);
             if (!this.isPrevFocused) {
-                var delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
-                setTimeout(function () {
-                    _this.element.setSelectionRange(0, formatValue_1.length);
-                }, delay);
+                if (!Browser.isDevice && Browser.info.version === '11.0') {
+                    this.element.setSelectionRange(0, formatValue_1.length);
+                }
+                else {
+                    var delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
+                    setTimeout(function () {
+                        _this.element.setSelectionRange(0, formatValue_1.length);
+                    }, delay);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -3632,6 +3637,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         this.initRender();
         this.wireEvents();
         this.setZindex();
+        this.renderComplete();
     };
     Slider.prototype.initialize = function () {
         addClass([this.element], classNames.root);
@@ -11403,7 +11409,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
                 this.element.value = this.roundValue(value).slice(0, 7);
                 var preview = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element);
                 if (preview) {
-                    preview.style.backgroundColor = newProp.value;
+                    preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value));
                 }
             }
             else {

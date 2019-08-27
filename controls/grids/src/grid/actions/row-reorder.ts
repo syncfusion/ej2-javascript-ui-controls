@@ -167,7 +167,7 @@ export class RowDD {
             if (this.isOverflowBorder && parseInt(this.startedRow.getAttribute('aria-rowindex'), 10) !== this.dragTarget) {
                 this.moveDragRows(e, this.startedRow, trElement);
             } else {
-                if (trElement && this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') ===
+                if (trElement && this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') ===
                     trElement.getAttribute('data-uid')) {
                     let bottomborder: HTMLElement = this.parent.createElement('div', { className: 'e-lastrow-dragborder' });
                     let gridcontentEle: Element = this.parent.getContent();
@@ -406,7 +406,8 @@ export class RowDD {
     }
 
     private removeLastRowBorder(element: Element): void {
-        let islastRowIndex: boolean = element && this.parent.getRowByIndex(this.parent.getRows().length - 1).getAttribute('data-uid') !==
+        let islastRowIndex: boolean = element &&
+            this.parent.getRowByIndex(this.parent.getCurrentViewRecords().length - 1).getAttribute('data-uid') !==
             element.getAttribute('data-uid');
         if (this.parent.element.getElementsByClassName('e-lastrow-dragborder').length > 0 && element && islastRowIndex) {
             this.parent.element.getElementsByClassName('e-lastrow-dragborder')[0].remove();

@@ -141,6 +141,7 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     };
     DropDownButton.prototype.createPopup = function () {
         var _a;
@@ -677,6 +678,7 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
         this.setActiveElem([this.element, this.secondaryBtnObj.element]);
         this.setAria();
         this.wireEvents();
+        this.renderComplete();
     };
     SplitButton.prototype.initWrapper = function () {
         if (!this.wrapper) {
@@ -1119,6 +1121,7 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
         this.init();
         this.wireEvents();
         this.setAria();
+        this.renderComplete();
     };
     /**
      * Starts the button progress at the specified percent.

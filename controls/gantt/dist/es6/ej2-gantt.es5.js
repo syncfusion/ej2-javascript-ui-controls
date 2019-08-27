@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, closest, compile, createElement, deleteObject, extend, formatUnit, getElement, getValue, isBlazor, isNullOrUndefined, isObject, isObjectArray, isUndefined, merge, remove, removeClass, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
@@ -2621,10 +2621,17 @@ var GanttChart = /** @__PURE__ @class */ (function () {
      * @param args
      * @private
      */
-    GanttChart.prototype.collapseGanttRow = function (args) {
-        this.parent.trigger('collapsing', args);
-        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+    GanttChart.prototype.collapseGanttRow = function (args, isCancel) {
+        var _this = this;
+        if (isCancel) {
             this.collapsedGanttRow(args);
+        }
+        else {
+            this.parent.trigger('collapsing', args, function (args) {
+                if (_this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+                    _this.collapsedGanttRow(args);
+                }
+            });
         }
         this.isExpandCollapseFromChart = false;
     };
@@ -4212,11 +4219,24 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         this.parent.treeDataBound(args);
     };
     GanttTreeGrid.prototype.collapsing = function (args) {
+        var _this = this;
         // Collapsing event
+        var callBackPromise = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
-            var collapsingArgs = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
-            setValue('cancel', getValue('cancel', collapsingArgs), args);
+            var collapsingArgs_1 = this.createExpandCollapseArgs(args);
+            if (isBlazor()) {
+                this.parent.trigger('collapsing', collapsingArgs_1, function (args) {
+                    callBackPromise.resolve(args);
+                    if (!getValue('cancel', args)) {
+                        _this.parent.ganttChartModule.collapseGanttRow(collapsingArgs_1, true);
+                    }
+                });
+                return callBackPromise;
+            }
+            else {
+                this.parent.ganttChartModule.collapseGanttRow(collapsingArgs_1);
+            }
+            setValue('cancel', getValue('cancel', collapsingArgs_1), args);
         }
     };
     GanttTreeGrid.prototype.expanding = function (args) {
@@ -6287,32 +6307,31 @@ var ChartRows = /** @__PURE__ @class */ (function () {
      * @private
      */
     ChartRows.prototype.triggerQueryTaskbarInfoByIndex = function (trElement, data) {
+        var _this = this;
         var taskbarElement;
         taskbarElement = trElement.querySelector('.' + taskBarMainContainer);
+        var rowElement;
+        var triggerTaskbarElement;
         var args = {
-            ganttModel: this.parent,
             data: data,
             rowElement: trElement,
             taskbarElement: trElement.querySelector('.' + taskBarMainContainer),
             taskbarType: data.hasChildRecords ? 'ParentTask' : data.ganttProperties.isMilestone ? 'Milestone' : 'ChildTask'
         };
-        var taskbarClass = '.' + (args.taskbarType === 'ParentTask' ?
-            traceParentTaskBar : args.taskbarType === 'ChildTask' ? traceChildTaskBar : milestoneTop);
-        var progressBarClass = '.' + (args.taskbarType === 'ParentTask' ?
-            traceParentProgressBar : args.taskbarType === 'ChildTask' ? traceChildProgressBar : baselineMilestoneTop);
+        var classCollections = this.getClassName(args);
         if (args.taskbarType === 'Milestone') {
-            args.milestoneColor = taskbarElement.querySelector(taskbarClass) ?
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderBottomColor : null;
-            args.baselineColor = trElement.querySelector(progressBarClass) ?
-                getComputedStyle(trElement.querySelector(progressBarClass)).borderBottomColor : null;
+            args.milestoneColor = taskbarElement.querySelector(classCollections[0]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor : null;
+            args.baselineColor = trElement.querySelector(classCollections[1]) ?
+                getComputedStyle(trElement.querySelector(classCollections[1])).borderBottomColor : null;
         }
         else {
-            args.taskbarBgColor = taskbarElement.querySelector(taskbarClass) ?
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).backgroundColor : null;
-            args.taskbarBorderColor = taskbarElement.querySelector(taskbarClass) ?
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor : null;
-            args.progressBarBgColor = taskbarElement.querySelector(progressBarClass) ?
-                getComputedStyle(taskbarElement.querySelector(progressBarClass)).backgroundColor : null;
+            args.taskbarBgColor = taskbarElement.querySelector(classCollections[0]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor : null;
+            args.taskbarBorderColor = taskbarElement.querySelector(classCollections[0]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor : null;
+            args.progressBarBgColor = taskbarElement.querySelector(classCollections[1]) ?
+                getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor : null;
             // args.progressBarBorderColor = taskbarElement.querySelector(progressBarClass) ?
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
             args.baselineColor = trElement.querySelector('.' + baselineBar) ?
@@ -6326,45 +6345,47 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         args.leftLabelColor = trElement.querySelector('.' + leftLabelContainer) &&
             (trElement.querySelector('.' + leftLabelContainer)).querySelector('.' + label) ?
             getComputedStyle((trElement.querySelector('.' + leftLabelContainer)).querySelector('.' + label)).color : null;
-        this.parent.trigger('queryTaskbarInfo', args);
-        this.updateQueryTaskbarInfoArgs(args);
+        if (isBlazor()) {
+            rowElement = args.rowElement;
+            triggerTaskbarElement = args.taskbarElement;
+        }
+        this.parent.trigger('queryTaskbarInfo', args, function (taskbarArgs) {
+            _this.updateQueryTaskbarInfoArgs(taskbarArgs, rowElement, triggerTaskbarElement);
+        });
     };
     /**
      * To update query taskbar info args.
      * @return {void}
      * @private
      */
-    ChartRows.prototype.updateQueryTaskbarInfoArgs = function (args) {
-        var trElement = args.rowElement;
-        var taskbarElement = args.taskbarElement;
-        var taskbarClass = '.' + (args.taskbarType === 'ParentTask' ?
-            traceParentTaskBar : args.taskbarType === 'ChildTask' ? traceChildTaskBar : milestoneTop);
-        var progressBarClass = '.' + (args.taskbarType === 'ParentTask' ?
-            traceParentProgressBar : args.taskbarType === 'ChildTask' ? traceChildProgressBar : baselineMilestoneTop);
+    ChartRows.prototype.updateQueryTaskbarInfoArgs = function (args, rowElement, taskBarElement) {
+        var trElement = isBlazor() && rowElement ? rowElement : args.rowElement;
+        var taskbarElement = isBlazor() && taskBarElement ? taskBarElement : args.taskbarElement;
+        var classCollections = this.getClassName(args);
         if (args.taskbarType === 'Milestone') {
-            if (taskbarElement.querySelector(taskbarClass) &&
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderBottomColor !== args.milestoneColor) {
-                taskbarElement.querySelector(taskbarClass).style.borderBottomColor = args.milestoneColor;
+            if (taskbarElement.querySelector(classCollections[0]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderBottomColor !== args.milestoneColor) {
+                taskbarElement.querySelector(classCollections[0]).style.borderBottomColor = args.milestoneColor;
                 taskbarElement.querySelector('.' + milestoneBottom).style.borderTopColor = args.milestoneColor;
             }
-            if (trElement.querySelector(progressBarClass) &&
-                getComputedStyle(trElement.querySelector(progressBarClass)).borderTopColor !== args.baselineColor) {
-                trElement.querySelector(progressBarClass).style.borderBottomColor = args.baselineColor;
+            if (trElement.querySelector(classCollections[1]) &&
+                getComputedStyle(trElement.querySelector(classCollections[1])).borderTopColor !== args.baselineColor) {
+                trElement.querySelector(classCollections[1]).style.borderBottomColor = args.baselineColor;
                 trElement.querySelector('.' + baselineMilestoneBottom).style.borderTopColor = args.baselineColor;
             }
         }
         else {
-            if (taskbarElement.querySelector(taskbarClass) &&
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).backgroundColor !== args.taskbarBgColor) {
-                taskbarElement.querySelector(taskbarClass).style.backgroundColor = args.taskbarBgColor;
+            if (taskbarElement.querySelector(classCollections[0]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).backgroundColor !== args.taskbarBgColor) {
+                taskbarElement.querySelector(classCollections[0]).style.backgroundColor = args.taskbarBgColor;
             }
-            if (taskbarElement.querySelector(taskbarClass) &&
-                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor !== args.taskbarBorderColor) {
-                taskbarElement.querySelector(taskbarClass).style.borderColor = args.taskbarBorderColor;
+            if (taskbarElement.querySelector(classCollections[0]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[0])).borderColor !== args.taskbarBorderColor) {
+                taskbarElement.querySelector(classCollections[0]).style.borderColor = args.taskbarBorderColor;
             }
-            if (taskbarElement.querySelector(progressBarClass) &&
-                getComputedStyle(taskbarElement.querySelector(progressBarClass)).backgroundColor !== args.progressBarBgColor) {
-                taskbarElement.querySelector(progressBarClass).style.backgroundColor = args.progressBarBgColor;
+            if (taskbarElement.querySelector(classCollections[1]) &&
+                getComputedStyle(taskbarElement.querySelector(classCollections[1])).backgroundColor !== args.progressBarBgColor) {
+                taskbarElement.querySelector(classCollections[1]).style.backgroundColor = args.progressBarBgColor;
             }
             // if (taskbarElement.querySelector(progressBarClass) &&
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor !== args.progressBarBorderColor) {
@@ -6389,6 +6410,14 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             getComputedStyle((trElement.querySelector('.' + rightLabelContainer)).querySelector('.' + label)).color !== args.rightLabelColor) {
             (trElement.querySelector('.' + rightLabelContainer)).querySelector('.' + label).style.color = args.rightLabelColor;
         }
+    };
+    ChartRows.prototype.getClassName = function (args) {
+        var classCollection = [];
+        classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
+            traceParentTaskBar : args.taskbarType === 'ChildTask' ? traceChildTaskBar : milestoneTop));
+        classCollection.push('.' + (args.taskbarType === 'ParentTask' ?
+            traceParentProgressBar : args.taskbarType === 'ChildTask' ? traceChildProgressBar : baselineMilestoneTop));
+        return classCollection;
     };
     /**
      * To compile template string.
@@ -11235,6 +11264,27 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             this.selectionModule.selectCell(cellIndex, isToggle);
         }
     };
+    /**
+     * Selects a row by given index.
+     * @param  {number} index - Defines the row index.
+     * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     * @return {void}
+     */
+    Gantt.prototype.selectRow = function (index, isToggle) {
+        if (this.selectionModule) {
+            this.selectionModule.selectRow(index, isToggle);
+        }
+    };
+    /**
+     * Selects a collection of rows by indexes.
+     * @param  {number[]} records - Defines the collection of row indexes.
+     * @return {void}
+     */
+    Gantt.prototype.selectRows = function (records) {
+        if (this.selectionModule) {
+            this.selectionModule.selectRows(records);
+        }
+    };
     __decorate([
         Property(true)
     ], Gantt.prototype, "allowKeyboard", void 0);
@@ -11581,6 +11631,7 @@ var CellEdit = /** @__PURE__ @class */ (function () {
      * @param args
      */
     CellEdit.prototype.ensureEditCell = function (args) {
+        var _this = this;
         var data = args.rowData;
         var field = args.columnName;
         var taskSettings = this.parent.taskFields;
@@ -11589,16 +11640,24 @@ var CellEdit = /** @__PURE__ @class */ (function () {
             args.cancel = true;
         }
         else {
-            this.parent.trigger('cellEdit', args);
-            if (!args.cancel) {
-                this.isCellEdit = true;
-                if (!isNullOrUndefined(this.parent.toolbarModule)) {
-                    this.parent.toolbarModule.refreshToolbarItems();
+            var callBackPromise_1 = new Deferred();
+            this.parent.trigger('cellEdit', args, function (args) {
+                if (isBlazor()) {
+                    args.cell = getElement(args.cell);
+                    args.row = getElement(args.row);
                 }
-                if (args.columnName === 'Notes') {
-                    this.openNotesEditor(args);
+                callBackPromise_1.resolve(args);
+                if (!args.cancel) {
+                    _this.isCellEdit = true;
+                    if (!isNullOrUndefined(_this.parent.toolbarModule)) {
+                        _this.parent.toolbarModule.refreshToolbarItems();
+                    }
+                    if (args.columnName === _this.parent.taskFields.notes) {
+                        _this.openNotesEditor(args);
+                    }
                 }
-            }
+            });
+            return callBackPromise_1;
         }
     };
     /**
@@ -17953,6 +18012,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         }
     };
     ContextMenu$$1.prototype.contextMenuBeforeOpen = function (args) {
+        var _this = this;
         args.gridRow = closest(args.event.target, '.e-row');
         args.chartRow = closest(args.event.target, '.e-chart-row');
         var menuElement = closest(args.event.target, '.e-gantt');
@@ -17995,19 +18055,28 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             args.type = 'Content';
             args.disableItems = this.disableItems;
             args.hideItems = this.hideItems;
-            this.parent.trigger('contextMenuOpen', args);
-            this.hideItems = args.hideItems;
-            this.disableItems = args.disableItems;
-            if (!args.parentItem && args.hideItems.length === args.items.length) {
-                this.revertItemStatus();
-                args.cancel = true;
-            }
-            if (this.hideItems.length > 0) {
-                this.contextMenu.hideItems(this.hideItems);
-            }
-            if (this.disableItems.length > 0) {
-                this.contextMenu.enableItems(this.disableItems, false);
-            }
+            var callBackPromise_1 = new Deferred();
+            this.parent.trigger('contextMenuOpen', args, function (args) {
+                callBackPromise_1.resolve(args);
+                if (isBlazor()) {
+                    args.element = !isNullOrUndefined(args.element) ? getElement(args.element) : args.element;
+                    args.gridRow = !isNullOrUndefined(args.gridRow) ? getElement(args.gridRow) : args.gridRow;
+                    args.chartRow = !isNullOrUndefined(args.chartRow) ? getElement(args.chartRow) : args.chartRow;
+                }
+                _this.hideItems = args.hideItems;
+                _this.disableItems = args.disableItems;
+                if (!args.parentItem && args.hideItems.length === args.items.length) {
+                    _this.revertItemStatus();
+                    args.cancel = true;
+                }
+                if (_this.hideItems.length > 0) {
+                    _this.contextMenu.hideItems(_this.hideItems);
+                }
+                if (_this.disableItems.length > 0) {
+                    _this.contextMenu.enableItems(_this.disableItems, false);
+                }
+            });
+            return callBackPromise_1;
         }
     };
     ContextMenu$$1.prototype.updateItemStatus = function (item, target) {
@@ -18209,6 +18278,9 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         }
     };
     ContextMenu$$1.prototype.revertItemStatus = function () {
+        if (isBlazor() && isNullOrUndefined(this.disableItems)) {
+            this.disableItems = [];
+        }
         this.contextMenu.showItems(this.hideItems);
         this.contextMenu.enableItems(this.disableItems);
         this.hideItems = [];

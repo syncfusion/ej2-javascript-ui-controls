@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.2.47 (2019-08-27)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#243874` - Contextual Spacing property on paragraph is now exported properly.
+- `#243878` - Copy and paste when the document contains page break character within control is now working.
+- `#243495` - Follow character width for list is now updated properly.
+
 ## 17.2.41 (2019-08-14)
 
 ### Document Editor

@@ -657,8 +657,18 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private checkSplitPane(currentBar: Element, elementIndex: number): HTMLElement {
-        let paneEle: HTMLElement = currentBar.parentElement.children[elementIndex] as HTMLElement;
+        let paneEle: HTMLElement = this.collectPanes(currentBar.parentElement.children)[elementIndex] as HTMLElement;
         return paneEle;
+    }
+
+    private collectPanes(childNodes: HTMLCollection): HTMLElement[] {
+        let elements: HTMLElement[] = [];
+        for (let i: number = 0; i < childNodes.length; i++) {
+          if (childNodes[i].classList.contains('e-pane')) {
+              elements.push(childNodes[i] as HTMLElement);
+          }
+        }
+        return elements;
     }
 
     private getPrevPane(currentBar: Element, order: number): HTMLElement {

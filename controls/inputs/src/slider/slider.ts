@@ -677,6 +677,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.initRender();
         this.wireEvents();
         this.setZindex();
+        this.renderComplete();
     }
 
     private initialize(): void {

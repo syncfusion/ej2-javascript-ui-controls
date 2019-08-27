@@ -52,7 +52,7 @@ export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'D
 /**
  * Enum unit for calibration annotation
  */
-export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' |'p';
+export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' |'p' | 'ft';
 
 /**
  * Enum unit for ContextMenu Actions

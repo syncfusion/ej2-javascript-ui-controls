@@ -403,8 +403,10 @@ export function convertElement(element: HTMLCollection, labelId: string, data: O
         id: labelId,
         styles: 'position: absolute;pointer-events: auto;'
     });
-    while (element.length > 0) {
+    let elementLength: number = element.length;
+    while (elementLength > 0) {
         childElement.appendChild(element[0]);
+        elementLength--;
     }
     let templateHtml: string = childElement.innerHTML;
     let keys: Object[] = Object.keys(data);

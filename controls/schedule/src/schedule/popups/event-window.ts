@@ -136,6 +136,12 @@ export class EventWindow {
         }
     }
 
+    public updateRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
+        if (this.parent.editorTemplate) {
+            this.recurrenceEditor = recurrenceEditor;
+        }
+    }
+
     public openEditor(data: Object, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);

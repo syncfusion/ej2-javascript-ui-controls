@@ -21,7 +21,7 @@ import { ZoomOptions, IPrintOptions, IExportOptions, IFitOptions, ActiveLabel } 
 import { View, IDataSource, IFields } from './objects/interface/interfaces';
 import { Container } from './core/containers/container';
 import { Node, BpmnShape, BpmnAnnotation, SwimLane, Path } from './objects/node';
-import { flipConnector, updatePortEdges, alignElement } from './utility/diagram-util';
+import { flipConnector, updatePortEdges, alignElement, setConnectorDefaults } from './utility/diagram-util';
 import { Segment } from './interaction/scroller';
 import { Connector } from './objects/connector';
 import { ConnectorModel, BpmnFlowModel } from './objects/connector-model';
@@ -1265,7 +1265,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 setSwimLaneDefaults(child, node);
             }
         }
-
+        for (let i: number = 0; options && options.connectors && i < options.connectors.length; i++) {
+            let defaultConnector: ConnectorModel = options.connectors[i];
+            let connector: ConnectorModel = this.connectors[i];
+            if (defaultConnector.shape && defaultConnector.shape.type !== 'None') {
+                setConnectorDefaults(defaultConnector, connector);
+            }
+        }
     }
 
     private clearCollection(isConnector?: boolean): void {
@@ -1641,6 +1647,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (isBlazor()) {
             this.tool = DiagramTools.ZoomPan;
         }
+        this.renderComplete();
 
     }
 
@@ -2624,43 +2631,47 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             this.protectPropertyChange(true);
             this.historyManager.startGroupAction();
             if (!this.nameTable[node.id]) {
-                let getDefaults: Function = getFunction(this.getNodeDefaults);
-                if (getDefaults) {
-                    let defaults: Function = getDefaults(node, this);
-                    node.offsetX = (defaults && (defaults as NodeModel).width) || node.offsetX / 2;
-                    node.offsetY = (defaults && (defaults as NodeModel).height) || node.offsetY / 2;
-                }
-                node.offsetX = (node.width || 50) / 2;
-                node.offsetY = (node.height || 50) / 2;
+                node.offsetX = swimlaneNode.wrapper.bounds.width + swimlaneNode.wrapper.bounds.x;
+                node.offsetY = swimlaneNode.wrapper.bounds.height + swimlaneNode.wrapper.bounds.y;
                 node = this.add(node) as NodeModel;
             }
             (node as Node).parentId = '';
-            for (let i: number = 0; i < (swimlaneNode.shape as SwimLane).phases.length; i++) {
-                let laneId: string = swimLane + lane + i;
-                if (this.nameTable[laneId] && this.nameTable[laneId].isLane) {
-                    let laneNode: Rect = this.nameTable[laneId].wrapper.bounds;
-                    let focusPoint: PointModel = {
-                        x: laneNode.x + (laneNode.x - swimlaneNode.wrapper.bounds.x + node.margin.left + (node.wrapper.bounds.width / 2)),
-                        y: laneNode.y + swimlaneNode.wrapper.bounds.y - node.margin.top
-                    };
-                    if ((swimlaneNode.shape as SwimLane).orientation === 'Horizontal') {
-                        focusPoint.y = laneNode.y;
-                    } else {
-                        focusPoint.x = laneNode.x;
-                        let laneHeaderId: string = this.nameTable[laneId].parentId +
-                            (swimlaneNode.shape as SwimLane).lanes[0].id + '_0_header';
-                        focusPoint.y = laneNode.y +
-                            (swimlaneNode.wrapper.bounds.y - this.nameTable[laneHeaderId].wrapper.bounds.height +
-                                node.margin.top + (node.wrapper.bounds.height / 2));
-                    }
-                    if (laneNode.containsPoint(focusPoint) ||
-                        (laneId === swimLane + lane + ((swimlaneNode.shape as SwimLane).phases.length - 1))) {
-                        addChildToContainer(this, this.nameTable[laneId], node, undefined, true);
-                        updateLaneBoundsAfterAddChild(this.nameTable[laneId], swimlaneNode, node, this);
-                        break;
+            if (!(swimlaneNode.shape as SwimLane).phases.length) {
+                let laneId: string = swimLane + lane + '0';
+                if (this.nameTable[laneId]) {
+                    addChildToContainer(this, this.nameTable[laneId], node, undefined, true);
+                    updateLaneBoundsAfterAddChild(this.nameTable[laneId], swimlaneNode, node, this);
+                }
+            } else {
+                for (let i: number = 0; i < (swimlaneNode.shape as SwimLane).phases.length; i++) {
+                    let laneId: string = swimLane + lane + i;
+                    if (this.nameTable[laneId] && this.nameTable[laneId].isLane) {
+                        let laneNode: Rect = this.nameTable[laneId].wrapper.bounds;
+                        let focusPoint: PointModel = {
+                            x: laneNode.x +
+                                (laneNode.x - swimlaneNode.wrapper.bounds.x + node.margin.left + (node.wrapper.bounds.width / 2)),
+                            y: laneNode.y + swimlaneNode.wrapper.bounds.y - node.margin.top
+                        };
+                        if ((swimlaneNode.shape as SwimLane).orientation === 'Horizontal') {
+                            focusPoint.y = laneNode.y;
+                        } else {
+                            focusPoint.x = laneNode.x;
+                            let laneHeaderId: string = this.nameTable[laneId].parentId +
+                                (swimlaneNode.shape as SwimLane).lanes[0].id + '_0_header';
+                            focusPoint.y = laneNode.y +
+                                (swimlaneNode.wrapper.bounds.y - this.nameTable[laneHeaderId].wrapper.bounds.height +
+                                    node.margin.top + (node.wrapper.bounds.height / 2));
+                        }
+                        if (laneNode.containsPoint(focusPoint) ||
+                            (laneId === swimLane + lane + ((swimlaneNode.shape as SwimLane).phases.length - 1))) {
+                            addChildToContainer(this, this.nameTable[laneId], node, undefined, true);
+                            updateLaneBoundsAfterAddChild(this.nameTable[laneId], swimlaneNode, node, this);
+                            break;
+                        }
                     }
                 }
             }
+
             this.historyManager.endGroupAction();
             this.protectPropertyChange(false);
         }
@@ -6373,7 +6384,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
             }
             if (!this.preventNodesUpdate) {
-                this.updateDiagramObject(actualObject as NodeModel);
+                if (!canVitualize(this) || (canVitualize(this) && this.scroller.oldCollectionObjects.indexOf(actualObject.id) > -1)) {
+                    this.updateDiagramObject(actualObject as NodeModel);
+                }
                 if (!isLayout && updateConnector) {
                     if (this.lineRoutingModule && this.diagramActions && (this.constraints & DiagramConstraints.LineRouting) && actualObject.id !== 'helper') {
                         if (!(this.diagramActions & DiagramAction.ToolAction)) {
@@ -6511,8 +6524,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             newProp.sourcePortID !== undefined || newProp.targetPortID !== undefined || newProp.sourcePadding !== undefined ||
             newProp.type !== undefined || newProp.segments !== undefined || newProp.flip !== undefined) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
-                let sourceNode: Node = this.nameTable[actualObject.sourceID];
-                outPort = this.findInOutConnectPorts(sourceNode, false);
+                let sourceNode: Node = this.nameTable[actualObject.sourceID]; outPort = this.findInOutConnectPorts(sourceNode, false);
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourceWrapper = sourceNode ? this.getEndNodeWrapper(sourceNode, actualObject, true) : undefined;
                 }
@@ -6552,8 +6564,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 let targetNode: Node = this.nameTable[actualObject.targetID];
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
-                    actualObject.targetPortWrapper = target ?
-                        this.getWrapper(target, newProp.targetPortID) : undefined;
+                    actualObject.targetPortWrapper = target ? this.getWrapper(target, newProp.targetPortID) : undefined;
                 }
             }
             if (newProp.flip !== undefined) { actualObject.flip = newProp.flip; flipConnector(actualObject); }
@@ -6566,8 +6577,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }//Add prop change for zindex, alignments and margin
         if (newProp.style !== undefined) { updateStyle(newProp.style, actualObject.wrapper.children[0]); }
         if (points.length > 0 || newProp.sourceDecorator !== undefined || (newProp.targetDecorator !== undefined
-            && Object.keys(newProp.targetDecorator).indexOf('style') === -1) ||
-            newProp.cornerRadius !== undefined) {
+            && Object.keys(newProp.targetDecorator).indexOf('style') === -1) || newProp.cornerRadius !== undefined) {
             updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
             if (newProp.type !== undefined) { updateSelector = true; }
             if (points.length > 0) {
@@ -6576,8 +6586,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.updateConnectorAnnotation(actualObject); this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }
-        if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments)
-            && this.diagramActions === DiagramAction.Render) {
+        if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments) && this.diagramActions === DiagramAction.Render) {
             updateSelector = true;
         }
         if (actualObject.shape.type === 'Bpmn' && (actualObject.shape as BpmnFlowModel).sequence === 'Default') {
@@ -6590,11 +6599,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (existingBounds.equals(existingBounds, actualObject.wrapper.bounds) === false) {
             this.updateQuad(actualObject); this.updateGroupSize(actualObject);
         }
-        if (updateSelector === true && this.checkSelectedItem(actualObject)
-            && (!(this.diagramActions & DiagramAction.ToolAction) || (this.diagramActions & DiagramAction.UndoRedo))) {
-            this.updateSelector();
+        if (updateSelector === true && this.checkSelectedItem(actualObject) && (!(this.diagramActions & DiagramAction.ToolAction)
+            || (this.diagramActions & DiagramAction.UndoRedo))) { this.updateSelector(); }
+        if (!this.preventConnectorsUpdate) {
+            if (!canVitualize(this) || (canVitualize(this) && this.scroller.oldCollectionObjects.indexOf(actualObject.id) > -1)) {
+                this.updateDiagramObject(actualObject);
+            }
         }
-        if (!this.preventConnectorsUpdate) { this.updateDiagramObject(actualObject); }
         if (this.diagramActions && actualObject.status !== 'New') { actualObject.status = 'Update'; }
         if (!propertyChange) {
             let element: ConnectorModel = actualObject;

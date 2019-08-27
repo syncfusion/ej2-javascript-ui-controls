@@ -9,6 +9,7 @@ import { Group } from '../../../src/grid/actions/group';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Page } from '../../../src/grid/actions/page';
+import {RowDD } from "../../../src/grid/actions/row-reorder";
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { filterData, employeeData, customerData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -16,7 +17,7 @@ import { Edit } from '../../../src/grid/actions/edit';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit);
+Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit,RowDD);
 
 describe('Detail template module', () => {
 
@@ -653,6 +654,64 @@ describe('Detail template module', () => {
             gridObj = actionComplete = null;
         });
     });   
+    
+     describe('Hierarchy Render testing', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
 
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowPaging: true,
+                    allowGrouping: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Row' },
+                    allowFiltering: true,
+                    allowSorting: true,
+                    allowReordering: true,
+                    actionComplete: actionComplete,
+                    allowRowDragAndDrop: true,
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                        { field: 'FirstName', headerText: 'First Name', textAlign: 'Left', width: 100 },
+                        { field: 'Title', headerText: 'Title', textAlign: 'Left', width: 120 },
+                        { field: 'City', headerText: 'City', textAlign: 'Left', width: 100 },
+                        { field: 'Country', headerText: 'Country', textAlign: 'Left', width: 100 }
+                    ],
+                    childGrid: {
+                        dataSource: filterData, queryString: 'EmployeeID',
+                        allowPaging: true,
+                        allowGrouping: true,
+                        allowRowDragAndDrop: true,
+                        selectionSettings: { type: 'Multiple', mode: 'Row' },
+                        pageSettings: { pageCount: 5, pageSize: 5 },
+                        allowFiltering: true,
+                        allowSorting: true,
+                        groupSettings: { showGroupedColumn: false },
+                        allowReordering: true,
+                        allowTextWrap: true,
+                        
+                        columns: [
+                            { field: 'OrderID', headerText: 'Order ID', textAlign: 'Right', width: 75 },
+                            { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 75 },
+                            { field: 'ShipCity', headerText: 'Ship City', textAlign: 'Left', width: 100 },
+                            { field: 'Freight', headerText: 'Freight', textAlign: 'Left', width: 120 },
+                            { field: 'ShipName', headerText: 'Ship Name', textAlign: 'Left', width: 100 }
+                        ]
+                    },
+                }, done);
+        });
+
+        it('Hierarchy row with expand-RowDD', () => {
+            gridObj.detailRowModule.expand(gridObj.getDataRows()[1].querySelector('.e-detailrowcollapse'));
+            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow').length).toBe(1);
+            expect(gridObj.getDataRows()[1].querySelectorAll('.e-detailrowexpand').length).toBe(1);
+            expect(gridObj.getContentTable().querySelectorAll('.e-detailrow')[0].children[1].getAttribute('colspan')).toBe('6');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
 
 });

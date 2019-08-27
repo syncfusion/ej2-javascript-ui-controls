@@ -1609,6 +1609,7 @@ let Dialog = class Dialog extends Component {
                 this.getMinHeight();
             }
         }
+        this.renderComplete();
     }
     /**
      * Initialize the event handler
@@ -2493,7 +2494,12 @@ let Dialog = class Dialog extends Component {
             if (!isNullOrUndefined(isFullScreen)) {
                 this.fullScreen(isFullScreen);
             }
-            let eventArgs = {
+            let eventArgs = isBlazor() ? {
+                cancel: false,
+                element: this.element,
+                container: this.isModal ? this.dlgContainer : this.element,
+                maxHeight: this.element.style.maxHeight
+            } : {
                 cancel: false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
@@ -2559,7 +2565,14 @@ let Dialog = class Dialog extends Component {
             return;
         }
         if (this.visible) {
-            let eventArgs = {
+            let eventArgs = isBlazor() ? {
+                cancel: false,
+                isInteraction: event ? true : false,
+                isInteracted: event ? true : false,
+                element: this.element,
+                container: this.isModal ? this.dlgContainer : this.element,
+                event: event
+            } : {
                 cancel: false,
                 isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
@@ -3194,7 +3207,7 @@ let Tooltip = class Tooltip extends Component {
             else {
                 let templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                if (this.content.indexOf('<div>Blazor') >= 0) {
+                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                     this.isBlazorTemplate = true;
                     updateBlazorTemplate(this.element.id + 'content', 'Content', this);
                 }
@@ -3598,6 +3611,7 @@ let Tooltip = class Tooltip extends Component {
     render() {
         this.initialize();
         this.wireEvents(this.opensOn);
+        this.renderComplete();
     }
     /**
      * Initializes the values of private members.

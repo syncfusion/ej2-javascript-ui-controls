@@ -190,10 +190,10 @@ __decorate$2([
 class Range extends ChildProperty {
 }
 __decorate$2([
-    Property(null)
+    Property(0)
 ], Range.prototype, "start", void 0);
 __decorate$2([
-    Property(null)
+    Property(0)
 ], Range.prototype, "end", void 0);
 __decorate$2([
     Property('Outside')
@@ -2247,6 +2247,7 @@ let LinearGauge = class LinearGauge extends Component {
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
+        this.renderComplete();
         this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
     }
     /**

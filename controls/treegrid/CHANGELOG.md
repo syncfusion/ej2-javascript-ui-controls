@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.47 (2019-08-27)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#243953` - Filter works properly with Filter Settings and Search Settings.
+
 ## 17.2.46 (2019-08-22)
 
 ### TreeGrid

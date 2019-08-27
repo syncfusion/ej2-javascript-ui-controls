@@ -321,6 +321,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
+        this.renderComplete();
     }
 
     private createChip(): void {

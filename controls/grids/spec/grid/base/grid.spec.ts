@@ -105,6 +105,17 @@ describe('Grid base module', () => {
             gridObj.dataBind();
         });
 
+        it('Ensure the grid column while dynamically change the lockColumn property value', (done: Function) => {
+            (gridObj.columns[1] as Column).lockColumn = true;
+            let dataBound = (args: Object) => {
+                 expect(gridObj.lockcolPositionCount).toBe(1);
+                 expect(gridObj.getColumns()[0].field).toBe('CustomerID');
+                 done();
+             };
+            gridObj.dataBound = dataBound;
+            gridObj.refreshColumns();
+         });
+
         afterAll(() => {
             destroy(gridObj);
             gridObj = actionComplete = null;

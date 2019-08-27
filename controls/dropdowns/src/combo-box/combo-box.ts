@@ -686,6 +686,7 @@ export class ComboBox extends DropDownList {
         if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
             super.renderList();
         }
+        this.renderComplete();
     };
     /**
      * Return the module name of this component.

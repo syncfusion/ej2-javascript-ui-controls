@@ -7627,6 +7627,9 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         if (_this.shape && _this.shape.type === 'UmlActivity') {
             setUMLActivityDefaults(defaultValue, _this);
         }
+        if (defaultValue && defaultValue.shape && defaultValue.shape.type !== 'None') {
+            setConnectorDefaults(defaultValue, _this);
+        }
         return _this;
     }
     /** @private */
@@ -7729,44 +7732,31 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
             this.segments[0].type = 'Straight';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
-            this.style.strokeWidth = 2;
         }
         else if (shape.relationship === 'Inheritance') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
-            this.targetDecorator.style.fill = 'white';
-            this.style.strokeWidth = 2;
-            this.style.strokeDashArray = '4 4';
         }
         else if (shape.relationship === 'Composition') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'Diamond';
             this.targetDecorator.shape = 'None';
-            this.sourceDecorator.style.fill = 'black';
-            this.style.strokeWidth = 2;
         }
         else if (shape.relationship === 'Aggregation') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'Diamond';
             this.targetDecorator.shape = 'None';
-            this.sourceDecorator.style.fill = 'white';
-            this.style.strokeWidth = 2;
         }
         else if (shape.relationship === 'Dependency') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'OpenArrow';
-            this.sourceDecorator.style.fill = 'white';
-            this.style.strokeWidth = 2;
-            this.style.strokeDashArray = '4 4';
         }
         else if (shape.relationship === 'Realization') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
-            this.sourceDecorator.style.fill = 'white';
-            this.style.strokeWidth = 2;
         }
         if (shape.associationType === 'BiDirectional') {
             this.sourceDecorator.shape = 'None';
@@ -7826,23 +7816,17 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         var pathseq = new PathElement();
         if ((this.shape.sequence) === 'Normal' && this.type !== 'Bezier') {
             this.targetDecorator.shape = 'Arrow';
-            this.targetDecorator.style.fill = 'black';
         }
         if ((this.shape.sequence) === 'Default') {
             segment = this.getSegmentElement(this, segment);
             var anglePoints = this.intermediatePoints;
             pathseq = updatePathElement(anglePoints, this);
             this.targetDecorator.shape = 'Arrow';
-            this.targetDecorator.style.fill = 'black';
         }
         if ((this.shape.sequence) === 'Conditional') {
             this.targetDecorator.shape = 'Arrow';
             this.sourceDecorator.shape = 'Diamond';
             pathseq.id = this.id + this.shape.type;
-            this.sourceDecorator.style.fill = 'white';
-            this.targetDecorator.style.fill = 'black';
-            this.sourceDecorator.width = 20;
-            this.sourceDecorator.height = 10;
         }
         return pathseq;
     };
@@ -7877,26 +7861,17 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     Connector.prototype.getBpmnAssociationFlow = function () {
         if ((this.shape.association) === 'Default') {
             this.targetDecorator.shape = 'Arrow';
-            this.targetDecorator.style.fill = 'black';
         }
         if ((this.shape.association) === 'Directional') {
-            this.style.strokeDashArray = '2 2';
-            this.targetDecorator.style.fill = 'black';
             this.targetDecorator.shape = 'Arrow';
         }
         if ((this.shape.association) === 'BiDirectional') {
-            this.style.strokeDashArray = '2 2';
             this.targetDecorator.shape = 'Arrow';
-            this.targetDecorator.style.fill = 'black';
             this.sourceDecorator.shape = 'Arrow';
-            this.sourceDecorator.style.fill = 'white';
-            this.sourceDecorator.width = 5;
-            this.sourceDecorator.height = 10;
         }
     };
     Connector.prototype.getBpmnMessageFlow = function () {
         var segmentMessage = new PathElement();
-        this.style.strokeDashArray = '4 4';
         this.targetDecorator.shape = 'Arrow';
         this.targetDecorator.width = 5;
         this.targetDecorator.height = 10;
@@ -8501,6 +8476,7 @@ var Ruler = /** @__PURE__ @class */ (function (_super) {
      */
     Ruler.prototype.render = function () {
         this.updateRulerGeometry();
+        this.renderComplete();
     };
     /**
      * Core method to return the component name.
@@ -12496,6 +12472,115 @@ function setUMLActivityDefaults(child, node) {
                 }
                 break;
         }
+    }
+}
+/**
+ * @private
+ */
+function setConnectorDefaults(child, node) {
+    switch ((child.shape).type) {
+        case 'Bpmn':
+            switch (child.shape.flow) {
+                case 'Sequence':
+                    if ((((child.shape.sequence) === 'Normal' && child.type !== 'Bezier')) ||
+                        ((child.shape.sequence) === 'Default') || ((child.shape.sequence) === 'Conditional')) {
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style
+                                && child.targetDecorator.style.fill) || 'black';
+                        }
+                        if ((child.shape.sequence) === 'Conditional' && node.sourceDecorator) {
+                            if (node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                                    child.sourceDecorator.style.fill) || 'white';
+                            }
+                            node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 20;
+                            node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.width) || 10;
+                        }
+                    }
+                    break;
+                case 'Association':
+                    if (((child.shape.association) === 'Default') ||
+                        ((child.shape.association) === 'Directional') ||
+                        ((child.shape.association) === 'BiDirectional')) {
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                                child.targetDecorator.style.fill) || 'black';
+                        }
+                        if ((child.shape.association) === 'BiDirectional') {
+                            if (node.sourceDecorator && node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                                    child.sourceDecorator.style.fill) || 'white';
+                                node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 5;
+                                node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.height) || 10;
+                            }
+                        }
+                    }
+                    break;
+                case 'Message':
+                    if (node.style && !node.style.strokeDashArray) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlActivity':
+            switch (child.shape.flow) {
+                case 'Exception':
+                    if (((child.shape.association) === 'Directional') ||
+                        ((child.shape.association) === 'BiDirectional')) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '2 2';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlClassifier':
+            var hasRelation = false;
+            if (child.shape.relationship === 'Association') {
+                hasRelation = true;
+            }
+            else if (child.shape.relationship === 'Inheritance') {
+                if (node.targetDecorator && node.targetDecorator.style) {
+                    node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                        child.targetDecorator.style.fill) || 'white';
+                }
+                if (node.style) {
+                    hasRelation = true;
+                    node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                }
+            }
+            else if (child.shape.relationship === 'Composition') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'black';
+                }
+                hasRelation = true;
+            }
+            else if (child.shape.relationship === 'Aggregation') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+            }
+            else if (child.shape.relationship === 'Dependency') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+                node.style.strokeDashArray = '4 4';
+            }
+            else if (child.shape.relationship === 'Realization') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+            }
+            if (hasRelation) {
+                node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2;
+            }
+            break;
     }
 }
 /** @private */
@@ -19597,7 +19682,15 @@ var DiagramRenderer = /** @__PURE__ @class */ (function () {
             };
         }
         if (attr) {
-            setAttributeSvg(canvas, attr);
+            if (element && element.children &&
+                element.children.length && (element.children[0] instanceof DiagramHtmlElement)) {
+                var layer = getHTMLLayer(this.diagramId).children[0];
+                canvas = layer.querySelector(('#' + element.id + '_content_html_element'));
+                canvas.style.transform = 'scale(' + scaleX + ',' + scaleY + ')';
+            }
+            else {
+                setAttributeSvg(canvas, attr);
+            }
         }
     };
     /**   @private  */
@@ -20287,7 +20380,7 @@ function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMo
                 var obj_1 = _a[_i];
                 if (obj_1.visible) {
                     var paddedBounds = getUserHandlePosition(handle, obj_1, diagram.scroller.transform);
-                    if (contains(position, paddedBounds, obj_1.size / 2)) {
+                    if (contains(position, paddedBounds, obj_1.size / (2 * diagram.scroller.transform.scale))) {
                         return obj_1.name;
                     }
                 }
@@ -29935,6 +30028,13 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 setSwimLaneDefaults(child, node);
             }
         }
+        for (var i = 0; options && options.connectors && i < options.connectors.length; i++) {
+            var defaultConnector = options.connectors[i];
+            var connector = _this.connectors[i];
+            if (defaultConnector.shape && defaultConnector.shape.type !== 'None') {
+                setConnectorDefaults(defaultConnector, connector);
+            }
+        }
         return _this;
     }
     Diagram.prototype.clearCollection = function (isConnector) {
@@ -30308,6 +30408,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (isBlazor()) {
             this.tool = DiagramTools.ZoomPan;
         }
+        this.renderComplete();
     };
     Diagram.prototype.updateTemplate = function () {
         var node;
@@ -31204,41 +31305,45 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.protectPropertyChange(true);
             this.historyManager.startGroupAction();
             if (!this.nameTable[node.id]) {
-                var getDefaults = getFunction(this.getNodeDefaults);
-                if (getDefaults) {
-                    var defaults = getDefaults(node, this);
-                    node.offsetX = (defaults && defaults.width) || node.offsetX / 2;
-                    node.offsetY = (defaults && defaults.height) || node.offsetY / 2;
-                }
-                node.offsetX = (node.width || 50) / 2;
-                node.offsetY = (node.height || 50) / 2;
+                node.offsetX = swimlaneNode.wrapper.bounds.width + swimlaneNode.wrapper.bounds.x;
+                node.offsetY = swimlaneNode.wrapper.bounds.height + swimlaneNode.wrapper.bounds.y;
                 node = this.add(node);
             }
             node.parentId = '';
-            for (var i = 0; i < swimlaneNode.shape.phases.length; i++) {
-                var laneId = swimLane + lane + i;
-                if (this.nameTable[laneId] && this.nameTable[laneId].isLane) {
-                    var laneNode = this.nameTable[laneId].wrapper.bounds;
-                    var focusPoint = {
-                        x: laneNode.x + (laneNode.x - swimlaneNode.wrapper.bounds.x + node.margin.left + (node.wrapper.bounds.width / 2)),
-                        y: laneNode.y + swimlaneNode.wrapper.bounds.y - node.margin.top
-                    };
-                    if (swimlaneNode.shape.orientation === 'Horizontal') {
-                        focusPoint.y = laneNode.y;
-                    }
-                    else {
-                        focusPoint.x = laneNode.x;
-                        var laneHeaderId = this.nameTable[laneId].parentId +
-                            swimlaneNode.shape.lanes[0].id + '_0_header';
-                        focusPoint.y = laneNode.y +
-                            (swimlaneNode.wrapper.bounds.y - this.nameTable[laneHeaderId].wrapper.bounds.height +
-                                node.margin.top + (node.wrapper.bounds.height / 2));
-                    }
-                    if (laneNode.containsPoint(focusPoint) ||
-                        (laneId === swimLane + lane + (swimlaneNode.shape.phases.length - 1))) {
-                        addChildToContainer(this, this.nameTable[laneId], node, undefined, true);
-                        updateLaneBoundsAfterAddChild(this.nameTable[laneId], swimlaneNode, node, this);
-                        break;
+            if (!swimlaneNode.shape.phases.length) {
+                var laneId = swimLane + lane + '0';
+                if (this.nameTable[laneId]) {
+                    addChildToContainer(this, this.nameTable[laneId], node, undefined, true);
+                    updateLaneBoundsAfterAddChild(this.nameTable[laneId], swimlaneNode, node, this);
+                }
+            }
+            else {
+                for (var i = 0; i < swimlaneNode.shape.phases.length; i++) {
+                    var laneId = swimLane + lane + i;
+                    if (this.nameTable[laneId] && this.nameTable[laneId].isLane) {
+                        var laneNode = this.nameTable[laneId].wrapper.bounds;
+                        var focusPoint = {
+                            x: laneNode.x +
+                                (laneNode.x - swimlaneNode.wrapper.bounds.x + node.margin.left + (node.wrapper.bounds.width / 2)),
+                            y: laneNode.y + swimlaneNode.wrapper.bounds.y - node.margin.top
+                        };
+                        if (swimlaneNode.shape.orientation === 'Horizontal') {
+                            focusPoint.y = laneNode.y;
+                        }
+                        else {
+                            focusPoint.x = laneNode.x;
+                            var laneHeaderId = this.nameTable[laneId].parentId +
+                                swimlaneNode.shape.lanes[0].id + '_0_header';
+                            focusPoint.y = laneNode.y +
+                                (swimlaneNode.wrapper.bounds.y - this.nameTable[laneHeaderId].wrapper.bounds.height +
+                                    node.margin.top + (node.wrapper.bounds.height / 2));
+                        }
+                        if (laneNode.containsPoint(focusPoint) ||
+                            (laneId === swimLane + lane + (swimlaneNode.shape.phases.length - 1))) {
+                            addChildToContainer(this, this.nameTable[laneId], node, undefined, true);
+                            updateLaneBoundsAfterAddChild(this.nameTable[laneId], swimlaneNode, node, this);
+                            break;
+                        }
                     }
                 }
             }
@@ -34964,7 +35069,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 updateConnectorsProperties(connectors, this);
             }
             if (!this.preventNodesUpdate) {
-                this.updateDiagramObject(actualObject);
+                if (!canVitualize(this) || (canVitualize(this) && this.scroller.oldCollectionObjects.indexOf(actualObject.id) > -1)) {
+                    this.updateDiagramObject(actualObject);
+                }
                 if (!isLayout && updateConnector$$1) {
                     if (this.lineRoutingModule && this.diagramActions && (this.constraints & DiagramConstraints.LineRouting) && actualObject.id !== 'helper') {
                         if (!(this.diagramActions & DiagramAction.ToolAction)) {
@@ -35149,8 +35256,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 var targetNode = this.nameTable[actualObject.targetID];
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
-                    actualObject.targetPortWrapper = target ?
-                        this.getWrapper(target, newProp.targetPortID) : undefined;
+                    actualObject.targetPortWrapper = target ? this.getWrapper(target, newProp.targetPortID) : undefined;
                 }
             }
             if (newProp.flip !== undefined) {
@@ -35168,8 +35274,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             updateStyle(newProp.style, actualObject.wrapper.children[0]);
         }
         if (points.length > 0 || newProp.sourceDecorator !== undefined || (newProp.targetDecorator !== undefined
-            && Object.keys(newProp.targetDecorator).indexOf('style') === -1) ||
-            newProp.cornerRadius !== undefined) {
+            && Object.keys(newProp.targetDecorator).indexOf('style') === -1) || newProp.cornerRadius !== undefined) {
             updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
             if (newProp.type !== undefined) {
                 updateSelector = true;
@@ -35181,8 +35286,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 this.updateObject(actualObject, oldProp, newProp);
             } //work-around to update intersected connector bridging
         }
-        if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments)
-            && this.diagramActions === DiagramAction.Render) {
+        if ((newProp.sourcePoint || newProp.targetPoint || newProp.segments) && this.diagramActions === DiagramAction.Render) {
             updateSelector = true;
         }
         if (actualObject.shape.type === 'Bpmn' && actualObject.shape.sequence === 'Default') {
@@ -35198,12 +35302,14 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             this.updateQuad(actualObject);
             this.updateGroupSize(actualObject);
         }
-        if (updateSelector === true && this.checkSelectedItem(actualObject)
-            && (!(this.diagramActions & DiagramAction.ToolAction) || (this.diagramActions & DiagramAction.UndoRedo))) {
+        if (updateSelector === true && this.checkSelectedItem(actualObject) && (!(this.diagramActions & DiagramAction.ToolAction)
+            || (this.diagramActions & DiagramAction.UndoRedo))) {
             this.updateSelector();
         }
         if (!this.preventConnectorsUpdate) {
-            this.updateDiagramObject(actualObject);
+            if (!canVitualize(this) || (canVitualize(this) && this.scroller.oldCollectionObjects.indexOf(actualObject.id) > -1)) {
+                this.updateDiagramObject(actualObject);
+            }
         }
         if (this.diagramActions && actualObject.status !== 'New') {
             actualObject.status = 'Update';
@@ -47112,6 +47218,12 @@ var HierarchicalLayoutUtil = /** @__PURE__ @class */ (function () {
             if (numConnectedNeighbours > 0) {
                 cellMedian = (medianNextLevel * nextConnectedCount + medianPreviousLevel * prevConnectedCount) / numConnectedNeighbours;
             }
+            if (nextConnectedCount === 1 && prevConnectedCount === 1) {
+                cellMedian = (medianPreviousLevel * prevConnectedCount) / prevConnectedCount;
+            }
+            else if (nextConnectedCount === 1) {
+                cellMedian = (medianNextLevel * nextConnectedCount) / nextConnectedCount;
+            }
             var positionChanged = false;
             var tempValue = undefined;
             if (cellMedian < currentPosition - tolerance) {
@@ -48461,6 +48573,7 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         this.svgRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), true);
         this.updatePalettes();
         this.accordionElement.appendTo('#' + this.element.id + '_container');
+        this.renderComplete();
     };
     /**
      * To get Module name
@@ -49647,6 +49760,7 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
         this.diagramRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), false);
         this.renderCanvas();
         this.setParent(this.sourceID);
+        this.renderComplete();
     };
     Overview.prototype.getSizeValue = function (real) {
         var text;
@@ -50453,5 +50567,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, findPath, findDistance, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, setConnectorDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, findPath, findDistance, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, Selector, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, LineRouting, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

@@ -1665,6 +1665,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 this.getMinHeight();
             }
         }
+        this.renderComplete();
     };
     /**
      * Initialize the event handler
@@ -2557,7 +2558,12 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(isFullScreen)) {
                 this.fullScreen(isFullScreen);
             }
-            var eventArgs_1 = {
+            var eventArgs_1 = isBlazor() ? {
+                cancel: false,
+                element: this.element,
+                container: this.isModal ? this.dlgContainer : this.element,
+                maxHeight: this.element.style.maxHeight
+            } : {
                 cancel: false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
@@ -2624,7 +2630,14 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (this.visible) {
-            var eventArgs = {
+            var eventArgs = isBlazor() ? {
+                cancel: false,
+                isInteraction: event ? true : false,
+                isInteracted: event ? true : false,
+                element: this.element,
+                container: this.isModal ? this.dlgContainer : this.element,
+                event: event
+            } : {
                 cancel: false,
                 isInteraction: event ? true : false,
                 isInteracted: event ? true : false,
@@ -3280,7 +3293,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             else {
                 var templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                if (this.content.indexOf('<div>Blazor') >= 0) {
+                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                     this.isBlazorTemplate = true;
                     updateBlazorTemplate(this.element.id + 'content', 'Content', this);
                 }
@@ -3688,6 +3701,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     Tooltip.prototype.render = function () {
         this.initialize();
         this.wireEvents(this.opensOn);
+        this.renderComplete();
     };
     /**
      * Initializes the values of private members.

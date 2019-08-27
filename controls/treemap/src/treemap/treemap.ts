@@ -3,7 +3,7 @@
  */
 
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax } from '@syncfusion/ej2-base';
-import { Complex, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { Complex, Collection, ModuleDeclaration, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';
@@ -517,6 +517,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
                 remove(this.svgObject);
+            }
+        }
+        if (this.leafItemSettings.labelTemplate) {
+            resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
+        }
+        for (let i: number = 0; i < this.levels.length; i++) {
+            if (this.levels[i].headerTemplate) {
+                resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
         let containerWidth: number = this.element.clientWidth;

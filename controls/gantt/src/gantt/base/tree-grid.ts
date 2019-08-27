@@ -2,7 +2,7 @@ import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { FilterEventArgs, SortEventArgs, FailureEventArgs, IEditCell, EJ2Intance, IFilterMUI } from '@syncfusion/ej2-grids';
-import { DataManager } from '@syncfusion/ej2-data';
+import { DataManager, Deferred } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
 import { ITaskData, IGanttData } from './interface';
@@ -128,11 +128,22 @@ export class GanttTreeGrid {
         this.ensureScrollBar();
         this.parent.treeDataBound(args);
     }
-    private collapsing(args: object): void {
+    private collapsing(args: object): void | Deferred {
         // Collapsing event
+        let callBackPromise: Deferred = new Deferred();
         if (!this.parent.ganttChartModule.isExpandCollapseFromChart) {
             let collapsingArgs: object = this.createExpandCollapseArgs(args);
-            this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
+            if (isBlazor()) {
+                this.parent.trigger('collapsing', collapsingArgs, (args: object) => {
+                    callBackPromise.resolve(args);
+                    if (!getValue('cancel', args)) {
+                        this.parent.ganttChartModule.collapseGanttRow(collapsingArgs, true);
+                    }
+                });
+                return callBackPromise;
+            } else {
+                this.parent.ganttChartModule.collapseGanttRow(collapsingArgs);
+            }
             setValue('cancel', getValue('cancel', collapsingArgs), args);
         }
     }

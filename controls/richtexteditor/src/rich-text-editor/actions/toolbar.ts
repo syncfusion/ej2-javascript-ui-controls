@@ -416,10 +416,17 @@ export class Toolbar {
 
     private scrollHandler(e: NotifyArgs): void {
         if (!this.parent.inlineMode.enable) {
-            if (this.parent.toolbarSettings.enableFloating) {
+            if (this.parent.toolbarSettings.enableFloating && this.getDOMVisibility(this.tbElement)) {
                 this.toggleFloatClass(e.args as Event);
             }
         }
+    }
+
+    private getDOMVisibility(el: HTMLElement): boolean {
+        if (!el.offsetParent && el.offsetWidth === 0 && el.offsetHeight === 0) {
+            return false;
+        }
+        return true;
     }
 
     private mouseDownHandler(): void {

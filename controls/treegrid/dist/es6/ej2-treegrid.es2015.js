@@ -5628,9 +5628,10 @@ class Filter$1 {
         for (let f = 0; f < this.flatFilteredData.length; f++) {
             let rec = this.flatFilteredData[f];
             this.addParentRecord(rec);
-            if (this.parent.filterSettings.hierarchyMode === 'Child' ||
-                this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'Child' ||
-                this.parent.searchSettings.hierarchyMode === 'None') {
+            let hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+                : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'None') &&
+                (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== ''))) {
                 this.isHierarchyFilter = true;
             }
             let ischild = getObject('childRecords', rec);
@@ -5653,7 +5654,10 @@ class Filter$1 {
     addParentRecord(record) {
         let parent = getParentData(this.parent, record.parentUniqueID);
         //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
-        if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
+        let hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+            : this.parent.searchSettings.hierarchyMode;
+        if (hierarchyMode === 'None' && (this.parent.grid.filterSettings.columns.length !== 0
+            || this.parent.grid.searchSettings.key !== '')) {
             if (isNullOrUndefined(parent)) {
                 if (this.flatFilteredData.indexOf(record) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
@@ -5682,8 +5686,10 @@ class Filter$1 {
         }
         else {
             if (!isNullOrUndefined(parent)) {
-                if (this.parent.filterSettings.hierarchyMode === 'Child'
-                    || this.parent.searchSettings.hierarchyMode === 'Child') {
+                let hierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                    this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+                if (hierarchyMode === 'Child' && (this.parent.grid.filterSettings.columns.length !== 0
+                    || this.parent.grid.searchSettings.key !== '')) {
                     if (this.flatFilteredData.indexOf(parent) !== -1) {
                         this.addParentRecord(parent);
                     }
@@ -5703,8 +5709,10 @@ class Filter$1 {
         let isExist = false;
         for (let count = 0; count < childRec.length; count++) {
             let ischild = childRec[count].childRecords;
-            if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
-                (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both')) {
+            let hierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'Both') && (this.parent.grid.filterSettings.columns.length !== 0
+                || this.parent.grid.searchSettings.key !== ''))) {
                 let uniqueIDValue = getValue('uniqueIDFilterCollection', this.parent);
                 if (!uniqueIDValue.hasOwnProperty(childRec[count].uniqueID)) {
                     this.filteredResult.push(childRec[count]);
@@ -5712,8 +5720,9 @@ class Filter$1 {
                     isExist = true;
                 }
             }
-            if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
-                if (this.flatFilteredData.indexOf(childRec[count] !== -1)) {
+            if ((hierarchyMode === 'None')
+                && (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== '')) {
+                if (this.flatFilteredData.indexOf(childRec[count]) !== -1) {
                     isExist = true;
                     break;
                 }

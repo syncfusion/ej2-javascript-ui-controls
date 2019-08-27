@@ -1,10 +1,11 @@
-import { isNullOrUndefined as isNOU, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, getValue, isBlazor, getElement } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
-import { ITaskData, ITaskbarEditedEventArgs, IGanttData } from '../base/interface';
+import { ITaskData, ITaskbarEditedEventArgs, IGanttData, CellEditArgs } from '../base/interface';
 import { ColumnModel } from '../models/column';
-import { CellEditArgs, EJ2Intance } from '@syncfusion/ej2-grids';
+import { EJ2Intance } from '@syncfusion/ej2-grids';
 import { TaskFieldsModel, EditDialogFieldSettingsModel } from '../models/models';
 import { TreeGrid, Edit } from '@syncfusion/ej2-treegrid';
+import { Deferred } from '@syncfusion/ej2-data';
 import { Tab } from '@syncfusion/ej2-navigations';
 /**
  * To handle cell edit action on default columns and custom columns
@@ -34,7 +35,7 @@ export class CellEdit {
      * Ensure current cell was editable or not
      * @param args 
      */
-    private ensureEditCell(args: CellEditArgs): void {
+    private ensureEditCell(args: CellEditArgs): void | Deferred {
         let data: IGanttData = args.rowData;
         let field: string = args.columnName;
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
@@ -42,16 +43,24 @@ export class CellEdit {
             || field === taskSettings.dependency || field === taskSettings.progress)) {
             args.cancel = true;
         } else {
-            this.parent.trigger('cellEdit', args);
-            if (!args.cancel) {
-                this.isCellEdit = true;
-                if (!isNOU(this.parent.toolbarModule)) {
-                    this.parent.toolbarModule.refreshToolbarItems();
+            let callBackPromise: Deferred = new Deferred();
+            this.parent.trigger('cellEdit', args, (args: CellEditArgs) => {
+                if (isBlazor()) {
+                    args.cell = getElement(args.cell);
+                    args.row = getElement(args.row);
                 }
-                if (args.columnName === 'Notes') {
-                    this.openNotesEditor(args);
+                callBackPromise.resolve(args);
+                if (!args.cancel) {
+                    this.isCellEdit = true;
+                    if (!isNOU(this.parent.toolbarModule)) {
+                        this.parent.toolbarModule.refreshToolbarItems();
+                    }
+                    if (args.columnName === this.parent.taskFields.notes) {
+                        this.openNotesEditor(args);
+                    }
                 }
-            }
+            });
+            return callBackPromise;
         }
     }
     /**

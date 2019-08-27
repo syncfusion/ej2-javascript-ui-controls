@@ -10,6 +10,9 @@ import { Index } from '../../common/model/base';
 import { getElement, AccPointData, withInBounds, indexFinder } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { BaseTooltip} from '../../common/user-interaction/tooltip';
+import { ITooltipRenderEventArgs } from '../../chart/model/chart-interface';
+import { tooltipRender } from '../../common/model/constants';
+
 
 /**
  * `AccumulationTooltip` module is used to render tooltip for accumulation chart.
@@ -73,14 +76,7 @@ export class AccumulationTooltip extends BaseTooltip {
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
             if (this.pushData(data, isFirst, tooltipDiv, false)) {
-                if (this.triggerEvent(data, isFirst, this.getTooltipText(data, chart.tooltip))) {
-                    this.createTooltip(chart, isFirst, this.findHeader(data), data.point.symbolLocation,
-                                       data.series.clipRect, data.point, ['Circle'], 0, rect, null, data.point);
-                } else {
-                    this.removeHighlight(this.control);
-                    remove(this.getElement(this.element.id + '_tooltip'));
-                }
-                this.isRemove = true;
+                this.triggerTooltipRender(data, isFirst, this.getTooltipText(data, chart.tooltip), this.findHeader(data));
             }
         } else {
             if (!data.point && this.isRemove) {
@@ -88,6 +84,31 @@ export class AccumulationTooltip extends BaseTooltip {
                 this.isRemove = false;
             }
         }
+    }
+
+    private triggerTooltipRender(point: AccPointData, isFirst: boolean, textCollection: string,
+                                 headerText: string, firstText: boolean = true): void {
+        let argsData: ITooltipRenderEventArgs = {
+            cancel: false, name: tooltipRender, text: textCollection, point: point.point,  textStyle: this.textStyle,
+            series: this.accumulation.isBlazor  ?  {} as AccumulationSeries : point.series,  headerText : headerText,
+            data : { pointX: point.point.x , pointY: point.point.y as Object, seriesIndex: point.series.index,
+                     pointIndex: point.point.index, pointText: point.point.text, seriesName: point.series.name  }
+        };
+        let tooltipSuccess: Function = (argsData: ITooltipRenderEventArgs) => {
+            if (!argsData.cancel) {
+                this.formattedText = this.formattedText.concat(argsData.text);
+                this.text = this.formattedText;
+                this.headerText = argsData.headerText;
+                this.createTooltip(this.chart, isFirst, point.point.symbolLocation,
+                                   point.series.clipRect, point.point, ['Circle'], 0, this.chart.initialClipRect, null, point.point);
+            } else {
+                this.removeHighlight(this.control);
+                remove(this.getElement(this.element.id + '_tooltip'));
+            }
+            this.isRemove = true;
+        };
+        tooltipSuccess.bind(this, point);
+        this.chart.trigger(tooltipRender, argsData, tooltipSuccess);
     }
     private getPieData(e: PointerEvent | TouchEvent, chart: AccumulationChart, x: number, y: number) : AccPointData {
         let target: Element = e.target as Element;

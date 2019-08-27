@@ -3,7 +3,7 @@ import { IRichTextEditor, NotifyArgs, IRenderer, ActionCompleteEventArgs } from 
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
@@ -204,7 +204,8 @@ export class PasteCleanup {
             if (!dialog.isDestroyed) {
               this.selectFormatting(value, args);
               dialog.hide();
-              this.dialogRenderObj.close(dialog);
+              let argument: Dialog = isBlazor() ? null : dialog;
+              this.dialogRenderObj.close(argument);
               dialog.destroy();
             }
           },
@@ -218,7 +219,8 @@ export class PasteCleanup {
           click: () => {
             if (!dialog.isDestroyed) {
               dialog.hide();
-              this.dialogRenderObj.close(dialog);
+              let args: Dialog = isBlazor() ? null : dialog;
+              this.dialogRenderObj.close(args);
               dialog.destroy();
             }
           },
@@ -478,13 +480,9 @@ export class PasteCleanup {
       let allowedStyleValue: string = '';
       let allowedStyleValueArray: string[] = [];
       let styleValue: string[] = styleElement[i].getAttribute('style').split(';');
-      for (let k: number = 0; k < allowedStyleProps.length; k++) {
-        for (let j: number = 0; j < styleValue.length; j++) {
-          if (!styleElement[i].getAttribute('style').split(';')[j]
-            .trim().indexOf(allowedStyleProps[k] + ':')) {
-            allowedStyleValueArray.push(styleElement[i].getAttribute('style').split(';')[j]);
-            k++;
-          }
+      for (let k: number = 0; k < styleValue.length; k++) {
+        if (allowedStyleProps.indexOf(styleValue[k].split(':')[0].trim()) >= 0) {
+          allowedStyleValueArray.push(styleValue[k]);
         }
       }
       styleElement[i].removeAttribute('style');

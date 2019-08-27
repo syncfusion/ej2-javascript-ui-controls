@@ -2746,10 +2746,12 @@ function getMonthSummary(ruleObject, cldrObj, localeObj) {
     }
     return summary;
 }
-function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, viewDate, calendarMode) {
+function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, viewDate, calendarMode, oldTimezone, newTimezone) {
     if (maximumCount === void 0) { maximumCount = MAXOCCURRENCE; }
     if (viewDate === void 0) { viewDate = null; }
     if (calendarMode === void 0) { calendarMode = 'Gregorian'; }
+    if (oldTimezone === void 0) { oldTimezone = null; }
+    if (newTimezone === void 0) { newTimezone = null; }
     var ruleObject = extractObjectFromRule(rule);
     var cacheDate;
     calendarUtil = getCalendarUtil(calendarMode);
@@ -2757,8 +2759,12 @@ function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, vi
     var modifiedDate = new Date(startDate.getTime());
     tempExcludeDate = [];
     var tempDate = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
+    var tz = new Timezone();
     tempDate.forEach(function (content) {
         var parsedDate = getDateFromRecurrenceDateString(content);
+        if (oldTimezone && newTimezone) {
+            parsedDate = tz.convert(new Date(parsedDate.getTime()), oldTimezone, newTimezone);
+        }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });
     ruleObject.recExceptionCount = !isNullOrUndefined(ruleObject.count) ? tempExcludeDate.length : 0;
@@ -3870,7 +3876,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 event_1[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event_1[fields.recurrenceRule]) && isNullOrUndefined(event_1[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event_1));
+                processed = processed.concat(this.generateOccurrence(event_1, null, oldTimezone));
             }
             else {
                 event_1.Guid = this.generateGuid();
@@ -4493,7 +4499,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
         this.parent.activeEventData = { event: eventObject, element: target };
     };
-    EventBase.prototype.generateOccurrence = function (event, viewDate) {
+    EventBase.prototype.generateOccurrence = function (event, viewDate, oldTimezone) {
         var startDate = event[this.parent.eventFields.startTime];
         var endDate = event[this.parent.eventFields.endTime];
         var eventRule = event[this.parent.eventFields.recurrenceRule];
@@ -4504,7 +4510,10 @@ var EventBase = /** @__PURE__ @class */ (function () {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        var dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
+        var newTimezone = this.parent.timezone || this.timezone.getLocalTimezoneName();
+        var firstDay = this.parent.firstDayOfWeek;
+        var calendarMode = this.parent.calendarMode;
+        var dates = generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -4730,7 +4739,11 @@ var Crud = /** @__PURE__ @class */ (function () {
     };
     Crud.prototype.refreshData = function (args) {
         var _this = this;
-        var actionArgs = { requestType: args.requestType, cancel: false, data: args.data };
+        var actionArgs = {
+            requestType: args.requestType, cancel: false, data: args.data,
+            addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
+            deletedRecords: args.editParms.deletedRecords
+        };
         if (this.parent.dataModule.dataManager.dataSource.offline) {
             this.parent.trigger(actionComplete, actionArgs);
             this.parent.renderModule.refreshDataManager();
@@ -4783,9 +4796,12 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
         else {
             this.processCrudTimezone(eventData);
+            editParms.addedRecords.push(eventData);
             promise = this.parent.dataModule.dataManager.insert(eventData, this.getTable(), this.getQuery());
         }
-        var crudArgs = { requestType: 'eventCreated', cancel: false, data: eventData, promise: promise };
+        var crudArgs = {
+            requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+        };
         this.refreshData(crudArgs);
     };
     Crud.prototype.saveEvent = function (event, action) {
@@ -4812,6 +4828,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                 this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
             }
             else {
+                editParms.changedRecords.push(event);
                 promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery());
             }
         }
@@ -4860,7 +4877,7 @@ var Crud = /** @__PURE__ @class */ (function () {
         // if (!this.parent.activeView.isTimelineView()) {
         //     this.parent.eventBase.selectWorkCellByTime(dataObj);
         // }
-        var crudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise };
+        var crudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise, editParms: editParms };
         this.refreshData(crudArgs);
     };
     Crud.prototype.processEditFutureOccurence = function (data, parentEvent, editParms) {
@@ -5153,7 +5170,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                 this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
         }
         this.parent.eventBase.selectWorkCellByTime(dataObj);
-        var crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise };
+        var crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise, editParms: editParms };
         this.refreshData(crudArgs);
     };
     Crud.prototype.processDeleteSeries = function (recEvent, editParms, id) {
@@ -5704,6 +5721,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
         var guid = target.getAttribute('data-guid');
         var eventObj = this.parent.eventBase.getEventByGuid(guid);
+        if (isNullOrUndefined(eventObj)) {
+            return;
+        }
         var eventTitle = (eventObj[this.parent.eventFields.subject] || this.l10n.getConstant('noTitle'));
         var eventTemplate = "<div class=\"" + MULTIPLE_EVENT_POPUP_CLASS + "\"><div class=\"" + POPUP_HEADER_CLASS + "\">" +
             ("<button class=\"" + CLOSE_CLASS + "\" title=\"" + this.l10n.getConstant('close') + "\"></button>") +
@@ -7808,6 +7828,11 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             this.createRecurrenceEditor(recurrenceEditor);
         }
     };
+    EventWindow.prototype.updateRecurrenceEditor = function (recurrenceEditor) {
+        if (this.parent.editorTemplate) {
+            this.recurrenceEditor = recurrenceEditor;
+        }
+    };
     EventWindow.prototype.openEditor = function (data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
@@ -9595,6 +9620,7 @@ var Render = /** @__PURE__ @class */ (function () {
             if (_this.parent.dragAndDropModule && _this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 _this.parent.dragAndDropModule.navigationWrapper();
             }
+            _this.parent.renderCompleted();
             _this.parent.trigger(dataBound, null, function () { return _this.parent.hideSpinner(); });
         });
     };
@@ -10972,6 +10998,11 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
     };
+    Schedule.prototype.renderCompleted = function () {
+        if (isBlazor()) {
+            this.renderComplete();
+        }
+    };
     Schedule.prototype.updateLayoutTemplates = function () {
         var view = this.views[this.viewIndex];
         if (this.dateHeaderTemplate) {
@@ -12312,6 +12343,13 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         return this.activeView ? this.activeView.renderDates : [];
     };
     /**
+     * Update the recurrence editor instance from custom editor template.
+     * @method updateRecurrenceEditor
+     */
+    Schedule.prototype.updateRecurrenceEditor = function (recurrenceEditor) {
+        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
+    };
+    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -13025,6 +13063,11 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     MonthEvent.prototype.renderAppointments = function () {
+        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        if (this.parent.rowAutoHeight) {
+            this.parent.uiStateValues.top = conWrap.scrollTop;
+            this.parent.uiStateValues.left = conWrap.scrollLeft;
+        }
         var appointmentWrapper = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
         for (var _i = 0, appointmentWrapper_1 = appointmentWrapper; _i < appointmentWrapper_1.length; _i++) {
             var wrap = appointmentWrapper_1[_i];
@@ -13035,7 +13078,6 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
-        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         var scrollTop = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
@@ -13051,7 +13093,8 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             var data = {
                 cssProperties: this.parent.getCssProperties(),
                 module: this.parent.getModuleName(),
-                isPreventScrollUpdate: true
+                isPreventScrollUpdate: true,
+                scrollPosition: { left: this.parent.uiStateValues.left, top: this.parent.uiStateValues.top }
             };
             if (this.parent.virtualScrollModule) {
                 if (this.parent.currentAction) {
@@ -13756,7 +13799,11 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
         var minutes = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        var resizeTime = resetTime(new Date(parseInt(this.actionObj.clone.offsetParent.getAttribute('data-date'), 10)));
+        var element = this.actionObj.clone.offsetParent;
+        if (isNullOrUndefined(element)) {
+            return;
+        }
+        var resizeTime = resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {
@@ -17276,6 +17323,10 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         }
         // tslint:enable:no-any
         this.setColWidth(content);
+        if (args.scrollPosition) {
+            content.scrollTop = args.scrollPosition.top;
+            content.scrollLeft = args.scrollPosition.left;
+        }
     };
     Month.prototype.setContentHeight = function (content, leftPanelElement, height) {
         content.style.height = 'auto';

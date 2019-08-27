@@ -62,7 +62,8 @@ export class Print {
         let jsonObject: object = {
             pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
             hashId: this.pdfViewerBase.hashId, zoomFactor: 1,
-            action: 'PrintImages'
+            action: 'PrintImages',
+            elementId: this.pdfViewer.element.id
         };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line

@@ -137,6 +137,7 @@ export class Render {
             if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj.action === 'drag') {
                 this.parent.dragAndDropModule.navigationWrapper();
             }
+            this.parent.renderCompleted();
             this.parent.trigger(events.dataBound, null, () => this.parent.hideSpinner());
         });
     }

@@ -215,7 +215,11 @@ export class Resize extends ActionBase {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
         let minutes: number = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        let resizeTime: Date = util.resetTime(new Date(parseInt(this.actionObj.clone.offsetParent.getAttribute('data-date'), 10)));
+        let element: Element = this.actionObj.clone.offsetParent;
+        if (isNullOrUndefined(element)) {
+            return;
+        }
+        let resizeTime: Date = util.resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {

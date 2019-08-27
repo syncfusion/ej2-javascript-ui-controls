@@ -2,7 +2,7 @@
 import { EventHandler, Property, Event, compile, EmitType, KeyboardEvents, append } from '@syncfusion/ej2-base';
 import { attributes, isNullOrUndefined, getUniqueID, formatUnit, isUndefined, getValue } from '@syncfusion/ej2-base';
 import { Animation, AnimationModel, Browser, KeyboardEventArgs, NotifyPropertyChanges } from '@syncfusion/ej2-base';
-import { addClass, removeClass, setStyleAttribute, closest, prepend, detach, classList } from '@syncfusion/ej2-base';
+import { addClass, removeClass, setStyleAttribute, closest, prepend, detach, classList, isBlazor } from '@syncfusion/ej2-base';
 import { Popup, isCollide, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { IInput, Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { incrementalSearch } from '../common/incremental-search';
@@ -1090,8 +1090,9 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.showPopup();
             }
             let proxy: this = this;
+            let duration: number = (isBlazor()) ? 1000 : 100;
             if (!this.isSecondClick) {
-                setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, 100);
+                setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, duration);
             }
         } else {
             this.focusIn(e);
@@ -1233,8 +1234,9 @@ export class DropDownList extends DropDownBase implements IInput {
             this.inputElement.style.display = 'none';
         }
         this.valueTempElement.innerHTML = '';
+        let templateData: FieldSettingsModel = (isBlazor()) ? JSON.parse(JSON.stringify(this.itemData)) : this.itemData;
         compiledString = compile(this.valueTemplate);
-        for (let item of compiledString(this.itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
@@ -1802,6 +1804,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (!this.isDocumentClick) {
                     this.focusDropDown();
                 }
+                let isResetItem: boolean = (this.getModuleName() === 'autocomplete') ? true : false;
+                this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
                 this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
@@ -1977,8 +1981,6 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
-        let isResetItem: boolean = (this.getModuleName() === 'autocomplete') ? true : false;
-        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
@@ -2126,6 +2128,7 @@ export class DropDownList extends DropDownBase implements IInput {
         if (!isNullOrUndefined(this.text)) {
             this.inputElement.setAttribute('value', this.text);
         }
+        this.renderComplete();
     };
 
     private setFooterTemplate(popupEle: HTMLElement): void {

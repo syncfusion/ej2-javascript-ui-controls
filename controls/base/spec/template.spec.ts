@@ -278,6 +278,21 @@ describe('Template', () => {
         result.push(createElement('div', { innerHTML: '' }));
         expect(outDOM(template.compile(templateStr), dsJSONSubArray)).toEqual(result);
     });
+    
+    it('Template string pass with double slash with special character',()=>{
+        let data: object = { "Quickbrain\\Models\\AllowedListValue#id": 123456};
+        let getDOMString: (data: object) => any = template.compile('<div>${Quickbrain\\Models\\AllowedListValue#id}</div>');
+        let output: any = getDOMString(data);
+        expect(output).toEqual("<div>123456</div>");
+    });
+
+    it('Template string pass with double slash',()=>{
+        let data: object = { "Quickbrain\\Models\\AllowedListValue": 2468};
+        let getDOMString: (data: object) => any = template.compile('<div>${Quickbrain\\Models\\AllowedListValue}</div>');
+        let output: any = getDOMString(data);
+        expect(output).toEqual("<div>2468</div>");
+    });
+
     it('multiple string pass in the template engine',()=>{
         let data: object = { name: 'Aston Martin',val: 'hi' };
         let getDOMString: (data: object) => any = template.compile('<div>${name,val}</div>');

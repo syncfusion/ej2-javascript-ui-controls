@@ -107,6 +107,24 @@ export interface ITooltipRenderEventArgs extends IChartEventArgs {
     series: Series | AccumulationSeries;
     /** Defines current tooltip point */
     point: Points | AccPoints;
+    /** Defines the header text for the tooltip */
+    headerText?: string;
+    /** point informations */
+    data?: IPointInformation;
+}
+export interface IPointInformation {
+    /** point xValue */
+    pointX: object;
+    /** point yValue */
+    pointY: object;
+    /** point index */
+    pointIndex: number;
+    /** series index */
+    seriesIndex: number;
+    /** series name */
+    seriesName: string;
+    /** point text */
+    pointText: string;
 }
 export interface IAxisLabelRenderEventArgs extends IChartEventArgs {
     /** Defines the current axis */
@@ -207,7 +225,7 @@ export interface IMouseEventArgs extends IChartEventArgs {
 export interface IDragCompleteEventArgs extends IChartEventArgs {
     /** Defines current selected Data X, Y values */
     selectedDataValues: {
-        x: string;
+        x: string | number | Date;
         y: number;
     }[][];
 }

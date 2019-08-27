@@ -346,3 +346,5 @@ export const beforeBatchCancel: string = 'before-batch-cancel';
 export const batchEditFormRendered: string = 'batcheditform-rendered';
 /** @hidden */
 export const partialRefresh: string = 'partial-refresh';
+/** @hidden */
+export const blazorId: string = 'BlazorTemplateId';

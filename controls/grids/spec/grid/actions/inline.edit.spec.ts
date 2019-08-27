@@ -1421,8 +1421,10 @@ describe('Inline Editing module', () => {
                     //toolbar status check
                     expect(gridObj.element.querySelectorAll('.e-overlay').length).toBe(3);
                     expect(gridObj.isEdit).toBeFalsy();
-                    gridObj.freezeModule.dblClickHandler({ target: gridObj.getContent().querySelectorAll('.e-row')[0] });
-                    done();
+                    gridObj.dblClickHandler({ target: gridObj.getContent().querySelectorAll('.e-row')[0] });
+                    setTimeout(()=>{
+                        done();
+                    },100);
                 }
             };
             actionBegin = (args?: any): void => {
@@ -1441,6 +1443,21 @@ describe('Inline Editing module', () => {
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_delete' } });
         });
 
+        it('Ensure added row position', (done: Function) => {
+            gridObj.editSettings.newRowPosition = "Bottom";
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    let editFormIndex: number = gridObj.element.querySelectorAll('.e-addedrow')[1].rowIndex;
+                    let totalRowsCount: number = gridObj.element.querySelector('.e-movablecontent').querySelectorAll('.e-row').length;
+                    expect((editFormIndex + 1)).toBe(totalRowsCount);
+                    gridObj.closeEdit();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+        
         it('Edit start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {

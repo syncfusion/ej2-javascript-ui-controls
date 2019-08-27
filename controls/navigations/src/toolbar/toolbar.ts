@@ -1514,14 +1514,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the command should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @returns void.
      */
-    public enableItems(items: HTMLElement | NodeList, isEnable?: boolean): void {
+    public enableItems(items: number | HTMLElement | NodeList, isEnable?: boolean): void {
         let elements: NodeList = <NodeList>items;
         let len: number = elements.length;
+        let ele: HTEle | number;
         if (isNOU(isEnable)) {
             isEnable = true;
         }
@@ -1534,16 +1535,39 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
-        if (len && len > 1) {
-            for (let ele of [].slice.call(elements)) {
+        if (!isNOU(len) && len >= 1) {
+            for (let a: number = 0, element: HTEle[] = [].slice.call(elements); a < len; a++) {
+                let itemElement: HTEle = element[a];
+                if (typeof (itemElement) === 'number') {
+                    ele = this.getElementByIndex(itemElement);
+                    if (isNOU(ele)) {
+                        return;
+                    } else {
+                        elements[a] = ele;
+                    }
+                } else {
+                    ele = itemElement;
+                }
                 enable(isEnable, ele);
             }
             isEnable ? removeClass(elements, CLS_DISABLE) : addClass(elements, CLS_DISABLE);
         } else {
-            let ele: HTEle;
-            ele = (len && len === 1) ? <HTEle>elements[0] : <HTEle>items;
+            if (typeof (elements) === 'number') {
+                ele = this.getElementByIndex(elements);
+                if (isNOU(ele)) {
+                    return;
+                }
+            } else {
+                ele = <HTEle>items;
+            }
             enable(isEnable, ele);
         }
+    }
+    private getElementByIndex(index: number): HTEle {
+        if (this.tbarEle[index]) {
+            return this.tbarEle[index];
+        }
+        return null;
     }
     /**
      * Adds new items to the Toolbar that accepts an array as Toolbar items.

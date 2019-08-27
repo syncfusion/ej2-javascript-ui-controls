@@ -108,6 +108,7 @@ let DropDownButton = class DropDownButton extends Component {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
     createPopup() {
         let div = this.createElement('div', {
@@ -624,6 +625,7 @@ let SplitButton = class SplitButton extends DropDownButton {
         this.setActiveElem([this.element, this.secondaryBtnObj.element]);
         this.setAria();
         this.wireEvents();
+        this.renderComplete();
     }
     initWrapper() {
         if (!this.wrapper) {
@@ -1034,6 +1036,7 @@ let ProgressButton = class ProgressButton extends Button {
         this.init();
         this.wireEvents();
         this.setAria();
+        this.renderComplete();
     }
     /**
      * Starts the button progress at the specified percent.

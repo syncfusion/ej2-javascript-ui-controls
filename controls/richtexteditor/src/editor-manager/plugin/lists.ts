@@ -148,6 +148,9 @@ export class Lists {
                 }
             } else {
                 if (!(e.event.action && e.event.action === 'indent')) {
+                    if (e.event && e.event.shiftKey && e.event.key === 'Tab') {
+                        e.event.action = 'tab';
+                    }
                     this.saveSelection = this.domNode.saveMarker(this.saveSelection, e.event.action);
                     this.saveSelection.restore();
                 }
@@ -317,16 +320,15 @@ export class Lists {
             for (let i: number = 0; i < elements.length; i++) {
                 if ('LI' !== elements[i].tagName) {
                     isReverse = false;
-                    let openTag: string = '<' + type + this.domNode.attributes(elements[i]) + '>';
+                    let elemAtt: string = elements[i].tagName === 'IMG' ? '' : this.domNode.attributes(elements[i]);
+                    let openTag: string = '<' + type + '>';
                     let closeTag: string = '</' + type + '>';
-                    let newTag: string = 'li class="e-rte-replace-tag"';
+                    let newTag: string = 'li' + elemAtt;
                     let replaceHTML: string = (elements[i].tagName.toLowerCase() === CONSTANT.DEFAULT_TAG ? elements[i].innerHTML :
                         elements[i].outerHTML);
                     let innerHTML: string = this.domNode.createTagString(newTag, null, replaceHTML);
                     let collectionString: string = openTag + innerHTML + closeTag;
                     this.domNode.replaceWith(elements[i], collectionString);
-                    let element: Element = this.parent.editableElement.querySelector('.e-rte-replace-tag');
-                    element.removeAttribute('class');
                 }
             }
         }
@@ -471,7 +473,9 @@ export class Lists {
                     classAttr += ' class="' + className + '"';
                 }
                 if (CONSTANT.DEFAULT_TAG && 0 === element.querySelectorAll(CONSTANT.BLOCK_TAGS.join(', ')).length) {
-                    let wrapper: string = '<' + CONSTANT.DEFAULT_TAG + classAttr + ' class="e-rte-wrap-inner"' +
+                    let wrapperclass: string = isNullOrUndefined(className) ? ' class="e-rte-wrap-inner"' :
+                    ' class="' + className + ' e-rte-wrap-inner"';
+                    let wrapper: string = '<' + CONSTANT.DEFAULT_TAG + wrapperclass +
                         this.domNode.attributes(parentNode) + '></' + CONSTANT.DEFAULT_TAG + '>';
                     this.domNode.wrapInner(element, this.domNode.parseHTMLFragment(wrapper));
                 } else if (this.domNode.contents(element)[0].nodeType === 3) {

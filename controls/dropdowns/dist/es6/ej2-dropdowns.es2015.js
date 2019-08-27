@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isUndefined, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, select, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, select, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
 import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
 import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
@@ -389,7 +389,7 @@ let DropDownBase = class DropDownBase extends Component {
         }
     }
     ;
-    DropDownBaseupdateBlazorTemplates(item, group, noRecord, action, value, header, footer) {
+    DropDownBaseupdateBlazorTemplates(item, group, noRecord, action, value, header, footer, isEmpty) {
         if (!this.isStringTemplate) {
             if (this.itemTemplate && item) {
                 updateBlazorTemplate(this.itemTemplateId, ITEMTEMPLATE_PROPERTY, this);
@@ -404,7 +404,7 @@ let DropDownBase = class DropDownBase extends Component {
                 updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY, this);
             }
             if (value) {
-                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this);
+                updateBlazorTemplate(this.valueTemplateId, VALUETEMPLATE_PROPERTY, this, isEmpty);
             }
             if (header) {
                 updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY, this);
@@ -1958,8 +1958,9 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.showPopup();
             }
             let proxy = this;
+            let duration = (isBlazor()) ? 1000 : 100;
             if (!this.isSecondClick) {
-                setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, 100);
+                setTimeout(() => { proxy.cloneElements(); proxy.isSecondClick = true; }, duration);
             }
         }
         else {
@@ -2098,8 +2099,9 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.inputElement.style.display = 'none';
         }
         this.valueTempElement.innerHTML = '';
+        let templateData = (isBlazor()) ? JSON.parse(JSON.stringify(this.itemData)) : this.itemData;
         compiledString = compile(this.valueTemplate);
-        for (let item of compiledString(this.itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
+        for (let item of compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
         this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, true, true);
@@ -2660,6 +2662,8 @@ let DropDownList = class DropDownList extends DropDownBase {
                 if (!this.isDocumentClick) {
                     this.focusDropDown();
                 }
+                let isResetItem = (this.getModuleName() === 'autocomplete') ? true : false;
+                this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
                 this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
@@ -2826,8 +2830,6 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (!(this.popupObj && document.body.contains(this.popupObj.element) && this.beforePopupOpen)) {
             return;
         }
-        let isResetItem = (this.getModuleName() === 'autocomplete') ? true : false;
-        this.DropDownBaseresetBlazorTemplates(isResetItem, isResetItem, true, true, false, true, true);
         EventHandler.remove(document, 'mousedown', this.onDocumentClick);
         this.isActive = false;
         this.filterInputObj = null;
@@ -2976,6 +2978,7 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (!isNullOrUndefined(this.text)) {
             this.inputElement.setAttribute('value', this.text);
         }
+        this.renderComplete();
     }
     ;
     setFooterTemplate(popupEle) {
@@ -4048,6 +4051,7 @@ let ComboBox = class ComboBox extends DropDownList {
         if (this.isFiltering() && this.getModuleName() === 'combobox' && isNullOrUndefined(this.list)) {
             super.renderList();
         }
+        this.renderComplete();
     }
     ;
     /**
@@ -6071,8 +6075,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     removeValue(value, eve, length, isClearAll) {
         let index = this.value.indexOf(this.getFormattedValue(value));
-        let isValueTemp = (this.valueTemplate) ? true : false;
-        this.DropDownBaseresetBlazorTemplates(false, false, false, false, isValueTemp, false, false);
         if (index === -1 && this.allowCustomValue && !isNullOrUndefined(value)) {
             index = this.value.indexOf(value.toString());
         }
@@ -6311,12 +6313,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             itemData = this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
-            this.DropDownBaseresetBlazorTemplates(false, false, false, false, true, false, false);
             let compiledString = compile(this.valueTemplate);
             for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
-            this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false);
+            this.DropDownBaseupdateBlazorTemplates(false, false, false, false, true, false, false, false);
         }
         else {
             chipContent.innerHTML = data;
@@ -6457,8 +6458,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             if (!this.isFirstClick) {
                                 let ulElement = this.list.querySelector('ul');
                                 if (ulElement) {
-                                    let isBlazor = Object.keys(window).indexOf('Blazor') >= 0;
-                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor) {
+                                    let isBlazor$$1 = Object.keys(window).indexOf('Blazor') >= 0;
+                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor$$1) {
                                         setTimeout(() => {
                                             this.mainList = this.ulElement;
                                         }, 0);
@@ -7758,6 +7759,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.enable(this.enabled);
         this.enableRTL(this.enableRtl);
         this.checkInitialValue();
+        this.renderComplete();
     }
     checkInitialValue() {
         let isData = this.dataSource instanceof Array ? (this.dataSource.length > 0)

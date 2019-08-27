@@ -1150,4 +1150,55 @@ describe('Aggregates Functionality testing', () => {
             grid = rows = datas = null;
         });
     });
+    
+    describe('Frozen columns with aggregates', () => {
+        let grid: Grid;
+        let rows: HTMLTableRowElement;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch'},
+                    toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                    allowPaging: true,
+                    frozenColumns: 2,
+                    frozenRows: 1,
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID' },
+                        { field: 'Verified', displayAsCheckBox: true, type: 'boolean' },
+                        { field: 'Freight', format: 'C1' },
+                        { field: 'OrderDate', format: 'yMd' },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right' },
+                        { field: 'ShipName', headerText: 'Ship Name',},
+                        { field: 'ShipCountry', headerText: 'Ship Country' },
+                    ],
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Freight',
+                            footerTemplate: 'Sum: ${Sum}'
+                        },
+                        {
+                            type: 'Average',
+                            field: 'OrderID',
+                            footerTemplate: 'Average: ${Average}'
+                        }]
+                    }]
+                },
+                done
+            );
+        });
+
+        it('Footer content  scroll check', () => {
+            grid.element.querySelector('.e-movablecontent').scroll(200, 0);
+            let left : number = (grid.element.querySelector('.e-movablecontent')).scrollLeft;
+            grid.editModule.updateCell(5, 'ShipRegion', 'updated');
+            (grid.aggregateModule as any).footerRenderer.refresh();
+            expect(grid.element.querySelector('.e-movablefootercontent').scrollLeft).toBe(left);
+        });
+
+        afterAll(() => {
+            destroy(grid);
+            grid = rows = null;
+        });
+    });
 });

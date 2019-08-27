@@ -192,6 +192,10 @@ export class MeasureAnnotation {
      * @private
      */
     public displayUnit: CalibrationUnit;
+    /**
+     * @private
+     */
+    public measureShapeCount: number = 0;
     private ratio: number;
     private volumeDepth: number;
     private scaleRatioString: string;
@@ -254,10 +258,14 @@ export class MeasureAnnotation {
     public renderMeasureShapeAnnotations(shapeAnnotations: any, pageNumber: number): void {
         if (shapeAnnotations) {
             if (shapeAnnotations.length >= 1) {
+                // tslint:disable-next-line
+                let measureAnnots: any[] = this.pdfViewer.annotation.getStoredAnnotations(pageNumber, shapeAnnotations, '_annotations_shape_measure');
+                if (!measureAnnots) {
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = shapeAnnotations[i];
                     let annotationObject: IMeasureShapeAnnotation = null;
+                    this.measureShapeCount = this.measureShapeCount + 1;
                     if (annotation.ShapeAnnotationType) {
                         annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotation.Subject);
                         let vertexPoints: IPoint[] = null;
@@ -278,7 +286,7 @@ export class MeasureAnnotation {
                         }
                         annotationObject = {
                             // tslint:disable-next-line:max-line-length
-                            id: 'measure' + i, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                            id: 'measure' + this.measureShapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
                             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
                             // tslint:disable-next-line:max-line-length
                             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
@@ -298,7 +306,7 @@ export class MeasureAnnotation {
                         }
                         annot = {
                             // tslint:disable-next-line:max-line-length
-                            id: 'measure' + i, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, modifiedDate: annotationObject.modifiedDate,
+                            id: 'measure' + this.measureShapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, modifiedDate: annotationObject.modifiedDate,
                             subject: annotationObject.subject, notes: annotationObject.note, fillColor: annotationObject.fillColor, strokeColor: annotationObject.strokeColor, opacity: annotationObject.opacity,
                             // tslint:disable-next-line:max-line-length
                             thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: annotationObject.borderDashArray.toString(), rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]),
@@ -312,6 +320,7 @@ export class MeasureAnnotation {
                         this.pdfViewer.add(annot as PdfAnnotationBase);
                     }
                 }
+            }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 let annotationObject: IMeasureShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
@@ -559,12 +568,13 @@ export class MeasureAnnotation {
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         // tslint:disable-next-line:max-line-length
-                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(pageAnnotationObject.annotations[z].bounds);
+                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         let strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
                         let fillColorString: string = pageAnnotationObject.annotations[z].fillColor;
                         pageAnnotationObject.annotations[z].fillColor = JSON.stringify(this.getRgbCode(fillColorString));
-                        pageAnnotationObject.annotations[z].vertexPoints = JSON.stringify(pageAnnotationObject.annotations[z].vertexPoints);
+                        // tslint:disable-next-line:max-line-length
+                        pageAnnotationObject.annotations[z].vertexPoints = JSON.stringify(this.pdfViewer.annotation.getVertexPoints(pageAnnotationObject.annotations[z].vertexPoints, pageAnnotationObject.pageIndex));
                         if (pageAnnotationObject.annotations[z].rectangleDifference !== null) {
                             // tslint:disable-next-line:max-line-length
                             pageAnnotationObject.annotations[z].rectangleDifference = JSON.stringify(pageAnnotationObject.annotations[z].rectangleDifference);
@@ -626,7 +636,7 @@ export class MeasureAnnotation {
         let element: HTMLElement = createElement('div');
         let elementID: string = this.pdfViewer.element.id;
         // tslint:disable-next-line:max-line-length
-        let items: { [key: string]: Object }[] = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }];
+        let items: { [key: string]: Object }[] = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }];
         let labelText: HTMLElement = createElement('div', { id: elementID + '_scale_ratio_label', className: 'e-pv-scale-ratio-text' });
         labelText.textContent = this.pdfViewer.localeObj.getConstant('Scale Ratio');
         element.appendChild(labelText);
@@ -964,6 +974,9 @@ export class MeasureAnnotation {
             case 'p':
                 factor = 1 / 12;
                 break;
+            case 'ft':
+                factor = 1 / 864;
+                break;
         }
         return factor;
     }
@@ -990,6 +1003,9 @@ export class MeasureAnnotation {
                 break;
             case 'p':
                 factor = 12;
+                break;
+            case 'ft':
+                factor = 864;
                 break;
         }
         return factor;

@@ -4716,6 +4716,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.renderTitle(this.titleSettings, 'title', null, null);
         this.renderArea();
         this.processRequestJsonData();
+        this.renderComplete();
     };
     /* tslint:disable:no-string-literal */
     Maps.prototype.processRequestJsonData = function () {

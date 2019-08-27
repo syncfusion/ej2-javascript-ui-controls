@@ -26,7 +26,7 @@ export class InlineEditRender {
         this.isEdit = false;
         let mTbody: Element;
         let tbody: Element;
-        if (this.parent.frozenRows) {
+        if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
             tbody = this.parent.getHeaderContent().querySelector('tbody');
         } else {
             tbody = this.parent.getContentTable().querySelector('tbody');
@@ -39,7 +39,7 @@ export class InlineEditRender {
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
         if (this.parent.getFrozenColumns()) {
             let mEle: Element = this.renderMovableform(args.row, args);
-            if (this.parent.frozenRows) {
+            if (this.parent.frozenRows && this.parent.editSettings.newRowPosition === 'Top') {
                 mTbody = this.parent.getHeaderContent().querySelector('.e-movableheader').querySelector('tbody');
             } else {
                 mTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');

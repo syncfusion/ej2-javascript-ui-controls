@@ -154,6 +154,10 @@ export class ShapeAnnotation {
      * @private
      */
     public arrowEndHead: LineHeadStyle;
+    /**
+     * @private
+     */
+    public shapeCount: number = 0;
 
     constructor(pdfviewer: PdfViewer, pdfViewerBase: PdfViewerBase) {
         this.pdfViewer = pdfviewer;
@@ -193,15 +197,20 @@ export class ShapeAnnotation {
     public renderShapeAnnotations(shapeAnnotations: any, pageNumber: number): void {
         if (shapeAnnotations) {
             if (shapeAnnotations.length >= 1) {
+                // tslint:disable-next-line
+                let shapeAnnots: any[] = this.pdfViewer.annotation.getStoredAnnotations(pageNumber, shapeAnnotations, '_annotations_shape');
+                if (!shapeAnnots) {
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = shapeAnnotations[i];
                     let annotationObject: IShapeAnnotation = null;
+                    this.shapeCount = this.shapeCount + 1;
                     if (annotation.ShapeAnnotationType) {
                         if (annotation.Subject === 'Line' && annotation.ShapeAnnotationType === 'Polygon') {
                             annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', 'Polygon');
                         } else {
-                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotation.Subject);
+                            // tslint:disable-next-line:max-line-length
+                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotation.ShapeAnnotationType);
                         }
                         let vertexPoints: IPoint[] = null;
                         if (annotation.VertexPoints) {
@@ -213,7 +222,7 @@ export class ShapeAnnotation {
                         }
                         // tslint:disable-next-line:max-line-length
                         annotationObject = {
-                            id: 'shape' + i, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
+                            id: 'shape' + this.shapeCount, shapeAnnotationType: annotation.ShapeAnnotationType, author: annotation.Author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject,
                             // tslint:disable-next-line:max-line-length
                             note: annotation.Note, strokeColor: annotation.StrokeColor, fillColor: annotation.FillColor, opacity: annotation.Opacity, thickness: annotation.Thickness, rectangleDifference: annotation.RectangleDifference,
                             borderStyle: annotation.BorderStyle, borderDashArray: annotation.BorderDashArray, rotateAngle: annotation.RotateAngle, isCloudShape: annotation.IsCloudShape,
@@ -229,7 +238,7 @@ export class ShapeAnnotation {
                         }
                         annot = {
                             // tslint:disable-next-line:max-line-length
-                            id: 'shape' + i, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
+                            id: 'shape' + this.shapeCount, shapeAnnotationType: this.getShapeType(annotationObject), author: annotationObject.author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName,
                             subject: annotationObject.subject, notes: annotationObject.note, fillColor: annotationObject.fillColor, strokeColor: annotationObject.strokeColor, opacity: annotationObject.opacity,
                             // tslint:disable-next-line:max-line-length
                             thickness: annotationObject.thickness, borderStyle: annotationObject.borderStyle, borderDashArray: annotationObject.borderDashArray.toString(), rotateAngle: parseFloat(annotationObject.rotateAngle.split('Angle')[1]), comments: annotationObject.comments, review: annotationObject.review,
@@ -245,6 +254,7 @@ export class ShapeAnnotation {
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
                     }
                 }
+            }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 let annotationObject: IShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');
@@ -502,13 +512,13 @@ export class ShapeAnnotation {
                 if (pageAnnotationObject) {
                     for (let z: number = 0; pageAnnotationObject.annotations.length > z; z++) {
                         // tslint:disable-next-line:max-line-length
-                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(pageAnnotationObject.annotations[z].bounds);
+                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         let strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
                         let fillColorString: string = pageAnnotationObject.annotations[z].fillColor;
                         pageAnnotationObject.annotations[z].fillColor = JSON.stringify(this.getRgbCode(fillColorString));
                         // tslint:disable-next-line:max-line-length
-                        pageAnnotationObject.annotations[z].vertexPoints = JSON.stringify(pageAnnotationObject.annotations[z].vertexPoints);
+                        pageAnnotationObject.annotations[z].vertexPoints = JSON.stringify(this.pdfViewer.annotation.getVertexPoints(pageAnnotationObject.annotations[z].vertexPoints, pageAnnotationObject.pageIndex));
                         if (pageAnnotationObject.annotations[z].rectangleDifference !== null) {
                             // tslint:disable-next-line:max-line-length
                             pageAnnotationObject.annotations[z].rectangleDifference = JSON.stringify(pageAnnotationObject.annotations[z].rectangleDifference);

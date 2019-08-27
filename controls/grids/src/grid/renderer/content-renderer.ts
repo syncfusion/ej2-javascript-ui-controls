@@ -54,6 +54,9 @@ export class ContentRender implements IRenderer {
                 if (this.parent.allowTextWrap) {
                     this.parent.notify(events.freezeRender, { case: 'textwrap' });
                 }
+                if (this.parent.getFrozenColumns() !== 0  && !this.parent.allowTextWrap) {
+                    this.parent.notify(events.freezeRender, { case: 'refreshHeight' });
+                }
             }
             if (arg) {
                 let action: string = (arg.requestType || '').toLowerCase() + '-complete';
@@ -289,6 +292,7 @@ export class ContentRender implements IRenderer {
             }
             this.ariaService.setOptions(this.getTable() as HTMLElement, { colcount: gObj.getColumns().length.toString() });
         }
+        this.parent.blazorTemplate();
         this.splitRows(idx);
         if (gObj.frozenRows) {
             hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'

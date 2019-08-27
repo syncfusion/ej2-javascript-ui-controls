@@ -92,16 +92,21 @@ export function resetBlazorTemplate(templateId?: string, templateName?: string, 
         // tslint:disable-next-line:no-any
         let innerTemplates: HTMLElement[] = templateDiv.getElementsByClassName('blazor-inner-template') as any;
         for (let i: number = 0; i < innerTemplates.length; i++) {
-            let tempId: string = innerTemplates[i].getAttribute('data-templateId');
+            let tempId: string = ' ';
+            if (!isNullOrUndefined(index)) {
+                tempId = innerTemplates[index].getAttribute('data-templateId');
+            } else {
+                tempId = innerTemplates[i].getAttribute('data-templateId');
+            }
             let tempElement: HTMLElement = document.getElementById(tempId);
             if (tempElement) {
-                let length: number = tempElement.children.length;
+                let length: number = tempElement.childNodes.length;
                 for (let j: number = 0; j < length; j++) {
                     if (!isNullOrUndefined(index)) {
-                        innerTemplates[index].appendChild(tempElement.children[0]);
-                        return;
+                        innerTemplates[index].appendChild(tempElement.childNodes[0]);
+                        i = innerTemplates.length;
                     } else {
-                        innerTemplates[i].appendChild(tempElement.children[0]);
+                        innerTemplates[i].appendChild(tempElement.childNodes[0]);
                     }
                 }
 

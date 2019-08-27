@@ -2058,8 +2058,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private contextHandler(e: MouseEvent): void {
         let closestElem: Element = closest((e.target as HTMLElement), 'a, table, img');
-        if (this.inlineMode.onSelection === false ||  (!isNOU(closestElem) && (closestElem.tagName === 'IMG' ||
-        closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+        if (this.inlineMode.onSelection === false ||  (!isNOU(closestElem) && this.inputElement.contains(closestElem)
+        && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
             e.preventDefault();
         }
     }

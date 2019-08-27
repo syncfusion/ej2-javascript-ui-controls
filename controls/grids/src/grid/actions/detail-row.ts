@@ -64,7 +64,11 @@ export class DetailRow {
                 let rowId: string = getUid('grid-row');
                 let detailRow: Element = this.parent.createElement('tr', { className: 'e-detailrow', attrs: {'data-uid': rowId} });
                 let detailCell: Element = this.parent.createElement('td', { className: 'e-detailcell' });
-                detailCell.setAttribute('colspan', this.parent.getVisibleColumns().length.toString());
+                let colSpan: number = this.parent.getVisibleColumns().length;
+                if (this.parent.allowRowDragAndDrop) {
+                    colSpan++;
+                }
+                detailCell.setAttribute('colspan', colSpan.toString());
                 let row: Row<Column> = new Row<Column>({
                     isDataRow: true,
                     isExpand: true,
@@ -83,7 +87,9 @@ export class DetailRow {
                     let detailTemplateID: string = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
                     if (isBlazor()) {
-                        resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
+                        window[detailTemplateID] = window[detailTemplateID] || {};
+                        window[detailTemplateID][data[events.blazorId]] = detailCell;
+                        //resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
                         updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }
                 } else {

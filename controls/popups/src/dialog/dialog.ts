@@ -1,6 +1,6 @@
 import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';
 import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';
-import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
+import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';
 import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
 import { EventHandler, updateBlazorTemplate } from '@syncfusion/ej2-base';
@@ -138,7 +138,7 @@ export interface BeforeOpenEventArgs {
      * @blazorType string
      * @deprecated
      */
-    target: HTMLElement | String;
+    target?: HTMLElement | String;
 }
 
 export interface BeforeCloseEventArgs {
@@ -168,7 +168,7 @@ export interface BeforeCloseEventArgs {
      * @blazorType string
      * @deprecated
      */
-    target: HTMLElement | String;
+    target?: HTMLElement | String;
     /**
      * Returns the original event arguments.
      */
@@ -482,6 +482,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.getMinHeight();
             }
         }
+        this.renderComplete();
     }
     /**
      * Initialize the event handler
@@ -1342,7 +1343,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             if (!isNullOrUndefined(isFullScreen)) {
                 this.fullScreen(isFullScreen);
             }
-            let eventArgs: BeforeOpenEventArgs = {
+            let eventArgs: BeforeOpenEventArgs = isBlazor() ? {
+                cancel: false,
+                element: this.element,
+                container: this.isModal ? this.dlgContainer : this.element,
+                maxHeight: this.element.style.maxHeight } : {
                 cancel: false,
                 element: this.element,
                 container: this.isModal ? this.dlgContainer : this.element,
@@ -1404,7 +1409,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     public hide(event?: Event): void {
         if (!this.element.classList.contains(ROOT)) { return; }
         if (this.visible) {
-            let eventArgs: BeforeCloseEventArgs = {
+            let eventArgs: BeforeCloseEventArgs = isBlazor() ? {
+                cancel: false,
+                isInteraction: event ? true : false,
+                isInteracted: event ? true : false,
+                element: this.element,
+                container: this.isModal ? this.dlgContainer : this.element,
+                event: event } : {
                 cancel: false,
                 isInteraction: event ? true : false,
                 isInteracted: event ? true : false,

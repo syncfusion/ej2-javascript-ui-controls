@@ -1,4 +1,4 @@
-import { extend, isNullOrUndefined, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
+import { extend, isNullOrUndefined, KeyboardEventArgs, Browser, isBlazor } from '@syncfusion/ej2-base';
 import * as CONSTANT from '../base/constant';
 import { updateUndoRedoStatus, isIDevice } from '../base/util';
 import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs } from './../base/interface';
@@ -56,6 +56,10 @@ export class Formatter {
                     itemCollection: value
                 };
                 extend(args, args, items, true);
+                if (isBlazor()) {
+                    delete args.item;
+                    delete args.itemCollection;
+                }
                 self.trigger(CONSTANT.actionBegin, args, (actionBeginArgs: ActionBeginEventArgs) => {
                     if (actionBeginArgs.cancel) {
                         if (action === 'paste' || action === 'cut' || action === 'copy') {
@@ -124,7 +128,11 @@ export class Formatter {
             this.enableUndo(self);
             self.notify(CONSTANT.execCommandCallBack, events);
         }
+        if (isBlazor()) {
+            delete (events as IHtmlFormatterCallBack).elements;
+        }
         self.trigger(CONSTANT.actionComplete, events, (callbackArgs: IMarkdownFormatterCallBack | IHtmlFormatterCallBack) => {
+            self.setPlaceHolder();
             if (callbackArgs.requestType === 'Images' || callbackArgs.requestType === 'Links' && self.editorMode === 'HTML') {
                 let args: IHtmlFormatterCallBack = callbackArgs as IHtmlFormatterCallBack;
                 if (callbackArgs.requestType === 'Links' && callbackArgs.event &&

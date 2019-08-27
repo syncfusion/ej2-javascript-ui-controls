@@ -1196,7 +1196,8 @@ describe('Schedule event window initial load', () => {
                 'colspan="2"><input id="StartTime" class="e-field" type="text" name="StartTime"/></td><td class="e-textlabel">EndTime:' +
                 '</td><td colspan="2"><input id="EndTime" class="e-field" type="text" name="EndTime"/></td></tr><tr><td colspan="3">' +
                 '<div class="form-check"><label class="form-check-label e-textlabel" for="AllDay">All Day</label><input type="checkbox"' +
-                'class="form-check-input e-field" name="IsAllDay" id="AllDay"></div></td></tr></tbody></table>';
+                'class="form-check-input e-field" name="IsAllDay" id="AllDay"></div></td></tr><tr><td><div id="recurrenceEditor"></div>' +
+                '</td></tr></tbody></table>';
             let scriptEle: HTMLScriptElement = document.createElement('script');
             scriptEle.type = 'text/x-template';
             scriptEle.id = 'eventEditor';
@@ -1211,6 +1212,15 @@ describe('Schedule event window initial load', () => {
                     let endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
                     if (!endElement.classList.contains('e-datetimepicker')) {
                         new DateTimePicker({ value: new Date(endElement.value) || new Date() }, endElement);
+                    }
+                    let recurrenceEditor: HTMLElement = args.element.querySelector('#recurrenceEditor') as HTMLElement;
+                    if (!recurrenceEditor.classList.contains('e-recurrenceeditor')) {
+                        let recurrenceObj: RecurrenceEditor = new RecurrenceEditor({
+                            // tslint:disable-next-line:no-string-literal
+                            value: (<{ [key: string]: string }>args.data)['RecurrenceRule']
+                        });
+                        recurrenceObj.appendTo(recurrenceEditor);
+                        schObj.updateRecurrenceEditor(recurrenceObj);
                     }
                 }
             };

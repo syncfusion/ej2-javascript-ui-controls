@@ -166,8 +166,8 @@ export class MsWordPaste {
                             }
                         }
                         values[i] = valueSplit.join(';') + ';';
-                        values[i] += styleProperty;
-                        resultElem[j].setAttribute('style', values[i]);
+                        let changedValue: string = values[i] + styleProperty;
+                        resultElem[j].setAttribute('style', changedValue);
                     } else {
                         resultElem[j].setAttribute('style', values[i]);
                     }
@@ -402,20 +402,8 @@ export class MsWordPaste {
     }
 
     public getListContent(elem: Element): void {
-        if (elem.nodeType === 3 && elem.textContent.trim().length > 0) {
-            if (this.blockNode.indexOf(elem.parentElement.tagName.toLowerCase()) === -1 &&
-            elem.parentElement.tagName !== 'SPAN') {
-                this.listContents.push(elem.parentElement.outerHTML);
-            } else {
-                this.listContents.push(elem.textContent.trim());
-            }
-        }
-        if (elem.firstChild) {
-            elem = elem.firstChild as Element;
-            do {
-                this.getListContent(elem);
-                elem = elem.nextSibling as Element;
-            } while (elem);
-        }
+        this.listContents.push(elem.firstElementChild.textContent.trim());
+        detach(elem.firstElementChild);
+        this.listContents.push(elem.innerHTML);
     }
 }

@@ -173,6 +173,7 @@ var Button = /** @__PURE__ @class */ (function (_super) {
      */
     Button.prototype.render = function () {
         this.initialize();
+        this.renderComplete();
     };
     Button.prototype.initialize = function () {
         if (this.cssClass) {
@@ -761,6 +762,7 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     };
     CheckBox.prototype.setDisabled = function () {
         var wrapper = this.getWrapper();
@@ -1168,6 +1170,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     };
     RadioButton.prototype.setDisabled = function () {
         this.element.disabled = true;
@@ -1514,6 +1517,7 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     };
     Switch.prototype.rippleHandler = function (e) {
         var rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE$2)[0];
@@ -1729,6 +1733,7 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
+        this.renderComplete();
     };
     ChipList.prototype.createChip = function () {
         this.innerText = this.element.innerText.trim();

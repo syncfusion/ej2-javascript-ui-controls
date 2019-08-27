@@ -29,7 +29,7 @@ import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, IT
 import { GeoPosition } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
-import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs} from './model/interface';
+import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs } from './model/interface';
 import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
@@ -204,7 +204,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * To configure the zoom level of maps.
      */
-    @Complex<CenterPositionModel>({ latitude: null, longitude: null}, CenterPosition)
+    @Complex<CenterPositionModel>({ latitude: null, longitude: null }, CenterPosition)
     public centerPosition: CenterPositionModel;
     /**
      * To customization Maps area
@@ -542,12 +542,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public previousScale: number;
     /** @private */
     public previousPoint: Point;
-     /** @public */
-     public dataLabelShape: number[] = [];
-     public zoomShapeCollection: object[] = [];
-     public zoomLabelPositions: object[] = [];
-     public mouseDownEvent: Object = { x: null, y: null };
-     public mouseClickEvent: Object = { x: null, y: null };
+    /** @public */
+    public dataLabelShape: number[] = [];
+    public zoomShapeCollection: object[] = [];
+    public zoomLabelPositions: object[] = [];
+    public mouseDownEvent: Object = { x: null, y: null };
+    public mouseClickEvent: Object = { x: null, y: null };
     /** @private */
     public isBlazor: boolean;
 
@@ -593,23 +593,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * To Initialize the control rendering.
      */
     protected render(): void {
-
         this.findBaseAndSubLayers();
-
         this.createSecondaryElement();
-
         this.addTabIndex();
-
         this.themeStyle = getThemeStyle(this.theme);
-
         this.renderBorder();
-
         this.renderTitle(this.titleSettings, 'title', null, null);
-
         this.renderArea();
-
         this.processRequestJsonData();
-
+        this.renderComplete();
     }
 
     /* tslint:disable:no-string-literal */
@@ -1662,7 +1654,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public pointToLatLong(pageX: number, pageY: number): Object {
         pageY = (this.zoomSettings.enable) ? pageY + 10 : pageY;
         let mapSize: number = 256 * Math.pow(2, this.tileZoomLevel);
-        let x1: number =  (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
+        let x1: number = (this.clip(pageX - (this.translatePoint.x * this.scale), 0, mapSize - 1) / mapSize) - 0.5;
         let y1: number = 0.5 - (this.clip(pageY - (this.translatePoint.y * this.scale), 0, mapSize - 1) / mapSize);
         let lat: number = 90 - 360 * Math.atan(Math.exp(-y1 * 2 * Math.PI)) / Math.PI;
         let long: number = 360 * x1;

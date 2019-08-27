@@ -437,6 +437,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.renderGaugeElements();
         this.calculateBounds();
         this.renderAxisElements();
+        this.renderComplete();
         this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
     }
 

@@ -560,7 +560,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             } else {
                 let templateFunction: Function = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                if (this.content.indexOf('<div>Blazor') >= 0) {
+                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
                     this.isBlazorTemplate = true;
                     updateBlazorTemplate(this.element.id + 'content', 'Content', this);
                 }
@@ -941,6 +941,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public render(): void {
         this.initialize();
         this.wireEvents(this.opensOn);
+        this.renderComplete();
     }
     /**
      * Initializes the values of private members.

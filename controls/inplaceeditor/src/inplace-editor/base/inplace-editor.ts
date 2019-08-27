@@ -375,6 +375,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
         this.setClass('add', this.cssClass);
+        this.renderComplete();
     }
     /**
      * Initializes a new instance of the In-place editor class.

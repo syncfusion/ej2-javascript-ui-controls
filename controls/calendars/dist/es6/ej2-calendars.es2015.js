@@ -2889,7 +2889,7 @@ let DatePicker = class DatePicker extends Calendar {
             'autocorrect': 'off', 'autocapitalize': 'off', 'spellcheck': 'false', 'aria-invalid': 'false'
         };
         if (this.getModuleName() === 'datepicker') {
-            let l10nLocale = { placeholder: null };
+            let l10nLocale = { placeholder: this.placeholder };
             this.globalize = new Internationalization(this.locale);
             this.l10n = new L10n('datepicker', l10nLocale, this.locale);
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
@@ -4480,7 +4480,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             spacebar: 'space'
         };
         this.defaultConstant = {
-            placeholder: '',
+            placeholder: this.placeholder,
             startLabel: 'Start Date',
             endLabel: 'End Date',
             customRange: 'Custom Range',

@@ -77,13 +77,13 @@ export interface RangeModel {
 
     /**
      * Start of the axis range.
-     * @default null
+     * @default 0
      */
     start?: number;
 
     /**
      * End of the axis range.
-     * @default null
+     * @default 0
      */
     end?: number;
 

@@ -578,7 +578,6 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         for (let property of Object.keys(newProp)) {
             switch (property) {
                 case 'series':
-                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -678,9 +677,14 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
     }
 
     private storeDataSource(): void {
-        this.series.forEach((series: Series) => {
+        this.series.forEach((series: StockSeries) => {
             this.tempSeriesType.push(series.type);
+            series.localData = undefined;
         });
+        this.initialRender = true;
+        this.rangeFound = false;
+        this.resizeTo = null;
+        this.startValue = null; this.endValue = null;
     }
 
     /**
@@ -698,6 +702,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.stockChartDataManagerSuccess();
             this.initialRender = false;
         }
+        this.renderComplete();
     }
 
     /**

@@ -15757,6 +15757,10 @@ var Layout = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.isBidiReLayout = false;
+        /**
+         * @private
+         */
+        this.defaultTabWidthPixel = 48;
         this.viewer = viewer;
     }
     Layout.prototype.isSameStyle = function (currentParagraph, isAfterSpacing) {
@@ -17629,6 +17633,14 @@ var Layout = /** @__PURE__ @class */ (function () {
         var fPosition = 0;
         var isCustomTab = false;
         var tabs = paragraph.paragraphFormat.getUpdatedTabs();
+        var isList = false;
+        // tslint:disable-next-line:max-line-length
+        if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
+            var listFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
+            if (paragraph.paragraphFormat.leftIndent !== listFormat.leftIndent) {
+                isList = true;
+            }
+        }
         //  Calculate hanging width
         var clientWidth = 0;
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
@@ -17645,7 +17657,8 @@ var Layout = /** @__PURE__ @class */ (function () {
             (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
         var defaultTabWidth = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
         if (tabs.length === 0) {
-            if (position > 0 && defaultTabWidth > position) {
+            if (position > 0 && defaultTabWidth > position && isList ||
+                defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
                 return defaultTabWidth - position;
             }
             return defaultTabWidth;
@@ -29799,6 +29812,10 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         var spanClass = '';
         if (spanText.indexOf('\v') !== -1) {
             spanClass += '<br>';
+            return spanClass.toString();
+        }
+        else if (spanText.indexOf('\f') !== -1) {
+            spanClass += '<br style = "page-break-after:always;"/>';
             return spanClass.toString();
         }
         var tagAttributes = [];
@@ -61631,8 +61648,11 @@ var WordExport = /** @__PURE__ @class */ (function () {
             writer.writeStartElement(undefined, 'bidi', this.wNamespace);
             writer.writeEndElement();
         }
-        if (paragraphFormat.contextualSpacing) {
+        if (!isNullOrUndefined(paragraphFormat.contextualSpacing)) {
             writer.writeStartElement('w', 'contextualSpacing', this.wNamespace);
+            if (!paragraphFormat.contextualSpacing) {
+                writer.writeAttributeString('w', 'val', this.wNamespace, '0');
+            }
             writer.writeEndElement();
         }
         this.serializeParagraphSpacing(writer, paragraphFormat);

@@ -1,4 +1,4 @@
-import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
+import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
 import { IDropDownItemModel } from './../base/interface';
@@ -82,34 +82,39 @@ export class Link {
         }
     }
     private showLinkQuickToolbar(e: IShowPopupArgs): void {
-        let pageX: number;
-        let pageY: number;
-        if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
-            isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) { return; }
-        this.quickToolObj = this.parent.quickToolbarModule;
-        let parentTop: number = this.parent.element.getBoundingClientRect().top;
-        let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-        let target: HTMLElement;
-        [].forEach.call(e.elements, (element: Element, index: number) => {
-            if (index === 0) {
-                target = ((element.nodeName === '#text') ? (element.parentNode) : element) as HTMLElement;
+        if ((e.args as KeyboardEventArgs).action !== 'enter' && (e.args as KeyboardEventArgs).action !== 'space') {
+            let pageX: number;
+            let pageY: number;
+            if (e.type !== 'Links' || isNullOrUndefined(this.parent.quickToolbarModule) ||
+                isNullOrUndefined(this.parent.quickToolbarModule.linkQTBar)) { return; }
+            this.quickToolObj = this.parent.quickToolbarModule;
+            let parentTop: number = this.parent.element.getBoundingClientRect().top;
+            let parentLeft: number = this.parent.element.getBoundingClientRect().left;
+            let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            let target: HTMLElement;
+            [].forEach.call(e.elements, (element: Element, index: number) => {
+                if (index === 0) {
+                    target = ((element.nodeName === '#text') ? (element.parentNode) : element) as HTMLElement;
+                }
+            });
+            if (e.isNotify) {
+                let tbElement: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
+                let linkTop: number = target.getBoundingClientRect().top;
+                let linkLeft: number = target.getBoundingClientRect().left;
+                let linkPos: number = linkTop - parentTop;
+                let tbHeight: number = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
+                pageX = (this.parent.iframeSettings.enable) ? parentLeft + linkLeft : target.getBoundingClientRect().left;
+                pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ?
+                (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
+            } else {
+                let args: Touch | MouseEvent;
+                args = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : args = e.args as MouseEvent;
+                pageX = (this.parent.iframeSettings.enable) ? window.pageXOffset + parentLeft + args.clientX : args.pageX;
+                pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
             }
-        });
-        if (e.isNotify) {
-            pageX = target.getBoundingClientRect().left;
-            let tbElement: HTMLElement = this.parent.toolbarModule.getToolbarElement() as HTMLElement;
-            let linkTop: number = target.getBoundingClientRect().top;
-            let linkPos: number = linkTop - parentTop;
-            let tbHeight: number = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
-            pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ? (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
-        } else {
-            let args: Touch | MouseEvent;
-            args = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : args = e.args as MouseEvent;
-            pageX = args.pageX;
-            pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
-        }
-        if (this.quickToolObj.linkQTBar) {
-            this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element);
+            if (this.quickToolObj.linkQTBar) {
+                this.quickToolObj.linkQTBar.showPopup(pageX, pageY, range.endContainer as Element);
+            }
         }
     }
 
@@ -187,8 +192,7 @@ export class Link {
         if (this.parent.editorMode === 'HTML' && (e.selectParent.length > 0 &&
             !isNullOrUndefined((e.selectParent[0] as HTMLElement).classList) &&
             (e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor')) && isNullOrUndefined(inputDetails)) {
-            this.editLink(e); return;
-        }
+            this.editLink(e); return; }
         let selectText: string; let linkWebAddress: string = this.i10n.getConstant('linkWebUrl');
         let linkDisplayText: string = this.i10n.getConstant('linkText');
         let linkTooltip: string = this.i10n.getConstant('linkTooltipLabel');
@@ -209,7 +213,6 @@ export class Link {
             '<div class="e-rte-label">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field"> ' +
             '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText" placeholder="' + textPlace + '">' +
             '</div><div class="e-rte-label">' + htmlTextbox;
-
         let contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);
         let linkTarget: HTMLInputElement = linkContent.querySelector('.e-rte-linkTarget') as HTMLInputElement;
@@ -253,7 +256,8 @@ export class Link {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                this.dialogRenderObj.close(this.dialogObj);
+                let args: Dialog = isBlazor() ? null : this.dialogObj;
+                this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             },
         };
@@ -408,8 +412,8 @@ export class Link {
         if (!isNullOrUndefined(this.dialogObj) && ((
             !closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target as Node)) ||
-            (this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node) &&
-                !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
+            (((this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node)) ||
+            this.parent.inlineMode.enable) && !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))
         ) {
             this.dialogObj.hide({ returnValue: true } as Event);

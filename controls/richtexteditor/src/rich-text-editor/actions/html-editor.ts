@@ -105,8 +105,8 @@ export class HtmlEditor {
         if ((e.args as KeyboardEvent).keyCode === 9 && this.parent.enableTabKey) {
             let range: Range = this.nodeSelectionObj.getRange(this.contentRenderer.getDocument());
             let parentNode: Node[] = this.nodeSelectionObj.getParentNodeCollection(range);
-            if (!((parentNode[0].nodeName === 'LI' || parentNode[0].nodeName === 'BR' || closest(parentNode[0] as HTMLElement, 'li')) &&
-                range.startOffset === 0)) {
+            if (!((parentNode[0].nodeName === 'LI' || closest(parentNode[0] as HTMLElement, 'li') ||
+                closest(parentNode[0] as HTMLElement, 'table')) && range.startOffset === 0)) {
                 (e.args as KeyboardEvent).preventDefault();
                 if (!(e.args as KeyboardEvent).shiftKey) {
                     InsertHtml.Insert(this.contentRenderer.getDocument(), '&nbsp;&nbsp;&nbsp;&nbsp;');

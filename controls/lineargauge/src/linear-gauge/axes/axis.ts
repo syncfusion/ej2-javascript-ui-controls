@@ -89,16 +89,16 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Start of the axis range.
-     * @default null
+     * @default 0
      */
-    @Property(null)
+    @Property(0)
     public start: number;
 
     /**
      * End of the axis range.
-     * @default null
+     * @default 0
      */
-    @Property(null)
+    @Property(0)
     public end: number;
 
     /**

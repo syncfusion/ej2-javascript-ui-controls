@@ -1030,12 +1030,16 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             let formatValue: string = this.formatNumber();
             this.setElementValue(formatValue);
             if (!this.isPrevFocused) {
-                let delay: number = (Browser.isDevice && Browser.isIos) ? 600 : 0;
-                setTimeout(
-                    () => {
-                        this.element.setSelectionRange(0, formatValue.length);
-                    },
-                    delay);
+                if (!Browser.isDevice && Browser.info.version === '11.0') {
+                    this.element.setSelectionRange(0, formatValue.length);
+                } else {
+                    let delay: number = (Browser.isDevice && Browser.isIos) ? 600 : 0;
+                    setTimeout(
+                        () => {
+                            this.element.setSelectionRange(0, formatValue.length);
+                        },
+                        delay);
+                }
             }
         }
         if (!Browser.isDevice) {
