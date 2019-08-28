@@ -169,7 +169,6 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         this.diagramRenderer = new DiagramRenderer(this.element.id, new SvgRenderer(), false);
         this.renderCanvas();
         this.setParent(this.sourceID);
-        this.renderComplete();
     }
 
     private getSizeValue(real: string | number): String {

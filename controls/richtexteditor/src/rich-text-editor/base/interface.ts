@@ -410,9 +410,7 @@ export interface ActionCompleteEventArgs {
     name?: string;
     /** Defines the editor mode. */
     editorMode?: string;
-    /** Defines the selected elements. 
-     * @deprecated
-     */
+    /** Defines the selected elements. */
     elements?: Node[];
     /** Defines the event item. */
     event?: MouseEvent | KeyboardEvent;
@@ -495,7 +493,7 @@ export interface BeforeQuickToolbarOpenArgs {
     /** Defines the instance of the current popup element
      * @deprecated
      */
-    popup?: Popup;
+    popup: Popup;
     /** Determine whether the quick toolbar is open */
     cancel: boolean;
     /** Defines the target element of the quick toolbar */

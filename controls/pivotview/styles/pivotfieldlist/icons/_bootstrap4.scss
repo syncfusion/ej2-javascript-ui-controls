@@ -30,6 +30,10 @@
       content: '\e7d6';
     }
 
+    .e-pivot-all-field-title-wrapper .e-info.e-icons::before {
+      content: '\e729';
+    }
+
     .e-list-item .e-text-content .e-edited.e-icons::before {
       content: '\e7fc';
     }
@@ -41,6 +45,108 @@
     .e-list-item .e-text-content .e-format.e-icons::before {
       content: '\e70b';
     }
+
+    // sass-lint:disable-all
+    .e-measureGroupCDB-icon::before {
+      content: '\e758' !important;
+    }
+
+    .e-measure-icon::before {
+        content: '\e758' !important;
+    }
+
+    .e-folderCDB-icon::before {
+        content: '\e76e' !important;
+    }
+
+    .e-folderCDB-open-icon::before {
+        content: '\e70f' !important;
+    }
+
+    .e-dimensionCDB-icon::before {
+        content: '\e65b' !important;
+    }
+
+    .e-kpiCDB-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiGoal-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiStatus-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiTrend-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiValue-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-namedSetCDB-icon::before {
+        content: '\e65d' !important;
+    }
+
+    .e-hierarchyCDB-icon::before {
+        content: '\e663' !important;
+    }
+
+    .e-attributeCDB-icon::before {
+        content: '\e65c' !important;
+    }
+
+    .e-hierarchy-level-0-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-1-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-2-icon::before {
+        content: '\e662' !important;
+    }
+
+    .e-hierarchy-level-3-icon::before {
+        content: '\e65e' !important;
+    }
+
+    .e-hierarchy-level-4-icon::before {
+        content: '\e660' !important;
+    }
+
+    .e-hierarchy-level-5-icon::before {
+        content: '\e661' !important;
+    }
+
+    .e-calcMemberGroupCDB::before {
+      content: '\e80f' !important;
+    }
+
+    .e-calc-measure-icon::before {
+      content: '\e758' !important;
+    }
+
+    .e-calc-dimension-icon::before {
+      content: '\e65b' !important;
+    }
+  
+    .e-sort-none::before {
+        content: '\e666' !important;
+    }
+
+    .e-sort-ascend::before {
+        content: '\e667' !important;
+    }
+
+    .e-sort-descend::before {
+        content: '\e665' !important;
+    }
+    // sass-lint:enable-all
   }
 
   #{&}.e-pivotfieldlist-wrapper {
@@ -100,5 +206,107 @@
     .e-dropdown-icon::before {
       content: '\e744';
     }
+
+    // sass-lint:disable-all
+    .e-measureGroupCDB-icon::before {
+      content: '\e758' !important;
+    }
+
+    .e-measure-icon::before {
+        content: '\e758' !important;
+    }
+
+    .e-folderCDB-icon::before {
+        content: '\e76e' !important;
+    }
+
+    .e-folderCDB-open-icon::before {
+        content: '\e70f' !important;
+    }
+
+    .e-dimensionCDB-icon::before {
+        content: '\e65b' !important;
+    }
+
+    .e-kpiCDB-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiGoal-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiStatus-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiTrend-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-kpiValue-icon::before {
+        content: '\e664' !important;
+    }
+
+    .e-namedSetCDB-icon::before {
+        content: '\e65d' !important;
+    }
+
+    .e-hierarchyCDB-icon::before {
+        content: '\e663' !important;
+    }
+
+    .e-attributeCDB-icon::before {
+        content: '\e65c' !important;
+    }
+
+    .e-hierarchy-level-0-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-1-icon::before {
+        content: '\e65a' !important;
+    }
+
+    .e-hierarchy-level-2-icon::before {
+        content: '\e662' !important;
+    }
+
+    .e-hierarchy-level-3-icon::before {
+        content: '\e65e' !important;
+    }
+
+    .e-hierarchy-level-4-icon::before {
+        content: '\e660' !important;
+    }
+
+    .e-hierarchy-level-5-icon::before {
+        content: '\e661' !important;
+    }
+
+    .e-calcMemberGroupCDB::before {
+      content: '\e80f' !important;
+    }
+
+    .e-calc-measure-icon::before {
+      content: '\e758' !important;
+    }
+
+    .e-calc-dimension-icon::before {
+      content: '\e65b' !important;
+    }
+  
+    .e-sort-none::before {
+        content: '\e666' !important;
+    }
+
+    .e-sort-ascend::before {
+        content: '\e667' !important;
+    }
+
+    .e-sort-descend::before {
+        content: '\e665' !important;
+    }
+    // sass-lint:enable-all
   }
 }

@@ -1892,6 +1892,9 @@ let MenuBase = class MenuBase extends Component {
                 this.clickHandler(e);
             }
         }
+        else if (this.isMenu && this.showItemOnClick) {
+            this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
+        }
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
@@ -3247,9 +3250,6 @@ let Toolbar = class Toolbar extends Component {
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
-        if (isBlazor()) {
-            this.renderComplete();
-        }
     }
     initialize() {
         let width = formatUnit(this.width);
@@ -4103,7 +4103,7 @@ let Toolbar = class Toolbar extends Component {
     }
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the command should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @returns void.
@@ -4111,7 +4111,6 @@ let Toolbar = class Toolbar extends Component {
     enableItems(items, isEnable) {
         let elements = items;
         let len = elements.length;
-        let ele;
         if (isNullOrUndefined(isEnable)) {
             isEnable = true;
         }
@@ -4125,43 +4124,17 @@ let Toolbar = class Toolbar extends Component {
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
-        if (!isNullOrUndefined(len) && len >= 1) {
-            for (let a = 0, element = [].slice.call(elements); a < len; a++) {
-                let itemElement = element[a];
-                if (typeof (itemElement) === 'number') {
-                    ele = this.getElementByIndex(itemElement);
-                    if (isNullOrUndefined(ele)) {
-                        return;
-                    }
-                    else {
-                        elements[a] = ele;
-                    }
-                }
-                else {
-                    ele = itemElement;
-                }
+        if (len && len > 1) {
+            for (let ele of [].slice.call(elements)) {
                 enable(isEnable, ele);
             }
             isEnable ? removeClass(elements, CLS_DISABLE$2) : addClass(elements, CLS_DISABLE$2);
         }
         else {
-            if (typeof (elements) === 'number') {
-                ele = this.getElementByIndex(elements);
-                if (isNullOrUndefined(ele)) {
-                    return;
-                }
-            }
-            else {
-                ele = items;
-            }
+            let ele;
+            ele = (len && len === 1) ? elements[0] : items;
             enable(isEnable, ele);
         }
-    }
-    getElementByIndex(index) {
-        if (this.tbarEle[index]) {
-            return this.tbarEle[index];
-        }
-        return null;
     }
     /**
      * Adds new items to the Toolbar that accepts an array as Toolbar items.
@@ -4859,9 +4832,6 @@ let Accordion = class Accordion extends Component {
         this.initialize();
         this.renderControl();
         this.wireEvents();
-        if (isBlazor()) {
-            this.renderComplete();
-        }
     }
     initialize() {
         let width = formatUnit(this.width);
@@ -5346,18 +5316,7 @@ let Accordion = class Accordion extends Component {
         }
     }
     getIndexByItem(item) {
-        let itemEle = this.getItemElements();
-        return [].slice.call(itemEle).indexOf(item);
-    }
-    getItemElements() {
-        let itemEle = [];
-        let itemCollection = this.element.children;
-        [].slice.call(itemCollection).forEach((el) => {
-            if (el.classList.contains(CLS_ITEM$1)) {
-                itemEle.push(el);
-            }
-        });
-        return itemEle;
+        return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).indexOf(item);
     }
     expandedItemsPop(item) {
         let index = this.getIndexByItem(item);
@@ -5456,7 +5415,7 @@ let Accordion = class Accordion extends Component {
         return 'accordion';
     }
     itemAttribUpdate() {
-        let itemEle = this.getItemElements();
+        let itemEle = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
         let itemLen = this.items.length;
         itemEle.forEach((ele) => {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -5471,7 +5430,6 @@ let Accordion = class Accordion extends Component {
      */
     addItem(item, index) {
         let ele = this.element;
-        let itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             index = this.items.length;
         }
@@ -5482,7 +5440,7 @@ let Accordion = class Accordion extends Component {
                 ele.appendChild(innerItemEle);
             }
             else {
-                ele.insertBefore(innerItemEle, itemEle[index]);
+                ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM$1)[index]);
             }
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5495,8 +5453,7 @@ let Accordion = class Accordion extends Component {
         }
     }
     expandedItemRefresh(ele) {
-        let itemEle = this.getItemElements();
-        [].slice.call(itemEle).forEach((el) => {
+        [].slice.call(ele.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
             if (el.classList.contains(CLS_SLCTED)) {
                 this.expandedItemsPush(el);
             }
@@ -5508,8 +5465,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     removeItem(index) {
-        let itemEle = this.getItemElements();
-        let ele = itemEle[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5526,8 +5482,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     select(index) {
-        let itemEle = this.getItemElements();
-        let ele = itemEle[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele) || isNullOrUndefined(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -5541,8 +5496,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     hideItem(index, isHidden) {
-        let itemEle = this.getItemElements();
-        let ele = itemEle[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5559,8 +5513,7 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     enableItem(index, isEnable) {
-        let itemEle = this.getItemElements();
-        let ele = itemEle[index];
+        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5589,15 +5542,14 @@ let Accordion = class Accordion extends Component {
      */
     expandItem(isExpand, index) {
         let root = this.element;
-        let itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                let ele = itemEle[itemEle.length - 1];
+                let ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.querySelectorAll('.' + CLS_ITEM$1).length - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
                 let item = select('#' + this.lastActiveItemId, this.element);
-                [].slice.call(itemEle).forEach((el) => {
+                [].slice.call(root.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
                     this.itemExpand(isExpand, el, this.getIndexByItem(el));
                     el.classList.remove(CLS_EXPANDSTATE);
                 });
@@ -5611,7 +5563,7 @@ let Accordion = class Accordion extends Component {
             }
         }
         else {
-            let ele = itemEle[index];
+            let ele = root.querySelectorAll('.' + CLS_ITEM$1)[index];
             if (isNullOrUndefined(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             }
@@ -6333,9 +6285,6 @@ let Tab = class Tab extends Component {
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
-        if (isBlazor()) {
-            this.renderComplete();
-        }
     }
     renderContainer() {
         let ele = this.element;
@@ -7670,13 +7619,7 @@ let Tab = class Tab extends Component {
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    if (oldProp.cssClass !== '') {
-                        this.setCssClass(this.element, oldProp.cssClass, false);
-                        this.setCssClass(this.element, newProp.cssClass, true);
-                    }
-                    else {
-                        this.setCssClass(this.element, newProp.cssClass, true);
-                    }
+                    this.setCssClass(this.element, newProp.cssClass, true);
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);
@@ -10257,6 +10200,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
+        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     }
@@ -11889,46 +11833,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      */
     getAllCheckedNodes() {
         let checkNodes = this.checkedNodes;
-        let newCheck = [];
-        let i = 0;
-        let id = this.fields.id;
-        for (i; i < this.treeData.length; i++) {
-            //Checks if isChecked is enabled while node is not loaded in DOM
-            let checked = null;
-            let childNode = null;
-            let isLoaded = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
-            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
-                //Checks if isChecked is enabled for parent
-                if (this.getTreeData()[i][this.fields.isChecked] === true
-                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
-                    newCheck.push(this.treeData[i][id].toString());
-                    checked = 2;
-                }
-                //Checks for child nodes with isChecked enabled
-                if (checked !== 2) {
-                    checked = 1;
-                }
-                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
-                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
-            }
-        }
-        i = 0;
-        //Gets checked nodes based on UI interaction
-        while (i < checkNodes.length) {
-            if (newCheck.indexOf(checkNodes[i]) !== -1) {
-                i++;
-                continue;
-            }
-            newCheck.push(checkNodes[i]);
-            //Gets all child which is not loaded while parent is checked
-            let parentNode = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
-            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
-                let child = this.getChildNodes(this.treeData, checkNodes[i].toString());
-                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
-            }
-            i++;
-        }
-        return newCheck;
+        return checkNodes;
     }
     /**
      * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
@@ -12346,37 +12251,36 @@ let Sidebar = class Sidebar extends Component {
         if (isBlazor()) {
             delete closeArguments.model;
         }
-        this.trigger('close', closeArguments, (observedcloseArgs) => {
-            if (!observedcloseArgs.cancel) {
-                if (this.element.classList.contains(CLOSE)) {
-                    return;
-                }
-                if (this.element.classList.contains(OPEN) && !this.animate) {
-                    this.triggerChange();
-                }
-                addClass([this.element], CLOSE);
-                removeClass([this.element], OPEN);
-                this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
-                    setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-                this.setType(this.type);
-                let sibling = document.querySelector('.e-main-content') ||
-                    this.element.nextElementSibling;
-                if (!this.enableDock && sibling) {
-                    sibling.style.transform = 'translateX(' + 0 + 'px)';
-                    this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-                }
-                this.destroyBackDrop();
-                this.setAnimation();
-                if (this.type === 'Slide') {
-                    document.body.classList.remove('e-sidebar-overflow');
-                }
-                this.setProperties({ isOpen: false }, true);
-                if (this.enableDock) {
-                    setTimeout(() => this.setTimeOut(), 50);
-                }
-                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        this.trigger('close', closeArguments);
+        if (!closeArguments.cancel) {
+            if (this.element.classList.contains(CLOSE)) {
+                return;
             }
-        });
+            if (this.element.classList.contains(OPEN) && !this.animate) {
+                this.triggerChange();
+            }
+            addClass([this.element], CLOSE);
+            removeClass([this.element], OPEN);
+            this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
+                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
+            this.setType(this.type);
+            let sibling = document.querySelector('.e-main-content') ||
+                this.element.nextElementSibling;
+            if (!this.enableDock && sibling) {
+                sibling.style.transform = 'translateX(' + 0 + 'px)';
+                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+            }
+            this.destroyBackDrop();
+            this.setAnimation();
+            if (this.type === 'Slide') {
+                document.body.classList.remove('e-sidebar-overflow');
+            }
+            this.setProperties({ isOpen: false }, true);
+        }
+        if (this.enableDock) {
+            setTimeout(() => this.setTimeOut(), 50);
+        }
+        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
     }
     setTimeOut() {
         let sibling = document.querySelector('.e-main-content') ||
@@ -12418,29 +12322,28 @@ let Sidebar = class Sidebar extends Component {
         if (isBlazor()) {
             delete openArguments.model;
         }
-        this.trigger('open', openArguments, (observedopenArgs) => {
-            if (!observedopenArgs.cancel) {
-                removeClass([this.element], VISIBILITY);
-                if (this.element.classList.contains(OPEN)) {
-                    return;
-                }
-                if (this.element.classList.contains(CLOSE) && !this.animate) {
-                    this.triggerChange();
-                }
-                addClass([this.element], [OPEN, TRASITION]);
-                setStyleAttribute(this.element, { 'transform': '' });
-                removeClass([this.element], CLOSE);
-                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-                this.setType(this.type);
-                this.createBackDrop();
-                this.setAnimation();
-                if (this.type === 'Slide') {
-                    document.body.classList.add('e-sidebar-overflow');
-                }
-                this.setProperties({ isOpen: true }, true);
-                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        this.trigger('open', openArguments);
+        if (!openArguments.cancel) {
+            removeClass([this.element], VISIBILITY);
+            if (this.element.classList.contains(OPEN)) {
+                return;
             }
-        });
+            if (this.element.classList.contains(CLOSE) && !this.animate) {
+                this.triggerChange();
+            }
+            addClass([this.element], [OPEN, TRASITION]);
+            setStyleAttribute(this.element, { 'transform': '' });
+            removeClass([this.element], CLOSE);
+            setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
+            this.setType(this.type);
+            this.createBackDrop();
+            this.setAnimation();
+            if (this.type === 'Slide') {
+                document.body.classList.add('e-sidebar-overflow');
+            }
+            this.setProperties({ isOpen: true }, true);
+        }
+        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
     }
     setAnimation() {
         if (this.animate) {
@@ -12827,5 +12730,5 @@ Sidebar = __decorate$9([
  * Navigation all modules
  */
 
-export { MenuAnimationSettings, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, MenuItem, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es2015.js.map

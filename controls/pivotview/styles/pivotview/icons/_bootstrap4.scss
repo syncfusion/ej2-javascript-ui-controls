@@ -106,6 +106,22 @@
     content: '\e725';
   }
 
+  .e-pivotview-png-export::before {
+    content: '\e84b';
+  }
+
+  .e-pivotview-jpeg-export::before {
+    content: '\e84a';
+  }
+
+  .e-pivotview-svg-export::before {
+    content: '\e84c';
+  }
+
+  .e-mdx::before {
+    content: '\e689';
+  }
+
   .e-pivotview-select-icon::before {
     content: '\e718';
   }

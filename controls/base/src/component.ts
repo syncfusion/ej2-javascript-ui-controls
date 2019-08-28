@@ -119,12 +119,12 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
      * It is used to process the post rendering functionalities to a component.
      */
     protected renderComplete(wrapperElement?: Node): void {
-        if (isBlazor()) {
-            let ejsInterop: string = 'ejsInterop';
-            // tslint:disable-next-line:no-any
-            (window as any)[ejsInterop].renderComplete(this.element, wrapperElement);
-        }
-        this.isRendered = true;
+    //     if (isBlazor()) {
+    //         let ejsInterop: string = 'ejsInterop';
+    //         // tslint:disable-next-line:no-any
+    //         (window as any)[ejsInterop].renderComplete(this.element, wrapperElement);
+    //     }
+    //     this.isRendered = true;
     }
 
     /**

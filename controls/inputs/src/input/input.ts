@@ -3,7 +3,6 @@ const CLASSNAMES: ClassNames = {
     RTL: 'e-rtl',
     DISABLE: 'e-disabled',
     INPUT: 'e-input',
-    TEXTAREA: 'e-multi-line-input',
     INPUTGROUP: 'e-input-group',
     FLOATINPUT: 'e-float-input',
     FLOATLINE: 'e-float-line',
@@ -82,9 +81,6 @@ export namespace Input {
             for (let i: number = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
             }
-        }
-        if (!isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
-            addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
         inputObject = setPropertyValue(args, inputObject);
         privateInputObj = inputObject;
@@ -332,13 +328,11 @@ export namespace Input {
         }
         if (!isNullOrUndefined(clearButton) && clearButton ) {
             let parentElement: HTMLElement = <HTMLElement> getParentNode(element);
-            if (!isNullOrUndefined(parentElement)) {
-                let button: HTMLElement = <HTMLElement> parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-                if (element.value && parentElement.classList.contains('e-input-focus')) {
-                    removeClass([button], CLASSNAMES.CLEARICONHIDE);
-                } else {
-                    addClass([button], CLASSNAMES.CLEARICONHIDE);
-                }
+            let button: HTMLElement = <HTMLElement> parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
+            if (element.value && parentElement.classList.contains('e-input-focus')) {
+                removeClass([button], CLASSNAMES.CLEARICONHIDE);
+            } else {
+                addClass([button], CLASSNAMES.CLEARICONHIDE);
             }
         }
         checkInputValue(floatLabelType, element as HTMLInputElement);
@@ -649,7 +643,6 @@ interface ClassNames {
     RTL: string;
     DISABLE: string;
     INPUT: string;
-    TEXTAREA: string;
     INPUTGROUP: string;
     FLOATINPUT: string;
     FLOATLINE: string;

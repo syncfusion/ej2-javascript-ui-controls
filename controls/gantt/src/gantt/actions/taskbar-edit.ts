@@ -203,16 +203,16 @@ export class TaskbarEdit {
                 let predecessor: IPredecessor = childRecord.predecessor[i];
                 if (predecessor.from === parentRecord.taskId.toString() &&
                     predecessor.to === childRecord.taskId.toString()) {
-                    this.parent.predecessorModule.childRecord = this.connectorSecondRecord;
-                    this.parent.predecessorModule.predecessorIndex = i;
-                    this.parent.predecessorModule.renderPredecessorDeleteConfirmDialog();
+                    this.parent.connectorLineEditModule.childRecord = this.connectorSecondRecord;
+                    this.parent.connectorLineEditModule.predecessorIndex = i;
+                    this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
                 } else if (predecessor.from === childRecord.taskId.toString() &&
                     predecessor.to === parentRecord.taskId.toString()) {
-                    this.parent.predecessorModule.childRecord = this.taskBarEditRecord;
-                    this.parent.predecessorModule.predecessorIndex = i;
-                    this.parent.predecessorModule.renderPredecessorDeleteConfirmDialog();
+                    this.parent.connectorLineEditModule.childRecord = this.taskBarEditRecord;
+                    this.parent.connectorLineEditModule.predecessorIndex = i;
+                    this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
                 }

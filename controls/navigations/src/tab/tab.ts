@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Animation
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -489,9 +489,6 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
-        if (isBlazor()) {
-            this.renderComplete();
-        }
     }
     private renderContainer(): void {
         let ele: HTEle = this.element;
@@ -1650,12 +1647,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    if (oldProp.cssClass !== '') {
-                        this.setCssClass(this.element, oldProp.cssClass, false);
-                        this.setCssClass(this.element, newProp.cssClass, true);
-                    } else {
-                        this.setCssClass(this.element, newProp.cssClass, true);
-                    }
+                    this.setCssClass(this.element, newProp.cssClass, true);
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);

@@ -128,14 +128,17 @@ export class VirtualScroll {
                 return;
             }
             showSpinner(this.parent.element);
-            this.parent.scrollPosObject.vertical = section;
-            this.parent.engineModule.pageSettings.rowCurrentPage = section > 1 ? section : 1;
-            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
-            this.parent.pivotValues = this.parent.engineModule.pivotValues;
-            let exactPage: number = Math.ceil(this.parent.engineModule.rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
+            let pivot: PivotView = this.parent;
+            //setTimeout(() => {
+            pivot.scrollPosObject.vertical = section;
+            pivot.engineModule.pageSettings.rowCurrentPage = section > 1 ? section : 1;
+            pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
+            pivot.pivotValues = pivot.engineModule.pivotValues;
+            let exactPage: number = Math.ceil(pivot.engineModule.rowStartPos / (pivot.pageSettings.rowSize * rowValues));
             let pos: number = exactSize * exactPage -
-                (this.parent.engineModule.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
-            this.parent.scrollPosObject.verticalSection = pos;
+                (pivot.engineModule.rowFirstLvl * rowValues * pivot.gridSettings.rowHeight);
+            pivot.scrollPosObject.verticalSection = pos;
+            //});
         } else {
             let colValues: number =
                 this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1;
@@ -147,21 +150,24 @@ export class VirtualScroll {
                 return;
             }
             showSpinner(this.parent.element);
-            this.parent.scrollPosObject.horizontal = section;
-            this.parent.engineModule.pageSettings.columnCurrentPage = section > 1 ? section : 1;
-            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
+            let pivot: PivotView = this.parent;
+            //setTimeout(() => {
+            pivot.scrollPosObject.horizontal = section;
+            pivot.engineModule.pageSettings.columnCurrentPage = section > 1 ? section : 1;
+            pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
             // let isLastPage: boolean =
-            //     (this.parent.engineModule.pivotValues[0] as IAxisSet[])[this.parent.engineModule.pivotValues[0].length - 1].type
+            //     (pivot.engineModule.pivotValues[0] as IAxisSet[])[pivot.engineModule.pivotValues[0].length - 1].type
             //     === 'grand sum' && section > 0;
-            this.parent.pivotValues = this.parent.engineModule.pivotValues;
-            let exactPage: number = Math.ceil(this.parent.engineModule.colStartPos / (this.parent.pageSettings.columnSize * colValues));
+            pivot.pivotValues = pivot.engineModule.pivotValues;
+            let exactPage: number = Math.ceil(pivot.engineModule.colStartPos / (pivot.pageSettings.columnSize * colValues));
             // let pos: number = isLastPage ?
             //     ((left + mHdr.clientWidth) - ((mHdr.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth)) :
-            //     exactSize * exactPage - (this.parent.engineModule.colFirstLvl *
-            //         colValues * this.parent.gridSettings.columnWidth);
-            let pos: number = exactSize * exactPage - (this.parent.engineModule.colFirstLvl *
-                colValues * this.parent.gridSettings.columnWidth);
-            this.parent.scrollPosObject.horizontalSection = pos;
+            //     exactSize * exactPage - (pivot.engineModule.colFirstLvl *
+            //         colValues * pivot.gridSettings.columnWidth);
+            let pos: number = exactSize * exactPage - (pivot.engineModule.colFirstLvl *
+                colValues * pivot.gridSettings.columnWidth);
+            pivot.scrollPosObject.horizontalSection = pos;
+            //});
         }
     }
 

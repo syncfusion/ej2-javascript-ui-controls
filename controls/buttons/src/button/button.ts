@@ -117,7 +117,6 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
      */
     public render(): void {
         this.initialize();
-        this.renderComplete();
     }
 
     private initialize(): void {

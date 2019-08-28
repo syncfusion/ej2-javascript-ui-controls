@@ -16,6 +16,7 @@ import { ThumbnailView } from './index';
 import { BookmarkView } from './index';
 import { TextSelection } from './index';
 import { TextSearch } from './index';
+import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';
@@ -1129,6 +1130,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableAnnotation: boolean;
 
     /**
+     * Enable or disable the form fields in the Pdfviewer.
+     * @default true
+     */
+    @Property(true)
+    public enableFormFields: boolean;
+
+    /**
      * Enable or disables the text markup annotation in the PdfViewer.
      * @default true
      */
@@ -1407,6 +1415,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public annotationModule: Annotation;
+    /**
+     * @private
+     */
+    public formFieldsModule: FormFields;
     /** 
      * Gets the bookmark view object of the pdf viewer.
      * @asptype BookmarkView
@@ -1645,7 +1657,6 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
             this.viewerBase.disableTextSelectionMode();
         }
         this.drawing.renderLabels(this);
-        this.renderComplete();
     }
 
     public getModuleName(): string {
@@ -1767,6 +1778,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (this.enableAnnotation) {
             modules.push({
                 member: 'Annotation', args: [this, this.viewerBase]
+            });
+        }
+        if (this.enableFormFields) {
+            modules.push({
+                member: 'FormFields', args: [this, this.viewerBase]
             });
         }
         return modules;

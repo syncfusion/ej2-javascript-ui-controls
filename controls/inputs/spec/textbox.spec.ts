@@ -2142,75 +2142,7 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('placeholder')).toBe('choose a date');
         });
     });
-    describe('HTML attribute API at inital rendering and dynamic rendering', () => {
-        let inputObj: any;
-        beforeEach((): void => {
-            inputObj = undefined;
-            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textbox' });
-            document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            if (inputObj) {
-                inputObj.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('Html attributes at initial rendering', () => {
-            inputObj = new TextBox({ htmlAttributes:{placeholder:"Enter a name", class: "sample" } });
-            inputObj.appendTo('#textbox');
-            expect(inputObj.element.getAttribute('placeholder')).toBe('Enter a name');
-            expect(inputObj.textboxWrapper.container.classList.contains('sample')).toBe(true);
-        });
-        it('Pass multiple attributes dynamically', () => {
-            inputObj = new TextBox({ value: 'Description'});
-            inputObj.appendTo('#textbox');
-            inputObj.htmlAttributes = { class:"sample", readonly: "true", disabled: "true"};
-            inputObj.dataBind();
-            expect(inputObj.element.value).toBe('Description');
-            expect(inputObj.textboxWrapper.container.classList.contains('sample')).toBe(true);
-            expect(inputObj.element.hasAttribute('readonly')).toBe(true);
-            expect(inputObj.element.hasAttribute('disabled')).toBe(true);
-        });
-        it('Dynamically change attributes through htmlAttributes API', () => {
-            inputObj = new TextBox({ value: 'Description' });
-            inputObj.appendTo('#textbox');
-            inputObj.element.value = 'Feedback';
-            inputObj.htmlAttributes = { class:"sample" };
-            inputObj.dataBind();
-            expect(inputObj.element.value).toBe('Feedback');
-        });
-        it('Dynamically change multiple attributes through htmlAttributes API', () => {
-            inputObj = new TextBox({ value: 'Description' });
-            inputObj.appendTo('#textbox');
-            inputObj.element.value = 'Feedback';
-            inputObj.htmlAttributes = { class:"sample" , maxlength:"5", minlength:"1"};
-            inputObj.dataBind();
-            expect(inputObj.element.value).toBe('Feedback');
-            expect(inputObj.element.getAttribute('maxlength')).toBe('5');
-            expect(inputObj.element.getAttribute('minlength')).toBe('1');
-        });
-        it('Pass null value in htmlAttributes', () => {
-            inputObj = new TextBox({ value: 'Feedback' });
-            inputObj.appendTo('#textbox');
-            inputObj.htmlAttributes = { null: "null"};
-            inputObj.dataBind();
-            expect(inputObj.element.value).toBe('Feedback');
-        });
-        it('Pass undefined in htmlAttributes', () => {
-            inputObj = new TextBox({ value: 'Feedback' });
-            inputObj.appendTo('#textbox');
-            inputObj.htmlAttributes = { undefined: "undefined"};
-            inputObj.dataBind();
-            expect(inputObj.element.value).toBe('Feedback');
-        });
-        it('Pass empty value in htmlAttributes', () => {
-            inputObj = new TextBox({ value: 'Feedback' });
-            inputObj.appendTo('#textbox');
-            inputObj.htmlAttributes = {};
-            inputObj.dataBind();
-            expect(inputObj.element.value).toBe('Feedback');
-        });
-    });
+
     describe('isInteracted event testing', () => {
         let inputObj: any;
         let originalTimeout: number;

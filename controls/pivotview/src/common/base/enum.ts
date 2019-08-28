@@ -39,7 +39,7 @@ export type SelectionMode =
 export type PdfBorderStyle = 'Solid' | 'Dash' | 'Dot' | 'DashDot' | 'DashDotDot';
 
 export type ToolbarItems = 'New' | 'Save' | 'SaveAs' | 'Load' | 'Rename' | 'Remove' | 'Grid' | 'Chart' | 'Export' |
-    'SubTotal' | 'GrandTotal' | 'FieldList' | 'ConditionalFormatting' | 'NumberFormatting' | 'Formatting';
+    'SubTotal' | 'GrandTotal' | 'FieldList' | 'ConditionalFormatting' | 'MDX' | 'NumberFormatting' | 'Formatting';
 
 export type View =
     /**  Defines the view port as both chart and table */

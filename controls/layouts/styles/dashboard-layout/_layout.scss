@@ -78,11 +78,6 @@
       & .e-panel-container {
         height: $panel-full-height;
         width: $panel-full-width;
-
-        & .e-panel-content .e-blazor-template {
-          height: $panel-content-template-height;
-          width: $panel-content-template-width;
-        }
       }
     }
 

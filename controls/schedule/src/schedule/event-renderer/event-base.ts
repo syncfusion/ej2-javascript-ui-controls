@@ -6,7 +6,6 @@ import { Timezone } from '../timezone/timezone';
 import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/resources-model';
 import { generate } from '../../recurrence-editor/date-generator';
-import { CalendarType } from '../../common/calendar-util';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 import * as event from '../base/constant';
@@ -58,7 +57,7 @@ export class EventBase {
                 event[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event, null, oldTimezone));
+                processed = processed.concat(this.generateOccurrence(event));
             } else {
                 event.Guid = this.generateGuid();
                 processed.push(event);
@@ -686,7 +685,7 @@ export class EventBase {
         this.parent.activeEventData = { event: eventObject, element: target } as EventClickArgs;
     }
 
-    public generateOccurrence(event: { [key: string]: Object }, viewDate?: Date, oldTimezone?: string): Object[] {
+    public generateOccurrence(event: { [key: string]: Object }, viewDate?: Date): Object[] {
         let startDate: Date = event[this.parent.eventFields.startTime] as Date;
         let endDate: Date = event[this.parent.eventFields.endTime] as Date;
         let eventRule: string = event[this.parent.eventFields.recurrenceRule] as string;
@@ -697,11 +696,8 @@ export class EventBase {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = util.getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        let newTimezone: string = this.parent.timezone || this.timezone.getLocalTimezoneName();
-        let firstDay: number = this.parent.firstDayOfWeek;
-        let calendarMode: CalendarType = this.parent.calendarMode;
         let dates: number[] =
-            generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
+            generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };

@@ -1665,7 +1665,6 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 this.getMinHeight();
             }
         }
-        this.renderComplete();
     };
     /**
      * Initialize the event handler
@@ -3132,7 +3131,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.popupObj.dataBind();
     };
     Tooltip.prototype.openPopupHandler = function () {
-        if (this.needTemplateReposition() && !this.mouseTrail) {
+        if (this.needTemplateReposition()) {
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
@@ -3287,16 +3286,13 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             if (this.content instanceof HTMLElement) {
                 tooltipContent.appendChild(this.content);
             }
-            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
+            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') !== 0) {
                 tooltipContent.innerHTML = this.content;
             }
             else {
                 var templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
-                    this.isBlazorTemplate = true;
-                    updateBlazorTemplate(this.element.id + 'content', 'Content', this);
-                }
+                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
             }
         }
         else {
@@ -3441,7 +3437,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 _this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: _this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: _this.tooltipEle };
                 var this$_1 = _this;
-                if (_this.needTemplateReposition() && !_this.mouseTrail) {
+                if (_this.needTemplateReposition()) {
                     _this.tooltipEle.style.display = 'none';
                 }
                 _this.trigger('beforeOpen', _this.tooltipEventArgs, function (observedArgs) {
@@ -3481,7 +3477,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || isBlazor() && this.isBlazorTemplate;
+            || isBlazor();
     };
     Tooltip.prototype.checkCollision = function (target, x, y) {
         var elePos = {
@@ -3701,7 +3697,6 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     Tooltip.prototype.render = function () {
         this.initialize();
         this.wireEvents(this.opensOn);
-        this.renderComplete();
     };
     /**
      * Initializes the values of private members.

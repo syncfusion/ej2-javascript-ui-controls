@@ -495,7 +495,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
-        this.renderComplete();
     }
 
     private initGridLines(): void {
@@ -944,7 +943,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.upTarget = (<HTMLElement>this.downTarget);
         let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.upTarget), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
-        this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
             let moveEventName: string = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
@@ -964,6 +962,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
+        this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;
         this.mOffX = this.mOffY = 0;

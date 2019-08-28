@@ -482,7 +482,6 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.getMinHeight();
             }
         }
-        this.renderComplete();
     }
     /**
      * Initialize the event handler

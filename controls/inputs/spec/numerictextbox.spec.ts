@@ -3542,52 +3542,6 @@ describe('Change Event testing', () => {
 
 
     });
-    describe('Check placeholder after load culture', () => {
-        let numerictextbox: any;
-        L10n.load({
-            'en': {
-                'numerictextbox': {
-                    incrementTitle: 'Increment value', decrementTitle: 'Decrement value',
-                    placeholder: 'Enter the value'
-                }
-            },
-             'de': {
-                'numerictextbox': {
-                    incrementTitle: 'Wert erhöhen', decrementTitle: 'Dekrementwert',
-                    placeholder: 'Geben Sie den Wert ein'
-                }
-            },
-            'ar': {
-                'numerictextbox': {
-                    incrementTitle: 'قيمة الزيادة', decrementTitle: 'انخفاض القيمة',
-                    placeholder: 'أدخل رقم'
-                }
-            },
-        });
-        beforeEach((): void => {
-            numerictextbox = undefined;
-            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric' });
-            document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            if (numerictextbox) {
-                numerictextbox.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('Pass placeholder through l10n load', () => {
-            numerictextbox = new NumericTextBox({ floatLabelType: 'Auto', locale: 'en' }, '#tsNumeric');
-            expect(numerictextbox.placeholder).toEqual('Enter the value');
-        });
-        it('Pass placeholder through l10n load in de culture', () => {
-            numerictextbox = new NumericTextBox({ floatLabelType: 'Auto', locale: 'de' }, '#tsNumeric');
-            expect(numerictextbox.placeholder).toEqual('Geben Sie den Wert ein');
-        });
-        it('Set placeholder through API', () => {
-            numerictextbox = new NumericTextBox({ floatLabelType: 'Auto', locale: 'en', placeholder: 'Testo numeric' }, '#tsNumeric');
-            expect(numerictextbox.placeholder).toEqual('Testo numeric');
-        });
-    });
 
     describe('Keyboard navigation triggering keyup', () => {
         let numerictextbox: any;
@@ -4783,75 +4737,7 @@ describe('Change Event testing', () => {
             expect(numerictextbox.element.getAttribute('placeholder')).toBe('choose a date');
         });
     });
-    describe('HTML attribute API at inital rendering and dynamic rendering', () => {
-        let numerictextbox: any;
-        beforeEach((): void => {
-            numerictextbox = undefined;
-            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'numeric' });
-            document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            if (numerictextbox) {
-                numerictextbox.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('Html attributes at initial rendering', () => {
-            numerictextbox = new NumericTextBox({ htmlAttributes:{placeholder:"Enter a number", class: "sample" } });
-            numerictextbox.appendTo('#numeric');
-            expect(numerictextbox.element.getAttribute('placeholder')).toBe('Enter a number');
-            expect(numerictextbox.inputWrapper.container.classList.contains('sample')).toBe(true);
-        });
-        it('Pass multiple attributes dynamically', () => {
-            numerictextbox = new NumericTextBox({ value: 5});
-            numerictextbox.appendTo('#numeric');
-            numerictextbox.htmlAttributes = { class:"sample", readonly: "true", disabled: "true"};
-            numerictextbox.dataBind();
-            expect(numerictextbox.element.value).toBe('5.00');
-            expect(numerictextbox.inputWrapper.container.classList.contains('sample')).toBe(true);
-            expect(numerictextbox.element.hasAttribute('readonly')).toBe(true);
-            expect(numerictextbox.element.hasAttribute('disabled')).toBe(true);
-        });
-        it('Dynamically change attributes through htmlAttributes API', () => {
-            numerictextbox = new NumericTextBox({ value: 10 });
-            numerictextbox.appendTo('#numeric');
-            numerictextbox.element.value = 20;
-            numerictextbox.htmlAttributes = { class:"sample" };
-            numerictextbox.dataBind();
-            expect(numerictextbox.element.value).toBe('20');
-        });
-        it('Dynamically change multiple attributes through htmlAttributes API', () => {
-            numerictextbox = new NumericTextBox({ value: 50 });
-            numerictextbox.appendTo('#numeric');
-            numerictextbox.htmlAttributes = { class:"sample" , max:"80", min:"20"};
-            numerictextbox.dataBind();
-            expect(numerictextbox.element.value).toBe('50.00');
-            expect(numerictextbox.element.getAttribute('max')).toBe('80');
-            expect(numerictextbox.element.getAttribute('min')).toBe('20');
-        });
-        it('Pass null value in htmlAttributes', () => {
-            numerictextbox = new NumericTextBox({ value: 100 });
-            numerictextbox.appendTo('#numeric');
-            numerictextbox.htmlAttributes = { null: "null"};
-            numerictextbox.dataBind();
-            expect(numerictextbox.element.value).toBe('100.00');
-        });
-        it('Pass undefined in htmlAttributes', () => {
-            numerictextbox = new NumericTextBox({ value: 25 });
-            numerictextbox.appendTo('#numeric');
-            numerictextbox.htmlAttributes = { undefined: "undefined"};
-            numerictextbox.dataBind();
-            expect(numerictextbox.element.value).toBe('25.00');
-        });
-        it('Pass empty value in htmlAttributes', () => {
-            numerictextbox = new NumericTextBox({ value: 15 });
-            numerictextbox.appendTo('#numeric');
-            numerictextbox.element.value = 25;
-            numerictextbox.htmlAttributes = {};
-            numerictextbox.dataBind();
-            expect(numerictextbox.element.value).toBe('25');
-        });
-    });
+
     describe('Keyboard navigation key validation', () => {
         let numerictextbox: any;
         beforeEach((): void => {

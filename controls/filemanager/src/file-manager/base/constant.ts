@@ -117,5 +117,3 @@ export const dragHelper: string = 'drag-helper';
 export const dragging: string = 'dragging';
 /** @hidden */
 export const updateSelectionData: string = 'update-selection-data';
-/** @hidden */
-export const methodCall: string = 'method-call';

@@ -24,7 +24,7 @@ export class Rte implements IComponent {
     }
 
     public focus(): void {
-        this.compObj.focusIn();
+        this.compObj.element.focus();
     }
 
     public updateValue(e: NotifyParams): void {

@@ -121,8 +121,7 @@ export class DiagramContextMenu {
             onOpen: this.contextMenuOpen.bind(this),
             beforeItemRender: this.BeforeItemRender.bind(this),
             onClose: this.contextMenuOnClose.bind(this),
-            cssClass: 'e-diagram-menu',
-            animationSettings: { effect: 'None' }
+            cssClass: 'e-diagram-menu'
         });
         this.contextMenu.appendTo(this.element);
     }

@@ -158,7 +158,12 @@ export class GroupingBar implements IAction {
                     this.columnPanel.removeAttribute('style');
                     this.rowPanel.removeAttribute('style');
                     this.filterPanel.removeAttribute('style');
-                    let emptyRowCount: number = Object.keys(this.parent.engineModule.headerContent).length;
+                    let emptyRowCount: number;
+                    if (this.parent.dataType === 'olap') {
+                        emptyRowCount = Object.keys(this.parent.olapEngineModule.headerContent).length;
+                    } else {
+                        emptyRowCount = Object.keys(this.parent.engineModule.headerContent).length;
+                    }
                     if (emptyRowCount) {
                         let emptyHeader: HTMLElement =
                             this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader') as HTMLElement;
@@ -324,14 +329,22 @@ export class GroupingBar implements IAction {
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth) :
                         (colwidth > this.resColWidth ? colwidth : this.resColWidth));
                 }
-                let valueColWidth: number = this.parent.renderModule.calculateColWidth((this.parent.dataSourceSettings.values.length > 0 &&
-                    this.parent.engineModule.pivotValues.length > 0) ?
-                    this.parent.engineModule.pivotValues[0].length : 2);
+                let valueColWidth: number;
+                if (this.parent.dataType === 'olap') {
+                    valueColWidth = this.parent.renderModule.calculateColWidth((this.parent.dataSourceSettings.values.length > 0 &&
+                        this.parent.olapEngineModule.pivotValues.length > 0) ?
+                        this.parent.olapEngineModule.pivotValues[0].length : 2);
+                } else {
+                    valueColWidth = this.parent.renderModule.calculateColWidth((this.parent.dataSourceSettings.values.length > 0 &&
+                        this.parent.engineModule.pivotValues.length > 0) ?
+                        this.parent.engineModule.pivotValues[0].length : 2);
+                }
                 for (let cCnt: number = 0; cCnt < gridColumn.length; cCnt++) {
                     if (cCnt !== 0) {
                         if ((gridColumn[cCnt] as Column).columns) {
                             this.setColWidth((gridColumn[cCnt] as Column).columns as Column[], valueColWidth);
                         } else {
+                            (gridColumn[cCnt] as Column).width = valueColWidth;
                             if ((gridColumn[cCnt] as Column).width !== 'auto') {
                                 let levelName: string = gridColumn[cCnt].customAttributes ?
                                     (gridColumn[cCnt].customAttributes as any).cell.valueSort.levelName : '';

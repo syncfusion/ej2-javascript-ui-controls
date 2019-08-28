@@ -8,7 +8,7 @@ import { Node } from '../../../src/diagram/objects/node';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { AnnotationConstraints } from '../../../src/diagram/enum/enum';
-import { Selector } from '../../../src/diagram/objects/node';
+import { Selector, } from '../../../src/diagram/interaction/selector';
 import { DiagramElement } from '../../../src/diagram/core/elements/diagram-element';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from '../../../src/diagram/primitives/matrix';

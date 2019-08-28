@@ -263,6 +263,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
    */
   @Property(false)
  public loadChildOnDemand: boolean;
+
 /**   
  * If `allowTextWrap` set to true,  
  * then text content will wrap to the next line when its text content exceeds the width of the Column Cells. 
@@ -906,21 +907,18 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * Triggers when row element’s drag(move) starts.
    * @event
-   * @deprecated
    */
   @Event()
   public rowDragStart: EmitType<RowDragEventArgs>;
   /**
    * Triggers when row element’s before drag(move).
    * @event
-   * @deprecated
    */
   @Event()
   public rowDragStartHelper: EmitType<RowDragEventArgs>;
   /**
    * Triggers when row elements are dropped on the target row.
    * @event
-   * @deprecated
    */
   @Event()
   public rowDrop: EmitType<RowDragEventArgs>;
@@ -1599,7 +1597,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.actionFailure = this.triggerEvents.bind(this);
     this.grid.dataBound = (args: Object): void => {
       this.updateRowTemplate(args); this.updateColumnModel();
-      this.updateAltRow(this.getRows()); this.notify('dataBoundArg', args);
+      this.updateAltRow(this.getRows());
+      this.notify('dataBoundArg', args);
       this.trigger(events.dataBound, args);
       if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
         let req: number = getObject('dataSource.requests', this).filter((e: Ajax) => {
@@ -1638,8 +1637,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
     };
     this.extendedGridEvents();
-    this.extendedGridEditEvents();
-    this.bindCallBackEvents();
+    this.extendedGridEditEvents(); this.bindCallBackEvents();
   }
   private bindCallBackEvents(): void {
     this.grid.toolbarClick = (args: ClickEventArgs): Deferred | void => {
@@ -2773,11 +2771,11 @@ private getGridEditSettings(): GridEditModel {
    */
   public expandAtLevel(level: number): void {
     if (((this.allowPaging && this.pageSettings.pageSizeMode === 'All') || this.enableVirtualization) && !isRemoteData(this)) {
-      let rec: ITreeData[] = (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
-          if (e.hasChildRecords && e.level === level) {
-            e.expanded = true;
-          }
-          return e.hasChildRecords && e.level === level;
+      let rec: ITreeData[] =  (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
+        if (e.hasChildRecords && e.level === level) {
+          e.expanded = true;
+        }
+        return e.hasChildRecords && e.level === level;
       });
       this.expandRow(null, rec);
     } else {

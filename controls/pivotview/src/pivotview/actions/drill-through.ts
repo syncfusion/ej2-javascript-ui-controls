@@ -1,7 +1,7 @@
 import { PivotView } from '../base/pivotview';
 import { contentReady } from '../../common/base/constant';
 import * as events from '../../common/base/constant';
-import { IAxisSet, IDataSet } from '../../base';
+import { IAxisSet, IDataSet, PivotEngine, OlapEngine, ITupInfo } from '../../base';
 import { DrillThroughEventArgs } from '../../common';
 import { DrillThroughDialog } from '../../common/popups/drillthrough-dialog';
 import { EventHandler } from '@syncfusion/ej2-base';
@@ -70,17 +70,29 @@ export class DrillThrough {
         let colIndex: number = Number(ele.getAttribute('aria-colindex'));
         let rowIndex: number = Number(ele.getAttribute('index'));
         let pivotValue: IAxisSet = this.parent.pivotValues[rowIndex][colIndex] as IAxisSet;
-        let valueCaption: string = this.parent.engineModule.fieldList[pivotValue.actualText.toString()] ?
-            this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
+        let engine: PivotEngine | OlapEngine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        let valueCaption: string = '';
+        let aggType: string = '';
         let rawData: IDataSet[] = [];
         if (pivotValue.rowHeaders !== undefined && pivotValue.columnHeaders !== undefined && pivotValue.value !== undefined) {
-            let indexArray: string[] = Object.keys(pivotValue.indexObject);
-            for (let index of indexArray) {
-                rawData.push((this.parent.engineModule.data as IDataSet[])[Number(index)]);
+            if (this.parent.dataType === 'olap') {
+                let measure: ITupInfo = engine.valueAxis === 'column' ? (engine as OlapEngine).tupColumnInfo[pivotValue.colOrdinal] :
+                    (engine as OlapEngine).tupRowInfo[pivotValue.rowOrdinal];
+                valueCaption = engine.fieldList[measure.measureName].caption;
+                aggType = engine.fieldList[measure.measureName].aggregateType;
+                this.parent.olapEngineModule.getDrillThroughData(pivotValue, this.parent.maxRowsForDrillThrough);
+                rawData = JSON.parse((engine as OlapEngine).gridJSON);
+            } else {
+                valueCaption = engine.fieldList[pivotValue.actualText.toString()] ?
+                    engine.fieldList[pivotValue.actualText.toString()].caption : pivotValue.actualText.toString();
+                aggType = engine.fieldList[pivotValue.actualText] ? engine.fieldList[pivotValue.actualText].aggregateType : '';
+                let indexArray: string[] = Object.keys(pivotValue.indexObject);
+                for (let index of indexArray) {
+                    rawData.push((this.parent.dataSourceSettings.dataSource as IDataSet[])[Number(index)]);
+                }
             }
-            let aggType: string = this.parent.engineModule.fieldList[pivotValue.actualText].aggregateType;
             let valuetText: string = aggType === 'CalculatedField' ? valueCaption.toString() :
-                (aggType + ' of ' + valueCaption);
+                aggType !== '' ? (aggType + ' ' + this.parent.localeObj.getConstant('of') + ' ' + valueCaption) : valueCaption;
             let eventArgs: DrillThroughEventArgs = {
                 currentTarget: ele,
                 currentCell: pivotValue,

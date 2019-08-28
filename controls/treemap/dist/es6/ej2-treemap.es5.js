@@ -895,10 +895,8 @@ function convertElement(element, labelId, data) {
         id: labelId,
         styles: 'position: absolute;pointer-events: auto;'
     });
-    var elementLength = element.length;
-    while (elementLength > 0) {
+    while (element.length > 0) {
         childElement.appendChild(element[0]);
-        elementLength--;
     }
     var templateHtml = childElement.innerHTML;
     var keys = Object.keys(data);
@@ -1954,7 +1952,7 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                         _this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
                     }
                     if (template) {
-                        templateEle = _this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
+                        templateEle = _this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
                         templateGroup.appendChild(templateEle);
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
@@ -1969,8 +1967,16 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
         }
         if (templateGroup.childNodes.length > 0) {
             secondaryEle.appendChild(templateGroup);
-            updateBlazorTemplate(this.treemap.element.id + '_HeaderTemplate', 'HeaderTemplate', levels[levels.length - 1]);
-            updateBlazorTemplate(this.treemap.element.id + '_LabelTemplate', 'LabelTemplate', leaf);
+            if (leaf.labelTemplate) {
+                for (var i = 0; i < templateGroup.childElementCount; i++) {
+                    updateBlazorTemplate(templateGroup.children[i].id, 'LabelTemplate');
+                }
+            }
+            else {
+                for (var j = 0; j < templateGroup.childElementCount; j++) {
+                    updateBlazorTemplate(templateGroup.children[j].id, 'HeaderTemplate');
+                }
+            }
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     };
@@ -2078,14 +2084,12 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
         var contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';
     };
-    LayoutPanel.prototype.renderTemplate = function (secondaryEle, groupId, rect, position, template, item, isLeafItem) {
+    LayoutPanel.prototype.renderTemplate = function (secondaryEle, groupId, rect, position, template, item) {
         var templateElement;
         var labelEle;
         var templateSize;
         var templateFn;
         var templateLocation;
-        var templateId = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';
-        var baseTemplateId = isLeafItem ? '_LabelTemplate' : '_HeaderTemplate';
         if (isNullOrUndefined(template['prototype'])) {
             var keys = Object.keys(item['data']);
             for (var i = 0; i < keys.length; i++) {
@@ -2093,8 +2097,8 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
             }
         }
         templateFn = getTemplateFunction(template);
-        templateElement = templateFn(item['data'], null, null, this.treemap.element.id + baseTemplateId, false);
-        labelEle = convertElement(templateElement, templateId, item['data']);
+        templateElement = templateFn(item['data'], this.treemap);
+        labelEle = convertElement(templateElement, groupId + '_Template', item['data']);
         templateSize = measureElement(labelEle, secondaryEle);
         templateLocation = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
         labelEle.style.left = templateLocation.x + 'px';
@@ -2405,7 +2409,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             this.defaultLevelData = this.levelsOfData;
         }
         this.processDataManager();
-        this.renderComplete();
     };
     /* tslint:disable:no-string-literal */
     /* tslint:disable:no-eval */
@@ -2445,7 +2448,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
+        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
     };
     TreeMap.prototype.createSvg = function () {
         if (this.svgObject) {
@@ -2454,14 +2457,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             }
             if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
                 remove(this.svgObject);
-            }
-        }
-        if (this.leafItemSettings.labelTemplate) {
-            resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
-        }
-        for (var i = 0; i < this.levels.length; i++) {
-            if (this.levels[i].headerTemplate) {
-                resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
         var containerWidth = this.element.clientWidth;
@@ -2840,7 +2835,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             cancel: false,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            treemap: this.isBlazor ? null : this
+            treemap: this
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -2852,7 +2847,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 _this.refreshing = true;
                 _this.wireEVents();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resize, args);
+                _this.trigger(resize, _this.isBlazor ? {} : args);
                 _this.render();
             }, 500);
         }
@@ -3173,10 +3168,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         }
         return modules;
     };
-    /**
-     * Called internally if any of the property value changed.
-     * @private
-     */
     TreeMap.prototype.onPropertyChanged = function (newProp, oldProp) {
         var render = false;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -3187,9 +3178,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'height':
                 case 'width':
-                case 'layoutType':
-                case 'leafItemSettings':
-                case 'legendSettings':
                     render = true;
                     break;
             }

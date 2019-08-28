@@ -316,7 +316,7 @@ export function maskInputBlurHandler(event: MouseEvent | FocusEvent | TouchEvent
 }
 
 function maskInputPasteHandler(event: KeyboardEvent): void {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         let sIndex: number = this.element.selectionStart;
         let eIndex: number = this.element.selectionEnd;
         let oldValue: string = this.element.value;
@@ -350,7 +350,7 @@ function maskInputPasteHandler(event: KeyboardEvent): void {
 }
 
 function maskInputCutHandler(event: KeyboardEvent): void {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         let preValue: string = this.element.value;
         let sIndex: number = this.element.selectionStart;
         let eIndex: number = this.element.selectionEnd;
@@ -415,7 +415,7 @@ function maskInputHandler(event: KeyboardEvent): void {
 }
 
 function maskInputKeyDownHandler(event: KeyboardEvent): void {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         let value: Object = this;
         if (event.keyCode !== 229) {
             if (event.ctrlKey && (event.keyCode === 89 || event.keyCode === 90)) {
@@ -584,7 +584,7 @@ function removeMaskInputValues(event: KeyboardEvent): void {
 }
 
 function maskInputKeyPressHandler(event: KeyboardEvent): void {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         let oldValue: string = this.element.value;
         if ((!event.ctrlKey) || (event.ctrlKey && event.code !== 'KeyA' && event.code !== 'KeyY'
             && event.code !== 'KeyZ' && event.code !== 'KeyX' && event.code !== 'KeyC' && event.code !== 'KeyV')) {
@@ -637,7 +637,7 @@ function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
 }
 
 function maskInputKeyUpHandler(event: KeyboardEvent): void {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         let collec: { value: string, startIndex: number, endIndex: number };
         if (!this.maskKeyPress && event.keyCode === 229) {
             let oldEventVal: string;

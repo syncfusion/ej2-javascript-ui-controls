@@ -26,10 +26,10 @@ const ACTIVE: string = 'e-switch-active';
 @NotifyPropertyChanges
 export class Switch extends Component<HTMLInputElement> implements INotifyPropertyChanged {
     private tagName: string;
-    private isFocused: boolean = false;
+    private isKeyPressed: boolean = false;
     private isDrag: boolean = false;
     private delegateMouseUpHandler: Function;
-    private delegateKeyUpHandler: Function;
+    private delegateKeyDownHandler: Function;
     private formElement: HTMLFormElement;
     private initialSwitchCheckedValue: boolean;
 
@@ -157,7 +157,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         destroy(this, this.getWrapper(), this.tagName);
     }
     private focusHandler(): void {
-        this.isFocused = true;
+        if (this.isKeyPressed) {
+            this.getWrapper().classList.add('e-focus');
+        }
     }
     private focusOutHandler(): void {
         this.getWrapper().classList.remove('e-focus');
@@ -299,14 +301,13 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     }
     private rippleHandler(e: MouseEvent): void {
         let rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
         if (e.type === 'mousedown' && (e.currentTarget as Element).classList.contains('e-switch-wrapper') && e.which === 1) {
             this.isDrag = true;
-            this.isFocused = false;
+            this.isKeyPressed = false;
         }
     }
     private rippleTouchHandler(eventType: string): void {
@@ -333,9 +334,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
     private switchFocusHandler(): void {
-        if (this.isFocused) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isKeyPressed = true;
     }
     private switchMouseUp(e: MouseEventArgs): void {
         let target: Element = e.target as Element;
@@ -371,12 +370,12 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         let wrapper: Element = this.getWrapper();
         let handle: Element = wrapper.querySelector('.e-switch-handle');
         this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
-        this.delegateKeyUpHandler = this.switchFocusHandler.bind(this);
+        this.delegateKeyDownHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(this.element, 'mouseup', this.delegateMouseUpHandler, this);
-        EventHandler.add(this.element, 'keyup', this.delegateKeyUpHandler, this);
+        EventHandler.add(document, 'mouseup', this.delegateMouseUpHandler, this);
+        EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
         if (this.formElement) {
@@ -389,8 +388,8 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
-        EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
+        EventHandler.remove(document, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {

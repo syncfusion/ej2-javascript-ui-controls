@@ -157,7 +157,6 @@ let Button = class Button extends Component {
      */
     render() {
         this.initialize();
-        this.renderComplete();
     }
     initialize() {
         if (this.cssClass) {
@@ -727,7 +726,6 @@ let CheckBox = class CheckBox extends Component {
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     }
     setDisabled() {
         let wrapper = this.getWrapper();
@@ -874,7 +872,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
      */
     constructor(options, element) {
         super(options, element);
-        this.isFocused = false;
+        this.isKeyPressed = false;
     }
     changeHandler(event) {
         this.checked = true;
@@ -926,7 +924,9 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         }
     }
     focusHandler() {
-        this.isFocused = true;
+        if (this.isKeyPressed) {
+            this.getLabel().classList.add('e-focus');
+        }
     }
     focusOutHandler() {
         this.getLabel().classList.remove('e-focus');
@@ -1009,14 +1009,15 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             this.setText(this.label);
         }
     }
-    keyUpHandler() {
-        if (this.isFocused) {
-            this.getLabel().classList.add('e-focus');
-        }
+    keyDownHandler() {
+        this.isKeyPressed = true;
     }
     labelRippleHandler(e) {
         let ripple = this.getLabel().getElementsByClassName(RIPPLE$1)[0];
         rippleMouseHandler(e, ripple);
+    }
+    mouseDownHandler() {
+        this.isKeyPressed = false;
     }
     formResetHandler() {
         this.checked = this.initialCheckedValue;
@@ -1117,7 +1118,6 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     }
     setDisabled() {
         this.element.disabled = true;
@@ -1142,9 +1142,10 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     unWireEvents() {
         let label = this.getLabel();
         EventHandler.remove(this.element, 'change', this.changeHandler);
+        EventHandler.remove(document, 'keydown', this.keyDownHandler);
+        EventHandler.remove(label, 'mousedown', this.mouseDownHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         let rippleLabel = label.getElementsByClassName(LABEL$1)[0];
         if (rippleLabel) {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
@@ -1157,7 +1158,8 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     wireEvents() {
         let label = this.getLabel();
         EventHandler.add(this.element, 'change', this.changeHandler, this);
-        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
+        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(label, 'mousedown', this.mouseDownHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         let rippleLabel = label.getElementsByClassName(LABEL$1)[0];
@@ -1250,7 +1252,7 @@ let Switch = class Switch extends Component {
      */
     constructor(options, element) {
         super(options, element);
-        this.isFocused = false;
+        this.isKeyPressed = false;
         this.isDrag = false;
     }
     changeState(state) {
@@ -1302,7 +1304,9 @@ let Switch = class Switch extends Component {
         destroy(this, this.getWrapper(), this.tagName);
     }
     focusHandler() {
-        this.isFocused = true;
+        if (this.isKeyPressed) {
+            this.getWrapper().classList.add('e-focus');
+        }
     }
     focusOutHandler() {
         this.getWrapper().classList.remove('e-focus');
@@ -1446,14 +1450,13 @@ let Switch = class Switch extends Component {
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     }
     rippleHandler(e) {
         let rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE$2)[0];
         rippleMouseHandler(e, rippleSpan);
         if (e.type === 'mousedown' && e.currentTarget.classList.contains('e-switch-wrapper') && e.which === 1) {
             this.isDrag = true;
-            this.isFocused = false;
+            this.isKeyPressed = false;
         }
     }
     rippleTouchHandler(eventType) {
@@ -1480,9 +1483,7 @@ let Switch = class Switch extends Component {
         }
     }
     switchFocusHandler() {
-        if (this.isFocused) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isKeyPressed = true;
     }
     switchMouseUp(e) {
         let target = e.target;
@@ -1517,12 +1518,12 @@ let Switch = class Switch extends Component {
         let wrapper = this.getWrapper();
         let handle = wrapper.querySelector('.e-switch-handle');
         this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
-        this.delegateKeyUpHandler = this.switchFocusHandler.bind(this);
+        this.delegateKeyDownHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(this.element, 'mouseup', this.delegateMouseUpHandler, this);
-        EventHandler.add(this.element, 'keyup', this.delegateKeyUpHandler, this);
+        EventHandler.add(document, 'mouseup', this.delegateMouseUpHandler, this);
+        EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
         if (this.formElement) {
@@ -1535,8 +1536,8 @@ let Switch = class Switch extends Component {
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
-        EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
+        EventHandler.remove(document, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {
@@ -1647,7 +1648,6 @@ let ChipList = class ChipList extends Component {
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
-        this.renderComplete();
     }
     createChip() {
         this.innerText = this.element.innerText.trim();

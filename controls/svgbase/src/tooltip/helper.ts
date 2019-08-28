@@ -12,7 +12,6 @@ import { createElement, remove, merge } from '@syncfusion/ej2-base';
  * @private
  */
 export function measureText(text: string, font: TextStyleModel): Size {
-    let breakText: string = text || ''; // For avoid NuLL value
     let htmlObject: HTMLElement = document.getElementById('chartmeasuretext');
 
     if (htmlObject === null) {
@@ -28,7 +27,7 @@ export function measureText(text: string, font: TextStyleModel): Size {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
+    htmlObject.innerHTML = text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;

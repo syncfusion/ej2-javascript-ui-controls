@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 17.2.47 (2019-08-27)
+## 17.2.48-beta (2019-08-28)
 
 ### RichTextEditor
 
@@ -12,26 +12,7 @@
 
 - `#244796` - Floating toolbar now renders properly without alignment issue, when render the Rich Text Editor within Tab.
 
-## 17.2.46 (2019-08-22)
-
-### RichTextEditor
-
-#### New Features
-
-- **Image upload events**
-    - `#240002`, `#236690`, `#241238`, `#244320` - This feature allows images to be customized on uploading and inserting them into the editor by using the upload events image selected, image uploading, image upload success, and image upload failed. Users can rename the images before inserting them into the editor using these events.
-
-#### Bug Fixes
-
-- `#243475` - Now, you can validate max-length even showCharCount property as false.
-
-- `#243475` - Resolved the issue with max-length validation on pasting the content.
-
-- `#242999` - The key action for `tab` key and `shift + tab` key are similar now.
-
-- `#241388` - The issue with right-click option while rendering RichTextEditor inside the table has been fixed.
-
-## 17.2.41 (2019-08-14)
+- `#243448` - Performance with page scroll has been improved when multiple Rich Text Editor components are rendered in the page.
 
 ### RichTextEditor
 
@@ -40,7 +21,8 @@
 - **Support for saving images in base64**
     - `#240002`, `#242405` - This feature allows users to save the images in the RichTextEditor in base64 format along with the existing blob format.
 
-- `#242771` - Provided the support to handle both absolute and relative path links.
+- **Image upload events**
+    - `#240002`, `#236690`, `#241238`, `#244320` - This feature allows images to be customized on uploading and inserting them into the editor by using the upload events image selected, image uploading, image upload success, and image upload failed. Users can rename the images before inserting them into the editor using these events.
 
 #### Bug Fixes
 
@@ -55,6 +37,12 @@
 - `#242377` - The issue, "alignment is not working while pasting content from notepad" has been resolved.
 
 - `#F146057` - The issue, "formatting(strong and alignment) is not maintained on pasting web content" has been resolved.
+
+- `#243475` - Resolved the issue with max-length validation on pasting the content.
+
+- `#243921` - The issue, "font-size not applied to cursor based selection" has been resolved.
+
+- `#242999` - The key action for `tab` key and `shift + tab` key are similar now.
 
 ## 17.2.35 (2019-07-17)
 

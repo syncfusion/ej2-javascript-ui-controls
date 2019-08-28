@@ -141,7 +141,7 @@ describe('Switch', () => {
             let event: MouseEvent = document.createEvent('MouseEvent');
             event.initEvent('mousedown', true, true);
             element.parentElement.dispatchEvent(event);
-            expect(specSwitch.isFocused).toEqual(false);
+            expect(specSwitch.isKeyPressed).toEqual(false);
             let up: MouseEvent = document.createEvent('MouseEvent');
             up.initEvent('mouseup', true, true);
             element.parentElement.dispatchEvent(up);
@@ -314,10 +314,10 @@ describe('Switch', () => {
         it('Keyboard Event', () => {
             specSwitch = new Switch({}, '#specSwitch');
             element.parentElement.focus();
-            specSwitch.focusHandler();
             specSwitch.switchFocusHandler();
+            specSwitch.focusHandler();
             expect(element.parentElement.classList.contains('e-focus')).toEqual(true);
-            specSwitch.isFocused = false;
+            specSwitch.isKeyPressed = false;
             specSwitch.focusOutHandler();
             expect(element.parentElement.classList.contains('e-focus')).toEqual(false);
         });

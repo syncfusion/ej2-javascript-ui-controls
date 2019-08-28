@@ -2723,7 +2723,7 @@ function getMonthSummary(ruleObject, cldrObj, localeObj) {
     }
     return summary;
 }
-function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = MAXOCCURRENCE, viewDate = null, calendarMode = 'Gregorian', oldTimezone = null, newTimezone = null) {
+function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = MAXOCCURRENCE, viewDate = null, calendarMode = 'Gregorian') {
     let ruleObject = extractObjectFromRule(rule);
     let cacheDate;
     calendarUtil = getCalendarUtil(calendarMode);
@@ -2731,12 +2731,8 @@ function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = M
     let modifiedDate = new Date(startDate.getTime());
     tempExcludeDate = [];
     let tempDate = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
-    let tz = new Timezone();
     tempDate.forEach((content) => {
         let parsedDate = getDateFromRecurrenceDateString(content);
-        if (oldTimezone && newTimezone) {
-            parsedDate = tz.convert(new Date(parsedDate.getTime()), oldTimezone, newTimezone);
-        }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });
     ruleObject.recExceptionCount = !isNullOrUndefined(ruleObject.count) ? tempExcludeDate.length : 0;
@@ -3845,7 +3841,7 @@ class EventBase {
                 event[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event, null, oldTimezone));
+                processed = processed.concat(this.generateOccurrence(event));
             }
             else {
                 event.Guid = this.generateGuid();
@@ -4451,7 +4447,7 @@ class EventBase {
         }
         this.parent.activeEventData = { event: eventObject, element: target };
     }
-    generateOccurrence(event, viewDate, oldTimezone) {
+    generateOccurrence(event, viewDate) {
         let startDate = event[this.parent.eventFields.startTime];
         let endDate = event[this.parent.eventFields.endTime];
         let eventRule = event[this.parent.eventFields.recurrenceRule];
@@ -4462,10 +4458,7 @@ class EventBase {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        let newTimezone = this.parent.timezone || this.timezone.getLocalTimezoneName();
-        let firstDay = this.parent.firstDayOfWeek;
-        let calendarMode = this.parent.calendarMode;
-        let dates = generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
+        let dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -5540,7 +5533,9 @@ class QuickPopups {
                 dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
         }
-        this.showQuickDialog('RecurrenceValidationAlert');
+        if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
+            this.showQuickDialog('RecurrenceValidationAlert');
+        }
     }
     openDeleteAlert() {
         if (this.parent.activeViewOptions.readonly) {
@@ -5608,7 +5603,14 @@ class QuickPopups {
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
-                appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
+                let templateElement;
+                if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+                    templateElement = this.parent.getAppointmentTemplate()(eventData);
+                    append(templateElement, appointmentEle);
+                }
+                else {
+                    appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
+                }
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     appointmentEle.setAttribute('data-group-index', groupIndex);
                 }
@@ -5639,9 +5641,6 @@ class QuickPopups {
         this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
         let guid = target.getAttribute('data-guid');
         let eventObj = this.parent.eventBase.getEventByGuid(guid);
-        if (isNullOrUndefined(eventObj)) {
-            return;
-        }
         let eventTitle = (eventObj[this.parent.eventFields.subject] || this.l10n.getConstant('noTitle'));
         let eventTemplate = `<div class="${MULTIPLE_EVENT_POPUP_CLASS}"><div class="${POPUP_HEADER_CLASS}">` +
             `<button class="${CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button>` +
@@ -7709,11 +7708,6 @@ class EventWindow {
             this.createRecurrenceEditor(recurrenceEditor);
         }
     }
-    updateRecurrenceEditor(recurrenceEditor) {
-        if (this.parent.editorTemplate) {
-            this.recurrenceEditor = recurrenceEditor;
-        }
-    }
     openEditor(data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
@@ -8638,7 +8632,8 @@ class EventWindow {
             if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
                 isShowAlert = false;
             }
-            if (!isNullOrUndefined(alertType) && isShowAlert) {
+            if (!isNullOrUndefined(alertType) && isShowAlert
+                && ((!this.parent.enableRecurrenceValidation && alertType === 'wrongPattern') || this.parent.enableRecurrenceValidation)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert(alertType);
                 return;
             }
@@ -8676,7 +8671,7 @@ class EventWindow {
                         eveId = eventObj[this.fields.recurrenceID];
                         currentAction = null;
                     }
-                    if (this.editOccurrenceValidation(eveId, eventObj)) {
+                    if (this.parent.enableRecurrenceValidation && this.editOccurrenceValidation(eveId, eventObj)) {
                         this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                         return;
                     }
@@ -11971,13 +11966,6 @@ let Schedule = class Schedule extends Component {
         return this.activeView ? this.activeView.renderDates : [];
     }
     /**
-     * Update the recurrence editor instance from custom editor template.
-     * @method updateRecurrenceEditor
-     */
-    updateRecurrenceEditor(recurrenceEditor) {
-        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
-    }
-    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -12087,6 +12075,26 @@ let Schedule = class Schedule extends Component {
             this.activeEventData.event = data;
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
+    }
+    /**
+     * To manually close the event editor window
+     * @method closeEditor
+     * @return {void}
+     */
+    closeEditor() {
+        if (this.eventWindow) {
+            this.eventWindow.dialogClose();
+        }
+    }
+    /**
+     * To manually close the quick info popup
+     * @method closeQuickInfoPopup
+     * @return {void}
+     */
+    closeQuickInfoPopup() {
+        if (this.quickPopup) {
+            this.quickPopup.quickPopupHide(true);
+        }
     }
     /**
      * Adds the resources to the specified index.
@@ -12227,6 +12235,9 @@ __decorate([
 __decorate([
     Property(true)
 ], Schedule.prototype, "hideEmptyAgendaDays", void 0);
+__decorate([
+    Property(true)
+], Schedule.prototype, "enableRecurrenceValidation", void 0);
 __decorate([
     Property()
 ], Schedule.prototype, "timezone", void 0);
@@ -12370,7 +12381,8 @@ class ActionBase {
                 eventObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
                 currentAction = 'EditOccurrence';
             }
-            if (this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
+            if (this.parent.enableRecurrenceValidation
+                && this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return;
             }
@@ -12664,11 +12676,6 @@ class MonthEvent extends EventBase {
         this.addEventListener();
     }
     renderAppointments() {
-        let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
-        if (this.parent.rowAutoHeight) {
-            this.parent.uiStateValues.top = conWrap.scrollTop;
-            this.parent.uiStateValues.left = conWrap.scrollLeft;
-        }
         let appointmentWrapper = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
         for (let wrap of appointmentWrapper) {
             remove(wrap);
@@ -12678,6 +12685,7 @@ class MonthEvent extends EventBase {
             return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
+        let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         let scrollTop = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
@@ -12693,8 +12701,7 @@ class MonthEvent extends EventBase {
             let data = {
                 cssProperties: this.parent.getCssProperties(),
                 module: this.parent.getModuleName(),
-                isPreventScrollUpdate: true,
-                scrollPosition: { left: this.parent.uiStateValues.left, top: this.parent.uiStateValues.top }
+                isPreventScrollUpdate: true
             };
             if (this.parent.virtualScrollModule) {
                 if (this.parent.currentAction) {
@@ -13362,11 +13369,7 @@ class Resize extends ActionBase {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
         let minutes = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        let element = this.actionObj.clone.offsetParent;
-        if (isNullOrUndefined(element)) {
-            return;
-        }
-        let resizeTime = resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
+        let resizeTime = resetTime(new Date(parseInt(this.actionObj.clone.offsetParent.getAttribute('data-date'), 10)));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {
@@ -16718,10 +16721,6 @@ class Month extends ViewBase {
         }
         // tslint:enable:no-any
         this.setColWidth(content);
-        if (args.scrollPosition) {
-            content.scrollTop = args.scrollPosition.top;
-            content.scrollLeft = args.scrollPosition.left;
-        }
     }
     setContentHeight(content, leftPanelElement, height) {
         content.style.height = 'auto';

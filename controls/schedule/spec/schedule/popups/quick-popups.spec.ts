@@ -2379,6 +2379,37 @@ describe('Quick Popups', () => {
         });
     });
 
+    describe('closeQuickInfoPopup public method testing', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking for cell click quick info popup', () => {
+            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            util.triggerMouseEvent(workCell, 'click');
+            let popupElement: HTMLElement = document.querySelector('.e-popup-open') as HTMLElement;
+            expect(popupElement.children[0].classList.contains('e-cell-popup')).toEqual(true);
+            schObj.closeQuickInfoPopup();
+            let popupElementCount: number = document.querySelectorAll('.e-cell-popup').length;
+            expect(popupElementCount).toEqual(0);
+        });
+
+        it('Checking for event click quick info popup', () => {
+            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            eventElements[0].click();
+            let popupElement: HTMLElement = document.querySelector('.e-popup-open') as HTMLElement;
+            expect(popupElement.children[0].classList.contains('e-event-popup')).toEqual(true);
+            schObj.closeQuickInfoPopup();
+            let popupElementCount: number = document.querySelectorAll('.e-event-popup').length;
+            expect(popupElementCount).toEqual(0);
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

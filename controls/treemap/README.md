@@ -10,7 +10,7 @@ The tree map control provides a simple and effective way to visualize flat or hi
 
 ## Setup
 
-To install TreeMap and its dependent packages, use the following commands
+To install TreeMap and its dependent packages, use the following command
 
 ```sh
 npm install @syncfusion/ej2-treemap

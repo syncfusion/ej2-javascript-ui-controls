@@ -36,7 +36,14 @@ let fieldlist: PivotFieldList = new PivotFieldList({
     },
     showValuesButton: true,
     enginePopulated: (): void => {
-        fieldlist.updateView(pivotGridObj);
+        if (pivotGridObj) {
+            fieldlist.updateView(pivotGridObj);
+        }
+    },
+    dataBound: (): void => {
+        if (pivotGridObj) {
+            pivotGridObj.layoutRefresh();
+        }
     },
     allowCalculatedField: true,
     renderMode: 'Fixed'

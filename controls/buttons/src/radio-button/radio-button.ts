@@ -25,7 +25,7 @@ const WRAPPER: string = 'e-radio-wrapper';
 @NotifyPropertyChanges
 export class RadioButton extends Component<HTMLInputElement> implements INotifyPropertyChanged {
     private tagName: string;
-    private isFocused: boolean = false;
+    private isKeyPressed: boolean = false;
     private formElement: HTMLFormElement;
     private initialCheckedValue: boolean;
     private angularValue: string;
@@ -159,7 +159,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     }
 
     private focusHandler(): void {
-        this.isFocused = true;
+        if (this.isKeyPressed) {
+            this.getLabel().classList.add('e-focus');
+        }
     }
 
     private focusOutHandler(): void {
@@ -248,15 +250,17 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         }
     }
 
-    private keyUpHandler(): void {
-        if (this.isFocused) {
-            this.getLabel().classList.add('e-focus');
-        }
+    private keyDownHandler(): void {
+        this.isKeyPressed = true;
     }
 
     private labelRippleHandler(e: MouseEvent): void {
         let ripple: Element = this.getLabel().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, ripple);
+    }
+
+    private mouseDownHandler(): void {
+        this.isKeyPressed = false;
     }
 
     private formResetHandler(): void {
@@ -357,7 +361,6 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     }
 
     private setDisabled(): void {
@@ -383,9 +386,10 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     protected unWireEvents(): void {
         let label: Element = this.getLabel();
         EventHandler.remove(this.element, 'change', this.changeHandler);
+        EventHandler.remove(document, 'keydown', this.keyDownHandler);
+        EventHandler.remove(label, 'mousedown', this.mouseDownHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         let rippleLabel: Element = label.getElementsByClassName(LABEL)[0];
         if (rippleLabel) {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
@@ -399,7 +403,8 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
     protected wireEvents(): void {
         let label: Element = this.getLabel();
         EventHandler.add(this.element, 'change', this.changeHandler, this);
-        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
+        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(label, 'mousedown', this.mouseDownHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         let rippleLabel: Element = label.getElementsByClassName(LABEL)[0];

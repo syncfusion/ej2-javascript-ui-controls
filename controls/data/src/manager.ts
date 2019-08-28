@@ -16,8 +16,6 @@ export class DataManager {
     /** @hidden */
     public dateParse: boolean = true;
     /** @hidden */
-    public timeZoneHandling: boolean = true;
-    /** @hidden */
     public ready: Promise<Ajax>;
     private isDataAvailable: boolean;
     private requests: Ajax[] = [];
@@ -34,9 +32,6 @@ export class DataManager {
             dataSource = [];
         }
         adaptor = adaptor || (dataSource as DataOptions).adaptor;
-        if (dataSource && (dataSource as DataOptions).timeZoneHandling === false) {
-            this.timeZoneHandling = (dataSource as DataOptions).timeZoneHandling;
-        }
         let data: DataOptions;
         if (dataSource instanceof Array) {
             data = {
@@ -188,11 +183,8 @@ export class DataManager {
             let result: ReturnOption = this.adaptor.processQuery(this, query);
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, <Query>query);
-            } else if (!isNullOrUndefined(result.url)) {
-                this.makeRequest(result, deffered, args, <Query>query);
             } else {
-                args = DataManager.getDeferedArgs(<Query>query, result as ReturnOption, args as ReturnOption);
-                deffered.resolve(args);
+                this.makeRequest(result, deffered, args, <Query>query);
             }
         } else {
             DataManager.nextTick(
@@ -579,7 +571,6 @@ export interface DataOptions {
     dataType?: string;
     offline?: boolean;
     requiresFormat?: boolean;
-    timeZoneHandling?: boolean;
 }
 
 /**

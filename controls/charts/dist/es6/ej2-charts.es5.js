@@ -32295,6 +32295,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             var property = _a[_i];
             switch (property) {
                 case 'series':
+                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -32380,13 +32381,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.series.forEach(function (series) {
             _this.tempSeriesType.push(series.type);
-            series.localData = undefined;
         });
-        this.initialRender = true;
-        this.rangeFound = false;
-        this.resizeTo = null;
-        this.startValue = null;
-        this.endValue = null;
     };
     /**
      * To Initialize the control rendering.

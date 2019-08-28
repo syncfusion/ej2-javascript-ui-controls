@@ -2,75 +2,20 @@
 
 ## [Unreleased]
 
-## 17.2.47 (2019-08-27)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#243953` - Filter works properly with Filter Settings and Search Settings.
-
-## 17.2.46 (2019-08-22)
+## 17.2.48-beta (2019-08-28)
 
 ### TreeGrid
 
 #### New Features
 
-- `#231649` - Support for Row Drag and Drop has been provided that allows to reorder rows within grid and also to drag and drop rows between two treegrid.
-
-## 17.2.41 (2019-08-14)
-
-### TreeGrid
+- Checkbox selection support has been provided that allows users to select rows using checkbox.
+- Checkbox Column support has been provided that allows users to check rows using checkbox in treegrid column.
 
 #### Bug Fixes
 
-- `#243065` - `expandAll` and `collapseAll` method works fine for remote data with `loadChildOnDemand` property as true.
-
-## 17.2.40 (2019-08-06)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `#146272` - Ellipsis works fine for tree-view column.
-
-## 17.2.39 (2019-07-30)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- #145979 - `checkboxChange` event will trigger for header cell check.
-- #240702 - `allowEditOnDblClick` works fine in Cell Edit mode.
-
-#### Breaking Changes
-
-- `checkboxChange` event will trigger after the cell checked.
-
-## 17.2.35 (2019-07-17)
-
-### TreeGrid
-
-#### Bug Fixes
-
-- `crudaction` works fine while performing crud actions with server-side.
-
-## 17.2.28-beta (2019-06-27)
-
-### TreeGrid
-
-#### New Features
-
-- Virtual Scrolling support has been provided in which the rows are added dynamically while scrolling.
-- Detail Template support has been provided that provides additional information about a particular row.
-
-#### Bug Fixes
-
-- `collapseAll` method works fine with pageSize mode set to `All`.
-
-#### Breaking Changes
-
-- The default value of `enableHover` property has been changed from `true` to `false`.
+- Change detection for properties `dataSource` and `query` were handled for remote data.
+- Edited records can be searched/filtered.
+- Inner level records will be collapsed/expanded after filtering/searching actions.
 
 ## 17.1.1-beta (2019-01-29)
 

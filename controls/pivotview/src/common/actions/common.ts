@@ -35,7 +35,7 @@ export class Common implements IAction {
     private initiateCommonModule(): void {
         if (!this.parent.pivotCommon) {
             let args: CommonArgs = {
-                pivotEngine: this.parent.engineModule,
+                pivotEngine: this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule,
                 dataSourceSettings: (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties ?
                     (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties : this.parent.dataSourceSettings,
                 id: this.parent.element.id,
@@ -44,12 +44,14 @@ export class Common implements IAction {
                 enableRtl: this.parent.enableRtl,
                 isAdaptive: Browser.isDevice as boolean,
                 renderMode: 'Popup',
-                localeObj: this.parent.localeObj
+                localeObj: this.parent.localeObj,
+                dataType: this.parent.dataType
             };
             this.parent.pivotCommon = new PivotCommon(args);
         } else {
             this.parent.pivotCommon.element = this.parent.element;
-            this.parent.pivotCommon.engineModule = this.parent.engineModule;
+            this.parent.pivotCommon.engineModule = this.parent.dataType === 'olap' ?
+                this.parent.olapEngineModule : this.parent.engineModule;
             this.parent.pivotCommon.parentID = this.parent.element.id;
             this.parent.pivotCommon.dataSourceSettings = (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties ?
                 (<{ [key: string]: Object }>this.parent.dataSourceSettings).properties : this.parent.dataSourceSettings;
@@ -58,6 +60,7 @@ export class Common implements IAction {
             this.parent.pivotCommon.isAdaptive = Browser.isDevice as boolean;
             this.parent.pivotCommon.renderMode = 'Popup';
             this.parent.pivotCommon.localeObj = this.parent.localeObj;
+            this.parent.pivotCommon.dataType = this.parent.dataType;
         }
         this.parent.pivotCommon.control = this.parent;
     }

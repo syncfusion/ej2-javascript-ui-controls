@@ -11,7 +11,7 @@ import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
 import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';
-import { findDistance, findPath, updatePathElement, setConnectorDefaults } from '../utility/diagram-util';
+import { findDistance, findPath, updatePathElement} from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { flipConnector } from './../utility/diagram-util';
 import { PathElement } from '../core/elements/path-element';
@@ -737,7 +737,6 @@ export class Connector extends NodeBase implements IElement {
      * Defines the segments
      * @default []
      * @aspType object
-     * @blazorType object
      */
     @CollectionFactory(getSegmentType)
     public segments: (OrthogonalSegmentModel | StraightSegmentModel | BezierSegmentModel)[];
@@ -771,8 +770,6 @@ export class Connector extends NodeBase implements IElement {
      * * Bezier - Sets the segment type as Bezier
      * @default 'Straight'
      * @aspType Syncfusion.EJ2.Diagrams.Segments
-     * @blazorDefaultValueIgnore
-     * @blazorDefaultValue  Syncfusion.EJ2.Blazor.Diagrams.Segments.Straight
      */
     @Property('Straight')
     public type: Segments;
@@ -872,9 +869,6 @@ export class Connector extends NodeBase implements IElement {
         super(parent, propName, defaultValue, isArray);
         if (this.shape && this.shape.type === 'UmlActivity') {
             setUMLActivityDefaults(defaultValue, this);
-        }
-        if (defaultValue && (defaultValue as Connector).shape && (defaultValue as Connector).shape.type !== 'None') {
-            setConnectorDefaults(defaultValue, this);
         }
     }
     /** @private */
@@ -985,27 +979,40 @@ export class Connector extends NodeBase implements IElement {
             this.segments[0].type = 'Straight';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
+            this.style.strokeWidth = 2;
 
         } else if (shape.relationship === 'Inheritance') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+            this.style.strokeDashArray = '4 4';
         } else if (shape.relationship === 'Composition') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'Diamond';
             this.targetDecorator.shape = 'None';
+            this.sourceDecorator.style.fill = 'black';
+            this.style.strokeWidth = 2;
         } else if (shape.relationship === 'Aggregation') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'Diamond';
             this.targetDecorator.shape = 'None';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
         } else if (shape.relationship === 'Dependency') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'OpenArrow';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
+            this.style.strokeDashArray = '4 4';
         } else if (shape.relationship === 'Realization') {
             this.segments[0].type = 'Orthogonal';
             this.sourceDecorator.shape = 'None';
             this.targetDecorator.shape = 'Arrow';
+            this.sourceDecorator.style.fill = 'white';
+            this.style.strokeWidth = 2;
         }
         if (shape.associationType === 'BiDirectional') {
             this.sourceDecorator.shape = 'None';
@@ -1059,17 +1066,19 @@ export class Connector extends NodeBase implements IElement {
     private getBpmnSequenceFlow(): PathElement {
         let segment: PathElement = new PathElement(); let pathseq: PathElement = new PathElement(); let pathseqData: Object;
         if (((this.shape as BpmnFlow).sequence) === 'Normal' && this.type !== 'Bezier') {
-            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.shape = 'Arrow'; this.targetDecorator.style.fill = 'black';
         }
         if (((this.shape as BpmnFlow).sequence) === 'Default') {
             segment = this.getSegmentElement(this, segment);
             let anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
             pathseq = updatePathElement(anglePoints, this);
-            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.shape = 'Arrow'; this.targetDecorator.style.fill = 'black';
         }
         if (((this.shape as BpmnFlow).sequence) === 'Conditional') {
             this.targetDecorator.shape = 'Arrow'; this.sourceDecorator.shape = 'Diamond';
             (pathseq as DiagramElement).id = this.id + this.shape.type;
+            this.sourceDecorator.style.fill = 'white'; this.targetDecorator.style.fill = 'black';
+            this.sourceDecorator.width = 20; this.sourceDecorator.height = 10;
         }
         return pathseq;
     }
@@ -1108,19 +1117,23 @@ export class Connector extends NodeBase implements IElement {
 
     private getBpmnAssociationFlow(): void {
         if (((this.shape as BpmnFlow).association) === 'Default') {
-            this.targetDecorator.shape = 'Arrow';
+            this.targetDecorator.shape = 'Arrow'; this.targetDecorator.style.fill = 'black';
         }
         if (((this.shape as BpmnFlow).association) === 'Directional') {
+            this.style.strokeDashArray = '2 2'; this.targetDecorator.style.fill = 'black';
             this.targetDecorator.shape = 'Arrow';
         }
         if (((this.shape as BpmnFlow).association) === 'BiDirectional') {
-            this.targetDecorator.shape = 'Arrow';
-            this.sourceDecorator.shape = 'Arrow';
+            this.style.strokeDashArray = '2 2';
+            this.targetDecorator.shape = 'Arrow'; this.targetDecorator.style.fill = 'black';
+            this.sourceDecorator.shape = 'Arrow'; this.sourceDecorator.style.fill = 'white';
+            this.sourceDecorator.width = 5; this.sourceDecorator.height = 10;
         }
     }
 
     private getBpmnMessageFlow(): PathElement {
         let segmentMessage: PathElement = new PathElement();
+        this.style.strokeDashArray = '4 4';
         this.targetDecorator.shape = 'Arrow';
         this.targetDecorator.width = 5;
         this.targetDecorator.height = 10;
@@ -1133,6 +1146,7 @@ export class Connector extends NodeBase implements IElement {
             segmentMessage.horizontalAlignment = 'Center';
             segmentMessage.verticalAlignment = 'Center'; segmentMessage.transform = Transform.Self;
             segmentMessage.style.fill = ((this.shape as BpmnFlow).message) === 'NonInitiatingMessage' ? 'lightgrey' : 'white';
+
         }
         return segmentMessage;
     }
@@ -1256,14 +1270,14 @@ export class Connector extends NodeBase implements IElement {
         end = !isSource ? points[length - 2] : points[1];
         let len: number = Point.distancePoints(start, end);
         len = (len === 0) ? 1 : len;
+        let width: number = connector.style.strokeWidth - 1;
+        point.x = (Math.round(start.x + width * (end.x - start.x) / len));
+        point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         let strokeWidth: number = 1;
         let node: DiagramElement = isSource ? connector.sourceWrapper : connector.targetWrapper;
         if (node) {
             strokeWidth = node.style.strokeWidth;
         }
-        let width: number = strokeWidth - 1;
-        point.x = (Math.round(start.x + width * (end.x - start.x) / len));
-        point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         if ((isSource && connector.sourceDecorator.shape !== 'None') ||
             (!isSource && connector.targetDecorator.shape !== 'None')) {
             point = Point.adjustPoint(point, end, true, (strokeWidth / 2));

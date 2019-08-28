@@ -1,4 +1,4 @@
-import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings} from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType } from '../../base/types';import { IStyle } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
+import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType } from '../../base/types';import { IStyle } from '../../base/engine';import { DataManager } from '@syncfusion/ej2-data';
 
 /**
  * Interface for a class FieldOptions
@@ -54,6 +54,20 @@ export interface FieldOptionsModel {
      * @default true
      */
     showSubTotals?: boolean;
+
+    /**
+     * It allows to show a field has named set type.
+     * Note: This option is appicable only for OLAP data source.
+     * @default false
+     */
+    isNamedSet?: boolean;
+
+    /**
+     * It allows to show a field has calculated member type.
+     * Note: This option is appicable only for OLAP data source.
+     * @default false
+     */
+    isCalculatedField?: boolean;
 
 }
 
@@ -133,6 +147,19 @@ export interface FilterModel {
      */
     measure?: string;
 
+    /**
+     * It allows to set level count of the field to fetch data from the cube.
+     * Note: This option is appicable only for user-defined hierarchies.
+     * @default 1
+     */
+    levelCount?: number;
+
+    /**
+     * It allows to set level name of a demension, where the filtering settings to be applied.
+     * Note: This option is appicable only for user-defined hierarchies.
+     */
+    selectedField?: string;
+
 }
 
 /**
@@ -169,6 +196,11 @@ export interface ConditionalFormatSettingsModel {
      * It allows to set the style to apply.
      */
     style?: IStyle;
+
+    /**
+     * It allows to apply conditional formatting to grand total
+     */
+    applyToGrandTotals?: boolean;
 
 }
 
@@ -309,6 +341,18 @@ export interface CalculatedFieldSettingsModel {
      */
     formula?: string;
 
+    /**
+     * It allows to set hierarchy unique name, that used to create calculated member.
+     * Note: This option is appicable only for OLAP data source.
+     */
+    hierarchyUniqueName?: string;
+
+    /**
+     * It allows to set format string that used to create calculated member.
+     * Note: This option is appicable only for OLAP data source.
+     */
+    formatString?: string;
+
 }
 
 /**
@@ -357,6 +401,11 @@ export interface ValueSortSettingsModel {
      */
     sortOrder?: Sorting;
 
+    /**
+     * It allows to set the measure name to achieve value sorting based on this.
+     */
+    measure?: string;
+
 }
 
 /**
@@ -365,8 +414,32 @@ export interface ValueSortSettingsModel {
 export interface DataSourceSettingsModel {
 
     /**
+     * It allows to set the cube catalog name.
+     */
+    catalog?: string;
+
+    /**
+     * It allows to set the cube name.
+     */
+    cube?: string;
+
+    /**
+     * It allows to set the date type.
+     */
+    dataProviderType?: string;
+
+    /**
+     * It allows to set the url stirng.
+     */
+    url?: string;
+
+    /**
+     * It allows to set the locale code.
+     */
+    localeIdentifier?: number;
+
+    /**
      * It allows to set the data source.
-     * @isGenericType true
      */
     dataSource?: IDataSet[] | DataManager;
 
@@ -483,6 +556,12 @@ export interface DataSourceSettingsModel {
      * @default false
      */
     alwaysShowValueHeader?: boolean;
+
+    /**
+     * If `showHeaderWhenEmpty` is set to false, then it will hide blank headers in pivot table.
+     * @default true
+     */
+    showHeaderWhenEmpty?: boolean;
 
     /**
      * It allows enable/disable show aggregation on PivotButton.

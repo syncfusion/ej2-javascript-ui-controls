@@ -37,7 +37,6 @@ const EXPAND_PANE = 'e-expanded';
 const COLLAPSE_PANE = 'e-collapsed';
 const PANE_HIDDEN = 'e-pane-hidden';
 const RESIZABLE_PANE = 'e-resizable';
-const LAST_BAR = 'e-last-bar';
 /**
  * Interface to configure pane properties such as its content, size, min, max, resizable, collapsed and collapsible.
  */
@@ -228,7 +227,6 @@ let Splitter = class Splitter extends Component {
         this.setRTL(this.enableRtl);
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
-        this.renderComplete();
     }
     onDocumentClick(e) {
         if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
@@ -446,17 +444,8 @@ let Splitter = class Splitter extends Component {
         this.addSeparator(this.element);
     }
     checkSplitPane(currentBar, elementIndex) {
-        let paneEle = this.collectPanes(currentBar.parentElement.children)[elementIndex];
+        let paneEle = currentBar.parentElement.children[elementIndex];
         return paneEle;
-    }
-    collectPanes(childNodes) {
-        let elements = [];
-        for (let i = 0; i < childNodes.length; i++) {
-            if (childNodes[i].classList.contains('e-pane')) {
-                elements.push(childNodes[i]);
-            }
-        }
-        return elements;
     }
     getPrevPane(currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -560,7 +549,6 @@ let Splitter = class Splitter extends Component {
             }
             else {
                 this.updateResizablePanes(i);
-                addClass([separator], LAST_BAR);
             }
         }
     }
@@ -643,8 +631,8 @@ let Splitter = class Splitter extends Component {
         }
     }
     wireResizeEvents() {
-        EventHandler.add(document, 'mousemove', this.onMouseMove, this);
         window.addEventListener('resize', this.reportWindowSize.bind(this));
+        EventHandler.add(document, 'mousemove', this.onMouseMove, this);
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         let touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -1044,9 +1032,13 @@ let Splitter = class Splitter extends Component {
         return nextPaneIndex + 1;
     }
     getPaneDetails() {
+        let prevPane = null;
+        let nextPane = null;
         this.order = parseInt(this.currentSeparator.style.order, 10);
-        let prevPane = this.getPrevPane(this.currentSeparator, this.order);
-        let nextPane = this.getNextPane(this.currentSeparator, this.order);
+        if (this.allPanes.length > 1) {
+            prevPane = this.getPrevPane(this.currentSeparator, this.order);
+            nextPane = this.getNextPane(this.currentSeparator, this.order);
+        }
         if (prevPane && nextPane) {
             this.previousPane = prevPane;
             this.nextPane = nextPane;
@@ -1547,7 +1539,9 @@ let Splitter = class Splitter extends Component {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
-        this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
+        if (this.allPanes.length > 0) {
+            this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
+        }
     }
 };
 __decorate([
@@ -1760,7 +1754,6 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
-        this.renderComplete();
     }
     initGridLines() {
         this.table = document.createElement('table');
@@ -2210,7 +2203,6 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.upTarget = this.downTarget;
         let el = closest((this.upTarget), '.e-panel');
         let args = { event: e, element: el };
-        this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
             let moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
@@ -2230,6 +2222,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
+        this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;
         this.mOffX = this.mOffY = 0;

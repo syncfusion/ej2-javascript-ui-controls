@@ -1,9 +1,9 @@
 
-import { Gantt, Selection } from '../../src/index';
+import { Gantt, Selection, Toolbar } from '../../src/index';
 import { projectData1 } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { RowSelectingEventArgs } from '@syncfusion/ej2-grids';
-Gantt.Inject(Selection);
+Gantt.Inject(Selection, Toolbar);
 
 describe('Gantt Selection support', () => {
     describe('Gantt selection', () => {
@@ -22,6 +22,7 @@ describe('Gantt Selection support', () => {
                         child: 'subtasks',
                         dependency: 'Predecessor',
                     },
+                    toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
                     projectStartDate: new Date('02/01/2017'),
                     projectEndDate: new Date('12/30/2017'),
                     rowHeight: 40,

@@ -802,7 +802,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking decorator position', (done: Function) => {
-            expect(diagram.connectors[0].wrapper.children[2].offsetX == 300 && diagram.connectors[0].wrapper.children[2].offsetY == 111).toBe(true);
+            expect(diagram.connectors[0].wrapper.children[2].offsetX == 300 && diagram.connectors[0].wrapper.children[2].offsetY == 120).toBe(true);
             diagram.selectAll();
             diagram.group();
             expect(diagram.nodes[2].children.length).toBe(3);
@@ -1514,7 +1514,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let decObj: HTMLElement = document.getElementById('c1_srcDec')
             let bounds: DOMRect = decObj.getBoundingClientRect() as DOMRect;
-            expect(bounds.x === 109 && bounds.y === 103.5 && bounds.width === 10 && bounds.height === 10).toBe(true);
+            expect(bounds.x === 110 && bounds.y === 103.5 && bounds.width === 10 && bounds.height === 10).toBe(true);
             done();
         });
     });

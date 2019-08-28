@@ -753,12 +753,8 @@ export enum ConnectorConstraints {
     Interaction = 1 << 1 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 6 | 1 << 12,
     /** Enables ReadOnly */
     ReadOnly = 1 << 14,
-    /** Enables or disables routing to the connector. */
-    LineRouting = 1 << 15,
-    /** Enables or disables routing to the connector. */
-    InheritLineRouting = 1 << 16,
     /** Enables all constraints. */
-    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13 | 1 << 16
+    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13
 }
 
 
@@ -995,8 +991,6 @@ export enum DiagramConstraints {
     ZoomTextEdit = 1 << 9,
     /** Enables/Disable Virtualization support the diagram */
     Virtualization = 1 << 10,
-    /** Enables/ Disable the line routing */
-    LineRouting = 1 << 11,
     /** Enables/Disable all constraints */
     Default = 1 << 2 | 1 << 4 | 1 << 5 | 1 << 6 | 1 << 7 | 1 << 8
 }
@@ -2189,8 +2183,7 @@ export enum DiagramAction {
     /** Use to prevent the icon while expand a node in diagram */
     PreventIconsUpdate = 1 << 11
 }
-/** @private */
-export type DiagramHistoryAction = 'AddNodeToLane';
+
 /**
  * Defines the Selector type to be drawn
  * None - Draws Normal selector with resize handles

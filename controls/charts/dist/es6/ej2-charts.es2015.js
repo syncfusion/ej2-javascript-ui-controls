@@ -30314,6 +30314,7 @@ class StockChart extends Component {
         for (let property of Object.keys(newProp)) {
             switch (property) {
                 case 'series':
+                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -30398,13 +30399,7 @@ class StockChart extends Component {
     storeDataSource() {
         this.series.forEach((series) => {
             this.tempSeriesType.push(series.type);
-            series.localData = undefined;
         });
-        this.initialRender = true;
-        this.rangeFound = false;
-        this.resizeTo = null;
-        this.startValue = null;
-        this.endValue = null;
     }
     /**
      * To Initialize the control rendering.

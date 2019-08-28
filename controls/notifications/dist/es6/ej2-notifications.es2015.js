@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isNullOrUndefined, isUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -136,7 +136,6 @@ let Toast = class Toast extends Component {
         if (this.isDevice && screen.width < 768) {
             new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
         }
-        this.renderComplete();
     }
     /**
      * To show Toast element on a document with the relative position.
@@ -332,9 +331,7 @@ let Toast = class Toast extends Component {
             duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
         };
         let intervalId = parseInt(toastEle.id.split('toast_')[1], 10);
-        let toastClose = isBlazor() ? {
-            toastContainer: this.toastContainer
-        } : {
+        let toastClose = {
             toastContainer: this.toastContainer,
             toastObj: this,
         };
@@ -501,10 +498,7 @@ let Toast = class Toast extends Component {
         }
     }
     appendToTarget() {
-        let toastBeforeOpen = isBlazor() ? {
-            element: this.toastEle,
-            cancel: false
-        } : {
+        let toastBeforeOpen = {
             toastObj: this,
             element: this.toastEle,
             cancel: false
@@ -528,9 +522,7 @@ let Toast = class Toast extends Component {
         e.stopPropagation();
         let target = e.target;
         let toastEle = closest(target, '.' + ROOT);
-        let clickArgs = isBlazor() ? {
-            element: toastEle, cancel: false, clickToClose: false, originalEvent: e
-        } : {
+        let clickArgs = {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this
         };
         let isCloseIcon = target.classList.contains(CLOSEBTN);
@@ -545,9 +537,7 @@ let Toast = class Toast extends Component {
         let animate = {
             duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
         };
-        let toastOpen = isBlazor() ? {
-            element: this.toastEle
-        } : {
+        let toastOpen = {
             toastObj: this,
             element: this.toastEle,
         };

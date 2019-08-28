@@ -526,8 +526,6 @@ const dragHelper = 'drag-helper';
 const dragging = 'dragging';
 /** @hidden */
 const updateSelectionData = 'update-selection-data';
-/** @hidden */
-const methodCall = 'method-call';
 
 /**
  * Utility file for common actions
@@ -1312,60 +1310,12 @@ function objectToString(data) {
     }
     return str;
 }
-function getItemName(parent, data) {
-    if (parent.hasId) {
-        return getValue('id', data);
-    }
-    return getName(parent, data);
-}
-function updateRenamingData(parent, data) {
-    parent.itemData = [data];
-    parent.currentItemText = getValue('name', data);
-    parent.isFile = getValue('isFile', data);
-    parent.filterPath = getValue('filterPath', data);
-}
 function doRename(parent) {
     if (!hasEditAccess(parent.itemData[0])) {
         createDeniedDialog(parent, parent.itemData[0]);
     }
     else {
         createDialog(parent, 'Rename');
-    }
-}
-/* istanbul ignore next */
-function doDownload(parent) {
-    let items = parent.itemData;
-    for (let i = 0; i < items.length; i++) {
-        if (!hasDownloadAccess(items[i])) {
-            createDeniedDialog(parent, items[i]);
-            return;
-        }
-    }
-    if (parent.selectedItems.length > 0) {
-        Download(parent, parent.path, parent.selectedItems);
-    }
-}
-function doDeleteFiles(parent, data, newIds) {
-    for (let i = 0; i < data.length; i++) {
-        if (!hasEditAccess(data[i])) {
-            createDeniedDialog(parent, data[i]);
-            return;
-        }
-    }
-    parent.itemData = data;
-    Delete(parent, newIds, parent.path, 'delete');
-}
-/* istanbul ignore next */
-function doDownloadFiles(parent, data, newIds) {
-    for (let i = 0; i < data.length; i++) {
-        if (!hasDownloadAccess(data[i])) {
-            createDeniedDialog(parent, data[i]);
-            return;
-        }
-    }
-    parent.itemData = data;
-    if (newIds.length > 0) {
-        Download(parent, parent.path, newIds);
     }
 }
 function createDeniedDialog(parent, data) {
@@ -1640,9 +1590,7 @@ function createSuccess(parent, result) {
 /* istanbul ignore next */
 function renameSuccess(parent, result, path) {
     if (!isNullOrUndefined(result.files)) {
-        if (!isNullOrUndefined(parent.dialogObj)) {
-            parent.dialogObj.hide();
-        }
+        parent.dialogObj.hide();
         let args = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
@@ -1667,16 +1615,14 @@ function renameSuccess(parent, result, path) {
         }
     }
     else {
-        if (result.error.code === '400' && parent.dialogObj && parent.dialogObj.visible) {
+        if (result.error.code === '400') {
             let ele = select('#rename', parent.dialogObj.element);
             let error = getLocaleText(parent, 'Validation-Rename-Exists').replace('{0}', '"' + parent.currentItemText + '"');
             error = error.replace('{1}', '"' + ele.value + '"');
             ele.parentElement.nextElementSibling.innerHTML = error;
         }
         else {
-            if (!isNullOrUndefined(parent.dialogObj)) {
-                parent.dialogObj.hide();
-            }
+            parent.dialogObj.hide();
             onFailure(parent, result, 'rename');
         }
     }
@@ -2700,7 +2646,8 @@ class LargeIconsView {
         while (i < items.length) {
             let icon = fileType(items[i]);
             let name = getValue('name', items[i]);
-            let selected = getItemName(this.parent, items[i]);
+            let id = getValue('id', items[i]);
+            let selected = this.parent.hasId ? id : getName(this.parent, items[i]);
             let className = ((this.parent.selectedItems &&
                 this.parent.selectedItems.indexOf(selected) !== -1)) ?
                 LARGE_ICON + ' e-active' : LARGE_ICON;
@@ -2846,7 +2793,6 @@ class LargeIconsView {
         this.parent.off(openInit, this.onOpenInit);
         this.parent.off(openEnd, this.onPathChanged);
         this.parent.off(modelChanged, this.onPropertyChanged);
-        this.parent.off(methodCall, this.onMethodCall);
         this.parent.off(renameInit, this.onRenameInit);
         this.parent.off(renameEnd, this.onPathChanged);
         this.parent.off(hideLayout, this.onHideLayout);
@@ -2883,7 +2829,6 @@ class LargeIconsView {
         this.parent.on(renameEnd, this.onPathChanged, this);
         this.parent.on(openEnd, this.onPathChanged, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
-        this.parent.on(methodCall, this.onMethodCall, this);
         this.parent.on(hideLayout, this.onHideLayout, this);
         this.parent.on(selectAllInit, this.onSelectAllInit, this);
         this.parent.on(clearAllInit, this.onClearAllInit, this);
@@ -3356,7 +3301,17 @@ class LargeIconsView {
                 break;
             case 'del':
             case 'shiftdel':
-                this.performDelete();
+                if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
+                    this.updateSelectedData();
+                    let data = this.parent.itemData;
+                    for (let i = 0; i < data.length; i++) {
+                        if (!hasEditAccess(data[i])) {
+                            createDeniedDialog(this.parent, data[i]);
+                            return;
+                        }
+                    }
+                    createDialog(this.parent, 'Delete');
+                }
                 break;
             case 'ctrlC':
                 copyFiles(this.parent);
@@ -3369,40 +3324,25 @@ class LargeIconsView {
                 cutFiles(this.parent);
                 break;
             case 'f2':
-                this.performRename();
+                if (this.parent.selectedItems.length === 1) {
+                    this.updateRenameData();
+                    doRename(this.parent);
+                }
                 break;
             case 'ctrlD':
-                this.doDownload();
-                break;
-        }
-    }
-    doDownload() {
-        this.updateSelectedData();
-        doDownload(this.parent);
-    }
-    performDelete() {
-        if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
-            this.updateSelectedData();
-            let data = this.parent.itemData;
-            for (let i = 0; i < data.length; i++) {
-                if (!hasEditAccess(data[i])) {
-                    createDeniedDialog(this.parent, data[i]);
-                    return;
+                if (this.parent.selectedItems.length !== 0) {
+                    Download(this.parent, this.parent.path, this.parent.selectedItems);
                 }
-            }
-            createDialog(this.parent, 'Delete');
-        }
-    }
-    performRename() {
-        if (this.parent.selectedItems.length === 1) {
-            this.updateRenameData();
-            doRename(this.parent);
+                break;
         }
     }
     updateRenameData() {
         let item = select('.' + LIST_ITEM + '.' + ACTIVE, this.element);
         let data = this.getItemObject(item);
-        updateRenamingData(this.parent, data);
+        this.parent.itemData = [data];
+        this.parent.currentItemText = getValue('name', data);
+        this.parent.isFile = getValue('isFile', data);
+        this.parent.filterPath = getValue('filterPath', data);
     }
     getVisitedItem() {
         let item = this.parent.selectedItems[this.parent.selectedItems.length - 1];
@@ -3566,7 +3506,10 @@ class LargeIconsView {
     }
     getDataName(item) {
         let data = this.getItemObject(item);
-        return getItemName(this.parent, data);
+        if (this.parent.hasId) {
+            return getValue('id', data);
+        }
+        return getName(this.parent, data);
     }
     addFocus(item) {
         this.element.setAttribute('tabindex', '-1');
@@ -3677,108 +3620,6 @@ class LargeIconsView {
             data[i] = this.getItemObject(items[i]);
         }
         this.parent.itemData = data;
-    }
-    onMethodCall(args) {
-        if (this.parent.view !== 'LargeIcons') {
-            return;
-        }
-        let action = getValue('action', args);
-        switch (action) {
-            case 'deleteFiles':
-                this.deleteFiles(getValue('ids', args));
-                break;
-            case 'downloadFiles':
-                this.downloadFiles(getValue('ids', args));
-                break;
-            case 'openFile':
-                this.openFile(getValue('id', args));
-                break;
-            case 'renameFile':
-                this.renameFile(getValue('id', args), getValue('newName', args));
-                break;
-        }
-    }
-    getItemsIndex(items) {
-        let indexes = [];
-        let isFilter = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
-        let filterName = this.parent.hasId ? 'id' : 'name';
-        if (this.parent.hasId || !isFilter) {
-            for (let i = 0, len = this.items.length; i < len; i++) {
-                if (items.indexOf(getValue(filterName, this.items[i])) !== -1) {
-                    indexes.push(i);
-                }
-            }
-        }
-        else {
-            for (let i = 0, len = this.items.length; i < len; i++) {
-                let name = getValue('filterPath', this.items[i]) + getValue('name', this.items[i]);
-                if (items.indexOf(name) !== -1) {
-                    indexes.push(i);
-                }
-            }
-        }
-        return indexes;
-    }
-    deleteFiles(ids) {
-        this.parent.activeModule = 'largeiconsview';
-        if (isNullOrUndefined(ids)) {
-            this.performDelete();
-            return;
-        }
-        let indexes = this.getItemsIndex(ids);
-        if (indexes.length === 0) {
-            return;
-        }
-        let data = [];
-        let newIds = [];
-        for (let i = 0; i < indexes.length; i++) {
-            data[i] = this.items[indexes[i]];
-            newIds[i] = getItemName(this.parent, data[i]);
-        }
-        doDeleteFiles(this.parent, data, newIds);
-    }
-    downloadFiles(ids) {
-        if (isNullOrUndefined(ids)) {
-            this.doDownload();
-            return;
-        }
-        let index = this.getItemsIndex(ids);
-        if (index.length === 0) {
-            return;
-        }
-        let data = [];
-        let newIds = [];
-        for (let i = 0; i < index.length; i++) {
-            data[i] = this.items[index[i]];
-            newIds[i] = getItemName(this.parent, data[i]);
-        }
-        doDownloadFiles(this.parent, data, newIds);
-    }
-    openFile(id) {
-        if (isNullOrUndefined(id)) {
-            return;
-        }
-        let indexes = this.getItemsIndex([id]);
-        if (indexes.length > 0) {
-            this.doOpenAction(this.itemList[indexes[0]]);
-        }
-    }
-    renameFile(id, name) {
-        this.parent.activeModule = 'largeiconsview';
-        if (isNullOrUndefined(id)) {
-            this.performRename();
-            return;
-        }
-        let indexes = this.getItemsIndex([id]);
-        if (indexes.length > 0) {
-            updateRenamingData(this.parent, this.items[indexes[0]]);
-            if (isNullOrUndefined(name)) {
-                doRename(this.parent);
-            }
-            else {
-                rename(this.parent, this.parent.path, name);
-            }
-        }
     }
 }
 
@@ -5514,17 +5355,6 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         super.destroy();
     }
     /**
-     * Deletes the folders or files from the given unique identifiers.
-     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to delete the nested level folders or
-     * files, then specify the filter path along with name of the folders or files when performing the search or custom filtering.
-     * For ID based file provider, specify the unique identifier of folders or files.
-     * If it is not specified, then delete confirmation dialog will be opened for selected item.
-     * @returns void
-     */
-    deleteFiles(ids) {
-        this.notify(methodCall, { action: 'deleteFiles', ids: ids });
-    }
-    /**
      * Disables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be disabled.
      * @returns void
@@ -5533,17 +5363,6 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         if (!isNullOrUndefined(items)) {
             this.toolbarModule.enableItems(items, false);
         }
-    }
-    /**
-     * Downloads the folders or files from the given unique identifiers.
-     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to download the nested level folders
-     * or files, then specify the filter path along with name of the folders or files when performing search or custom filtering.
-     * For ID based file provider, specify the unique identifier of folders or files.
-     * If it is not specified, then the selected items will be downloaded.
-     * @returns void
-     */
-    downloadFiles(ids) {
-        this.notify(methodCall, { action: 'downloadFiles', ids: ids });
     }
     /**
      * Enables the specified toolbar items of the file manager.
@@ -5573,21 +5392,11 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     }
     /**
      * Gets the details of the selected files in the file manager.
-     * @returns Object[]
+     * @returns void
      */
     getSelectedFiles() {
         this.notify(updateSelectionData, {});
         return this.itemData;
-    }
-    /**
-     * Opens the corresponding file or folder from the given unique identifier.
-     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to open the nested level folder or
-     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
-     * file provider, specify the unique identifier of folder or file.
-     * @returns void
-     */
-    openFile(id) {
-        this.notify(methodCall, { action: 'openFile', id: id });
     }
     /**
      * Refreshes the folder files of the file manager.
@@ -5603,19 +5412,6 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     refreshLayout() {
         this.adjustHeight();
         this.notify(layoutRefresh, {});
-    }
-    /**
-     * Renames the file or folder with given new name in file manager.
-     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to rename the nested level folder or
-     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
-     * file provider, specify the unique identifier of folder or file.
-     * If it is not specified, then rename dialog will be opened for selected item.
-     * @param {name: string} name – Specifies the new name of the file or folder in current path. If it is not specified, then rename dialog
-     * will be opened for given identifier.
-     * @returns void
-     */
-    renameFile(id, name) {
-        this.notify(methodCall, { action: 'renameFile', id: id, newName: name });
     }
     /**
      * Specifies the direction of FileManager
@@ -5853,7 +5649,7 @@ class Toolbar$1 {
                         refresh(this.parent);
                         break;
                     case 'download':
-                        doDownload(this.parent);
+                        this.doDownload();
                         break;
                     case 'rename':
                         if (!hasEditAccess(details[0])) {
@@ -5883,6 +5679,21 @@ class Toolbar$1 {
                 }
             }
         });
+    }
+    doDownload() {
+        let items = this.parent.itemData;
+        for (let i = 0; i < items.length; i++) {
+            if (!hasDownloadAccess(items[i])) {
+                createDeniedDialog(this.parent, items[i]);
+                return;
+            }
+        }
+        if (this.parent.selectedItems.length > 0) {
+            Download(this.parent, this.parent.path, this.parent.selectedItems);
+        }
+        else {
+            return;
+        }
     }
     toolbarCreateHandler() {
         if (!isNullOrUndefined(select('#' + this.getId('SortBy'), this.parent.element))) {
@@ -6944,11 +6755,10 @@ class DetailsView {
         this.dragObj = null;
         this.startIndex = null;
         this.firstItemIndex = null;
-        this.count = 0;
-        this.isRendered = true;
-        this.isLoaded = false;
         this.pasteOperation = false;
         this.uploadOperation = false;
+        this.count = 0;
+        this.isRendered = true;
         Grid.Inject(Resize, ContextMenu$1, Sort, VirtualScroll);
         this.parent = parent;
         this.element = select('#' + this.parent.element.id + GRID_ID, this.parent.element);
@@ -7267,8 +7077,6 @@ class DetailsView {
         this.parent.isLayoutChange = false;
         hideSpinner(this.parent.element);
         this.checkEmptyDiv(this.emptyArgs);
-        this.isInteracted = this.isLoaded ? true : this.isInteracted;
-        this.isLoaded = false;
     }
     selectRecords(nodes) {
         let gridRecords = this.gridObj.getCurrentViewRecords();
@@ -7470,9 +7278,6 @@ class DetailsView {
             if (!this.gridObj) {
                 this.render(args);
             }
-            else {
-                this.isLoaded = true;
-            }
             if (this.parent.isFiltered) {
                 this.updatePathColumn();
                 this.parent.setProperties({ selectedItems: [] }, true);
@@ -7621,7 +7426,6 @@ class DetailsView {
         this.parent.on(detailsInit, this.onDetailsInit, this);
         this.parent.on(refreshEnd, this.onRefreshEnd, this);
         this.parent.on(search, this.onSearchFiles, this);
-        this.parent.on(methodCall, this.onMethodCall, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
         this.parent.on(deleteInit, this.onDeleteInit, this);
         this.parent.on(deleteEnd, this.onDeleteEnd, this);
@@ -7658,7 +7462,6 @@ class DetailsView {
         this.parent.off(createEnd, this.onCreateEnd);
         this.parent.off(refreshEnd, this.onRefreshEnd);
         this.parent.off(search, this.onSearchFiles);
-        this.parent.off(methodCall, this.onMethodCall);
         this.parent.off(modelChanged, this.onPropertyChanged);
         this.parent.off(renameInit, this.onRenameInit);
         this.parent.off(renameEnd, this.onPathChanged);
@@ -7921,7 +7724,13 @@ class DetailsView {
         let selectSize = 0;
         while (selectSize < selectedRecords.length) {
             let record = selectedRecords[selectSize];
-            let name = getItemName(this.parent, record);
+            let name;
+            if (this.parent.hasId) {
+                name = getValue('id', record);
+            }
+            else {
+                name = getName(this.parent, record);
+            }
             this.parent.selectedItems.push(name);
             selectSize++;
         }
@@ -8091,7 +7900,17 @@ class DetailsView {
                 break;
             case 'del':
             case 'shiftdel':
-                this.performDelete();
+                if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
+                    this.parent.itemData = this.gridObj.getSelectedRecords();
+                    let items = this.parent.itemData;
+                    for (let i = 0; i < items.length; i++) {
+                        if (!hasEditAccess(items[i])) {
+                            createDeniedDialog(this.parent, items[i]);
+                            return;
+                        }
+                    }
+                    createDialog(this.parent, 'Delete');
+                }
                 break;
             case 'enter':
                 if (this.gridObj.selectedRowIndex === -1) {
@@ -8114,10 +7933,23 @@ class DetailsView {
                 cutFiles(this.parent);
                 break;
             case 'ctrlD':
-                this.doDownload();
+                if (this.parent.selectedItems.length !== 0) {
+                    this.parent.itemData = this.gridObj.getSelectedRecords();
+                    let items = this.parent.itemData;
+                    for (let i = 0; i < items.length; i++) {
+                        if (!hasDownloadAccess(items[i])) {
+                            createDeniedDialog(this.parent, items[i]);
+                            return;
+                        }
+                    }
+                    Download(this.parent, this.parent.path, this.parent.selectedItems);
+                }
                 break;
             case 'f2':
-                this.performRename();
+                if (this.parent.selectedItems.length === 1) {
+                    this.updateRenameData();
+                    doRename(this.parent);
+                }
                 break;
             case 'ctrlA':
                 if (!isNullOrUndefined(gridItems[0]) && this.parent.allowMultiSelection) {
@@ -8199,41 +8031,11 @@ class DetailsView {
     gridSelectNodes() {
         return this.gridObj.getSelectedRecords();
     }
-    doDownload() {
-        if (this.parent.selectedItems.length !== 0) {
-            this.parent.itemData = this.gridObj.getSelectedRecords();
-            let items = this.parent.itemData;
-            for (let i = 0; i < items.length; i++) {
-                if (!hasDownloadAccess(items[i])) {
-                    createDeniedDialog(this.parent, items[i]);
-                    return;
-                }
-            }
-            Download(this.parent, this.parent.path, this.parent.selectedItems);
-        }
-    }
-    performDelete() {
-        if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
-            this.parent.itemData = this.gridObj.getSelectedRecords();
-            let items = this.parent.itemData;
-            for (let i = 0; i < items.length; i++) {
-                if (!hasEditAccess(items[i])) {
-                    createDeniedDialog(this.parent, items[i]);
-                    return;
-                }
-            }
-            createDialog(this.parent, 'Delete');
-        }
-    }
-    performRename() {
-        if (this.parent.selectedItems.length === 1) {
-            this.updateRenameData();
-            doRename(this.parent);
-        }
-    }
     updateRenameData() {
         let data = this.gridSelectNodes()[0];
-        updateRenamingData(this.parent, data);
+        this.parent.itemData = [data];
+        this.parent.isFile = getValue('isFile', data);
+        this.parent.filterPath = getValue('filterPath', data);
     }
     shiftMoveMethod(gridItems, selIndex, focIndex, selRowIndeces, e) {
         if (!this.parent.allowMultiSelection) {
@@ -8447,109 +8249,6 @@ class DetailsView {
             }
         }
     }
-    onMethodCall(e) {
-        if (this.parent.view !== 'Details') {
-            return;
-        }
-        let action = getValue('action', e);
-        switch (action) {
-            case 'deleteFiles':
-                this.deleteFiles(getValue('ids', e));
-                break;
-            case 'downloadFiles':
-                this.downloadFiles(getValue('ids', e));
-                break;
-            case 'openFile':
-                this.openFile(getValue('id', e));
-                break;
-            case 'renameFile':
-                this.renameFile(getValue('id', e), getValue('newName', e));
-                break;
-        }
-    }
-    getRecords(nodes) {
-        let gridRecords = this.gridObj.getCurrentViewRecords();
-        let records = [];
-        let hasFilter = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
-        let filter$$1 = this.parent.hasId ? 'id' : 'name';
-        if (this.parent.hasId || !hasFilter) {
-            for (let i = 0, len = gridRecords.length; i < len; i++) {
-                if (nodes.indexOf(getValue(filter$$1, gridRecords[i])) !== -1) {
-                    records.push(gridRecords[i]);
-                }
-            }
-        }
-        else {
-            for (let i = 0, len = gridRecords.length; i < len; i++) {
-                let name = getValue('filterPath', gridRecords[i]) + getValue('name', gridRecords[i]);
-                if (nodes.indexOf(name) !== -1) {
-                    records.push(gridRecords[i]);
-                }
-            }
-        }
-        return records;
-    }
-    deleteFiles(ids) {
-        this.parent.activeModule = 'detailsview';
-        if (isNullOrUndefined(ids)) {
-            this.performDelete();
-            return;
-        }
-        let records = this.getRecords(ids);
-        if (records.length === 0) {
-            return;
-        }
-        let data = [];
-        let newIds = [];
-        for (let i = 0; i < records.length; i++) {
-            data[i] = records[i];
-            newIds[i] = getItemName(this.parent, data[i]);
-        }
-        doDeleteFiles(this.parent, data, newIds);
-    }
-    downloadFiles(ids) {
-        if (isNullOrUndefined(ids)) {
-            this.doDownload();
-            return;
-        }
-        let dRecords = this.getRecords(ids);
-        if (dRecords.length === 0) {
-            return;
-        }
-        let data = [];
-        let newIds = [];
-        for (let i = 0; i < dRecords.length; i++) {
-            data[i] = dRecords[i];
-            newIds[i] = getItemName(this.parent, data[i]);
-        }
-        doDownloadFiles(this.parent, data, newIds);
-    }
-    openFile(id) {
-        if (isNullOrUndefined(id)) {
-            return;
-        }
-        let records = this.getRecords([id]);
-        if (records.length > 0) {
-            this.openContent(records[0]);
-        }
-    }
-    renameFile(id, name) {
-        this.parent.activeModule = 'detailsview';
-        if (isNullOrUndefined(id)) {
-            this.performRename();
-            return;
-        }
-        let records = this.getRecords([id]);
-        if (records.length > 0) {
-            updateRenamingData(this.parent, records[0]);
-            if (isNullOrUndefined(name)) {
-                doRename(this.parent);
-            }
-            else {
-                rename(this.parent, this.parent.path, name);
-            }
-        }
-    }
 }
 
 /**
@@ -8568,5 +8267,5 @@ class DetailsView {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es2015.js.map

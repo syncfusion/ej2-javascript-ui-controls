@@ -1,0 +1,153 @@
+@include export-module('ribbon-layout') {
+  .e-ribbon {
+    @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+      & .e-tab .e-content .e-toolbar {
+        border-bottom-width: 0;
+        border-radius: 0;
+        border-top-width: 0;
+      }
+    }
+    @else {
+      border: $border;
+    }
+
+    & .e-tab .e-tab-header {
+      & .e-hscroll {
+        display: inline-block !important; // sass-lint:disable-line no-important
+        width: calc(100% - 28px);
+      }
+
+      & .e-toolbar-items .e-toolbar-item:nth-child(2) {
+        @if $skin-name == 'bootstrap' {
+          border-width: 0;
+        }
+
+        @if $skin-name == 'fabric' {
+          margin-right: 0;
+        }
+
+        & .e-tab-wrap {
+          padding: $file-menu-wrap-padding;
+
+          @if $skin-name == 'bootstrap4' {
+            border-width: 0;
+          }
+        }
+
+        & .e-text-wrap {
+          vertical-align: top;
+        }
+      }
+
+      & .e-indicator {
+        z-index: 1;
+      }
+    }
+
+    & .e-drop-icon {
+      cursor: pointer;
+      float: right;
+      font-family: 'e-icons';
+      margin: $drop-icon-margin;
+      text-align: center;
+      transform: rotate(180deg);
+      transition: transform 300ms ease;
+      width: 18px;
+
+      @if $skin-name != 'bootstrap4' {
+        font-size: 10px;
+      }
+    }
+
+    &.e-collapsed {
+      & .e-content,
+      & .e-indicator,
+      & .e-tab-header .e-toolbar-item.e-active .e-text-wrap::before {
+        display: none;
+      }
+
+
+
+      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        & .e-tab .e-tab-header:not(.e-vertical) {
+          &::before {
+            border-width: 0;
+          }
+
+          & .e-toolbar-item.e-active {
+            border: 0;
+          }
+        }
+      }
+
+      & .e-drop-icon {
+        transform: rotate(0deg);
+      }
+    }
+
+    @if $skin-name == 'fabric' {
+      & .e-toolbar {
+        border-top-width: 1px;
+        border-width: 0;
+      }
+    }
+
+    & .e-content .e-toolbar {
+      @if $skin-name == 'highcontrast' {
+        & .e-toolbar-items .e-toolbar-item.e-overlay {
+          opacity: .5;
+        }
+      }
+
+      &.e-overlay .e-toolbar-items .e-toolbar-item.e-overlay {
+        opacity: 1;
+      }
+    }
+
+    & .e-menu-wrapper {
+      border-width: 0;
+
+      & ul {
+        &.e-menu {
+          padding: 0;
+        }
+
+        @if $skin-name == 'material' or $skin-name == 'fabric' {
+          & .e-menu-item.e-menu-caret-icon {
+            height: $tab-header-height;
+            line-height: $tab-header-height;
+
+            & .e-caret {
+              line-height: $tab-header-height;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-ribbon,
+  .e-bigger.e-ribbon {
+    & .e-menu-wrapper {
+      & ul.e-menu {
+        padding: 0;
+
+        @if $skin-name == 'material' or $skin-name == 'fabric' {
+          & .e-menu-item.e-menu-caret-icon {
+            height: $bigger-tab-header-height;
+            line-height: $bigger-tab-header-height;
+
+            & .e-caret {
+              line-height: $bigger-tab-header-height;
+            }
+          }
+        }
+      }
+    }
+
+    & .e-drop-icon {
+      font-size: 12px;
+      margin: $bigger-drop-icon-margin;
+    }
+  }
+}

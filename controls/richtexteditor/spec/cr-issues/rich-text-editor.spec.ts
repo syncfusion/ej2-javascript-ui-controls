@@ -869,7 +869,8 @@ describe('RTE CR issues', () => {
         afterEach(() => {
             destroy(rteObj);
         });
-    }); 
+    });
+
     describe('Check maxLength while showCharCount in false', () => {
         let rteObj: RichTextEditor;
       
@@ -907,4 +908,5 @@ describe('RTE CR issues', () => {
             expect(rteObj.getCharCount()).toBe(10);
         });
     });
+
 })

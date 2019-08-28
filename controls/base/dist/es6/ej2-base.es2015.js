@@ -5182,12 +5182,12 @@ let Component = class Component extends Base {
      * It is used to process the post rendering functionalities to a component.
      */
     renderComplete(wrapperElement) {
-        if (isBlazor()) {
-            let ejsInterop = 'ejsInterop';
-            // tslint:disable-next-line:no-any
-            window[ejsInterop].renderComplete(this.element, wrapperElement);
-        }
-        this.isRendered = true;
+        //     if (isBlazor()) {
+        //         let ejsInterop: string = 'ejsInterop';
+        //         // tslint:disable-next-line:no-any
+        //         (window as any)[ejsInterop].renderComplete(this.element, wrapperElement);
+        //     }
+        //     this.isRendered = true;
     }
     /**
      * When invoked, applies the pending property changes immediately to the component.

@@ -3,7 +3,7 @@ import { IRichTextEditor, NotifyArgs, IRenderer, ActionCompleteEventArgs } from 
 import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, extend } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
@@ -204,8 +204,7 @@ export class PasteCleanup {
             if (!dialog.isDestroyed) {
               this.selectFormatting(value, args);
               dialog.hide();
-              let argument: Dialog = isBlazor() ? null : dialog;
-              this.dialogRenderObj.close(argument);
+              this.dialogRenderObj.close(dialog);
               dialog.destroy();
             }
           },
@@ -219,8 +218,7 @@ export class PasteCleanup {
           click: () => {
             if (!dialog.isDestroyed) {
               dialog.hide();
-              let args: Dialog = isBlazor() ? null : dialog;
-              this.dialogRenderObj.close(args);
+              this.dialogRenderObj.close(dialog);
               dialog.destroy();
             }
           },

@@ -987,19 +987,19 @@ describe('GridLayout', () => {
                 cellSpacing: [5, 5],
                 allowResizing: true,
                 panels: [
-                    { id:"zero", sizeX: 2, sizeY: 2, row: 0, col: 0, content: "<div>1</div>" },
-                    { id:"one", sizeX: 2, sizeY: 2, row: 2, col: 0, content: "<div>2</div>" },
-                    { id:"two", sizeX: 2, sizeY: 2, row: 4, col: 0, content: "<div>3</div>" },
-                    { id:"three", sizeX: 2, sizeY: 2, row: 6, col: 0, content: "<div>4</div>" },
-                    { id:"four", sizeX: 2, sizeY: 2, row: 8, col: 0, content: "<div>5</div>" },
-                    { id:"five", sizeX: 2, sizeY: 2, row: 10, col: 0, content: "<div>6</div>" },
-                    { id:"six", sizeX: 2, sizeY: 2, row: 12, col: 0, content: "<div>7</div>" },
-                    { id:"seven", sizeX: 2, sizeY: 2, row: 14, col: 0, content: "<div>8</div>" },
-                    { id:"eight", sizeX: 2, sizeY: 2, row: 16, col: 0, content: "<div>9</div>" },
-                    { id:"nine", sizeX: 2, sizeY: 2, row: 18, col: 0, content: "<div>10</div>" },
-                    { id:"ten", sizeX: 2, sizeY: 2, row: 20, col: 0, content: "<div>11</div>" },
-                    { id:"eleven", sizeX: 2, sizeY: 2, row: 22, col: 0, content: "<div>12</div>" },
-                    { id:"twelve", sizeX: 2, sizeY: 2, row: 24, col: 0, content: "<div>13</div>" }
+                    { id: "zero", sizeX: 2, sizeY: 2, row: 0, col: 0, content: "<div>1</div>" },
+                    { id: "one", sizeX: 2, sizeY: 2, row: 2, col: 0, content: "<div>2</div>" },
+                    { id: "two", sizeX: 2, sizeY: 2, row: 4, col: 0, content: "<div>3</div>" },
+                    { id: "three", sizeX: 2, sizeY: 2, row: 6, col: 0, content: "<div>4</div>" },
+                    { id: "four", sizeX: 2, sizeY: 2, row: 8, col: 0, content: "<div>5</div>" },
+                    { id: "five", sizeX: 2, sizeY: 2, row: 10, col: 0, content: "<div>6</div>" },
+                    { id: "six", sizeX: 2, sizeY: 2, row: 12, col: 0, content: "<div>7</div>" },
+                    { id: "seven", sizeX: 2, sizeY: 2, row: 14, col: 0, content: "<div>8</div>" },
+                    { id: "eight", sizeX: 2, sizeY: 2, row: 16, col: 0, content: "<div>9</div>" },
+                    { id: "nine", sizeX: 2, sizeY: 2, row: 18, col: 0, content: "<div>10</div>" },
+                    { id: "ten", sizeX: 2, sizeY: 2, row: 20, col: 0, content: "<div>11</div>" },
+                    { id: "eleven", sizeX: 2, sizeY: 2, row: 22, col: 0, content: "<div>12</div>" },
+                    { id: "twelve", sizeX: 2, sizeY: 2, row: 24, col: 0, content: "<div>13</div>" }
                 ]
             });
             gridLayOut.appendTo('#gridlayout');
@@ -2346,6 +2346,56 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('1').row == 2).toBe(true);
             expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').row == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').col == 4).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('5').row == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('5').col == 4).toBe(true);
+        });
+
+        it('Resizing test case to check resize stop is triggered correctly', () => {
+            let height: number = 0;
+            let width: number = 0;
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                //     rows: 2,
+                cellSpacing: [5, 5],
+                allowResizing: true,
+                resizeStop: function (args: any) {
+                    expect(args.element.offsetHeight === height).toBe(true);
+                    expect(args.element.offsetWidth === width).toBe(true);
+                },
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "id": '4', "sizeX": 1, "sizeY": 1, "row": 0, "col": 4, content: generateTemplate('4') },
+                    { "id": '5', "sizeX": 1, "sizeY": 1, "row": 1, "col": 4, content: generateTemplate('5') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            let resizingElement: HTMLElement = document.getElementById('0');
+            height = resizingElement.offsetHeight;
+            width = resizingElement.offsetWidth;
+            resizingElement.classList.add('e-item-hover');
+            let movingElemnt: HTMLElement = resizingElement.querySelector('.e-south-east');
+            let targetElemnt: HTMLElement = document.getElementById('1');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, targetElemnt, 90, 95);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 91, 96);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('1').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
             expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('3').col == 3).toBe(true);

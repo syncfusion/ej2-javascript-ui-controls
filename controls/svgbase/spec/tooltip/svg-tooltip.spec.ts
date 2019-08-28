@@ -326,7 +326,7 @@ describe('SVG Tooltip', () => {
             if (args.tooltip.fadeOut) {
                 let tooltipElement: HTMLElement = <HTMLElement>getElement(args.tooltip.element.id);
                 let tooltipGroup: HTMLElement = tooltipElement.firstChild as HTMLElement;   
-                expect(tooltipGroup.style.display).toBe('none');
+                expect(tooltipGroup.style.display).toBe('');
                 done();
             }            
          };

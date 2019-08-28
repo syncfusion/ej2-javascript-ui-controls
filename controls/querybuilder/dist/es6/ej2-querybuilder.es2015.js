@@ -820,13 +820,12 @@ let QueryBuilder = class QueryBuilder extends Component {
                     rule.value = [];
                 }
             }
-            else if (typeof rule.value === 'object' && rule.value != null) {
+            else if (typeof rule.value === 'object') {
                 rule.value = rule.value.length > 0 ? rule.value[0] : '';
             }
             if (ddlArgs.previousItemData) {
                 let prevValue = ddlArgs.previousItemData.value.toLowerCase();
-                if (prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
-                    || (prevValue.indexOf('empty') > -1) && prevValue.indexOf('contains') < 0)) {
+                if (prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 && prevValue.indexOf('contains') < 0)) {
                     filterElem = operatorElem.previousElementSibling;
                     tempRule.type = rule.type;
                 }
@@ -834,11 +833,6 @@ let QueryBuilder = class QueryBuilder extends Component {
             if ((prevOper.indexOf('in') > -1 && prevOper.indexOf('in') < 5) && (currOper.indexOf('in') > -1
                 && currOper.indexOf('in') < 5)) {
                 filterElem = null;
-            }
-            if (tempRule.operator.indexOf('null') > -1 || (tempRule.operator.indexOf('empty') > -1)) {
-                let parentElem = operatorElem.parentElement.querySelector('.e-rule-value');
-                removeClass([parentElem], 'e-show');
-                addClass([parentElem], 'e-hide');
             }
             this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
         }
@@ -1200,8 +1194,6 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     renderControls(target, itemData, rule, tempRule) {
         addClass([target.parentElement.querySelector('.e-rule-value')], 'e-value');
-        removeClass([target.parentElement.querySelector('.e-rule-value')], 'e-hide');
-        addClass([target.parentElement.querySelector('.e-rule-value')], 'e-show');
         if (itemData.template) {
             this.processTemplate(target, itemData, rule, tempRule);
         }
@@ -1333,64 +1325,62 @@ let QueryBuilder = class QueryBuilder extends Component {
                 ddlObj.dataBind();
             }
         }
-        if (!(tempRule.operator.indexOf('null') > -1 || tempRule.operator.indexOf('empty') > -1)) {
-            let parentId = closest(target, '.e-rule-container').id;
-            if (prevItemData && prevItemData.template) {
-                this.templateDestroy(prevItemData, parentId + '_valuekey0');
-                detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
-            }
-            if (isRender) {
-                this.destroyControls(target);
-            }
-            let filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
-            let filtObj = getComponent(filtElem, 'dropdownlist');
+        let parentId = closest(target, '.e-rule-container').id;
+        if (prevItemData && prevItemData.template) {
+            this.templateDestroy(prevItemData, parentId + '_valuekey0');
+            detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+        }
+        if (isRender) {
+            this.destroyControls(target);
+        }
+        let filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
+        let filtObj = getComponent(filtElem, 'dropdownlist');
+        itemData.template = this.columns[filtObj.index].template;
+        if (itemData.template) {
             itemData.template = this.columns[filtObj.index].template;
-            if (itemData.template) {
-                itemData.template = this.columns[filtObj.index].template;
-                let valElem;
-                if (itemData.template && typeof itemData.template.create === 'string') {
-                    valElem = getValue(itemData.template.create, window)();
+            let valElem;
+            if (itemData.template && typeof itemData.template.create === 'string') {
+                valElem = getValue(itemData.template.create, window)();
+            }
+            else if (itemData.template && itemData.template.create) {
+                valElem = itemData.template.create();
+            }
+            if (valElem instanceof Element) {
+                valElem.id = parentId + '_valuekey0';
+                addClass([valElem], 'e-template');
+                addClass([valElem], 'e-' + itemData.field);
+                target.nextElementSibling.appendChild(valElem);
+            }
+            else if (valElem instanceof Array) {
+                addClass(valElem, 'e-template');
+                for (let i = 0, iLen = valElem.length; i < iLen; i++) {
+                    valElem[i].id = parentId + '_valuekey' + i;
+                    target.nextElementSibling.appendChild(valElem[i]);
                 }
-                else if (itemData.template && itemData.template.create) {
-                    valElem = itemData.template.create();
-                }
-                if (valElem instanceof Element) {
-                    valElem.id = parentId + '_valuekey0';
-                    addClass([valElem], 'e-template');
-                    addClass([valElem], 'e-' + itemData.field);
-                    target.nextElementSibling.appendChild(valElem);
-                }
-                else if (valElem instanceof Array) {
-                    addClass(valElem, 'e-template');
-                    for (let i = 0, iLen = valElem.length; i < iLen; i++) {
-                        valElem[i].id = parentId + '_valuekey' + i;
-                        target.nextElementSibling.appendChild(valElem[i]);
-                    }
-                }
-                let parentElem = target.parentElement.querySelector('.e-rule-value');
-                if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
-                    parentElem.style.width = '100%';
-                }
-                else {
-                    parentElem.style.minWidth = '200px';
-                }
+            }
+            let parentElem = target.parentElement.querySelector('.e-rule-value');
+            if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
+                parentElem.style.width = '100%';
             }
             else {
-                let inputLen = 1;
-                if (tempRule.type === 'boolean') {
-                    inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
-                }
-                else {
-                    inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
-                }
-                for (let i = 0; i < inputLen; i++) {
-                    let valElem;
-                    valElem = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
-                    target.nextElementSibling.appendChild(valElem);
-                }
+                parentElem.style.minWidth = '200px';
             }
-            this.renderControls(target, itemData, rule, tempRule);
         }
+        else {
+            let inputLen = 1;
+            if (tempRule.type === 'boolean') {
+                inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
+            }
+            else {
+                inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+            }
+            for (let i = 0; i < inputLen; i++) {
+                let valElem;
+                valElem = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
+                target.nextElementSibling.appendChild(valElem);
+            }
+        }
+        this.renderControls(target, itemData, rule, tempRule);
     }
     updateValues(element, rule) {
         let controlName = element.className.split(' e-')[1];
@@ -1454,9 +1444,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         if (closest(target, '.e-rule-filter')) {
             dropDownObj = getComponent(target, 'dropdownlist');
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
-                if (!(rule.rules[index].operator.indexOf('null') > -1) || (rule.rules[index].operator.indexOf('empty') > -1)) {
-                    rule.rules[index].value = '';
-                }
+                rule.rules[index].value = '';
             }
             this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
             rule.rules[index].field = this.selectedColumn.field;
@@ -1923,11 +1911,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             OtherFields: 'Other Fields',
             AND: 'AND',
             OR: 'OR',
-            SelectValue: 'Enter Value',
-            IsEmpty: 'Is Empty',
-            IsNotEmpty: 'Is Not Empty',
-            IsNull: 'Is Null',
-            IsNotNull: 'Is Not Null'
+            SelectValue: 'Enter Value'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);
@@ -1944,11 +1928,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 { value: 'equal', key: this.l10n.getConstant('Equal') },
                 { value: 'notequal', key: this.l10n.getConstant('NotEqual') },
                 { value: 'in', key: this.l10n.getConstant('In') },
-                { value: 'notin', key: this.l10n.getConstant('NotIn') },
-                { value: 'isempty', key: this.l10n.getConstant('IsEmpty') },
-                { value: 'isnotempty', key: this.l10n.getConstant('IsNotEmpty') },
-                { value: 'isnull', key: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') },
+                { value: 'notin', key: this.l10n.getConstant('NotIn') }
             ],
             dateOperator: [
                 { value: 'equal', key: this.l10n.getConstant('Equal') },
@@ -1972,15 +1952,12 @@ let QueryBuilder = class QueryBuilder extends Component {
                 { value: 'lessthanorequal', key: this.l10n.getConstant('LessThanOrEqual') },
                 { value: 'notequal', key: this.l10n.getConstant('NotEqual') },
                 { value: 'in', key: this.l10n.getConstant('In') },
-                { value: 'notin', key: this.l10n.getConstant('NotIn') },
-                { value: 'isnull', key: this.l10n.getConstant('IsNull') },
-                { value: 'isnotnull', key: this.l10n.getConstant('IsNotNull') }
+                { value: 'notin', key: this.l10n.getConstant('NotIn') }
             ],
         };
         this.operators = {
             equal: '=', notequal: '!=', greaterthan: '>', greaterthanorequal: '>=', lessthan: '<', in: 'IN', notin: 'NOT IN',
-            lessthanorequal: '<=', startswith: 'LIKE', endswith: 'LIKE', between: 'BETWEEN', notbetween: 'NOT BETWEEN', contains: 'LIKE',
-            isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY'
+            lessthanorequal: '<=', startswith: 'LIKE', endswith: 'LIKE', between: 'BETWEEN', notbetween: 'NOT BETWEEN', contains: 'LIKE'
         };
         this.fields = { text: 'label', value: 'field' };
     }
@@ -2193,12 +2170,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
         }
-        if (!rule.condition && rule.condition !== '') {
-            if (rule.operator) {
-                if (rule.operator.indexOf('null') > -1 || rule.operator.indexOf('empty') > -1) {
-                    rule.value = null;
-                }
-            }
+        if (!rule.condition) {
             if (rule.field !== '' && rule.operator !== '' && rule.value !== '') {
                 rule = {
                     'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value
@@ -2352,8 +2324,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             else if (ruleColl[i].operator.length) {
                 let oper = ruleColl[i].operator.toLowerCase();
-                let isDateFilter = false;
-                let dateOperColl = ['equal', 'notequal', 'greaterthan', 'lessthanorequal'];
+                let dateOperColl = ['equal', 'notequal'];
                 if (ruleColl[i].type === 'string') {
                     ignoreCase = this.matchCase ? false : true;
                 }
@@ -2364,20 +2335,13 @@ let QueryBuilder = class QueryBuilder extends Component {
                 if (ruleColl[i].type === 'date') {
                     let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
                     ruleValue = this.intl.parseDate(ruleColl[i].value, format);
-                    if (dateOperColl.indexOf(oper) > -1) {
-                        isDateFilter = true;
-                    }
-                }
-                else if (ruleColl[i].operator.indexOf('null') > -1 || ruleColl[i].operator.indexOf('empty') > -1) {
-                    ruleColl[i].value = null;
                 }
                 else {
                     ruleValue = ruleColl[i].value;
                 }
                 if (i === 0) {
-                    if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1 || oper.indexOf('null') > -1 ||
-                        oper.indexOf('empty') > -1) && oper !== 'contains') {
-                        pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue) : this.arrayPredicate(ruleColl[i]);
+                    if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
+                        pred = this.arrayPredicate(ruleColl[i]);
                     }
                     else {
                         let value = ruleValue;
@@ -2387,21 +2351,23 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                 }
                 else {
-                    if (isDateFilter || (oper.indexOf('in') > -1 || oper.indexOf('between') > -1 ||
-                        oper.indexOf('null') > -1 || oper.indexOf('empty') > -1) && oper !== 'contains') {
-                        pred = isDateFilter ? this.datePredicate(ruleColl[i], ruleValue, pred, rule.condition) :
-                            this.arrayPredicate(ruleColl[i], pred, rule.condition);
-                    }
-                    else {
-                        if (rule.condition === 'and') {
+                    if (rule.condition === 'and') {
+                        if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
+                            pred = this.arrayPredicate(ruleColl[i], pred, rule.condition);
+                        }
+                        else {
                             let value = ruleValue;
                             if (pred && value !== '') {
-                                pred
-                                    = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
+                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                             else if (value !== '') {
                                 pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
+                        }
+                    }
+                    else {
+                        if ((oper.indexOf('in') > -1 || oper.indexOf('between') > -1) && oper !== 'contains') {
+                            pred = this.arrayPredicate(ruleColl[i], pred, rule.condition);
                         }
                         else {
                             let value = ruleValue;
@@ -2428,95 +2394,41 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         return column;
     }
-    datePredicate(ruleColl, value, predicate, condition) {
-        let pred;
-        let dummyDate = new Date(value.getTime());
-        let nextDate = new Date(dummyDate.setDate(dummyDate.getDate() + 1));
-        switch (ruleColl.operator) {
-            case 'equal':
-                pred = new Predicate(ruleColl.field, 'greaterthanorequal', value);
-                pred = pred.and(ruleColl.field, 'lessthan', nextDate);
-                break;
-            case 'notequal':
-                pred = new Predicate(ruleColl.field, 'lessthan', value);
-                pred = pred.or(ruleColl.field, 'greaterthanorequal', nextDate);
-                break;
-            case 'greaterthan':
-                pred = new Predicate(ruleColl.field, 'greaterthanorequal', nextDate);
-                break;
-            case 'lessthanorequal':
-                pred = new Predicate(ruleColl.field, 'lessthan', nextDate);
-                break;
-        }
-        if (pred) {
-            if (predicate) {
-                if (condition === 'and') {
-                    predicate = predicate.and(pred);
-                }
-                else if (condition === 'or') {
-                    predicate = predicate.or(pred);
-                }
-            }
-            else {
-                predicate = pred;
-            }
-        }
-        return predicate;
-    }
     arrayPredicate(ruleColl, predicate, condition) {
         let value = ruleColl.value;
-        let nullValue = ruleColl.value;
         let pred;
-        if (ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1) {
-            switch (ruleColl.operator) {
-                case 'isnull':
-                    pred = new Predicate(ruleColl.field, 'isnull', nullValue);
-                    break;
-                case 'isnotnull':
-                    pred = new Predicate(ruleColl.field, 'notnull', nullValue);
-                    break;
-                case 'isempty':
-                    pred = new Predicate(ruleColl.field, 'equal', '');
-                    break;
-                case 'isnotempty':
-                    pred = new Predicate(ruleColl.field, 'notequal', '');
-                    break;
-            }
-        }
-        if (!(ruleColl.operator.indexOf('null') > -1 || ruleColl.operator.indexOf('empty') > -1)) {
-            for (let j = 0, jLen = value.length; j < jLen; j++) {
-                if (value[j] !== '') {
-                    if (j === 0) {
-                        switch (ruleColl.operator) {
-                            case 'between':
-                                pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
-                                break;
-                            case 'notbetween':
-                                pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
-                                break;
-                            case 'in':
-                                pred = new Predicate(ruleColl.field, 'equal', value[j]);
-                                break;
-                            case 'notin':
-                                pred = new Predicate(ruleColl.field, 'notequal', value[j]);
-                                break;
-                        }
+        for (let j = 0, jLen = value.length; j < jLen; j++) {
+            if (value[j] !== '') {
+                if (j === 0) {
+                    switch (ruleColl.operator) {
+                        case 'between':
+                            pred = new Predicate(ruleColl.field, 'greaterthan', value[j]);
+                            break;
+                        case 'notbetween':
+                            pred = new Predicate(ruleColl.field, 'lessthan', value[j]);
+                            break;
+                        case 'in':
+                            pred = new Predicate(ruleColl.field, 'equal', value[j]);
+                            break;
+                        case 'notin':
+                            pred = new Predicate(ruleColl.field, 'notequal', value[j]);
+                            break;
                     }
-                    else {
-                        switch (ruleColl.operator) {
-                            case 'between':
-                                pred = pred.and(ruleColl.field, 'lessthan', value[j]);
-                                break;
-                            case 'notbetween':
-                                pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
-                                break;
-                            case 'in':
-                                pred = pred.or(ruleColl.field, 'equal', value[j]);
-                                break;
-                            case 'notin':
-                                pred = pred.and(ruleColl.field, 'notequal', value[j]);
-                                break;
-                        }
+                }
+                else {
+                    switch (ruleColl.operator) {
+                        case 'between':
+                            pred = pred.and(ruleColl.field, 'lessthan', value[j]);
+                            break;
+                        case 'notbetween':
+                            pred = pred.or(ruleColl.field, 'greaterthan', value[j]);
+                            break;
+                        case 'in':
+                            pred = pred.or(ruleColl.field, 'equal', value[j]);
+                            break;
+                        case 'notin':
+                            pred = pred.and(ruleColl.field, 'notequal', value[j]);
+                            break;
                     }
                 }
             }
@@ -2633,12 +2545,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                         }
                     }
                 }
-                if (rule.operator.indexOf('null') > -1 || (rule.operator.indexOf('empty') > -1)) {
-                    queryStr += rule.field + ' ' + this.operators[rule.operator];
-                }
-                else {
-                    queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
-                }
+                queryStr += rule.field + ' ' + this.operators[rule.operator] + ' ' + valueStr;
             }
             if (j !== jLen - 1) {
                 queryStr += ' ' + condition + ' ';
@@ -2687,8 +2594,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     parseSqlStrings(sqlString) {
         let operators = ['=', '!=', '<=', '>=', '<', '>'];
         let conditions = ['and', 'or'];
-        let subOp = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL',
-            'IS EMPTY', 'IS NOT EMPTY'];
+        let subOp = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN'];
         let regexStr;
         let regex;
         let matchValue;
@@ -2761,8 +2667,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     getOperator(value, operator) {
         let operators = {
             '=': 'equal', '!=': 'notequal', '<': 'lessthan', '>': 'greaterthan', '<=': 'lessthanorequal',
-            '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween',
-            'is empty': 'isempty', 'is null': 'isnull', 'is not null': 'isnotnull', 'is not empty': 'isnotempty'
+            '>=': 'greaterthanorequal', 'in': 'in', 'not in': 'notin', 'between': 'between', 'not between': 'notbetween'
         };
         if (value.indexOf('%') === 0 && value.indexOf('%') === value.length - 1) {
             return 'contains';
@@ -2775,21 +2680,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         return operators[operator];
     }
-    getTypeFromColumn(rules) {
-        let columnData = this.columns;
-        for (let i = 0; i < columnData.length; i++) {
-            if (columnData[i].field === rules.field) {
-                rules.type = columnData[i].type;
-                break;
-            }
-        }
-        return rules.type;
-    }
     processParser(parser, rules, levelColl) {
         let rule;
-        let subRules;
         let numVal = [];
         let strVal = [];
+        let subRules;
         let j;
         let jLen;
         let k;
@@ -2802,14 +2697,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (parser[i][0] === 'Literal') {
                 rule = { label: parser[i][1], field: parser[i][1] };
                 if (parser[i + 1][0] === 'SubOperators') {
-                    if (parser[i + 1][1].indexOf('null') > -1 || parser[i + 1][1].indexOf('empty') > -1) {
-                        rule.operator = this.getOperator(' ', parser[i + 1][1]);
-                        rule.value = null;
-                        rule.type = this.getTypeFromColumn(rule);
-                    }
-                    else {
-                        rule.operator = this.getOperator(parser[i + 3][1].replace(/'/g, ''), parser[i + 1][1]);
-                    }
+                    rule.operator = this.getOperator(parser[i + 3][1].replace(/'/g, ''), parser[i + 1][1]);
                     operator = parser[i + 1][1];
                     i++;
                     j = i + 1;
@@ -2820,9 +2708,6 @@ let QueryBuilder = class QueryBuilder extends Component {
                             break;
                         }
                         else {
-                            if (operator.indexOf('null') > -1 || operator.indexOf('empty') > -1) {
-                                break;
-                            }
                             if (operator === 'like' && parser[j][0] === 'String') {
                                 rule.value = parser[j][1].replace(/'/g, '').replace(/%/g, '');
                                 rule.type = 'string';
@@ -2874,11 +2759,12 @@ let QueryBuilder = class QueryBuilder extends Component {
                 rules.rules.push(rule);
             }
             else if (parser[i][0] === 'Left') {
-                this.parser = parser.splice(i + 1, iLen - (i + 1));
                 subRules = { condition: '', rules: [] };
+                this.parser = parser.splice(i + 1, iLen - (i + 1));
                 grpCount = 0;
+                //To get the group position
                 kLen = rules.rules.length;
-                for (k = 0; k < kLen; k++) { //To get the group position
+                for (k = 0; k < kLen; k++) {
                     if (rules.rules[k].rules) {
                         grpCount++;
                     }

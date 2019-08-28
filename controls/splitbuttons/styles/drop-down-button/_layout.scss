@@ -84,6 +84,7 @@
       border: $drop-down-btn-ul-border;
       border-radius: $drop-down-btn-ul-border-radius;
       box-shadow: $drop-down-btn-parent-ul-box-shadow;
+      box-sizing: border-box;
       font-size: $drop-down-btn-font-size;
       font-weight: $drop-down-btn-font-weight;
       list-style-image: none;

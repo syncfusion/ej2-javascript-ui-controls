@@ -1149,18 +1149,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Deletes the folders or files from the given unique identifiers.
-     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to delete the nested level folders or
-     * files, then specify the filter path along with name of the folders or files when performing the search or custom filtering.
-     * For ID based file provider, specify the unique identifier of folders or files.
-     * If it is not specified, then delete confirmation dialog will be opened for selected item.
-     * @returns void
-     */
-    public deleteFiles(ids?: string[]): void {
-        this.notify(events.methodCall, { action: 'deleteFiles', ids: ids });
-    }
-
-    /**
      * Disables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be disabled.
      * @returns void
@@ -1169,18 +1157,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (!isNOU(items)) {
             this.toolbarModule.enableItems(items, false);
         }
-    }
-
-    /**
-     * Downloads the folders or files from the given unique identifiers.
-     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to download the nested level folders
-     * or files, then specify the filter path along with name of the folders or files when performing search or custom filtering.
-     * For ID based file provider, specify the unique identifier of folders or files.
-     * If it is not specified, then the selected items will be downloaded.
-     * @returns void
-     */
-    public downloadFiles(ids?: string[]): void {
-        this.notify(events.methodCall, { action: 'downloadFiles', ids: ids });
     }
 
     /**
@@ -1213,22 +1189,11 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Gets the details of the selected files in the file manager.
-     * @returns Object[]
+     * @returns void
      */
     public getSelectedFiles(): Object[] {
         this.notify(events.updateSelectionData, {});
         return this.itemData;
-    }
-
-    /**
-     * Opens the corresponding file or folder from the given unique identifier.
-     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to open the nested level folder or
-     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
-     * file provider, specify the unique identifier of folder or file.
-     * @returns void
-     */
-    public openFile(id: string): void {
-        this.notify(events.methodCall, { action: 'openFile', id: id });
     }
 
     /**
@@ -1247,21 +1212,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.adjustHeight();
         this.notify(events.layoutRefresh, {});
     }
-
-    /**
-     * Renames the file or folder with given new name in file manager.
-     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to rename the nested level folder or
-     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
-     * file provider, specify the unique identifier of folder or file. 
-     * If it is not specified, then rename dialog will be opened for selected item.
-     * @param {name: string} name – Specifies the new name of the file or folder in current path. If it is not specified, then rename dialog
-     * will be opened for given identifier.
-     * @returns void
-     */
-    public renameFile(id?: string, name?: string): void {
-        this.notify(events.methodCall, { action: 'renameFile', id: id, newName: name });
-    }
-
 
     /**
      * Specifies the direction of FileManager

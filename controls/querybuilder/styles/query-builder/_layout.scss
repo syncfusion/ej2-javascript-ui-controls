@@ -270,18 +270,6 @@
         display: $qrybldr-device-diaplay;
       }
 
-      & .e-rule-value {
-        &.e-hide {
-          display: none;
-        }
-      }
-
-      & .e-rule-value {
-        &.e-show {
-          display: inline-block;
-        }
-      }
-
       & .e-rule-container.e-vertical-mode .e-rule-delete {
         margin-bottom: $grpcon-padding;
         padding-right: $device-rulecon-right-padding;

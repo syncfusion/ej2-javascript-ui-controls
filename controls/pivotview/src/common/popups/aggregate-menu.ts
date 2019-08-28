@@ -123,7 +123,7 @@ export class AggregateMenu {
         });
         this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
-        this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
+        // this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
     }
     /* tslint:disable:all */
     private createFieldOptions(buttonElement: HTMLElement): HTMLElement {

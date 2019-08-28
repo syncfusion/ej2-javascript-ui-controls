@@ -147,8 +147,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private touchModule: Touch;
     private tipHeight: number;
     private autoCloseTimer: number;
-    private isBlazorTemplate: boolean;
-
     // Tooltip Options
     /**
      * It is used to set the width of Tooltip component which accepts both string and number values.
@@ -413,7 +411,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.popupObj.dataBind();
     }
     private openPopupHandler(): void {
-        if (this.needTemplateReposition() && !this.mouseTrail) {
+        if (this.needTemplateReposition()) {
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
@@ -555,15 +553,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             tooltipContent.innerHTML = '';
             if (this.content instanceof HTMLElement) {
                 tooltipContent.appendChild(this.content);
-            } else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
+            } else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') !== 0) {
                 tooltipContent.innerHTML = this.content;
             } else {
                 let templateFunction: Function = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
-                    this.isBlazorTemplate = true;
-                    updateBlazorTemplate(this.element.id + 'content', 'Content', this);
-                }
+                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
             }
         } else {
             if (target && !isNullOrUndefined(target.getAttribute('data-content'))) {
@@ -694,7 +689,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
                 const this$: Tooltip = this;
-                if (this.needTemplateReposition() && !this.mouseTrail) {
+                if (this.needTemplateReposition()) {
                     this.tooltipEle.style.display = 'none';
                 }
                 this.trigger('beforeOpen', this.tooltipEventArgs, (observedArgs: TooltipEventArgs) => {
@@ -733,7 +728,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         const tooltip: any = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || isBlazor() && this.isBlazorTemplate;
+            || isBlazor();
     }
 
     private checkCollision(target: HTMLElement, x: number, y: number): ElementPosition {
@@ -941,7 +936,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public render(): void {
         this.initialize();
         this.wireEvents(this.opensOn);
-        this.renderComplete();
     }
     /**
      * Initializes the values of private members.

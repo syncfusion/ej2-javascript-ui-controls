@@ -4,7 +4,7 @@ import { ConnectorModel } from '../connector-model';
 import { NodeModel } from '../node-model';
 import { PointModel } from '../../primitives/point-model';
 import { EventState, ChangeType, State, DiagramAction } from '../../enum/enum';
-import { SelectorModel } from '../../objects/node-model';
+import { SelectorModel } from '../../interaction/selector-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
 import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel} from '../../objects/connector-model';

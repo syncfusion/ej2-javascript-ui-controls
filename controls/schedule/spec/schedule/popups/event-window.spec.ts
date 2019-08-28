@@ -12,7 +12,7 @@ import { RecurrenceEditor, RecurrenceEditorModel } from '../../../src/recurrence
 import { EJ2Instance, PopupOpenEventArgs, ActionEventArgs } from '../../../src/schedule/base/interface';
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
-import { stringData } from '../base/datasource.spec';
+import { stringData, defaultData } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Week);
@@ -1196,8 +1196,7 @@ describe('Schedule event window initial load', () => {
                 'colspan="2"><input id="StartTime" class="e-field" type="text" name="StartTime"/></td><td class="e-textlabel">EndTime:' +
                 '</td><td colspan="2"><input id="EndTime" class="e-field" type="text" name="EndTime"/></td></tr><tr><td colspan="3">' +
                 '<div class="form-check"><label class="form-check-label e-textlabel" for="AllDay">All Day</label><input type="checkbox"' +
-                'class="form-check-input e-field" name="IsAllDay" id="AllDay"></div></td></tr><tr><td><div id="recurrenceEditor"></div>' +
-                '</td></tr></tbody></table>';
+                'class="form-check-input e-field" name="IsAllDay" id="AllDay"></div></td></tr></tbody></table>';
             let scriptEle: HTMLScriptElement = document.createElement('script');
             scriptEle.type = 'text/x-template';
             scriptEle.id = 'eventEditor';
@@ -1212,15 +1211,6 @@ describe('Schedule event window initial load', () => {
                     let endElement: HTMLInputElement = args.element.querySelector('#EndTime') as HTMLInputElement;
                     if (!endElement.classList.contains('e-datetimepicker')) {
                         new DateTimePicker({ value: new Date(endElement.value) || new Date() }, endElement);
-                    }
-                    let recurrenceEditor: HTMLElement = args.element.querySelector('#recurrenceEditor') as HTMLElement;
-                    if (!recurrenceEditor.classList.contains('e-recurrenceeditor')) {
-                        let recurrenceObj: RecurrenceEditor = new RecurrenceEditor({
-                            // tslint:disable-next-line:no-string-literal
-                            value: (<{ [key: string]: string }>args.data)['RecurrenceRule']
-                        });
-                        recurrenceObj.appendTo(recurrenceEditor);
-                        schObj.updateRecurrenceEditor(recurrenceObj);
                     }
                 }
             };
@@ -1719,6 +1709,36 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('closeEditor public method testing', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking for cell double click event editor', () => {
+            let workCellElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            util.triggerMouseEvent(workCellElements[0], 'click');
+            util.triggerMouseEvent(workCellElements[0], 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            schObj.closeEditor();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+
+        it('Checking for event double click event editor', () => {
+            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            eventElements[0].click();
+            let editButton: HTMLElement = document.querySelectorAll('.e-edit')[0] as HTMLElement;
+            util.triggerMouseEvent(editButton, 'click');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            schObj.closeEditor();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+    });
+
     describe('Add Event With Editor Template', () => {
         let schObj: Schedule;
         let beginArgs: string;
@@ -1764,6 +1784,128 @@ describe('Schedule event window initial load', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveButton.click();
+        });
+    });
+    
+    describe('Recurrence Validation', () => {
+        let schObj: Schedule;
+        let beginArgs: string;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 3),
+                enableRecurrenceValidation: false
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Wrong Pattern Alert', (done: Function) => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let repeatElement: DropDownList =
+                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let repeatInterval: NumericTextBox =
+                (dialogElement.querySelector('.e-repeat-interval') as EJ2Instance).ej2_instances[0] as NumericTextBox;
+            let endOnElement: DropDownList =
+                (dialogElement.querySelector('.e-end-on-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            repeatElement.index = 1; repeatElement.dataBind();
+            endOnElement.index = 1; endOnElement.dataBind();
+            repeatInterval.value = 1;
+            let untilDateElement: DatePicker =
+                (dialogElement.querySelector('.e-end-on-date .e-datepicker') as EJ2Instance).ej2_instances[0] as DatePicker;
+            untilDateElement.value = new Date('10/1/2017');
+            untilDateElement.dataBind();
+            schObj.dataBind();
+            saveButton.click();
+            let okButton: HTMLElement = document.querySelector('.e-quick-alertok') as HTMLElement;
+            okButton.click();
+            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            cancelButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+            done();
+        });
+
+        it('Create Error Alert', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let startDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS);
+            startDateElement.value = '11/19/17 11:00 AM'
+            let endDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            endDateElement.value = '12/30/17 11:30 AM'
+            let repeatElement: DropDownList =
+                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let repeatInterval: NumericTextBox =
+                (dialogElement.querySelector('.e-repeat-interval') as EJ2Instance).ej2_instances[0] as NumericTextBox;
+            repeatElement.index = 3; repeatElement.dataBind();
+            repeatInterval.value = 1;
+            saveButton.click();
+        });
+
+        it('Edit Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(7);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'dblclick');
+            let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let subjectElement: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
+            subjectElement.value = 'Test';
+            saveButton.click();
+        });
+
+        it('Series Alert', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                let subject: String = dataObj[4].Subject as string;
+                expect(subject).toEqual('EditSeries');
+                done();
+            };
+            let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let subjectElement: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'dblclick');
+            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-series-event')).click();
+            subjectElement.value = 'EditSeries';
+            saveButton.click();
+        });
+
+        it('Same Day Alert', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(7);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[1] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[1] as HTMLElement, 'dblclick');
+            let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let startDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS);
+            startDateElement.value = '11/19/17 11:30 AM'
+            let endDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            endDateElement.value = '11/20/17 14:45 AM'
             saveButton.click();
         });
     });

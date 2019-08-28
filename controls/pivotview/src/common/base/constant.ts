@@ -97,6 +97,8 @@ export const contextMenuClick: string = 'contextMenuClick';
 export const contextMenuOpen: string = 'contextMenuOpen';
 /** @hidden */
 export const fieldListRefreshed: string = 'fieldListRefreshed';
+/** @hidden */
+export const conditionalFormatCreating: string = 'conditionalFormatCreating';
 
 /** 
  * Specifies pivot internal events

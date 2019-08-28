@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { NodeModel, TextModel, FlowShapeModel, BasicShapeModel, PathModel, UmlActivityShapeModel } from '../../../src/diagram/objects/node-model';
+import { NodeModel, TextModel, FlowShapeModel, BasicShapeModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { Segments } from '../../../src/diagram/enum/enum';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
@@ -739,111 +739,6 @@ describe('Diagram Control', () => {
             let connector: ConnectorModel = diagram.connectors[0];
             expect(connector.sourcePoint.x === 350 && connector.sourcePoint.y === 300 &&
                 connector.targetPoint.x === 150 && connector.targetPoint.y === 300).toBe(true);
-            done();
-        });
-        it('Checking default property at run time', (done: Function) => {
-            let failure: boolean = false;
-            diagram.add({
-                id: 'connector111q',
-                type: 'Straight',
-                sourcePoint: { x: 100, y: 100 },
-                targetPoint: { x: 200, y: 200 },
-                shape: {
-                    type: 'Bpmn',
-                    flow: 'Sequence',
-                    sequence:'Conditional'
-                  },
-                  targetDecorator :{ shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',
-                        strokeColor: 'green'} }, 
-                        sourceDecorator :{ shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',
-                        strokeColor: 'green'} }
-                });
-            diagram.add({
-                id: 'connector21q',
-                type: 'Straight',
-                sourcePoint: { x: 100, y: 100 },
-                targetPoint: { x: 200, y: 200 },
-                shape: {
-                    type: 'Bpmn',
-                    flow: 'Association',
-                    association:'BiDirectional'
-                  },
-                  targetDecorator :{ shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',
-                        strokeColor: 'green'} }, 
-                        sourceDecorator :{ shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',
-                        strokeColor: 'green'} }
-                });
-                diagram.add({
-                    id: 'connector21qq',
-                    type: 'Straight',
-                    sourcePoint: { x: 100, y: 100 },
-                    targetPoint: { x: 200, y: 200 },
-                    style:{strokeWidth:4,strokeDashArray:'3,3'},
-                    shape: {
-                        type: 'UmlActivity',
-                        flow: 'Exception',
-                        association:'BiDirectional'
-                      } as UmlActivityShapeModel ,
-                      targetDecorator :{ shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',
-                            strokeColor: 'green'} }
-                    });
-                    diagram.add({
-                        id: 'connector31sqq',
-                        type: 'Straight',
-                        sourcePoint: { x: 100, y: 100 },
-                        targetPoint: { x: 200, y: 200 },
-                        shape: {
-                            type: 'UmlClassifier',
-                            relationship : 'Inheritance',
-                          } as UmlActivityShapeModel , targetDecorator :{ shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',strokeDashArray:'1,2',
-                          strokeColor: 'green'} }
-                        });
-                        diagram.add({
-                            id: 'connectorss31qq',
-                            type: 'Straight',
-                            sourcePoint: { x: 100, y: 100 },
-                            targetPoint: { x: 200, y: 200 },
-                            shape: {
-                                type: 'UmlClassifier',
-                                relationship : 'Composition',
-                              } as UmlActivityShapeModel , sourceDecorator :{  shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',strokeDashArray:'1,2',
-                              strokeColor: 'green'} }
-                            });
-                            diagram.add({
-                                id: 'wee23',
-                                type: 'Straight',
-                                sourcePoint: { x: 100, y: 100 },
-                                targetPoint: { x: 200, y: 200 },
-                                shape: {
-                                    type: 'UmlClassifier',
-                                    relationship : 'Aggregation',
-                                  } as UmlActivityShapeModel , sourceDecorator :{  shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',strokeDashArray:'1,2',
-                                  strokeColor: 'green'} }
-                                });
-                                diagram.add({
-                                    id: 'wewee23',
-                                    type: 'Straight',
-                                    sourcePoint: { x: 100, y: 100 },
-                                    targetPoint: { x: 200, y: 200 },
-                                    shape: {
-                                        type: 'UmlClassifier',
-                                        relationship : 'Dependency',
-                                      } as UmlActivityShapeModel , sourceDecorator :{  shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',strokeDashArray:'1,2',
-                                      strokeColor: 'green'} }
-                                    });
-                                    diagram.add({
-                                        id: 'weeeer23',
-                                        type: 'Straight',
-                                        sourcePoint: { x: 100, y: 100 },
-                                        targetPoint: { x: 200, y: 200 },
-                                        style:{strokeWidth:4,strokeDashArray:'3,3'},
-                                        shape: {
-                                            type: 'UmlClassifier',
-                                            relationship : 'Realization',
-                                          } as UmlActivityShapeModel , sourceDecorator :{  shape: 'Arrow', width: 10, height: 10, style: { fill: 'red',strokeDashArray:'1,2',
-                                          strokeColor: 'green',strokeWidth:4} }
-                                        });
-                expect(diagram.nameTable['connector21qq'].targetDecorator.style.fill==='red').toBe(true);
             done();
         });
     });

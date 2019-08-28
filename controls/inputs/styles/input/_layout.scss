@@ -1630,9 +1630,7 @@
   }
 
   .e-float-input.e-rtl label.e-float-text,
-  .e-float-input.e-control-wrapper.e-rtl label.e-float-text,
-  .e-rtl .e-float-input label.e-float-text,
-  .e-rtl .e-float-input.e-control-wrapper label.e-float-text {
+  .e-float-input.e-control-wrapper.e-rtl label.e-float-text {
     right: $zero-value;
     transform-origin: right top;
   }
@@ -6495,226 +6493,6 @@
     line-height: 1;
   }
 
-  // Filled Input box sizing configuration
-
-  .e-filled input.e-input#{$css},
-  .e-filled.e-input-group input,
-  .e-filled.e-input-group.e-control-wrapper input,
-  .e-filled.e-input-group input.e-input,
-  .e-filled.e-input-group.e-control-wrapper input.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled.e-float-input:not(.e-input-group) input,
-  .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-control .e-filled input.e-input,
-  .e-control .e-filled.e-input-group input,
-  .e-control .e-filled.e-input-group input.e-input,
-  .e-control .e-filled.e-input-group.e-control-wrapper input,
-  .e-control .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-control .e-filled.e-float-input input,
-  .e-control .e-filled.e-float-input.e-control-wrapper input,
-  .e-control.e-filled.e-input-group input,
-  .e-control.e-filled.e-input-group input.e-input,
-  .e-control.e-filled.e-input-group.e-control-wrapper input,
-  .e-control.e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-control.e-filled.e-float-input input,
-  .e-control.e-filled.e-float-input.e-control-wrapper input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled input.e-input.e-bigger#{$css},
-  .e-filled.e-input-group.e-bigger input,
-  .e-filled.e-input-group.e-bigger input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger input.e-input,
-  .e-bigger .e-filled.e-input-group input,
-  .e-bigger .e-filled.e-input-group input.e-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-filled.e-float-input.e-bigger input,
-  .e-filled.e-float-input.e-bigger input.e-input,
-  .e-bigger .e-filled.e-float-input input,
-  .e-bigger .e-filled.e-float-input input.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger input.e-input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper input.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled.e-float-input.e-bigger:not(.e-input-group) input,
-  .e-filled.e-float-input.e-bigger:not(.e-input-group) input.e-input,
-  .e-bigger .e-filled.e-float-input:not(.e-input-group) input,
-  .e-bigger .e-filled.e-float-input:not(.e-input-group) input.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-input-group) input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger:not(.e-input-group) input.e-input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled input.e-input.e-small#{$css},
-  .e-filled.e-input-group.e-small input,
-  .e-filled.e-input-group.e-small input.e-input,
-  .e-small .e-filled.e-input-group input,
-  .e-small .e-filled.e-input-group input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small input,
-  .e-filled.e-input-group.e-control-wrapper.e-small input.e-input,
-  .e-small .e-filled.e-input-group.e-control-wrapper input,
-  .e-small .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-filled.e-float-input.e-small input,
-  .e-filled.e-float-input.e-small input.e-input,
-  .e-small .e-filled.e-float-input input,
-  .e-small .e-filled.e-float-input input.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-small input,
-  .e-filled.e-float-input.e-control-wrapper.e-small input.e-input,
-  .e-small .e-filled.e-float-input.e-control-wrapper input,
-  .e-small .e-filled.e-float-input.e-control-wrapper input.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled.e-float-input.e-small:not(.e-input-group) input,
-  .e-filled.e-float-input.e-small:not(.e-input-group) input.e-input,
-  .e-small .e-filled.e-float-input:not(.e-input-group) input,
-  .e-small .e-filled.e-float-input:not(.e-input-group) input.e-input
-  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-input-group) input,
-  .e-filled.e-float-input.e-control-wrapper.e-small:not(.e-input-group) input.e-input,
-  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input,
-  .e-small .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input.e-input  {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled input.e-input.e-small.e-bigger#{$css},
-  .e-filled.e-input-group.e-bigger.e-small input,
-  .e-filled.e-input-group.e-bigger.e-small input.e-input,
-  .e-bigger.e-small .e-filled.e-input-group input,
-  .e-bigger.e-small .e-filled.e-input-group input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small input.e-input,
-  .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper input,
-  .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-filled.e-float-input.e-bigger.e-small input,
-  .e-filled.e-float-input.e-bigger.e-small input.e-input,
-  .e-bigger.e-small .e-filled.e-float-input input,
-  .e-bigger.e-small .e-filled.e-float-input input.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small input.e-input,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper input,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper input.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled.e-float-input.e-bigger.e-small:not(.e-input-group) input,
-  .e-filled.e-float-input.e-bigger.e-small:not(.e-input-group) input.e-input,
-  .e-bigger.e-small .e-filled.e-float-input:not(.e-input-group) input,
-  .e-bigger.e-small .e-filled.e-float-input:not(.e-input-group) input.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small:not(.e-input-group) input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small:not(.e-input-group) input.e-input,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper:not(.e-input-group) input.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled textarea.e-input#{$css},
-  .e-filled.e-input-group textarea,
-  .e-filled.e-input-group.e-control-wrapper textarea,
-  .e-filled.e-float-input textarea,
-  .e-filled.e-float-input.e-control-wrapper textarea {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled.e-input-group textarea.e-input.e-bigger,
-  .e-filled.e-input-group.e-control-wrapper textarea.e-input.e-bigger,
-  .e-filled textarea.e-input.e-bigger#{$css},
-  .e-filled.e-input-group.e-bigger textarea,
-  .e-filled.e-input-group.e-bigger textarea.e-input,
-  .e-bigger .e-filled.e-input-group textarea,
-  .e-bigger .e-filled.e-input-group textarea.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger textarea,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger textarea.e-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper textarea,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper textarea.e-input,
-  .e-filled.e-float-input.e-bigger textarea,
-  .e-filled.e-float-input.e-bigger textarea.e-input,
-  .e-bigger .e-filled.e-float-input textarea,
-  .e-bigger .e-filled.e-float-input textarea.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger textarea,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger textarea.e-input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper textarea,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper textarea.e-input  {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled textarea.e-input.e-small#{$css},
-  .e-filled.e-input-group.e-small textarea,
-  .e-filled.e-input-group.e-small textarea.e-input,
-  .e-small .e-filled.e-input-group textarea,
-  .e-small .e-filled.e-input-group textarea.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small textarea,
-  .e-filled.e-input-group.e-control-wrapper.e-small textarea.e-input,
-  .e-small .e-filled.e-input-group.e-control-wrapper textarea,
-  .e-small .e-filled.e-input-group.e-control-wrapper textarea.e-input,
-  .e-filled.e-float-input.e-small textarea,
-  .e-filled.e-float-input.e-small textarea.e-input,
-  .e-small .e-filled.e-float-input textarea,
-  .e-small .e-filled.e-float-input textarea.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-small textarea,
-  .e-filled.e-float-input.e-control-wrapper.e-small textarea.e-input,
-  .e-small .e-filled.e-float-input.e-control-wrapper textarea,
-  .e-small .e-filled.e-float-input.e-control-wrapper textarea.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
-  .e-filled textarea.e-input.e-small.e-bigger#{$css},
-  .e-filled.e-input-group.e-bigger.e-small textarea,
-  .e-filled.e-input-group.e-bigger.e-small textarea.e-input,
-  .e-bigger.e-small .e-filled.e-input-group textarea,
-  .e-bigger.e-small .e-filled.e-input-group textarea.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small textarea,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small textarea.e-input,
-  .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper textarea,
-  .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper textarea.e-input,
-  .e-filled.e-float-input.e-bigger.e-small textarea,
-  .e-filled.e-float-input.e-bigger.e-small textarea.e-input,
-  .e-bigger.e-small .e-filled.e-float-input textarea,
-  .e-bigger.e-small .e-filled.e-float-input textarea.e-input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small textarea,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small textarea.e-input,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper textarea,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper textarea.e-input {
-    @if $input-skin-name == 'material' {
-      box-sizing: border-box;
-    }
-  }
-
   // Filled inside input border configuration
 
   .e-filled.e-float-input input,
@@ -6856,460 +6634,6 @@
     }
   }
 
-  .e-rtl.e-filled.e-input-group,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper,
-  .e-rtl .e-filled.e-input-group,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper {
-    @if $input-skin-name == 'material' {
-      padding: $filled-wrapper-rtl-padding;
-    }
-  }
-
-  .e-rtl.e-filled.e-input-group.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-input-group,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-control-wrapper,
-  .e-rtl .e-filled.e-input-group.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-filled-wrapper-rtl-padding;
-    }
-  }
-
-  .e-rtl.e-filled.e-input-group.e-small,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small,
-  .e-small .e-rtl.e-filled.e-input-group.e-control-wrapper,
-  .e-rtl .e-filled.e-input-group.e-small,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper {
-    @if $input-skin-name == 'material' {
-      padding: $small-filled-wrapper-rtl-padding;
-    }
-  }
-
-  .e-rtl.e-filled.e-input-group.e-small.e-bigger,
-  .e-bigger.e-small .e-rtl.e-filled.e-input-group.e-small,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-small,
-  .e-small .e-rtl.e-filled.e-input-group.e-bigger,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small.e-bigger,
-  .e-bigger.e-small .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small,
-  .e-small .e-rtl.e-filled.e-input-group.e-control-wrapper.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-small.e-bigger,
-  .e-bigger.e-small.e-rtl .e-filled.e-input-group.e-small,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-small,
-  .e-small.e-rtl .e-filled.e-input-group.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger,
-  .e-bigger.e-small.e-rtl .e-filled.e-input-group.e-control-wrapper.e-small,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper.e-small,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-small-filled-wrapper-rtl-padding;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper,
-  .e-rtl .e-filled.e-float-input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper {
-    @if $input-skin-name == 'material' {
-      padding: $filled-float-input-wrapper-rtl-padding;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-control-wrapper,
-  .e-rtl .e-filled.e-float-input.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-filled-float-input-wrapper-rtl-padding;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input.e-small,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-small,
-  .e-small .e-rtl.e-filled.e-float-input.e-control-wrapper,
-  .e-rtl .e-filled.e-float-input.e-small,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper {
-    @if $input-skin-name == 'material' {
-      padding: $small-filled-float-input-wrapper-rtl-padding;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input.e-small.e-bigger,
-  .e-bigger.e-small .e-rtl.e-filled.e-float-input.e-small,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-small,
-  .e-small .e-rtl.e-filled.e-float-input.e-bigger,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-small.e-bigger,
-  .e-bigger.e-small .e-rtl.e-filled.e-float-input.e-control-wrapper.e-small,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-control-wrapper.e-small,
-  .e-small .e-rtl.e-filled.e-float-input.e-control-wrapper.e-bigger,
-  .e-rtl .e-filled.e-float-input.e-small.e-bigger,
-  .e-bigger.e-small.e-rtl .e-filled.e-float-input.e-small,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-small,
-  .e-small.e-rtl .e-filled.e-float-input.e-bigger,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger,
-  .e-bigger.e-small.e-rtl .e-filled.e-float-input.e-control-wrapper.e-small,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-small,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper.e-bigger {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-small-filled-float-input-wrapper-rtl-padding;
-    }
-  }
-
-  // Filled input padding configuration
-
-  .e-filled input.e-input#{$css},
-  .e-filled.e-input-group input.e-input,
-  .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-filled textarea.e-input#{$css},
-  .e-filled.e-input-group textarea.e-input,
-  .e-filled.e-input-group.e-control-wrapper textarea.e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-input-padding;
-    }
-  }
-
-  .e-filled .e-input#{$css}:focus {
-    @if $input-skin-name == 'material' {
-      padding-bottom: $filled-input-padding-bottom;
-    }
-  }
-
-  .e-filled.e-input-group input.e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper input.e-input:focus,
-  .e-filled.e-input-group textarea.e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper textarea.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-input-padding;
-    }
-  }
-
-  .e-filled input.e-input.e-bigger#{$css},
-  .e-filled textarea.e-input.e-bigger#{$css},
-  .e-filled.e-input-group.e-bigger .e-input,
-  .e-filled.e-input-group.e-bigger.e-control-wrapper .e-input,
-  .e-bigger .e-filled input.e-input#{$css},
-  .e-bigger .e-filled textarea.e-input#{$css},
-  .e-bigger .e-filled.e-input-group .e-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper .e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-input-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-bigger .e-input:focus,
-  .e-bigger .e-filled.e-input-group .e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger .e-input:focus,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper .e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-input-padding;
-    }
-  }
-
-  .e-filled .e-input.e-bigger#{$css}:focus,
-  .e-bigger .e-filled .e-input#{$css}:focus {
-    @if $input-skin-name == 'material' {
-      padding-bottom: $filled-bigger-input-padding-bottom;
-    }
-  }
-
-  .e-filled .e-input.e-small#{$css}:focus {
-    @if $input-skin-name == 'material' {
-      padding-bottom: $filled-small-input-padding-bottom;
-    }
-  }
-
-  .e-filled .e-input#{$css}.e-small,
-  .e-filled.e-input-group.e-small .e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small .e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-input-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-small .e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper.e-small .e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-input-padding;
-    }
-  }
-
-  .e-filled .e-input.e-small.e-bigger#{$css}:focus,
-  .e-bigger .e-filled .e-input.e-small#{$css}:focus {
-    @if $input-skin-name == 'material' {
-      padding-bottom: $filled-bigger-small-input-padding-bottom;
-    }
-  }
-
-  .e-filled .e-input.e-small.e-bigger#{$css},
-  .e-bigger .e-filled .e-input#{$css}.e-small,
-  .e-small .e-filled .e-input#{$css}.e-bigger {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-input-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-small.e-bigger .e-input,
-  .e-filled.e-input-group.e-small .e-input.e-bigger,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small .e-input.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-small .e-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small .e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-input-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-small.e-bigger .e-input:focus,
-  .e-filled.e-input-group.e-small .e-input.e-bigger:focus,
-  .e-bigger .e-filled.e-input-group.e-small .e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper.e-small .e-input.e-bigger:focus,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small .e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-input-padding;
-    }
-  }
-
-  .e-filled.e-float-input input,
-  .e-filled.e-float-input.e-control-wrapper input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-float-input-padding;
-    }
-  }
-
-  .e-filled.e-float-input.e-bigger input,
-  .e-filled.e-float-input input.e-bigger,
-  .e-bigger .e-filled.e-float-input input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger input,
-  .e-filled.e-float-input.e-control-wrapper input.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-float-input-padding;
-    }
-  }
-
-  .e-filled.e-float-input.e-small.e-bigger input,
-  .e-filled.e-float-input.e-small input.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-small input,
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger input,
-  .e-filled.e-float-input.e-control-wrapper.e-small input.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-float-input-padding;
-    }
-  }
-
-  .e-filled.e-float-input.e-small input,
-  .e-filled.e-float-input.e-control-wrapper.e-small input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-float-input-padding;
-    }
-  }
-
-  .e-filled input.e-input.e-rtl#{$css},
-  .e-filled.e-input-group.e-rtl input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input,
-  .e-rtl .e-filled.e-input-group input.e-input,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-filled.e-input-group.e-rtl input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input,
-  .e-rtl .e-filled.e-input-group input.e-input,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-filled.e-input-group.e-rtl input.e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input:focus,
-  .e-rtl .e-filled.e-input-group input.e-input:focus,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-rtl input,
-  .e-filled.e-float-input.e-control-wrapper.e-rtl input,
-  .e-rtl .e-filled.e-float-input input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper input,
-  .e-filled.e-float-input.e-rtl input,
-  .e-filled.e-float-input.e-control-wrapper.e-rtl input,
-  .e-rtl .e-filled.e-float-input input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper input,
-  .e-filled.e-float-input.e-rtl input:focus,
-  .e-filled.e-float-input.e-control-wrapper.e-rtl input:focus,
-  .e-rtl .e-filled.e-float-input input:focus,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-float-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-rtl .e-filled input.e-input.e-small#{$css},
-  .e-filled input.e-input#{$css}.e-small.e-rtl,
-  .e-small.e-rtl .e-filled input.e-input#{$css},
-  .e-small .e-filled input.e-input.e-rtl#{$css},
-  .e-filled.e-input-group.e-small.e-rtl input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-rtl input.e-input,
-  .e-rtl .e-filled.e-input-group.e-small input.e-input,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small input.e-input,
-  .e-filled.e-input-group.e-rtl input.e-input.e-small,
-  .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input.e-small,
-  .e-rtl .e-filled.e-input-group input.e-input.e-small,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input.e-small,
-  .e-small .e-filled.e-input-group.e-rtl input.e-input,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-small.e-rtl .e-filled.e-input-group input.e-input,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input:focus,
-  .e-small.e-rtl .e-filled.e-input-group input.e-input:focus,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input:focus,
-  .e-small .e-filled.e-input-group.e-rtl input.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-rtl input,
-  .e-filled.e-float-input.e-small.e-rtl input,
-  .e-rtl .e-filled.e-float-input.e-small input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small input,
-  .e-filled.e-float-input.e-rtl input.e-small,
-  .e-filled.e-float-input.e-control-wrapper.e-rtl input.e-small,
-  .e-rtl .e-filled.e-float-input input.e-small,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper input.e-small,
-  .e-small .e-filled.e-float-input.e-rtl input,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-rtl input,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper input,
-  .e-small.e-rtl .e-filled.e-float-input input,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper input:focus,
-  .e-small.e-rtl .e-filled.e-float-input input:focus,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-rtl input:focus,
-  .e-small .e-filled.e-float-input.e-rtl input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-float-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-rtl .e-filled input.e-input.e-bigger#{$css},
-  .e-filled input.e-input.e-bigger.e-rtl#{$css},
-  .e-bigger.e-rtl .e-filled input.e-input#{$css},
-  .e-bigger .e-filled input.e-input.e-rtl#{$css},
-  .e-filled.e-input-group.e-bigger.e-rtl input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-rtl input.e-input,
-  .e-rtl .e-filled.e-input-group.e-bigger input.e-input,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger input.e-input,
-  .e-filled.e-input-group.e-rtl input.e-input.e-bigger,
-  .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input.e-bigger,
-  .e-rtl .e-filled.e-input-group input.e-input.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-rtl input.e-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group input.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group input.e-input:focus,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper input.e-input:focus,
-  .e-bigger .e-filled.e-input-group.e-rtl input.e-input:focus,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-rtl input.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-rtl input,
-  .e-filled.e-float-input.e-bigger.e-rtl input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-bigger input,
-  .e-rtl .e-filled.e-float-input.e-bigger input,
-  .e-filled.e-float-input.e-control-wrapper.e-rtl input.e-bigger,
-  .e-filled.e-float-input.e-rtl input.e-bigger,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper input.e-bigger,
-  .e-rtl .e-filled.e-float-input input.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl input,
-  .e-bigger .e-filled.e-float-input.e-rtl input,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper input,
-  .e-bigger.e-rtl .e-filled.e-float-input input,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper input:focus,
-  .e-bigger.e-rtl .e-filled.e-float-input input:focus,
-  .e-bigger .e-filled.e-float-input.e-rtl input:focus,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-rtl input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-float-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-bigger .e-filled input.e-input.e-small.e-rtl#{$css},
-  .e-filled.e-input-group.e-small.e-bigger.e-rtl input.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger.e-rtl input.e-input,
-  .e-filled.e-input-group.e-small.e-rtl input.e-input.e-bigger,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-rtl input.e-input.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-small.e-rtl input.e-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small.e-rtl input.e-input,
-  .e-bigger.e-rtl input.e-input.e-small,
-  .e-rtl .e-filled.e-input-group.e-small.e-bigger input.e-input,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger input.e-input,
-  .e-rtl .e-filled.e-input-group.e-small input.e-input.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small input.e-input.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-small input.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper.e-small input.e-input,
-  .e-bigger .e-filled.e-input-group.e-small.e-rtl input.e-input:focus,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small.e-rtl input.e-input:focus,
-  .e-small .e-filled.e-input-group.e-bigger.e-rtl input.e-input:focus,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-bigger.e-rtl input.e-input:focus,
-  .e-filled.e-input-group.e-bigger.e-small.e-rtl input.e-input:focus,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small.e-rtl input.e-input:focus,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-small input.e-input:focus,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper.e-small input.e-input:focus,
-  .e-small.e-rtl .e-filled.e-input-group.e-bigger input.e-input:focus,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger input.e-input:focus,
-  .e-rtl .e-filled.e-input-group.e-bigger.e-small input.e-input:focus,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger.e-small input.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-small.e-bigger.e-rtl input,
-  .e-filled.e-float-input.e-small.e-rtl input.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-small.e-rtl input,
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-rtl input,
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-rtl input.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-rtl input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger input,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-small input.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-small input,
-  .e-rtl .e-filled.e-float-input.e-small.e-bigger input,
-  .e-rtl .e-filled.e-float-input.e-small input.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-small input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-rtl input:focus,
-  .e-bigger .e-filled.e-float-input.e-small.e-rtl input:focus,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-bigger.e-rtl input:focus,
-  .e-small .e-filled.e-float-input.e-bigger.e-rtl input:focus,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small.e-rtl input:focus,
-  .e-filled.e-float-input.e-bigger.e-small.e-rtl input:focus,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-small input:focus,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-small input:focus,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper.e-bigger input:focus,
-  .e-small.e-rtl .e-filled.e-float-input.e-bigger input:focus,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small input:focus,
-  .e-rtl .e-filled.e-float-input.e-bigger.e-small input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-float-input-rtl-padding;
-      text-indent: 0;
-    }
-  }
-
   // Filled input font size configuration
 
   .e-filled.e-float-input,
@@ -7398,6 +6722,245 @@
   .e-small .e-filled.e-float-input.e-input-group.e-control-wrapper.e-bigger.e-disabled {
     @if $input-skin-name == 'material' {
       font-size: $bigger-small-filled-input-font-size;
+    }
+  }
+
+  // Filled input padding configuration
+
+  .e-filled input.e-input#{$css},
+  .e-filled.e-input-group input.e-input,
+  .e-filled.e-input-group.e-control-wrapper input.e-input,
+  .e-filled textarea.e-input#{$css},
+  .e-filled.e-input-group textarea.e-input,
+  .e-filled.e-input-group.e-control-wrapper textarea.e-input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled .e-input#{$css}:focus {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group input.e-input:focus,
+  .e-filled.e-input-group.e-control-wrapper input.e-input:focus,
+  .e-filled.e-input-group textarea.e-input:focus,
+  .e-filled.e-input-group.e-control-wrapper textarea.e-input:focus {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-float-input input,
+  .e-filled.e-float-input.e-control-wrapper input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled .e-input.e-bigger#{$css}:focus,
+  .e-bigger .e-filled .e-input#{$css}:focus {
+    @if $input-skin-name == 'material' {
+      padding-bottom: $filled-input-padding;
+    }
+  }
+
+  .e-filled input.e-input.e-bigger#{$css},
+  .e-filled textarea.e-input.e-bigger#{$css},
+  .e-input-group.e-bigger.e-filled .e-input,
+  .e-input-group.e-bigger.e-control-wrapper.e-filled .e-input,
+  .e-bigger .e-filled input.e-input#{$css},
+  .e-bigger .e-filled textarea.e-input#{$css},
+  .e-bigger .e-input-group.e-filled .e-input,
+  .e-bigger .e-input-group.e-control-wrapper.e-filled .e-input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-input-group.e-bigger.e-filled .e-input:focus,
+  .e-bigger .e-input-group.e-filled .e-input:focus,
+  .e-input-group.e-control-wrapper.e-bigger.e-filled .e-input:focus,
+  .e-bigger .e-input-group.e-control-wrapper.e-filled .e-input:focus {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled .e-input.e-small.e-bigger#{$css}:focus,
+  .e-bigger .e-filled .e-input.e-small#{$css}:focus {
+    @if $input-skin-name == 'material' {
+      padding-bottom: $filled-input-padding;
+    }
+  }
+
+  .e-filled .e-input.e-small#{$css}:focus {
+    @if $input-skin-name == 'material' {
+      padding-bottom: $filled-input-padding;
+    }
+  }
+
+  .e-filled .e-input.e-small.e-bigger#{$css}:focus,
+  .e-bigger .e-filled .e-input.e-small#{$css}:focus {
+    @if $input-skin-name == 'material' {
+      padding-bottom: $filled-input-padding;
+    }
+  }
+
+  .e-filled .e-input#{$css}.e-small,
+  .e-filled.e-input-group.e-small .e-input,
+  .e-filled.e-input-group.e-control-wrapper.e-small .e-input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group.e-small .e-input:focus,
+  .e-filled.e-input-group.e-control-wrapper.e-small .e-input:focus {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled .e-input.e-small.e-bigger#{$css},
+  .e-bigger .e-filled .e-input#{$css}.e-small,
+  .e-small .e-filled .e-input#{$css}.e-bigger {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group.e-small.e-bigger .e-input,
+  .e-filled.e-input-group.e-small .e-input.e-bigger,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input,
+  .e-filled.e-input-group.e-control-wrapper.e-small .e-input.e-bigger,
+  .e-bigger .e-filled.e-input-group.e-small .e-input,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small .e-input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group.e-small.e-bigger .e-input:focus,
+  .e-filled.e-input-group.e-small .e-input.e-bigger:focus,
+  .e-bigger .e-filled.e-input-group.e-small .e-input:focus,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input:focus,
+  .e-filled.e-input-group.e-control-wrapper.e-small .e-input.e-bigger:focus,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small .e-input:focus {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-float-input.e-small input,
+  .e-filled.e-float-input.e-control-wrapper.e-small input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-float-input.e-small.e-bigger input,
+  .e-filled.e-float-input.e-small input.e-bigger,
+  .e-bigger .e-filled.e-float-input.e-small input,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger input,
+  .e-filled.e-float-input.e-control-wrapper.e-small input.e-bigger,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group.e-small textarea,
+  .e-filled.e-input-group.e-small textarea.e-input,
+  .e-filled.e-input-group textarea.e-small,
+  .e-filled.e-input-group textarea.e-input.e-small,
+  .e-filled.e-input-group.e-control-wrapper.e-small textarea,
+  .e-filled.e-input-group.e-control-wrapper.e-small textarea.e-input,
+  .e-filled.e-input-group.e-control-wrapper textarea.e-bigger,
+  .e-filled.e-input-group.e-control-wrapper textarea.e-input.e-bigger,
+  .e-small .e-filled.e-input-group textarea,
+  .e-small .e-filled.e-input-group textarea.e-input,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper textarea,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper textarea.e-input,
+  .e-filled.e-float-input.e-small textarea,
+  .e-filled.e-float-input textarea.e-small,
+  .e-filled.e-float-input.e-control-wrapper.e-small textarea,
+  .e-filled.e-float-input.e-control-wrapper textarea.e-small,
+  .e-small .e-filled.e-float-input textarea,
+  .e-small .e-filled.e-float-input.e-control-wrapper textarea {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group.e-input-focus.e-small textarea,
+  .e-filled.e-input-group.e-input-focus.e-small textarea.e-input,
+  .e-filled.e-input-group.e-input-focus textarea.e-small,
+  .e-filled.e-input-group.e-input-focus textarea.e-input.e-small,
+  .e-filled.e-input-group.e-input-focus textarea.e-input.e-small,
+  .e-filled.e-input-group.e-control-wrapper.e-input-focus.e-small textarea,
+  .e-filled.e-input-group.e-control-wrapper.e-input-focus.e-small textarea.e-input,
+  .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-bigger,
+  .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input.e-bigger,
+  .e-small .e-filled.e-input-group.e-input-focus textarea,
+  .e-small .e-filled.e-input-group.e-input-focus textarea.e-input,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group.e-small.e-bigger textarea.e-input,
+  .e-filled.e-input-group.e-small textarea.e-input.e-bigger,
+  .e-filled.e-input-group textarea.e-input.e-bigger.e-small,
+  .e-filled.e-input-group.e-bigger textarea.e-small,
+  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger textarea.e-input,
+  .e-filled.e-input-group.e-control-wrapper.e-small textarea.e-input.e-bigger,
+  .e-bigger.e-small .e-filled.e-input-group textarea.e-input,
+  .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper textarea.e-input,
+  .e-bigger .e-filled.input-group textarea.e-small,
+  .e-bigger .e-filled.e-input-group.e-small textarea.e-input,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small textarea.e-input,
+  .e-bigger .e-filled.e-small.e-input-group.e-control-wrapper textarea.e-input,
+  .e-small .e-filled.e-input-group textarea.e-bigger,
+  .e-small .e-filled.e-input-group.e-bigger textarea.e-input,
+  .e-small .e-filled.e-input-group.e-control-wrapper textarea.e-input.e-bigger,
+  .e-small .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input.e-bigger,
+  .e-filled.e-float-input textarea.e-bigger.e-small,
+  .e-filled.e-float-input.e-small.e-bigger textarea,
+  .e-filled.e-float-input.e-small textarea.e-bigger,
+  .e-filled.e-float-input.e-bigger textarea.e-small,
+  .e-bigger .e-filled.e-float-input.e-small textarea,
+  .e-bigger.e-small .e-filled.e-float-input textarea,
+  .e-bigger .e-filled.float-input textarea.e-small,
+  .e-small .e-filled.e-float-input.e-bigger textarea,
+  .e-small .e-filled.float-input textarea.e-bigger,
+  .e-small .e-filled.e-float-input.e-control-wrapper textarea.e-bigger,
+  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger textarea,
+  .e-filled.e-float-input.e-control-wrapper.e-small textarea.e-bigger,
+  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small textarea,
+  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper textarea,
+  .e-bigger .e-filled.e-small.e-float-input.e-control-wrapper textarea {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
+    }
+  }
+
+  .e-filled.e-input-group.e-input-focus textarea.e-input.e-bigger.e-small,
+  .e-filled.e-input-group.e-input-focus.e-small.e-bigger textarea.e-input,
+  .e-filled.e-input-group.e-input-focus.e-small textarea.e-input.e-bigger,
+  .e-filled.e-input-group.e-input-focus.e-bigger textarea.e-small,
+  .e-filled.e-input-group.e-control-wrapper.e-input-focus.e-small.e-bigger textarea.e-input,
+  .e-filled.e-input-group.e-control-wrapper.e-input-focus.e-small textarea.e-input.e-bigger,
+  .e-bigger.e-small .e-filled.e-input-group.e-input-focus textarea.e-input,
+  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-input-focus.e-small textarea.e-input,
+  .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input,
+  .e-bigger .e-filled.e-small.e-input-group.e-control-wrapper.e-input-focus textarea.e-input {
+    @if $input-skin-name == 'material' {
+      padding: $filled-input-padding;
     }
   }
 
@@ -8210,52 +7773,11 @@
   .e-small .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $filled-input-icon-size;
+      height: 100%;
       margin-bottom: $zero-value;
       margin-top: $zero-value;
       min-height: $filled-input-icon-min-height;
       min-width: $filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
-    }
-  }
-
-  .e-rtl.e-filled.e-input-group .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group .e-input-group-icon.e-bigger,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper .e-input-group-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-input-group .e-input-group-icon,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-small.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-small .e-input-group-icon.e-bigger,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-small .e-input-group-icon,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-small .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-input-group .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group .e-input-group-icon.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper .e-input-group-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group .e-input-group-icon,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-small.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-small .e-input-group-icon.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-small .e-input-group-icon,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-small .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-input-group .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 8px $zero-value $zero-value;
     }
   }
 
@@ -8267,20 +7789,6 @@
       font-size: $small-filled-input-icon-size;
       min-height: $small-filled-input-icon-min-height;
       min-width: $small-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 4px;
-    }
-  }
-
-  .e-rtl.e-filled.e-input-group.e-small .e-input-group-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-input-group .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-input-group.e-control-wrapper .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-small .e-input-group-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-input-group .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 4px $zero-value $zero-value;
     }
   }
 
@@ -8294,7 +7802,6 @@
       font-size: $bigger-filled-input-icon-size;
       min-height: $bigger-filled-input-icon-min-height;
       min-width: $bigger-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
     }
   }
 
@@ -8308,48 +7815,6 @@
       font-size: $bigger-small-filled-input-icon-size;
       min-height: $bigger-small-filled-input-icon-min-height;
       min-width: $bigger-small-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group .e-input-group-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-input-group-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group .e-input-group-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small .e-input-group-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-input-group.e-small .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 8px $zero-value $zero-value;
     }
   }
 
@@ -8373,9 +7838,10 @@
   .e-small .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $filled-input-icon-size;
+      height: 100%;
       margin-bottom: $zero-value;
       margin-top: $zero-value;
-      padding: $zero-value $zero-value $zero-value 8px;
+      min-height: $zero-value;
     }
   }
 
@@ -8385,20 +7851,7 @@
   .e-small .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $small-filled-input-icon-size;
-      padding: $zero-value $zero-value $zero-value 4px;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-input-group .e-input-group-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 4px $zero-value $zero-value;
+      min-height: $zero-value;
     }
   }
 
@@ -8410,7 +7863,7 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-input-group .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $bigger-filled-input-icon-size;
-      padding: $zero-value $zero-value $zero-value 8px;
+      min-height: $zero-value;
     }
   }
 
@@ -8422,7 +7875,7 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-input-group-icon {
     @if $input-skin-name == 'material' {
       font-size: $bigger-small-filled-input-icon-size;
-      padding: $zero-value $zero-value $zero-value 8px;
+      min-height: $zero-value;
     }
   }
 
@@ -8434,7 +7887,10 @@
   .e-filled.e-input-group.e-control-wrapper .e-clear-icon {
     @if $input-skin-name == 'material' {
       font-size: $filled-input-clear-icon-size;
-      padding: $zero-value $zero-value $zero-value 8px;
+      height: 100%;
+      min-height: $zero-value;
+      padding-bottom: $zero-value;
+      padding-top: $zero-value;
     }
   }
 
@@ -8443,14 +7899,15 @@
     @if $input-skin-name == 'material' {
       min-height: $filled-input-icon-min-height;
       min-width: $filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding-right: 4px;
     }
   }
 
   .e-filled.e-float-input.e-input-group .e-clear-icon,
   .e-filled.e-float-input.e-input-group.e-control-wrapper .e-clear-icon {
     @if $input-skin-name == 'material' {
-      padding: $zero-value $zero-value $zero-value 8px;
+      min-height: $zero-value;
+      padding-top: $zero-value;
     }
   }
 
@@ -8462,9 +7919,12 @@
   .e-bigger .e-filled.e-input-group.e-control-wrapper .e-clear-icon {
     @if $input-skin-name == 'material' {
       font-size: $bigger-filled-input-clear-icon-size;
+      height: 100%;
       min-height: $bigger-filled-input-icon-min-height;
       min-width: $bigger-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding-bottom: $zero-value;
+      padding-right: 4px;
+      padding-top: $zero-value;
     }
   }
 
@@ -8475,7 +7935,8 @@
   .e-filled.e-input-group.e-control-wrapper.e-float-input .e-clear-icon.e-bigger,
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-input .e-clear-icon {
     @if $input-skin-name == 'material' {
-      padding: $zero-value $zero-value $zero-value 8px;
+      min-height: $zero-value;
+      padding-top: $zero-value;
     }
   }
 
@@ -8487,9 +7948,12 @@
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon {
     @if $input-skin-name == 'material' {
       font-size: $bigger-small-filled-input-clear-icon-size;
+      height: 100%;
       min-height: $bigger-small-filled-input-icon-min-height;
       min-width: $bigger-small-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 8px;
+      padding-bottom: $zero-value;
+      padding-right: 4px;
+      padding-top: $zero-value;
     }
   }
 
@@ -8506,7 +7970,8 @@
   .e-filled.e-input-group.e-control-wrapper.e-float-input.e-small .e-clear-icon.e-bigger,
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-input.e-small .e-clear-icon {
     @if $input-skin-name == 'material' {
-      padding: $zero-value $zero-value $zero-value 8px;
+      min-height: $zero-value;
+      padding-top: $zero-value;
     }
   }
 
@@ -8518,9 +7983,12 @@
   .e-small .e-filled.e-input-group.e-control-wrapper .e-clear-icon {
     @if $input-skin-name == 'material' {
       font-size: $small-filled-input-clear-icon-size;
+      height: 100%;
       min-height: $small-filled-input-icon-min-height;
       min-width: $small-filled-input-icon-min-height;
-      padding: $zero-value $zero-value $zero-value 4px;
+      padding-bottom: $zero-value;
+      padding-right: 4px;
+      padding-top: $zero-value;
     }
   }
 
@@ -8537,115 +8005,8 @@
   .e-filled.e-input-group.e-control-wrapper.e-float-input .e-clear-icon.e-small,
   .e-small .e-filled.e-input-group.e-control-wrapper.e-float-input .e-clear-icon {
     @if $input-skin-name == 'material' {
-      padding: $zero-value $zero-value $zero-value 4px;
-    }
-  }
-
-  .e-rtl.e-filled.e-input-group .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-input-group .e-clear-icon.e-bigger,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper .e-clear-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-input-group .e-clear-icon,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-control-wrapper .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-small.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-small .e-clear-icon.e-bigger,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-small .e-clear-icon,
-  .e-bigger .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-small .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-input-group .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-input-group.e-control-wrapper .e-clear-icon,
-  .e-rtl .e-filled.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-input-group .e-clear-icon.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper .e-clear-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group .e-clear-icon,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-small.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-small .e-clear-icon.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-small .e-clear-icon,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-small .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-input-group .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 8px $zero-value $zero-value;
-    }
-  }
-
-  .e-rtl.e-filled.e-input-group.e-small .e-clear-icon,
-  .e-rtl.e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-input-group .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-input-group.e-control-wrapper .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-small .e-clear-icon,
-  .e-rtl .e-filled.e-input-group.e-control-wrapper.e-small .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-input-group .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-input-group.e-control-wrapper .e-clear-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 4px $zero-value $zero-value;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group .e-clear-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-clear-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon.e-bigger,
-  .e-bigger .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group .e-clear-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small .e-clear-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-input-group.e-small .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 8px $zero-value $zero-value;
-    }
-  }
-
-  .e-rtl.e-filled.e-float-input.e-input-group.e-small .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon,
-  .e-small .e-rtl.e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-input-group.e-small .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-input-group .e-clear-icon,
-  .e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small .e-clear-icon,
-  .e-small.e-rtl .e-filled.e-float-input.e-control-wrapper.e-input-group .e-clear-icon {
-    @if $input-skin-name == 'material' {
-      padding: $zero-value 4px $zero-value $zero-value;
+      min-height: $zero-value;
+      padding-top: $zero-value;
     }
   }
 
@@ -8720,7 +8081,7 @@
   .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input[disabled] ~ label.e-label-top.e-float-text,
   .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input label.e-float-text.e-label-top {
     @if $input-skin-name == 'material' {
-      top: $filled-input-label-top-after-floating;
+      top: -2px;
     }
   }
 
@@ -8745,7 +8106,7 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input[readonly] ~ label.e-label-top.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input[disabled] ~ label.e-label-top.e-float-text {
     @if $input-skin-name == 'material' {
-      top: $bigger-filled-input-label-top-after-floating;
+      top: -2px;
     }
   }
 
@@ -8762,7 +8123,7 @@
   .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap input[readonly] ~ label.e-label-top.e-float-text,
   .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap input[disabled] ~ label.e-label-top.e-float-text {
     @if $input-skin-name == 'material' {
-      top: $small-filled-input-label-top-after-floating;
+      top: -3px;
     }
   }
 
@@ -8787,7 +8148,7 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap input[readonly] ~ label.e-float-text,
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap input[disabled] ~ label.e-float-text {
     @if $input-skin-name == 'material' {
-      top: $bigger-small-filled-input-label-top-after-floating;
+      top: -2px;
     }
   }
 
@@ -8810,7 +8171,7 @@
   .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap label.e-float-text,
   .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      top: $filled-input-label-top;
+      top: -2px;
     }
   }
 
@@ -8827,7 +8188,7 @@
   .e-filled.e-float-input.e-control-wrapper.e-bigger .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom  {
     @if $input-skin-name == 'material' {
-      top: $bigger-filled-input-label-top;
+      top: -2px;
     }
   }
 
@@ -8840,7 +8201,7 @@
   .e-filled.e-float-input.e-control-wrapper.e-small .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-small .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      top: $small-filled-input-label-top;
+      top: -3px;
     }
   }
 
@@ -8857,7 +8218,7 @@
   .e-filled.e-float-input.e-control-wrapper.e-bigger.e-small .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom,
   .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper .e-input-in-wrap input:not(:focus):valid ~ label.e-float-text.e-label-bottom {
     @if $input-skin-name == 'material' {
-      top: $bigger-small-filled-input-label-top;
+      top: -2px;
     }
   }
 
@@ -8869,6 +8230,13 @@
       min-height: $filled-input-left-icon-min-height;
       min-width: $filled-input-left-icon-min-width;
       padding: $zero-value;
+    }
+  }
+
+  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+    @if $input-skin-name == 'material' {
+      min-height: $zero-value;
     }
   }
 
@@ -8887,6 +8255,17 @@
     }
   }
 
+  .e-filled.e-float-input.e-input-group.e-bigger.e-float-icon-left>.e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
+  .e-bigger .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
+    @if $input-skin-name == 'material' {
+      min-height: $zero-value;
+    }
+  }
+
   .e-filled.e-input-group:not(.e-float-input).e-small.e-float-icon-left>.e-input-group-icon,
   .e-filled.e-input-group:not(.e-float-input).e-float-icon-left>.e-input-group-icon.e-small,
   .e-filled.e-input-group:not(.e-float-input).e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
@@ -8899,6 +8278,17 @@
       min-height: $small-filled-input-left-icon-min-height;
       min-width: $small-filled-input-left-icon-min-width;
       padding: $zero-value;
+    }
+  }
+
+  .e-filled.e-float-input.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
+  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
+  .e-small .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
+  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
+  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
+  .e-small .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon {
+    @if $input-skin-name == 'material' {
+      min-height: $zero-value;
     }
   }
 
@@ -8917,75 +8307,14 @@
     }
   }
 
-  .e-filled.e-input-group.e-float-icon-left >.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left >.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
-    @if $input-skin-name == 'material' {
-      margin: $zero-value;
-      min-height: $filled-input-left-icon-min-height;
-      min-width: $filled-input-left-icon-min-width;
-      padding: $zero-value;
-    }
-  }
-
-  .e-filled.e-input-group.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon {
-    @if $input-skin-name == 'material' {
-      margin: $zero-value;
-      min-height: $bigger-filled-input-left-icon-min-height;
-      min-width: $bigger-filled-input-left-icon-min-width;
-      padding: $zero-value;
-    }
-  }
-
-  .e-filled.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-filled.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-filled.e-float-input.e-input-group.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon.e-small,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-input-group.e-float-icon-left>.e-input-group-icon {
-    @if $input-skin-name == 'material' {
-      margin: $zero-value;
-      min-height: $small-filled-input-left-icon-min-height;
-      min-width: $small-filled-input-left-icon-min-width;
-      padding: $zero-value;
-    }
-  }
-
-  .e-filled.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-small.e-float-icon-left>.e-input-group-icon,
   .e-filled.e-float-input.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
   .e-filled.e-float-input.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
   .e-bigger .e-filled.e-input-group.e-float-input.e-small.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small.e-float-icon-left>.e-input-group-icon,
   .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-bigger.e-float-icon-left>.e-input-group-icon,
   .e-filled.e-float-input.e-control-wrapper.e-input-group.e-small.e-float-icon-left>.e-input-group-icon.e-bigger,
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-float-input.e-small.e-float-icon-left>.e-input-group-icon {
     @if $input-skin-name == 'material' {
-      margin: $zero-value;
-      min-height: $bigger-small-filled-input-left-icon-min-height;
-      min-width: $bigger-small-filled-input-left-icon-min-width;
-      padding: $zero-value;
+      min-height: $zero-value;
     }
   }
 
@@ -9214,7 +8543,7 @@
   .e-small.e-bigger .e-filled.e-input-group .e-input-group-icon,
   .e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' {
-      margin-right: $zero-value;
+      margin-right: 8px;
     }
   }
 
@@ -9231,7 +8560,7 @@
   .e-rtl.e-small.e-bigger .e-filled.e-input-group .e-input-group-icon,
   .e-rtl.e-small.e-bigger .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' {
-      margin-left: $zero-value;
+      margin-left: 8px;
       margin-right: $zero-value;
     }
   }
@@ -9241,7 +8570,7 @@
   .e-small .e-filled.e-input-group .e-input-group-icon,
   .e-small .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' {
-      margin-right: $zero-value;
+      margin-right: $input-child-small-margin-right;
     }
   }
 
@@ -9254,20 +8583,12 @@
   .e-rtl.e-small .e-filled.e-input-group .e-input-group-icon,
   .e-rtl.e-small .e-filled.e-input-group.e-control-wrapper .e-input-group-icon {
     @if $input-skin-name == 'material' {
-      margin-left: $zero-value;
+      margin-left: $input-child-small-margin-right;
       margin-right: $zero-value;
     }
   }
 
-  // Filled input textarea padding / wrapper padding configuration
-
-  .e-filled textarea.e-input#{$css},
-  .e-filled.e-input-group.e-multi-line-input textarea,
-  .e-filled.e-input-group.e-control-wrapper.e-multi-line-input textarea,
-  .e-filled.e-float-input.e-multi-line-input textarea,
-  .e-filled.e-float-input.e-control-wrapper.e-multi-line-input textarea {
-    box-sizing: border-box;
-  }
+  // Filled input textarea padding configuration
 
   .e-filled textarea.e-input#{$css},
   .e-filled.e-input-group textarea,
@@ -9277,17 +8598,11 @@
   .e-filled.e-input-group.e-control-wrapper textarea,
   .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea,
   .e-filled.e-input-group.e-control-wrapper textarea.e-input,
-  .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-textarea-padding;
-    }
-  }
-
+  .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input,
   .e-filled.e-float-input textarea,
   .e-filled.e-float-input.e-control-wrapper textarea {
-    @if $input-skin-name == 'material' {
-      padding: $filled-float-textarea-padding;
-    }
+    padding: $zero-value;
+    padding-right: $filled-input-label-left;
   }
 
   .e-filled.e-input-group.e-bigger textarea,
@@ -9301,21 +8616,15 @@
   .e-bigger .e-filled.e-input-group textarea,
   .e-bigger .e-filled.e-input-group textarea.e-input,
   .e-bigger .e-filled.e-input-group.e-control-wrapper textarea,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper textarea.e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-textarea-padding;
-    }
-  }
-
+  .e-bigger .e-filled.e-input-group.e-control-wrapper textarea.e-input,
   .e-filled.e-float-input.e-bigger textarea,
   .e-filled.e-float-input textarea.e-bigger,
   .e-filled.e-float-input.e-control-wrapper.e-bigger textarea,
   .e-filled.e-float-input.e-control-wrapper textarea.e-bigger,
   .e-bigger .e-filled.e-float-input textarea,
   .e-bigger .e-filled.e-float-input.e-control-wrapper textarea {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-float-textarea-padding;
-    }
+    padding: $zero-value;
+    padding-right: $bigger-filled-input-label-left;
   }
 
   .e-filled.e-input-group.e-input-focus.e-bigger textarea,
@@ -9329,9 +8638,8 @@
   .e-bigger .e-filled.e-input-group.e-input-focus textarea,
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea,
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-textarea-padding;
-    }
+    padding: $zero-value;
+    padding-right: $bigger-filled-input-label-left;
   }
 
   .e-filled.e-input-group.e-small textarea,
@@ -9341,21 +8649,15 @@
   .e-filled.e-input-group.e-control-wrapper.e-small textarea,
   .e-filled.e-input-group.e-control-wrapper.e-small textarea.e-input,
   .e-small .e-filled.e-input-group textarea,
-  .e-small .e-filled.e-input-group textarea.e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-textarea-padding;
-    }
-  }
-
+  .e-small .e-filled.e-input-group textarea.e-input,
   .e-filled.e-float-input.e-small textarea,
   .e-filled.e-float-input textarea.e-small,
   .e-filled.e-float-input.e-control-wrapper.e-small textarea,
   .e-filled.e-float-input.e-control-wrapper textarea.e-small,
   .e-small .e-filled.e-float-input textarea,
   .e-small .e-filled.e-float-input.e-control-wrapper textarea {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-float-textarea-padding;
-    }
+    padding: $zero-value;
+    padding-right: $small-filled-input-label-left;
   }
 
   .e-filled.e-input-group.e-input-focus.e-small textarea,
@@ -9367,9 +8669,8 @@
   .e-filled.e-input-group.e-control-wrapper.e-input-focus.e-small textarea.e-input,
   .e-small .e-filled.e-input-group.e-input-focus textarea,
   .e-small .e-filled.e-input-group.e-input-focus textarea.e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-textarea-padding;
-    }
+    padding: $zero-value;
+    padding-right: $small-filled-input-label-left;
   }
 
   .e-filled.e-input-group.e-small.e-bigger textarea.e-input,
@@ -9387,19 +8688,14 @@
   .e-small .input-group textarea.e-bigger,
   .e-small .e-filled.e-input-group.e-bigger textarea.e-input,
   .e-small .e-filled.e-input-group.e-control-wrapper textarea.e-input.e-bigger,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input.e-bigger {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-textarea-padding;
-    }
-  }
-
+  .e-small .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input.e-bigger,
   .e-filled.e-float-input textarea.e-bigger.e-small,
   .e-filled.e-float-input.e-small.e-bigger textarea,
   .e-filled.e-float-input.e-small textarea.e-bigger,
   .e-filled.e-float-input.e-bigger textarea.e-small,
   .e-bigger .e-filled.e-float-input.e-small textarea,
   .e-bigger.e-small .e-filled.e-float-input textarea,
-  .e-bigger .e-float-input textarea.e-small,
+  .e-bigger .float-input textarea.e-small,
   .e-small .e-filled.e-float-input.e-bigger textarea,
   .e-small .float-input textarea.e-bigger,
   .e-small .e-filled.e-float-input.e-control-wrapper textarea.e-bigger,
@@ -9408,9 +8704,8 @@
   .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small textarea,
   .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper textarea,
   .e-bigger .e-small.e-filled.e-float-input.e-control-wrapper textarea {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-float-textarea-padding;
-    }
+    padding: $zero-value;
+    padding-right: $bigger-small-filled-input-label-left;
   }
 
   .e-filled.e-input-group.e-input-focus textarea.e-input.e-bigger.e-small,
@@ -9423,278 +8718,8 @@
   .e-bigger .e-filled.e-input-group.e-control-wrapper.e-input-focus.e-small textarea.e-input,
   .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input,
   .e-bigger .e-small.e-filled.e-input-group.e-control-wrapper.e-input-focus textarea.e-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-textarea-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-multi-line-input,
-  .e-filled.e-input-group.e-control-wrapper.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-multi-line-input.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input,
-  .e-filled.e-input-group.e-control-wrapper.e-bigger.e-multi-line-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-filled-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-small.e-multi-line-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-multi-line-input,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $small-filled-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled.e-input-group.e-small.e-bigger.e-multi-line-input,
-  .e-bigger.e-small .e-filled.e-input-group.e-small.e-multi-line-input,
-  .e-bigger .e-filled.e-input-group.e-small.e-multi-line-input,
-  .e-small .e-filled.e-input-group.e-bigger.e-multi-line-input,
-  .e-filled.e-input-group.e-control-wrapper.e-small.e-bigger.e-multi-line-input,
-  .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper.e-small.e-multi-line-input,
-  .e-bigger .e-filled.e-input-group.e-control-wrapper.e-small.e-multi-line-input,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-bigger.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-small-filled-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled.e-float-input.e-multi-line-input,
-  .e-filled.e-float-input.e-control-wrapper.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $filled-float-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled.e-float-input.e-bigger.e-multi-line-input,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input,
-  .e-filled.e-float-input.e-control-wrapper.e-bigger.e-multi-line-input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-filled-float-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled.e-float-input.e-small.e-multi-line-input,
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-multi-line-input,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $small-filled-float-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled.e-float-input.e-small.e-bigger.e-multi-line-input,
-  .e-bigger.e-small .e-filled.e-float-input.e-small.e-multi-line-input,
-  .e-bigger .e-filled.e-float-input.e-small.e-multi-line-input,
-  .e-small .e-filled.e-float-input.e-bigger.e-multi-line-input,
-  .e-filled.e-float-input.e-control-wrapper.e-small.e-bigger.e-multi-line-input,
-  .e-bigger.e-small .e-filled.e-float-input.e-control-wrapper.e-small.e-multi-line-input,
-  .e-bigger .e-filled.e-float-input.e-control-wrapper.e-small.e-multi-line-input,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-bigger.e-multi-line-input {
-    @if $input-skin-name == 'material' {
-      padding: $bigger-small-filled-float-textarea-wrapper-padding;
-    }
-  }
-
-  .e-filled textarea.e-input.e-rtl#{$css},
-  .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input:focus,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input:focus,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input:focus,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-textarea-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-multi-line-input.e-rtl textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-rtl textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-rtl textarea:focus,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea:focus,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input textarea:focus,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-float-textarea-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-rtl .e-filled textarea.e-input.e-small#{$css},
-  .e-filled textarea.e-input#{$css}.e-small.e-rtl,
-  .e-small.e-rtl .e-filled textarea.e-input#{$css},
-  .e-small .e-filled textarea.e-input.e-rtl#{$css},
-  .e-filled.e-input-group.e-multi-line-input.e-small.e-rtl textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-small textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input.e-small,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input.e-small,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input.e-small,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input.e-small,
-  .e-small .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input,
-  .e-small .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input,
-  .e-small.e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input,
-  .e-small.e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input,
-  .e-small.e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input:focus,
-  .e-small.e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input:focus,
-  .e-small .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input:focus,
-  .e-small .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-textarea-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-small.e-rtl textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-small textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-rtl textarea.e-small,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-small,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input textarea.e-small,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea.e-small,
-  .e-small .e-filled.e-float-input.e-multi-line-input.e-rtl textarea,
-  .e-small .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea,
-  .e-small.e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea,
-  .e-small.e-rtl .e-filled.e-float-input.e-multi-line-input textarea,
-  .e-small.e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea:focus,
-  .e-small.e-rtl .e-filled.e-float-input.e-multi-line-input textarea:focus,
-  .e-small .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea:focus,
-  .e-small .e-filled.e-float-input.e-multi-line-input.e-rtl textarea:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-small-float-textarea-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-rtl .e-filled textarea.e-input.e-bigger#{$css},
-  .e-filled textarea.e-input.e-bigger.e-rtl#{$css},
-  .e-bigger.e-rtl .e-filled textarea.e-input#{$css},
-  .e-bigger .e-filled textarea.e-input.e-rtl#{$css},
-  .e-filled.e-input-group.e-multi-line-input.e-bigger.e-rtl textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-bigger.e-rtl textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-bigger textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-bigger textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input.e-bigger,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input textarea.e-input:focus,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper textarea.e-input:focus,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-rtl textarea.e-input:focus,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-textarea-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-bigger.e-rtl textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-bigger.e-rtl textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-bigger textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-bigger textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea.e-bigger,
-  .e-filled.e-float-input.e-multi-line-input.e-rtl textarea.e-bigger,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea.e-bigger,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input textarea.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-rtl textarea,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input textarea,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper textarea:focus,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input textarea:focus,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-rtl textarea:focus,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-rtl textarea:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-float-textarea-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-bigger .e-filled textarea.e-input.e-small.e-rtl#{$css},
-  .e-filled.e-input-group.e-multi-line-input.e-small.e-bigger.e-rtl textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small.e-bigger.e-rtl textarea.e-input,
-  .e-filled.e-input-group.e-multi-line-input.e-small.e-rtl textarea.e-input.e-bigger,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea.e-input.e-bigger,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-small.e-rtl textarea.e-input,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea.e-input,
-  .e-bigger.e-rtl textarea.e-input.e-small,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-small.e-bigger textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small.e-bigger textarea.e-input,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-small textarea.e-input.e-bigger,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small textarea.e-input.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input.e-small textarea.e-input,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small textarea.e-input,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-small.e-rtl textarea.e-input:focus,
-  .e-bigger .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea.e-input:focus,
-  .e-small .e-filled.e-input-group.e-multi-line-input.e-bigger.e-rtl textarea.e-input:focus,
-  .e-small .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-bigger.e-rtl textarea.e-input:focus,
-  .e-filled.e-input-group.e-multi-line-input.e-bigger.e-small.e-rtl textarea.e-input:focus,
-  .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-bigger.e-small.e-rtl textarea.e-input:focus,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input.e-small textarea.e-input:focus,
-  .e-bigger.e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-small textarea.e-input:focus,
-  .e-small.e-rtl .e-filled.e-input-group.e-multi-line-input.e-bigger textarea.e-input:focus,
-  .e-small.e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-bigger textarea.e-input:focus,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-bigger.e-small textarea.e-input:focus,
-  .e-rtl .e-filled.e-input-group.e-multi-line-input.e-control-wrapper.e-bigger.e-small textarea.e-input:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-textarea-padding;
-      text-indent: 0;
-    }
-  }
-
-  .e-filled.e-float-input.e-multi-line-input.e-small.e-bigger.e-rtl textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-small.e-rtl textarea.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-small.e-rtl textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small.e-bigger.e-rtl textarea,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea.e-bigger,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small.e-bigger textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small textarea.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-small.e-bigger textarea,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-small textarea.e-bigger,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input.e-small textarea,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small.e-rtl textarea:focus,
-  .e-bigger .e-filled.e-float-input.e-multi-line-input.e-small.e-rtl textarea:focus,
-  .e-small .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-bigger.e-rtl textarea:focus,
-  .e-small .e-filled.e-float-input.e-multi-line-input.e-bigger.e-rtl textarea:focus,
-  .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-bigger.e-small.e-rtl textarea:focus,
-  .e-filled.e-float-input.e-multi-line-input.e-bigger.e-small.e-rtl textarea:focus,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-small textarea:focus,
-  .e-bigger.e-rtl .e-filled.e-float-input.e-multi-line-input.e-small textarea:focus,
-  .e-small.e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-bigger textarea:focus,
-  .e-small.e-rtl .e-filled.e-float-input.e-multi-line-input.e-bigger textarea:focus,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-control-wrapper.e-bigger.e-small textarea:focus,
-  .e-rtl .e-filled.e-float-input.e-multi-line-input.e-bigger.e-small textarea:focus {
-    @if $input-skin-name == 'material' {
-      padding: $filled-bigger-small-float-textarea-padding;
-      text-indent: 0;
-    }
+    padding: $zero-value;
+    padding-right: $bigger-small-filled-input-label-left;
   }
 
   // Filled input - prefix icon configuration
@@ -9735,19 +8760,6 @@
     @if $input-skin-name == 'material' {
       border: $input-group-full-border;
       border-width: $zero-value;
-      margin-left: 8px;
-    }
-  }
-
-  .e-filled.e-float-input.e-float-icon-left.e-small .e-input-in-wrap,
-  .e-filled.e-float-input.e-control-wrapper.e-float-icon-left.e-small .e-input-in-wrap,
-  .e-filled.e-input-group.e-float-icon-left.e-small .e-input-in-wrap,
-  .e-filled.e-input-group.e-control-wrapper.e-float-icon-left.e-small .e-input-in-wrap,
-  .e-small .e-filled.e-float-input.e-float-icon-left .e-input-in-wrap,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-float-icon-left .e-input-in-wrap,
-  .e-small .e-filled.e-input-group.e-float-icon-left .e-input-in-wrap,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left .e-input-in-wrap {
-    @if $input-skin-name == 'material' {
       margin-left: 4px;
     }
   }
@@ -9768,28 +8780,6 @@
   .e-bigger.e-small .e-filled.e-float-input.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-bigger.e-small .e-filled.e-input-group.e-float-icon-left.e-rtl .e-input-in-wrap,
   .e-bigger.e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap {
-    @if $input-skin-name == 'material' {
-      margin-left: $zero-value;
-      margin-right: 8px;
-    }
-  }
-
-  .e-rtl.e-small .e-filled.e-float-input.e-float-icon-left .e-input-in-wrap,
-  .e-rtl.e-small .e-filled.e-float-input.e-control-wrapper.e-float-icon-left .e-input-in-wrap,
-  .e-rtl.e-small .e-filled.e-input-group.e-float-icon-left .e-input-in-wrap,
-  .e-rtl.e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left .e-input-in-wrap,
-  .e-rtl .e-small.e-filled.e-float-input.e-float-icon-left .e-input-in-wrap,
-  .e-rtl .e-small.e-filled.e-float-input.e-control-wrapper.e-float-icon-left .e-input-in-wrap,
-  .e-rtl .e-small.e-filled.e-input-group.e-float-icon-left .e-input-in-wrap,
-  .e-rtl .e-small.e-filled.e-input-group.e-control-wrapper.e-float-icon-left .e-input-in-wrap,
-  .e-small.e-filled.e-float-input.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap,
-  .e-small.e-filled.e-float-input.e-float-icon-left.e-rtl .e-input-in-wrap,
-  .e-small.e-filled.e-input-group.e-float-icon-left.e-rtl .e-input-in-wrap,
-  .e-small.e-filled.e-input-group.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap,
-  .e-small .e-filled.e-float-input.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap,
-  .e-small .e-filled.e-float-input.e-float-icon-left.e-rtl .e-input-in-wrap,
-  .e-small .e-filled.e-input-group.e-float-icon-left.e-rtl .e-input-in-wrap,
-  .e-small .e-filled.e-input-group.e-control-wrapper.e-float-icon-left.e-rtl .e-input-in-wrap {
     @if $input-skin-name == 'material' {
       margin-left: $zero-value;
       margin-right: 4px;

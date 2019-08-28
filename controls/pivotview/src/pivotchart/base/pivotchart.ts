@@ -15,10 +15,13 @@ import {
 import { createElement, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ChartSettingsModel } from '../../pivotview/model/chartsettings-model';
 import { PivotView } from '../../pivotview';
-import { RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping } from '../../common';
+import {
+    RowHeaderPositionGrouping, ChartSeriesType, ChartSeriesCreatedEventArgs, RowHeaderLevelGrouping, ChartLabelInfo
+} from '../../common';
 import { DrillOptionsModel } from '../../pivotview/model/datasourcesettings-model';
 import { showSpinner } from '@syncfusion/ej2-popups';
 import { PivotUtil } from '../../base/util';
+import { OlapEngine, ITupInfo } from '../../base';
 
 export class PivotChart {
     private chartSeries: SeriesModel[];
@@ -30,12 +33,14 @@ export class PivotChart {
     private maxLevel: number = 0;
     private columnGroupObject: { [key: string]: { x: string, y: number }[] } = {};
     private persistSettings: ChartSettingsModel;
+    private fieldPosition: string[] = [];
+    private measurePos: number = -1;
     /** @hidden */
     public calculatedWidth: number;
     /** @hidden */
     public currentMeasure: string;
     /** @hidden */
-    public engineModule: PivotEngine;
+    public engineModule: PivotEngine | OlapEngine;
     /** @hidden */
     public parent: PivotView;
 
@@ -51,10 +56,14 @@ export class PivotChart {
     /* tslint:disable */
     public loadChart(parent: PivotView, chartSettings: ChartSettingsModel): void {
         this.parent = parent;
-        this.engineModule = this.parent.engineModule;
-        this.dataSourceSettings = this.parent.dataSourceSettings;
+        this.engineModule = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
+        this.dataSourceSettings = this.parent.dataSourceSettings as IDataOptions;
         this.chartSettings = chartSettings;
-        if (this.dataSourceSettings.values.length > 0) {
+        let isDataAvail: boolean = parent.dataType === 'olap' ?
+            (parent.olapEngineModule.tupColumnInfo.length > 0 && parent.olapEngineModule.tupRowInfo.length > 0 &&
+                (!isNullOrUndefined(parent.olapEngineModule.colMeasurePos) || !isNullOrUndefined(parent.olapEngineModule.rowMeasurePos)))
+            : parent.dataSourceSettings.values.length > 0;
+        if (isDataAvail) {
             if (this.chartSettings.enableMultiAxis) {
                 this.measureList = this.dataSourceSettings.values.map(function (item) { return item.name; });
             }
@@ -64,7 +73,7 @@ export class PivotChart {
         } else if (this.parent.chart) {
             this.parent.chart.series = [];
             this.parent.chart.primaryXAxis.title = '';
-            this.parent.chart.primaryYAxis.title = '';
+            this.parent.chart.primaryYAxis.title = ''
             this.parent.chart.primaryXAxis.multiLevelLabels = [];
             this.parent.chart.primaryYAxis.multiLevelLabels = [];
             if (this.parent.chart.axes.length > 0) {
@@ -78,7 +87,7 @@ export class PivotChart {
             return;
         }
         this.columnGroupObject = {};
-        let pivotValues: IPivotValues = this.parent.engineModule.pivotValues;
+        let pivotValues: IPivotValues = this.engineModule.pivotValues;
         this.currentMeasure = chartSettings.enableMultiAxis ? this.measureList[0] :
             (((chartSettings.value === '' || this.dataSourceSettings.values.filter((item: IFieldOptions) => {
                 return item.name === chartSettings.value;
@@ -86,68 +95,117 @@ export class PivotChart {
         let totColIndex: INumberIndex = this.getColumnTotalIndex(pivotValues);
         let rKeys: string[] = Object.keys(pivotValues);
         let prevLevel: number;
+        let firstLevelUName: string;
+        let levelCollection: { [key: string]: number } = {};
+        let prevCell: IAxisSet;
+        let integratedLevel: number = 0;
         let indexCount: number = -0.5;
         this.headerColl = {};
         this.maxLevel = 0;
+        let levelPos: { [key: string]: { start: number, end: number } } = {};
+        let lastHierarchy: string = '';
+        let lastDimension: string = '';
         let memberCell: IAxisSet;
+        if (this.parent.dataType === 'olap') {
+            levelPos = this.groupHierarchyWithLevels(pivotValues as any);
+            lastHierarchy = this.fieldPosition[this.fieldPosition.length - 1];
+            lastDimension = (this.measurePos === (this.fieldPosition.length - 1) && this.fieldPosition.length > 1) ?
+                this.fieldPosition[this.fieldPosition.length - 2] : lastHierarchy;
+        }
         for (let rKey of rKeys) {
             let rowIndex: number = Number(rKey);
             if (pivotValues[rowIndex][0] && (pivotValues[rowIndex][0] as IAxisSet).axis === 'row' &&
                 (this.dataSourceSettings.rows.length === 0 ? true : (pivotValues[rowIndex][0] as IAxisSet).type !== 'grand sum')) {
                 let firstRowCell: IAxisSet = pivotValues[rowIndex][0] as IAxisSet;
-                if (firstRowCell.type !== 'value') {
-                    if (!(prevLevel === undefined || prevLevel < firstRowCell.level)) {
+                let tupInfo: ITupInfo = this.parent.dataType === 'olap' ?
+                    (this.engineModule as OlapEngine).tupRowInfo[firstRowCell.ordinal] : undefined;
+                let fieldPos: number = -1;
+                let currrentLevel: number = firstRowCell.level;
+                if (this.parent.dataType === 'olap') {
+                    fieldPos = tupInfo.uNameCollection.split('::').length - 1;
+                    if (firstRowCell.memberType !== 3 && (tupInfo.measureName ?
+                        tupInfo.measureName === this.dataSourceSettings.values[0].name : true)) {
+                        firstLevelUName = firstLevelUName === undefined ? firstRowCell.levelUniqueName : firstLevelUName;
+                        integratedLevel = firstLevelUName === firstRowCell.levelUniqueName ? 0 : integratedLevel;
+                        levelCollection = integratedLevel === 0 ? {} : levelCollection;
+                        integratedLevel = (prevCell && firstLevelUName !== firstRowCell.levelUniqueName) ?
+                            (prevCell.hierarchy === firstRowCell.hierarchy ?
+                                (integratedLevel + (firstRowCell.level - prevCell.level)) :
+                                (isNullOrUndefined(levelCollection[firstRowCell.levelUniqueName]) ? (levelPos[firstRowCell.hierarchy].start) :
+                                    levelCollection[firstRowCell.levelUniqueName])) : integratedLevel;
+                        levelCollection[firstRowCell.levelUniqueName] = integratedLevel;
+                        currrentLevel = integratedLevel;
+                        indexCount += (prevCell && lastDimension === prevCell.hierarchy && !prevCell.isDrilled) ? 1 : 0;
+                        prevLevel = integratedLevel;
+                        prevCell = firstRowCell;
+                    }
+                } else if (firstRowCell.type !== 'value') {
+                    if (!(prevLevel === undefined || prevLevel < currrentLevel)) {
                         indexCount++;
                     }
-                    prevLevel = firstRowCell.level;
+                    prevLevel = currrentLevel;
                 }
-                this.maxLevel = firstRowCell.level > this.maxLevel ? firstRowCell.level : this.maxLevel;
-                let name: string = firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString();
+                this.maxLevel = currrentLevel > this.maxLevel ? currrentLevel : this.maxLevel;
+                let name: string = this.parent.dataType === 'olap' ? firstRowCell.formattedText :
+                    (firstRowCell.actualText ? firstRowCell.actualText.toString() : firstRowCell.formattedText.toString());
                 let caption: string = firstRowCell.hasChild ? ((firstRowCell.isDrilled ? ' - ' : ' + ') + name) : name;
-                let cellInfo: any = {
+                let levelName: string = tupInfo ? tupInfo.uNameCollection : firstRowCell.valueSort['levelName'].toString();
+                let cellInfo: ChartLabelInfo = {
                     name: name,
                     text: caption,
                     hasChild: firstRowCell.hasChild,
                     isDrilled: firstRowCell.isDrilled,
-                    levelName: firstRowCell.valueSort['levelName'].toString(),
-                    level: firstRowCell.level,
+                    levelName: levelName,
+                    level: currrentLevel,
                     fieldName: firstRowCell.valueSort['axis'] ? firstRowCell.valueSort['axis'].toString() : '',
                     rowIndex: rowIndex,
-                    colIndex: 0
+                    colIndex: 0,
+                    cell: firstRowCell
                 };
-                if (firstRowCell.type !== 'value') {
+                if (this.parent.dataType === 'olap' ? firstRowCell.memberType !== 3 : firstRowCell.type !== 'value') {
                     if (this.headerColl[indexCount]) {
-                        this.headerColl[indexCount][firstRowCell.level] = cellInfo;
+                        this.headerColl[indexCount][currrentLevel] = cellInfo;
                     } else {
                         this.headerColl[indexCount] = {};
-                        this.headerColl[indexCount][firstRowCell.level] = cellInfo;
+                        this.headerColl[indexCount][currrentLevel] = cellInfo;
                     }
                 }
-                let prevMemberCell: IAxisSet;
-                memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
                 let rows: IPivotRows = pivotValues[rowIndex];
                 let cKeys: string[] = Object.keys(rows);
+                let prevMemberCell: IAxisSet;
+                if (this.parent.dataType === 'olap') {
+                    memberCell = firstRowCell.memberType !== 3 ? firstRowCell : memberCell;
+                } else {
+                    memberCell = firstRowCell.type !== 'value' ? firstRowCell : memberCell;
+                }
                 for (let cKey of cKeys) {
                     let cellIndex: number = Number(cKey);
                     let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
                     let measureAllow: boolean = cell.rowHeaders === '' ? this.dataSourceSettings.rows.length === 0 : true;
-                    if (!totColIndex[cell.colIndex] && cell.axis === 'value' &&
-                        (chartSettings.enableMultiAxis ? true : cell.actualText === this.currentMeasure)) {
-                        if (((firstRowCell.type === 'value' && prevMemberCell) ?
-                            prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow) {
+                    let actualText: any = (this.parent.dataType === 'olap' && tupInfo && tupInfo.measureName) ?
+                        tupInfo.measureName : cell.actualText;
+                    if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
+                        (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
+                        if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
+                            ((firstRowCell.memberType === 3 && prevMemberCell) ?
+                                (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
+                            : (((firstRowCell.type === 'value' && prevMemberCell) ?
+                                prevMemberCell.members.length > 0 : firstRowCell.members.length > 0) || !measureAllow)) {
                             break;
                         }
-                        let columnSeries: string = cell.columnHeaders.toString().split('.').join(' - ') + ' | ' + cell.actualText;
+                        let colHeaders: string = this.parent.dataType === 'olap' ? cell.columnHeaders.toString().split(/~~|::/).join(' - ')
+                            : cell.columnHeaders.toString().split('.').join(' - ');
+                        let rowHeaders: string = this.parent.dataType === 'olap' ? cell.rowHeaders.toString().split(/~~|::/).join(' - ')
+                            : cell.rowHeaders.toString().split('.').join(' - ');
+                        let columnSeries: string = colHeaders + ' | ' + actualText;
                         if (this.columnGroupObject[columnSeries]) {
                             this.columnGroupObject[columnSeries].push({
-                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText :
-                                    cell.rowHeaders.toString().split('.').join(' - '),
+                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
                                 y: Number(cell.value)
                             });
                         } else {
                             this.columnGroupObject[columnSeries] = [{
-                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText :
-                                    cell.rowHeaders.toString().split('.').join(' - '),
+                                x: this.dataSourceSettings.rows.length === 0 ? firstRowCell.formattedText : rowHeaders,
                                 y: Number(cell.value)
                             }];
                         }
@@ -291,8 +349,8 @@ export class PivotChart {
                     axisLabelRender: this.axisLabelRender.bind(this),
                     multiLevelLabelClick: this.multiLevelLabelClick.bind(this),
                 });
-                this.parent.chart.isStringTemplate = true;
-                this.parent.chart.appendTo('#' + this.parent.element.id + '_chart');
+            this.parent.chart.isStringTemplate = true;
+            this.parent.chart.appendTo('#' + this.parent.element.id + '_chart');
         } else {
             this.parent.chart.series = this.chartSeries;
             this.parent.chart.primaryXAxis = currentXAxis;
@@ -324,16 +382,25 @@ export class PivotChart {
                 let measureField: IField = this.engineModule.fieldList[item.name];
                 let measureAggregatedName: string =
                     this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' + measureField.caption;
-                let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((itm: IFormatSettings) => {
-                    return itm.name === item.name;
-                })[0];
+                // let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((itm: IFormatSettings) => {
+                //     return itm.name === item.name;
+                // })[0];
+                let formatSetting: IFormatSettings;
+                for (let field of this.dataSourceSettings.formatSettings) {
+                    if (field.name === item.name) {
+                        formatSetting = field;
+                        break;
+                    }
+                }
+                let format: string = this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) :
+                    (formatSetting ? formatSetting.format : 'N');
                 let resFormat: boolean =
                     (this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar') ? true : false;
                 let currentYAxis: AxisModel = {};
                 currentYAxis = this.persistSettings.primaryYAxis ?
                     this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
                 currentYAxis.labelFormat = currentYAxis.labelFormat ?
-                    currentYAxis.labelFormat : (percentChart ? '' : (formatSetting && !resFormat ? formatSetting.format : 'N'));
+                    currentYAxis.labelFormat : (percentChart ? '' : (!resFormat ? format : 'N'));
                 currentYAxis.title = currentYAxis.title ? currentYAxis.title : measureAggregatedName;
                 currentYAxis.plotOffset = currentYAxis.plotOffset ? currentYAxis.plotOffset : (valCnt % 2 !== 0 ? 30 : 0);
                 currentYAxis.rowIndex = valCnt;
@@ -348,22 +415,41 @@ export class PivotChart {
             let measureField: IField = this.engineModule.fieldList[this.currentMeasure];
             let measureAggregatedName: string = this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' +
                 measureField.caption;
-            let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((item: IFormatSettings) => {
-                return item.name === this.currentMeasure;
-            })[0];
+            // let formatSetting: IFormatSettings = this.dataSourceSettings.formatSettings.filter((item: IFormatSettings) => {
+            //     return item.name === this.currentMeasure;
+            // })[0];
+            let formatSetting: IFormatSettings;
+            for (let item of this.dataSourceSettings.formatSettings) {
+                if (item.name === this.currentMeasure) {
+                    formatSetting = item;
+                    break;
+                }
+            }
             let currentYAxis: AxisModel = {};
+            let format: string = this.parent.dataType === 'olap' ? this.getFormat(measureField.formatString) :
+                (formatSetting ? formatSetting.format : 'N');
             currentYAxis = this.persistSettings.primaryYAxis ? this.frameObjectWithKeys(this.persistSettings.primaryYAxis) : currentYAxis;
             currentYAxis.rowIndex = 0;
             if (!(this.chartSettings.chartSeries.type === 'Polar' || this.chartSettings.chartSeries.type === 'Radar')) {
                 currentYAxis.name = this.currentMeasure;
             }
-            currentYAxis.labelFormat = currentYAxis.labelFormat ? currentYAxis.labelFormat : (percentChart ? '' : (formatSetting ?
-                formatSetting.format : 'N'));
+            currentYAxis.labelFormat = currentYAxis.labelFormat ? currentYAxis.labelFormat : (percentChart ? '' : format);
             currentYAxis.title = currentYAxis.title ? currentYAxis.title : measureAggregatedName;
             axes = axes.concat(currentYAxis);
             rows.push({ height: '100%' });
         }
         return { axes: axes, rows: rows };
+    }
+
+    private getFormat(format: string): string {
+        if (format === 'Currency') {
+            format = 'C';
+        } else if (format === 'Percent') {
+            format = 'P';
+        } else {
+            format = 'N';
+        }
+        return format;
     }
 
     private getColumnTotalIndex(pivotValues: IPivotValues): INumberIndex {
@@ -383,6 +469,43 @@ export class PivotChart {
             }
         }
         return colIndexColl;
+    }
+
+    private groupHierarchyWithLevels(pivotValues: IAxisSet[]): { [key: string]: { start: number, end: number } } {
+        this.fieldPosition = [];
+        let group: { [key: string]: { [key: string]: string } } = {};
+        let fieldCount: number = 0;
+        let levelPos: { [key: string]: { start: number, end: number } } = {};
+        this.measurePos = (this.engineModule as OlapEngine).tupRowInfo[0].measurePosition;
+        for (let rowPos: number = 0; rowPos < pivotValues.length; rowPos++) {
+            let cell: IAxisSet = (pivotValues[rowPos] as IAxisSet[])[0];
+            if (cell && cell.axis === 'row' && cell.type !== 'grand sum') {
+                if (isNullOrUndefined(group[cell.hierarchy])) {
+                    if (cell.memberType === 3) {
+                        if (fieldCount === this.measurePos) {
+                            this.fieldPosition[this.measurePos] = cell.hierarchy;
+                            group[cell.hierarchy] = { [cell.levelUniqueName]: cell.levelUniqueName };
+                        } else {
+                            fieldCount--;
+                        }
+                    } else {
+                        this.fieldPosition[fieldCount] = cell.hierarchy;
+                        group[cell.hierarchy] = { [cell.levelUniqueName]: cell.levelUniqueName };
+                    }
+                    fieldCount++;
+                } else {
+                    group[cell.hierarchy][cell.levelUniqueName] = cell.levelUniqueName;
+                }
+            }
+        }
+        let lastEnd: number = -1;
+        for (let pos: number = 0; pos < this.fieldPosition.length; pos++) {
+            if (this.measurePos !== pos) {
+                levelPos[this.fieldPosition[pos]] = { start: (lastEnd + 1), end: (lastEnd + Object.keys(group[this.fieldPosition[pos]]).length) };
+                lastEnd = levelPos[this.fieldPosition[pos]].end;
+            }
+        }
+        return levelPos;
     }
 
     private frameMultiLevelLabels(): MultiLevelLabelsModel[] {
@@ -515,9 +638,10 @@ export class PivotChart {
             (args.series as Series).yAxisName ? ((args.series as Series).yAxisName.split('_CumulativeAxis')[0]) :
                 (this.chartSettings.enableMultiAxis ? args.series.name.split(' | ')[1] : this.currentMeasure)];
         let measureAggregatedName: string = this.parent.localeObj.getConstant(measureField.aggregateType) + ' of ' + measureField.caption;
-        let formattedValue: string = (this.engineModule.formatFields[measureField.id] && this.chartSettings.useGroupingSeparator) ?
-            this.parent.engineModule.getFormattedValue(args.point.y as number, measureField.id).formattedText :
-            args.text.split('<b>')[1].split('</b>')[0];
+        let formattedValue: string = (this.parent.dataType === 'olap' ? args.point.y as string :
+            ((this.engineModule as PivotEngine).formatFields[measureField.id] && this.chartSettings.useGroupingSeparator) ?
+                this.parent.engineModule.getFormattedValue(args.point.y as number, measureField.id).formattedText :
+                args.text.split('<b>')[1].split('</b>')[0]);
         args.text = measureAggregatedName + ': ' + formattedValue +
             (this.dataSourceSettings.columns.length === 0 ? '' :
                 (' <br/>' + this.parent.localeObj.getConstant('column') + ': ' + args.series.name.split(' | ')[0])) +
@@ -555,7 +679,11 @@ export class PivotChart {
 
     private multiLevelLabelClick(args: IMultiLevelLabelClickEventArgs): void {
         if (args.customAttributes && (args.customAttributes as any).hasChild) {
-            this.onDrill(args);
+            if (this.parent.dataType === 'olap') {
+                this.parent.onDrill(undefined, args.customAttributes as ChartLabelInfo);
+            } else {
+                this.onDrill(args);
+            }
         }
     }
     /** @hidden */
@@ -593,24 +721,27 @@ export class PivotChart {
             }
         }
         showSpinner(this.parent.element);
+        let pivot: PivotChart = this;
+        //setTimeout(() => {
         let drilledItem: IDrilledItem = {
             fieldName: fieldName, memberName: memberUqName, delimiter: delimiter,
             axis: 'row',
             action: labelInfo.isDrilled ? 'up' : 'down',
             currentCell: currentCell
         };
-        this.parent.trigger(events.drill, {
+        pivot.parent.trigger(events.drill, {
             drillInfo: drilledItem,
-            pivotview: this
+            pivotview: pivot
         });
-        if (this.parent.enableVirtualization) {
-            this.engineModule.drilledMembers = this.dataSourceSettings.drilledMembers;
-            (this.engineModule as PivotEngine).onDrill(drilledItem);
+        if (pivot.parent.enableVirtualization) {
+            pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+            (pivot.engineModule as PivotEngine).onDrill(drilledItem);
         } else {
-            this.engineModule.generateGridData(this.dataSourceSettings);
+            (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings);
         }
-        this.parent.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
-        this.parent.renderPivotGrid();
+        pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+        pivot.parent.renderPivotGrid();
+        //});
     }
 
     private load(args: ILoadedEventArgs): void {

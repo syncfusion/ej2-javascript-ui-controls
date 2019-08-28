@@ -2746,12 +2746,10 @@ function getMonthSummary(ruleObject, cldrObj, localeObj) {
     }
     return summary;
 }
-function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, viewDate, calendarMode, oldTimezone, newTimezone) {
+function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, viewDate, calendarMode) {
     if (maximumCount === void 0) { maximumCount = MAXOCCURRENCE; }
     if (viewDate === void 0) { viewDate = null; }
     if (calendarMode === void 0) { calendarMode = 'Gregorian'; }
-    if (oldTimezone === void 0) { oldTimezone = null; }
-    if (newTimezone === void 0) { newTimezone = null; }
     var ruleObject = extractObjectFromRule(rule);
     var cacheDate;
     calendarUtil = getCalendarUtil(calendarMode);
@@ -2759,12 +2757,8 @@ function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, vi
     var modifiedDate = new Date(startDate.getTime());
     tempExcludeDate = [];
     var tempDate = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
-    var tz = new Timezone();
     tempDate.forEach(function (content) {
         var parsedDate = getDateFromRecurrenceDateString(content);
-        if (oldTimezone && newTimezone) {
-            parsedDate = tz.convert(new Date(parsedDate.getTime()), oldTimezone, newTimezone);
-        }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });
     ruleObject.recExceptionCount = !isNullOrUndefined(ruleObject.count) ? tempExcludeDate.length : 0;
@@ -3876,7 +3870,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 event_1[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event_1[fields.recurrenceRule]) && isNullOrUndefined(event_1[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event_1, null, oldTimezone));
+                processed = processed.concat(this.generateOccurrence(event_1));
             }
             else {
                 event_1.Guid = this.generateGuid();
@@ -4499,7 +4493,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
         this.parent.activeEventData = { event: eventObject, element: target };
     };
-    EventBase.prototype.generateOccurrence = function (event, viewDate, oldTimezone) {
+    EventBase.prototype.generateOccurrence = function (event, viewDate) {
         var startDate = event[this.parent.eventFields.startTime];
         var endDate = event[this.parent.eventFields.endTime];
         var eventRule = event[this.parent.eventFields.recurrenceRule];
@@ -4510,10 +4504,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        var newTimezone = this.parent.timezone || this.timezone.getLocalTimezoneName();
-        var firstDay = this.parent.firstDayOfWeek;
-        var calendarMode = this.parent.calendarMode;
-        var dates = generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
+        var dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -5615,7 +5606,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
         }
-        this.showQuickDialog('RecurrenceValidationAlert');
+        if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
+            this.showQuickDialog('RecurrenceValidationAlert');
+        }
     };
     QuickPopups.prototype.openDeleteAlert = function () {
         if (this.parent.activeViewOptions.readonly) {
@@ -5685,7 +5678,14 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
-                appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
+                var templateElement = void 0;
+                if (!isNullOrUndefined(this_1.parent.activeViewOptions.eventTemplate)) {
+                    templateElement = this_1.parent.getAppointmentTemplate()(eventData);
+                    append(templateElement, appointmentEle);
+                }
+                else {
+                    appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
+                }
                 if (this_1.parent.activeViewOptions.group.resources.length > 0) {
                     appointmentEle.setAttribute('data-group-index', groupIndex);
                 }
@@ -5721,9 +5721,6 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
         var guid = target.getAttribute('data-guid');
         var eventObj = this.parent.eventBase.getEventByGuid(guid);
-        if (isNullOrUndefined(eventObj)) {
-            return;
-        }
         var eventTitle = (eventObj[this.parent.eventFields.subject] || this.l10n.getConstant('noTitle'));
         var eventTemplate = "<div class=\"" + MULTIPLE_EVENT_POPUP_CLASS + "\"><div class=\"" + POPUP_HEADER_CLASS + "\">" +
             ("<button class=\"" + CLOSE_CLASS + "\" title=\"" + this.l10n.getConstant('close') + "\"></button>") +
@@ -7828,11 +7825,6 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             this.createRecurrenceEditor(recurrenceEditor);
         }
     };
-    EventWindow.prototype.updateRecurrenceEditor = function (recurrenceEditor) {
-        if (this.parent.editorTemplate) {
-            this.recurrenceEditor = recurrenceEditor;
-        }
-    };
     EventWindow.prototype.openEditor = function (data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
@@ -8763,7 +8755,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
                 isShowAlert = false;
             }
-            if (!isNullOrUndefined(alertType) && isShowAlert) {
+            if (!isNullOrUndefined(alertType) && isShowAlert
+                && ((!this.parent.enableRecurrenceValidation && alertType === 'wrongPattern') || this.parent.enableRecurrenceValidation)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert(alertType);
                 return;
             }
@@ -8801,7 +8794,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                         eveId = eventObj[this.fields.recurrenceID];
                         currentAction = null;
                     }
-                    if (this.editOccurrenceValidation(eveId, eventObj)) {
+                    if (this.parent.enableRecurrenceValidation && this.editOccurrenceValidation(eveId, eventObj)) {
                         this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                         return;
                     }
@@ -12343,13 +12336,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         return this.activeView ? this.activeView.renderDates : [];
     };
     /**
-     * Update the recurrence editor instance from custom editor template.
-     * @method updateRecurrenceEditor
-     */
-    Schedule.prototype.updateRecurrenceEditor = function (recurrenceEditor) {
-        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
-    };
-    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -12462,6 +12448,26 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.activeEventData.event = data;
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
+    };
+    /**
+     * To manually close the event editor window
+     * @method closeEditor
+     * @return {void}
+     */
+    Schedule.prototype.closeEditor = function () {
+        if (this.eventWindow) {
+            this.eventWindow.dialogClose();
+        }
+    };
+    /**
+     * To manually close the quick info popup
+     * @method closeQuickInfoPopup
+     * @return {void}
+     */
+    Schedule.prototype.closeQuickInfoPopup = function () {
+        if (this.quickPopup) {
+            this.quickPopup.quickPopupHide(true);
+        }
     };
     /**
      * Adds the resources to the specified index.
@@ -12601,6 +12607,9 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(true)
     ], Schedule.prototype, "hideEmptyAgendaDays", void 0);
+    __decorate([
+        Property(true)
+    ], Schedule.prototype, "enableRecurrenceValidation", void 0);
     __decorate([
         Property()
     ], Schedule.prototype, "timezone", void 0);
@@ -12746,7 +12755,8 @@ var ActionBase = /** @__PURE__ @class */ (function () {
                 eventObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
                 currentAction = 'EditOccurrence';
             }
-            if (this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
+            if (this.parent.enableRecurrenceValidation
+                && this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return;
             }
@@ -13063,11 +13073,6 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     MonthEvent.prototype.renderAppointments = function () {
-        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
-        if (this.parent.rowAutoHeight) {
-            this.parent.uiStateValues.top = conWrap.scrollTop;
-            this.parent.uiStateValues.left = conWrap.scrollLeft;
-        }
         var appointmentWrapper = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
         for (var _i = 0, appointmentWrapper_1 = appointmentWrapper; _i < appointmentWrapper_1.length; _i++) {
             var wrap = appointmentWrapper_1[_i];
@@ -13078,6 +13083,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
+        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         var scrollTop = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
@@ -13093,8 +13099,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             var data = {
                 cssProperties: this.parent.getCssProperties(),
                 module: this.parent.getModuleName(),
-                isPreventScrollUpdate: true,
-                scrollPosition: { left: this.parent.uiStateValues.left, top: this.parent.uiStateValues.top }
+                isPreventScrollUpdate: true
             };
             if (this.parent.virtualScrollModule) {
                 if (this.parent.currentAction) {
@@ -13799,11 +13804,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
         var minutes = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        var element = this.actionObj.clone.offsetParent;
-        if (isNullOrUndefined(element)) {
-            return;
-        }
-        var resizeTime = resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
+        var resizeTime = resetTime(new Date(parseInt(this.actionObj.clone.offsetParent.getAttribute('data-date'), 10)));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {
@@ -17323,10 +17324,6 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         }
         // tslint:enable:no-any
         this.setColWidth(content);
-        if (args.scrollPosition) {
-            content.scrollTop = args.scrollPosition.top;
-            content.scrollLeft = args.scrollPosition.left;
-        }
     };
     Month.prototype.setContentHeight = function (content, leftPanelElement, height) {
         content.style.height = 'auto';

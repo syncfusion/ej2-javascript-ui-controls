@@ -2,51 +2,13 @@
 
 ## [Unreleased]
 
-## 17.2.47 (2019-08-27)
-
-### NumericTextBox
-
-#### Bug Fixes
-
-- `#242949` - Resolved the cursor flickering issue on IE11 browser while focus the input by tab and mouse simultaneously.
-
-## 17.2.46 (2019-08-22)
-
-### Slider
-
-#### Bug Fixes
-
-- `I240495` - Ticks rendering issue in the vertical slider has been fixed.
-
-## 17.2.41 (2019-08-14)
-
-### NumericTextBox
-
-#### Bug Fixes
-
-- `#244336` - Now, the percentage textbox value never changed in read-only mode after `focusIn` and `focusOut`.
+## 17.2.48-beta (2019-08-28)
 
 ### Uploader
 
 #### Bug Fixes
 
 - `#F146285`, `244026` - Now, you can get the files in server-side when drag and drop the files in the synchronous upload.
-
-## 17.2.40 (2019-08-06)
-
-### MaskedTextBox
-
-#### Bug Fixes
-
-- `#243500` - Provided `readonly` property to control user interactions.
-
-## 17.2.39 (2019-07-30)
-
-### Uploader
-
-#### Bug Fixes
-
-- `#F145959`, `#242743` - Provided specific type for success event arguments in the `Uploader`.
 
 ## 17.2.36 (2019-07-24)
 

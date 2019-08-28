@@ -908,7 +908,7 @@ class DataUtil {
         while (left.length > 0 || right.length > 0) {
             if (left.length > 0 && right.length > 0) {
                 if (comparer) {
-                    current = comparer(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName), left[0], right[0]) <= 0 ? left : right;
+                    current = comparer(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName)) <= 0 ? left : right;
                 }
                 else {
                     current = left[0][fieldName] < left[0][fieldName] ? left : right;
@@ -1067,11 +1067,6 @@ class DataUtil {
  * @default null
  */
 DataUtil.serverTimezoneOffset = null;
-/**
- * Species whether are not to be parsed with serverTimezoneOffset value.
- * @hidden
- */
-DataUtil.timeZoneHandling = true;
 /**
  * Throw error with the given string as message.
  * @param  {string} er
@@ -2308,14 +2303,13 @@ DataUtil.parse = {
         let dupValue = value;
         if (typeof value === 'string') {
             let ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
-            let offSet = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
             if (ms) {
-                return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
+                return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
             }
             else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
                 let arr = dupValue.split(/[^0-9]/);
                 value = DataUtil.dateParse
-                    .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), offSet, true);
+                    .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), DataUtil.serverTimezoneOffset, true);
             }
         }
         return value;
@@ -2392,40 +2386,6 @@ DataUtil.parse = {
             }
         }
         return val;
-    },
-    /**
-     * It will replace the Date object with respective to UTC format value.
-     * @param  {string} key
-     * @param  {any} value
-     * @hidden
-     */
-    /* tslint:disable-next-line:no-any */
-    jsonDateReplacer: (key, value) => {
-        if (key === 'value' && value) {
-            if (typeof value === 'string') {
-                let ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
-                if (ms) {
-                    value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
-                }
-                else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
-                    let arr = value.split(/[^0-9]/);
-                    value = DataUtil.dateParse
-                        .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), null, true);
-                }
-            }
-            if (value instanceof Date) {
-                value = DataUtil.dateParse.addSelfOffset(value);
-                if (DataUtil.serverTimezoneOffset === null) {
-                    return DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(value), null).toJSON();
-                }
-                else {
-                    value = DataUtil.dateParse.toTimeZone(value, (((value.getTimezoneOffset() / 60) * 2)
-                        - DataUtil.serverTimezoneOffset), false);
-                    return value.toJSON();
-                }
-            }
-        }
-        return value;
     }
 };
 /**
@@ -2886,7 +2846,7 @@ class UrlAdaptor extends Adaptor {
         this.pvt = {};
         if (this.options.requestType === 'json') {
             return {
-                data: JSON.stringify(req, DataUtil.parse.jsonDateReplacer),
+                data: JSON.stringify(req),
                 url: url,
                 pvtData: p,
                 type: 'POST',
@@ -2948,12 +2908,7 @@ class UrlAdaptor extends Adaptor {
     processResponse(data, ds, query, xhr, request, changes) {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
-            let handleTimeZone = DataUtil.timeZoneHandling;
-            if (ds && !ds.timeZoneHandling) {
-                DataUtil.timeZoneHandling = false;
-            }
             data = DataUtil.parse.parseJson(data);
-            DataUtil.timeZoneHandling = handleTimeZone;
         }
         let requests = request;
         let pvt = requests.pvtData || {};
@@ -3606,19 +3561,7 @@ class ODataAdaptor extends UrlAdaptor {
         let req = '';
         let stat = {
             'method': 'DELETE ',
-            'url': (data, i, key) => {
-                let url = DataUtil.getObject(key, data[i]);
-                if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
-                    return '(' + url + ')';
-                }
-                else if (url instanceof Date) {
-                    let dateTime = data[i][key];
-                    return '(' + dateTime.toJSON() + ')';
-                }
-                else {
-                    return `('${url}')`;
-                }
-            },
+            'url': (data, i, key) => '(' + data[i][key] + ')',
             'data': (data, i) => ''
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3657,18 +3600,7 @@ class ODataAdaptor extends UrlAdaptor {
         arr.forEach((change) => change = this.compareAndRemove(change, org.filter((o) => DataUtil.getObject(e.key, o) === DataUtil.getObject(e.key, change))[0], e.key));
         let stat = {
             'method': this.options.updateType + ' ',
-            'url': (data, i, key) => {
-                if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
-                    return '(' + data[i][key] + ')';
-                }
-                else if (data[i][key] instanceof Date) {
-                    let date = data[i][key];
-                    return '(' + date.toJSON() + ')';
-                }
-                else {
-                    return `('${data[i][key]}')`;
-                }
-            },
+            'url': (data, i, key) => '(' + data[i][key] + ')',
             'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3992,82 +3924,6 @@ class WebApiAdaptor extends ODataAdaptor {
             type: 'PUT',
             url: dm.dataSource.url,
             data: JSON.stringify(value)
-        };
-    }
-    batchRequest(dm, changes, e) {
-        let initialGuid = e.guid = DataUtil.getGuid(this.options.batchPre);
-        let url = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
-        e.url = this.resourceTableName ? this.resourceTableName : e.url;
-        let req = [];
-        //insertion
-        for (let i = 0, x = changes.addedRecords.length; i < x; i++) {
-            changes.addedRecords.forEach((j, d) => {
-                let stat = {
-                    'method': 'POST ',
-                    'url': (data, i, key) => '',
-                    'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
-                };
-                req.push('--' + initialGuid);
-                req.push('Content-Type: application/http; msgtype=request', '');
-                req.push('POST ' + '/api/' + (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url)
-                    + stat.url(changes.addedRecords, i, e.key) + ' HTTP/1.1');
-                req.push('Content-Type: ' + 'application/json; charset=utf-8');
-                req.push('Host: ' + location.host);
-                req.push('', j ? JSON.stringify(j) : '');
-            });
-        }
-        //updation 
-        for (let i = 0, x = changes.changedRecords.length; i < x; i++) {
-            changes.changedRecords.forEach((j, d) => {
-                let stat = {
-                    'method': this.options.updateType + ' ',
-                    'url': (data, i, key) => '',
-                    'data': (data, i) => JSON.stringify(data[i]) + '\n\n'
-                };
-                req.push('--' + initialGuid);
-                req.push('Content-Type: application/http; msgtype=request', '');
-                req.push('PUT ' + '/api/' + (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url)
-                    + stat.url(changes.changedRecords, i, e.key) + ' HTTP/1.1');
-                req.push('Content-Type: ' + 'application/json; charset=utf-8');
-                req.push('Host: ' + location.host);
-                req.push('', j ? JSON.stringify(j) : '');
-            });
-        }
-        //deletion
-        for (let i = 0, x = changes.deletedRecords.length; i < x; i++) {
-            changes.deletedRecords.forEach((j, d) => {
-                let state = {
-                    'mtd': 'DELETE ',
-                    'url': (data, i, key) => {
-                        let url = DataUtil.getObject(key, data[i]);
-                        if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
-                            return '/' + url;
-                        }
-                        else if (url instanceof Date) {
-                            let datTime = data[i][key];
-                            return '/' + datTime.toJSON();
-                        }
-                        else {
-                            return `/'${url}'`;
-                        }
-                    },
-                    'data': (data, i) => ''
-                };
-                req.push('--' + initialGuid);
-                req.push('Content-Type: application/http; msgtype=request', '');
-                req.push('DELETE ' + '/api/' + (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url)
-                    + state.url(changes.deletedRecords, i, e.key) + ' HTTP/1.1');
-                req.push('Content-Type: ' + 'application/json; charset=utf-8');
-                req.push('Host: ' + location.host);
-                req.push('', j ? JSON.stringify(j) : '');
-            });
-        }
-        req.push('--' + initialGuid + '--', '');
-        return {
-            type: 'POST',
-            url: url,
-            contentType: 'multipart/mixed; boundary=' + initialGuid,
-            data: req.join('\r\n')
         };
     }
     /**
@@ -4405,8 +4261,7 @@ class CacheAdaptor extends UrlAdaptor {
      * @param  {Ajax} settings?
      */
     beforeSend(dm, request, settings) {
-        if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
-            && settings.type.toLowerCase() === 'post') {
+        if (DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch) && settings.type.toLowerCase() === 'post') {
             request.setRequestHeader('Accept', this.cacheAdaptor.options.multipartAccept);
         }
         if (!dm.dataSource.crossDomain) {
@@ -4471,16 +4326,11 @@ class DataManager {
     constructor(dataSource, query, adaptor) {
         /** @hidden */
         this.dateParse = true;
-        /** @hidden */
-        this.timeZoneHandling = true;
         this.requests = [];
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
         adaptor = adaptor || dataSource.adaptor;
-        if (dataSource && dataSource.timeZoneHandling === false) {
-            this.timeZoneHandling = dataSource.timeZoneHandling;
-        }
         let data;
         if (dataSource instanceof Array) {
             data = {
@@ -4619,12 +4469,8 @@ class DataManager {
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, query);
             }
-            else if (!isNullOrUndefined(result.url)) {
-                this.makeRequest(result, deffered, args, query);
-            }
             else {
-                args = DataManager.getDeferedArgs(query, result, args);
-                deffered.resolve(args);
+                this.makeRequest(result, deffered, args, query);
             }
         }
         else {

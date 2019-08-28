@@ -61,7 +61,7 @@ button1.appendTo('#reset');
 
 button1.element.onclick = (): void => {
     if (pivotGridObj.dataSourceSettings.conditionalFormatSettings.length > 0) {
-        pivotGridObj.setProperties({ dataSource: { conditionalFormatSettings: [] } }, true);
+        pivotGridObj.setProperties({ dataSourceSettings: { conditionalFormatSettings: [] } }, true);
         pivotGridObj.renderPivotGrid();
     }
     pivotGridObj.conditionalFormattingModule.destroy();

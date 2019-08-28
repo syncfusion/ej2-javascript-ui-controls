@@ -804,10 +804,8 @@ function convertElement(element, labelId, data) {
         id: labelId,
         styles: 'position: absolute;pointer-events: auto;'
     });
-    let elementLength = element.length;
-    while (elementLength > 0) {
+    while (element.length > 0) {
         childElement.appendChild(element[0]);
-        elementLength--;
     }
     let templateHtml = childElement.innerHTML;
     let keys = Object.keys(data);
@@ -1859,7 +1857,7 @@ class LayoutPanel {
                         this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
                     }
                     if (template) {
-                        templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
+                        templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
                         templateGroup.appendChild(templateEle);
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
@@ -1870,8 +1868,16 @@ class LayoutPanel {
         }
         if (templateGroup.childNodes.length > 0) {
             secondaryEle.appendChild(templateGroup);
-            updateBlazorTemplate(this.treemap.element.id + '_HeaderTemplate', 'HeaderTemplate', levels[levels.length - 1]);
-            updateBlazorTemplate(this.treemap.element.id + '_LabelTemplate', 'LabelTemplate', leaf);
+            if (leaf.labelTemplate) {
+                for (let i = 0; i < templateGroup.childElementCount; i++) {
+                    updateBlazorTemplate(templateGroup.children[i].id, 'LabelTemplate');
+                }
+            }
+            else {
+                for (let j = 0; j < templateGroup.childElementCount; j++) {
+                    updateBlazorTemplate(templateGroup.children[j].id, 'HeaderTemplate');
+                }
+            }
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     }
@@ -1979,14 +1985,12 @@ class LayoutPanel {
         let contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';
     }
-    renderTemplate(secondaryEle, groupId, rect, position, template, item, isLeafItem) {
+    renderTemplate(secondaryEle, groupId, rect, position, template, item) {
         let templateElement;
         let labelEle;
         let templateSize;
         let templateFn;
         let templateLocation;
-        let templateId = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';
-        let baseTemplateId = isLeafItem ? '_LabelTemplate' : '_HeaderTemplate';
         if (isNullOrUndefined(template['prototype'])) {
             let keys = Object.keys(item['data']);
             for (let i = 0; i < keys.length; i++) {
@@ -1994,8 +1998,8 @@ class LayoutPanel {
             }
         }
         templateFn = getTemplateFunction(template);
-        templateElement = templateFn(item['data'], null, null, this.treemap.element.id + baseTemplateId, false);
-        labelEle = convertElement(templateElement, templateId, item['data']);
+        templateElement = templateFn(item['data'], this.treemap);
+        labelEle = convertElement(templateElement, groupId + '_Template', item['data']);
         templateSize = measureElement(labelEle, secondaryEle);
         templateLocation = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
         labelEle.style.left = templateLocation.x + 'px';
@@ -2288,7 +2292,6 @@ let TreeMap = class TreeMap extends Component {
             this.defaultLevelData = this.levelsOfData;
         }
         this.processDataManager();
-        this.renderComplete();
     }
     /* tslint:disable:no-string-literal */
     /* tslint:disable:no-eval */
@@ -2327,7 +2330,7 @@ let TreeMap = class TreeMap extends Component {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
+        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
     }
     createSvg() {
         if (this.svgObject) {
@@ -2336,14 +2339,6 @@ let TreeMap = class TreeMap extends Component {
             }
             if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
                 remove(this.svgObject);
-            }
-        }
-        if (this.leafItemSettings.labelTemplate) {
-            resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
-        }
-        for (let i = 0; i < this.levels.length; i++) {
-            if (this.levels[i].headerTemplate) {
-                resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
         let containerWidth = this.element.clientWidth;
@@ -2714,7 +2709,7 @@ let TreeMap = class TreeMap extends Component {
             cancel: false,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            treemap: this.isBlazor ? null : this
+            treemap: this
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -2726,7 +2721,7 @@ let TreeMap = class TreeMap extends Component {
                 this.refreshing = true;
                 this.wireEVents();
                 args.currentSize = this.availableSize;
-                this.trigger(resize, args);
+                this.trigger(resize, this.isBlazor ? {} : args);
                 this.render();
             }, 500);
         }
@@ -3044,10 +3039,6 @@ let TreeMap = class TreeMap extends Component {
         }
         return modules;
     }
-    /**
-     * Called internally if any of the property value changed.
-     * @private
-     */
     onPropertyChanged(newProp, oldProp) {
         let render = false;
         for (let prop of Object.keys(newProp)) {
@@ -3057,9 +3048,6 @@ let TreeMap = class TreeMap extends Component {
                     break;
                 case 'height':
                 case 'width':
-                case 'layoutType':
-                case 'leafItemSettings':
-                case 'legendSettings':
                     render = true;
                     break;
             }

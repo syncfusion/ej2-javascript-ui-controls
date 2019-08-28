@@ -1,16 +1,13 @@
 import { Gantt } from './gantt';
 import { TreeGrid, ColumnModel } from '@syncfusion/ej2-treegrid';
 import { createElement, isNullOrUndefined, getValue, extend, EventHandler, deleteObject, setValue, isBlazor } from '@syncfusion/ej2-base';
-import { FilterEventArgs, SortEventArgs, FailureEventArgs, IEditCell, EJ2Intance, IFilterMUI } from '@syncfusion/ej2-grids';
-import { DataManager, Deferred } from '@syncfusion/ej2-data';
+import { FilterEventArgs, SortEventArgs, FailureEventArgs } from '@syncfusion/ej2-grids';
+import { Deferred } from '@syncfusion/ej2-data';
 import { TaskFieldsModel } from '../models/models';
 import { ColumnModel as GanttColumnModel, Column as GanttColumn } from '../models/column';
 import { ITaskData, IGanttData } from './interface';
-import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs, Filter } from '@syncfusion/ej2-grids';
+import { QueryCellInfoEventArgs, HeaderCellInfoEventArgs, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '@syncfusion/ej2-grids';
-import { NumericTextBoxModel, TextBox } from '@syncfusion/ej2-inputs';
-import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
-import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 
 /**
  * TreeGrid related code goes here
@@ -19,7 +16,10 @@ export class GanttTreeGrid {
     private parent: Gantt;
     private treeGridElement: HTMLElement;
     public treeGridColumns: ColumnModel[];
-    private currentEditRow: {};
+    /**
+     * @private
+     */
+    public currentEditRow: {};
     private previousScroll: { top: number, left: number } = { top: 0, left: 0 };
 
     constructor(parent: Gantt) {
@@ -362,17 +362,15 @@ export class GanttTreeGrid {
         } else if (taskSettings.startDate === column.field) {
             /** Name column */
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('startDate');
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.width = column.width ? column.width : 150;
-            this.initiateFiltering(column);
         } else if (taskSettings.endDate === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('endDate');
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            this.initiateFiltering(column);
             column.width = column.width ? column.width : 150;
         } else if (taskSettings.duration === column.field) {
             column.width = column.width ? column.width : 150;
@@ -380,7 +378,6 @@ export class GanttTreeGrid {
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.durationValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'stringedit';
             column.type = 'string';
-            this.initiateFiltering(column);
         } else if (taskSettings.progress === column.field) {
             this.composeProgressColumn(column);
         } else if (taskSettings.dependency === column.field) {
@@ -409,14 +406,12 @@ export class GanttTreeGrid {
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            this.initiateFiltering(column);
         } else if (taskSettings.baselineEndDate === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineEndDate');
             column.width = column.width ? column.width : 150;
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            this.initiateFiltering(column);
         }
         this.bindTreeGridColumnProperties(column, isDefined);
     }
@@ -429,55 +424,14 @@ export class GanttTreeGrid {
         column.width = column.width ? column.width : 150;
         column.type = 'string';
         column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.resourceValueAccessor.bind(this);
-        if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
-            column.editType = 'dropdownedit';
-            column.edit = this.getResourceEditor();
-        }
         column.allowFiltering = column.allowFiltering === false ? false : true;
     }
-    private getResourceIds(data: IGanttData): object {
+    /**
+     * 
+     * @private
+     */
+    public getResourceIds(data: IGanttData): object {
         return getValue(this.parent.taskFields.resourceInfo, data.taskData);
-    }
-    private getResourceEditor(): IEditCell {
-        let editObject: IEditCell = {};
-        let editor: MultiSelect;
-        MultiSelect.Inject(CheckBoxSelection);
-        editObject.write = (args: { rowData: Object, element: Element, column: GanttColumn, row: HTMLElement, requestType: string }) => {
-            this.currentEditRow = {};
-            editor = new MultiSelect({
-                dataSource: new DataManager(this.parent.resources),
-                fields: { text: this.parent.resourceNameMapping, value: this.parent.resourceIDMapping },
-                mode: 'CheckBox',
-                showDropDownIcon: true,
-                popupHeight: '350px',
-                delimiterChar: ',',
-                value: this.getResourceIds(args.rowData as IGanttData) as number[]
-            });
-            editor.appendTo(args.element as HTMLElement);
-        };
-        editObject.read = (element: HTMLElement): string => {
-            let value: Object[] = (<EJ2Intance>element).ej2_instances[0].value;
-            let resourcesName: string[] = [];
-            if (isNullOrUndefined(value)) {
-                value = [];
-            }
-            for (let i: number = 0; i < value.length; i++) {
-                for (let j: number = 0; j < this.parent.resources.length; j++) {
-                    if (this.parent.resources[j][this.parent.resourceIDMapping] === value[i]) {
-                        resourcesName.push(this.parent.resources[j][this.parent.resourceNameMapping]);
-                        break;
-                    }
-                }
-            }
-            this.currentEditRow[this.parent.taskFields.resourceInfo] = value;
-            return resourcesName.join(',');
-        };
-        editObject.destroy = () => {
-            if (editor) {
-                editor.destroy();
-            }
-        };
-        return editObject;
     }
     /**
      * Create Id column
@@ -489,20 +443,6 @@ export class GanttTreeGrid {
         column.width = column.width ? column.width : 100;
         column.allowEditing = false;
         column.editType = column.editType ? column.editType : 'numericedit';
-        let editParam: NumericTextBoxModel = {
-            min: 0,
-            decimals: 0,
-            validateDecimalOnType: true,
-            format: 'n0',
-            showSpinButton: false
-        };
-        if (isNullOrUndefined(column.edit)) {
-            column.edit = {};
-            column.edit.params = {};
-        } else if (isNullOrUndefined(column.edit.params)) {
-            column.edit.params = {};
-        }
-        extend(column.edit.params, editParam);
     }
 
     /**
@@ -513,137 +453,6 @@ export class GanttTreeGrid {
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('progress');
         column.width = column.width ? column.width : 150;
         column.editType = column.editType ? column.editType : 'numericedit';
-        let editParam: NumericTextBoxModel = {
-            min: 0,
-            max: 100,
-            decimals: 0,
-            validateDecimalOnType: true,
-            format: 'n0'
-        };
-        if (isNullOrUndefined(column.edit)) {
-            column.edit = {};
-            column.edit.params = {};
-        } else if (isNullOrUndefined(column.edit.params)) {
-            column.edit.params = {};
-        }
-        extend(column.edit.params, editParam);
-    }
-
-    private initiateFiltering(column: GanttColumnModel): void {
-        column.allowFiltering = column.allowFiltering === false ? false : true;
-        if (column.allowFiltering && this.parent.filterSettings.type === 'Menu' && !column.filter) {
-            column.filter = { ui: this.getCustomFilterUi(column) };
-        }
-    }
-
-    /**
-     * To get filter menu UI
-     * @param column 
-     */
-    private getCustomFilterUi(column: GanttColumnModel): IFilterMUI {
-        let settings: TaskFieldsModel = this.parent.taskFields;
-        let filterUI: IFilterMUI = {};
-        if (column.editType === 'datepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
-            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
-            filterUI = this.getDatePickerFilter(column.field);
-        } else if (column.editType === 'datetimepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
-            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
-            filterUI = this.getDateTimePickerFilter();
-        } else if (column.field === settings.duration && column.editType === 'stringedit') {
-            filterUI = this.getDurationFilter();
-        }
-        return filterUI;
-    }
-
-    private getDatePickerFilter(columnName: string): IFilterMUI {
-        let parent: Gantt = this.parent;
-        let timeValue: number = (columnName === parent.taskFields.startDate) || (columnName === parent.taskFields.baselineStartDate)
-            ? parent.defaultStartTime : parent.defaultEndTime;
-        let dropDateInstance: DatePicker;
-        let filterDateUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
-                let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
-                args.target.appendChild(flValInput);
-                dropDateInstance = new DatePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
-                dropDateInstance.appendTo(flValInput);
-            },
-            write: (args: {
-                filteredValue: Date
-            }) => {
-                dropDateInstance.value = args.filteredValue;
-            },
-            read: (args: { target: Element, column: ColumnModel, operator: string, fltrObj: Filter }) => {
-                if (dropDateInstance.value) {
-                    dropDateInstance.value.setSeconds(timeValue);
-                }
-                args.fltrObj.filterByColumn(args.column.field, args.operator, dropDateInstance.value);
-            }
-        };
-        return filterDateUI;
-    }
-
-    private getDateTimePickerFilter(): IFilterMUI {
-        let dropInstance: DateTimePicker;
-        let filterDateTimeUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
-                let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
-                args.target.appendChild(flValInput);
-                dropInstance = new DateTimePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
-                dropInstance.appendTo(flValInput);
-            },
-            write: (args: {
-                filteredValue: Date
-            }) => {
-                dropInstance.value = args.filteredValue;
-            },
-            read: (args: { target: Element, column: ColumnModel, operator: string, fltrObj: Filter }) => {
-                args.fltrObj.filterByColumn(args.column.field, args.operator, dropInstance.value);
-            }
-        };
-        return filterDateTimeUI;
-    }
-
-    private getDurationFilter(): IFilterMUI {
-        let parent: Gantt = this.parent;
-        let textBoxInstance: TextBox;
-        let textValue: string = '';
-        let filterDurationUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
-                let flValInput: HTMLElement = createElement('input', { className: 'e-input' });
-                flValInput.setAttribute('placeholder', this.parent.localeObj.getConstant('enterValue'));
-                args.target.appendChild(flValInput);
-                textBoxInstance = new TextBox();
-                textBoxInstance.appendTo(flValInput);
-            },
-            write: (args: {
-                filteredValue: string
-            }) => {
-                textBoxInstance.value = args.filteredValue ? textValue : '';
-            },
-            read: (args: { element: HTMLInputElement, column: ColumnModel, operator: string, fltrObj: Filter }) => {
-                let durationObj: object = this.parent.dataOperation.getDurationValue(textBoxInstance.value);
-                let intVal: number = getValue('duration', durationObj);
-                let unit: string = getValue('durationUnit', durationObj);
-                if (intVal >= 0) {
-                    let dayVal: number;
-                    if (unit === 'minute') {
-                        dayVal = (intVal * 60) / parent.secondsPerDay;
-                    } else if (unit === 'hour') {
-                        dayVal = (intVal * 60 * 60) / parent.secondsPerDay;
-                    } else {
-                        //Consider it as day unit
-                        dayVal = intVal;
-                        unit = 'day';
-                    }
-                    args.fltrObj.filterByColumn(args.column.field, args.operator, dayVal);
-                    textValue = this.parent.dataOperation.getDurationString(intVal, unit);
-                } else {
-                    args.fltrObj.filterByColumn(args.column.field, args.operator, null);
-                    textValue = null;
-                }
-            }
-        };
-        return filterDurationUI;
     }
 
     /**

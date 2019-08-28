@@ -2,6 +2,7 @@ import { DragEventArgs, isNullOrUndefined, closest } from '@syncfusion/ej2-base'
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { DragAndDropEventArgs } from '@syncfusion/ej2-navigations';
+import { OlapEngine } from '../../base/olap/engine';
 
 /**
  * `DialogAction` module is used to handle field list dialog related behaviour.
@@ -37,15 +38,62 @@ export class NodeStateModified {
                 'rows' : target.classList[1] === cls.COLUMN_AXIS_CLASS ? 'columns' : target.classList[1] === cls.VALUE_AXIS_CLASS ?
                     'values' : target.classList[1] === cls.FILTER_AXIS_CLASS ? 'filters' : '';
         }
-        if ((args.cancel && droppedClass === '') ||
-            (this.parent.dataSourceUpdate.btnElement && this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
-                ((droppedClass === 'filters' || droppedClass === 'values') ||
-                    droppedClass.indexOf(this.parent.dataSourceSettings.valueAxis) > -1))) {
-            nodeDropped = false;
-            return nodeDropped;
+        if (this.parent.dataType === 'olap') {
+            let actualFieldName: string = ((this.parent.engineModule as OlapEngine).fieldList[fieldName] &&
+                (this.parent.engineModule as OlapEngine).fieldList[fieldName].isCalculatedField ?
+                (this.parent.engineModule as OlapEngine).fieldList[fieldName].tag : fieldName);
+            if (args.cancel && droppedClass === '') {
+                nodeDropped = false;
+                return nodeDropped;
+            } else if ((this.parent.dataSourceUpdate.btnElement &&
+                (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
+                    (droppedClass === 'filters' || droppedClass === 'values'))) ||
+                (this.parent.dataSourceUpdate.btnElement &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
+                        (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns'))) ||
+                (this.parent.dataSourceUpdate.btnElement &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') === -1 &&
+                        (this.parent.engineModule as OlapEngine).fieldList[fieldName] &&
+                        (this.parent.engineModule as OlapEngine).fieldList[fieldName].isNamedSets &&
+                        (droppedClass === 'filters' || droppedClass === 'values'))) ||
+                (this.parent.dataSourceUpdate.btnElement &&
+                    (this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'false' &&
+                        actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values'))) {
+                let title: string = this.parent.localeObj.getConstant('warning');
+                let description: string = this.parent.localeObj.getConstant('fieldDropErrorAction');
+                this.parent.errorDialog.createErrorDialog(title, description);
+                nodeDropped = false;
+                return nodeDropped;
+            }
+        } else {
+            if ((args.cancel && droppedClass === '') ||
+                (this.parent.dataSourceUpdate.btnElement && this.parent.dataSourceUpdate.btnElement.getAttribute('isValue') === 'true' &&
+                    ((droppedClass === 'filters' || droppedClass === 'values') ||
+                        droppedClass.indexOf(this.parent.dataSourceSettings.valueAxis) > -1))) {
+                nodeDropped = false;
+                return nodeDropped;
+            }
         }
         if (droppedClass !== '') {
-            if (this.parent.engineModule.fieldList[fieldName] &&
+            if (this.parent.dataType === 'olap') {
+                let actualFieldName: string = (this.parent.engineModule.fieldList[fieldName] &&
+                    (this.parent.engineModule as OlapEngine).fieldList[fieldName].isCalculatedField ?
+                    (this.parent.engineModule as OlapEngine).fieldList[fieldName].tag : fieldName);
+                if ((actualFieldName.toLowerCase().indexOf('[measures].') > -1 &&
+                    (droppedClass === 'filters' || droppedClass === 'rows' || droppedClass === 'columns')) ||
+                    (this.parent.engineModule.fieldList[fieldName] &&
+                        (this.parent.engineModule as OlapEngine).fieldList[fieldName].isNamedSets && droppedClass === 'filters') ||
+                    (actualFieldName.toLowerCase().indexOf('[measures].') === -1 && droppedClass === 'values')) {
+                    let title: string = this.parent.localeObj.getConstant('warning');
+                    let description: string = this.parent.localeObj.getConstant('fieldDropErrorAction');
+                    this.parent.errorDialog.createErrorDialog(title, description);
+                    nodeDropped = false;
+                    return nodeDropped;
+                }
+            }
+            if (this.parent.dataType === 'pivot' && this.parent.engineModule.fieldList[fieldName] &&
                 this.parent.engineModule.fieldList[fieldName].aggregateType === 'CalculatedField' && droppedClass !== 'values') {
                 let title: string = this.parent.localeObj.getConstant('warning');
                 let description: string = this.parent.localeObj.getConstant('dropAction');

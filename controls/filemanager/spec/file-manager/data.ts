@@ -91,17 +91,6 @@ export let dataDelete: any = {
     "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "D:\\EJ2\\FileExplorer\\Services\\FEService\\FEService\\FileContent\\" },
 };
 
-export let data1Delete: any = {
-    "files": [
-        { "name": "Employees", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" },
-        { "name": "Food", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\" },
-        { "name": "Nature", "size": 0, "dateModified": "10/15/2018 5:39:03 PM", "dateCreated": "10/15/2018 5:39:03 PM", "hasChild": false, "isFile": false, "type": "", "filterPath": "\\" }
-    ],
-    "error": null,
-    "details": null,
-    "cwd": { "name": "FileContent", "size": 0, "dateModified": "11/15/2018 11:42:21 AM", "dateCreated": "11/8/2018 4:07:00 PM", "hasChild": true, "isFile": false, "type": "", "filterPath": "" },
-};
-
 export let dataHidden: any = {
     "files": [
         { "name": "1.png", "size": 49792, "dateModified": "1/3/2018 4:07:28 PM", "dateCreated": "10/17/2018 12:57:59 PM", "hasChild": false, "isFile": true, "type": ".png", "filterPath": null },
@@ -991,40 +980,6 @@ export let idData4: any = {
         { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "File Manager.txt", "size": 20, "dateModified": "2019-06-18T18:58:59.047", "targetData": null, "dateCreated": "2019-06-18T18:58:59.047", "hasChild": false, "isFile": true, "type": ".txt", "id": "6179", "filterPath": "/Documents/", "filterId": "1/6171/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
         { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "EJ2 File Manager.pdf", "size": 20, "dateModified": "2019-06-18T18:59:13.177", "targetData": null, "dateCreated": "2019-06-18T18:59:13.177", "hasChild": false, "isFile": true, "type": ".pdf", "id": "6182", "filterPath": "/Documents/", "filterId": "1/6171/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
         { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "EJ2FileManager", "size": 20, "dateModified": "2019-06-18T19:06:20", "targetData": null, "dateCreated": "2019-06-18T19:06:06.943", "hasChild": false, "isFile": true, "type": ".ppt", "id": "6206", "filterPath": "/Documents/", "filterId": "1/6171/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null }
-    ],
-    "error": null,
-    "details": null
-}
-
-export let idData1Delete: any = {
-    "cwd": { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Files", "size": 0, "dateModified": "2011-02-05T00:00:00", "targetData": null, "dateCreated": "2011-02-05T00:00:00", "hasChild": true, "isFile": false, "type": "", "id": "1", "filterPath": "", "filterId": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-    "files": [
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Downloads", "size": 30, "dateModified": "2019-06-18T18:57:16.603", "targetData": null, "dateCreated": "2019-06-18T18:57:16.603", "hasChild": false, "isFile": false, "type": "", "id": "6172", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Music", "size": 30, "dateModified": "2019-06-18T18:57:24.173", "targetData": null, "dateCreated": "2019-06-18T18:57:24.173", "hasChild": false, "isFile": false, "type": "", "id": "6173", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Pictures", "size": 30, "dateModified": "2019-06-18T18:57:28.15", "targetData": null, "dateCreated": "2019-06-18T18:57:28.15", "hasChild": true, "isFile": false, "type": "", "id": "6174", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Videos", "size": 30, "dateModified": "2019-06-18T18:57:32.717", "targetData": null, "dateCreated": "2019-06-18T18:57:32.717", "hasChild": false, "isFile": false, "type": "", "id": "6175", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null }
-    ],
-    "error": null,
-    "details": null
-}
-
-export let idData1Rename: any = {
-    "cwd": { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Files", "size": 0, "dateModified": "2011-02-05T00:00:00", "targetData": null, "dateCreated": "2011-02-05T00:00:00", "hasChild": true, "isFile": false, "type": "", "id": "1", "filterPath": "", "filterId": null, "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-    "files": [
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "My Folder", "size": 30, "dateModified": "2019-06-18T18:57:12.53", "targetData": null, "dateCreated": "2019-06-18T18:57:12.567", "hasChild": false, "isFile": false, "type": "", "id": "6171", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Downloads", "size": 30, "dateModified": "2019-06-18T18:57:16.603", "targetData": null, "dateCreated": "2019-06-18T18:57:16.603", "hasChild": false, "isFile": false, "type": "", "id": "6172", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Music", "size": 30, "dateModified": "2019-06-18T18:57:24.173", "targetData": null, "dateCreated": "2019-06-18T18:57:24.173", "hasChild": false, "isFile": false, "type": "", "id": "6173", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Pictures", "size": 30, "dateModified": "2019-06-18T18:57:28.15", "targetData": null, "dateCreated": "2019-06-18T18:57:28.15", "hasChild": true, "isFile": false, "type": "", "id": "6174", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "Videos", "size": 30, "dateModified": "2019-06-18T18:57:32.717", "targetData": null, "dateCreated": "2019-06-18T18:57:32.717", "hasChild": false, "isFile": false, "type": "", "id": "6175", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null }
-    ],
-    "error": null,
-    "details": null
-}
-
-export let idData1Rename1: any = {
-    "cwd": null,
-    "files": [
-        { "path": null, "action": null, "newName": null, "renameFiles": null, "targetPath": null, "names": null, "name": "My Folder", "size": 30, "dateModified": "2019-06-18T18:57:12.53", "targetData": null, "dateCreated": "2019-06-18T18:57:12.567", "hasChild": false, "isFile": false, "type": "", "id": "6171", "filterPath": "/", "filterId": "1/", "uploadFiles": null, "caseSensitive": false, "searchString": null, "showHiddenItems": false, "iconClass": null, "nodeId": null, "parentID": null, "selected": false, "icon": null, "data": null },
     ],
     "error": null,
     "details": null

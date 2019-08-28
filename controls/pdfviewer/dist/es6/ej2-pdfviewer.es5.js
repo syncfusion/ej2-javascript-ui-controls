@@ -11752,7 +11752,9 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             var isUpdate = false;
             if (event.button === 0 && !_this.getPopupNoteVisibleStatus() && !_this.isClickedOnScrollBar(event, false)) {
                 _this.isViewerMouseDown = true;
-                if (event.detail === 1) {
+                // tslint:disable-next-line
+                var target = event.target;
+                if (event.detail === 1 && target.className !== 'e-pdfviewer-formFields') {
                     isUpdate = true;
                     _this.focusViewerContainer();
                 }
@@ -11762,7 +11764,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 // tslint:disable-next-line
                 var isIE = !!document.documentMode;
                 if (_this.pdfViewer.textSelectionModule && !_this.isClickedOnScrollBar(event, true) && !_this.isTextSelectionDisabled) {
-                    if (!isIE) {
+                    if (!isIE && target.className !== 'e-pdfviewer-formFields' && target.className !== 'e-pdfviewer-ListBox') {
                         event.preventDefault();
                     }
                     _this.pdfViewer.textSelectionModule.clearTextSelection();
@@ -12176,7 +12178,9 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                                 _this.pdfViewer.textSelectionModule.textSelectionOnMouseup(event);
                             }
                         }
-                        if (_this.viewerContainer.contains(event.target)) {
+                        // tslint:disable-next-line
+                        var target = event.target;
+                        if (_this.viewerContainer.contains(event.target) && target.className !== 'e-pdfviewer-formFields') {
                             if (!_this.isClickedOnScrollBar(event, true) && !_this.isScrollbarMouseDown) {
                                 _this.pdfViewer.textSelectionModule.textSelectionOnMouseup(event);
                             }
@@ -12747,6 +12751,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             this.hashId = data.hashId;
             this.documentLiveCount = data.documentLiveCount;
             this.saveDocumentHashData();
+            this.saveFormfieldsData(data);
             this.pageRender(data);
             if (Browser.isDevice) {
                 this.mobileScrollerContainer.style.display = '';
@@ -12917,6 +12922,10 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
     PdfViewerBase.prototype.saveDocumentHashData = function () {
         window.sessionStorage.setItem('hashId', this.hashId);
         window.sessionStorage.setItem('documentLiveCount', this.documentLiveCount.toString());
+    };
+    // tslint:disable-next-line
+    PdfViewerBase.prototype.saveFormfieldsData = function (data) {
+        window.sessionStorage.setItem('formfields', JSON.stringify(data.PdfRenderedFormFields));
     };
     PdfViewerBase.prototype.updateWaitingPopup = function (pageNumber) {
         if (this.pageSize[pageNumber].top != null) {
@@ -13267,6 +13276,7 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         }
         window.sessionStorage.removeItem('hashId');
         window.sessionStorage.removeItem('documentLiveCount');
+        window.sessionStorage.removeItem('formfields');
     };
     /**
      * @private
@@ -14059,6 +14069,9 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                     }
                 }
                 this.renderTextContent(data, pageIndex);
+                if (this.pdfViewer.formFieldsModule) {
+                    this.pdfViewer.formFieldsModule.renderFormFields(pageIndex);
+                }
                 if (this.pdfViewer.enableHyperlink && this.pdfViewer.linkAnnotationModule) {
                     this.pdfViewer.linkAnnotationModule.renderHyperlinkContent(data, pageIndex);
                 }
@@ -14388,6 +14401,11 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
             var importList = JSON.stringify(this.importPageList);
             // tslint:disable-next-line
             jsonObject['importPageList'] = importList;
+        }
+        if (this.pdfViewer.formFieldsModule) {
+            var fieldsData = this.pdfViewer.formFieldsModule.downloadFormFieldsData();
+            // tslint:disable-next-line
+            jsonObject['fieldsData'] = fieldsData;
         }
         // tslint:disable-next-line
         jsonObject['action'] = 'Download';
@@ -15707,10 +15725,12 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     // tslint:disable-next-line:max-line-length
-                    var annotation = { textMarkupAnnotation: newlyImportAnnotation[i].textMarkupAnnotation, shapeAnnotation: newlyImportAnnotation[i].shapeAnnotation,
+                    var annotation = {
+                        textMarkupAnnotation: newlyImportAnnotation[i].textMarkupAnnotation, shapeAnnotation: newlyImportAnnotation[i].shapeAnnotation,
                         // tslint:disable-next-line:max-line-length
                         measureShapeAnnotation: newlyImportAnnotation[i].measureShapeAnnotation, stampAnnotations: newlyImportAnnotation[i].stampAnnotations,
-                        stickyNotesAnnotation: newlyImportAnnotation[i].stickyNotesAnnotation };
+                        stickyNotesAnnotation: newlyImportAnnotation[i].stickyNotesAnnotation
+                    };
                     excistingImportAnnotation[i] = annotation;
                 }
             }
@@ -15793,7 +15813,7 @@ var TextLayer = /** @__PURE__ @class */ (function () {
                 textLayer.appendChild(textDiv);
                 this.resizeExcessDiv(textLayer, textDiv);
                 // tslint:disable-next-line:max-line-length
-                if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled) {
+                if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled && textDiv.className !== 'e-pdfviewer-formFields') {
                     textDiv.classList.add('e-pv-cursor');
                 }
             }
@@ -16076,11 +16096,13 @@ var TextLayer = /** @__PURE__ @class */ (function () {
             var childNodes = textLayers[i].childNodes;
             for (var j = 0; j < childNodes.length; j++) {
                 var textDiv = childNodes[j];
-                var textContent = textDiv.textContent;
-                // tslint:disable-next-line:max-line-length
-                if (textDiv.childNodes.length > 1 || textDiv.childNodes.length === 1 && (textDiv.childNodes[0].tagName === 'SPAN')) {
-                    textDiv.textContent = '';
-                    textDiv.textContent = textContent;
+                if (textDiv.className !== 'e-pdfviewer-formFields') {
+                    var textContent = textDiv.textContent;
+                    // tslint:disable-next-line:max-line-length
+                    if (textDiv.childNodes.length > 1 || textDiv.childNodes.length === 1 && (textDiv.childNodes[0].tagName === 'SPAN')) {
+                        textDiv.textContent = '';
+                        textDiv.textContent = textContent;
+                    }
                 }
             }
         }
@@ -16110,7 +16132,7 @@ var TextLayer = /** @__PURE__ @class */ (function () {
             var childNodes = textLayerList[i].childNodes;
             for (var j = 0; j < childNodes.length; j++) {
                 var textElement = childNodes[j];
-                if (isAdd) {
+                if (isAdd && textElement.className !== 'e-pdfviewer-formFields') {
                     textElement.classList.add('e-pv-cursor');
                 }
                 else {
@@ -23668,7 +23690,6 @@ var PdfViewer = /** @__PURE__ @class */ (function (_super) {
             this.viewerBase.disableTextSelectionMode();
         }
         this.drawing.renderLabels(this);
-        this.renderComplete();
     };
     PdfViewer.prototype.getModuleName = function () {
         return 'PdfViewer';
@@ -23789,6 +23810,11 @@ var PdfViewer = /** @__PURE__ @class */ (function (_super) {
         if (this.enableAnnotation) {
             modules.push({
                 member: 'Annotation', args: [this, this.viewerBase]
+            });
+        }
+        if (this.enableFormFields) {
+            modules.push({
+                member: 'FormFields', args: [this, this.viewerBase]
             });
         }
         return modules;
@@ -24225,6 +24251,9 @@ var PdfViewer = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property(true)
     ], PdfViewer.prototype, "enableAnnotation", void 0);
+    __decorate$2([
+        Property(true)
+    ], PdfViewer.prototype, "enableFormFields", void 0);
     __decorate$2([
         Property(true)
     ], PdfViewer.prototype, "enableTextMarkupAnnotation", void 0);
@@ -27487,6 +27516,59 @@ var Print = /** @__PURE__ @class */ (function () {
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.print);
         };
     };
+    // tslint:disable-next-line
+    Print.prototype.renderFieldsForPrint = function (pageIndex, heightRatio, widthRatio) {
+        // tslint:disable-next-line
+        var data = window.sessionStorage.getItem('formfields');
+        // tslint:disable-next-line
+        var formFieldsData = JSON.parse(data);
+        for (var i = 0; i < formFieldsData.length; i++) {
+            // tslint:disable-next-line
+            var currentData = formFieldsData[i];
+            // tslint:disable-next-line
+            if (parseFloat(currentData['PageIndex']) === pageIndex) {
+                // tslint:disable-next-line
+                var targetField = this.frameDoc.document.getElementById('fields_' + pageIndex);
+                // tslint:disable-next-line
+                var inputField = this.pdfViewer.formFieldsModule.createFormFields(currentData, pageIndex, i, targetField);
+                if (inputField) {
+                    // tslint:disable-next-line
+                    var bounds = currentData['LineBounds'];
+                    // tslint:disable-next-line
+                    var font = currentData['Font'];
+                    this.applyPosition(inputField, bounds, font, heightRatio, widthRatio);
+                    targetField.appendChild(inputField);
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    Print.prototype.applyPosition = function (inputField, bounds, font, heightRatio, widthRatio) {
+        if (bounds) {
+            var left = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.X)) / widthRatio;
+            var top_1 = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Y)) / heightRatio;
+            var width = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Width)) / widthRatio;
+            var height = (this.pdfViewer.formFieldsModule.ConvertPointToPixel(bounds.Height)) / heightRatio;
+            var fontHeight = 0;
+            if (font !== null && font.Height) {
+                inputField.style.fontfamily = font.Name;
+                if (font.Italic) {
+                    inputField.style.fontStyle = 'italic';
+                }
+                if (font.Bold) {
+                    inputField.style.fontWeight = 'Bold';
+                }
+                fontHeight = this.pdfViewer.formFieldsModule.ConvertPointToPixel(font.Size);
+            }
+            if (Browser.isIE) {
+                top_1 = top_1 - 6;
+            }
+            this.pdfViewer.formFieldsModule.setStyleToTextDiv(inputField, left, top_1, fontHeight, width, height, true);
+        }
+    };
     Print.prototype.printWindowOpen = function () {
         var _this = this;
         var browserUserAgent = navigator.userAgent;
@@ -27515,7 +27597,14 @@ var Print = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < this.printViewerContainer.children.length; i++) {
             // tslint:disable-next-line:max-line-length
             var canvasUrl = this.printViewerContainer.children[i].toDataURL();
-            this.frameDoc.document.write('<div style="margin:0mm;width:816px;height:1056px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /></div>');
+            this.frameDoc.document.write('<div style="margin:0mm;width:816px;height:1056px;position:relative"><img src="' + canvasUrl + '" id="' + 'image_' + i + '" /><div id="' + 'fields_' + i + '" style="margin:0px;top:0px;left:0px;position:absolute;width:816px;height:1056px;z-index:2"></div></div>');
+            if (this.pdfViewer.formFieldsModule) {
+                var pageWidth = this.pdfViewerBase.pageSize[i].width;
+                var pageHeight = this.pdfViewerBase.pageSize[i].height;
+                var heightRatio = pageHeight / 1056;
+                var widthRatio = pageWidth / 816;
+                this.renderFieldsForPrint(i, heightRatio, widthRatio);
+            }
         }
         this.pdfViewerBase.showPrintLoadingIndicator(false);
         if (Browser.isIE || Browser.info.name === 'edge') {
@@ -27555,6 +27644,586 @@ var Print = /** @__PURE__ @class */ (function () {
  */
 
 /**
+ * The `FormFields` module is to render formfields in the PDF document.
+ * @hidden
+ */
+var FormFields = /** @__PURE__ @class */ (function () {
+    /**
+     * @private
+     */
+    function FormFields(viewer, base) {
+        // tslint:disable-next-line
+        this.maintainTabIndex = {};
+        // tslint:disable-next-line
+        this.maintanMinTabindex = {};
+        this.pdfViewer = viewer;
+        this.pdfViewerBase = base;
+    }
+    /**
+     * @private
+     */
+    FormFields.prototype.renderFormFields = function (pageIndex) {
+        this.maxTabIndex = 0;
+        this.minTabIndex = -1;
+        // tslint:disable-next-line
+        var data = window.sessionStorage.getItem('formfields');
+        if (data != null) {
+            // tslint:disable-next-line
+            var formFieldsData = JSON.parse(data);
+            var textLayer = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
+            var canvasElement = document.getElementById(this.pdfViewer.element.id + '_pageCanvas_' + pageIndex);
+            if (formFieldsData !== null && canvasElement !== null && textLayer !== null) {
+                for (var i = 0; i < formFieldsData.length; i++) {
+                    // tslint:disable-next-line
+                    var currentData = formFieldsData[i];
+                    // tslint:disable-next-line
+                    if (parseFloat(currentData['PageIndex']) == pageIndex) {
+                        // tslint:disable-next-line
+                        var inputField = this.createFormFields(currentData, pageIndex, i);
+                        if (inputField) {
+                            // tslint:disable-next-line
+                            var bounds = currentData['LineBounds'];
+                            // tslint:disable-next-line
+                            var font = currentData['Font'];
+                            this.applyPosition(inputField, bounds, font);
+                            // tslint:disable-next-line
+                            currentData['uniqueID'] = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + i;
+                            this.applyCommonProperties(inputField, pageIndex, i, currentData);
+                            this.checkIsReadonly(currentData, inputField);
+                            this.applyTabIndex(currentData, inputField, pageIndex);
+                            this.checkIsRequiredField(currentData, inputField);
+                            this.applyDefaultColor(inputField);
+                            textLayer.appendChild(inputField);
+                            inputField.addEventListener('focus', this.focusFormFields.bind(this));
+                            inputField.addEventListener('blur', this.blurFormFields.bind(this));
+                            inputField.addEventListener('click', this.updateFormFields.bind(this));
+                            inputField.addEventListener('change', this.changeFormFields.bind(this));
+                            inputField.addEventListener('keydown', this.updateFormFieldsValue.bind(this));
+                        }
+                    }
+                }
+                window.sessionStorage.removeItem('formfields');
+                window.sessionStorage.setItem('formfields', JSON.stringify(formFieldsData));
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    FormFields.prototype.downloadFormFieldsData = function () {
+        // tslint:disable-next-line
+        var data = window.sessionStorage.getItem('formfields');
+        // tslint:disable-next-line
+        var formFieldsData = JSON.parse(data);
+        // tslint:disable-next-line
+        var datas = {};
+        for (var m = 0; m < formFieldsData.length; m++) {
+            // tslint:disable-next-line
+            var currentData = formFieldsData[m];
+            if (currentData.Name === 'Textbox' || currentData.Name === 'Password' || currentData.Multiline) {
+                datas[currentData.FieldName] = currentData.Text;
+            }
+            else if (currentData.Name === 'RadioButton' && currentData.Selected) {
+                datas[currentData.GroupName] = currentData.Value;
+            }
+            else if (currentData.Name === 'CheckBox') {
+                datas[currentData.GroupName] = currentData.Selected;
+            }
+            else if (currentData.Name === 'DropDown') {
+                datas[currentData.Text] = currentData.SelectedValue;
+            }
+            else if (currentData.Name === 'ListBox') {
+                // tslint:disable-next-line
+                var childItems = currentData['TextList'];
+                var childItemsText = [];
+                for (var m_1 = 0; m_1 < currentData.SelectedList.length; m_1++) {
+                    // tslint:disable-next-line
+                    var currentElement = currentData.SelectedList[m_1];
+                    childItemsText.push(childItems[currentElement]);
+                }
+                datas[currentData.Text] = JSON.stringify(childItemsText);
+            }
+        }
+        return (JSON.stringify(datas));
+    };
+    FormFields.prototype.focusFormFields = function (event) {
+        // tslint:disable-next-line
+        var currentTarget = event.target;
+        // tslint:disable-next-line
+        var backgroundcolor = currentTarget.style.backgroundColor;
+        // tslint:disable-next-line
+        var currentIndex = backgroundcolor.lastIndexOf(',');
+        // tslint:disable-next-line
+        var currentColor = backgroundcolor.slice(0, currentIndex + 1) + 0 + ')';
+        if (currentTarget.type === 'checkbox') {
+            currentTarget.style.webkitAppearance = '';
+        }
+        currentTarget.style.backgroundColor = currentColor;
+    };
+    FormFields.prototype.blurFormFields = function (event) {
+        // tslint:disable-next-line
+        var currentTarget = event.target;
+        // tslint:disable-next-line
+        var backgroundcolor = currentTarget.style.backgroundColor;
+        // tslint:disable-next-line
+        var currentIndex = backgroundcolor.lastIndexOf(',');
+        // tslint:disable-next-line
+        var currentColor = backgroundcolor.slice(0, currentIndex + 1) + 0.2 + ')';
+        if ((currentTarget.type === 'checkbox') && !currentTarget.checked) {
+            currentTarget.style.webkitAppearance = 'none';
+        }
+        else {
+            currentTarget.style.webkitAppearance = '';
+        }
+        currentTarget.style.backgroundColor = currentColor;
+    };
+    FormFields.prototype.updateFormFields = function (event) {
+        // tslint:disable-next-line
+        var currentTarget = event.target;
+        if (currentTarget.className === 'e-pdfviewer-ListBox') {
+            currentTarget = currentTarget.parentElement;
+            this.updateDataInSession(currentTarget);
+        }
+    };
+    FormFields.prototype.updateFormFieldsValue = function (event) {
+        // tslint:disable-next-line
+        var currentTarget = event.target;
+        if (event.which === 9 && currentTarget && currentTarget.className === 'e-pdfviewer-formFields') {
+            // tslint:disable-next-line
+            var id = currentTarget.id.split('input_')[1].split('_')[0];
+            if (this.maintainTabIndex[id] === currentTarget.tabIndex) {
+                // tslint:disable-next-line
+                var textLayer = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + (parseInt(id) + 1));
+                if (textLayer) {
+                    // tslint:disable-next-line
+                    var currentFields = textLayer.getElementsByClassName('e-pdfviewer-formFields');
+                    if (currentFields && currentFields.length > 0) {
+                        currentFields[0].focus();
+                        event.preventDefault();
+                    }
+                }
+                else {
+                    var textLayer_1 = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + 0);
+                    // tslint:disable-next-line
+                    var currentFields = textLayer_1.getElementsByClassName('e-pdfviewer-formFields');
+                    for (var m = 0; m < currentFields.length; m++) {
+                        if (currentFields[m].tabIndex === this.maintanMinTabindex['0']) {
+                            currentFields[m].focus();
+                            event.preventDefault();
+                            break;
+                        }
+                    }
+                }
+            }
+            else {
+                // tslint:disable-next-line
+                var textLayer = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + parseInt(id));
+                // tslint:disable-next-line
+                var currentFields = textLayer.getElementsByClassName('e-pdfviewer-formFields');
+                var istabindexed = true;
+                for (var m = 0; m < currentFields.length; m++) {
+                    istabindexed = false;
+                    if (currentFields[m].tabIndex === (currentTarget.tabIndex + 1)) {
+                        currentFields[m].focus();
+                        istabindexed = true;
+                        event.preventDefault();
+                        break;
+                    }
+                }
+                var tabindex = currentTarget.tabIndex + 1;
+                while (!istabindexed) {
+                    for (var l = 0; l < currentFields.length; l++) {
+                        istabindexed = false;
+                        if (currentFields[l].tabIndex === (tabindex)) {
+                            currentFields[l].focus();
+                            istabindexed = true;
+                            event.preventDefault();
+                            break;
+                        }
+                    }
+                    if (this.maintainTabIndex[id] === tabindex) {
+                        istabindexed = true;
+                    }
+                    tabindex = tabindex + 1;
+                }
+            }
+        }
+    };
+    FormFields.prototype.changeFormFields = function (event) {
+        // tslint:disable-next-line
+        var currentTarget = event.target;
+        this.updateDataInSession(currentTarget);
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.updateDataInSession = function (target) {
+        // tslint:disable-next-line
+        var data = window.sessionStorage.getItem('formfields');
+        // tslint:disable-next-line
+        var FormFieldsData = JSON.parse(data);
+        for (var m = 0; m < FormFieldsData.length; m++) {
+            // tslint:disable-next-line
+            var currentData = FormFieldsData[m];
+            if (currentData.uniqueID === target.id) {
+                if (target.type === 'text' || target.type === 'password' || target.type === 'textarea') {
+                    currentData.Text = target.value;
+                }
+                else if (target.type === 'radio') {
+                    for (var l = 0; l < FormFieldsData.length; l++) {
+                        // tslint:disable-next-line
+                        var currentType = FormFieldsData[l];
+                        if (FormFieldsData[l].GroupName === target.name) {
+                            FormFieldsData[l].Selected = false;
+                        }
+                    }
+                    currentData.Selected = true;
+                }
+                else if (target.type === 'checkbox') {
+                    if (target.checked) {
+                        currentData.Selected = true;
+                    }
+                    else {
+                        currentData.Selected = false;
+                    }
+                }
+                else if (target.type === 'select-one') {
+                    // tslint:disable-next-line
+                    var currentValue = target.options[target.selectedIndex].text;
+                    // tslint:disable-next-line
+                    var childrens = target.children;
+                    for (var k = 0; k < childrens.length; k++) {
+                        if (childrens[k].text === currentValue) {
+                            currentData.SelectedValue = currentValue;
+                        }
+                    }
+                }
+                else if (target.type === 'select-multiple') {
+                    // tslint:disable-next-line
+                    var currentValue = target.selectedOptions;
+                    currentData.SelectedList = [];
+                    for (var z = 0; z < currentValue.length; z++) {
+                        // tslint:disable-next-line
+                        var childrens = target.children;
+                        for (var k = 0; k < childrens.length; k++) {
+                            if (childrens[k] === currentValue[z]) {
+                                currentData.SelectedList.push(k);
+                            }
+                        }
+                    }
+                }
+                break;
+            }
+            else if (target && target.getAttribute('list') != null && target.type === 'text' && currentData.uniqueID === target.list.id) {
+                currentData.SelectedValue = target.value;
+            }
+        }
+        window.sessionStorage.removeItem('formfields');
+        window.sessionStorage.setItem('formfields', JSON.stringify(FormFieldsData));
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.applyCommonProperties = function (inputdiv, pageIndex, index, currentData) {
+        // tslint:disable-next-line
+        var inputField = document.getElementById(this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index);
+        if (inputField) {
+            inputField.remove();
+        }
+        if (currentData.IsSignatureField) {
+            inputdiv.className = 'e-pdfviewer-signatureformFields';
+        }
+        else {
+            inputdiv.className = 'e-pdfviewer-formFields';
+        }
+        inputdiv.id = this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index;
+        inputdiv.style.zIndex = 1000;
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    FormFields.prototype.createFormFields = function (currentData, pageIndex, index, printContainer) {
+        // tslint:disable-next-line
+        var currentField;
+        // tslint:disable-next-line
+        switch (currentData['Name']) {
+            case 'Textbox':
+                currentField = this.createTextBoxField(currentData, pageIndex, 'text');
+                break;
+            case 'Password':
+                currentField = this.createTextBoxField(currentData, pageIndex, 'password');
+                break;
+            case 'RadioButton':
+                currentField = this.createRadioBoxField(currentData, pageIndex, 'radio');
+                break;
+            case 'CheckBox':
+                currentField = this.createRadioBoxField(currentData, pageIndex, 'checkbox', printContainer);
+                break;
+            case 'DropDown':
+                currentField = this.createDropDownField(currentData, pageIndex, index, printContainer);
+                break;
+            case 'ListBox':
+                currentField = this.createListBoxField(currentData, pageIndex);
+                break;
+            case 'SignatureField':
+                currentField = this.createSignatureField(currentData, pageIndex);
+                break;
+        }
+        return currentField;
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.createTextBoxField = function (data, pageIndex, type) {
+        // tslint:disable-next-line
+        var inputField;
+        if (data.Visible === 1) {
+            return;
+        }
+        if (data.Multiline) {
+            inputField = document.createElement('textarea');
+            inputField.style.resize = 'none';
+        }
+        else {
+            inputField = document.createElement('input');
+            inputField.type = type;
+        }
+        if (data.MaxLength > 0) {
+            inputField.maxLength = data.MaxLength;
+        }
+        this.addAlignmentPropety(data, inputField);
+        if (data.Text !== '') {
+            inputField.value = data.Text;
+        }
+        else {
+            inputField.value = '';
+        }
+        inputField.name = data.FieldName;
+        return inputField;
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.checkIsReadonly = function (data, inputField) {
+        if (data.IsReadonly) {
+            inputField.disabled = true;
+            inputField.style.cursor = 'default';
+            inputField.style.backgroundColor = 'none';
+        }
+        else {
+            // tslint:disable-next-line
+            var borderColor = data.BackColor;
+            inputField.style.backgroundColor = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 0.2 + ')';
+            inputField.style.color = 'black';
+        }
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.applyTabIndex = function (data, inputField, pageIndex) {
+        inputField.tabIndex = data.TabIndex;
+        this.maxTabIndex = Math.max(this.maxTabIndex, inputField.tabIndex);
+        if (this.minTabIndex === -1) {
+            this.minTabIndex = inputField.tabIndex;
+        }
+        this.minTabIndex = Math.min(this.minTabIndex, inputField.tabIndex);
+        this.maintainTabIndex[pageIndex.toString()] = this.maxTabIndex;
+        this.maintanMinTabindex[pageIndex.toString()] = this.minTabIndex;
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.checkIsRequiredField = function (data, inputField) {
+        if (data.IsRequired) {
+            inputField.required = true;
+            inputField.style.border = '1px solid red';
+        }
+        else {
+            // tslint:disable-next-line
+            var borderColor = data.BorderColor;
+            inputField.style.border = data.BorderWidth;
+            inputField.style.borderColor = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 1 + ')';
+        }
+        if (inputField.type !== 'checkbox' && inputField.type !== 'radio') {
+            inputField.style.borderStyle = 'solid';
+        }
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.applyDefaultColor = function (inputField) {
+        if (inputField.style.backgroundColor === 'rgba(255, 255, 255, 0.2)' || inputField.style.backgroundColor === 'rgba(0, 0, 0, 0.2)') {
+            inputField.style.backgroundColor = 'rgba(0, 20, 200, 0.2)';
+        }
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.addAlignmentPropety = function (data, inputField) {
+        // tslint:disable-next-line
+        var alignment = data.Alignment;
+        switch (alignment) {
+            case 0:
+                inputField.style.textAlign = 'left';
+                break;
+            case 1:
+                inputField.style.textAlign = 'center';
+                break;
+            case 2:
+                inputField.style.textAlign = 'right';
+                break;
+            case 3:
+                inputField.style.textAlign = 'justify';
+                break;
+        }
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.createRadioBoxField = function (data, pageIndex, type, printContainer) {
+        // tslint:disable-next-line
+        var inputField = document.createElement('input');
+        inputField.type = type;
+        if (data.Selected) {
+            inputField.checked = true;
+        }
+        else if (type === 'checkbox' && !printContainer) {
+            inputField.style.webkitAppearance = 'none';
+        }
+        inputField.name = data.GroupName;
+        inputField.value = data.Value;
+        return inputField;
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.createDropDownField = function (data, pageIndex, index, printContainer) {
+        // tslint:disable-next-line
+        var inputField = document.createElement('select');
+        // tslint:disable-next-line
+        var childItems = data['TextList'];
+        if (data.Selected) {
+            // tslint:disable-next-line
+            var previousField = document.getElementById('editableDropdown' + pageIndex + '_' + index);
+            if (previousField) {
+                previousField.remove();
+            }
+            // tslint:disable-next-line
+            var inputFields = document.createElement('input');
+            inputFields.id = 'editableDropdown' + pageIndex + '_' + index;
+            inputFields.setAttribute('list', this.pdfViewer.element.id + 'input_' + pageIndex + '_' + index);
+            // tslint:disable-next-line
+            var bounds = data['LineBounds'];
+            // tslint:disable-next-line
+            var font = data['Font'];
+            this.applyPosition(inputFields, bounds, font);
+            inputFields.style.backgroundColor = 'rgba(0, 20, 200, 0.2)';
+            inputFields.className = 'e-pdfviewer-formFields';
+            if (data.selectedIndex === -1) {
+                inputFields.value = data.SelectedValue;
+            }
+            if (printContainer) {
+                printContainer.appendChild(inputFields);
+            }
+            else {
+                var textLayer = document.getElementById(this.pdfViewer.element.id + '_textLayer_' + pageIndex);
+                textLayer.appendChild(inputFields);
+            }
+            inputFields.addEventListener('focus', this.focusFormFields.bind(this));
+            inputFields.addEventListener('blur', this.blurFormFields.bind(this));
+            inputFields.addEventListener('click', this.updateFormFields.bind(this));
+            inputFields.addEventListener('change', this.changeFormFields.bind(this));
+            inputFields.addEventListener('keydown', this.updateFormFieldsValue.bind(this));
+            inputField = document.createElement('DATALIST');
+        }
+        for (var j = 0; j < childItems.length; j++) {
+            // tslint:disable-next-line
+            var option = document.createElement('option');
+            option.className = 'e-dropdownSelect';
+            if (data.SelectedValue === childItems[j]) {
+                option.selected = true;
+            }
+            else {
+                option.selected = false;
+            }
+            option.innerHTML = childItems[j];
+            inputField.appendChild(option);
+        }
+        inputField.name = data.Text;
+        return inputField;
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.createListBoxField = function (data, pageIndex) {
+        // tslint:disable-next-line
+        var inputField = document.createElement('select');
+        inputField.multiple = true;
+        // tslint:disable-next-line
+        var childItems = data['TextList'];
+        for (var j = 0; j < childItems.length; j++) {
+            // tslint:disable-next-line
+            var option = document.createElement('option');
+            option.className = 'e-pdfviewer-ListBox';
+            for (var k = 0; k < data.SelectedList.length; k++) {
+                if (data.SelectedList[k] === j) {
+                    option.selected = true;
+                }
+            }
+            option.innerHTML = childItems[j];
+            inputField.appendChild(option);
+        }
+        inputField.name = data.Text;
+        return inputField;
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.createSignatureField = function (data, pageIndex) {
+        // tslint:disable-next-line
+        var inputField = document.createElement('input');
+        inputField.type = 'text';
+        return inputField;
+    };
+    // tslint:disable-next-line
+    FormFields.prototype.applyPosition = function (inputField, bounds, font) {
+        if (bounds) {
+            var left = this.ConvertPointToPixel(bounds.X);
+            var top_1 = this.ConvertPointToPixel(bounds.Y);
+            var width = this.ConvertPointToPixel(bounds.Width);
+            var height = this.ConvertPointToPixel(bounds.Height);
+            var fontHeight = 0;
+            if (font !== null && font.Height) {
+                inputField.style.fontfamily = font.Name;
+                if (font.Italic) {
+                    inputField.style.fontStyle = 'italic';
+                }
+                if (font.Bold) {
+                    inputField.style.fontWeight = 'Bold';
+                }
+                fontHeight = this.ConvertPointToPixel(font.Size);
+            }
+            this.setStyleToTextDiv(inputField, left, top_1, fontHeight, width, height, false);
+        }
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    FormFields.prototype.setStyleToTextDiv = function (textDiv, left, top, fontHeight, width, height, isPrint) {
+        textDiv.style.position = 'absolute';
+        var zoomvalue = this.pdfViewerBase.getZoomFactor();
+        if (isPrint) {
+            zoomvalue = 1;
+        }
+        textDiv.style.left = left * zoomvalue + 'px';
+        textDiv.style.top = top * zoomvalue + 'px';
+        textDiv.style.height = height * zoomvalue + 'px';
+        textDiv.style.width = width * zoomvalue + 'px';
+        textDiv.style.margin = '0px';
+        if (fontHeight > 0) {
+            textDiv.style.fontSize = fontHeight * zoomvalue + 'px';
+        }
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    FormFields.prototype.ConvertPointToPixel = function (number) {
+        return (number * (96 / 72));
+    };
+    /**
+     * @private
+     */
+    FormFields.prototype.getModuleName = function () {
+        return 'FormFields';
+    };
+    return FormFields;
+}());
+
+/**
+ * export types
+ */
+
+/**
  * PdfViewer component exported items
  */
 
@@ -27566,5 +28235,5 @@ var Print = /** @__PURE__ @class */ (function () {
  * export PDF viewer modules
  */
 
-export { Annotation, LinkAnnotation, TextMarkupAnnotation, MeasureAnnotation, ShapeAnnotation, StampAnnotation, StickyNotesAnnotation, NavigationPane, PdfViewerBase, TextLayer, ContextMenu$1 as ContextMenu, AjaxHandler, Magnification, Navigation, ThumbnailView, Toolbar$1 as Toolbar, AnnotationToolbar, ToolbarSettings, AjaxRequestSettings, CustomStampItem, AnnotationToolbarSettings, ServerActionSettings, StrikethroughSettings, UnderlineSettings, HighlightSettings, LineSettings, ArrowSettings, RectangleSettings, CircleSettings, PolygonSettings, StampSettings, CustomStampSettings, DistanceSettings, PerimeterSettings, AreaSettings, RadiusSettings, VolumeSettings, StickyNotesSettings, MeasurementSettings, PdfViewer, BookmarkView, TextSelection, TextSearch, Print, Drawing };
+export { Annotation, LinkAnnotation, TextMarkupAnnotation, MeasureAnnotation, ShapeAnnotation, StampAnnotation, StickyNotesAnnotation, NavigationPane, PdfViewerBase, TextLayer, ContextMenu$1 as ContextMenu, AjaxHandler, Magnification, Navigation, ThumbnailView, Toolbar$1 as Toolbar, AnnotationToolbar, ToolbarSettings, AjaxRequestSettings, CustomStampItem, AnnotationToolbarSettings, ServerActionSettings, StrikethroughSettings, UnderlineSettings, HighlightSettings, LineSettings, ArrowSettings, RectangleSettings, CircleSettings, PolygonSettings, StampSettings, CustomStampSettings, DistanceSettings, PerimeterSettings, AreaSettings, RadiusSettings, VolumeSettings, StickyNotesSettings, MeasurementSettings, PdfViewer, BookmarkView, TextSelection, TextSearch, Print, FormFields, Drawing };
 //# sourceMappingURL=ej2-pdfviewer.es5.js.map

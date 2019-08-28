@@ -33,10 +33,8 @@ export interface QRCodeGeneratorModel extends ComponentModel{
 
     /**
      * Defines the error correction level of the QR code.
-     * @blazorDefaultValueIgnore
      * @aspDefaultValueIgnore
      * @aspNumberEnum 
-     * @blazorNumberEnum
      * @default undefined
      */
     errorCorrectionLevel?: ErrorCorrectionLevel;
@@ -74,8 +72,6 @@ export interface QRCodeGeneratorModel extends ComponentModel{
     /**
      * * Defines the version of the QR code.
      * @aspDefaultValueIgnore
-     * @blazorNumberEnum
-     * @blazorDefaultValueIgnore
      * @aspNumberEnum 
      * @default undefined
      */

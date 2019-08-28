@@ -1,4 +1,4 @@
-import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';
+﻿import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';
 import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import { SidebarModel } from './sidebar-model';
@@ -75,7 +75,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
      * @aspType string
-     * @blazorType string
      */
     @Property(null)
     public mediaQuery: string | MediaQueryList;
@@ -190,42 +189,36 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
      * @default 1000
      * @aspType double
-     * @blazorType double
      */
     @Property(1000)
     public zIndex: string | number;
     /**
      * Triggers when component is created.
      * @event 
-     * @blazorproperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /**
      * Triggers when component is closed.
      * @event 
-     * @blazorproperty 'OnClose'
      */
     @Event()
     public close: EmitType<EventArgs>;
     /**
      * Triggers when component is opened.
      * @event 
-     * @blazorproperty 'OnOpen'
      */
     @Event()
     public open: EmitType<EventArgs>;
     /**
      * Triggers when the state(expand/collapse) of the component is changed.
      * @event 
-     * @blazorproperty 'Changed'
      */
     @Event()
     public change: EmitType<ChangeEventArgs>;
     /**
      * Triggers when component gets destroyed.
      * @event 
-     * @blazorproperty 'Destroyed'
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -378,37 +371,36 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (isBlazor()) {
             delete closeArguments.model;
         }
-        this.trigger('close', closeArguments, (observedcloseArgs: EventArgs) => {
-            if (!observedcloseArgs.cancel) {
-                if (this.element.classList.contains(CLOSE)) {
-                    return;
-                }
-                if (this.element.classList.contains(OPEN) && !this.animate) {
-                    this.triggerChange();
-                }
-                addClass([this.element], CLOSE);
-                removeClass([this.element], OPEN);
-                this.enableDock ? setStyle(this.element, { 'width': formatUnit(this.dockSize) }) :
-                    setStyle(this.element, { 'width': formatUnit(this.width) });
-                this.setType(this.type);
-                let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
-                    (<HTMLElement>this.element.nextElementSibling);
-                if (!this.enableDock && sibling) {
-                    sibling.style.transform = 'translateX(' + 0 + 'px)';
-                    this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-                }
-                this.destroyBackDrop();
-                this.setAnimation();
-                if (this.type === 'Slide') {
-                    document.body.classList.remove('e-sidebar-overflow');
-                }
-                this.setProperties({ isOpen: false }, true);
-                if (this.enableDock) {
-                    setTimeout((): void => this.setTimeOut(), 50);
-                }
-                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        this.trigger('close', closeArguments);
+        if (!closeArguments.cancel) {
+            if (this.element.classList.contains(CLOSE)) {
+                return;
             }
-        });
+            if (this.element.classList.contains(OPEN) && !this.animate) {
+                this.triggerChange();
+            }
+            addClass([this.element], CLOSE);
+            removeClass([this.element], OPEN);
+            this.enableDock ? setStyle(this.element, { 'width': formatUnit(this.dockSize) }) :
+                setStyle(this.element, { 'width': formatUnit(this.width) });
+            this.setType(this.type);
+            let sibling: HTMLElement = <HTMLElement>document.querySelector('.e-main-content') ||
+                (<HTMLElement>this.element.nextElementSibling);
+            if (!this.enableDock && sibling) {
+                sibling.style.transform = 'translateX(' + 0 + 'px)';
+                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+            }
+            this.destroyBackDrop();
+            this.setAnimation();
+            if (this.type === 'Slide') {
+                document.body.classList.remove('e-sidebar-overflow');
+            }
+            this.setProperties({ isOpen: false }, true);
+        }
+        if (this.enableDock) {
+            setTimeout((): void => this.setTimeOut(), 50);
+        }
+        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
     }
 
     private setTimeOut(): void {
@@ -447,29 +439,29 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         if (isBlazor()) {
             delete openArguments.model;
         }
-        this.trigger('open', openArguments, (observedopenArgs: EventArgs) => {
-            if (!observedopenArgs.cancel) {
-                removeClass([this.element], VISIBILITY);
-                if (this.element.classList.contains(OPEN)) {
-                    return;
-                }
-                if (this.element.classList.contains(CLOSE) && !this.animate) {
-                    this.triggerChange();
-                }
-                addClass([this.element], [OPEN, TRASITION]);
-                setStyle(this.element, { 'transform': '' });
-                removeClass([this.element], CLOSE);
-                setStyle(this.element, { 'width': formatUnit(this.width) });
-                this.setType(this.type);
-                this.createBackDrop();
-                this.setAnimation();
-                if (this.type === 'Slide') {
-                    document.body.classList.add('e-sidebar-overflow');
-                }
-                this.setProperties({ isOpen: true }, true);
-                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        this.trigger('open', openArguments);
+        if (!openArguments.cancel) {
+            removeClass([this.element], VISIBILITY);
+            if (this.element.classList.contains(OPEN)) {
+                return;
             }
-        });
+            if (this.element.classList.contains(CLOSE) && !this.animate) {
+                this.triggerChange();
+            }
+            addClass([this.element], [OPEN, TRASITION]);
+            setStyle(this.element, { 'transform': '' });
+            removeClass([this.element], CLOSE);
+            setStyle(this.element, { 'width': formatUnit(this.width) });
+            this.setType(this.type);
+            this.createBackDrop();
+
+            this.setAnimation();
+            if (this.type === 'Slide') {
+                document.body.classList.add('e-sidebar-overflow');
+            }
+            this.setProperties({ isOpen: true }, true);
+        }
+        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
     }
 
     private setAnimation(): void {

@@ -6,9 +6,9 @@ import * as CLS from '../base/classes';
 import { IFileManager, NotifyArgs, ToolbarClickEventArgs, ToolbarCreateEventArgs } from '../base/interface';
 import { refresh, getPathObject, getLocaleText, getCssClass, sortbyClickHandler } from '../common/utility';
 import { createDeniedDialog, updateLayout } from '../common/utility';
-import { GetDetails } from '../common/operations';
+import { Download, GetDetails } from '../common/operations';
 import { DropDownButton, ItemModel as SplitButtonItemModel } from '@syncfusion/ej2-splitbuttons';
-import { cutFiles, copyFiles, pasteHandler, hasEditAccess, hasContentAccess, hasUploadAccess, doDownload } from '../common/index';
+import { cutFiles, copyFiles, pasteHandler, hasEditAccess, hasContentAccess, hasUploadAccess, hasDownloadAccess } from '../common/index';
 
 /**
  * Toolbar module
@@ -120,7 +120,7 @@ export class Toolbar {
                         refresh(this.parent);
                         break;
                     case 'download':
-                        doDownload(this.parent);
+                        this.doDownload();
                         break;
                     case 'rename':
                         if (!hasEditAccess(details[0])) {
@@ -148,6 +148,21 @@ export class Toolbar {
                 }
             }
         });
+    }
+
+    private doDownload(): void {
+        let items: Object[] = this.parent.itemData;
+        for (let i: number = 0; i < items.length; i++) {
+            if (!hasDownloadAccess(items[i])) {
+                createDeniedDialog(this.parent, items[i]);
+                return;
+            }
+        }
+        if (this.parent.selectedItems.length > 0) {
+            Download(this.parent, this.parent.path, this.parent.selectedItems);
+        } else {
+            return;
+        }
     }
 
     private toolbarCreateHandler(): void {

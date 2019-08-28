@@ -677,7 +677,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.initRender();
         this.wireEvents();
         this.setZindex();
-        this.renderComplete();
     }
 
     private initialize(): void {
@@ -1390,7 +1389,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         return tickCount;
     }
 
-    // tslint:disable-next-line:max-func-body-length
     private renderScale(): void {
         let orien: string = this.orientation === 'Vertical' ? 'v' : 'h';
         let spanText: number;
@@ -1458,11 +1456,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 } else {
                     let largestep: number = this.fractionalToInteger(<number>this.ticks.largeStep);
                     let startValue: number = this.fractionalToInteger(<number>start);
-                    if (orien === 'h') {
-                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
-                    } else {
-                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
-                    }
+                    islargeTick = ((startValue - min) % largestep === 0) ? true : false;
                 }
             }
             if (islargeTick) {

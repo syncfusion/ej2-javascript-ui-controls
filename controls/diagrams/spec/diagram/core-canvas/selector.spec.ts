@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
-import { SelectorModel } from '../../../src/diagram/objects/node-model';
+import { SelectorModel } from '../../../src/diagram/interaction/selector-model';
 import { SelectorConstraints } from '../../../src/diagram/enum/enum';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 

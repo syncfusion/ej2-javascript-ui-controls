@@ -43,7 +43,6 @@ import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, Dra
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
 import { ViewsData } from '../base/interface';
 import { ResourceBase } from '../base/resource';
-import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
@@ -374,6 +373,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public hideEmptyAgendaDays: boolean;
+
+    /**
+     * The recurrence validation will be done by default
+     *  When this property is set to `false`, the recurrence validation will be skipped.
+     * @default true
+     */
+    @Property(true)
+    public enableRecurrenceValidation: boolean;
+
     /**
      * Schedule will be assigned with specific timezone, so as to display the events in it accordingly. By default,
      *  Schedule dates are processed with System timezone, as no timezone will be assigned specifically to the Schedule at the initial time.
@@ -1989,14 +1997,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Update the recurrence editor instance from custom editor template.
-     * @method updateRecurrenceEditor
-     */
-    public updateRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
-        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
-    }
-
-    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -2108,6 +2108,28 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.activeEventData.event = data as { [key: string]: Object };
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
+    }
+
+    /**
+     * To manually close the event editor window
+     * @method closeEditor
+     * @return {void}
+     */
+    public closeEditor(): void {
+        if (this.eventWindow) {
+            this.eventWindow.dialogClose();
+        }
+    }
+
+    /**
+     * To manually close the quick info popup
+     * @method closeQuickInfoPopup
+     * @return {void}
+     */
+    public closeQuickInfoPopup(): void {
+        if (this.quickPopup) {
+            this.quickPopup.quickPopupHide(true);
+        }
     }
 
     /**

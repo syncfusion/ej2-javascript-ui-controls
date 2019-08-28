@@ -5367,12 +5367,12 @@ var Component = /** @__PURE__ @class */ (function (_super) {
      * It is used to process the post rendering functionalities to a component.
      */
     Component.prototype.renderComplete = function (wrapperElement) {
-        if (isBlazor()) {
-            var ejsInterop = 'ejsInterop';
-            // tslint:disable-next-line:no-any
-            window[ejsInterop].renderComplete(this.element, wrapperElement);
-        }
-        this.isRendered = true;
+        //     if (isBlazor()) {
+        //         let ejsInterop: string = 'ejsInterop';
+        //         // tslint:disable-next-line:no-any
+        //         (window as any)[ejsInterop].renderComplete(this.element, wrapperElement);
+        //     }
+        //     this.isRendered = true;
     };
     /**
      * When invoked, applies the pending property changes immediately to the component.

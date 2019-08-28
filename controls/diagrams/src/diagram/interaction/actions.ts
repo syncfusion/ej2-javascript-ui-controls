@@ -15,8 +15,8 @@ import { Point } from '../primitives/point';
 import { ITouches } from '../objects/interface/interfaces';
 import { TextElement } from '../core/elements/text-element';
 import { PortConstraints, DiagramTools, PortVisibility, ThumbsConstraints } from '../enum/enum';
-import { Selector } from '../objects/node';
-import { SelectorModel } from '../objects/node-model';
+import { Selector } from './selector';
+import { SelectorModel } from './selector-model';
 import { PointPortModel } from './../objects/port-model';
 import { PointPort } from './../objects/port';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
@@ -48,7 +48,7 @@ export function findToolToActivate(
             for (let obj of handle.userHandles) {
                 if (obj.visible) {
                     let paddedBounds: PointModel = getUserHandlePosition(handle, obj, diagram.scroller.transform);
-                    if (contains(position, paddedBounds, obj.size / (2 * diagram.scroller.transform.scale))) { return obj.name as Actions; }
+                    if (contains(position, paddedBounds, obj.size / 2)) { return obj.name as Actions; }
                 }
             }
         }

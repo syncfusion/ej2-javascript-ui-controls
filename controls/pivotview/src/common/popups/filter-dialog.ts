@@ -1,7 +1,9 @@
 import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
+import {
+    TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance, NodeClickEventArgs, NodeExpandEventArgs
+} from '@syncfusion/ej2-navigations';
 import { Dialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { setStyleAndAttributes } from '@syncfusion/ej2-grids';
@@ -9,6 +11,9 @@ import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { IFilter, IFieldOptions, IFormatSettings } from '../../base/engine';
 import { Operators, FilterType } from '../../base/types';
 import { ChangedEventArgs, DateTimePicker } from '@syncfusion/ej2-calendars';
+import { ItemModel, DropDownButton, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { OlapEngine, IOlapField } from '../../base/olap/engine';
+import { PivotUtil } from '../../base/util';
 
 /**
  * `FilterDialog` module to create filter dialog.
@@ -16,6 +21,8 @@ import { ChangedEventArgs, DateTimePicker } from '@syncfusion/ej2-calendars';
 /** @hidden */
 export class FilterDialog {
     public parent: PivotCommon;
+    /** @hidden */
+    public dropMenu: DropDownButton;
     /** @hidden */
     public memberTreeView: TreeView;
     /** @hidden */
@@ -29,7 +36,10 @@ export class FilterDialog {
     /** @hidden */
     public allowExcelLikeFilter: boolean;
     /** @hidden */
+    public isSearchEnabled: boolean;
     public filterObject: IFilter;
+    /* tslint:disable-next-line:no-any */
+    private timeOutObj: any;
 
     /**
      * Constructor for the dialog action.
@@ -48,7 +58,7 @@ export class FilterDialog {
     public createFilterDialog(treeData: { [key: string]: Object }[], fieldName: string, fieldCaption: string, target: HTMLElement): void {
         let editorDialog: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_EditorTreeView',
-            className: cls.MEMBER_EDITOR_DIALOG_CLASS,
+            className: cls.MEMBER_EDITOR_DIALOG_CLASS + ' ' + (this.parent.dataType === 'olap' ? 'e-olap-editor-dialog' : ''),
             attrs: { 'data-fieldName': fieldName, 'aria-label': fieldCaption },
             styles: 'visibility:hidden;'
         });
@@ -56,6 +66,7 @@ export class FilterDialog {
         let headerTemplate: string = this.parent.localeObj.getConstant('filter') + ' ' +
             '"' + fieldCaption + '"' + ' ' + this.parent.localeObj.getConstant('by');
         this.filterObject = this.getFilterObject(fieldName);
+        this.isSearchEnabled = false;
         this.allowExcelLikeFilter = this.isExcelFilter(fieldName);
         this.parent.element.appendChild(editorDialog);
         this.dialogPopUp = new Dialog({
@@ -96,7 +107,7 @@ export class FilterDialog {
         });
         this.dialogPopUp.isStringTemplate = true;
         this.dialogPopUp.appendTo(editorDialog);
-        this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
+        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = (this.allowExcelLikeFilter ? headerTemplate : filterCaption);
         if (this.allowExcelLikeFilter) {
             this.createTabMenu(treeData, fieldCaption, fieldName);
             addClass([this.dialogPopUp.element], 'e-excel-filter');
@@ -117,10 +128,15 @@ export class FilterDialog {
                 (args.element as HTMLElement).offsetWidth + 'px';
         }
     }
+    /* tslint:disable */
     private createTreeView(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName?: string): HTMLElement {
         let editorTreeWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + 'EditorDiv',
             className: cls.EDITOR_TREE_WRAPPER_CLASS + (this.allowExcelLikeFilter ? ' e-excelfilter' : '')
+        });
+        let levelWrapper: HTMLElement = createElement('button', {
+            id: this.parent.parentID + '_LevelDiv',
+            className: 'e-level-wrapper-class'
         });
         let searchWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_SearchDiv', attrs: { 'tabindex': '-1' },
@@ -139,16 +155,25 @@ export class FilterDialog {
         labelWrapper.style.display = this.parent.isDataOverflow ? 'inline-block' : 'none';
         labelWrapper.appendChild(this.parent.editorLabelElement);
         searchWrapper.appendChild(editorSearch);
+        searchWrapper.appendChild(levelWrapper);
         let selectAllWrapper: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_AllDiv', attrs: { 'tabindex': '-1' },
             className: cls.SELECT_ALL_WRAPPER_CLASS
         });
         let selectAllContainer: HTMLElement = createElement('div', { className: cls.SELECT_ALL_CLASS });
+        let treeOuterDiv: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS + '-outer-div' })
         let treeViewContainer: HTMLElement = createElement('div', { className: cls.EDITOR_TREE_CONTAINER_CLASS });
         let promptDiv: HTMLElement = createElement('div', {
             className: cls.EMPTY_MEMBER_CLASS + ' ' + cls.ICON_DISABLE,
             innerHTML: this.parent.localeObj.getConstant('noMatches')
         });
+        if (this.parent.dataType === 'olap' && !this.parent.control.loadMaximumMembers &&
+            !(this.parent.engineModule as OlapEngine).fieldList[fieldName].isHierarchy &&
+            !(this.parent.engineModule as OlapEngine).fieldList[fieldName].isNamedSets) {
+            this.createLevelWrapper(levelWrapper, fieldName);
+        } else {
+            levelWrapper.style.display = 'none';
+        }
         selectAllWrapper.appendChild(selectAllContainer);
         editorTreeWrapper.appendChild(searchWrapper);
         editorTreeWrapper.appendChild(selectAllWrapper);
@@ -159,61 +184,210 @@ export class FilterDialog {
             cssClass: cls.EDITOR_SEARCH_CLASS,
             showClearButton: true,
             change: (e: MaskChangeEventArgs) => {
-                this.parent.eventBase.searchTreeNodes(e, this.memberTreeView, false);
-                let filterDialog: Element = this.dialogPopUp.element;
-                let liList: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
-                if (liList.length === 0) {
-                    this.allMemberSelect.disableNodes([this.allMemberSelect.element.querySelector('li')]);
-                    filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
-                    removeClass([promptDiv], cls.ICON_DISABLE);
+                if (this.parent.dataType === 'olap') {
+                    this.searchOlapTreeView(e, promptDiv, fieldCaption);
                 } else {
-                    this.allMemberSelect.enableNodes([this.allMemberSelect.element.querySelector('li')]);
-                    filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
-                    addClass([promptDiv], cls.ICON_DISABLE);
+                    this.parent.eventBase.searchTreeNodes(e, this.memberTreeView, false);
+                    let filterDialog: Element = this.dialogPopUp.element;
+                    let liList: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
+                    if (liList.length === 0) {
+                        this.allMemberSelect.disableNodes([this.allMemberSelect.element.querySelector('li')]);
+                        filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                        removeClass([promptDiv], cls.ICON_DISABLE);
+                    } else {
+                        this.allMemberSelect.enableNodes([this.allMemberSelect.element.querySelector('li')]);
+                        filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
+                        addClass([promptDiv], cls.ICON_DISABLE);
+                    }
+                    this.updateCheckedState(fieldCaption);
                 }
-                this.updateCheckedState(fieldCaption);
             }
         });
         this.editorSearch.isStringTemplate = true;
         this.editorSearch.appendTo(editorSearch);
-        let data: { [key: string]: Object }[] = [{ id: 'all', name: 'All', checkedStatus: true }];
+        let nodeAttr: { [key: string]: string } = { 'data-fieldName': fieldName };
+        let data: { [key: string]: Object }[] = [{ id: 'all', name: 'All', isSelected: true, htmlAttributes: nodeAttr }];
         this.allMemberSelect = new TreeView({
-            fields: { dataSource: data, id: 'id', text: 'name', isChecked: 'checkedStatus', },
+            fields: { dataSource: data, id: 'id', text: 'name', isChecked: 'isSelected' },
             showCheckBox: true,
+            expandOn: 'None',
             enableRtl: this.parent.enableRtl,
-            nodeClicked: this.nodeCheck.bind(this),
-            keyPress: this.nodeCheck.bind(this)
+            nodeClicked: this.nodeCheck.bind(this, true),
+            keyPress: this.nodeCheck.bind(this, true)
         });
         this.allMemberSelect.isStringTemplate = true;
         this.allMemberSelect.appendTo(selectAllContainer);
-        editorTreeWrapper.appendChild(treeViewContainer);
+        treeOuterDiv.appendChild(treeViewContainer);
+        editorTreeWrapper.appendChild(treeOuterDiv);
         this.memberTreeView = new TreeView({
-            fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'checkedStatus' },
+            fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' },
             showCheckBox: true,
             enableRtl: this.parent.enableRtl,
             nodeChecking: this.validateTreeNode.bind(this),
-            nodeClicked: this.nodeCheck.bind(this),
-            keyPress: this.nodeCheck.bind(this)
+            nodeClicked: this.nodeCheck.bind(this, false),
+            keyPress: this.nodeCheck.bind(this, false),
+            nodeExpanding: this.updateChildNodes.bind(this),
+            expandOn: 'None'
         });
         this.memberTreeView.isStringTemplate = true;
         this.memberTreeView.appendTo(treeViewContainer);
         editorTreeWrapper.appendChild(labelWrapper);
         return editorTreeWrapper;
     }
+    private createLevelWrapper(levelWrapper: HTMLElement, fieldName: string): void {
+        let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+        let levels: IOlapField[] = engineModule.fieldList[fieldName].levels;
+        let levelCount: number = engineModule.fieldList[fieldName].levelCount;
+        let items: ItemModel[] = [];
+        for (let i: number = 0, cnt: number = levels.length; i < cnt; i++) {
+            items.push({ id: levels[i].id, text: levels[i].name });
+        }
+        this.dropMenu = new DropDownButton({
+            cssClass: 'e-level-drop',
+            items: items, iconCss: 'e-icons e-dropdown-icon',
+            disabled: levelCount === levels.length ? true : false,
+            beforeOpen: (args: BeforeOpenCloseMenuEventArgs) => {
+                let items: HTMLLIElement[] = [].slice.call(args.element.querySelectorAll('li'));
+                let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+                let levelCount: number = engineModule.fieldList[fieldName].levelCount;
+                removeClass(items, cls.MENU_DISABLE);
+                for (let i: number = 0, cnt: number = items.length; i < cnt; i++) {
+                    if (i < levelCount) {
+                        addClass([items[i]], cls.MENU_DISABLE);
+                    }
+                }
+            },
+            select: (args: MenuEventArgs) => {
+                let fieldName: string = this.dialogPopUp.element.getAttribute('data-fieldname');
+                let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+                let selectedLevel: number;
+                for (let i: number = 0, cnt: number = items.length; i < cnt; i++) {
+                    if (items[i].id === args.item.id) {
+                        selectedLevel = i;
+                    }
+                }
+                engineModule.getFilterMembers(this.parent.dataSourceSettings, fieldName, selectedLevel + 1, false, true);
+            }
+        });
+        this.dropMenu.appendTo(levelWrapper);
+    }
+    private searchOlapTreeView(e: MaskChangeEventArgs, promptDiv: HTMLElement, fieldCaption: string): void {
+        let popupInstance: FilterDialog = this;
+        clearTimeout(this.timeOutObj);
+        this.timeOutObj = setTimeout(function () {
+            let engineModule: OlapEngine = popupInstance.parent.engineModule as OlapEngine;
+            let filterDialog: Element = popupInstance.dialogPopUp.element;
+            let fieldName: string = filterDialog.getAttribute('data-fieldname');
+            let nodeLimit: number = popupInstance.parent.control.maxNodeLimitInMemberEditor ?
+                popupInstance.parent.control.maxNodeLimitInMemberEditor : 5000;
+            if (!engineModule.fieldList[fieldName].isHierarchy) {
+                if (popupInstance.dropMenu && e.value !== '') {
+                    popupInstance.dropMenu.disabled = true;
+                } else {
+                    popupInstance.dropMenu.disabled = false;
+                }
+                if (popupInstance.parent.control.loadMaximumMembers) {
+                    engineModule.getSearchMembers(popupInstance.parent.dataSourceSettings, fieldName, e.value.toLowerCase(), nodeLimit, true);
+                } else {
+                    let levelCount: number = engineModule.fieldList[fieldName].levelCount ? engineModule.fieldList[fieldName].levelCount : 1;
+                    engineModule.getSearchMembers(popupInstance.parent.dataSourceSettings, fieldName, e.value.toLowerCase(), nodeLimit, false, levelCount);
+                }
+                popupInstance.parent.eventBase.searchTreeNodes(e, popupInstance.memberTreeView, false, false);
+            } else {
+                popupInstance.parent.eventBase.searchTreeNodes(e, popupInstance.memberTreeView, false, true);
+            }
+            let liList: HTMLElement[] = [].slice.call(popupInstance.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
+            // for (let element of liList) {
+            //     if (element.querySelector('.interaction')) {
+            //         setStyleAttribute(element.querySelector('.interaction'), { display: 'none' });
+            //     }
+            // }
+            if (liList.length === 0) {
+                popupInstance.allMemberSelect.disableNodes([popupInstance.allMemberSelect.element.querySelector('li')]);
+                filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
+                removeClass([promptDiv], cls.ICON_DISABLE);
+            } else {
+                popupInstance.allMemberSelect.enableNodes([popupInstance.allMemberSelect.element.querySelector('li')]);
+                filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
+                addClass([promptDiv], cls.ICON_DISABLE);
+            }
+            popupInstance.updateCheckedState(fieldCaption);
+        }, 500);
 
+    }
+    /* tslint:enable */
     /* tslint:disable:no-any */
-    private nodeCheck(args: NodeClickEventArgs): void {
+    private nodeCheck(isAllMember: boolean, args: NodeClickEventArgs): void {
         let checkedNode: any = [args.node];
         if ((args.event.target as HTMLElement).classList.contains('e-fullrow') || (args.event as any).key === 'Enter') {
-            let getNodeDetails: any = this.memberTreeView.getNode(args.node);
+            let memberObj: TreeView = isAllMember ? this.allMemberSelect : this.memberTreeView;
+            let getNodeDetails: any = memberObj.getNode(args.node);
             if (getNodeDetails.isChecked === 'true') {
-                this.memberTreeView.uncheckAll(checkedNode);
+                memberObj.uncheckAll(checkedNode);
             } else {
-                this.memberTreeView.checkAll(checkedNode);
+                memberObj.checkAll(checkedNode);
             }
         }
     }
-
+    private updateChildNodes(args: NodeExpandEventArgs): void {
+        if (this.parent.dataType === 'olap') {
+            let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+            let fieldName: string = args.node.getAttribute('data-fieldname');
+            let fieldList: IOlapField = engineModule.fieldList[fieldName];
+            let filterItems: string[] = [];
+            if (fieldList && fieldList.filterMembers.length > 0 && !this.isSearchEnabled &&
+                !fieldList.members[args.nodeData.id as string].isNodeExpand) {
+                let childNodes: IOlapField[] = [];
+                for (let item of fieldList.filterMembers) {
+                    if (item.pid === args.nodeData.id.toString()) {
+                        childNodes.push(item);
+                    }
+                }
+                if (childNodes.length === 0) {
+                    fieldList.childMembers = [];
+                    engineModule.getChildMembers(this.parent.dataSourceSettings, args.nodeData.id.toString(), fieldName);
+                    childNodes = fieldList.childMembers;
+                    fieldList.childMembers = [];
+                }
+                let treeData: { [key: string]: Object }[] = PivotUtil.getClonedData(childNodes as { [key: string]: Object }[]);
+                let curTreeData: { [key: string]: Object }[] = (this.memberTreeView.fields.dataSource as { [key: string]: Object }[]);
+                let isInclude: boolean = false;
+                if (!isNullOrUndefined(this.filterObject)) {
+                    isInclude = this.filterObject.type === 'Include' ? true : false;
+                    filterItems = this.filterObject.items ? this.filterObject.items : [];
+                }
+                treeData = this.updateChildData(isInclude, treeData, filterItems, fieldName, args.nodeData);
+                for (let node of treeData) {
+                    curTreeData.push(node);
+                }
+                fieldList.members[args.nodeData.id as string].isNodeExpand = true;
+                this.memberTreeView.addNodes(treeData, args.node);
+            }
+        }
+    }
+    /* tslint:disable-next-line:max-line-length */
+    private updateChildData(isInclude: boolean, members: { [key: string]: Object }[], filterItems: string[], fieldName: string, parentNode: { [key: string]: Object }): { [key: string]: Object }[] {
+        let memberCount: number = Object.keys(this.parent.currentTreeItemsPos).length;
+        let fieldList: IOlapField = this.parent.engineModule.fieldList[fieldName];
+        let list: { [key: string]: Object }[] = [];
+        let childMemberCount: number = 1;
+        for (let member of members) {
+            let obj: { [key: string]: Object } = member;
+            let memberName: string = member.id.toString();
+            fieldList.members[memberName].isNodeExpand = false;
+            member.isSelected = (parentNode.isChecked === 'true');
+            if (childMemberCount <= this.parent.control.maxNodeLimitInMemberEditor) {
+                list.push(obj);
+            }
+            this.parent.currentTreeItems.push(obj);
+            this.parent.searchTreeItems.push(obj);
+            this.parent.currentTreeItemsPos[memberName] = memberCount;
+            memberCount++;
+            childMemberCount++;
+        }
+        this.parent.isDataOverflow = false;
+        return list;
+    }
     private createTabMenu(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName: string): void {
         let wrapper: HTMLElement = createElement('div', {
             className: 'e-filter-tab-wrapper'
@@ -271,12 +445,15 @@ export class FilterDialog {
             addClass([this.dialogPopUp.element.querySelector('.e-filter-div-content' + '.' + (selectedIndex === 1 && this.parent.dataSourceSettings.allowLabelFilter ? 'e-label-filter' : 'e-value-filter'))], 'e-selected-tab');
         }
     }
+    /* tslint:disable */
     private createCustomFilter(fieldName: string, filterObject: IFilter, type: string): HTMLElement {
         let dataSource: { [key: string]: Object }[] = [];
         let valueOptions: { [key: string]: Object }[] = [];
+        let levelOptions: { [key: string]: Object }[] = [];
         let measures: IFieldOptions[] = this.parent.dataSourceSettings.values;
         let selectedOption: string = 'DoesNotEquals';
         let selectedValueIndex: number = 0;
+        let selectedLevelIndex: number = 0;
         let options: { label: string[], value: string[], date: string[] } = {
             label: ['Equals', 'DoesNotEquals', 'BeginWith', 'DoesNotBeginWith', 'EndsWith',
                 'DoesNotEndsWith', 'Contains', 'DoesNotContains', 'GreaterThan',
@@ -301,11 +478,27 @@ export class FilterDialog {
                 filterObject.measure === measures[len].name &&
                 filterObject.condition === selectedOption ? len : selectedValueIndex;
         }
+        if (this.parent.dataType === 'olap') {
+            let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+            let levels: IOlapField[] = engineModule.fieldList[fieldName].levels;
+            if ((this.parent.engineModule as OlapEngine).fieldList[fieldName].isHierarchy) {
+                levelOptions.push({ value: fieldName, text: engineModule.fieldList[fieldName].name });
+                selectedLevelIndex = 0;
+            } else {
+                for (let i: number = 0, cnt: number = levels.length; i < cnt; i++) {
+                    selectedLevelIndex = (filterObject &&
+                        filterObject.selectedField === levels[i].id ? i : selectedLevelIndex);
+                    levelOptions.push({ value: levels[i].id, text: levels[i].name });
+                }
+            }
+        }
         let mainDiv: HTMLElement = createElement('div', {
             className: cls.FILTER_DIV_CONTENT_CLASS + ' e-' + ((['date', 'number']).indexOf(type) >= 0 ? 'label' : type) + '-filter',
             id: this.parent.parentID + '_' + type + '_filter_div_content',
             attrs: {
                 'data-type': type, 'data-fieldName': fieldName, 'data-operator': selectedOption,
+                'data-selectedField': (this.parent.dataType === 'olap' &&
+                    levelOptions.length > 0 ? levelOptions[selectedLevelIndex].value.toString() : ''),
                 'data-measure': (this.parent.dataSourceSettings.values.length > 0 ?
                     this.parent.dataSourceSettings.values[selectedValueIndex].name : ''),
                 'data-value1': (filterObject && selectedOption === filterObject.condition ?
@@ -325,11 +518,16 @@ export class FilterDialog {
         });
         let separatordiv: HTMLElement = createElement('div', { className: cls.SEPARATOR_DIV_CLASS });
         let filterWrapperDiv1: HTMLElement = createElement('div', { className: cls.FILTER_OPTION_WRAPPER_1_CLASS });
+        let levelWrapperDiv: HTMLElement = createElement('div', {
+            className: 'e-level-option-wrapper' + ' ' +
+                (this.parent.dataType === 'olap' ? '' : cls.ICON_DISABLE),
+        });
         let optionWrapperDiv1: HTMLElement = createElement('div', {
             className: 'e-measure-option-wrapper' + ' ' + (((['label', 'date', 'number']).indexOf(type) >= 0) ? cls.ICON_DISABLE : ''),
         });
         let optionWrapperDiv2: HTMLElement = createElement('div', { className: 'e-condition-option-wrapper' });
         let filterWrapperDiv2: HTMLElement = createElement('div', { className: cls.FILTER_OPTION_WRAPPER_2_CLASS });
+        let levelDropOption: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_level_option_wrapper' });
         let dropOptionDiv1: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_measure_option_wrapper' });
         let dropOptionDiv2: HTMLElement = createElement('div', { id: this.parent.parentID + '_' + type + '_contition_option_wrapper' });
         let inputDiv1: HTMLElement = createElement('div', { className: cls.FILTER_INPUT_DIV_1_CLASS });
@@ -345,24 +543,91 @@ export class FilterDialog {
         }) as HTMLInputElement;
         inputDiv1.appendChild(inputField1);
         inputDiv2.appendChild(inputField2);
+        levelWrapperDiv.appendChild(levelDropOption);
+        levelWrapperDiv.appendChild(separatordiv.cloneNode(true));
         optionWrapperDiv1.appendChild(dropOptionDiv1);
         optionWrapperDiv1.appendChild(separatordiv);
         optionWrapperDiv2.appendChild(dropOptionDiv2);
+        filterWrapperDiv1.appendChild(levelWrapperDiv);
         filterWrapperDiv1.appendChild(optionWrapperDiv1);
         filterWrapperDiv1.appendChild(optionWrapperDiv2);
         filterWrapperDiv2.appendChild(inputDiv1);
         filterWrapperDiv2.appendChild(betweenTextContentdiv);
         filterWrapperDiv2.appendChild(inputDiv2);
         /* tslint:disable-next-line:max-line-length */
-        this.createElements(filterObject, betweenOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions, dataSource, selectedValueIndex, selectedOption, type);
+        this.createElements(filterObject, betweenOperators, dropOptionDiv1, dropOptionDiv2, inputField1, inputField2, valueOptions, dataSource, selectedValueIndex, selectedOption, type, levelDropOption, levelOptions, selectedLevelIndex);
         mainDiv.appendChild(textContentdiv);
         mainDiv.appendChild(filterWrapperDiv1);
         mainDiv.appendChild(filterWrapperDiv2);
         return mainDiv;
     }
-    /* tslint:disable */
-    private createElements(filterObj: IFilter, operators: Operators[], optionDiv1: HTMLElement, optionDiv2: HTMLElement, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement, vDataSource: { [key: string]: Object }[], oDataSource: { [key: string]: Object }[], valueIndex: number, option: string, type: string): void {
+    private createElements(filterObj: IFilter, operators: Operators[], optionDiv1: HTMLElement, optionDiv2:
+        HTMLElement, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement, vDataSource: { [key: string]: Object }[],
+        oDataSource: { [key: string]: Object }[], valueIndex: number, option: string, type: string,
+        levelDropOption: HTMLElement, lDataSource: { [key: string]: Object }[], levelIndex: number): void {
         let popupInstance: FilterDialog = this;
+        if (this.parent.dataType === 'olap') {
+            let levelWrapper: DropDownList = new DropDownList({
+                dataSource: lDataSource, enableRtl: this.parent.enableRtl,
+                fields: { value: 'value', text: 'text' },
+                index: levelIndex,
+                cssClass: cls.LEVEL_OPTIONS_CLASS, width: '100%',
+                change(args: ChangeEventArgs): void {
+                    let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
+                    let fieldName: string = element.getAttribute('data-fieldName');
+                    let type: string = element.getAttribute('data-type');
+                    if (!isNullOrUndefined(element)) {
+                        popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                        setStyleAndAttributes(element, { 'data-selectedField': args.value });
+                        let filterObj: IFilter;
+                        for (let field of popupInstance.parent.dataSourceSettings.filterSettings) {
+                            if (field.name === fieldName && field.selectedField === args.value) {
+                                filterObj = field;
+                                break;
+                            }
+                        }
+                        if (filterObj) {
+                            if (type === 'value' && filterObj.measure && filterObj.measure !== '') {
+                                optionWrapper1.value = filterObj.measure ? filterObj.measure : vDataSource[0].value as string;
+                            } else {
+
+                            }
+                            if (filterObj.condition) {
+                                optionWrapper.value = filterObj.condition ? filterObj.condition : 'DoesNotEquals';
+                            } else {
+                                optionWrapper.value = 'DoesNotEquals';
+                            }
+                            let inputObj1: MaskedTextBox | NumericTextBox;
+                            let inputObj2: MaskedTextBox | NumericTextBox;
+                            if (type === 'value') {
+                                inputObj1 = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as NumericTextBox;
+                                inputObj2 = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as NumericTextBox;
+                                if (inputObj1) {
+                                    inputObj1.value = filterObj.value1 ? parseInt(filterObj.value1 as string, 10) : undefined;
+                                }
+                                if (inputObj2) {
+                                    inputObj2.value = filterObj.value2 ? parseInt(filterObj.value2 as string, 10) : undefined;
+                                }
+                            } else {
+                                inputObj1 = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as MaskedTextBox;
+                                inputObj2 = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as MaskedTextBox;
+                                if (inputObj1) {
+                                    inputObj1.value = filterObj.value1 ? filterObj.value1 as string : '';
+                                }
+                                if (inputObj2) {
+                                    inputObj2.value = filterObj.value2 ? filterObj.value2 as string : '';
+                                }
+                            }
+                        }
+                        popupInstance.updateInputValues(element, type, inputDiv1, inputDiv2);
+                    } else {
+                        return;
+                    }
+                }
+            });
+            levelWrapper.isStringTemplate = true;
+            levelWrapper.appendTo(levelDropOption);
+        }
         let optionWrapper1: DropDownList = new DropDownList({
             dataSource: vDataSource, enableRtl: this.parent.enableRtl,
             fields: { value: 'value', text: 'text' }, index: valueIndex,
@@ -409,7 +674,8 @@ export class FilterDialog {
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? (typeof (filterObj.value1) === 'string' ? new Date(filterObj.value1) : filterObj.value1) : null),
+                value: (filterObj && option === filterObj.condition ?
+                    (typeof (filterObj.value1) === 'string' ? new Date(filterObj.value1) : filterObj.value1) : null),
                 change: (e: ChangedEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     if (!isNullOrUndefined(element)) {
@@ -425,7 +691,8 @@ export class FilterDialog {
                 enableRtl: this.parent.enableRtl,
                 format: 'dd/MM/yyyy hh:mm:ss a',
                 showClearButton: true,
-                value: (filterObj && option === filterObj.condition ? (typeof (filterObj.value2) === 'string' ? new Date(filterObj.value2) : filterObj.value2) : null),
+                value: (filterObj && option === filterObj.condition ?
+                    (typeof (filterObj.value2) === 'string' ? new Date(filterObj.value2) : filterObj.value2) : null),
                 change: (e: ChangedEventArgs) => {
                     let element: Element = popupInstance.dialogPopUp.element.querySelector('.e-selected-tab');
                     if (!isNullOrUndefined(element)) {
@@ -548,24 +815,25 @@ export class FilterDialog {
         let filterDialog: Element = this.dialogPopUp.element;
         setStyleAndAttributes(filterDialog, { 'role': 'menu', 'aria-haspopup': 'true' });
         let list: HTMLElement[] = [].slice.call(this.memberTreeView.element.querySelectorAll('li')) as HTMLElement[];
-        let uncheckedNodes: { [key: string]: object }[] = this.getUnCheckedNodes();
-        let checkedNodes: { [key: string]: object }[] = this.getCheckedNodes();
+        let fieldName: string = filterDialog.getAttribute('data-fieldname');
+        let uncheckedNodes: number = this.getUnCheckedNodes(fieldName);
+        let checkedNodes: number = this.getCheckedNodes(fieldName);
         let firstNode: Element =
             this.allMemberSelect.element.querySelector('li').querySelector('span.' + cls.CHECK_BOX_FRAME_CLASS);
         if (list.length > 0) {
-            if (checkedNodes.length > 0) {
-                if (uncheckedNodes.length > 0) {
+            if (checkedNodes > 0) {
+                if (uncheckedNodes > 0) {
                     removeClass([firstNode], cls.NODE_CHECK_CLASS);
                     addClass([firstNode], cls.NODE_STOP_CLASS);
-                } else if (uncheckedNodes.length === 0) {
+                } else if (uncheckedNodes === 0) {
                     removeClass([firstNode], cls.NODE_STOP_CLASS);
                     addClass([firstNode], cls.NODE_CHECK_CLASS);
                 }
                 this.dialogPopUp.buttons[0].buttonModel.disabled = false;
                 filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
-            } else if (uncheckedNodes.length > 0 && checkedNodes.length === 0) {
+            } else if (uncheckedNodes > 0 && checkedNodes === 0) {
                 removeClass([firstNode], [cls.NODE_CHECK_CLASS, cls.NODE_STOP_CLASS]);
-                if (this.getCheckedNodes().length === checkedNodes.length) {
+                if (this.getCheckedNodes(fieldName) === checkedNodes) {
                     this.dialogPopUp.buttons[0].buttonModel.disabled = true;
                     filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
                 }
@@ -575,19 +843,42 @@ export class FilterDialog {
             filterDialog.querySelector('.' + cls.OK_BUTTON_CLASS).setAttribute('disabled', 'disabled');
         }
     }
-    private getCheckedNodes(): { [key: string]: object }[] {
-        let checkeNodes: { [key: string]: object }[] =
-            this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
-                return item.checkedStatus;
-            });
-        return checkeNodes;
+    private getCheckedNodes(fieldName: string): number {
+        let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+        let nodeList: string[] = [];
+        let checkeNodes: { [key: string]: object }[] = [];
+        if (this.parent.dataType === 'olap' && engineModule &&
+            !engineModule.fieldList[fieldName].isHierarchy) {
+            nodeList = this.memberTreeView.getAllCheckedNodes();
+            return nodeList.length;
+        } else {
+            for (let item of this.parent.searchTreeItems) {
+                if (item.isSelected) {
+                    checkeNodes.push(item);
+                }
+            }
+            return checkeNodes.length;
+        }
     }
-    private getUnCheckedNodes(): { [key: string]: object }[] {
-        let unCheckeNodes: { [key: string]: object }[] =
-            this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
-                return !item.checkedStatus;
-            });
-        return unCheckeNodes;
+    private getUnCheckedNodes(fieldName: string): number {
+        let unCheckeNodes: { [key: string]: object }[] = [];
+        let nodeList: string[] = [];
+        let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
+        if (this.parent.dataType === 'olap' && engineModule && !engineModule.fieldList[fieldName].isHierarchy) {
+            nodeList = this.memberTreeView.getAllCheckedNodes();
+            return ((this.memberTreeView.fields.dataSource as { [key: string]: object }[]).length -
+                nodeList.length);
+        } else {
+            // unCheckeNodes = this.parent.searchTreeItems.filter((item: { [key: string]: object }) => {
+            //     return !item.isSelected;
+            // });
+            for (let item of this.parent.searchTreeItems) {
+                if (!item.isSelected) {
+                    unCheckeNodes.push(item);
+                }
+            }
+            return unCheckeNodes.length;
+        }
     }
     private isExcelFilter(fieldName: string): boolean {
         let isFilterField: boolean = false;
@@ -622,6 +913,12 @@ export class FilterDialog {
             if (this.tabObj && !this.tabObj.isDestroyed) {
                 this.tabObj.destroy();
             }
+        }
+        if (this.dropMenu && !this.dropMenu.isDestroyed) {
+            this.dropMenu.destroy();
+        }
+        if (document.getElementById(this.parent.parentID + '_LevelDiv-popup')) {
+            remove(document.getElementById(this.parent.parentID + '_LevelDiv-popup'));
         }
         this.dialogPopUp.close();
     }

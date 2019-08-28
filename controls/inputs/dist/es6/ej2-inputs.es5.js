@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -6,7 +6,6 @@ var CLASSNAMES = {
     RTL: 'e-rtl',
     DISABLE: 'e-disabled',
     INPUT: 'e-input',
-    TEXTAREA: 'e-multi-line-input',
     INPUTGROUP: 'e-input-group',
     FLOATINPUT: 'e-float-input',
     FLOATLINE: 'e-float-line',
@@ -75,9 +74,6 @@ var Input;
             for (var i = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
             }
-        }
-        if (!isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
-            addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
         inputObject = setPropertyValue(args, inputObject);
         return inputObject;
@@ -325,14 +321,12 @@ var Input;
         }
         if (!isNullOrUndefined(clearButton) && clearButton) {
             var parentElement = getParentNode(element);
-            if (!isNullOrUndefined(parentElement)) {
-                var button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-                if (element.value && parentElement.classList.contains('e-input-focus')) {
-                    removeClass([button], CLASSNAMES.CLEARICONHIDE);
-                }
-                else {
-                    addClass([button], CLASSNAMES.CLEARICONHIDE);
-                }
+            var button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
+            if (element.value && parentElement.classList.contains('e-input-focus')) {
+                removeClass([button], CLASSNAMES.CLEARICONHIDE);
+            }
+            else {
+                addClass([button], CLASSNAMES.CLEARICONHIDE);
             }
         }
         checkInputValue(floatLabelType, element);
@@ -737,11 +731,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             setValue('ej2_instances', ejInstance, this.element);
         }
         attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-        var localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder };
+        var localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: '' };
         this.l10n = new L10n('numerictextbox', localeText, this.locale);
-        if (this.l10n.getConstant('placeholder') !== '') {
-            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
-        }
         this.isValidState = true;
         this.inputStyle = null;
         this.inputName = null;
@@ -749,7 +740,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         this.initCultureInfo();
         this.initCultureFunc();
         this.updateHTMLAttrToElement();
-        this.checkAttributes(false);
+        this.checkAttributes(true);
         this.prevValue = this.value;
         if (this.formEle) {
             this.inputEleValue = this.value;
@@ -786,69 +777,67 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
-            this.renderComplete();
         }
     };
     NumericTextBox.prototype.checkAttributes = function (isDynamic) {
-        var attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
-            ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
+        var attributes$$1 = ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || !isDynamic) {
                             var enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, !isDynamic);
+                            this.setProperties({ enabled: enabled }, isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || !isDynamic) {
                             var readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, !isDynamic);
+                            this.setProperties({ readonly: readonly }, isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || !isDynamic) {
                             var setNumber = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
-                            this.setProperties(setValue(prop, setNumber, {}), !isDynamic);
+                            this.setProperties(setValue(prop, setNumber, {}), isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || !isDynamic) {
                             var minValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (minValue !== null && !isNaN(minValue)) {
-                                this.setProperties(setValue(prop, minValue, {}), !isDynamic);
+                                this.setProperties(setValue(prop, minValue, {}), isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || !isDynamic) {
                             var maxValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (maxValue !== null && !isNaN(maxValue)) {
-                                this.setProperties(setValue(prop, maxValue, {}), !isDynamic);
+                                this.setProperties(setValue(prop, maxValue, {}), isDynamic);
                             }
                         }
                         break;
                     case 'step':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || !isDynamic) {
                             var stepValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (stepValue !== null && !isNaN(stepValue)) {
-                                this.setProperties(setValue(prop, stepValue, {}), !isDynamic);
+                                this.setProperties(setValue(prop, stepValue, {}), isDynamic);
                             }
                         }
                         break;
@@ -912,32 +901,28 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     NumericTextBox.prototype.updateHTMLAttrToElement = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var pro = _a[_i];
-                if (wrapperAttributes.indexOf(pro) < 0) {
-                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
-                }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var pro = _a[_i];
+            if (wrapperAttributes.indexOf(pro) < 0) {
+                this.element.setAttribute(pro, this.htmlAttributes[pro]);
             }
         }
     };
     NumericTextBox.prototype.updateHTMLAttrToWrapper = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var pro = _a[_i];
-                if (wrapperAttributes.indexOf(pro) > -1) {
-                    if (pro === 'class') {
-                        addClass([this.container], this.htmlAttributes[pro].split(' '));
-                    }
-                    else if (pro === 'style') {
-                        var numericStyle = this.container.getAttribute(pro);
-                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
-                            this.htmlAttributes[pro];
-                        this.container.setAttribute(pro, numericStyle);
-                    }
-                    else {
-                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
-                    }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var pro = _a[_i];
+            if (wrapperAttributes.indexOf(pro) > -1) {
+                if (pro === 'class') {
+                    addClass([this.container], this.htmlAttributes[pro].split(' '));
+                }
+                else if (pro === 'style') {
+                    var numericStyle = this.container.getAttribute(pro);
+                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                    this.container.setAttribute(pro, numericStyle);
+                }
+                else {
+                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
                 }
             }
         }
@@ -1114,9 +1099,6 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     NumericTextBox.prototype.pasteHandler = function () {
         var _this = this;
-        if (!this.enabled || this.readonly) {
-            return;
-        }
         var beforeUpdate = this.element.value;
         setTimeout(function () {
             if (!_this.numericRegex().test(_this.element.value)) {
@@ -1201,9 +1183,6 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         });
     };
     NumericTextBox.prototype.keyUpHandler = function (event) {
-        if (!this.enabled || this.readonly) {
-            return;
-        }
         var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         if (!iOS && Browser.isDevice) {
             this.preventHandler();
@@ -1221,9 +1200,6 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     
     NumericTextBox.prototype.inputHandler = function (event) {
-        if (!this.enabled || this.readonly) {
-            return;
-        }
         var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         var fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
@@ -1377,9 +1353,6 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     NumericTextBox.prototype.keyPressHandler = function (event) {
-        if (!this.enabled || this.readonly) {
-            return true;
-        }
         if (!Browser.isDevice && Browser.info.version === '11.0' && event.keyCode === 13) {
             var parsedInput = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             this.updateValue(parsedInput, event);
@@ -1450,15 +1423,10 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             var formatValue_1 = this.formatNumber();
             this.setElementValue(formatValue_1);
             if (!this.isPrevFocused) {
-                if (!Browser.isDevice && Browser.info.version === '11.0') {
-                    this.element.setSelectionRange(0, formatValue_1.length);
-                }
-                else {
-                    var delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
-                    setTimeout(function () {
-                        _this.element.setSelectionRange(0, formatValue_1.length);
-                    }, delay);
-                }
+                var delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
+                setTimeout(function () {
+                    _this.element.setSelectionRange(0, formatValue_1.length);
+                }, delay);
             }
         }
         if (!Browser.isDevice) {
@@ -1470,9 +1438,6 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.blurEventArgs = { event: event, value: this.value, container: this.container };
         this.trigger('blur', this.blurEventArgs);
-        if (!this.enabled || this.readonly) {
-            return;
-        }
         if (this.isPrevFocused) {
             event.preventDefault();
             if (Browser.isDevice) {
@@ -1693,7 +1658,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkAttributes(true);
+                    this.checkAttributes(false);
                     break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);
@@ -2151,7 +2116,7 @@ function maskInputBlurHandler(event) {
 }
 function maskInputPasteHandler(event) {
     var _this = this;
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         var sIndex_1 = this.element.selectionStart;
         var eIndex_1 = this.element.selectionEnd;
         var oldValue_1 = this.element.value;
@@ -2190,7 +2155,7 @@ function maskInputPasteHandler(event) {
 }
 function maskInputCutHandler(event) {
     var _this = this;
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         var preValue_1 = this.element.value;
         var sIndex_2 = this.element.selectionStart;
         var eIndex = this.element.selectionEnd;
@@ -2253,7 +2218,7 @@ function maskInputHandler(event) {
     }
 }
 function maskInputKeyDownHandler(event) {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         if (event.keyCode !== 229) {
             if (event.ctrlKey && (event.keyCode === 89 || event.keyCode === 90)) {
                 event.preventDefault();
@@ -2423,7 +2388,7 @@ function removeMaskInputValues(event) {
     }
 }
 function maskInputKeyPressHandler(event) {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         var oldValue = this.element.value;
         if ((!event.ctrlKey) || (event.ctrlKey && event.code !== 'KeyA' && event.code !== 'KeyY'
             && event.code !== 'KeyZ' && event.code !== 'KeyX' && event.code !== 'KeyC' && event.code !== 'KeyV')) {
@@ -2475,7 +2440,7 @@ function triggerMaskChangeEvent(event, oldValue) {
     attributes(this.element, { 'aria-valuenow': this.element.value });
 }
 function maskInputKeyUpHandler(event) {
-    if (this.mask && !this.readonly) {
+    if (this.mask) {
         var collec = void 0;
         if (!this.maskKeyPress && event.keyCode === 229) {
             var oldEventVal = void 0;
@@ -2988,7 +2953,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        this.checkHtmlAttributes(false);
+        this.checkHtmlAttributes(true);
         if (this.formElement) {
             this.initInputValue = this.value;
         }
@@ -3027,36 +2992,31 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
-            this.renderComplete();
         }
     };
     MaskedTextBox.prototype.updateHTMLAttrToElement = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var key = _a[_i];
-                if (wrapperAttr.indexOf(key) < 0) {
-                    this.element.setAttribute(key, this.htmlAttributes[key]);
-                }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (wrapperAttr.indexOf(key) < 0) {
+                this.element.setAttribute(key, this.htmlAttributes[key]);
             }
         }
     };
     MaskedTextBox.prototype.updateHTMLAttrToWrapper = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var key = _a[_i];
-                if (wrapperAttr.indexOf(key) > -1) {
-                    if (key === 'class') {
-                        addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
-                    }
-                    else if (key === 'style') {
-                        var maskStyle = this.inputObj.container.getAttribute(key);
-                        maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
-                            this.htmlAttributes[key];
-                        this.inputObj.container.setAttribute(key, maskStyle);
-                    }
-                    else {
-                        this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
-                    }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (wrapperAttr.indexOf(key) > -1) {
+                if (key === 'class') {
+                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    var maskStyle = this.inputObj.container.getAttribute(key);
+                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.inputObj.container.setAttribute(key, maskStyle);
+                }
+                else {
+                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
         }
@@ -3102,38 +3062,29 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MaskedTextBox.prototype.checkHtmlAttributes = function (isDynamic) {
-        var attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
-            : ['placeholder', 'disabled', 'value', 'readonly'];
+        var attributes$$1 = ['placeholder', 'disabled', 'value'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var key = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || !isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || !isDynamic) {
                             var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, !isDynamic);
+                            this.setProperties({ enabled: enabled }, isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
-                            this.setProperties({ value: this.element.value }, !isDynamic);
-                        }
-                        break;
-                    case 'readonly':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
-                            var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
-                                || this.element.getAttribute(key) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || !isDynamic) {
+                            this.setProperties({ value: this.element.value }, isDynamic);
                         }
                         break;
                 }
@@ -3148,7 +3099,6 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                 enableRtl: this.enableRtl,
                 cssClass: this.cssClass,
                 enabled: this.enabled,
-                readonly: this.readonly,
                 placeholder: this.placeholder,
                 showClearButton: this.showClearButton
             }
@@ -3181,9 +3131,6 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
                     break;
-                case 'readonly':
-                    Input.setReadonly(newProp.readonly, this.element);
-                    break;
                 case 'enableRtl':
                     Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);
                     break;
@@ -3203,7 +3150,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHtmlAttributes(true);
+                    this.checkHtmlAttributes(false);
                     break;
                 case 'mask':
                     var strippedValue_1 = this.value;
@@ -3302,9 +3249,6 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(true)
     ], MaskedTextBox.prototype, "enabled", void 0);
-    __decorate$1([
-        Property(false)
-    ], MaskedTextBox.prototype, "readonly", void 0);
     __decorate$1([
         Property(false)
     ], MaskedTextBox.prototype, "showClearButton", void 0);
@@ -3637,7 +3581,6 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         this.initRender();
         this.wireEvents();
         this.setZindex();
-        this.renderComplete();
     };
     Slider.prototype.initialize = function () {
         addClass([this.element], classNames.root);
@@ -4328,7 +4271,6 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
         return tickCount;
     };
-    // tslint:disable-next-line:max-func-body-length
     Slider.prototype.renderScale = function () {
         var orien = this.orientation === 'Vertical' ? 'v' : 'h';
         this.noOfDecimals = this.numberOfDecimals(this.step);
@@ -4403,12 +4345,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 else {
                     var largestep = this.fractionalToInteger(this.ticks.largeStep);
                     var startValue = this.fractionalToInteger(start);
-                    if (orien === 'h') {
-                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
-                    }
-                    else {
-                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
-                    }
+                    islargeTick = ((startValue - min) % largestep === 0) ? true : false;
                 }
             }
             if (islargeTick) {
@@ -6883,41 +6820,6 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
 var CONTROL_WRAPPER = 'e-upload';
 var INPUT_WRAPPER = 'e-file-select';
 var DROP_AREA = 'e-file-drop';
@@ -7030,7 +6932,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         _this.fileList = [];
         _this.filesData = [];
         _this.uploadedFilesData = [];
-        _this.base64String = [];
         _this.isForm = false;
         _this.allTypes = false;
         _this.pausedData = [];
@@ -7080,7 +6981,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHTMLAttributes(true);
+                    this.checkHTMLAttributes(false);
                     break;
                 case 'files':
                     this.renderPreLoadFiles();
@@ -7187,7 +7088,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.updateHTMLAttrToElement();
-        this.checkHTMLAttributes(false);
+        this.checkHTMLAttributes(true);
         var parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -7277,7 +7178,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.renderPreLoadFiles();
         this.setControlStatus();
         this.setCSSClass();
-        this.renderComplete();
     };
     Uploader.prototype.renderBrowseButton = function () {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
@@ -7449,32 +7349,28 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.bindDropEvents();
     };
     Uploader.prototype.updateHTMLAttrToElement = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var pro = _a[_i];
-                if (wrapperAttr$1.indexOf(pro) < 0) {
-                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
-                }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var pro = _a[_i];
+            if (wrapperAttr$1.indexOf(pro) < 0) {
+                this.element.setAttribute(pro, this.htmlAttributes[pro]);
             }
         }
     };
     Uploader.prototype.updateHTMLAttrToWrapper = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var pro = _a[_i];
-                if (wrapperAttr$1.indexOf(pro) > -1) {
-                    if (pro === 'class') {
-                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
-                    }
-                    else if (pro === 'style') {
-                        var uploadStyle = this.uploadWrapper.getAttribute(pro);
-                        uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
-                            this.htmlAttributes[pro];
-                        this.uploadWrapper.setAttribute(pro, uploadStyle);
-                    }
-                    else {
-                        this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
-                    }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var pro = _a[_i];
+            if (wrapperAttr$1.indexOf(pro) > -1) {
+                if (pro === 'class') {
+                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                }
+                else if (pro === 'style') {
+                    var uploadStyle = this.uploadWrapper.getAttribute(pro);
+                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                    this.uploadWrapper.setAttribute(pro, uploadStyle);
+                }
+                else {
+                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
                 }
             }
         }
@@ -7810,22 +7706,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    /* istanbul ignore next */
-    Uploader.prototype.updateCustomheader = function (request, currentRequest) {
-        if (currentRequest.length > 0 && currentRequest[0]) {
-            var _loop_2 = function (i) {
-                var data = currentRequest[i];
-                // tslint:disable-next-line
-                var value = Object.keys(data).map(function (e) {
-                    return data[e];
-                });
-                request.setRequestHeader(Object.keys(data)[0], value);
-            };
-            for (var i = 0; i < currentRequest.length; i++) {
-                _loop_2(i);
-            }
-        }
-    };
     Uploader.prototype.removeCompleted = function (e, files, customTemplate) {
         var response = e && e.currentTarget ? this.getResponse(e) : null;
         var args = {
@@ -7872,7 +7752,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (!validDirectoryUpload) {
             return;
         }
-        var _loop_3 = function (i) {
+        var _loop_2 = function (i) {
             // tslint:disable-next-line
             var item = items[i].webkitGetAsEntry();
             if (item.isFile) {
@@ -7890,7 +7770,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         var this_1 = this;
         for (var i = 0; i < items.length; i++) {
-            _loop_3(i);
+            _loop_2(i);
         }
     };
     /* istanbul ignore next */
@@ -7910,7 +7790,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         if (typeof (item) === 'boolean') {
             var files_3 = [];
-            var _loop_4 = function (i) {
+            var _loop_3 = function (i) {
                 this_2.filesEntries[i].file(function (fileObj) {
                     var path = _this.filesEntries[i].fullPath;
                     files_3.push({ 'path': path, 'file': fileObj });
@@ -7918,7 +7798,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             };
             var this_2 = this;
             for (var i = 0; i < this.filesEntries.length; i++) {
-                _loop_4(i);
+                _loop_3(i);
             }
             this.renderSelectedFiles(event, files_3, true);
         }
@@ -7952,7 +7832,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 this.getFilesFromFolder(args);
             }
             else {
-                var files = this.sortFilesList = args.dataTransfer.files;
+                var files = args.dataTransfer.files;
                 this.element.files = files;
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
                 this.renderSelectedFiles(args, targetFiles);
@@ -7963,137 +7843,97 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.renderSelectedFiles(args, targetFiles);
         }
     };
-    /* istanbul ignore next */
-    Uploader.prototype.getBase64 = function (file) {
-        return new Promise(function (resolve, reject) {
-            var fileReader = new FileReader();
-            fileReader.readAsDataURL(file);
-            fileReader.onload = function () { return resolve(fileReader.result); };
-            fileReader.onerror = function (error) { return reject(error); };
-        });
-    };
-    /* istanbul ignore next */
     Uploader.prototype.renderSelectedFiles = function (args, 
     // tslint:disable-next-line
     targetFiles, directory, paste) {
-        return __awaiter(this, void 0, void 0, function () {
-            var eventArgs, fileData, i, file, data, fileName, fileDetails;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        eventArgs = {
-                            event: args,
-                            cancel: false,
-                            filesData: [],
-                            isModified: false,
-                            modifiedFilesData: [],
-                            progressInterval: '',
-                            isCanceled: false,
-                            currentRequest: null,
-                            customFormData: null
-                        };
-                        /* istanbul ignore next */
-                        if (targetFiles.length < 1) {
-                            eventArgs.isCanceled = true;
-                            this.trigger('selected', eventArgs);
-                            return [2 /*return*/];
+        var _this = this;
+        var eventArgs = {
+            event: args,
+            cancel: false,
+            filesData: [],
+            isModified: false,
+            modifiedFilesData: [],
+            progressInterval: '',
+            isCanceled: false
+        };
+        /* istanbul ignore next */
+        if (targetFiles.length < 1) {
+            eventArgs.isCanceled = true;
+            this.trigger('selected', eventArgs);
+            return;
+        }
+        this.flag = true;
+        var fileData = [];
+        if (!this.multiple) {
+            this.clearData(true);
+            targetFiles = [targetFiles[0]];
+        }
+        for (var i = 0; i < targetFiles.length; i++) {
+            var file = directory ? targetFiles[i].file : targetFiles[i];
+            var fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
+                getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
+                this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
+            var fileDetails = {
+                name: fileName,
+                rawFile: file,
+                size: file.size,
+                status: this.localizedTexts('readyToUploadMessage'),
+                type: this.getFileType(file.name),
+                validationMessages: this.validatedFileSize(file.size),
+                statusCode: '1'
+            };
+            /* istanbul ignore next */
+            if (paste) {
+                fileDetails.fileSource = 'paste';
+            }
+            fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
+            if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
+                fileDetails.statusCode = '0';
+                this.checkActionComplete(true);
+            }
+            fileData.push(fileDetails);
+        }
+        eventArgs.filesData = fileData;
+        if (this.allowedExtensions.indexOf('*') > -1) {
+            this.allTypes = true;
+        }
+        if (!this.allTypes) {
+            fileData = this.checkExtension(fileData);
+        }
+        this.trigger('selected', eventArgs, function (eventArgs) {
+            if (!eventArgs.cancel) {
+                _this.selectedFiles = fileData;
+                _this.btnTabIndex = _this.disableKeyboardNavigation ? '-1' : '0';
+                if (_this.showFileList) {
+                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                        var dataFiles = _this.allTypes ? eventArgs.modifiedFilesData :
+                            _this.checkExtension(eventArgs.modifiedFilesData);
+                        _this.updateSortedFileList(dataFiles);
+                        _this.filesData = dataFiles;
+                        if (!_this.isForm || _this.allowUpload()) {
+                            _this.checkAutoUpload(dataFiles);
                         }
-                        this.flag = true;
-                        fileData = [];
-                        if (!this.multiple) {
-                            this.clearData(true);
-                            targetFiles = [targetFiles[0]];
+                    }
+                    else {
+                        _this.createFileList(fileData);
+                        _this.filesData = _this.filesData.concat(fileData);
+                        if (!_this.isForm || _this.allowUpload()) {
+                            _this.checkAutoUpload(fileData);
                         }
-                        i = 0;
-                        _a.label = 1;
-                    case 1:
-                        if (!(i < targetFiles.length)) return [3 /*break*/, 5];
-                        file = directory ? targetFiles[i].file : targetFiles[i];
-                        if (!isBlazor()) return [3 /*break*/, 3];
-                        return [4 /*yield*/, this.getBase64(file)];
-                    case 2:
-                        data = _a.sent();
-                        this.base64String.push(data);
-                        _a.label = 3;
-                    case 3:
-                        fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
-                            getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
-                            this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
-                        fileDetails = {
-                            name: fileName,
-                            rawFile: file,
-                            size: file.size,
-                            status: this.localizedTexts('readyToUploadMessage'),
-                            type: this.getFileType(file.name),
-                            validationMessages: this.validatedFileSize(file.size),
-                            statusCode: '1'
-                        };
-                        /* istanbul ignore next */
-                        if (paste) {
-                            fileDetails.fileSource = 'paste';
-                        }
-                        fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
-                            fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
-                        if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
-                            fileDetails.statusCode = '0';
-                            this.checkActionComplete(true);
-                        }
-                        fileData.push(fileDetails);
-                        _a.label = 4;
-                    case 4:
-                        i++;
-                        return [3 /*break*/, 1];
-                    case 5:
-                        eventArgs.filesData = fileData;
-                        if (this.allowedExtensions.indexOf('*') > -1) {
-                            this.allTypes = true;
-                        }
-                        if (!this.allTypes) {
-                            fileData = this.checkExtension(fileData);
-                        }
-                        this.trigger('selected', eventArgs, function (eventArgs) {
-                            if (!eventArgs.cancel) {
-                                /* istanbul ignore next */
-                                if (isBlazor()) {
-                                    _this.currentRequestHeader = eventArgs.currentRequest;
-                                    _this.customFormDatas = eventArgs.customFormData;
-                                }
-                                _this.selectedFiles = fileData;
-                                _this.btnTabIndex = _this.disableKeyboardNavigation ? '-1' : '0';
-                                if (_this.showFileList) {
-                                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                                        var dataFiles = _this.allTypes ? eventArgs.modifiedFilesData :
-                                            _this.checkExtension(eventArgs.modifiedFilesData);
-                                        _this.updateSortedFileList(dataFiles);
-                                        _this.filesData = dataFiles;
-                                        if (!_this.isForm || _this.allowUpload()) {
-                                            _this.checkAutoUpload(dataFiles);
-                                        }
-                                    }
-                                    else {
-                                        _this.createFileList(fileData);
-                                        _this.filesData = _this.filesData.concat(fileData);
-                                        if (!_this.isForm || _this.allowUpload()) {
-                                            _this.checkAutoUpload(fileData);
-                                        }
-                                    }
-                                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                                        _this.progressInterval = eventArgs.progressInterval;
-                                    }
-                                }
-                                else {
-                                    _this.filesData = _this.filesData.concat(fileData);
-                                    if (_this.autoUpload) {
-                                        _this.upload(_this.filesData, true);
-                                    }
-                                }
-                                _this.raiseActionComplete();
-                            }
-                        });
-                        return [2 /*return*/];
+                    }
+                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                        _this.progressInterval = eventArgs.progressInterval;
+                    }
                 }
-            });
+                else {
+                    _this.filesData = _this.filesData.concat(fileData);
+                    if (_this.autoUpload) {
+                        _this.upload(_this.filesData, true);
+                    }
+                }
+                _this.raiseActionComplete();
+            }
         });
     };
     Uploader.prototype.allowUpload = function () {
@@ -8206,9 +8046,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var listItem = fileData_1[_i];
             var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            var fromElements = [].slice.call(this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
+            var fromElements = [].slice.call(this.uploadTemplateFn(listItem));
             var index = fileData.indexOf(listItem);
             append(fromElements, liElement);
+            updateBlazorTemplate(this.element.id + 'Template', 'Template');
             var eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -8226,7 +8067,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
-        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
     };
     Uploader.prototype.createParentUL = function () {
         if (isNullOrUndefined(this.listParent)) {
@@ -8746,8 +8586,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.checkHTMLAttributes = function (isDynamic) {
-        var attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
-            ['accept', 'multiple', 'disabled'];
+        var attributes$$1 = ['accept', 'multiple', 'disabled'];
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
@@ -8755,44 +8594,43 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                     case 'accept':
                         // tslint:disable-next-line
                         if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined))
-                            || isDynamic) {
-                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, !isDynamic);
+                            || !isDynamic) {
+                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, isDynamic);
                             this.initialAttr.accept = this.allowedExtensions;
                         }
                         break;
                     case 'multiple':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || !isDynamic) {
                             var isMutiple = this.element.getAttribute(prop) === 'multiple' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ multiple: isMutiple }, !isDynamic);
+                            this.setProperties({ multiple: isMutiple }, isDynamic);
                             this.initialAttr.multiple = true;
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || !isDynamic) {
                             var isDisabled = this.element.getAttribute(prop) === 'disabled' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: isDisabled }, !isDynamic);
+                            this.setProperties({ enabled: isDisabled }, isDynamic);
                             this.initialAttr.disabled = true;
                         }
                 }
             }
         }
     };
-    Uploader.prototype.chunkUpload = function (file, custom, fileIndex) {
+    Uploader.prototype.chunkUpload = function (file, custom) {
         var start = 0;
         var end = Math.min(this.asyncSettings.chunkSize, file.size);
         var index = 0;
         var blob = file.rawFile.slice(start, end);
         var metaData = { chunkIndex: index, blob: blob, file: file, start: start, end: end, retryCount: 0, request: null };
-        this.sendRequest(file, metaData, custom, fileIndex);
+        this.sendRequest(file, metaData, custom);
     };
-    Uploader.prototype.sendRequest = function (file, metaData, custom, fileIndex) {
+    Uploader.prototype.sendRequest = function (file, metaData, custom) {
         var _this = this;
         var formData = new FormData();
-        var cloneFile;
         var blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
@@ -8816,31 +8654,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         ajax.beforeSend = function (e) {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
-            /* istanbul ignore next */
-            if (isBlazor()) {
-                cloneFile = new File([file.rawFile], file.name);
-                eventArgs.fileData.rawFile = fileIndex ? _this.base64String[fileIndex] : null;
-                if (_this.currentRequestHeader) {
-                    _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
-                }
-                if (_this.customFormDatas) {
-                    _this.updateFormData(formData, _this.customFormDatas);
-                }
-            }
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
                 _this.trigger('uploading', eventArgs, function (eventArgs) {
-                    if (isBlazor()) {
-                        eventArgs.fileData.rawFile = cloneFile;
-                    }
                     _this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
             else {
                 _this.trigger('chunkUploading', eventArgs, function (eventArgs) {
-                    if (isBlazor()) {
-                        eventArgs.fileData.rawFile = cloneFile;
-                    }
                     _this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
@@ -9273,7 +9094,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     /* istanbul ignore next */
     Uploader.prototype.sortFileList = function (filesData) {
-        filesData = filesData ? filesData : this.sortFilesList;
         var files = filesData;
         var fileNames = [];
         for (var i = 0; i < files.length; i++) {
@@ -9327,7 +9147,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.upload = function (files, custom) {
-        files = files ? files : this.filesData;
         var uploadFiles = this.validateFileType(files);
         this.uploadFiles(uploadFiles, custom);
     };
@@ -9344,7 +9163,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.uploadFiles = function (files, custom) {
         var _this = this;
         var selectedFiles = [];
-        var cloneFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
             return;
         }
@@ -9362,38 +9180,18 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             selectedFiles = files;
         }
         var chunkEnabled = this.checkChunkUpload();
-        var _loop_5 = function (i) {
+        var _loop_4 = function (i) {
             var ajax = new Ajax(this_3.asyncSettings.saveUrl, 'POST', true, null);
             ajax.emitError = false;
-            var getFileData = void 0;
-            /* istanbul ignore next */
-            if (isBlazor()) {
-                getFileData = selectedFiles.slice(0);
-                cloneFiles.push(new File([getFileData[i].rawFile], getFileData[i].name));
-            }
             var eventArgs = {
-                fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
+                fileData: selectedFiles[i],
                 customFormData: [],
                 cancel: false
             };
             var formData = new FormData();
             ajax.beforeSend = function (e) {
                 eventArgs.currentRequest = ajax.httpRequest;
-                /* istanbul ignore next */
-                if (isBlazor()) {
-                    eventArgs.fileData.rawFile = _this.base64String[i];
-                    if (_this.currentRequestHeader) {
-                        _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
-                    }
-                    if (_this.customFormDatas) {
-                        _this.updateFormData(formData, _this.customFormDatas);
-                    }
-                }
                 _this.trigger('uploading', eventArgs, function (eventArgs) {
-                    /* istanbul ignore next */
-                    if (isBlazor()) {
-                        selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
-                    }
                     if (eventArgs.cancel) {
                         _this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
                     }
@@ -9404,26 +9202,13 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 var name_4 = this_3.element.getAttribute('name');
                 formData.append(name_4, selectedFiles[i].rawFile, selectedFiles[i].name);
                 if (chunkEnabled && selectedFiles[i].size > this_3.asyncSettings.chunkSize) {
-                    this_3.chunkUpload(selectedFiles[i], custom, i);
+                    this_3.chunkUpload(selectedFiles[i], custom);
                 }
                 else {
-                    ajax.onLoad = function (e) {
-                        if (eventArgs.cancel && isBlazor()) {
-                            return {};
-                        }
-                        else {
-                            _this.uploadComplete(e, selectedFiles[i], custom);
-                            return {};
-                        }
-                    };
+                    ajax.onLoad = function (e) { _this.uploadComplete(e, selectedFiles[i], custom); return {}; };
                     ajax.onUploadProgress = function (e) {
-                        if (eventArgs.cancel && isBlazor()) {
-                            return {};
-                        }
-                        else {
-                            _this.uploadInProgress(e, selectedFiles[i], custom, ajax);
-                            return {};
-                        }
+                        _this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                        return {};
                     };
                     /* istanbul ignore next */
                     ajax.onError = function (e) { _this.uploadFailed(e, selectedFiles[i]); return {}; };
@@ -9433,7 +9218,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         };
         var this_3 = this;
         for (var i = 0; i < selectedFiles.length; i++) {
-            _loop_5(i);
+            _loop_4(i);
         }
     };
     /**
@@ -9479,7 +9264,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             eventArgs.filesData = removeFiles;
             var removeUrl = this.asyncSettings.removeUrl;
             var validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
-            var _loop_6 = function (files) {
+            var _loop_5 = function (files) {
                 index = this_4.filesData.indexOf(files);
                 if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
                     this_4.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
@@ -9509,7 +9294,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             var this_4 = this;
             for (var _i = 0, removeFiles_1 = removeFiles; _i < removeFiles_1.length; _i++) {
                 var files = removeFiles_1[_i];
-                _loop_6(files);
+                _loop_5(files);
             }
         }
     };
@@ -9543,15 +9328,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns FileInfo[]
      */
     Uploader.prototype.getFilesData = function () {
-        if (!isBlazor()) {
-            return this.filesData;
-        }
-        else {
-            for (var i = 0; i < this.filesData.length; i++) {
-                this.filesData[i].rawFile = this.base64String[i];
-            }
-            return this.filesData;
-        }
+        return this.filesData;
     };
     /**
      * Pauses the in-progress chunked upload based on the file data.
@@ -9560,7 +9337,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.pause = function (fileData, custom) {
-        fileData = fileData ? fileData : this.filesData;
         var fileDataFiles = this.validateFileType(fileData);
         this.pauseUploading(fileDataFiles, custom);
     };
@@ -9589,7 +9365,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.resume = function (fileData, custom) {
-        fileData = fileData ? fileData : this.filesData;
         var fileDataFiles = this.validateFileType(fileData);
         this.resumeFiles(fileDataFiles, custom);
     };
@@ -9608,7 +9383,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.retry = function (fileData, fromcanceledStage, custom) {
-        fileData = fileData ? fileData : this.filesData;
         var fileDataFiles = this.validateFileType(fileData);
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     };
@@ -9636,7 +9410,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.cancel = function (fileData) {
-        fileData = fileData ? fileData : this.filesData;
         var cancelingFiles = this.validateFileType(fileData);
         this.cancelUpload(cancelingFiles);
     };
@@ -9889,7 +9662,6 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         if (!this.enableOpacity) {
             addClass([this.container.parentElement], HIDEOPACITY);
         }
-        this.renderComplete();
     };
     ColorPicker.prototype.initWrapper = function () {
         var wrapper = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
@@ -9952,8 +9724,8 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             target: this.container,
             disabled: this.disabled,
             enableRtl: this.enableRtl,
-            open: this.onOpen.bind(this),
             beforeOpen: this.beforeOpenFn.bind(this),
+            open: this.onOpen.bind(this),
             beforeClose: this.beforePopupClose.bind(this),
             click: function (args) {
                 _this.trigger('change', {
@@ -11409,7 +11181,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
                 this.element.value = this.roundValue(value).slice(0, 7);
                 var preview = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element);
                 if (preview) {
-                    preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value));
+                    preview.style.backgroundColor = newProp.value;
                 }
             }
             else {
@@ -11642,6 +11414,8 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         _this.isHiddenInput = false;
         _this.isForm = false;
         _this.inputPreviousValue = null;
+        _this.isVue = false;
+        _this.isReact = false;
         _this.textboxOptions = options;
         return _this;
     }
@@ -11673,12 +11447,13 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     }
                     this.inputPreviousValue = this.respectiveElement.value;
                     /* istanbul ignore next */
-                    if (this.isAngular && this.preventChange === true) {
+                    if ((this.isAngular || this.isVue) && this.preventChange === true) {
                         this.previousValue = this.value;
                         this.preventChange = false;
                     }
-                    else if (isNullOrUndefined(this.isAngular) || !this.isAngular
-                        || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
+                    else if ((isNullOrUndefined(this.isAngular) || isNullOrUndefined(this.isVue)) || (!this.isAngular || !this.isVue)
+                        || ((this.isAngular || this.isVue) && !this.preventChange) || ((this.isAngular || this.isVue)
+                        && isNullOrUndefined(this.preventChange))) {
                         this.raiseChangeEvent();
                     }
                     break;
@@ -11686,7 +11461,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
                     var attributes$$1 = this.element.attributes;
-                    this.checkAttributes(true);
+                    this.checkAttributes(attributes$$1, false);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -11759,7 +11534,8 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        this.checkAttributes(false);
+        var attributes$$1 = this.element.attributes;
+        this.checkAttributes(attributes$$1, true);
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
@@ -11795,48 +11571,44 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    TextBox.prototype.checkAttributes = function (isDynamic) {
-        var attrs = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
-            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
-        for (var _i = 0, attrs_1 = attrs; _i < attrs_1.length; _i++) {
-            var key = attrs_1[_i];
-            if (!isNullOrUndefined(this.element.getAttribute(key))) {
-                switch (key) {
-                    case 'disabled':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
-                            var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
-                                this.element.getAttribute(key) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, !isDynamic);
-                        }
-                        break;
-                    case 'readonly':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
-                            var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
-                                || this.element.getAttribute(key) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, !isDynamic);
-                        }
-                        break;
-                    case 'placeholder':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
-                        }
-                        break;
-                    case 'value':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
-                            this.setProperties({ value: this.element.value }, !isDynamic);
-                        }
-                        break;
-                    case 'type':
-                        // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
-                            this.setProperties({ type: this.element.type }, !isDynamic);
-                        }
-                        break;
-                }
+    TextBox.prototype.checkAttributes = function (attrs, isDynamic) {
+        for (var i = 0; i < attrs.length; i++) {
+            var key = attrs[i].nodeName;
+            switch (key) {
+                case 'disabled':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || !isDynamic) {
+                        var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                            this.element.getAttribute(key) === 'true' ? false : true;
+                        this.setProperties({ enabled: enabled }, isDynamic);
+                    }
+                    break;
+                case 'readonly':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || !isDynamic) {
+                        var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                            || this.element.getAttribute(key) === 'true' ? true : false;
+                        this.setProperties({ readonly: readonly }, isDynamic);
+                    }
+                    break;
+                case 'placeholder':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || !isDynamic) {
+                        this.setProperties({ placeholder: attrs[i].nodeValue }, isDynamic);
+                    }
+                    break;
+                case 'value':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || !isDynamic) {
+                        this.setProperties({ value: attrs[i].nodeValue }, isDynamic);
+                    }
+                    break;
+                case 'type':
+                    // tslint:disable-next-line
+                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || !isDynamic) {
+                        this.setProperties({ type: attrs[i].nodeValue }, isDynamic);
+                    }
+                    break;
             }
         }
     };
@@ -11875,36 +11647,31 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
-        this.renderComplete();
     };
     TextBox.prototype.updateHTMLAttrToWrapper = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var key = _a[_i];
-                if (containerAttr.indexOf(key) > -1) {
-                    if (key === 'class') {
-                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
-                    }
-                    else if (key === 'style') {
-                        var setStyle = this.textboxWrapper.container.getAttribute(key);
-                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                            this.htmlAttributes[key];
-                        this.textboxWrapper.container.setAttribute(key, setStyle);
-                    }
-                    else {
-                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
-                    }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (containerAttr.indexOf(key) > -1) {
+                if (key === 'class') {
+                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                }
+                else if (key === 'style') {
+                    var setStyle = this.textboxWrapper.container.getAttribute(key);
+                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                    this.textboxWrapper.container.setAttribute(key, setStyle);
+                }
+                else {
+                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
         }
     };
     TextBox.prototype.updateHTMLAttrToElement = function () {
-        if (!isNullOrUndefined(this.htmlAttributes)) {
-            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
-                var key = _a[_i];
-                if (containerAttr.indexOf(key) < 0) {
-                    this.element.setAttribute(key, this.htmlAttributes[key]);
-                }
+        for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (containerAttr.indexOf(key) < 0) {
+                this.element.setAttribute(key, this.htmlAttributes[key]);
             }
         }
     };
@@ -11983,6 +11750,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         /* istanbul ignore next */
         if (this.isAngular) {
             textboxObj.localChange({ value: this.respectiveElement.value });
+            this.preventChange = true;
+        }
+        if (this.isVue) {
             this.preventChange = true;
         }
         this.trigger('input', eventArgs);

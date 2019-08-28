@@ -404,7 +404,6 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     }
 
     private setDisabled(): void {

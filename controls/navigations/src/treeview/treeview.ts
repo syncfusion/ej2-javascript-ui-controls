@@ -3218,6 +3218,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
+        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     }
@@ -4876,44 +4877,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getAllCheckedNodes(): string[] {
         let checkNodes: string[] = this.checkedNodes;
-        let newCheck: string[] = [];
-        let i: number = 0;
-        let id: string = this.fields.id;
-        for (i; i < this.treeData.length; i++) {
-            //Checks if isChecked is enabled while node is not loaded in DOM
-            let checked: number = null;
-            let childNode: { [key: string]: Object; }[] = null;
-            let isLoaded: Element = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
-            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
-                //Checks if isChecked is enabled for parent
-                if (this.getTreeData()[i][this.fields.isChecked] === true
-                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
-                    newCheck.push(this.treeData[i][id].toString());
-                    checked = 2;
-                }
-                //Checks for child nodes with isChecked enabled
-                if (checked !== 2) { checked = 1; }
-                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
-                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
-            }
-        }
-        i = 0;
-        //Gets checked nodes based on UI interaction
-        while (i < checkNodes.length) {
-            if (newCheck.indexOf(checkNodes[i]) !== -1) {
-                i++;
-                continue;
-            }
-            newCheck.push(checkNodes[i]);
-            //Gets all child which is not loaded while parent is checked
-            let parentNode: Element = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
-            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
-                let child: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkNodes[i].toString());
-                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
-            }
-            i++;
-        }
-        return newCheck;
+        return checkNodes;
     }
 
     /**

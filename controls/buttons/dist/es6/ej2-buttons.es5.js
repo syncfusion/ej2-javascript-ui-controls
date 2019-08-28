@@ -173,7 +173,6 @@ var Button = /** @__PURE__ @class */ (function (_super) {
      */
     Button.prototype.render = function () {
         this.initialize();
-        this.renderComplete();
     };
     Button.prototype.initialize = function () {
         if (this.cssClass) {
@@ -762,7 +761,6 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     };
     CheckBox.prototype.setDisabled = function () {
         var wrapper = this.getWrapper();
@@ -923,7 +921,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
      */
     function RadioButton(options, element) {
         var _this = _super.call(this, options, element) || this;
-        _this.isFocused = false;
+        _this.isKeyPressed = false;
         return _this;
     }
     RadioButton_1 = RadioButton;
@@ -978,7 +976,9 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RadioButton.prototype.focusHandler = function () {
-        this.isFocused = true;
+        if (this.isKeyPressed) {
+            this.getLabel().classList.add('e-focus');
+        }
     };
     RadioButton.prototype.focusOutHandler = function () {
         this.getLabel().classList.remove('e-focus');
@@ -1061,14 +1061,15 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
             this.setText(this.label);
         }
     };
-    RadioButton.prototype.keyUpHandler = function () {
-        if (this.isFocused) {
-            this.getLabel().classList.add('e-focus');
-        }
+    RadioButton.prototype.keyDownHandler = function () {
+        this.isKeyPressed = true;
     };
     RadioButton.prototype.labelRippleHandler = function (e) {
         var ripple = this.getLabel().getElementsByClassName(RIPPLE$1)[0];
         rippleMouseHandler(e, ripple);
+    };
+    RadioButton.prototype.mouseDownHandler = function () {
+        this.isKeyPressed = false;
     };
     RadioButton.prototype.formResetHandler = function () {
         this.checked = this.initialCheckedValue;
@@ -1170,7 +1171,6 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     };
     RadioButton.prototype.setDisabled = function () {
         this.element.disabled = true;
@@ -1195,9 +1195,10 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     RadioButton.prototype.unWireEvents = function () {
         var label = this.getLabel();
         EventHandler.remove(this.element, 'change', this.changeHandler);
+        EventHandler.remove(document, 'keydown', this.keyDownHandler);
+        EventHandler.remove(label, 'mousedown', this.mouseDownHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         var rippleLabel = label.getElementsByClassName(LABEL$1)[0];
         if (rippleLabel) {
             EventHandler.remove(rippleLabel, 'mousedown', this.labelRippleHandler);
@@ -1210,7 +1211,8 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     RadioButton.prototype.wireEvents = function () {
         var label = this.getLabel();
         EventHandler.add(this.element, 'change', this.changeHandler, this);
-        EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
+        EventHandler.add(document, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(label, 'mousedown', this.mouseDownHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
         var rippleLabel = label.getElementsByClassName(LABEL$1)[0];
@@ -1319,7 +1321,7 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
      */
     function Switch(options, element) {
         var _this = _super.call(this, options, element) || this;
-        _this.isFocused = false;
+        _this.isKeyPressed = false;
         _this.isDrag = false;
         return _this;
     }
@@ -1372,7 +1374,9 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         destroy(this, this.getWrapper(), this.tagName);
     };
     Switch.prototype.focusHandler = function () {
-        this.isFocused = true;
+        if (this.isKeyPressed) {
+            this.getWrapper().classList.add('e-focus');
+        }
     };
     Switch.prototype.focusOutHandler = function () {
         this.getWrapper().classList.remove('e-focus');
@@ -1517,14 +1521,13 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         if (!this.disabled) {
             this.wireEvents();
         }
-        this.renderComplete();
     };
     Switch.prototype.rippleHandler = function (e) {
         var rippleSpan = this.getWrapper().getElementsByClassName(RIPPLE$2)[0];
         rippleMouseHandler(e, rippleSpan);
         if (e.type === 'mousedown' && e.currentTarget.classList.contains('e-switch-wrapper') && e.which === 1) {
             this.isDrag = true;
-            this.isFocused = false;
+            this.isKeyPressed = false;
         }
     };
     Switch.prototype.rippleTouchHandler = function (eventType) {
@@ -1551,9 +1554,7 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Switch.prototype.switchFocusHandler = function () {
-        if (this.isFocused) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isKeyPressed = true;
     };
     Switch.prototype.switchMouseUp = function (e) {
         var target = e.target;
@@ -1588,12 +1589,12 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         var wrapper = this.getWrapper();
         var handle = wrapper.querySelector('.e-switch-handle');
         this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
-        this.delegateKeyUpHandler = this.switchFocusHandler.bind(this);
+        this.delegateKeyDownHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(this.element, 'mouseup', this.delegateMouseUpHandler, this);
-        EventHandler.add(this.element, 'keyup', this.delegateKeyUpHandler, this);
+        EventHandler.add(document, 'mouseup', this.delegateMouseUpHandler, this);
+        EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
         if (this.formElement) {
@@ -1606,8 +1607,8 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
-        EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
+        EventHandler.remove(document, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {
@@ -1733,7 +1734,6 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         this.rippleFunctin = rippleEffect(this.element, {
             selector: '.e-chip'
         });
-        this.renderComplete();
     };
     ChipList.prototype.createChip = function () {
         this.innerText = this.element.innerText.trim();

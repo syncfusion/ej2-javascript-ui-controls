@@ -7,3 +7,5 @@ export * from './engine';
 export * from './util';
 /** @hidden */
 export * from './types';
+/** @hidden */
+export * from './olap';

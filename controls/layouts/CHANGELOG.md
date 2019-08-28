@@ -2,61 +2,21 @@
 
 ## [Unreleased]
 
-## 17.2.46 (2019-08-22)
-
-### Splitter
-
-#### Bug Fixes
-
-- #245067 - Resolved the issue with pane resizing on rendering nested split panes.
-
-## 17.2.41 (2019-08-14)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- Issue with "panel resizing after window resize" has been resolved.
-
-### Splitter
-
-#### Bug Fixes
-
-- #243003 - Resolved the issue with enabling expand and collapse arrow based on collapsible property.
-
-- #243007 - The issue "Collapsing and expanding splitter control does not return to original state" has been resolved.
-
-- #244847 - The issue "Split panes are not resized properly on window resizing" has been resolved.
-
-## 17.2.40 (2019-08-06)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- #243056 - Issue with "dashboard panels moving out of the layout on resizing" has been fixed.
-
-## 17.2.39 (2019-07-30)
-
-### Splitter
-
-#### Bug Fixes
-
-- #242579 - Resolved the issue with "Split-bar rendering while change orientation dynamically"
-
-## 17.2.36 (2019-07-24)
-
-### Dashboard Layout
-
-#### Bug Fixes
-
-- #241653 - ContentTemplate issue in Dashboard Layout has been fixed.
+## 17.2.48-beta (2019-08-28)
 
 ### Splitter
 
 #### Bug Fixes
 
 - #241183 - Issue with "show the expand and collapse arrow on hovering middle of split bar" has been resolved.
+
+- #242579 - Resolved the issue with "Split-bar rendering while change orientation dynamically"
+
+- #243003 - Resolved the issue with enabling expand and collapse arrow based on collapsible property.
+
+- #243007 - The issue "Collapsing and expanding splitter control does not return to original state" has been resolved.
+
+- #244847 - The issue "Split panes are not resized properly on window resizing" has been resolved.
 
 ## 17.1.51 (2019-06-11)
 

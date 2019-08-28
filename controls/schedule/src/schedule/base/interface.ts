@@ -337,7 +337,6 @@ export interface NotifyEventArgs {
     cssProperties?: ScrollCss;
     processedData?: Object[];
     isPreventScrollUpdate?: boolean;
-    scrollPosition?: { [key: string]: Object };
 }
 
 /** @hidden */
