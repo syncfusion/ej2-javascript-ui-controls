@@ -167,7 +167,7 @@ describe('Count module', () => {
                 which: 65,
                 ctrlKey: true
             };
-            (<any>rteObj).restrict(kArgs);
+            (<any>rteObj).restrict(keyboardEventArgs);
             expect(flag).toBe(false);
             flag = false;
             keyboardEventArgs = {

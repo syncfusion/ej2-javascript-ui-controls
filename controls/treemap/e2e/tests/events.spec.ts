@@ -1,8 +1,8 @@
 import { browser, element, By, by, Key } from "@syncfusion/ej2-base/e2e/index";
 
-if(browser.isDesktop===true){
-    browser.driver.manage().window().setSize(1900, 1200);
-}
+//if(browser.isDesktop===true){
+//    browser.driver.manage().window().setSize(1900, 1200);
+//}
 describe('Treemap Event samples test spec', () => {
     let tooltipElement;
     it('tooltip Event testing text Style', (done: Function) => {

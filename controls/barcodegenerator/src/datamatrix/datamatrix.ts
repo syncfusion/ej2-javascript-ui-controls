@@ -295,5 +295,6 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         this.trigger('load');
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     }
 }

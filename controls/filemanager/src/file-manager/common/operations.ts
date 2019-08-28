@@ -252,7 +252,7 @@ function createSuccess(parent: IFileManager, result: ReadArgs): void {
 /* istanbul ignore next */
 function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): void {
     if (!isNOU(result.files)) {
-        parent.dialogObj.hide();
+        if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
         let args: SuccessEventArgs = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
@@ -273,13 +273,13 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
             }
         }
     } else {
-        if (result.error.code === '400') {
+        if (result.error.code === '400' && parent.dialogObj && parent.dialogObj.visible) {
             let ele: HTMLInputElement = select('#rename', parent.dialogObj.element) as HTMLInputElement;
             let error: string = getLocaleText(parent, 'Validation-Rename-Exists').replace('{0}', '"' + parent.currentItemText + '"');
             error = error.replace('{1}', '"' + ele.value + '"');
             ele.parentElement.nextElementSibling.innerHTML = error;
         } else {
-            parent.dialogObj.hide();
+            if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
             onFailure(parent, result, 'rename');
         }
     }

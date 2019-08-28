@@ -48,8 +48,7 @@ describe('Context-', () => {
             allowAdding: true,
             allowEditing: true,
             allowDeleting: true,
-            allowTaskbarEditing: true,
-            showDeleteConfirmDialog: true
+            allowTaskbarEditing: true
         },
         toolbar: ['Add', 'Edit', 'Delete'],
         projectStartDate: new Date('02/01/2017'),
@@ -127,29 +126,13 @@ describe('Context-', () => {
             expect((ganttObj.contextMenuModule as any).hideItems.length).toBe(8);
             expect((ganttObj.contextMenuModule as any).disableItems.length).toBe(0);
         });
-        it('Add record - Below', () => {
+        it('Add record', () => {
             let e: ContextMenuClickEventArgs = {
                 item: { id: ganttObj.element.id + '_contextMenu_Below' },
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
             expect(ganttObj.currentViewData.length).toBe(42);
-        });
-        it('Add record - Above', () => {
-            let e: ContextMenuClickEventArgs = {
-                item: { id: ganttObj.element.id + '_contextMenu_Above' },
-                element: null,
-            };
-            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData.length).toBe(43);
-        });
-        it('Add record - Milestone', () => {
-            let e: ContextMenuClickEventArgs = {
-                item: { id: ganttObj.element.id + '_contextMenu_Milestone' },
-                element: null,
-            };
-            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData.length).toBe(44);
         });
         it('Convert to Milestone', () => {
             (ganttObj.contextMenuModule as any).rowData = ganttObj.currentViewData[2];
@@ -182,7 +165,7 @@ describe('Context-', () => {
             }
         });
         beforeEach((done: Function) => {
-            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(8)') as HTMLElement;
+            let $tr: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6)') as HTMLElement;
             triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
             setTimeout(done, 500);
         });
@@ -192,44 +175,15 @@ describe('Context-', () => {
                 element: null,
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData[7].ganttProperties.isMilestone).toBeFalsy;
-            expect(ganttObj.currentViewData[7].ganttProperties.duration).toBe(1);
+            expect(ganttObj.currentViewData[5].ganttProperties.isMilestone).toBeFalsy;
+            expect(ganttObj.currentViewData[5].ganttProperties.duration).toBe(1);
         });
         it('Delete Depedency', () => {
             let e = {
                 item: ganttObj.contextMenuModule.contextMenu.items[3].items[0],
             };
             (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            expect(ganttObj.currentViewData[7].ganttProperties.predecessorsName).toEqual('4FS,5FS');
-        });
-        it('Save & Cancel', () => {
-            let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)');
-            triggerMouseEvent(record,'dblclick');
-            let e1: ContextMenuClickEventArgs = {
-                item: { id: ganttObj.element.id + '_contextMenu_Save' },
-                element: null,
-            };
-            (ganttObj.contextMenuModule as any).contextMenuItemClick(e1);
-            expect(ganttObj.currentViewData[3].ganttProperties.taskName).toEqual('Planning');
-            triggerMouseEvent(record,'dblclick');
-            let e2: ContextMenuClickEventArgs = {
-                item: { id: ganttObj.element.id + '_contextMenu_Cancel' },
-                element: null,
-            };
-            (ganttObj.contextMenuModule as any).contextMenuItemClick(e2);
-            expect(ganttObj.currentViewData[3].ganttProperties.taskName).toEqual('Planning');
-        });
-        it('Delete Record', () => {
-            let record: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)');
-            triggerMouseEvent(record,'click');
-            let e: ContextMenuClickEventArgs = {
-                item: { id: ganttObj.element.id + '_contextMenu_DeleteTask' },
-                element: null,
-            };
-            (ganttObj.contextMenuModule as any).contextMenuItemClick(e);
-            let ok: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_deleteConfirmDialog > div.e-footer-content > button');
-            triggerMouseEvent(ok,'click');
-            expect(ganttObj.currentViewData.length).toBe(43);
+            expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toEqual('4FS,5FS');
         });
         it('Destroy', () => {
             ganttObj.contextMenuModule.destroy();
@@ -237,27 +191,6 @@ describe('Context-', () => {
             let contextmenu: HTMLElement = document.getElementById(cmenuId);
             expect(contextmenu).toBeNull();
 
-        });
-    });
-    describe('Context menu - spec coverage -', () => {
-        beforeAll((done: Function) => {
-            ganttObj = createGantt(ganttModel, done);
-        });
-        afterAll(() => {
-            if (ganttObj) {
-                destroyGantt(ganttObj);
-            }
-        });
-        it('Disable editing', () => {
-            ganttObj.editSettings.allowEditing = false;
-            ganttObj.editSettings.allowAdding = false;
-            ganttObj.editSettings.allowDeleting = false;
-            ganttObj.editModule.destroy();
-            ganttObj.dataBind();
-            let $tr: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-Child(5) > td > div.e-left-label-container') as HTMLElement;
-            triggerMouseEvent($tr, 'contextmenu', 0, 0, false, false, 2);
-            let taskInfo: HTMLElement = document.getElementById(ganttObj.element.id + '_contextMenu_TaskInformation');
-            expect(taskInfo.classList.contains('e-disabled')).toEqual(true);
         });
     });
 });

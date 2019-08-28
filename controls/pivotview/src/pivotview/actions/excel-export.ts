@@ -2,10 +2,8 @@ import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ExcelRow, ExcelCell, ExcelColumn, BeforeExportEventArgs } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import { PivotView } from '../base/pivotview';
-import { IAxisSet, IPivotValues, PivotEngine } from '../../base/engine';
+import { IAxisSet, IPivotValues } from '../../base/engine';
 import { IPageSettings } from '../../base/engine';
-import { OlapEngine } from '../../base/olap/engine';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * @hidden
@@ -13,7 +11,6 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  */
 export class ExcelExport {
     private parent: PivotView;
-    private engine: PivotEngine | OlapEngine;
 
     /**
      * Constructor for the PivotGrid Excel Export module.
@@ -21,7 +18,6 @@ export class ExcelExport {
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
-        this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
 
     /**
@@ -39,26 +35,36 @@ export class ExcelExport {
     public exportToExcel(type: string): void {
         /** Event trigerring */
         if (this.parent.enableVirtualization) {
-            let pageSettings: IPageSettings = this.engine.pageSettings; this.engine.pageSettings = null;
-            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings);
-            this.engine.pageSettings = pageSettings;
+            let pageSettings: IPageSettings = this.parent.engineModule.pageSettings;
+            this.parent.engineModule.pageSettings = null;
+            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings);
+            this.parent.engineModule.pageSettings = pageSettings;
         }
         let args: BeforeExportEventArgs = {
-            fileName: 'default', header: '', footer: '', dataCollections: [this.engine.pivotValues]
+            fileName: 'default', header: '', footer: '', dataCollections: [this.parent.engineModule.pivotValues]
         };
-        this.parent.trigger(events.beforeExport, args); let fileName: string = args.fileName; let header: string = args.header;
-        let footer: string = args.footer; let dataCollections: IPivotValues[] = args.dataCollections;
+        this.parent.trigger(events.beforeExport, args);
+        let fileName: string = args.fileName;
+        let header: string = args.header;
+        let footer: string = args.footer;
+        let dataCollections: IPivotValues[] = args.dataCollections;
 
         /** Fill data and export */
         /* tslint:disable-next-line:no-any */
         let workSheets: any = [];
         for (let dataColl: number = 0; dataColl < dataCollections.length; dataColl++) {
-            let pivotValues: IPivotValues = dataCollections[dataColl]; let colLen: number = 0; let rowLen: number = pivotValues.length;
-            let actualrCnt: number = 0; let formatList: { [key: string]: string } = this.parent.renderModule.getFormatList();
-            let rows: ExcelRow[] = []; let maxLevel: number = 0;
+            let pivotValues: IPivotValues = dataCollections[dataColl];
+            let colLen: number = 0;
+            let rowLen: number = pivotValues.length;
+            let actualrCnt: number = 0;
+            let formatList: string[] = this.parent.renderModule.getFormatList();
+            let rows: ExcelRow[] = [];
+            let maxLevel: number = 0;
             for (let rCnt: number = 0; rCnt < rowLen; rCnt++) {
                 if (pivotValues[rCnt]) {
-                    actualrCnt++; colLen = pivotValues[rCnt].length; let cells: ExcelCell[] = [];
+                    actualrCnt++;
+                    colLen = pivotValues[rCnt].length;
+                    let cells: ExcelCell[] = [];
                     for (let cCnt: number = 0; cCnt < colLen; cCnt++) {
                         if (pivotValues[rCnt][cCnt]) {
                             let pivotCell: IAxisSet = (pivotValues[rCnt][cCnt] as IAxisSet);
@@ -74,20 +80,13 @@ export class ExcelExport {
                                 if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                     cells.push({
                                         index: cCnt + 1, value: cellValue,
-                                        colSpan: pivotCell.colSpan, rowSpan: (pivotCell.rowSpan === -1 ? 1 : pivotCell.rowSpan),
+                                        colSpan: pivotCell.colSpan, rowSpan: pivotCell.rowSpan,
                                     });
                                     if (pivotCell.axis === 'value') {
-                                        if (isNaN(pivotCell.value) || pivotCell.formattedText === '' ||
-                                            pivotCell.formattedText === undefined || isNullOrUndefined(pivotCell.value)) {
-                                            cells[cells.length - 1].value = '';
-                                        }
-                                        let field: string = (this.parent.dataSourceSettings.valueAxis === 'row' &&
-                                            this.parent.dataType === 'olap' && pivotCell.rowOrdinal &&
-                                            (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal]) ?
-                                            (this.engine as OlapEngine).tupRowInfo[pivotCell.rowOrdinal].measureName :
-                                            pivotCell.actualText as string;
                                         cells[cells.length - 1].style = {
-                                            numberFormat: formatList[field], bold: false, wrapText: true
+                                            numberFormat: formatList[(cCnt - 1) % this.parent.dataSourceSettings.values.length],
+                                            bold: false,
+                                            wrapText: true
                                         };
                                         if (pivotCell.style) {
                                             cells[cells.length - 1].style.backColor = pivotCell.style.backgroundColor;
@@ -97,18 +96,15 @@ export class ExcelExport {
                                         }
                                     } else {
                                         cells[cells.length - 1].style = {
-                                            bold: true, vAlign: 'Center', wrapText: true, indent: cCnt === 0 ? pivotCell.level * 10 : 0
+                                            bold: true,
+                                            vAlign: 'Center',
+                                            wrapText: true,
+                                            indent: cCnt === 1 ? pivotCell.level * 10 : 0
                                         };
                                         if (pivotCell.axis === 'row' && cCnt === 0) {
                                             cells[cells.length - 1].style.hAlign = 'Left';
-                                            if (this.parent.dataType === 'olap') {
-                                                let indent: number = this.parent.renderModule.indentCollection[rCnt];
-                                                cells[cells.length - 1].style.indent = indent * 2;
-                                                maxLevel = maxLevel > indent ? maxLevel : indent;
-                                            } else {
-                                                cells[cells.length - 1].style.indent = pivotCell.level * 2;
-                                                maxLevel = pivotCell.level > maxLevel ? pivotCell.level : maxLevel;
-                                            }
+                                            cells[cells.length - 1].style.indent = pivotCell.level * 2;
+                                            maxLevel = pivotCell.level > maxLevel ? pivotCell.level : maxLevel;
                                         }
                                     }
                                     cells[cells.length - 1].style.borders = { color: '#000000', lineStyle: 'Thin' };

@@ -2,10 +2,130 @@
 
 ## [Unreleased]
 
-## 17.2.48-beta (2019-08-28)
+## 17.2.47 (2019-08-27)
+
+### Chart
+
+#### Bug Fixes
+
+`#243156` - Drag complete returns value in string issue has been fixed.
+`#245710` - Lograthmic is not working properly for smaller value issue has been fixed.
+`#243156` - Selection is not proper at the edge issue has been fixed.
+`#245710` - Y-Axis of Spline chart not adjusting scale to suit dataSource issue has been fixed.
+
+## 17.2.36 (2019-07-24)
+
+### Stock Chart
+
+#### Bug Fixes
+
+The `querySelector of null` console error issue has been fixed.
+
+### RangeNavigator
+
+#### Bug Fixes
+
+The `appendChild of null` console error issue has been fixed.
+
+### Chart
+
+#### Bug Fixes
+
+`#240342` - While scrolling chart's scrollbar Vertical HTML scrollbar goes up issue fixed.
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- #241559 - Console error on doughnut chart when trying to hide a point via legend icon issue fixed.
+
+## 17.2.34 (2019-07-11)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- #240342 - Accumulation chart print not working proper in IE and Edge browsers issue fixed.
+
+## 17.2.28-beta (2019-06-27)
+
+### Chart
+
+#### New Features
+
+- Canvas rendering mode support provided.
+- Overlapping data labels in funnel and pyramid charts will be arranged on both sides of the charts.
+- Data Editing support provided for chart series points.
+- Multi level label click event added with custom object.
+
+#### Breaking Changes
+
+- sizeType enumeration name changed to SizeType
+
+### Stock Chart
+
+#### Breaking Changes
+
+- sizeType enumeration name changed to SizeType
+
+## 17.1.51 (2019-06-11)
+
+### Chart
+
+#### Bug Fixes
 
 - #144983 - Label style not working in axisLabelRender event for polar and radar series type issue fixed.
 - #237811 - Chart rendered with default width in Internet Explorer issue fixed.
+
+## 17.1.49 (2019-05-29)
+
+### Stock Chart
+
+#### Bug Fixes
+
+- #236896 - Provided mouse event in stock charts
+
+## 17.1.47 (2019-05-14)
+
+### Chart
+
+#### New Features
+
+- #233749 - Provided zOrder support for chart series.
+
+## 17.1.43 (2019-04-30)
+
+### Chart
+
+#### Bug Fixes
+
+- #219174 - Multi line axis label is not proper when using multiple rows intersect action issue has been fixed.
+- #231943 - Console error throws when using area chart out of the axis range has been fixed.
+- #234027 - Chart is not destroying properly while calling destroy method issue fixed.
+
+## 17.1.41 (2019-04-16)
+
+### Chart
+
+#### Bug Fixes
+
+- Support has been provided for multiple export in horizontal mode.
+
+## 17.1.40 (2019-04-09)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- Now Accumulation chart is refreshing properly on data change.
+
+### Chart
+
+#### Bug Fixes
+
+- Stacking column is not rendered properly when yvalue in string is fixed.
+- Zoomposition is not proper, when the axis is inversed is fixed.
+- Multiline label alignment is not proper, when breaking the labels into smaller text issue fixed
 
 ## 17.1.32-beta (2019-03-13)
 

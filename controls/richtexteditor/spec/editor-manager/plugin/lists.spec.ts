@@ -1511,7 +1511,7 @@ describe ('left indent testing', () => {
             });
         });
     });
-    
+
     describe(' EJ2-29800 - Reactive form validation not working properly', () => {
         let editorObj: EditorManager;
         let editNode: HTMLElement;
@@ -1548,5 +1548,4 @@ describe ('left indent testing', () => {
             detach(elem);
         });
     });
-
 });

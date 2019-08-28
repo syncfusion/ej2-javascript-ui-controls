@@ -554,6 +554,23 @@ describe('Diagram Control', () => {
             }
             diagram = new Diagram({ width: '500px', height: '500px', nodes: [node1, node2], connectors: [connector] } as DiagramModel);
             diagram.appendTo('#diagram35');
+            let node:NodeModel = {
+                id: "umlRumNode",
+                //Position of the node
+                offsetX: 200,
+                offsetY: 200,
+                shape: {
+                    type: "UmlClassifier",
+                    //Define class object
+                    classShape: {
+                        name: "Patient",
+                        //Define class attributes
+                        attributes: [{ name: "accepted", type: "Date" }],
+                    },
+                    classifier: "Class"
+                }
+            } as NodeModel;
+            diagram.add(node);
         });
         afterAll((): void => {
             diagram.destroy();
@@ -572,6 +589,10 @@ describe('Diagram Control', () => {
             diagram.undo();
             expect(diagram.nodes[0].wrapper.actualSize.width < 200).toBe(true);
             expect(diagram.nodes.length > 1).toBe(true);
+            done();
+        });
+        it('add uml class at runtime', (done: Function) => {
+            expect(diagram.nameTable['umlRumNode'].offsetX===200).toBe(true);
             done();
         });
         it('memory leak', () => {

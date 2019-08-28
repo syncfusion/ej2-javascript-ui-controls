@@ -31,8 +31,7 @@ import { Sort } from '../actions/sort';
 import { CellSelectEventArgs, CellSelectingEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { RowDeselectEventArgs, CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';
 import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { Filter } from '../actions/filter';
 import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';
 import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';
@@ -45,7 +44,6 @@ import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
 import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';
 import { Selection } from '../actions/selection';
-import { ExcelExport } from '../actions/excel-export';
 import { DayMarkers } from '../actions/day-markers';
 import { ContextMenu } from './../actions/context-menu';
 import { RowSelectingEventArgs } from './interface';
@@ -201,10 +199,6 @@ export class Gantt extends Component<HTMLElement>
      * The `selectionModule` is used to manipulate selection operation in Gantt.
      */
     public selectionModule: Selection;
-    /**
-     * The `excelExportModule` is used to exporting Gantt data in excel format.
-     */
-    public excelExportModule: ExcelExport;
     /**
      * The `dayMarkersModule` is used to manipulate event markers operation in Gantt.
      */
@@ -412,8 +406,6 @@ export class Gantt extends Component<HTMLElement>
      * * ZoomIn: ZoomIn the Gantt control.
      * * ZoomOut: ZoomOut the Gantt control.
      * * ZoomToFit: Display the all tasks within the viewable Gantt chart.
-     * * ExcelExport: To export in Excel format
-     * * CsvExport : To export in CSV format
      * @default null
      */
     @Property()
@@ -606,16 +598,6 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public allowFiltering: boolean;
-
-   /**
-    * If `allowExcelExport` set to true, then it will allow the user to export Gantt to Excel file.
-    *
-    * > Check the [`ExcelExport`](./excel-exporting.html) to configure exporting document.
-    * @default false
-    */
-    @Property(false)
-    public allowExcelExport: boolean;
-
     /**
      * If `allowReordering` is set to true, Gantt columns can be reordered. 
      * Reordering can be done by drag and drop of a particular column from one index to another index.  
@@ -687,38 +669,6 @@ export class Gantt extends Component<HTMLElement>
      */
     @Event()
     public queryTaskbarInfo: EmitType<IQueryTaskbarInfoEventArgs>;
-
-    /**
-     * Triggers before Gantt data is exported to Excel file.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public beforeExcelExport: EmitType<Object>;
-    /**
-     * Triggers after Gantt data is exported to Excel file.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
-    /** 
-     * Triggers before exporting each cell to Excel file.
-     * You can also customize the Excel cells.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
-
-    /**
-     * Triggers before exporting each header cell to Excel file.
-     * You can also customize the Excel cells.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
 
     /** 
      * This will be triggered before the row getting collapsed.
@@ -802,20 +752,6 @@ export class Gantt extends Component<HTMLElement>
      */
     @Event()
     public load: EmitType<Object>;
-
-    /** 
-     * Triggers when the component is created.
-     * @event
-     */
-    @Event()
-    public created: EmitType<Object>;
-
-    /** 
-     * Triggers when the component is destroyed.
-     * @event
-     */
-    @Event()
-    public destroyed: EmitType<Object>;
 
     /** 
      * This event will be triggered when taskbar was in dragging state.
@@ -1297,6 +1233,7 @@ export class Gantt extends Component<HTMLElement>
         this.dateValidationModule = new DateProcessor(this);
         this.predecessorModule = new Dependency(this);
         this.connectorLineModule = new ConnectorLine(this);
+        this.connectorLineEditModule = new ConnectorLineEdit(this);
         this.splitterModule = new Splitter(this);
         this.tooltipModule = new Tooltip(this);
         this.keyConfig = {
@@ -1427,7 +1364,13 @@ export class Gantt extends Component<HTMLElement>
             }
             this.renderTreeGrid();
             this.wireEvents();
-            this.notify('initPredessorDialog', {});
+            if (this.taskFields.dependency && this.isInPredecessorValidation) {
+                let dialogElement: HTMLElement = createElement('div', {
+                    id: this.element.id + '_dialogValidationRule',
+                });
+                this.element.appendChild(dialogElement);
+                this.predecessorModule.renderValidationDialog();
+            }
         }
         this.splitterModule.updateSplitterPosition();
         if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
@@ -1742,7 +1685,6 @@ export class Gantt extends Component<HTMLElement>
             this.notify('tree-grid-created', {});
             this.createGanttPopUpElement();
             this.hideSpinner();
-            setValue('isGanttCreated', true, args);
             this.renderComplete();
         }
         if (this.taskFields.dependency) {
@@ -2020,12 +1962,6 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
-        if (this.allowExcelExport) {
-            modules.push({
-                member: 'excelExport',
-                args: [this]
-            });
-        }
         if (this.allowResizing) {
             modules.push({
                 member: 'resize',
@@ -2259,8 +2195,6 @@ export class Gantt extends Component<HTMLElement>
             zoomIn: 'Zoom in',
             zoomOut: 'Zoom out',
             zoomToFit: 'Zoom to fit',
-            excelExport: 'Excel export',
-            csvExport: 'Csv export',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',
@@ -2402,36 +2336,6 @@ export class Gantt extends Component<HTMLElement>
         this.treeGrid.filterByColumn(
             fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent
         );
-    }
-
-    /**
-     * Export Gantt data to Excel file(.xlsx).
-     * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the Gantt.
-     * @param  {boolean} isMultipleExport - Define to enable multiple export.
-     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
-     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @return {Promise<any>}
-     */
-    public excelExport(
-        excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
-        /* tslint:disable-next-line:no-any */
-        workbook?: any, isBlob?: boolean): Promise<any> {
-        return this.excelExportModule ? this.treeGrid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
-    }
-
-    /**
-     * Export Gantt data to CSV file.
-     * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the Gantt.
-     * @param  {boolean} isMultipleExport - Define to enable multiple export.
-     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
-     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @return {Promise<any>}
-     */
-    public csvExport(
-        excelExportProperties?: ExcelExportProperties,
-        /* tslint:disable-next-line:no-any */
-        isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
-        return this.excelExportModule ? this.treeGrid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
     }
 
     /** 
@@ -2995,19 +2899,6 @@ export class Gantt extends Component<HTMLElement>
      */
     public getGridColumns(): Column[] {
         return this.treeGrid.getColumns();
-    }
-
-    /**
-     * Method to column from given column collection based on field value
-     * @param field 
-     * @param columns 
-     * @private
-     */
-    public getColumnByField(field: string, columns: ColumnModel[]): ColumnModel {
-        let column: ColumnModel[] = columns.filter((value: ColumnModel) => {
-            return value.field === field;
-        });
-        return column.length > 0 ? column[0] : null;
     }
 
     /**

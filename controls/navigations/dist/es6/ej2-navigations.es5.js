@@ -1981,9 +1981,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 this.clickHandler(e);
             }
         }
-        else if (this.isMenu && this.showItemOnClick) {
-            this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
-        }
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
@@ -3385,6 +3382,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Toolbar.prototype.initialize = function () {
         var width = formatUnit(this.width);
@@ -4249,7 +4249,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the command should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @returns void.
@@ -4257,6 +4257,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.enableItems = function (items, isEnable) {
         var elements = items;
         var len = elements.length;
+        var ele;
         if (isNullOrUndefined(isEnable)) {
             isEnable = true;
         }
@@ -4270,18 +4271,43 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
-        if (len && len > 1) {
-            for (var _i = 0, _a = [].slice.call(elements); _i < _a.length; _i++) {
-                var ele = _a[_i];
+        if (!isNullOrUndefined(len) && len >= 1) {
+            for (var a = 0, element = [].slice.call(elements); a < len; a++) {
+                var itemElement = element[a];
+                if (typeof (itemElement) === 'number') {
+                    ele = this.getElementByIndex(itemElement);
+                    if (isNullOrUndefined(ele)) {
+                        return;
+                    }
+                    else {
+                        elements[a] = ele;
+                    }
+                }
+                else {
+                    ele = itemElement;
+                }
                 enable(isEnable, ele);
             }
             isEnable ? removeClass(elements, CLS_DISABLE$2) : addClass(elements, CLS_DISABLE$2);
         }
         else {
-            var ele = void 0;
-            ele = (len && len === 1) ? elements[0] : items;
+            if (typeof (elements) === 'number') {
+                ele = this.getElementByIndex(elements);
+                if (isNullOrUndefined(ele)) {
+                    return;
+                }
+            }
+            else {
+                ele = items;
+            }
             enable(isEnable, ele);
         }
+    };
+    Toolbar.prototype.getElementByIndex = function (index) {
+        if (this.tbarEle[index]) {
+            return this.tbarEle[index];
+        }
+        return null;
     };
     /**
      * Adds new items to the Toolbar that accepts an array as Toolbar items.
@@ -5014,6 +5040,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Accordion.prototype.initialize = function () {
         var width = formatUnit(this.width);
@@ -5503,7 +5532,18 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.getIndexByItem = function (item) {
-        return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).indexOf(item);
+        var itemEle = this.getItemElements();
+        return [].slice.call(itemEle).indexOf(item);
+    };
+    Accordion.prototype.getItemElements = function () {
+        var itemEle = [];
+        var itemCollection = this.element.children;
+        [].slice.call(itemCollection).forEach(function (el) {
+            if (el.classList.contains(CLS_ITEM$1)) {
+                itemEle.push(el);
+            }
+        });
+        return itemEle;
     };
     Accordion.prototype.expandedItemsPop = function (item) {
         var index = this.getIndexByItem(item);
@@ -5604,7 +5644,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         return 'accordion';
     };
     Accordion.prototype.itemAttribUpdate = function () {
-        var itemEle = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
+        var itemEle = this.getItemElements();
         var itemLen = this.items.length;
         itemEle.forEach(function (ele) {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -5619,6 +5659,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      */
     Accordion.prototype.addItem = function (item, index) {
         var ele = this.element;
+        var itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             index = this.items.length;
         }
@@ -5629,7 +5670,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 ele.appendChild(innerItemEle);
             }
             else {
-                ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM$1)[index]);
+                ele.insertBefore(innerItemEle, itemEle[index]);
             }
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5643,7 +5684,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.expandedItemRefresh = function (ele) {
         var _this = this;
-        [].slice.call(ele.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
+        var itemEle = this.getItemElements();
+        [].slice.call(itemEle).forEach(function (el) {
             if (el.classList.contains(CLS_SLCTED)) {
                 _this.expandedItemsPush(el);
             }
@@ -5655,7 +5697,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.removeItem = function (index) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5672,7 +5715,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.select = function (index) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele) || isNullOrUndefined(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -5686,7 +5730,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.hideItem = function (index, isHidden) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5703,7 +5748,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.enableItem = function (index, isEnable) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5733,14 +5779,15 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.expandItem = function (isExpand, index) {
         var _this = this;
         var root = this.element;
+        var itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                var ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.querySelectorAll('.' + CLS_ITEM$1).length - 1];
+                var ele = itemEle[itemEle.length - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
                 var item = select('#' + this.lastActiveItemId, this.element);
-                [].slice.call(root.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
+                [].slice.call(itemEle).forEach(function (el) {
                     _this.itemExpand(isExpand, el, _this.getIndexByItem(el));
                     el.classList.remove(CLS_EXPANDSTATE);
                 });
@@ -5754,7 +5801,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            var ele = root.querySelectorAll('.' + CLS_ITEM$1)[index];
+            var ele = itemEle[index];
             if (isNullOrUndefined(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             }
@@ -6547,6 +6594,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Tab.prototype.renderContainer = function () {
         var ele = this.element;
@@ -7891,7 +7941,13 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    this.setCssClass(this.element, newProp.cssClass, true);
+                    if (oldProp.cssClass !== '') {
+                        this.setCssClass(this.element, oldProp.cssClass, false);
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
+                    else {
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);
@@ -10519,7 +10575,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
-        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     };
@@ -12158,7 +12213,46 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.getAllCheckedNodes = function () {
         var checkNodes = this.checkedNodes;
-        return checkNodes;
+        var newCheck = [];
+        var i = 0;
+        var id = this.fields.id;
+        for (i; i < this.treeData.length; i++) {
+            //Checks if isChecked is enabled while node is not loaded in DOM
+            var checked = null;
+            var childNode = null;
+            var isLoaded = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
+            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
+                //Checks if isChecked is enabled for parent
+                if (this.getTreeData()[i][this.fields.isChecked] === true
+                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
+                    newCheck.push(this.treeData[i][id].toString());
+                    checked = 2;
+                }
+                //Checks for child nodes with isChecked enabled
+                if (checked !== 2) {
+                    checked = 1;
+                }
+                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
+                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
+            }
+        }
+        i = 0;
+        //Gets checked nodes based on UI interaction
+        while (i < checkNodes.length) {
+            if (newCheck.indexOf(checkNodes[i]) !== -1) {
+                i++;
+                continue;
+            }
+            newCheck.push(checkNodes[i]);
+            //Gets all child which is not loaded while parent is checked
+            var parentNode = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
+            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
+                var child = this.getChildNodes(this.treeData, checkNodes[i].toString());
+                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
+            }
+            i++;
+        }
+        return newCheck;
     };
     /**
      * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
@@ -12594,36 +12688,37 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (isBlazor()) {
             delete closeArguments.model;
         }
-        this.trigger('close', closeArguments);
-        if (!closeArguments.cancel) {
-            if (this.element.classList.contains(CLOSE)) {
-                return;
+        this.trigger('close', closeArguments, function (observedcloseArgs) {
+            if (!observedcloseArgs.cancel) {
+                if (_this.element.classList.contains(CLOSE)) {
+                    return;
+                }
+                if (_this.element.classList.contains(OPEN) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                addClass([_this.element], CLOSE);
+                removeClass([_this.element], OPEN);
+                _this.enableDock ? setStyleAttribute(_this.element, { 'width': formatUnit(_this.dockSize) }) :
+                    setStyleAttribute(_this.element, { 'width': formatUnit(_this.width) });
+                _this.setType(_this.type);
+                var sibling = document.querySelector('.e-main-content') ||
+                    _this.element.nextElementSibling;
+                if (!_this.enableDock && sibling) {
+                    sibling.style.transform = 'translateX(' + 0 + 'px)';
+                    _this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+                }
+                _this.destroyBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.remove('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: false }, true);
+                if (_this.enableDock) {
+                    setTimeout(function () { return _this.setTimeOut(); }, 50);
+                }
+                EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
             }
-            if (this.element.classList.contains(OPEN) && !this.animate) {
-                this.triggerChange();
-            }
-            addClass([this.element], CLOSE);
-            removeClass([this.element], OPEN);
-            this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
-                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setType(this.type);
-            var sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
-            if (!this.enableDock && sibling) {
-                sibling.style.transform = 'translateX(' + 0 + 'px)';
-                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-            }
-            this.destroyBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.remove('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: false }, true);
-        }
-        if (this.enableDock) {
-            setTimeout(function () { return _this.setTimeOut(); }, 50);
-        }
-        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        });
     };
     Sidebar.prototype.setTimeOut = function () {
         var sibling = document.querySelector('.e-main-content') ||
@@ -12655,6 +12750,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Sidebar.prototype.show = function (e) {
+        var _this = this;
         var openArguments = {
             model: this,
             element: this.element,
@@ -12665,28 +12761,29 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (isBlazor()) {
             delete openArguments.model;
         }
-        this.trigger('open', openArguments);
-        if (!openArguments.cancel) {
-            removeClass([this.element], VISIBILITY);
-            if (this.element.classList.contains(OPEN)) {
-                return;
+        this.trigger('open', openArguments, function (observedopenArgs) {
+            if (!observedopenArgs.cancel) {
+                removeClass([_this.element], VISIBILITY);
+                if (_this.element.classList.contains(OPEN)) {
+                    return;
+                }
+                if (_this.element.classList.contains(CLOSE) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                addClass([_this.element], [OPEN, TRASITION]);
+                setStyleAttribute(_this.element, { 'transform': '' });
+                removeClass([_this.element], CLOSE);
+                setStyleAttribute(_this.element, { 'width': formatUnit(_this.width) });
+                _this.setType(_this.type);
+                _this.createBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.add('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: true }, true);
+                EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
             }
-            if (this.element.classList.contains(CLOSE) && !this.animate) {
-                this.triggerChange();
-            }
-            addClass([this.element], [OPEN, TRASITION]);
-            setStyleAttribute(this.element, { 'transform': '' });
-            removeClass([this.element], CLOSE);
-            setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setType(this.type);
-            this.createBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.add('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: true }, true);
-        }
-        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        });
     };
     Sidebar.prototype.setAnimation = function () {
         if (this.animate) {
@@ -13075,5 +13172,5 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
  * Navigation all modules
  */
 
-export { MenuAnimationSettings, MenuItem, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es5.js.map

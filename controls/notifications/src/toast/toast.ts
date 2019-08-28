@@ -1,5 +1,5 @@
 import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';
-import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler, isBlazor } from '@syncfusion/ej2-base';
 import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';
 import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';
 import { SwipeEventArgs, Touch } from '@syncfusion/ej2-base';
@@ -24,8 +24,11 @@ export type PositionX = 'Left' | 'Right' | 'Center';
 export interface ToastClickEventArgs extends BaseEventArgs {
   /** Defines the Toast element. */
   element: HTMLElement;
-  /** Defines the Toast object. */
-  toastObj: Toast;
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
+  toastObj?: Toast;
   /** Defines the prevent action for Toast click event. */
   cancel : boolean;
   /** Defines the close action for click or tab on the Toast. */
@@ -38,8 +41,11 @@ export interface ToastClickEventArgs extends BaseEventArgs {
  * Specifies the event arguments of Toast before open.
  */
 export interface ToastBeforeOpenArgs extends BaseEventArgs {
-  /** Defines the Toast object. */
-  toastObj: Toast;
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
+  toastObj?: Toast;
   /** Defines the Toast element. */
   element: HTMLElement;
   /** Defines the prevent action for before opening toast. */
@@ -50,8 +56,11 @@ export interface ToastBeforeOpenArgs extends BaseEventArgs {
  * Specifies the event arguments of Toast open.
  */
 export interface ToastOpenArgs extends BaseEventArgs {
-  /** Defines the Toast object. */
-  toastObj: Toast;
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
+  toastObj?: Toast;
   /** Defines the Toast element. */
   element: HTMLElement;
 }
@@ -62,8 +71,11 @@ export interface ToastOpenArgs extends BaseEventArgs {
 export interface ToastCloseArgs extends BaseEventArgs {
   /** Defines the Toast container element. */
   toastContainer: HTMLElement;
-  /** Defines the Toast object. */
-  toastObj: Toast;
+  /** 
+   * Defines the Toast object.
+   * @deprecated
+   */
+  toastObj?: Toast;
 }
 
 interface ToastOffsetPosition {
@@ -458,6 +470,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       if (this.isDevice && screen.width < 768) {
         new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
       }
+      this.renderComplete();
     }
     /**
      * To show Toast element on a document with the relative position.
@@ -642,10 +655,11 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         duration : hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
        };
       let intervalId: number = parseInt(toastEle.id.split('toast_')[1], 10);
-      let toastClose: ToastCloseArgs = {
-        toastContainer: this.toastContainer,
-        toastObj: this,
-      };
+      let toastClose: ToastCloseArgs = isBlazor() ? {
+        toastContainer: this.toastContainer } : {
+          toastContainer: this.toastContainer,
+          toastObj: this,
+        };
       if (!isNOU(this.progressObj[intervalId]) && !isNOU(toastEle.querySelector('.' + PROGRESS)) ) {
         this.progressObj[intervalId].progressEle.style.width = '0%'; }
       animate.end = () => {
@@ -800,10 +814,13 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     }
 
     private appendToTarget(): void {
-      let toastBeforeOpen: ToastBeforeOpenArgs = {
-        toastObj: this,
+      let toastBeforeOpen: ToastBeforeOpenArgs = isBlazor() ? {
         element: this.toastEle,
-        cancel: false };
+        cancel: false } : {
+          toastObj: this,
+          element: this.toastEle,
+          cancel: false
+        };
       this.trigger('beforeOpen', toastBeforeOpen, (toastBeforeOpenArgs: ToastBeforeOpenArgs) => {
         if (!toastBeforeOpenArgs.cancel) {
           this.toastEle.style.display = 'none';
@@ -822,8 +839,10 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       e.stopPropagation();
       let target: HTEle = e.target as HTEle;
       let toastEle: HTEle = closest(target , '.' + ROOT) as HTEle;
-      let clickArgs: ToastClickEventArgs = {
-        element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this };
+      let clickArgs: ToastClickEventArgs = isBlazor() ? {
+        element: toastEle, cancel: false, clickToClose: false, originalEvent: e } : {
+          element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this
+        };
       let isCloseIcon: boolean = target.classList.contains(CLOSEBTN);
       this.trigger('click', clickArgs, (toastClickArgs: ToastClickEventArgs) => {
         if ((isCloseIcon && !toastClickArgs.cancel ) || toastClickArgs.clickToClose) {
@@ -836,10 +855,11 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       let animate: AnimationModel = {
         duration : showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
        };
-      let toastOpen: ToastOpenArgs = {
-        toastObj: this,
-        element: this.toastEle,
-      };
+      let toastOpen: ToastOpenArgs = isBlazor() ? {
+        element: this.toastEle } : {
+          toastObj: this,
+          element: this.toastEle,
+        };
       animate.begin = () => {
         toastEle.style.display = ''; };
       animate.end = () => {

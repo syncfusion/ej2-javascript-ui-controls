@@ -36,49 +36,8 @@ describe('PivotFieldList spec', () => {
         (treeObj as any).checkNode((li).getAttribute('data-uid'));
     }
 
-	function fieldListRefreshed(args: FieldListRefreshedEventArgs) {
+    function fieldListRefreshed(args: FieldListRefreshedEventArgs) {
         isRefresh = true;
-	}
-
-    function copyObject(source: any, destiation: any): Object {
-        for (let prop of source) {
-            destiation[prop] = source[prop];
-        }
-        return destiation;
-    }
-
-    function getEventObject(eventType: string, eventName: string, currentTarget?: Element, target?: Element, x?: number, y?: number): Object {
-        let tempEvent: any = document.createEvent(eventType);
-        tempEvent.initEvent(eventName, true, true);
-        let returnObject: any = copyObject(tempEvent, {});
-        returnObject.preventDefault = () => { return true; };
-
-        if (!isNullOrUndefined(x)) {
-            returnObject.pageX = x;
-            returnObject.clientX = x;
-        }
-        if (!isNullOrUndefined(y)) {
-            returnObject.pageY = y;
-            returnObject.clientY = y;
-        }
-        if (!isNullOrUndefined(currentTarget)) {
-            returnObject.currentTarget = currentTarget;
-        }
-        if (!isNullOrUndefined(target)) {
-            returnObject.target = returnObject.srcElement = returnObject.toElement = target;
-            returnObject.offsetY = 7;
-        }
-        returnObject.type = 'mouse';
-        return returnObject;
-    }
-
-    function setMouseCordinates(eventarg: any, x: number, y: number): Object {
-        eventarg.pageX = x;
-        eventarg.pageY = y;
-        eventarg.clientX = x;
-        eventarg.clientY = y;
-        eventarg.offsetY = 7;
-        return eventarg;
     }
 
     beforeAll(() => {
@@ -1247,86 +1206,62 @@ describe('PivotFieldList spec', () => {
                 expect(!isNullOrUndefined(fieldListObj.element.querySelector('.e-pivotfieldlist-wrapper')));
                 expect(fieldListObj.treeViewModule.fieldTable.element.classList.contains('e-field-list'));
             });
-            it('check tree header node', (done: Function) => {
-                setTimeout(() => {
-                    let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(checkEle.length).toBeGreaterThan(0);
-                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
-                    done();
-                });
+            it('check tree header node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
             });
-            it('checked node check axis button', (done: Function) => {
-                setTimeout(() => {
-                    let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
-                    let pivotButtons: HTMLElement[] =
-                        [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-                    expect(pivotButtons.length).toBeGreaterThan(0);
-                    expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('pno');
-                    done();
-                });
+            it('checked node check axis button', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('_id');
             });
-            it('un-check tree header nodes', (done: Function) => {
-                setTimeout(() => {
-                    let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(checkEle.length).toBeGreaterThan(0);
-                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('false');
-                    done();
-                });
+            it('un-check tree header nodes', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(checkEle[0].getAttribute('aria-checked')).toBe('false');
             });
-            it('un-checked node check axis button', (done: Function) => {
-                setTimeout(() => {
-                    let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
-                    let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-                    expect(pivotButtons.length).toBeGreaterThan(0);
-                    expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).not.toBe('pno');
-                    done();
-                });
+            it('un-checked node check axis button', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).not.toBe('pno');
             });
-            it('check tree value node', (done: Function) => {
-                setTimeout(() => {
-                    let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(checkEle.length).toBeGreaterThan(0);
-                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    checkTreeNode(treeObj, closest(checkEle[10], 'li'));
-                    expect(checkEle[10].getAttribute('aria-checked')).toBe('true');
-                    done();
-                });
+            it('check tree value node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                checkTreeNode(treeObj, closest(checkEle[10], 'li'));
+                expect(checkEle[10].getAttribute('aria-checked')).toBe('true');
             });
-            it('checked node check axis button', (done: Function) => {
-                setTimeout(() => {
-                    let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
-                    let pivotButtons: HTMLElement[] = [].slice.call(rightAxisPanel.querySelectorAll('.e-pivot-button'));
-                    expect(pivotButtons.length).toBeGreaterThan(0);
-                    expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('age');
-                    done();
-                });
+            it('checked node check axis button', () => {
+                let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(rightAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('index');
             });
-            it('un-check tree value nodes', (done: Function) => {
-                setTimeout(() => {
-                    let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(checkEle.length).toBeGreaterThan(0);
-                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    checkTreeNode(treeObj, closest(checkEle[10], 'li'));
-                    expect(checkEle[10].getAttribute('aria-checked')).toBe('false');
-                    done();
-                });
+            it('un-check tree value nodes', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                checkTreeNode(treeObj, closest(checkEle[10], 'li'));
+                expect(checkEle[10].getAttribute('aria-checked')).toBe('false');
             });
-            it('un-checked node check axis button', (done: Function) => {
-                setTimeout(() => {
-                    let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
-                    let pivotButtons: HTMLElement[] = [].slice.call(rightAxisPanel.querySelectorAll('.e-pivot-button'));
-                    expect(pivotButtons.length).toBeGreaterThan(0);
-                    expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).not.toBe('age');
-                    done();
-                });
+            it('un-checked node check axis button', () => {
+                let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(rightAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).not.toBe('age');
             });
             it('show filter popup', (done: Function) => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -1337,29 +1272,23 @@ describe('PivotFieldList spec', () => {
                 setTimeout(() => {
                     expect(pivotCommon.filterDialog.dialogPopUp.element.classList.contains('e-popup-open')).toBe(true);
                     done();
-                });
+                }, 1000);
             });
-            it('check tree header node with filter popup', (done: Function) => {
-                setTimeout(() => {
-                    let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(checkEle.length).toBeGreaterThan(0);
-                    expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
-                    checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
-                    expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
-                    done();
-                });
+            it('check tree header node with filter popup', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(treeObj.element.querySelector('.e-checkbox-wrapper').classList.contains('e-small')).toBe(false);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(checkEle[0].getAttribute('aria-checked')).toBe('true');
             });
-            it('checked node check axis button with filter popup closed', (done: Function) => {
-                setTimeout(() => {
-                    expect(isNullOrUndefined(document.getElementById(fieldListObj.element.id + '_EditorTreeView'))).toBe(true);
-                    let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
-                    let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-                    expect(pivotButtons.length).toBeGreaterThan(0);
-                    expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('pno');
-                    done();
-                });
+            it('checked node check axis button with filter popup closed', () => {
+                expect(isNullOrUndefined(document.getElementById(fieldListObj.element.id + '_EditorTreeView'))).toBe(true);
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[pivotButtons.length - 1]).getAttribute('data-uid')).toBe('_id');
             });
         });
     });
@@ -2797,6 +2726,48 @@ describe('PivotFieldList spec', () => {
      * Pivot Field List Drag and drop spec
      */
 
+
+    function copyObject(source: any, destiation: any): Object {
+        for (let prop of source) {
+            destiation[prop] = source[prop];
+        }
+        return destiation;
+    }
+
+    function getEventObject(eventType: string, eventName: string, currentTarget?: Element, target?: Element, x?: number, y?: number): Object {
+        let tempEvent: any = document.createEvent(eventType);
+        tempEvent.initEvent(eventName, true, true);
+        let returnObject: any = copyObject(tempEvent, {});
+        returnObject.preventDefault = () => { return true; };
+
+        if (!isNullOrUndefined(x)) {
+            returnObject.pageX = x;
+            returnObject.clientX = x;
+        }
+        if (!isNullOrUndefined(y)) {
+            returnObject.pageY = y;
+            returnObject.clientY = y;
+        }
+        if (!isNullOrUndefined(currentTarget)) {
+            returnObject.currentTarget = currentTarget;
+        }
+        if (!isNullOrUndefined(target)) {
+            returnObject.target = returnObject.srcElement = returnObject.toElement = target;
+            returnObject.offsetY = 7;
+        }
+        returnObject.type = 'mouse';
+        return returnObject;
+    }
+
+    function setMouseCordinates(eventarg: any, x: number, y: number): Object {
+        eventarg.pageX = x;
+        eventarg.pageY = y;
+        eventarg.clientX = x;
+        eventarg.clientY = y;
+        eventarg.offsetY = 7;
+        return eventarg;
+    }
+
     describe('Pivot Field List Rendering', () => {
         describe('Check node drag and drop Actions', () => {
             let fieldListObj: PivotFieldList;
@@ -2889,7 +2860,7 @@ describe('PivotFieldList spec', () => {
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
                 expect((li[0]).querySelector('e-check')).not.toBeTruthy;
             });
-            it('drag and drop node to filter axis', (done: Function) => {
+            it('drag and drop node to filter axis', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let filterAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-filters');
@@ -2897,10 +2868,10 @@ describe('PivotFieldList spec', () => {
                 let pivotButton: HTMLElement[] = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(1);
                 let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[14].querySelector('.e-drag'), 15, 10);
+                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-drag'), 15, 10);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
                 let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[14].querySelector('.e-drag'), 15, 70);
+                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-drag'), 15, 70);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = filterAxiscontent;
                 mousemove = setMouseCordinates(mousemove, 15, 75);
@@ -2908,13 +2879,10 @@ describe('PivotFieldList spec', () => {
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, filterAxiscontent);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-                expect((li[14]).querySelector('e-check')).toBeTruthy;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(2);
-                    expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('advance');
-                    done();
-                });
+                expect((li[0]).querySelector('e-check')).toBeTruthy;
+                pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('advance');
             });
             it('drag and drop node to filter axis with button axis', (done: Function) => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
@@ -2924,10 +2892,10 @@ describe('PivotFieldList spec', () => {
                 let pivotButton: HTMLElement[] = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(2);
                 let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[14].querySelector('.e-drag'), 15, 10);
+                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-drag'), 15, 10);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
                 let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[14].querySelector('.e-drag'), 15, 70);
+                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-drag'), 15, 70);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = pivotButton[0];
                 mousemove = setMouseCordinates(mousemove, 15, 75);
@@ -2946,10 +2914,10 @@ describe('PivotFieldList spec', () => {
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, pivotButton[0]);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-                expect((li[14]).querySelector('e-check')).toBeTruthy;
+                expect((li[0]).querySelector('e-check')).toBeTruthy;
+                pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    pivotButton = [].slice.call((filterAxiscontent).querySelectorAll('.e-pivot-button'));
                     expect(pivotButton.length).toEqual(2);
                     expect(pivotButton[0].getAttribute('data-uid')).toBe('advance');
                     done();
@@ -2966,7 +2934,7 @@ describe('PivotFieldList spec', () => {
                     done();
                 }, 1000);
             });
-            it('drag and drop node to value axis', (done: Function) => {
+            it('drag and drop node to value axis', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
                 let valueAxiscontent: HTMLElement = rightAxisPanel.querySelector('.e-values');
@@ -2974,10 +2942,10 @@ describe('PivotFieldList spec', () => {
                 let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(3);
                 let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[14].querySelector('.e-drag'), 15, 10);
+                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-drag'), 15, 10);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
                 let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[14].querySelector('.e-drag'), 15, 70);
+                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-drag'), 15, 70);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
                 mousemove = setMouseCordinates(mousemove, 15, 75);
@@ -2985,14 +2953,11 @@ describe('PivotFieldList spec', () => {
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, valueAxiscontent);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-                expect((li[14]).querySelector('e-check')).toBeTruthy;
-                setTimeout(() => {
-                    pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
-                    expect(pivotButton.length).toEqual(4);
-                    expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('advance');
-                    done();
-                }, 1000);
+                expect((li[0]).querySelector('e-check')).toBeTruthy;
+                pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotButton.length).toEqual(4);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('advance');
             });
             it('drag and drop node to value axis with button axis', (done: Function) => {
                 fieldListObj.onFieldDropped = function (args: FieldDroppedEventArgs) {
@@ -3005,10 +2970,10 @@ describe('PivotFieldList spec', () => {
                 let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(4);
                 let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[14].querySelector('.e-drag'), 15, 10);
+                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[1].querySelector('.e-drag'), 15, 10);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
                 let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[14].querySelector('.e-drag'), 15, 70);
+                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[1].querySelector('.e-drag'), 15, 70);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = pivotButton[0];
                 mousemove = setMouseCordinates(mousemove, 15, 75);
@@ -3016,10 +2981,10 @@ describe('PivotFieldList spec', () => {
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, pivotButton[0]);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-                expect((li[14]).querySelector('e-check')).toBeTruthy;
+                expect((li[0]).querySelector('e-check')).toBeTruthy;
+                pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                     expect(pivotButton.length).toEqual(4);
                     expect(pivotButton[0].getAttribute('data-uid')).toBe('advance');
                     expect((pivotButton[0].querySelector('.e-content') as HTMLElement).innerText).toEqual("Sum of droppedButton");
@@ -3034,10 +2999,10 @@ describe('PivotFieldList spec', () => {
                 let pivotButton: HTMLElement[] = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
                 expect(pivotButton.length).toEqual(4);
                 let mousedown: any =
-                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[0].querySelector('.e-drag'), 15, 10);
+                    getEventObject('MouseEvents', 'mousedown', treeObj.element, li[li.length - 1].querySelector('.e-drag'), 15, 10);
                 EventHandler.trigger(treeObj.element, 'mousedown', mousedown);
                 let mousemove: any =
-                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[0].querySelector('.e-drag'), 15, 70);
+                    getEventObject('MouseEvents', 'mousemove', treeObj.element, li[li.length - 1].querySelector('.e-drag'), 15, 70);
                 EventHandler.trigger(<any>(document), 'mousemove', mousemove);
                 mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
                 mousemove = setMouseCordinates(mousemove, 15, 75);
@@ -3045,11 +3010,11 @@ describe('PivotFieldList spec', () => {
                 let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, valueAxiscontent);
                 mouseup.type = 'mouseup';
                 EventHandler.trigger(<any>(document), 'mouseup', mouseup);
-                expect((li[0]).querySelector('e-check')).toBeTruthy;
+                expect((li[li.length - 1]).querySelector('e-check')).toBeTruthy;
+                pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
                     expect(pivotButton.length).toEqual(5);
                     expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('total');
                     done();
@@ -3097,7 +3062,7 @@ describe('PivotFieldList spec', () => {
                 fieldListObj.appendTo('#PivotFieldList');
                 pivotCommon = fieldListObj.pivotCommon;
             });
-            it('drag and drop pivot button to body', (done: Function) => {
+            it('drag and drop pivot button to body', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
@@ -3117,11 +3082,8 @@ describe('PivotFieldList spec', () => {
                 mouseUp.type = 'mouseup';
                 mouseUp.srcElement = mouseUp.target = mouseUp.toElement = treeObj.element;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(1);
-                    done();
-                }, 1000);
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(1);
             });
             it('show filter popup', (done: Function) => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -3135,7 +3097,7 @@ describe('PivotFieldList spec', () => {
                     done();
                 }, 1000);
             });
-            it('drag/drop pivot button from axis field to axis field', (done: Function) => {
+            it('drag/drop pivot button from axis field to axis field', () => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
                 let filterAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-filters');
@@ -3155,12 +3117,9 @@ describe('PivotFieldList spec', () => {
                 mouseUp.type = 'mouseup';
                 mouseUp.srcElement = mouseUp.target = mouseUp.toElement = rowAxiscontent;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
-                    expect(pivotButton.length).toEqual(2);
-                    done();
-                }, 1000);
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
+                expect(pivotButton.length).toEqual(2);
             });
             it('drag/drop pivot button from axis field to same axis field', () => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -3208,7 +3167,7 @@ describe('PivotFieldList spec', () => {
                 expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
                 expect(pivotButton.length).toEqual(2);
             });
-            it('drag/drop pivot button from axis field to button position', (done: Function) => {
+            it('drag/drop pivot button from axis field to button position', () => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
                 let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
@@ -3230,11 +3189,8 @@ describe('PivotFieldList spec', () => {
                 mouseUp.type = 'mouseup';
                 mouseUp.srcElement = mouseUp.target = mouseUp.toElement = columnButtonElement;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                setTimeout(() => {
-                    pivotButton = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(2);
-                    done();
-                }, 1000);
+                pivotButton = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
             });
             it('drag/drop calculated field to filter axis field', (done: Function) => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
@@ -3457,7 +3413,7 @@ describe('PivotFieldList spec', () => {
                 fieldListObj.appendTo('#PivotFieldList');
                 pivotCommon = fieldListObj.pivotCommon;
             });
-            it('drag and drop pivot button to body', (done: Function) => {
+            it('drag and drop pivot button to body', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
@@ -3477,20 +3433,14 @@ describe('PivotFieldList spec', () => {
                 mouseUp.type = 'mouseup';
                 mouseUp.srcElement = mouseUp.target = mouseUp.toElement = treeObj.element;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(1);
-                    done();
-                });
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(1);
             });
-            it('Cancel button', (done: Function) => {
+            it('Cancel button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton2').click();
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
-                    done();
-                });
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
             });
-            it('drag and drop pivot button to body', (done: Function) => {
+            it('drag and drop pivot button to body', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let rowAxiscontent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
@@ -3510,11 +3460,8 @@ describe('PivotFieldList spec', () => {
                 mouseUp.type = 'mouseup';
                 mouseUp.srcElement = mouseUp.target = mouseUp.toElement = treeObj.element;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
-                setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(1);
-                    done();
-                });
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(1);
             });
             it('Apply button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton1').click();
@@ -3615,34 +3562,28 @@ describe('PivotFieldList spec', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton2').click();
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(6);
             });
-            it('testing row axis using drop args', (done: Function) => {
+            it('testing row axis using drop args', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
                 let rowsAxisContent: HTMLElement = leftAxisPanel.querySelector('.e-rows');
-                setTimeout(() => {
-                    let pivotButton: HTMLElement[] = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(2);
-                    let args: any = {
-                        target: rowsAxisContent,
-                        cancel: true,
-                        event: getEventObject('MouseEvents', 'mouseup', treeObj.element, rowsAxisContent) as any
-                    } as DragAndDropEventArgs;
-                    pivotCommon.nodeStateModified.onStateModified(args, 'pno');
-                    fieldListObj.axisFieldModule.render();
-                    pivotButton = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(3);
-                    expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('pno');
-                    done();
-                });
+                let pivotButton: HTMLElement[] = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let args: any = {
+                    target: rowsAxisContent,
+                    cancel: true,
+                    event: getEventObject('MouseEvents', 'mouseup', treeObj.element, rowsAxisContent) as any
+                } as DragAndDropEventArgs;
+                pivotCommon.nodeStateModified.onStateModified(args, 'pno');
+                fieldListObj.axisFieldModule.render();
+                pivotButton = [].slice.call((rowsAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('pno');
             });
-            it('Apply button', (done: Function) => {
+            it('Apply button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton1').click();
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
-                    done();
-                });
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
             });
-            it('testing column axis using drop args', (done: Function) => {
+            it('testing column axis using drop args', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
                 let columnAxisContent: HTMLElement = rightAxisPanel.querySelector('.e-columns');
@@ -3655,21 +3596,15 @@ describe('PivotFieldList spec', () => {
                 } as DragAndDropEventArgs;
                 pivotCommon.nodeStateModified.onStateModified(args, 'pno');
                 fieldListObj.axisFieldModule.render();
-                setTimeout(() => {
-                    pivotButton = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(3);
-                    expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('Values');
-                    done();
-                });
+                pivotButton = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('Values');
             });
-            it('Cancel button', (done: Function) => {
+            it('Cancel button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton2').click();
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
-                    done();
-                });
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
             });
-            it('testing column axis using drop args', (done: Function) => {
+            it('testing column axis using drop args', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let rightAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
                 let columnAxisContent: HTMLElement = rightAxisPanel.querySelector('.e-columns');
@@ -3682,19 +3617,13 @@ describe('PivotFieldList spec', () => {
                 } as DragAndDropEventArgs;
                 pivotCommon.nodeStateModified.onStateModified(args, 'pno');
                 fieldListObj.axisFieldModule.render();
-                setTimeout(() => {
-                    pivotButton = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotButton.length).toEqual(3);
-                    expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('Values');
-                    done();
-                });
+                pivotButton = [].slice.call((columnAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(3);
+                expect(pivotButton[pivotButton.length - 1].getAttribute('data-uid')).toBe('Values');
             });
-            it('Apply button', (done: Function) => {
+            it('Apply button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton1').click();
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
-                    done();
-                });
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(7);
             });
         });
         describe('Check public method for node state change', () => {
@@ -3771,63 +3700,42 @@ describe('PivotFieldList spec', () => {
                 checkTreeNode(treeObj, closest(checkEle[0], 'li'));
                 expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
             });
-            it('Cancel button', (done: Function) => {
+            it('Cancel button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton2').click();
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
-                    done();
-                });
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
             });
-            it('Check node', (done: Function) => {
-                setTimeout(() => {
-                    let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(checkEle.length).toBeGreaterThan(0);
-                    checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
-                    done();
-                });
-            });
-            it('Apply button', (done: Function) => {
-                setTimeout(() => {
-                    document.getElementById('PivotFieldList_DeferUpdateButton1').click();
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
-                    done();
-                });
-            });
-            it('Check node', (done: Function) => {
-                setTimeout(() => {
-                    let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
-                    let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
-                    expect(checkEle.length).toBeGreaterThan(0);
-                    checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
-                    done();
-                });
-            });
-            it('Cancel button', (done: Function) => {
-                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
-                    done();
-                });
-            });
-            it('Check node', (done: Function) => {
+            it('Check node', () => {
                 let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
                 let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
                 expect(checkEle.length).toBeGreaterThan(0);
                 checkTreeNode(treeObj, closest(checkEle[0], 'li'));
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
-                    done();
-                });
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
             });
-            it('Apply button', (done: Function) => {
+            it('Apply button', () => {
                 document.getElementById('PivotFieldList_DeferUpdateButton1').click();
-                setTimeout(() => {
-                    expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
-                    done();
-                });
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
+            });
+            it('Check node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
+            });
+            it('Cancel button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton2').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(5);
+            });
+            it('Check node', () => {
+                let treeObj: TreeView = fieldListObj.treeViewModule.fieldTable;
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                checkTreeNode(treeObj, closest(checkEle[0], 'li'));
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
+            });
+            it('Apply button', () => {
+                document.getElementById('PivotFieldList_DeferUpdateButton1').click();
+                expect(pivotGridObj.element.querySelectorAll('.e-pivot-button').length).toBe(4);
             });
             it('Sort Click', () => {
                 (fieldListObj.element.querySelector('.e-pivot-button .e-sort') as HTMLElement).click();
@@ -5485,9 +5393,9 @@ describe('PivotFieldList spec', () => {
                 mouseUp.srcElement = filterAxisContent;
                 mouseUp.target = mouseUp.toElement = rowAxiscontent;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
                 setTimeout(() => {
-                    pivotButton = [].slice.call((rowAxiscontent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
                     expect((pivotButton[pivotButton.length - 1].querySelector('.e-content') as HTMLElement).innerText).toEqual('eyeColor');
                     done();
                 }, 2000);
@@ -5513,9 +5421,9 @@ describe('PivotFieldList spec', () => {
                 mouseUp.srcElement = rowAxiscontent;
                 mouseUp.target = mouseUp.toElement = filterAxisContent;
                 EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                pivotButton = [].slice.call((filterAxisContent).querySelectorAll('.e-pivot-button'));
+                expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
                 setTimeout(() => {
-                    pivotButton = [].slice.call((filterAxisContent).querySelectorAll('.e-pivot-button'));
-                    expect(pivotCommon.filterDialog.dialogPopUp.element).toBeUndefined;
                     expect((pivotButton[pivotButton.length - 1].querySelector('.e-content') as HTMLElement).innerText).toEqual('eyeColor (green)');
                     done();
                 }, 2000);
@@ -5545,7 +5453,7 @@ describe('PivotFieldList spec', () => {
                             dataSource: pivot_dataset as IDataSet[],
                             expandAll: false,
                             enableSorting: true,
-                            sortSettings: [{ name: 'company', order: 'None' }, { name: 'state', order: 'Ascending' }, { name: 'name', order: 'Descending' }],
+                            sortSettings: [{ name: 'company', order: 'None' },{ name: 'state', order: 'Ascending' },{ name: 'name', order: 'Descending' }],
                             filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
                             { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
                             { name: 'gender', type: 'Include', items: ['male'] }],
@@ -5586,16 +5494,13 @@ describe('PivotFieldList spec', () => {
                 ((pivotButtons[1]) as HTMLElement).click();
                 expect((pivotButtons[1]).querySelector('.e-descend')).toBeTruthy;
             });
-            it('check ascending order field', (done: Function) => {
-                setTimeout(() => {
-                    let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
-                    let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
-                    expect(pivotButtons.length).toBeGreaterThan(0);
-                    ((pivotButtons[1]) as HTMLElement).click();
-                    ((pivotButtons[1]).querySelector('.e-sort') as HTMLElement).click();
-                    expect((pivotButtons[1]).querySelector('.e-sort')).toBeTruthy;
-                    done();
-                }, 1000);
+            it('check ascending order field', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[1]) as HTMLElement).click();
+                ((pivotButtons[1]).querySelector('.e-sort') as HTMLElement).click();
+                expect((pivotButtons[1]).querySelector('.e-sort')).toBeTruthy;
             });
             it('fieldlist obj sort none', (done: Function) => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -5659,7 +5564,7 @@ describe('PivotFieldList spec', () => {
                         dataSource: pivot_dataset as IDataSet[],
                         expandAll: false,
                         enableSorting: true,
-                        excludeFields: ['index', '_id', 'guid', 'pno', 'phone', 'email', 'advance'],
+                        excludeFields: ['index','_id','guid','pno','phone','email','advance'],
                         sortSettings: [{ name: 'company', order: 'Descending' }],
                         calculatedFieldSettings: [
                             { name: 'price', formula: '(("Sum(balance)"*10^3+"Count(quantity)")/100)+"Sum(balance)"' },
@@ -5678,7 +5583,7 @@ describe('PivotFieldList spec', () => {
         beforeEach((done: Function) => {
             setTimeout(() => { done(); }, 1000);
         });
-        it('exclude fields ui check', (done: Function) => {
+        it('exclude fields ui check',(done: Function)=>{
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(() => {
                 expect((fieldListObj.element.querySelector('.e-list-parent') as HTMLElement).children.length).toBe(13);
@@ -5686,7 +5591,7 @@ describe('PivotFieldList spec', () => {
                 done();
             }, 2000);
         });
-        it('exclude fields null and ui check', (done: Function) => {
+        it('exclude fields null and ui check',(done: Function)=>{
             fieldListObj.dataSourceSettings.excludeFields = [];
             fieldListObj.refresh();
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;

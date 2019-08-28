@@ -25,7 +25,6 @@ let pivotGridObj: PivotView = new PivotView({
         allowLabelFilter: true
     },
     height: 500,
-    showValuesButton: true,
     allowCalculatedField: true,
     showGroupingBar: true,
     showFieldList: true,

@@ -26,9 +26,7 @@ export class AxisTableRenderer {
      */
     public render(): void {
         if (!this.parent.isAdaptive) {
-            let axisTable: Element = createElement('div', {
-                className: cls.AXIS_TABLE_CLASS + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_AXIS_TABLE_CLASS : '')
-            });
+            let axisTable: Element = createElement('div', { className: cls.AXIS_TABLE_CLASS });
             this.leftAxisPanel = createElement('div', { className: cls.LEFT_AXIS_PANEL_CLASS });
             this.rightAxisPanel = createElement('div', { className: cls.RIGHT_AXIS_PANEL_CLASS });
             this.parent.dialogRenderer.parentElement.appendChild(axisTable);

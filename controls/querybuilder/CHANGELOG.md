@@ -2,6 +2,39 @@
 
 ## [Unreleased]
 
+## 17.2.47 (2019-08-27)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided Null and Empty operator support.
+
+## 17.2.36 (2019-07-24)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Date values are not properly filtered using DataManager.
+
+## 17.2.35 (2019-07-17)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- SQL Parsing issue when the rule contains 'Greater Than Or Equal', 'Less Than Or Equal' operator.
+- Condition is not updated properly in the root while using 'setRules' method.
+
+## 17.2.28-beta (2019-06-27)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided localization support for 'AND/OR' conditions.
+
 ## 17.1.50 (2019-06-04)
 
 ### QueryBuilder

@@ -12,5 +12,4 @@ export * from './pdfviewer-model';
 export * from './bookmark-view/index';
 export * from './text-selection/index';
 export * from './text-search/index';
-export * from './print/index';
-export * from './form-fields/index';
+export * from './print/index'

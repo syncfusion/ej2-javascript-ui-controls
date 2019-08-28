@@ -32,8 +32,6 @@ export class Canvas extends Container {
                     if (child.canMeasure) {
                         availableSize.width = availableSize.width || this.maxWidth || this.minWidth;
                         child.measure(availableSize);
-                    } else {
-                        break;
                     }
                 } else if (!(child instanceof TextElement)) {
                     child.measure(availableSize);

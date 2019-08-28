@@ -273,6 +273,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
         this.setClass('add', this.cssClass);
+        this.renderComplete();
     }
     setClass(action, val) {
         if (!this.isEmpty(val)) {
@@ -1514,7 +1515,7 @@ class Rte {
         this.compObj = new RichTextEditor(this.parent.model, e.target);
     }
     focus() {
-        this.compObj.element.focus();
+        this.compObj.focusIn();
     }
     updateValue(e) {
         if (this.compObj && e.type === 'RTE') {

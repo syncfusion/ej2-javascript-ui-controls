@@ -30,7 +30,6 @@ describe('Gantt taskbar editing', () => {
                     taskbarHeight: 30,
                     allowSelection: false,
                     editSettings: {
-                        allowEditing: true,
                         allowTaskbarEditing: true
                     }
                 }, done);
@@ -341,63 +340,10 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
             triggerMouseEvent(dragElement, 'mousemove', 400, 100);
             triggerMouseEvent(dragElement, 'mouseup');
-        });        
-        it('Dependency editing - spec coverage', () => {
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-             };
-            ganttObj.dataBind();
-            ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            ganttObj.taskbarEdited = (args: ITaskbarEditedEventArgs) => { };
-            ganttObj.dataBind();
-            let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            dragElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div.e-left-connectorpoint-outer-div > div.e-connectorpoint-left') as HTMLElement;
-            triggerMouseEvent(dragElement, 'mousedown', dragElement.offsetLeft, dragElement.offsetTop);
-            triggerMouseEvent(dragElement, 'mousemove', 100, -50);
-            ganttObj.editModule.taskbarEditModule.drawPredecessor = true;
-            ganttObj.editModule.taskbarEditModule.connectorSecondRecord = ganttObj.flatData[4];
-            ganttObj.editModule.taskbarEditModule.finalPredecessor = '6SF';
-            triggerMouseEvent(dragElement, 'mouseup');
-            expect(ganttObj.flatData[4].ganttProperties.predecessorsName).toBe('6SF');
-            let dragElement1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div:nth-Child(3)') as HTMLElement;
-            triggerMouseEvent(dragElement1, 'mousedown');
-            triggerMouseEvent(dragElement1, 'mousemove', -80, 0);
-            triggerMouseEvent(dragElement1, 'mouseup');
-            let ok: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-footer-content > button') as HTMLElement;
-            triggerMouseEvent(ok, 'click');
-            let dragElement2: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div:nth-Child(3)') as HTMLElement;
-            triggerMouseEvent(dragElement2, 'mousedown');
-            triggerMouseEvent(dragElement2, 'mousemove', -80, 0);
-            triggerMouseEvent(dragElement2, 'mouseup');
-            let cancel: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-footer-content > button:nth-child(2)') as HTMLElement;
-            triggerMouseEvent(cancel, 'click');
-            let dragElement3: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div:nth-Child(3)') as HTMLElement;
-            triggerMouseEvent(dragElement3, 'mousedown');
-            triggerMouseEvent(dragElement3, 'mousemove', 80, 0);
-            triggerMouseEvent(dragElement3, 'mouseup');
-            let move: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_ValidationAddlineOffset') as HTMLElement;
-            triggerMouseEvent(move, 'click');
-            let ok1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-footer-content > button') as HTMLElement;
-            triggerMouseEvent(ok1, 'click');
-            let dragElement4: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div:nth-Child(3)') as HTMLElement;
-            triggerMouseEvent(dragElement4, 'mousedown');
-            triggerMouseEvent(dragElement4, 'mousemove', 80, 0);
-            triggerMouseEvent(dragElement4, 'mouseup');
-            let remove: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_ValidationRemoveline') as HTMLElement;
-            triggerMouseEvent(remove, 'click');
-            let ok2: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-footer-content > button') as HTMLElement;
-            triggerMouseEvent(ok2, 'click');
         });
+
         it('Draw Connector Line by drag and drop', () => {
-            ganttObj.actionBegin = (args: any) => {
-                if (args.requestType == "validateLinkedTask") {
-                    args.validateMode.preserveLinkWithEditing = false;
-                }
-             };
+            ganttObj.actionBegin = (args: object) => { };
             ganttObj.dataBind();
             ganttObj.taskbarEditing = (args: ITaskbarEditedEventArgs) => { };
             ganttObj.dataBind();
@@ -413,12 +359,6 @@ describe('Gantt taskbar editing', () => {
             ganttObj.editModule.taskbarEditModule.finalPredecessor = '6SS';
             triggerMouseEvent(dragElement, 'mouseup');
             expect(ganttObj.flatData[4].ganttProperties.predecessorsName).toBe('6SS');
-            let dragElement1: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container > div:nth-Child(3)') as HTMLElement;
-            triggerMouseEvent(dragElement1, 'mousedown');
-            triggerMouseEvent(dragElement1, 'mousemove', -80, 0);
-            triggerMouseEvent(dragElement1, 'mouseup');
-            let close: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialogValidationRule > div.e-dlg-header-content > button') as HTMLElement;
-            triggerMouseEvent(close, 'click');
         });
         it('Connector Line highlight while perform click on connector line', () => {
             let dragElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(5) > td > div.e-taskbar-main-container') as HTMLElement;

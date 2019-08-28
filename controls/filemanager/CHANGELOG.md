@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.47 (2019-08-27)
+
+### File Manager
+
+#### New Features
+
+- Methods have been provided to perform file operations such as create, upload, download, delete, rename, and open in file manager.
+
 ## 17.2.41 (2019-08-14)
 
 ### File Manager

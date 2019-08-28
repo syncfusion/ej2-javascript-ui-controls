@@ -1,7 +1,7 @@
 import { Diagram } from '../diagram';
 import { DiagramModel } from '../diagram-model';
 import { HistoryEntry, History, } from '../diagram/history';
-import { SelectorModel } from '../interaction/selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { NodeModel, PhaseModel, LaneModel } from '../objects/node-model';
 import { SwimLane } from '../objects/node';
 import { Node, BpmnAnnotation } from './node';
@@ -432,7 +432,7 @@ export class UndoRedo {
         let parentNode: NodeModel = diagram.nameTable[(entryObject as Node).parentId];
         let actualObject: Node = diagram.nameTable[(entryObject as Node).id];
         if (parentNode) {
-            addChildToContainer(diagram, parentNode, actualObject, !isRedo);
+            addChildToContainer(diagram, parentNode, actualObject, !isRedo, entry.historyAction === 'AddNodeToLane');
         } else {
             if (actualObject.parentId) {
                 parentNode = diagram.nameTable[actualObject.parentId];

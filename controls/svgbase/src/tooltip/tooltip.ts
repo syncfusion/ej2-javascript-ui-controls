@@ -474,7 +474,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 cancel: false, name: 'tooltipRender', tooltip : this
             };
             this.trigger('tooltipRender', argsData);
-            let markerSide: Side = this.renderTooltipElement(<Rect>this.areaBounds, <TooltipLocation>this.location, this.availableSize);
+            let markerSide: Side = this.renderTooltipElement(<Rect>this.areaBounds, <TooltipLocation>this.location);
             this.drawMarker(markerSide.isBottom, markerSide.isRight, this.markerSize);
         } else {
             this.updateTemplateFn();
@@ -491,10 +491,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.textElements = [];
         if (!this.template || this.shared) {
             // SVG element for tooltip
-            let svgObject: Element = document.getElementById(this.element.id + '_tooltip_svg');
-            if (!svgObject) {
-                svgObject = this.renderer.createSvg({ id: this.element.id + '_svg' });
-            }
+            let svgObject: Element = this.renderer.createSvg({ id: this.element.id + '_svg' });
             this.element.appendChild(svgObject);
             // Group to hold text and path.
             let groupElement: HTMLElement = document.getElementById(this.element.id + '_group');
@@ -536,9 +533,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         groupElement.appendChild(markerGroup);
     }
 
-    private renderTooltipElement(areaBounds: Rect, location: TooltipLocation, availableSize: Size): Side {
-        let elementId: string = (this.template !== null) ? this.element.id : this.element.id + '_group';
-        let tooltipDiv: HTMLDivElement = <HTMLDivElement>getElement(elementId);
+    private renderTooltipElement(areaBounds: Rect, location: TooltipLocation): Side {
+        let tooltipDiv: HTMLDivElement = <HTMLDivElement>getElement(this.element.id);
         let arrowLocation: TooltipLocation = new TooltipLocation(0, 0);
         let tipLocation: TooltipLocation = new TooltipLocation(0, 0);
         let textHeights: number[];
@@ -589,12 +585,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             this.updateDiv(tooltipDiv, rect.x, rect.y);
         }
-        let height : string = availableSize ? (availableSize.height).toString() :
-        (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding)).toString();
-        let width : string = availableSize ? (availableSize.width).toString() :
-        (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding)).toString();
-        svgObject.setAttribute('height', height);
-        svgObject.setAttribute('width', width);
+        svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
+        svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('opacity', '1');
 
         pathElement.setAttribute('d', findDirection(
@@ -610,7 +602,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
 
             let defElement: Element = this.renderer.createDefs();
-            defElement.setAttribute('id', 'SVG_tooltip_definition');
+            defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
             groupElement.appendChild(defElement);
 
             defElement.innerHTML = shadow;
@@ -666,7 +658,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
             removeElement(this.element.id + '_trackball_group');
-            removeElement('SVG_tooltip_definition');
+            removeElement(this.element.id + 'SVG_tooltip_definition');
         }
         let options: TextOption = new TextOption(
             this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)),
@@ -877,32 +869,16 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private animateTooltipDiv(tooltipDiv: HTMLDivElement, rect: Rect): void {
-        let transform: string;
-        let translate: string[];
-        let x: number;
-        let y: number;
-        if (this.template !== null) {
-            x = parseFloat(tooltipDiv.style.left);
-            y = parseFloat(tooltipDiv.style.top);
-        } else {
-            transform = tooltipDiv.getAttribute('transform');
-            translate = transform.split(',');
-            x = parseFloat(translate[0].replace('translate(' , ''));
-            y = parseFloat(translate[1]);
-        }
+        let x: number = parseFloat(tooltipDiv.style.left);
+        let y: number = parseFloat(tooltipDiv.style.top);
         let currenDiff: number;
         new Animation({}).animate(tooltipDiv, {
             duration: 300,
             progress: (args: AnimationOptions): void => {
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;
-                if (this.template !== null) {
-                    tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
-                    tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
-                } else {
-                    tooltipDiv.setAttribute('transform', 'translate(' + (x + currenDiff * (rect.x - x)) + ',' +
-                    (y + currenDiff * (rect.y - y)) + ')');
-                }
+                tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
+                tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
             },
             end: (model: AnimationOptions): void => {
                 this.updateDiv(tooltipDiv, rect.x, rect.y);
@@ -913,13 +889,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private updateDiv(tooltipDiv: HTMLDivElement, x: number, y: number): void {
-        if (this.template !== null) {
-            tooltipDiv.style.position = 'absolute';
-            tooltipDiv.style.left = x + 'px';
-            tooltipDiv.style.top = y + 'px';
-        } else {
-            tooltipDiv.setAttribute('transform', 'translate(' + x + ',' + y + ')');
-        }
+        tooltipDiv.style.left = x + 'px';
+        tooltipDiv.style.top = y + 'px';
     }
 
 

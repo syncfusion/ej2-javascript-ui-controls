@@ -85,7 +85,11 @@ export class HierarchicalTree {
                 layoutInfo.tree.hasSubTree = false;
                 if (!layout.nameTable[layout.root]) {
                     if (!node.inEdges || !node.inEdges.length) {
-                        rootNodes.push(node as INode);
+                        let parentId: string = 'parentId';
+                        let processId: string = 'processId';
+                        if (!node[parentId] && !node[processId]) {
+                            rootNodes.push(node as INode);
+                        }
                         if (node.data && String(node.data[uniqueId]) === layout.root) {
                             layout.firstLevelNodes.push(node as INode);
                         }

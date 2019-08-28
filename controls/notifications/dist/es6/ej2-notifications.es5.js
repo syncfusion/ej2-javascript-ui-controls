@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isNullOrUndefined, isUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -170,6 +170,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         if (this.isDevice && screen.width < 768) {
             new Touch(this.element, { swipe: this.swipeHandler.bind(this) });
         }
+        this.renderComplete();
     };
     /**
      * To show Toast element on a document with the relative position.
@@ -367,7 +368,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             duration: hideAnimate.duration, name: hideAnimate.effect, timingFunction: hideAnimate.easing
         };
         var intervalId = parseInt(toastEle.id.split('toast_')[1], 10);
-        var toastClose = {
+        var toastClose = isBlazor() ? {
+            toastContainer: this.toastContainer
+        } : {
             toastContainer: this.toastContainer,
             toastObj: this,
         };
@@ -536,7 +539,10 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
     };
     Toast.prototype.appendToTarget = function () {
         var _this = this;
-        var toastBeforeOpen = {
+        var toastBeforeOpen = isBlazor() ? {
+            element: this.toastEle,
+            cancel: false
+        } : {
             toastObj: this,
             element: this.toastEle,
             cancel: false
@@ -561,7 +567,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         e.stopPropagation();
         var target = e.target;
         var toastEle = closest(target, '.' + ROOT);
-        var clickArgs = {
+        var clickArgs = isBlazor() ? {
+            element: toastEle, cancel: false, clickToClose: false, originalEvent: e
+        } : {
             element: toastEle, cancel: false, clickToClose: false, originalEvent: e, toastObj: this
         };
         var isCloseIcon = target.classList.contains(CLOSEBTN);
@@ -577,7 +585,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         var animate = {
             duration: showAnimate.duration, name: showAnimate.effect, timingFunction: showAnimate.easing
         };
-        var toastOpen = {
+        var toastOpen = isBlazor() ? {
+            element: this.toastEle
+        } : {
             toastObj: this,
             element: this.toastEle,
         };

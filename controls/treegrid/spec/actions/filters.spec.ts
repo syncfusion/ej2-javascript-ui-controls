@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData, newSampledata } from '../base/datasource.spec';
+import { sampleData, projectData, newSampledata, sampleBlankData } from '../base/datasource.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { actionComplete, SaveEventArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
 import { Filter } from '../../src/treegrid/actions/filter';
@@ -694,7 +694,6 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
     });
     describe('Excel Filter Custom Filter Testing - MatchCase', () => {
       let gridObj: TreeGrid;
-      let rows: Element[];
       let originalTimeout: number;
       let actionComplete: (args: CellSaveEventArgs) => void;
       beforeAll((done: Function) => {
@@ -949,6 +948,55 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
       gridObj.actionComplete = actionComplete;
       (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+    describe('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionComplete: (args: CellSaveEventArgs) => void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleBlankData,
+            childMapping: 'subtasks',
+            treeColumnIndex: 1,
+            allowFiltering: true,
+            filterSettings: { type: 'Excel' },
+            toolbar: ['Search'],
+            searchSettings: { fields: ['taskName'], operator: 'contains', hierarchyMode: 'Both', ignoreCase: true },
+            columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+          },
+          done
+        );
+      });
+  
+      it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if (args.requestType == "filterafteropen") {
+            (<HTMLElement>gridObj.element.querySelectorAll('.e-excelfilter .e-check')[0]).click();
+            (<HTMLElement>gridObj.element.querySelectorAll('.e-excelfilter .e-uncheck')[1]).click();
+            expect(gridObj.element.querySelectorAll('.e-excelfilter .e-check')[0].textContent == "").toBe(true);
+          }
+          done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        (<HTMLElement>gridObj.element.querySelectorAll('.e-filtermenudiv')[1]).click();
+  
+      });
+      it('Hierarchy Filter Mode Testing - Parent with Search Settings Mode as Both - result', (done: Function) => {
+        actionComplete = (args: CellSaveEventArgs): void => {
+          if (args.requestType == "filtering") {
+            expect(gridObj.getRows().length == 3).toBe(true);
+            expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "").toBe(true);
+          }
+          done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        (<HTMLElement>gridObj.element.querySelector('.e-excelfilter .e-footer-content').getElementsByClassName('e-primary')[0]).click();
+  
+      });
       afterAll(() => {
         destroy(gridObj);
       });

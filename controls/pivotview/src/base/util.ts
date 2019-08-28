@@ -1,3 +1,5 @@
+import { IDataSet } from './engine';
+
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
  * @hidden
@@ -16,21 +18,19 @@ export class PivotUtil {
         return date;
     }
 
-    public static getClonedData(data: { [key: string]: Object }[]): { [key: string]: Object }[] {
-        let clonedData: { [key: string]: Object }[] = [];
-        if (data) {
-            for (let item of data as { [key: string]: Object }[]) {
-                let fields: string[] = Object.keys(item);
-                let keyPos: number = 0;
-                /* tslint:disable */
-                let framedSet: any = {};
-                /* tslint:enable */
-                while (keyPos < fields.length) {
-                    framedSet[fields[keyPos]] = item[fields[keyPos]];
-                    keyPos++;
-                }
-                clonedData.push(framedSet);
+    public static getClonedData(data: IDataSet[]): IDataSet[] {
+        let clonedData: IDataSet[] = [];
+        let fields: string[] = Object.keys(data[0]);
+        for (let item of data) {
+            let keyPos: number = 0;
+            /* tslint:disable */
+            let framedSet: any = {};
+            /* tslint:enable */
+            while (keyPos < fields.length) {
+                framedSet[fields[keyPos]] = item[fields[keyPos]];
+                keyPos++;
             }
+            clonedData.push(framedSet);
         }
         return clonedData;
     }

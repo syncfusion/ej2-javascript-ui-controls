@@ -275,6 +275,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         if (!this.enableOpacity) {
             addClass([this.container.parentElement], HIDEOPACITY);
         }
+        this.renderComplete();
     }
 
     private initWrapper(): void {
@@ -340,8 +341,8 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 target: this.container,
                 disabled: this.disabled,
                 enableRtl: this.enableRtl,
-                beforeOpen: this.beforeOpenFn.bind(this),
                 open: this.onOpen.bind(this),
+                beforeOpen: this.beforeOpenFn.bind(this),
                 beforeClose: this.beforePopupClose.bind(this),
                 click: (args: ClickEventArgs) => {
                     this.trigger('change', {
@@ -1782,7 +1783,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             if (value.length === 9) {
                 this.element.value = this.roundValue(value).slice(0, 7);
                 let preview: HTMLElement = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element) as HTMLElement;
-                if (preview) { preview.style.backgroundColor = newProp.value; }
+                if (preview) { preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value)); }
             } else {
                 this.value = oldProp.value;
             }

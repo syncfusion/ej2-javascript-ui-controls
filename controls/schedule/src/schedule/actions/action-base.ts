@@ -69,8 +69,7 @@ export class ActionBase {
                 eventObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
                 currentAction = 'EditOccurrence';
             }
-            if (this.parent.enableRecurrenceValidation
-                && this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
+            if (this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return;
             }

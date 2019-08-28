@@ -1,4 +1,4 @@
-export let excel_data: { [key: string]: Object }[] = [
+export let excel_data: object[] = [
   {
     "Date": "9-Jul",
     "Product": "File Folder",
@@ -59,7 +59,7 @@ export let excel_data: { [key: string]: Object }[] = [
   }
 ];
 
-export let pivot_dataset: { [key: string]: Object }[] = [
+export let pivot_dataset: object[] = [
   {
     "_id": "5a940692c2d185d9fde50e5e",
     "index": 0,
@@ -8882,7 +8882,7 @@ export let pivot_dataset: { [key: string]: Object }[] = [
   }
 ];
 
-export let pivot_nodata: { [key: string]: Object }[] = [
+export let pivot_nodata: object[] = [
   { Amount: 2100, Country: "Canada", Date: "FY 2005", Product: "Bike", Quantity: 22, State: "Alberta" },
   { Amount: 1000, Country: "Canada", Date: "FY 2006", Product: "Bike", Quantity: 12, State: "Alberta" },
   { Amount: 1050, Country: "Canada", Date: "FY 2007", Product: "Bike", Quantity: 27, State: "Alberta" },
@@ -9173,7 +9173,7 @@ export let pivot_nodata: { [key: string]: Object }[] = [
   { Amount: 5400, Country: "United States", Date: "FY 2008", Product: "Van", Quantity: 43, State: "South Carolina" }
 ];
 
-export let pivot_smalldata: { [key: string]: Object }[] = [
+export let pivot_smalldata: object[] = [
   { Amount: 100, Country: "Canada", Date: "FY 2005", Product: "Bike", Quantity: 2, State: "Alberta" },
   { Amount: 200, Country: "Canada", Date: "FY 2006", Product: "Van", Quantity: 3, State: "British Columbia" },
   { Amount: 300, Country: "Canada", Date: "FY 2007", Product: "Car", Quantity: 4, State: "Brunswick" },
@@ -9198,31 +9198,4 @@ export let pivot_smalldata: { [key: string]: Object }[] = [
   { Amount: 200, Country: "United States", Date: "FY 2005", Product: "Bike", Quantity: 4, State: "New York" },
   { Amount: 250, Country: "United States", Date: "FY 2008", Product: "Car", Quantity: 3, State: "North Carolina" },
   { Amount: 300, Country: "United States", Date: "FY 2007", Product: "Van", Quantity: 4, State: "South Carolina" }
-];
-
-export let pivot_undefineddata: { [key: string]: Object }[] = [
-  { Amount: 100, Country: "Canada", Date: "FY 2005", Product: "Bike", Quantity: 2, State: "Alberta" },
-  { Country: "Canada", Date: "FY 2006", Product: "Van", Quantity: 3, State: "British Columbia" },
-  { Amount: 300, Date: "FY 2007", Product: "Car", Quantity: 4, State: "Brunswick" },
-  { Amount: 150, Country: "Canada", Product: "Bike", Quantity: 3, State: "Manitoba" },
-  { Amount: 200, Country: "Canada", Date: "FY 2006", Quantity: 4, State: "Ontario" },
-  { Amount: 100, Country: "Canada", Date: "FY 2007", Product: "Van", State: "Quebec" },
-  { Amount: 200, Country: "France", Date: "FY 2005", Product: "Bike", Quantity: 2 },
-  { Country: "France", Date: "FY 2006", Product: "Van", Quantity: 4, State: "Essonne" },
-  { Amount: 300, Date: "FY 2007", Product: "Car", Quantity: 3, State: "Garonne (Haute)" },
-  { Amount: 150, Country: "France", Product: "Van", Quantity: 2, State: "Gers" },
-  { Amount: 200, Country: "Germany", Date: "FY 2006", Quantity: 3, State: "Bayern" },
-  { Amount: 250, Country: "Germany", Date: "FY 2007", Product: "Car", State: "Brandenburg" },
-  { Amount: 150, Country: "Germany", Date: "FY 2008", Product: "Car", Quantity: 4 },
-  { Country: "Germany", Date: "FY 2008", Product: "Bike", Quantity: 4, State: "Hessen" },
-  { Amount: 150, Date: "FY 2007", Product: "Van", Quantity: 3, State: "Nordrhein-Westfalen" },
-  { Amount: 100, Country: "Germany", Product: "Bike", Quantity: 2, State: "Saarland" },
-  { Amount: 150, Country: "United Kingdom", Date: "FY 2008", Quantity: 5 },
-  { Amount: 250, Country: "United States", Date: "FY 2007", Product: "Car", State: "Alabama" },
-  { Amount: 200, Country: "United States", Date: "FY 2005", Product: "Van", Quantity: 4 },
-  { Country: "United States", Date: "FY 2006", Product: "Bike", Quantity: 2, State: "Colorado" },
-  { Amount: 150, Date: "FY 2008", Product: "Car", Quantity: 3, State: "New Mexico" },
-  { Amount: 200, Country: "United States", Product: "Bike", Quantity: 4, State: "New York" },
-  { Amount: 250, Country: "United States", Date: "FY 2008", Quantity: 3, State: "North Carolina" },
-  { Amount: 300, Country: "United States", Date: "FY 2007", Product: "Van", State: "South Carolina" }
 ];

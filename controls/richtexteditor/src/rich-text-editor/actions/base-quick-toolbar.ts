@@ -1,4 +1,4 @@
-import { detach, getUniqueID, append, closest, selectAll, select, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { detach, getUniqueID, append, closest, selectAll, select, isNullOrUndefined as isNOU, isBlazor } from '@syncfusion/ej2-base';
 import { addClass, removeClass, Browser, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Popup, isCollide } from '@syncfusion/ej2-popups';
 import { OverflowMode } from '@syncfusion/ej2-navigations';
@@ -174,7 +174,8 @@ export class BaseQuickToolbar {
     }
 
     public showPopup(x: number, y: number, target: Element): void {
-        let eventArgs: BeforeQuickToolbarOpenArgs = {popup: this.popupObj, cancel: false, targetElement: target};
+        let eventArgs: BeforeQuickToolbarOpenArgs = isBlazor() ? { cancel: false, targetElement: target } :
+        { popup: this.popupObj, cancel: false, targetElement: target };
         this.parent.trigger(events.beforeQuickToolbarOpen, eventArgs, (beforeQuickToolbarArgs: BeforeQuickToolbarOpenArgs) => {
             if (!beforeQuickToolbarArgs.cancel) {
                 let editPanelTop: number;
@@ -290,7 +291,8 @@ export class BaseQuickToolbar {
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [classes.CLS_POP]);
             detach(element);
-            this.parent.trigger(events.quickToolbarClose, this.popupObj);
+            let args: Popup = isBlazor() ? null : this.popupObj;
+            this.parent.trigger(events.quickToolbarClose, args);
         }
     }
 

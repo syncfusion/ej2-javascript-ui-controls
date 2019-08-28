@@ -1,4 +1,4 @@
-import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, append, isBlazor } from '@syncfusion/ej2-base';import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile } from '@syncfusion/ej2-base';import { removeClass, addClass, Event, KeyboardEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IDataSet, IPageSettings, IGroupSettings } from '../../base/engine';import { IDrilledItem, ICustomProperties, ISort, IFilter, IFieldOptions, ICalculatedFields, IDrillOptions } from '../../base/engine';import { IConditionalFormatSettings, IStringIndex } from '../../base/engine';import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, ChartLabelInfo } from '../../common/base/interface';import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs, SaveReportArgs } from '../../common/base/interface';import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, CellTemplateArgs } from '../../common/base/interface';import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs } from '../../common/base/interface';import { FieldListRefreshedEventArgs } from '../../common/base/interface';import { Render } from '../renderer/render';import { PivotCommon } from '../../common/base/pivot-common';import { Common } from '../../common/actions/common';import { GroupingBar } from '../../common/grouping-bar/grouping-bar';import { DataSourceSettingsModel, DrillOptionsModel } from '../model/datasourcesettings-model';import { DataSourceSettings } from '../model/datasourcesettings';import { GridSettings } from '../model/gridsettings';import { GridSettingsModel } from '../model/gridsettings-model';import { PivotButton } from '../../common/actions/pivot-button';import { PivotFieldList } from '../../pivotfieldlist/base/field-list';import { Grid, Column, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, getObject } from '@syncfusion/ej2-grids';import { SelectionType, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';import { RowDeselectEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';import { EditSettingsModel, HeaderCellInfoEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';import { PdfExportProperties, ExcelExportProperties, ExcelQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { ExcelHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExport } from '../actions/excel-export';import { PDFExport } from '../actions/pdf-export';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { KeyboardInteraction } from '../actions/keyboard';import { PivotContextMenu } from '../../common/popups/context-menu';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { ConditionalFormatting } from '../../common/conditionalformatting/conditional-formatting';import { VirtualScroll } from '../actions/virtualscroll';import { DrillThrough } from '../actions/drill-through';import { Condition } from '../../base/types';import { EditMode, ToolbarItems, View, Primary } from '../../common';import { PivotUtil } from '../../base/util';import { Toolbar } from '../../common/popups/toolbar';import { PivotChart } from '../../pivotchart/index';import { ChartSettings } from '../model/chartsettings';import { ChartSettingsModel } from '../model/chartsettings-model';import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ClickEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';import { OlapEngine, IOlapCustomProperties, ITupInfo, IDrillInfo } from '../../base/olap/engine';import { NumberFormatting } from '../../common/popups/formatting-dialog';
+import { Property, Browser, Component, ModuleDeclaration, createElement, setStyleAttribute, append, isBlazor } from '@syncfusion/ej2-base';import { EmitType, EventHandler, Complex, extend, ChildProperty, Collection, isNullOrUndefined, remove } from '@syncfusion/ej2-base';import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChanged, compile } from '@syncfusion/ej2-base';import { removeClass, addClass, Event, KeyboardEventArgs } from '@syncfusion/ej2-base';import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IDataSet, IPageSettings, IGroupSettings } from '../../base/engine';import { IDrilledItem, ICustomProperties, ISort, IFilter, IFieldOptions, ICalculatedFields } from '../../base/engine';import { IConditionalFormatSettings, IStringIndex } from '../../base/engine';import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import * as events from '../../common/base/constant';import * as cls from '../../common/base/css-constant';import { AxisFields } from '../../common/grouping-bar/axis-field-renderer';import { LoadEventArgs, EnginePopulatingEventArgs, DrillThroughEventArgs, PivotColumn, SaveReportArgs } from '../../common/base/interface';import { FetchReportArgs, LoadReportArgs, RenameReportArgs, RemoveReportArgs, ToolbarArgs } from '../../common/base/interface';import { PdfCellRenderArgs, NewReportArgs, ChartSeriesCreatedEventArgs, AggregateEventArgs } from '../../common/base/interface';import { ResizeInfo, ScrollInfo, ColumnRenderEventArgs, PivotCellSelectedEventArgs } from '../../common/base/interface';import { CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, CellTemplateArgs } from '../../common/base/interface';import { BeforeExportEventArgs, EnginePopulatedEventArgs, BeginDrillThroughEventArgs, DrillArgs } from '../../common/base/interface';import { FieldListRefreshedEventArgs } from '../../common/base/interface';import { Render } from '../renderer/render';import { PivotCommon } from '../../common/base/pivot-common';import { Common } from '../../common/actions/common';import { GroupingBar } from '../../common/grouping-bar/grouping-bar';import { DataSourceSettingsModel, DrillOptionsModel } from '../model/datasourcesettings-model';import { DataSourceSettings } from '../model/datasourcesettings';import { GridSettings } from '../model/gridsettings';import { GridSettingsModel } from '../model/gridsettings-model';import { PivotButton } from '../../common/actions/pivot-button';import { PivotFieldList } from '../../pivotfieldlist/base/field-list';import { Grid, Column, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, getObject } from '@syncfusion/ej2-grids';import { SelectionType, ContextMenuItemModel } from '@syncfusion/ej2-grids';import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';import { RowDeselectEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';import { EditSettingsModel, HeaderCellInfoEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';import { PdfExportProperties, ExcelExportProperties, ExcelQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';import { ExcelHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';import { ExcelExport } from '../actions/excel-export';import { PDFExport } from '../actions/pdf-export';import { CalculatedField } from '../../common/calculatedfield/calculated-field';import { KeyboardInteraction } from '../actions/keyboard';import { PivotContextMenu } from '../../common/popups/context-menu';import { DataManager, ReturnOption, Query } from '@syncfusion/ej2-data';import { ConditionalFormatting } from '../../common/conditionalformatting/conditional-formatting';import { VirtualScroll } from '../actions/virtualscroll';import { DrillThrough } from '../actions/drill-through';import { Condition } from '../../base/types';import { EditMode, ToolbarItems, View, Primary } from '../../common';import { PivotUtil } from '../../base/util';import { Toolbar } from '../../common/popups/toolbar';import { PivotChart } from '../../pivotchart/index';import { ChartSettings } from '../model/chartsettings';import { ChartSettingsModel } from '../model/chartsettings-model';import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';import { ClickEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';import { NumberFormatting } from '../../common/popups/formatting-dialog';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -372,31 +372,11 @@ export interface PivotViewModel extends ComponentModel{
     maxNodeLimitInMemberEditor?: number;
 
     /**
-     * It allows to set the maximum number of rows to be return while drill through.
-     * @default 10000 
-     */
-    maxRowsForDrillThrough?: number;
-
-    /**
-     * If `loadMaximumMembers` is set to true, then it will load all the level members from cube when doing member filtering initially.
-     * Note: This may cause performance lag based on members count that fetch from cube 
-     * while the member editor pop-up opens for the first time alone.
-     * @default false    
-     */
-    loadMaximumMembers?: boolean;
-
-    /**
      * The template option which is used to render the pivot cells on the pivotview. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the pivot cells.
      * @default null
      */
     cellTemplate?: string;
-
-    /**
-     * It allows to customize the spinner.
-     * @default null
-     */
-    spinnerTemplate?: string;
 
     /**
      * @hidden
@@ -462,7 +442,7 @@ export interface PivotViewModel extends ComponentModel{
     beforeColumnsRender?: EmitType<ColumnRenderEventArgs>;
 
     /**
-     * @hidden
+     * @hidden 
      * @blazorproperty 'Selected'
      */
     selected?: EmitType<CellSelectEventArgs>;
@@ -474,25 +454,25 @@ export interface PivotViewModel extends ComponentModel{
     cellDeselected?: EmitType<CellDeselectEventArgs>;
 
     /**
-     * @hidden
+     * @hidden 
      * @blazorproperty 'RowSelected'
      */
     rowSelected?: EmitType<RowSelectEventArgs>;
 
     /**
-     * @hidden
+     * @hidden 
      * @blazorproperty 'RowDeselected'
      */
     rowDeselected?: EmitType<RowDeselectEventArgs>;
 
     /**
-     * @hidden
+     * @hidden 
      * @blazorproperty 'ChartTooltipRendered'
      */
     chartTooltipRender?: EmitType<ITooltipRenderEventArgs>;
 
     /**
-     * @hidden
+     * @hidden 
      * @blazorproperty 'ChartLoaded'
      */
     chartLoaded?: EmitType<ILoadedEventArgs>;
@@ -519,7 +499,7 @@ export interface PivotViewModel extends ComponentModel{
     contextMenuClick?: EmitType<ContextMenuClickEventArgs>;
 
     /**
-     * @hidden
+     * @hidden 
      * @blazorproperty 'ContextMenuOpened'
      */
     contextMenuOpen?: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -648,12 +628,6 @@ export interface PivotViewModel extends ComponentModel{
      * @deprecated
      */
     beforeExport?: EmitType<BeforeExportEventArgs>;
-
-    /**
-     * This allows to do changes before conditional formatting apply.
-     * @event
-     */
-    conditionalFormatCreating?: EmitType<IConditionalFormatSettings>;
 
     /**
      * Triggers when cell is clicked in the Pivot widget.

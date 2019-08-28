@@ -10,7 +10,6 @@ import { SeriesModel } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
 import { PivotView } from '../../pivotview';
-import { OlapEngine } from '../../base/olap/engine';
 
 /**
  * Interface
@@ -267,7 +266,7 @@ export interface SelectionSettings {
  * @hidden
  */
 export interface CommonArgs {
-    pivotEngine: PivotEngine | OlapEngine;
+    pivotEngine: PivotEngine;
     dataSourceSettings: IDataOptions;
     element: HTMLElement;
     id: string;
@@ -276,7 +275,6 @@ export interface CommonArgs {
     isAdaptive: boolean;
     renderMode: Mode;
     localeObj: L10n;
-    dataType: string;
 }
 /**
  * @hidden
@@ -369,24 +367,18 @@ export interface RowHeaderPositionGrouping {
  * @hidden
  */
 export interface RowHeaderLevelGrouping {
-    [key: string]: ChartLabelInfo;
-}
-
-/**
- * @hidden
- */
-export interface ChartLabelInfo {
-    text: string;
-    name: string;
-    level: number;
-    hasChild: boolean;
-    isDrilled: boolean;
-    levelName: string;
-    fieldName: string;
-    rowIndex: number;
-    colIndex: number;
-    span?: number;
-    cell?: IAxisSet;
+    [key: string]: {
+        text: string,
+        name: string,
+        level: number,
+        hasChild: boolean,
+        isDrilled: boolean
+        levelName: string,
+        fieldName: string,
+        rowIndex: number,
+        colIndex: number,
+        span?: number,
+    };
 }
 
 export interface PdfTheme {

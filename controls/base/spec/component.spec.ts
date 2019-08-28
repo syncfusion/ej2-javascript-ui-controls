@@ -833,7 +833,7 @@ describe('Component', () => {
             let obj: any = new Styler();
             delete window['Blazor'];
             obj.renderComplete();
-            // expect(obj.isRendered).toBe(true);
+            expect(obj.isRendered).toBe(true);
         });
         it(' - wrapper element and blazor testing', () => {
             window['Blazor'] = {};
@@ -846,7 +846,7 @@ describe('Component', () => {
             let obj: any = new Styler({ size: '10px' }, elem);
             let wrapper: HTMLElement = createElement('div');
             obj.renderComplete(wrapper);
-            // expect(obj.isRendered).toBe(true);
+            expect(obj.isRendered).toBe(true);
         });
     });
 });

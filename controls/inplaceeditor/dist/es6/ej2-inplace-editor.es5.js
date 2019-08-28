@@ -306,6 +306,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
         this.setClass('add', this.cssClass);
+        this.renderComplete();
     };
     InPlaceEditor.prototype.setClass = function (action, val) {
         if (!this.isEmpty(val)) {
@@ -1559,7 +1560,7 @@ var Rte = /** @__PURE__ @class */ (function () {
         this.compObj = new RichTextEditor(this.parent.model, e.target);
     };
     Rte.prototype.focus = function () {
-        this.compObj.element.focus();
+        this.compObj.focusIn();
     };
     Rte.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'RTE') {

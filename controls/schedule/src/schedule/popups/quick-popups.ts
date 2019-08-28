@@ -251,9 +251,7 @@ export class QuickPopups {
                 dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
         }
-        if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
-            this.showQuickDialog('RecurrenceValidationAlert');
-        }
+        this.showQuickDialog('RecurrenceValidationAlert');
     }
 
     public openDeleteAlert(): void {
@@ -324,13 +322,7 @@ export class QuickPopups {
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
-                let templateElement: HTMLElement[];
-                if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-                    templateElement = this.parent.getAppointmentTemplate()(eventData);
-                    append(templateElement, appointmentEle);
-                } else {
-                    appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
-                }
+                appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     appointmentEle.setAttribute('data-group-index', groupIndex);
                 }
@@ -362,6 +354,9 @@ export class QuickPopups {
         this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
         let guid: string = target.getAttribute('data-guid');
         let eventObj: { [key: string]: Object } = this.parent.eventBase.getEventByGuid(guid) as { [key: string]: Object };
+        if (isNullOrUndefined(eventObj)) {
+            return;
+        }
         let eventTitle: string = (eventObj[this.parent.eventFields.subject] || this.l10n.getConstant('noTitle')) as string;
         let eventTemplate: string = `<div class="${cls.MULTIPLE_EVENT_POPUP_CLASS}"><div class="${cls.POPUP_HEADER_CLASS}">` +
             `<button class="${cls.CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button>` +

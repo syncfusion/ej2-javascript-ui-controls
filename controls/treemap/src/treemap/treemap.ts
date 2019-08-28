@@ -3,7 +3,7 @@
  */
 
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax } from '@syncfusion/ej2-base';
-import { Complex, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
+import { Complex, Collection, ModuleDeclaration, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Event, EmitType, Internationalization } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { isNullOrUndefined, createElement, EventHandler, Browser, remove } from '@syncfusion/ej2-base';
@@ -452,23 +452,16 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     protected render(): void {
-
         this.createSecondaryElement();
-
         this.addTabIndex();
-
         this.themeStyle = getThemeStyle(this.theme);
-
         this.renderBorder();
-
         this.renderTitle(this.titleSettings, 'title', null, null);
-
         if (!isNullOrUndefined(this.levelsOfData)) {
             this.defaultLevelData = this.levelsOfData;
         }
-
         this.processDataManager();
-
+        this.renderComplete();
     }
 
     /* tslint:disable:no-string-literal */
@@ -513,7 +506,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
         this.elementChange();
 
-        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
+        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
 
     }
 
@@ -524,6 +517,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
                 remove(this.svgObject);
+            }
+        }
+        if (this.leafItemSettings.labelTemplate) {
+            resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
+        }
+        for (let i: number = 0; i < this.levels.length; i++) {
+            if (this.levels[i].headerTemplate) {
+                resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
         let containerWidth: number = this.element.clientWidth;
@@ -771,8 +772,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Handles the export method for chart control.
-     * @param type 
-     * @param fileName 
+     * @param type
+     * @param fileName
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
         let exportMap: ExportUtils = new ExportUtils(this);
@@ -914,7 +915,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             cancel: false,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            treemap: this
+            treemap: this.isBlazor ? null : this
         };
 
         if (this.resizeTo) {
@@ -928,7 +929,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     this.refreshing = true;
                     this.wireEVents();
                     args.currentSize = this.availableSize;
-                    this.trigger(resize, this.isBlazor ? {} : args);
+                    this.trigger(resize, args);
                     this.render();
                 },
                 500);
@@ -1136,7 +1137,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 };
                 this.trigger(drillStart, startEvent, (observedArgs: IDrillStartEventArgs) => {
                     this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
-                    (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
+                        (!isNullOrUndefined(drillLevel) && this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
                     if (!observedArgs.cancel) {
                         if (document.getElementById(layoutID)) {
                             document.getElementById(layoutID).remove();
@@ -1200,7 +1201,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To provide the array of modules needed for maps rendering
      * @return {ModuleDeclaration[]}
-     * @private 
+     * @private
      */
     public requiredModules(): ModuleDeclaration[] {
         let modules: ModuleDeclaration[] = [];
@@ -1231,7 +1232,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         return modules;
     }
 
-
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
     public onPropertyChanged(newProp: TreeMapModel, oldProp: TreeMapModel): void {
         let render: boolean = false;
         for (let prop of Object.keys(newProp)) {
@@ -1241,6 +1245,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 case 'height':
                 case 'width':
+                case 'layoutType':
+                case 'leafItemSettings':
+                case 'legendSettings':
                     render = true;
                     break;
             }

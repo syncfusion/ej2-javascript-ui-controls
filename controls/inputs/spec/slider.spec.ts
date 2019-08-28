@@ -4333,3 +4333,39 @@ describe('Slider Control', () => {
         });
     });
 });
+
+describe("Slider ticks with decimal values", () => {
+    it("Horizontal ticks", () => {
+        let slider = document.createElement('div');
+        document.body.appendChild(slider);
+        const sliderInstance = new Slider({
+            min: 2,
+            max: 263.5,
+            ticks: { placement: 'Before', largeStep: 20, smallStep: 5, showSmallTicks: true }
+        });
+        sliderInstance.appendTo(slider);
+        let content = sliderInstance.element.querySelector('.e-first-tick').children[0].textContent;
+        expect(content).toBe("2");
+        content = sliderInstance.element.querySelector('.e-last-tick').children[0].textContent;
+        expect(content).toBe("262");
+        sliderInstance.destroy();
+        document.body.removeChild(slider);
+    });
+    it("Horizontal ticks", () => {
+        let slider = document.createElement('div');
+        document.body.appendChild(slider);
+        const sliderInstance = new Slider({
+            min: 2,
+            max: 263.5,
+            ticks: { placement: 'Before', largeStep: 20, smallStep: 5, showSmallTicks: true },
+            orientation: 'Vertical'
+        });
+        sliderInstance.appendTo(slider);
+        let content = sliderInstance.element.querySelector('.e-first-tick').children[0].textContent;
+        expect(content).toBe("263.5");
+        content = sliderInstance.element.querySelector('.e-last-tick').children[0].textContent;
+        expect(content).toBe("3.5");
+        sliderInstance.destroy();
+        document.body.removeChild(slider);
+    });
+})

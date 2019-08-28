@@ -234,11 +234,10 @@ describe('RadioButton', () => {
 
         it('Keyboard Event', () => {
             radio = new RadioButton({}, '#radio');
-            radio.keyDownHandler();
             radio.focusHandler();
+            radio.keyUpHandler();
             expect(element.nextElementSibling.classList.contains('e-focus')).toEqual(true);
             radio.focusOutHandler();
-            radio.mouseDownHandler();
             radio.focusHandler();
             expect(element.nextElementSibling.classList.contains('e-focus')).toEqual(false);
             radio.focusOutHandler();
@@ -246,11 +245,10 @@ describe('RadioButton', () => {
 
         it('Mouse Event', () => {
             radio = new RadioButton({}, '#radio');
-            radio.mouseDownHandler();
             radio.focusHandler();
             expect(element.nextElementSibling.classList.contains('e-focus')).toEqual(false);
             radio.focusOutHandler();
-            radio.mouseDownHandler();
+            radio.focusHandler();
             let event: any = {
                 preventDefault: (): void => { /** NO Code */ },
                 type: 'mousedown'

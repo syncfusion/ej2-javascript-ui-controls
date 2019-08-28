@@ -3,19 +3,15 @@ import { Gantt } from '../base/gantt';
 import { TaskFieldsModel, EditSettingsModel } from '../models/models';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent, IPredecessor } from '../base/interface';
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs } from '../base/interface';
-import { ColumnModel, Column as GanttColumn } from '../models/column';
+import { ColumnModel } from '../models/column';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
-import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance } from '@syncfusion/ej2-grids';
+import { ReturnType, RecordDoubleClickEventArgs, Row, Column } from '@syncfusion/ej2-grids';
 import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex } from '../base/utils';
 import { RowPosition } from '../base/enum';
 import { CellEdit } from './cell-edit';
 import { TaskbarEdit } from './taskbar-edit';
 import { DialogEdit } from './dialog-edit';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
-import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
-import { ConnectorLineEdit } from './connector-line-edit';
-
 
 /**
  * The Edit Module is used to handle editing actions.
@@ -43,9 +39,6 @@ export class Edit {
         if (this.parent.editSettings.allowEditing && this.parent.editSettings.mode === 'Auto') {
             this.cellEditModule = new CellEdit(this.parent);
         }
-        if (this.parent.taskFields.dependency) {
-            this.parent.connectorLineEditModule = new ConnectorLineEdit(this.parent);
-        }
         if (this.parent.editSettings.allowAdding || (this.parent.editSettings.allowEditing &&
             (this.parent.editSettings.mode === 'Dialog' || this.parent.editSettings.mode === 'Auto'))) {
             this.dialogModule = new DialogEdit(this.parent);
@@ -66,131 +59,10 @@ export class Edit {
         this.parent.treeGrid.editSettings.allowAdding = this.parent.editSettings.allowAdding;
         this.parent.treeGrid.editSettings.allowDeleting = this.parent.editSettings.allowDeleting;
         this.parent.treeGrid.editSettings.showDeleteConfirmDialog = this.parent.editSettings.showDeleteConfirmDialog;
-        this.updateDefaultColumnEditors();
     }
 
     private getModuleName(): string {
         return 'edit';
-    }
-
-    /**
-     * Method to update default edit params and editors for Gantt
-     */
-    private updateDefaultColumnEditors(): void {
-        let customEditorColumns: string[] =
-            [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo];
-        for (let i: number = 0; i < customEditorColumns.length; i++) {
-            if (!isNullOrUndefined(customEditorColumns[i]) && customEditorColumns[i].length > 0) {
-                let column: ColumnModel = this.parent.getColumnByField(customEditorColumns[i], this.parent.treeGridModule.treeGridColumns);
-                if (column) {
-                    if (column.field === this.parent.taskFields.id) {
-                        this.updateIDColumnEditParams(column);
-                    } else if (column.field === this.parent.taskFields.progress) {
-                        this.updateProgessColumnEditParams(column);
-                    } else if (column.field === this.parent.taskFields.resourceInfo) {
-                        this.updateResourceColumnEditor(column);
-                    }
-                }
-            }
-        }
-    }
-    /**
-     * Method to update editors for id column in Gantt
-     */
-    private updateIDColumnEditParams(column: ColumnModel): void {
-        let editParam: NumericTextBoxModel = {
-            min: 0,
-            decimals: 0,
-            validateDecimalOnType: true,
-            format: 'n0',
-            showSpinButton: false
-        };
-        this.updateEditParams(column, editParam);
-    }
-
-    /**
-     * Method to update edit params of default progress column
-     */
-    private updateProgessColumnEditParams(column: ColumnModel): void {
-        let editParam: NumericTextBoxModel = {
-            min: 0,
-            decimals: 0,
-            validateDecimalOnType: true,
-            max: 100,
-            format: 'n0'
-        };
-        this.updateEditParams(column, editParam);
-    }
-    /**
-     * Assign edit params for id and progress columns
-     */
-    private updateEditParams(column: ColumnModel, editParam: object): void {
-        if (isNullOrUndefined(column.edit)) {
-            column.edit = {};
-            column.edit.params = {};
-        } else if (isNullOrUndefined(column.edit.params)) {
-            column.edit.params = {};
-        }
-        extend(column.edit.params, editParam);
-        let ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
-        ganttColumn.edit = column.edit;
-    }
-    /**
-     * Method to update resource column editor for default resource column
-     */
-    private updateResourceColumnEditor(column: ColumnModel): void {
-        if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
-            column.editType = 'dropdownedit';
-            column.edit = this.getResourceEditor();
-            let ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
-            ganttColumn.editType = 'dropdownedit';
-            ganttColumn.edit = column.edit;
-        }
-    }
-
-    /**
-     * Method to create resource custom editor
-     */
-    private getResourceEditor(): IEditCell {
-        let editObject: IEditCell = {};
-        let editor: MultiSelect;
-        MultiSelect.Inject(CheckBoxSelection);
-        editObject.write = (args: { rowData: Object, element: Element, column: GanttColumn, row: HTMLElement, requestType: string }) => {
-            this.parent.treeGridModule.currentEditRow = {};
-            editor = new MultiSelect({
-                dataSource: new DataManager(this.parent.resources),
-                fields: { text: this.parent.resourceNameMapping, value: this.parent.resourceIDMapping },
-                mode: 'CheckBox',
-                showDropDownIcon: true,
-                popupHeight: '350px',
-                delimiterChar: ',',
-                value: this.parent.treeGridModule.getResourceIds(args.rowData as IGanttData) as number[]
-            });
-            editor.appendTo(args.element as HTMLElement);
-        };
-        editObject.read = (element: HTMLElement): string => {
-            let value: Object[] = (<EJ2Intance>element).ej2_instances[0].value;
-            let resourcesName: string[] = [];
-            if (isNullOrUndefined(value)) {
-                value = [];
-            }
-            for (let i: number = 0; i < value.length; i++) {
-                for (let j: number = 0; j < this.parent.resources.length; j++) {
-                    if (this.parent.resources[j][this.parent.resourceIDMapping] === value[i]) {
-                        resourcesName.push(this.parent.resources[j][this.parent.resourceNameMapping]);
-                        break;
-                    }
-                }
-            }
-            this.parent.treeGridModule.currentEditRow[this.parent.taskFields.resourceInfo] = value;
-            return resourcesName.join(',');
-        };
-        editObject.destroy = () => {
-            if (editor) {
-                editor.destroy();
-            }
-        };
-        return editObject;
     }
 
     /**
@@ -485,20 +357,20 @@ export class Edit {
         this.predecessorUpdated = this.isPredecessorUpdated(args.data);
         if (this.predecessorUpdated) {
             this.parent.isConnectorLineUpdate = true;
-            this.parent.connectorLineEditModule.addRemovePredecessor(args.data);
+            this.parent.predecessorModule.addRemovePredecessor(args.data);
         }
         let validateObject: object = {};
         if (isValidatePredecessor) {
-            validateObject = this.parent.connectorLineEditModule.validateTypes(args.data);
+            validateObject = this.parent.predecessorModule.validateTypes(args.data);
             this.parent.isConnectorLineUpdate = true;
             if (!isNullOrUndefined(getValue('violationType', validateObject))) {
                 let newArgs: IValidateArgs = this.validateTaskEvent(args);
                 if (newArgs.validateMode.preserveLinkWithEditing === false &&
                     newArgs.validateMode.removeLink === false &&
                     newArgs.validateMode.respectLink === false) {
-                    this.parent.connectorLineEditModule.openValidationDialog(validateObject);
+                    this.parent.predecessorModule.openValidationDialog(validateObject);
                 } else {
-                    this.parent.connectorLineEditModule.applyPredecessorOption();
+                    this.parent.predecessorModule.applyPredecessorOption();
                 }
             } else {
                 this.updateEditedTask(args);

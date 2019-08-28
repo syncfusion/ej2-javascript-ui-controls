@@ -15,6 +15,12 @@ export class DataUtil {
     public static serverTimezoneOffset: number = null;
 
     /**
+     * Species whether are not to be parsed with serverTimezoneOffset value.
+     * @hidden
+     */
+    public static timeZoneHandling: boolean = true;
+
+    /**
      * Returns the value by invoking the provided parameter function.
      * If the paramater is not of type function then it will be returned as it is.
      * @param  {Function|string|string[]|number} value
@@ -449,7 +455,8 @@ export class DataUtil {
         while (left.length > 0 || right.length > 0) {
             if (left.length > 0 && right.length > 0) {
                 if (comparer) {
-                    current = (<Function>comparer)(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName)) <= 0 ? left : right;
+                    current = (<Function>comparer)(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName),
+                                                   left[0], right[0]) <= 0 ? left : right;
                 } else {
                     current = left[0][fieldName] < left[0][fieldName] ? left : right;
                 }
@@ -1633,8 +1640,9 @@ export class DataUtil {
             let dupValue: string | Date = value;
             if (typeof value === 'string') {
                 let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                let offSet: number = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
                 if (ms) {
-                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
+                        return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
                 } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
                     let arr: string[] = (<string>dupValue).split(/[^0-9]/);
                     value = DataUtil.dateParse
@@ -1643,7 +1651,7 @@ export class DataUtil {
                                 parseInt(arr[1], 10) - 1,
                                 parseInt(arr[2], 10),
                                 parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
-                                DataUtil.serverTimezoneOffset, true);
+                                offSet, true);
                 }
             }
             return value;
@@ -1726,6 +1734,44 @@ export class DataUtil {
             }
 
             return val;
+        },
+        /**
+         * It will replace the Date object with respective to UTC format value.
+         * @param  {string} key
+         * @param  {any} value
+         * @hidden
+         */
+        /* tslint:disable-next-line:no-any */
+        jsonDateReplacer: (key: string, value: any): any => {
+            if (key === 'value' && value) {
+                if (typeof value === 'string') {
+                    let ms: string[] = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(<string>value);
+                    if (ms) {
+                        value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
+                    } else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(<string>value)) {
+                        let arr: string[] = (<string>value).split(/[^0-9]/);
+                        value = DataUtil.dateParse
+                        .toTimeZone(new Date(
+                                    parseInt(arr[0], 10),
+                                    parseInt(arr[1], 10) - 1,
+                                    parseInt(arr[2], 10),
+                                    parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)),
+                                    null, true);
+                    }
+                }
+                if (value instanceof Date) {
+                    value = DataUtil.dateParse.addSelfOffset(value);
+                    if (DataUtil.serverTimezoneOffset === null) {
+                        return DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(value), null).toJSON();
+                    } else {
+                        value = DataUtil.dateParse.toTimeZone(value, (((value.getTimezoneOffset() / 60) * 2)
+                                                                     - DataUtil.serverTimezoneOffset ),
+                                                              false);
+                        return value.toJSON();
+                    }
+                }
+            }
+            return value;
         }
     };
 
@@ -1934,6 +1980,8 @@ export interface ParseOption {
     replacer?: Function;
     jsonReplacer?: Function;
     arrayReplacer?: Function;
+    /* tslint:disable-next-line:no-any */
+    jsonDateReplacer?: (key: string, value: any) => any;
 }
 /**
  * @hidden

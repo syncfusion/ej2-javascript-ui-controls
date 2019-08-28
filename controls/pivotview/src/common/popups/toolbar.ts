@@ -142,14 +142,6 @@ export class Toolbar {
                         id: this.parent.element.id + 'chartmenu'
                     });
                     break;
-                case 'MDX':
-                    if (this.parent.dataType == "olap") {
-                        items.push({
-                            prefixIcon: cls.GRID_MDX + ' ' + cls.ICON, id: this.parent.element.id + 'mdxQuery',
-                            click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('mdxQuery')
-                        });
-                    }
-                    break;
                 case 'Export':
                     items.push({
                         template: '<ul id="' + this.parent.element.id + 'export_menu"></ul>',
@@ -239,26 +231,6 @@ export class Toolbar {
         }
     }
 
-    private mdxQueryDialog(args: ClickEventArgs): void {
-        this.parent.element.appendChild(createElement('div', {
-            id: this.parent.element.id + 'mdx-dialog',
-            className: cls.GRID_MDX_DIALOG
-        }));
-        this.dialog.appendTo('#' + this.parent.element.id + 'mdx-dialog');
-        this.dialog.header = this.parent.localeObj.getConstant('mdxQuery');
-        let outerDiv: HTMLElement = createElement('div', {
-            className: cls.MDX_QUERY
-        });
-        let textarea: HTMLElement = createElement('textarea', {
-            className: cls.MDX_QUERY_CONTENT,
-            innerHTML: this.parent.olapEngineModule.getMDXQuery(this.parent.dataSourceSettings),
-            attrs: { 'readonly': 'readonly' }
-        });
-        outerDiv.appendChild(textarea);
-        this.dialog.content = outerDiv;
-        this.dialog.show();
-    }
-
     private dialogShow(args: ClickEventArgs, action?: string): void {
         this.dialog.header = args.item.tooltipText;
         let outerDiv: HTMLElement = createElement('div', {
@@ -338,9 +310,6 @@ export class Toolbar {
                     this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
                 }
                 break;
-            case (this.parent.element.id + 'mdxQuery'):
-                this.mdxQueryDialog(args);
-                break;
             case (this.parent.element.id + 'numberFormatting'):
                 if (this.parent.numberFormattingModule) {
                     this.parent.numberFormattingModule.showNumberFormattingDialog();
@@ -359,7 +328,7 @@ export class Toolbar {
         }));
         this.dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
-            allowDragging: true,
+            allowDragging: false,
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
@@ -452,7 +421,7 @@ export class Toolbar {
         this.parent.element.appendChild(errorDialog);
         this.confirmPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
-            allowDragging: true,
+            allowDragging: false,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             header: title,
@@ -583,28 +552,13 @@ export class Toolbar {
                         text: this.parent.localeObj.getConstant('csv'),
                         iconCss: cls.GRID_CSV_EXPORT + ' ' + cls.ICON,
                         id: this.parent.element.id + 'csv'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('png'),
-                        iconCss: cls.GRID_PNG_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'png'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('jpeg'),
-                        iconCss: cls.GRID_JPEG_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'jpeg'
-                    },
-                    {
-                        text: this.parent.localeObj.getConstant('svg'),
-                        iconCss: cls.GRID_SVG_EXPORT + ' ' + cls.ICON,
-                        id: this.parent.element.id + 'svg'
                     }
                 ]
             }];
             this.exportMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this)
+                    select: this.menuItemClick.bind(this)
                 });
             this.exportMenu.isStringTemplate = true;
             this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
@@ -718,18 +672,6 @@ export class Toolbar {
         }
     }
 
-    private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
-        if (this.parent.currentView == "Table") {
-            args.element.querySelector('#' + this.parent.element.id + 'png').remove();
-            args.element.querySelector('#' + this.parent.element.id + 'jpeg').remove();
-            args.element.querySelector('#' + this.parent.element.id + 'svg').remove();
-        }
-        else {
-            args.element.querySelector('#' + this.parent.element.id + 'excel').remove();
-            args.element.querySelector('#' + this.parent.element.id + 'csv').remove();
-        }
-    }
-
     private updateSubtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
         if (!args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
             args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
@@ -826,15 +768,10 @@ export class Toolbar {
                 }
                 break;
             case (this.parent.element.id + 'pdf'):
-                if (this.parent.currentView == "Table") {
-                    if (this.parent.pdfExportModule) {
-                        this.parent.pdfExportModule.exportToPDF();
-                    } else {
-                        this.parent.pdfExport();
-                    }
-                }
-                else {
-                    this.parent.chartExport('PDF', 'result');
+                if (this.parent.pdfExportModule) {
+                    this.parent.pdfExportModule.exportToPDF();
+                } else {
+                    this.parent.pdfExport();
                 }
                 break;
             case (this.parent.element.id + 'excel'):
@@ -850,15 +787,6 @@ export class Toolbar {
                 } else {
                     this.parent.csvExport();
                 }
-                break;
-            case (this.parent.element.id + 'png'):
-                this.parent.chartExport('PNG', 'result');
-                break;
-            case (this.parent.element.id + 'jpeg'):
-                this.parent.chartExport('JPEG', 'result');
-                break;
-            case (this.parent.element.id + 'svg'):
-                this.parent.chartExport('SVG', 'result');
                 break;
             case (this.parent.element.id + 'notsubtotal'):
                 this.parent.dataSourceSettings.showSubTotals = false;

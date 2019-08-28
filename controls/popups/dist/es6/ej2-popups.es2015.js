@@ -1609,6 +1609,7 @@ let Dialog = class Dialog extends Component {
                 this.getMinHeight();
             }
         }
+        this.renderComplete();
     }
     /**
      * Initialize the event handler
@@ -3045,7 +3046,7 @@ let Tooltip = class Tooltip extends Component {
         this.popupObj.dataBind();
     }
     openPopupHandler() {
-        if (this.needTemplateReposition()) {
+        if (this.needTemplateReposition() && !this.mouseTrail) {
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
@@ -3200,13 +3201,16 @@ let Tooltip = class Tooltip extends Component {
             if (this.content instanceof HTMLElement) {
                 tooltipContent.appendChild(this.content);
             }
-            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') !== 0) {
+            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
                 tooltipContent.innerHTML = this.content;
             }
             else {
                 let templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
+                    this.isBlazorTemplate = true;
+                    updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                }
             }
         }
         else {
@@ -3348,7 +3352,7 @@ let Tooltip = class Tooltip extends Component {
                 this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
                 const this$ = this;
-                if (this.needTemplateReposition()) {
+                if (this.needTemplateReposition() && !this.mouseTrail) {
                     this.tooltipEle.style.display = 'none';
                 }
                 this.trigger('beforeOpen', this.tooltipEventArgs, (observedArgs) => {
@@ -3388,7 +3392,7 @@ let Tooltip = class Tooltip extends Component {
         const tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || isBlazor();
+            || isBlazor() && this.isBlazorTemplate;
     }
     checkCollision(target, x, y) {
         let elePos = {
@@ -3607,6 +3611,7 @@ let Tooltip = class Tooltip extends Component {
     render() {
         this.initialize();
         this.wireEvents(this.opensOn);
+        this.renderComplete();
     }
     /**
      * Initializes the values of private members.

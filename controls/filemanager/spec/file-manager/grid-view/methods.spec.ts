@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
-import { data1, idData1, filterData } from '../data';
+import { data1, idData1, filterData, idData1Rename, data1Delete, rename, folderRename, idData1Delete, idData1Rename1, data17, idData4 } from '../data';
 import { ColumnModel } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -208,6 +208,332 @@ describe('FileManager control Grid view', () => {
                 expect(data.length).toBe(2);
                 expect(data[0]['name']).toBe('Documents');
                 expect(data[1]['name']).toBe('Videos');
+                done();
+            }, 400);
+        });
+        it('for deleteFiles', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.deleteFiles();
+                feObj.detailsviewModule.gridObj.selectRows([0, 4]);
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["Documents", "1.png"]));
+                feObj.deleteFiles();
+                let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Multiple Files");
+                (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[2] as HTMLElement).click();
+                feObj.deleteFiles([]);
+                feObj.deleteFiles(["Documents", "2.png", "1.png"]);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1Delete)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
+                    let ntr: any = document.getElementById('file1_grid').querySelectorAll('.e-row');
+                    let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                    expect(nli.length).toEqual(4);
+                    expect(ntr.length).toEqual(3);
+                    expect(nar.length).toEqual(1);
+                    done();
+                }, 500);
+            }, 400);
+        });
+        it('for deleteFiles with id base', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.deleteFiles();
+                feObj.detailsviewModule.gridObj.selectRows([0, 4]);
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["6171", "6175"]));
+                feObj.deleteFiles();
+                let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Delete Multiple Files");
+                (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[2] as HTMLElement).click();
+                feObj.deleteFiles([]);
+                feObj.deleteFiles(["6171", "2.png"]);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(idData1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(idData1Delete)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
+                    let ntr: any = document.getElementById('file1_grid').querySelectorAll('.e-row');
+                    let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                    expect(nli.length).toEqual(5);
+                    expect(ntr.length).toEqual(4);
+                    expect(nar.length).toEqual(1);
+                    done();
+                }, 500);
+            }, 400);
+        });
+        it('for renameFile', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.renameFile();
+                feObj.detailsviewModule.gridObj.selectRows([0]);
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["Documents"]));
+                feObj.renameFile();
+                let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Rename");
+                (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).click();
+                feObj.renameFile("Document");
+                feObj.renameFile("Documents");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Rename");
+                (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).click();
+                feObj.renameFile("Documents", 'My Folder');
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(folderRename)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(rename)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
+                    let ntr: any = document.getElementById('file1_grid').querySelectorAll('.e-row');
+                    let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                    expect(nli.length).toEqual(5);
+                    expect(ntr.length).toEqual(5);
+                    expect(nar.length).toEqual(1);
+                    expect(nli[1].textContent).toBe("My Folder");
+                    expect(ntr[2].querySelector('.e-fe-grid-name').textContent).toBe("My Folder");
+                    done();
+                }, 500);
+            }, 400);
+        });
+        it('for renameFile with id base', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.renameFile();
+                feObj.detailsviewModule.gridObj.selectRows([0]);
+                expect(feObj.selectedItems).toEqual(jasmine.arrayContaining(["6171"]));
+                feObj.renameFile();
+                let dialogObj: any = (document.getElementById("file1_dialog") as any).ej2_instances[0];
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Rename");
+                (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).click();
+                feObj.renameFile("617");
+                feObj.renameFile("6171");
+                expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Rename");
+                (document.getElementById('file1_dialog').querySelectorAll('.e-btn')[1] as HTMLElement).click();
+                feObj.renameFile("6171", 'My Folder');
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(idData1Rename1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(idData1Rename)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
+                    let ntr: any = document.getElementById('file1_grid').querySelectorAll('.e-row');
+                    let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                    expect(nli.length).toEqual(6);
+                    expect(ntr.length).toEqual(5);
+                    expect(nar.length).toEqual(1);
+                    expect(nli[1].textContent).toBe("My Folder");
+                    expect(ntr[2].querySelector('.e-fe-grid-name').textContent).toBe("My Folder");
+                    done();
+                }, 500);
+            }, 400);
+        });
+        it('for openFile', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.openFile(null);
+                feObj.openFile("Document");
+                feObj.openFile("Documents");
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data17)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
+                    let ntr: any = document.getElementById('file1_grid').querySelectorAll('.e-row');
+                    let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                    expect(nli.length).toEqual(6);
+                    expect(ntr.length).toEqual(1);
+                    expect(nar.length).toEqual(2);
+                    expect(nli[1].classList.contains('e-active')).toBe(true);
+                    done();
+                }, 500);
+            }, 400);
+        });
+        it('for openFile with id base', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.openFile(null);
+                feObj.openFile("617");
+                feObj.openFile("6171");
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(idData4)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let nli: any = document.getElementById('file1_tree').querySelectorAll('li');
+                    let ntr: any = document.getElementById('file1_grid').querySelectorAll('.e-row');
+                    let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                    expect(nli.length).toEqual(6);
+                    expect(ntr.length).toEqual(3);
+                    expect(nar.length).toEqual(2);
+                    expect(nli[1].classList.contains('e-active')).toBe(true);
+                    done();
+                }, 500);
+            }, 400);
+        });
+        it('for downloadFiles', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.downloadFiles();
+                feObj.downloadFiles(['12']);
+                done();
+            }, 400);
+        });
+        it('for downloadFiles with id base', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            });
+            feObj.appendTo("#file1");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(idData1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.downloadFiles();
+                feObj.downloadFiles(['12']);
                 done();
             }, 400);
         });

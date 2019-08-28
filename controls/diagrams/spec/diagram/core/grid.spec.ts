@@ -11,7 +11,7 @@ import { Margin } from '../../../src/diagram/core/appearance';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { Selector } from '../../../src/diagram/interaction/selector';
+import { Selector } from '../../../src/diagram/objects/node';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 function resize(diagram: Diagram, direction: string): void {

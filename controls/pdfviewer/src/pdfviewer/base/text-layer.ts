@@ -76,7 +76,7 @@ export class TextLayer {
                 textLayer.appendChild(textDiv);
                 this.resizeExcessDiv(textLayer, textDiv);
                 // tslint:disable-next-line:max-line-length
-                if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled && textDiv.className !== 'e-pdfviewer-formFields') {
+                if (this.pdfViewer.textSelectionModule && this.pdfViewer.enableTextSelection && !this.pdfViewerBase.isTextSelectionDisabled) {
                     textDiv.classList.add('e-pv-cursor');
                 }
             }
@@ -339,13 +339,11 @@ export class TextLayer {
             let childNodes: NodeList = textLayers[i].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {
                 let textDiv: HTMLElement = (childNodes[j] as HTMLElement);
-                if (textDiv.className !== 'e-pdfviewer-formFields') {
-                    let textContent: string = textDiv.textContent;
-                    // tslint:disable-next-line:max-line-length
-                    if (textDiv.childNodes.length > 1 || textDiv.childNodes.length === 1 && ((textDiv.childNodes[0] as HTMLElement).tagName === 'SPAN')) {
-                        textDiv.textContent = '';
-                        textDiv.textContent = textContent;
-                    }
+                let textContent: string = textDiv.textContent;
+                // tslint:disable-next-line:max-line-length
+                if (textDiv.childNodes.length > 1 || textDiv.childNodes.length === 1 && ((textDiv.childNodes[0] as HTMLElement).tagName === 'SPAN')) {
+                    textDiv.textContent = '';
+                    textDiv.textContent = textContent;
                 }
             }
         }
@@ -376,7 +374,7 @@ export class TextLayer {
             let childNodes: NodeList = textLayerList[i].childNodes;
             for (let j: number = 0; j < childNodes.length; j++) {
                 let textElement: HTMLElement = (childNodes[j] as HTMLElement);
-                if (isAdd && textElement.className !== 'e-pdfviewer-formFields') {
+                if (isAdd) {
                     textElement.classList.add('e-pv-cursor');
                 } else {
                     textElement.classList.remove('e-pv-cursor');
@@ -402,7 +400,7 @@ export class TextLayer {
      */
     public getPageIndex(element: Node): number {
         let pageId: number;
-        // tslint:disable-next-line
+         // tslint:disable-next-line
         let parentElement: any = element.parentElement;
         if (!parentElement) {
             parentElement = element.parentNode;
@@ -422,7 +420,7 @@ export class TextLayer {
      */
     public getTextIndex(element: Node, pageIndex: number): number {
         let textIndex: number;
-        // tslint:disable-next-line
+         // tslint:disable-next-line
         let parentElement: any = element.parentElement;
         if (!parentElement) {
             parentElement = element.parentNode;

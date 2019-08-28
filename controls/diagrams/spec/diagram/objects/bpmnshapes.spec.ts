@@ -674,7 +674,7 @@ describe('Diagram Control', () => {
             let ele = document.getElementById('Connector4_path_groupElement');
            expect(ele.children[0].getAttribute('d')==='M0,0 L30.76,0 ').toBe(true);
            let connector = document.getElementById('Connector1_Default_groupElement')
-           expect(connector.children[0].getAttribute('d') === 'M0,0 L23.99,0.8 ').toBe(true);
+           expect(connector.children[0].getAttribute('d') === 'M0,0 L23.98,0.92 ').toBe(true);
             done();
         });
         it('memory leak', () => { 

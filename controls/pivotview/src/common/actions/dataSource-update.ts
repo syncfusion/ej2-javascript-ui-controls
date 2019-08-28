@@ -3,7 +3,6 @@ import * as events from '../../common/base/constant';
 import { IFieldOptions, IField } from '../../base/engine';
 import { SummaryTypes } from '../../base/types';
 import { FieldDroppedEventArgs } from '../base/interface';
-import { OlapEngine, IOlapField } from '../../base/olap/engine';
 
 /**
  * `DataSourceUpdate` module is used to update the dataSource.
@@ -55,16 +54,6 @@ export class DataSourceUpdate {
                 droppedClass = 'values';
             }
         }
-        if (this.parent.dataType === 'olap') {
-            dataSourceItem = this.removeFieldFromReport(fieldName.toString());
-            dataSourceItem = dataSourceItem ? dataSourceItem : this.getNewField(fieldName.toString());
-            if (this.parent.dataSourceSettings.values.length === 0) {
-                this.removeFieldFromReport('[measures]');
-            }
-            if (dataSourceItem.type === 'CalculatedField' && droppedClass !== '') {
-                droppedClass = 'values';
-            }
-        }
         if (this.control) {
             let eventArgs: FieldDroppedEventArgs = {
                 'droppedField': dataSourceItem, 'dataSourceSettings': this.parent.dataSourceSettings, 'droppedAxis': droppedClass
@@ -92,14 +81,6 @@ export class DataSourceUpdate {
                     droppedPosition !== -1 ?
                         this.parent.dataSourceSettings.values.splice(droppedPosition as number, 0, dataSourceItem) :
                         this.parent.dataSourceSettings.values.push(dataSourceItem);
-                    if (this.parent.dataType === 'olap' && !(this.parent.engineModule as OlapEngine).isMeasureAvail) {
-                        let measureField: IFieldOptions = {
-                            name: '[Measures]', caption: 'Measures', baseField: undefined, baseItem: undefined
-                        };
-                        let fieldAxis: IFieldOptions[] = this.parent.dataSourceSettings.valueAxis === 'row' ?
-                            this.parent.dataSourceSettings.rows : this.parent.dataSourceSettings.columns;
-                        fieldAxis.push(measureField);
-                    }
                     break;
             }
         }
@@ -124,22 +105,12 @@ export class DataSourceUpdate {
         for (let len: number = 0, lnt: number = fields.length; len < lnt; len++) {
             if (!isDataSource && fields[len]) {
                 for (let i: number = 0, n: number = fields[len].length; i < n; i++) {
-                    if (fields[len][i].name === fieldName || (this.parent.dataType === 'olap' &&
-                        fields[len][i].name.toLowerCase() === '[measures]' && fields[len][i].name.toLowerCase() === fieldName)) {
+                    if (fields[len][i].name === fieldName) {
                         dataSourceItem = (<{ [key: string]: IFieldOptions }>fields[len][i]).properties ?
                             (<{ [key: string]: IFieldOptions }>fields[len][i]).properties : fields[len][i];
-                        dataSourceItem.type = (field && field.type === 'number') ? dataSourceItem.type :
+                        dataSourceItem.type = field.type === 'number' ? dataSourceItem.type :
                             'Count' as SummaryTypes;
                         fields[len].splice(i, 1);
-                        if (this.parent.dataType === 'olap') {
-                            let engineModule: OlapEngine = this.parent.engineModule as OlapEngine;
-                            if (engineModule && engineModule.fieldList[fieldName]) {
-                                engineModule.fieldList[fieldName].currrentMembers = {};
-                                engineModule.fieldList[fieldName].members = {};
-                                engineModule.fieldList[fieldName].filterMembers = [];
-                                engineModule.fieldList[fieldName].searchMembers = [];
-                            }
-                        }
                         isDataSource = true;
                         break;
                     }
@@ -157,29 +128,16 @@ export class DataSourceUpdate {
      * @hidden
      */
     public getNewField(fieldName: string): IFieldOptions {
-        let newField: IFieldOptions;
-        if (this.parent.dataType === 'olap') {
-            let field: IOlapField = (this.parent.engineModule as OlapEngine).fieldList[fieldName];
-            newField = {
-                name: fieldName,
-                caption: field.caption,
-                isNamedSet: field.isNamedSets,
-                isCalculatedField: field.isCalculatedField,
-                type: ((field.aggregateType as SummaryTypes) === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
-                    'Count' as SummaryTypes : field.aggregateType as SummaryTypes),
-            };
-        } else {
-            let field: IField = this.parent.engineModule.fieldList[fieldName];
-            newField = {
-                name: fieldName,
-                caption: field.caption,
-                type: ((field.aggregateType as SummaryTypes) === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
-                    'Count' as SummaryTypes : field.aggregateType as SummaryTypes),
-                showNoDataItems: field.showNoDataItems,
-                baseField: field.baseField,
-                baseItem: field.baseItem,
-            };
-        }
+        let field: IField = this.parent.engineModule.fieldList[fieldName];
+        let newField: IFieldOptions = {
+            name: fieldName,
+            caption: field.caption,
+            type: field.aggregateType as SummaryTypes === undefined ? field.type === 'number' ? 'Sum' as SummaryTypes :
+                'Count' as SummaryTypes : field.aggregateType as SummaryTypes,
+            showNoDataItems: field.showNoDataItems,
+            baseField: field.baseField,
+            baseItem: field.baseItem,
+        };
         return newField;
     }
 }

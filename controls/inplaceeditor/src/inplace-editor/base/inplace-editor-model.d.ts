@@ -37,6 +37,7 @@ export interface InPlaceEditorModel extends ComponentModel{
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
      * @default ''
+     * @blazorType string
      */
     primaryKey?: string | number;
 

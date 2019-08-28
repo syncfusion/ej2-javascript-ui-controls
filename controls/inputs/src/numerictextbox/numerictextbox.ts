@@ -337,8 +337,11 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
 
         }
         attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-        let localeText: object = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: '' };
+        let localeText: object = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder };
         this.l10n = new L10n('numerictextbox', localeText, this.locale);
+        if (this.l10n.getConstant('placeholder') !== '') {
+            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        }
         this.isValidState = true;
         this.inputStyle = null;
         this.inputName = null;
@@ -346,7 +349,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.initCultureInfo();
         this.initCultureFunc();
         this.updateHTMLAttrToElement();
-        this.checkAttributes(true);
+        this.checkAttributes(false);
         this.prevValue = this.value;
         if (this.formEle) {
             this.inputEleValue = this.value;
@@ -378,67 +381,69 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     }
 
     private checkAttributes(isDynamic: boolean): void {
-        let attributes: string[] = ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
+        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled: boolean = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly: boolean = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({placeholder: this.element.placeholder}, isDynamic);
+                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || !isDynamic){
+                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || isDynamic){
                             let setNumber: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
-                            this.setProperties(setValue(prop, setNumber, {}), isDynamic);
+                            this.setProperties(setValue(prop, setNumber, {}), !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || isDynamic) {
                             let minValue: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (minValue !== null && !isNaN(minValue)) {
-                                this.setProperties(setValue(prop, minValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, minValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || isDynamic) {
                             let maxValue: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (maxValue !== null && !isNaN(maxValue)) {
-                                this.setProperties(setValue(prop, maxValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, maxValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'step':
                         // tslint:disable-next-line
-                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || !isDynamic) {
+                        if (( isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || isDynamic) {
                             let stepValue: number = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (stepValue !== null && !isNaN(stepValue)) {
-                                this.setProperties(setValue(prop, stepValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, stepValue, {}), !isDynamic);
                             }
                         }
                         break;
@@ -505,24 +510,28 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (this.inputStyle !== null) { attributes(this.container, { 'style': this.inputStyle }); }
     }
     private updateHTMLAttrToElement(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) < 0 ) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) < 0 ) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     private updateHTMLAttrToWrapper(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) > -1 ) {
-                if (pro === 'class') {
-                    addClass([this.container], this.htmlAttributes[pro].split(' '));
-                } else if (pro === 'style') {
-                    let numericStyle: string = this.container.getAttribute(pro);
-                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
-                    this.htmlAttributes[pro];
-                    this.container.setAttribute(pro, numericStyle);
-                } else {
-                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) > -1 ) {
+                    if (pro === 'class') {
+                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                    } else if (pro === 'style') {
+                        let numericStyle: string = this.container.getAttribute(pro);
+                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                        this.container.setAttribute(pro, numericStyle);
+                    } else {
+                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -710,6 +719,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private pasteHandler(): void {
+        if (!this.enabled || this.readonly) { return; }
         let beforeUpdate: string = this.element.value;
         setTimeout(() => {
             if (!this.numericRegex().test(this.element.value)) {
@@ -789,6 +799,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         });
     }
     private keyUpHandler(event: KeyboardEvent): void {
+        if (!this.enabled || this.readonly) { return; }
         let iOS: boolean = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         if (!iOS && Browser.isDevice) {
             this.preventHandler();
@@ -805,6 +816,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         }
     };
     private inputHandler(event: KeyboardEvent): void {
+        if (!this.enabled || this.readonly) { return; }
         let iOS: boolean = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         let fireFox: boolean = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
@@ -954,6 +966,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private keyPressHandler(event: KeyboardEvent): boolean {
+        if (!this.enabled || this.readonly) { return true; }
         if (!Browser.isDevice && Browser.info.version === '11.0'  && event.keyCode === 13) {
             let parsedInput: number = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             this.updateValue(parsedInput, event);
@@ -1017,12 +1030,16 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             let formatValue: string = this.formatNumber();
             this.setElementValue(formatValue);
             if (!this.isPrevFocused) {
-                let delay: number = (Browser.isDevice && Browser.isIos) ? 600 : 0;
-                setTimeout(
-                    () => {
-                        this.element.setSelectionRange(0, formatValue.length);
-                    },
-                    delay);
+                if (!Browser.isDevice && Browser.info.version === '11.0') {
+                    this.element.setSelectionRange(0, formatValue.length);
+                } else {
+                    let delay: number = (Browser.isDevice && Browser.isIos) ? 600 : 0;
+                    setTimeout(
+                        () => {
+                            this.element.setSelectionRange(0, formatValue.length);
+                        },
+                        delay);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -1033,6 +1050,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private focusOutHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
         this.blurEventArgs = {event: event, value: this.value, container: this.container };
         this.trigger('blur', this.blurEventArgs);
+        if (!this.enabled || this.readonly) { return; }
         if (this.isPrevFocused) {
             event.preventDefault();
             if (Browser.isDevice) {
@@ -1252,7 +1270,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);

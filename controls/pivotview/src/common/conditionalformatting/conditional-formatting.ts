@@ -8,7 +8,6 @@ import { DropDownList, ChangeEventArgs as DropDownArgs } from '@syncfusion/ej2-d
 import { ConditionalFormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
 import { Condition } from '../../base';
 import * as cls from '../../common/base/css-constant';
-import * as events from '../../common/base/constant';
 
 /**
  * Module to render Conditional Formatting Dialog
@@ -104,7 +103,7 @@ export class ConditionalFormatting {
         }
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parentID + 'conditionalformatting');
-        // this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('conditionalFormating');
+        this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('conditionalFormating');
     }
 
     private beforeOpen(args: BeforeOpenEventArgs): void {
@@ -116,7 +115,6 @@ export class ConditionalFormatting {
         let format: ConditionalFormatSettingsModel = {
             conditions: 'LessThan',
             value1: 0,
-            applyToGrandTotals: true,
             style: {
                 backgroundColor: 'white',
                 color: 'black',
@@ -124,7 +122,6 @@ export class ConditionalFormatting {
                 fontSize: '12px'
             }
         };
-        this.parent.trigger(events.conditionalFormatCreating, format);
         this.refreshConditionValues();
         this.newFormat.push(format);
         this.addFormat();

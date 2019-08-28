@@ -3,7 +3,7 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { MouseEvents } from './mouseevents.spec';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
-import { SelectorModel } from '../../../src/diagram/interaction/selector-model';
+import { SelectorModel } from '../../../src/diagram/objects/node-model';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
 

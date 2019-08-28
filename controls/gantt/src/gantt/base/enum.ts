@@ -51,11 +51,7 @@ export type ToolbarItem =
      /** To perform zoom out action on Gantt timeline */
     'ZoomOut'|
      /** To show all project task in available chart width */
-    'ZoomToFit' |
-     /** To export Gantt in excel sheet */
-    'ExcelExport' |
-     /** To export Gantt is CSV */
-    'CsvExport';
+     'ZoomToFit';
 
 /** 
  * Defines the schedule header mode. They are

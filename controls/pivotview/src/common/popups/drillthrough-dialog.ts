@@ -5,9 +5,8 @@ import { createElement, setStyleAttribute, remove, isNullOrUndefined } from '@sy
 import * as cls from '../../common/base/css-constant';
 import { Grid, ColumnModel, Reorder, Resize, ColumnChooser, Toolbar } from '@syncfusion/ej2-grids';
 import { VirtualScroll, Selection, Edit, Page, CommandColumn } from '@syncfusion/ej2-grids';
-import { IDataSet, INumberIndex, IDataOptions, PivotEngine } from '../../base/engine';
+import { IDataSet, INumberIndex } from '../../base';
 import * as events from '../../common/base/constant';
-import { OlapEngine } from '../../base/olap/engine';
 
 /**
  * `DrillThroughDialog` module to create drill-through dialog.
@@ -21,8 +20,6 @@ export class DrillThroughDialog {
     public drillThroughGrid: Grid;
     private isUpdated: boolean = false;
     private gridIndexObjects: INumberIndex = {};
-    private engine: PivotEngine | OlapEngine;
-    private gridData: IDataSet[] = [];
 
     /**
      * Constructor for the dialog action.
@@ -30,15 +27,10 @@ export class DrillThroughDialog {
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
-        this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
     }
 
     /** @hidden */
     public showDrillThroughDialog(eventArgs: DrillThroughEventArgs): void {
-        this.gridData = eventArgs.rawData;
-        if (this.parent.dataType === 'olap') {
-            this.formatData();
-        }
         this.removeDrillThroughDialog();
         let drillThroughDialog: HTMLElement = createElement('div', {
             id: this.parent.element.id + '_drillthrough',
@@ -55,7 +47,7 @@ export class DrillThroughDialog {
                 /* tslint:disable:align */
                 this.drillThroughGrid.setProperties({
                     dataSource: this.parent.editSettings.allowEditing ?
-                        this.dataWithPrimarykey(eventArgs) : this.gridData, height: 300
+                        this.dataWithPrimarykey(eventArgs) : eventArgs.rawData, height: 300
                 }, true);
                 /* tslint:enable:align */
                 this.drillThroughGrid.enableVirtualization = !this.parent.editSettings.allowEditing;
@@ -67,7 +59,7 @@ export class DrillThroughDialog {
                     /* tslint:disable:no-string-literal */
                     for (let item of this.drillThroughGrid.dataSource as IDataSet[]) {
                         if (isNullOrUndefined(item['__index']) || item['__index'] === '') {
-                            for (let field of this.engine.fields) {
+                            for (let field of this.parent.engineModule.fields) {
                                 if (isNullOrUndefined(item[field])) {
                                     delete item[field];
                                 }
@@ -91,8 +83,8 @@ export class DrillThroughDialog {
                     /* tslint:enable:no-string-literal */
                     items = items.concat(addItems);
                     this.parent.setProperties({ dataSourceSettings: { dataSource: items } }, true);
-                    (this.engine as PivotEngine).updateGridData(this.parent.dataSourceSettings as IDataOptions);
-                    this.parent.pivotValues = this.engine.pivotValues;
+                    this.parent.engineModule.updateGridData(this.parent.dataSourceSettings);
+                    this.parent.pivotValues = this.parent.engineModule.pivotValues;
                 }
                 this.isUpdated = false;
                 this.gridIndexObjects = {};
@@ -110,7 +102,7 @@ export class DrillThroughDialog {
         });
         this.dialogPopUp.isStringTemplate = true;
         this.dialogPopUp.appendTo(drillThroughDialog);
-        // this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
+        this.dialogPopUp.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('details');
         setStyleAttribute(this.dialogPopUp.element, { 'visibility': 'visible' });
     }
 
@@ -237,66 +229,35 @@ export class DrillThroughDialog {
     }
 
     private frameGridColumns(): ColumnModel[] {
-        let keys: string[] = this.parent.dataType === 'olap' ? Object.keys(JSON.parse((this.engine as OlapEngine).gridJSON)[0]) :
-            Object.keys(this.engine.fieldList);
+        let keys: string[] = Object.keys(this.parent.engineModule.fieldList);
         let columns: ColumnModel[] = [];
-        if (this.parent.dataType === 'olap') {
-            for (let key of keys) {
+        for (let key of keys) {
+            if (this.parent.engineModule.fieldList[key].aggregateType !== 'CalculatedField') {
+                let editType: string = '';
+                if (this.parent.engineModule.fieldList[key].type === 'number') {
+                    editType = 'numericedit';
+                } else if (this.parent.engineModule.fieldList[key].type === 'date') {
+                    editType = 'datepickeredit';
+                } else {
+                    editType = '';
+                }
                 columns.push({
-                    field: key.replace(/_x005B_|_x0020_|_x005D_|_x0024_/g, '').replace('].[', '').split('.').reverse().join(''),
-                    headerText: key.replace(/_x005B_|_x0020_|_x005D_|_x0024_/g, '').replace('].[', '').split('.').reverse().join('.'),
+                    field: key,
+                    headerText: this.parent.engineModule.fieldList[key].caption,
                     width: 120,
-                    visible: true,
+                    visible: this.parent.engineModule.fieldList[key].isSelected,
                     validationRules: { required: true },
+                    editType: editType,
                     type: 'string'
                 });
-            }
-        } else {
-            for (let key of keys) {
-                if (this.engine.fieldList[key].aggregateType !== 'CalculatedField') {
-                    let editType: string = '';
-                    if (this.engine.fieldList[key].type === 'number') {
-                        editType = 'numericedit';
-                    } else if (this.engine.fieldList[key].type === 'date') {
-                        editType = 'datepickeredit';
-                    } else {
-                        editType = '';
-                    }
-                    columns.push({
-                        field: key,
-                        headerText: this.engine.fieldList[key].caption,
-                        width: 120,
-                        visible: this.engine.fieldList[key].isSelected,
-                        validationRules: { required: true },
-                        editType: editType,
-                        type: 'string'
-                    });
-                }
             }
         }
         return columns;
     }
 
-    private formatData(): void {
-        let index: number = 0;
-        while (index < this.gridData.length) {
-            let data: IDataSet = this.gridData[index];
-            let keys: string[] = Object.keys(this.gridData[index]);
-            let newData: IDataSet = {};
-            let i: number = 0;
-            while (i < keys.length) {
-                let key: string = keys[i].replace(/_x005B_|_x0020_|_x005D_|_x0024_/g, '').replace('].[', '').split('.').reverse().join('');
-                newData[key] = data[keys[i]];
-                i++;
-            }
-            this.gridData[index] = newData;
-            index++;
-        }
-    }
-
     private dataWithPrimarykey(eventArgs: DrillThroughEventArgs): IDataSet[] {
         let indexString: string[] = Object.keys(eventArgs.currentCell.indexObject);
-        let rawData: IDataSet[] = this.gridData;
+        let rawData: IDataSet[] = eventArgs.rawData;
         let count: number = 0;
         for (let item of rawData) {
             /* tslint:disable-next-line:no-string-literal */

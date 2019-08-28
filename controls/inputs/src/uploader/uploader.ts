@@ -4,7 +4,7 @@ import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, get
 import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { UploaderModel, AsyncSettingsModel, ButtonsPropsModel, FilesPropModel } from './uploader-model';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 
 const ROOT: string =  'e-uploader';
 const CONTROL_WRAPPER: string = 'e-upload';
@@ -135,6 +135,7 @@ export interface FileInfo {
     name: string;
     /**
      * Returns the details about upload file.
+     * @blazorType object
      */
     rawFile: string | Blob;
     /**
@@ -213,6 +214,15 @@ export interface SelectedEventArgs {
      * Specifies whether the file selection has been canceled
      */
     isCanceled?: boolean;
+    /**
+     * Set the current request header to the XMLHttpRequest instance.
+     * @blazorType object
+     */
+    currentRequest?: { [key: string]: string }[];
+    /**
+     * Defines the additional data in key and value pair format that will be submitted to the upload action.
+     */
+    customFormData: { [key: string]: Object }[];
 }
 
 export interface RemovingEventArgs {
@@ -262,6 +272,7 @@ export interface UploadingEventArgs {
     fileData: FileInfo;
     /**
      * Defines the additional data in key and value pair format that will be submitted to the upload action.
+     * @deprecated
      */
     customFormData: { [key: string]: Object }[];
     /**
@@ -278,6 +289,7 @@ export interface UploadingEventArgs {
     currentChunkIndex?: number;
     /**
      * Returns the XMLHttpRequest instance that is associated with upload action.
+     * @deprecated
      */
     currentRequest?: XMLHttpRequest;
 }
@@ -463,6 +475,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private listParent: HTMLElement;
     private cloneElement: HTMLElement;
     private fileList: HTMLElement[] = [];
+    private sortFilesList: FileList;
     private actionButtons: HTMLElement;
     private uploadButton: HTMLElement;
     private clearButton: HTMLElement;
@@ -473,6 +486,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private filesEntries: any[];
     private filesData: FileInfo[] = [];
     private uploadedFilesData: FileInfo[] = [];
+    private base64String: string[] = [];
+    private currentRequestHeader: { [key: string]: string }[];
+    private customFormDatas: { [key: string]: object }[];
     private dropZoneElement: HTMLElement;
     private currentStatus : string;
     private l10n: L10n;
@@ -973,7 +989,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHTMLAttributes(false);
+                    this.checkHTMLAttributes(true);
                     break;
                 case 'files':
                     this.renderPreLoadFiles();
@@ -1084,7 +1100,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.updateHTMLAttrToElement();
-        this.checkHTMLAttributes(true);
+        this.checkHTMLAttributes(false);
         let parentEle: HTMLElement = closest(this.element, 'form') as HTMLElement;
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -1175,6 +1191,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.renderPreLoadFiles();
         this.setControlStatus();
         this.setCSSClass();
+        this.renderComplete();
     }
 
     private renderBrowseButton(): void {
@@ -1350,24 +1367,28 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private updateHTMLAttrToElement(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(pro) < 0 ) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(pro) < 0 ) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     private updateHTMLAttrToWrapper(): void {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(pro) > -1 ) {
-                if (pro === 'class') {
-                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
-                } else if (pro === 'style') {
-                    let uploadStyle: string = this.uploadWrapper.getAttribute(pro);
-                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
-                    this.htmlAttributes[pro];
-                    this.uploadWrapper.setAttribute(pro, uploadStyle);
-                } else {
-                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(pro) > -1 ) {
+                    if (pro === 'class') {
+                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                    } else if (pro === 'style') {
+                        let uploadStyle: string = this.uploadWrapper.getAttribute(pro);
+                        uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                        this.htmlAttributes[pro];
+                        this.uploadWrapper.setAttribute(pro, uploadStyle);
+                    } else {
+                        this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -1696,6 +1717,20 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
     }
 
+    /* istanbul ignore next */
+    private updateCustomheader(request: XMLHttpRequest, currentRequest: { [key: string]: string }[]): void {
+        if (currentRequest.length > 0 && currentRequest[0]) {
+            for (let i: number = 0; i < currentRequest.length; i++) {
+                let data: { [key: string]: string } = currentRequest[i];
+                // tslint:disable-next-line
+                let value: any = Object.keys(data).map(function (e) {
+                    return data[e];
+                });
+                request.setRequestHeader(Object.keys(data)[0], value);
+            }
+        }
+    }
+
     private removeCompleted(e: Event, files:  FileInfo, customTemplate: boolean): void {
         let response: Object = e && e.currentTarget ? this.getResponse(e) : null;
         let args : Object = {
@@ -1805,7 +1840,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             if (this.directoryUpload) {
                 this.getFilesFromFolder(args);
             } else {
-                let files: FileList = (<DragEvent>args).dataTransfer.files;
+                let files: FileList = this.sortFilesList = (<DragEvent>args).dataTransfer.files;
                 this.element.files = files;
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
                 this.renderSelectedFiles(args, targetFiles);
@@ -1815,11 +1850,21 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.renderSelectedFiles(args, targetFiles);
         }
     }
+     /* istanbul ignore next */
+    private getBase64(file: File): string | PromiseLike<string> {
+        return new Promise((resolve: Function, reject: Function) => {
+            let fileReader: FileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = () => resolve(fileReader.result as string);
+            fileReader.onerror = (error: ProgressEvent) => reject(error);
+        });
+    }
 
-    private renderSelectedFiles(
+    /* istanbul ignore next */
+    private async renderSelectedFiles(
         args: MouseEvent | TouchEvent | DragEvent | ClipboardEvent,
         // tslint:disable-next-line
-        targetFiles: any, directory?: boolean, paste?: boolean): void {
+        targetFiles: any, directory?: boolean, paste?: boolean): Promise<void> {
         let eventArgs: SelectedEventArgs = {
             event: args,
             cancel: false,
@@ -1827,7 +1872,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             isModified: false,
             modifiedFilesData: [],
             progressInterval: '',
-            isCanceled: false
+            isCanceled: false,
+            currentRequest: null,
+            customFormData: null
         };
         /* istanbul ignore next */
         if (targetFiles.length < 1) {
@@ -1843,6 +1890,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         for (let i: number = 0; i < targetFiles.length; i++) {
             let file: File = directory ? targetFiles[i].file : targetFiles[i];
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                let data: string = await this.getBase64(file);
+                this.base64String.push(data);
+            }
             let fileName: string = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
             getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
             this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
@@ -1870,6 +1922,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (!this.allTypes) { fileData =  this.checkExtension(fileData); }
         this.trigger('selected', eventArgs, (eventArgs: SelectedEventArgs) => {
             if (!eventArgs.cancel) {
+                 /* istanbul ignore next */
+                if (isBlazor()) {
+                    this.currentRequestHeader = eventArgs.currentRequest;
+                    this.customFormDatas = eventArgs.customFormData;
+                }
                 this.selectedFiles = fileData;
                 this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
                 if (this.showFileList) {
@@ -2000,16 +2057,16 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         return isPreload;
     }
 
-    private createCustomfileList (fileData : FileInfo[]) : void {
+    private createCustomfileList(fileData: FileInfo[]): void {
         this.createParentUL();
         resetBlazorTemplate(this.element.id + 'Template', 'Template');
         for (let listItem of fileData) {
-            let liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: {'data-file-name': listItem.name}});
+            let liElement: HTMLElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            let fromElements: HTMLElement[] = [].slice.call(this.uploadTemplateFn(listItem));
+            let fromElements: HTMLElement[] = [].slice.call(
+                this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
             let index: number = fileData.indexOf(listItem);
             append(fromElements, liElement);
-            updateBlazorTemplate(this.element.id + 'Template', 'Template');
             let eventArgs: RenderingEventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -2027,6 +2084,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
     }
 
     private createParentUL() : void {
@@ -2542,33 +2600,34 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private checkHTMLAttributes(isDynamic: boolean) : void {
-        let attributes: string[] = ['accept', 'multiple', 'disabled'];
+        let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['accept', 'multiple', 'disabled'];
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'accept':
                         // tslint:disable-next-line
                         if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined)) 
-                        || !isDynamic) {
-                        this.setProperties({allowedExtensions: this.element.getAttribute('accept')}, isDynamic);
+                        || isDynamic) {
+                        this.setProperties({allowedExtensions: this.element.getAttribute('accept')}, !isDynamic);
                         this.initialAttr.accept = this.allowedExtensions;
                         }
                     break;
                     case 'multiple':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || isDynamic) {
                             let isMutiple: boolean = this.element.getAttribute(prop) === 'multiple' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({multiple: isMutiple}, isDynamic);
+                            this.setProperties({multiple: isMutiple}, !isDynamic);
                             this.initialAttr.multiple = true;
                         }
                     break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || isDynamic) {
                             let isDisabled: boolean = this.element.getAttribute(prop) === 'disabled' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({enabled: isDisabled}, isDynamic);
+                            this.setProperties({enabled: isDisabled}, !isDynamic);
                             this.initialAttr.disabled = true;
                         }
                     }
@@ -2576,17 +2635,18 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             }
         }
 
-    private chunkUpload(file: FileInfo, custom?: boolean): void {
+    private chunkUpload(file: FileInfo, custom?: boolean, fileIndex?: number): void {
         let start: number = 0;
         let end: number = Math.min(this.asyncSettings.chunkSize, file.size);
         let index: number = 0;
         let blob: string | Blob = file.rawFile.slice(start, end);
         let metaData: MetaData = { chunkIndex: index, blob: blob, file: file, start: start, end: end, retryCount: 0, request: null };
-        this.sendRequest(file, metaData, custom);
+        this.sendRequest(file, metaData, custom, fileIndex);
     }
 
-    private sendRequest(file: FileInfo, metaData: MetaData, custom?: boolean): void {
+    private sendRequest(file: FileInfo, metaData: MetaData, custom?: boolean, fileIndex?: number): void {
         let formData: FormData = new FormData();
+        let cloneFile: File;
         let blob: string | Blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
@@ -2610,13 +2670,26 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                cloneFile = new File([file.rawFile], file.name);
+                eventArgs.fileData.rawFile = fileIndex ? this.base64String[fileIndex] : null;
+                if (this.currentRequestHeader) {
+                    this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                }
+                if (this.customFormDatas) {
+                    this.updateFormData(formData, this.customFormDatas);
+                }
+            }
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
                 this.trigger('uploading', eventArgs, (eventArgs: UploadingEventArgs) => {
+                    if (isBlazor()) { eventArgs.fileData.rawFile = cloneFile; }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             } else {
                 this.trigger('chunkUploading', eventArgs, (eventArgs: UploadingEventArgs) => {
+                    if (isBlazor()) { eventArgs.fileData.rawFile = cloneFile; }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
@@ -3039,7 +3112,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @returns File[]
      */
     /* istanbul ignore next */
-    public sortFileList(filesData: FileList): File[] {
+    public sortFileList(filesData?: FileList): File[] {
+        filesData = filesData ? filesData : this.sortFilesList;
         let files: FileList = filesData;
         let fileNames: string[] = [];
         for (let i: number = 0; i < files.length; i++) {
@@ -3093,8 +3167,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { FileInfo | FileInfo[] } files - specifies the files data for upload.
      * @returns void
      */
-    public upload(files: FileInfo | FileInfo[], custom?: boolean): void {
-        let  uploadFiles:  FileInfo[]  = this.validateFileType(files);
+    public upload(files?: FileInfo | FileInfo[], custom?: boolean): void {
+        files = files ? files : this.filesData;
+        let uploadFiles: FileInfo[] = this.validateFileType(files);
         this.uploadFiles(uploadFiles, custom);
     }
     private validateFileType(files: FileInfo | FileInfo[]):  FileInfo[] {
@@ -3108,6 +3183,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
     private uploadFiles(files: FileInfo[], custom?: boolean): void {
         let selectedFiles: FileInfo[] = [];
+        let cloneFiles: File[] = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
             return;
         }
@@ -3126,15 +3202,33 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for (let i: number = 0; i < selectedFiles.length; i++) {
             let ajax: Ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
             ajax.emitError = false;
+            let getFileData: FileInfo[];
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                getFileData = selectedFiles.slice(0);
+                cloneFiles.push(new File([getFileData[i].rawFile], getFileData[i].name));
+            }
             let eventArgs: UploadingEventArgs = {
-                fileData: selectedFiles[i],
+                fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
                 customFormData: [],
                 cancel: false
             };
             let formData: FormData = new FormData();
             ajax.beforeSend = (e: BeforeSendEventArgs) => {
                 eventArgs.currentRequest = ajax.httpRequest;
+                /* istanbul ignore next */
+                if (isBlazor()) {
+                    eventArgs.fileData.rawFile = this.base64String[i];
+                    if (this.currentRequestHeader) {
+                        this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                    }
+                    if (this.customFormDatas) {
+                        this.updateFormData(formData, this.customFormDatas);
+                    }
+                }
                 this.trigger('uploading', eventArgs, (eventArgs: UploadingEventArgs) => {
+                    /* istanbul ignore next */
+                    if (isBlazor()) { selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i]; }
                     if (eventArgs.cancel) {
                         this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
                     }
@@ -3145,12 +3239,23 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 let name: string = this.element.getAttribute('name');
                 formData.append(name, selectedFiles[i].rawFile, selectedFiles[i].name);
                 if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
-                    this.chunkUpload(selectedFiles[i], custom);
+                    this.chunkUpload(selectedFiles[i], custom, i);
                 } else {
-                    ajax.onLoad = (e: Event): object => { this.uploadComplete(e, selectedFiles[i], custom); return {}; };
-                    ajax.onUploadProgress = (e: Event) => {
-                        this.uploadInProgress(e, selectedFiles[i], custom, ajax);
-                        return {};
+                    ajax.onLoad = (e: Event): object => {
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        } else {
+                            this.uploadComplete(e, selectedFiles[i], custom);
+                            return {};
+                        }
+                    };
+                    ajax.onUploadProgress = (e: Event): object => {
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        } else {
+                            this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                            return {};
+                        }
                     };
                     /* istanbul ignore next */
                     ajax.onError = (e: Event) => { this.uploadFailed(e, selectedFiles[i]); return {}; };
@@ -3256,7 +3361,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @returns FileInfo[]
      */
     public getFilesData(): FileInfo[] {
-        return this.filesData;
+        if (!isBlazor()) {
+            return this.filesData;
+        } else {
+            for (let i: number = 0; i < this.filesData.length; i++) {
+                this.filesData[i].rawFile = this.base64String[i];
+            }
+            return this.filesData;
+        }
     }
 
     /**
@@ -3265,8 +3377,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { boolean } custom - Set true if used custom UI.
      * @returns void
      */
-    public pause(fileData: FileInfo | FileInfo[], custom?: boolean): void {
-        let  fileDataFiles:  FileInfo[]  =  this.validateFileType(fileData);
+    public pause(fileData?: FileInfo | FileInfo[], custom?: boolean): void {
+        fileData = fileData ? fileData : this.filesData;
+        let fileDataFiles: FileInfo[] = this.validateFileType(fileData);
         this.pauseUploading(fileDataFiles, custom);
     }
     private pauseUploading(fileData: FileInfo[], custom?: boolean): void {
@@ -3294,7 +3407,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { boolean } custom - Set true if used custom UI.
      * @returns void
      */
-    public resume(fileData: FileInfo | FileInfo[], custom?: boolean): void {
+    public resume(fileData?: FileInfo | FileInfo[], custom?: boolean): void {
+        fileData = fileData ? fileData : this.filesData;
         let  fileDataFiles:  FileInfo[]  =  this.validateFileType(fileData);
         this.resumeFiles(fileDataFiles, custom);
     }
@@ -3314,7 +3428,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { boolean } fromcanceledStage - Set true to retry from canceled stage and set false to retry from initial stage.
      * @returns void
      */
-    public retry(fileData: FileInfo | FileInfo[], fromcanceledStage?: boolean, custom?: boolean): void {
+    public retry(fileData?: FileInfo | FileInfo[], fromcanceledStage?: boolean, custom?: boolean): void {
+        fileData = fileData ? fileData : this.filesData;
         let  fileDataFiles:  FileInfo[]  =  this.validateFileType(fileData);
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     }
@@ -3342,7 +3457,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      * @param { FileInfo | FileInfo[] } fileData - specifies the files data to cancel the progressing file.
      * @returns void
      */
-    public cancel(fileData: FileInfo[]): void {
+    public cancel(fileData?: FileInfo[]): void {
+        fileData = fileData ? fileData : this.filesData;
         let cancelingFiles:  FileInfo[]  =  this.validateFileType(fileData);
         this.cancelUpload(cancelingFiles);
     }

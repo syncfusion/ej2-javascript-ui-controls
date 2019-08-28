@@ -53,27 +53,13 @@ export class PivotContextMenu {
     }
     private onBeforeMenuOpen(args: MenuEventArgs): void {
         let items: HTMLLIElement[] = [].slice.call(args.element.querySelectorAll('li'));
-        let fieldType: SummaryTypes | string = this.parent.dataType === 'olap' ? this.fieldElement.getAttribute('data-type') :
+        let fieldType: SummaryTypes =
             this.fieldElement.querySelector('.' + cls.PIVOT_BUTTON_CONTENT_CLASS).getAttribute('data-type') as SummaryTypes;
         removeClass(items, cls.MENU_DISABLE);
-        if (fieldType === 'CalculatedField' || fieldType === 'isMeasureFieldsAvail') {
+        if (fieldType === 'CalculatedField') {
             for (let item of items) {
                 if (item.textContent !== this.parent.localeObj.getConstant('addToValue')) {
                     addClass([item], cls.MENU_DISABLE);
-                }
-            }
-        } else if (fieldType === 'isMeasureAvail') {
-            for (let item of items) {
-                if (item.textContent !== this.parent.localeObj.getConstant('addToRow') &&
-                    item.textContent !== this.parent.localeObj.getConstant('addToColumn')) {
-                    addClass([item], cls.MENU_DISABLE);
-                }
-            }
-        } else if (this.parent.dataType === 'olap') {
-            for (let item of items) {
-                if (item.textContent === this.parent.localeObj.getConstant('addToValue')) {
-                    addClass([item], cls.MENU_DISABLE);
-                    break;
                 }
             }
         }
@@ -84,7 +70,6 @@ export class PivotContextMenu {
             let dropClass: string = menu.item.id.replace(this.parent.element.id + '_', '').toLowerCase();
             this.parent.pivotCommon.dataSourceUpdate.control = this.parent.getModuleName() === 'pivotview' ? this.parent :
                 ((this.parent as PivotFieldList).pivotGridModule ? (this.parent as PivotFieldList).pivotGridModule : this.parent);
-            this.parent.pivotCommon.dataSourceUpdate.btnElement = this.fieldElement;
             this.parent.pivotCommon.dataSourceUpdate.updateDataSource(fieldName, dropClass, -1);
             this.parent.updateDataSource(true);
             this.fieldElement = undefined;

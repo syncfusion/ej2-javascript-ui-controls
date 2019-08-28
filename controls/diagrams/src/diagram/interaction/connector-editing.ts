@@ -9,7 +9,7 @@ import { cloneObject } from '../utility/base-util';
 import { HistoryEntry } from '../diagram/history';
 import { Direction, DiagramEvent } from './../enum/enum';
 import { contains } from './actions';
-import { SelectorModel } from './selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { MouseEventArgs } from './event-handlers';
 import { getOppositeDirection } from '../utility/connector';
 import { StraightSegment, BezierSegment, OrthogonalSegment } from '../objects/connector';

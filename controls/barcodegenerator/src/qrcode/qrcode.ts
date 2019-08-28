@@ -53,8 +53,10 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Defines the error correction level of the QR code.
+     * @blazorDefaultValueIgnore
      * @aspDefaultValueIgnore
      * @aspNumberEnum 
+     * @blazorNumberEnum
      * @default undefined
      */
     @Property()
@@ -99,6 +101,8 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     /**
      * * Defines the version of the QR code.
      * @aspDefaultValueIgnore
+     * @blazorNumberEnum
+     * @blazorDefaultValueIgnore
      * @aspNumberEnum 
      * @default undefined
      */
@@ -145,6 +149,7 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
 
         this.notify('initial-end', {});
         this.renderElements();
+        this.renderComplete();
     }
 
     private triggerEvent(eventName: BarcodeEvent, message: string): void {
