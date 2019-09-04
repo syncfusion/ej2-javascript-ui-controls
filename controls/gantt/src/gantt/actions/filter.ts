@@ -1,12 +1,11 @@
 import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel  } from '@syncfusion/ej2-treegrid';
 import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { getActualProperties, IFilterMUI, Filter as GridFilter } from '@syncfusion/ej2-grids';
+import { getActualProperties } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
-import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
-import { getValue, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
+import { FilterSettingsModel } from '../models/models';
+import { getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
-import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
 /** 
  * The Filter module is used to handle filter action.
@@ -20,28 +19,12 @@ export class Filter {
         TreeGrid.Inject(TreeGridFilter);
         this.parent.treeGrid.allowFiltering = this.parent.allowFiltering ||
             (this.parent.toolbar.indexOf('Search') !== -1 ? true : false);
-        this.updateCustomFilters();
         this.parent.treeGrid.filterSettings = getActualProperties(this.parent.filterSettings) as TreeFilterSettingsModel;
         this.addEventListener();
     }
 
     private getModuleName(): string {
         return 'filter';
-    }
-    /**
-     * Update custom filter for default Gantt columns
-     */
-    private updateCustomFilters(): void {
-        let settings: TaskFieldsModel = this.parent.taskFields;
-        for (let i: number = 0; i < this.parent.ganttColumns.length; i++) {
-            let column: ColumnModel = this.parent.ganttColumns[i];
-            if (((column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') &&
-                (column.field === settings.startDate || column.field === settings.endDate
-                    || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) ||
-                (column.field === settings.duration && column.editType === 'stringedit')) {
-                this.initiateFiltering(this.parent.ganttColumns[i]);
-            }
-        }
     }
 
     private updateModel(): void {
@@ -53,129 +36,6 @@ export class Filter {
         this.parent.on('actionComplete', this.actionComplete, this);
         this.parent.on('columnMenuOpen', this.columnMenuOpen, this);
     }
-
-    private initiateFiltering(column: ColumnModel): void {
-        let treeColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.treeGridModule.treeGridColumns);
-        column.allowFiltering = column.allowFiltering === false ? false : true;
-        if (column.allowFiltering && this.parent.filterSettings.type === 'Menu' && !column.filter) {
-            column.filter = { ui: this.getCustomFilterUi(column) };
-        }
-        if (treeColumn) {
-            treeColumn.allowFiltering = column.allowFiltering;
-            treeColumn.filter = column.filter;
-        }
-    }
-
-    /**
-     * To get filter menu UI
-     * @param column 
-     */
-    private getCustomFilterUi(column: ColumnModel): IFilterMUI {
-        let settings: TaskFieldsModel = this.parent.taskFields;
-        let filterUI: IFilterMUI = {};
-        if (column.editType === 'datepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
-            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
-            filterUI = this.getDatePickerFilter(column.field);
-        } else if (column.editType === 'datetimepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
-            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
-            filterUI = this.getDateTimePickerFilter();
-        } else if (column.field === settings.duration && column.editType === 'stringedit') {
-            filterUI = this.getDurationFilter();
-        }
-        return filterUI;
-    }
-
-    private getDatePickerFilter(columnName: string): IFilterMUI {
-        let parent: Gantt = this.parent;
-        let timeValue: number = (columnName === parent.taskFields.startDate) || (columnName === parent.taskFields.baselineStartDate)
-            ? parent.defaultStartTime : parent.defaultEndTime;
-        let dropDateInstance: DatePicker;
-        let filterDateUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
-                let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
-                args.target.appendChild(flValInput);
-                dropDateInstance = new DatePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
-                dropDateInstance.appendTo(flValInput);
-            },
-            write: (args: {
-                filteredValue: Date
-            }) => {
-                dropDateInstance.value = args.filteredValue;
-            },
-            read: (args: { target: Element, column: ColumnModel, operator: string, fltrObj: GridFilter }) => {
-                if (dropDateInstance.value) {
-                    dropDateInstance.value.setSeconds(timeValue);
-                }
-                args.fltrObj.filterByColumn(args.column.field, args.operator, dropDateInstance.value);
-            }
-        };
-        return filterDateUI;
-    }
-
-    private getDateTimePickerFilter(): IFilterMUI {
-        let dropInstance: DateTimePicker;
-        let filterDateTimeUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
-                let flValInput: HTMLElement = createElement('input', { className: 'flm-input' });
-                args.target.appendChild(flValInput);
-                dropInstance = new DateTimePicker({ placeholder: this.parent.localeObj.getConstant('enterValue') });
-                dropInstance.appendTo(flValInput);
-            },
-            write: (args: {
-                filteredValue: Date
-            }) => {
-                dropInstance.value = args.filteredValue;
-            },
-            read: (args: { target: Element, column: ColumnModel, operator: string, fltrObj: GridFilter }) => {
-                args.fltrObj.filterByColumn(args.column.field, args.operator, dropInstance.value);
-            }
-        };
-        return filterDateTimeUI;
-    }
-
-    private getDurationFilter(): IFilterMUI {
-        let parent: Gantt = this.parent;
-        let textBoxInstance: TextBox;
-        let textValue: string = '';
-        let filterDurationUI: IFilterMUI = {
-            create: (args: { target: Element, column: Object }) => {
-                let flValInput: HTMLElement = createElement('input', { className: 'e-input' });
-                flValInput.setAttribute('placeholder', this.parent.localeObj.getConstant('enterValue'));
-                args.target.appendChild(flValInput);
-                textBoxInstance = new TextBox();
-                textBoxInstance.appendTo(flValInput);
-            },
-            write: (args: {
-                filteredValue: string
-            }) => {
-                textBoxInstance.value = args.filteredValue ? textValue : '';
-            },
-            read: (args: { element: HTMLInputElement, column: ColumnModel, operator: string, fltrObj: GridFilter }) => {
-                let durationObj: object = this.parent.dataOperation.getDurationValue(textBoxInstance.value);
-                let intVal: number = getValue('duration', durationObj);
-                let unit: string = getValue('durationUnit', durationObj);
-                if (intVal >= 0) {
-                    let dayVal: number;
-                    if (unit === 'minute') {
-                        dayVal = (intVal * 60) / parent.secondsPerDay;
-                    } else if (unit === 'hour') {
-                        dayVal = (intVal * 60 * 60) / parent.secondsPerDay;
-                    } else {
-                        //Consider it as day unit
-                        dayVal = intVal;
-                        unit = 'day';
-                    }
-                    args.fltrObj.filterByColumn(args.column.field, args.operator, dayVal);
-                    textValue = this.parent.dataOperation.getDurationString(intVal, unit);
-                } else {
-                    args.fltrObj.filterByColumn(args.column.field, args.operator, null);
-                    textValue = null;
-                }
-            }
-        };
-        return filterDurationUI;
-    }
-
     /**
      * Remove filter menu while opening column chooser menu
      * @param args 

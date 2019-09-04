@@ -50,7 +50,7 @@ export class NavigationLine {
             latitude = navigation[i]['properties']['latitude'];
             longitude = navigation[i]['properties']['longitude'];
             visible = navigation[i]['properties']['visible'];
-            angle = navigation[i]['properties']['angle'];
+            angle = navigation[i]['angle'];
             width = navigation[i]['width'] || 1;
             color = navigation[i]['color'];
             dashArray = navigation[i]['properties']['dashArray'];

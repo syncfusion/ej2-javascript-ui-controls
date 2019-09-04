@@ -144,10 +144,12 @@ export type TextOverflow =
  * Table - Heat map is rendering using table type data source
  */
 export type AdaptorType =
-    /** Define the data soruce type is cell */
+    /** Defines the data source type is cell */
     'Cell' |
-    /** Define the data soruce type is table */
-    'Table';
+    /** Defines the data source type is table */
+    'Table' |
+    /** Defines no adaptor type is used for data source */
+    'None';
 
 /**
  * specify the rendering mode

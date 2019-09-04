@@ -53,6 +53,12 @@ export interface MaskedTextBoxModel extends ComponentModel{
     enabled?: boolean;
 
     /**
+     * Specifies the boolean value whether the Masked TextBox allows the user to change the text.
+     * @default false
+     */
+    readonly?: boolean;
+
+    /**
      * Specifies whether to show or hide the clear icon.
      * @default false
      */

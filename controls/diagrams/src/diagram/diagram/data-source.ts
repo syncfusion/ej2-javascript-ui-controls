@@ -1,6 +1,8 @@
 import { DataManager } from '@syncfusion/ej2-data';
-import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
-import {CrudActionModel, ConnectionDataSourceModel } from './data-source-model';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
+import { CrudActionModel, ConnectionDataSourceModel } from './data-source-model';
+import { DataMappingItems as DataMappingItems } from './data-mapping';
+import { DataMappingItemsModel } from './data-mapping-model';
 
 /**
  * Configures the data source that is to be bound with diagram
@@ -188,6 +190,13 @@ export class DataSource extends ChildProperty<DataSource> {
      */
     @Property()
     public doBinding: Function | string;
+
+    /**
+     * A collection of JSON objects where each object represents an Data Map Items.
+     * @default []
+     */
+    @Collection<DataMappingItems>([], DataMappingItems)
+    public dataMapSettings: DataMappingItemsModel[];
 
     /**
      * Add CrudAction to data source

@@ -114,7 +114,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before maps rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadEventArgs>;
@@ -164,7 +163,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps tooltip rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'TooltipRendering'
      */
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
@@ -179,7 +177,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before selection applied
      * @event
-     * @deprecated
      * @blazorProperty 'OnItemSelect'
      */
     itemSelection?: EmitType<ISelectionEventArgs>;
@@ -187,7 +184,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Trigger before highlight applied
      * @event
-     * @deprecated
      * @blazorProperty 'OnItemHighlight'
      */
     itemHighlight?: EmitType<ISelectionEventArgs>;
@@ -202,7 +198,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps layer rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'LayerRendering'
      */
     layerRendering?: EmitType<ILayerRenderingEventArgs>;
@@ -210,7 +205,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps shape rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'ShapeRendering'
      */
     shapeRendering?: EmitType<IShapeRenderingEventArgs>;
@@ -218,7 +212,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the maps marker rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'MarkerRendering'
      */
     markerRendering?: EmitType<IMarkerRenderingEventArgs>;
@@ -258,7 +251,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before the data label get rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'DataLabelRendering'
      */
     dataLabelRendering?: EmitType<ILabelRenderingEventArgs>;
@@ -294,7 +286,6 @@ export interface MapsModel extends ComponentModel{
     /**
      * Triggers before annotation rendering.
      * @event
-     * @deprecated
      * @blazorProperty 'AnnotationRendering'
      */
     annotationRendering?: EmitType<IAnnotationRenderingEventArgs>;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.49 (2019-09-04)
+
+### DatePicker
+
+#### Bug Fixes
+
+- `#244043` - Issue with "datepicker popup not closed while choose the same date value" has been resolved.
+
 ## 17.2.41 (2019-08-14)
 
 ### DateRangePicker

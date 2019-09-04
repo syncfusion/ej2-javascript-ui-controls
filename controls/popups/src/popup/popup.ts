@@ -288,7 +288,6 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         this.fixedParent = false;
         this.setEnableRtl();
         this.setContent();
-        this.wireEvents();
     }
     private wireEvents(): void {
         if (Browser.isDevice) {
@@ -635,6 +634,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
      * @param { HTMLElement } relativeElement? - To calculate the zIndex value dynamically.
      */
     public show(animationOptions?: AnimationModel, relativeElement?: HTMLElement): void {
+        this.wireEvents();
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {
             let zIndexElement: HTMLElement = ( isNullOrUndefined(relativeElement)) ? this.element : relativeElement;
             this.zIndex = getZindexPartial(zIndexElement as HTMLElement);
@@ -687,6 +687,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
             addClass([this.element], CLASSNAMES.CLOSE);
             this.trigger('close');
         }
+        this.unwireEvents();
     }
     /**
      * Gets scrollable parent elements for the given element.

@@ -1448,4 +1448,38 @@ describe('Read only mode validation on viewer with selection', () => {
     });
 });
 
+describe('Safari Paste Event Validation', () => {
+    let editor: DocumentEditor;
+    let viewer: LayoutViewer;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:1200px;height:100%' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer
+    });
+    afterAll((done) => {
+        editor.destroy();
+        editor = undefined;
+        document.body.removeChild(document.getElementById('container'));
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Paste Event Key Press Validation', () => {
+        let event: any = {
+            offsetX: 100, offsetY: 100, preventDefault: function () { return true; },
+            ctrlKey: true, shiftKey: false, which: 0, key: "v"
+        };
+        let keyPress: any = (editor.viewer as any).onKeyPressInternal(event);
+        expect(keyPress).toBe(undefined);
+    });
+});
+
 //#endregion

@@ -937,6 +937,11 @@ export abstract class LayoutViewer {
     }
     // tslint:enable:no-any 
     private onKeyPressInternal = (event: KeyboardEvent): void => {
+        let key: number = event.which || event.keyCode;
+        let ctrl: boolean = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
+        if (ctrl && event.key === 'v') {
+            return;
+        }
         if (!this.owner.isReadOnlyMode) {
             let key: number = event.keyCode || event.charCode;
             let char: string = '';

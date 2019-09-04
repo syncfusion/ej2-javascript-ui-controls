@@ -1671,7 +1671,6 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         args.count = count;
         this.parent.notify('updateResults', args);
     };
-    /* tslint:disable */
     DataManipulation.prototype.paging = function (results, count, isExport, isPrinting, exportType, args) {
         if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
             && (!isPrinting || this.parent.printMode === 'CurrentPage')) {
@@ -5866,9 +5865,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         for (var f = 0; f < this.flatFilteredData.length; f++) {
             var rec = this.flatFilteredData[f];
             this.addParentRecord(rec);
-            if (this.parent.filterSettings.hierarchyMode === 'Child' ||
-                this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'Child' ||
-                this.parent.searchSettings.hierarchyMode === 'None') {
+            var hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+                : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'None') &&
+                (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== ''))) {
                 this.isHierarchyFilter = true;
             }
             var ischild = getObject('childRecords', rec);
@@ -5891,7 +5891,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
     Filter$$1.prototype.addParentRecord = function (record) {
         var parent = getParentData(this.parent, record.parentUniqueID);
         //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
-        if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
+        var hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+            : this.parent.searchSettings.hierarchyMode;
+        if (hierarchyMode === 'None' && (this.parent.grid.filterSettings.columns.length !== 0
+            || this.parent.grid.searchSettings.key !== '')) {
             if (isNullOrUndefined(parent)) {
                 if (this.flatFilteredData.indexOf(record) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
@@ -5920,8 +5923,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         }
         else {
             if (!isNullOrUndefined(parent)) {
-                if (this.parent.filterSettings.hierarchyMode === 'Child'
-                    || this.parent.searchSettings.hierarchyMode === 'Child') {
+                var hierarchyMode_1 = this.parent.grid.searchSettings.key === '' ?
+                    this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+                if (hierarchyMode_1 === 'Child' && (this.parent.grid.filterSettings.columns.length !== 0
+                    || this.parent.grid.searchSettings.key !== '')) {
                     if (this.flatFilteredData.indexOf(parent) !== -1) {
                         this.addParentRecord(parent);
                     }
@@ -5941,8 +5946,10 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
         var isExist = false;
         for (var count = 0; count < childRec.length; count++) {
             var ischild = childRec[count].childRecords;
-            if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
-                (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both')) {
+            var hierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'Both') && (this.parent.grid.filterSettings.columns.length !== 0
+                || this.parent.grid.searchSettings.key !== ''))) {
                 var uniqueIDValue = getValue('uniqueIDFilterCollection', this.parent);
                 if (!uniqueIDValue.hasOwnProperty(childRec[count].uniqueID)) {
                     this.filteredResult.push(childRec[count]);
@@ -5950,8 +5957,9 @@ var Filter$1 = /** @__PURE__ @class */ (function () {
                     isExist = true;
                 }
             }
-            if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
-                if (this.flatFilteredData.indexOf(childRec[count] !== -1)) {
+            if ((hierarchyMode === 'None')
+                && (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== '')) {
+                if (this.flatFilteredData.indexOf(childRec[count]) !== -1) {
                     isExist = true;
                     break;
                 }
@@ -6066,8 +6074,18 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
                 return null;
             }
             dm.executeQuery(query).then(function (e) {
+                var customData = null;
+                if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)) {
+                    customData = excelExportProperties.dataSource;
+                }
                 excelExportProperties = _this.manipulateExportProperties(excelExportProperties, dataSource, e);
                 return _this.parent.grid.excelExportModule.Map(_this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then(function (book) {
+                    if (customData != null) {
+                        excelExportProperties.dataSource = customData;
+                    }
+                    else {
+                        delete excelExportProperties.dataSource;
+                    }
                     resolve(book);
                 });
             });
@@ -6103,12 +6121,9 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
         if (!this.isLocal()) {
             this.parent.flatData = [];
         }
-        if (property && property.dataSource && this.isLocal()) {
-            var flatsData = this.parent.flatData;
-            var dataSrc = property.dataSource instanceof DataManager ? property.dataSource.dataSource.json : property.dataSource;
-            this.parent.dataModule.convertToFlatData(dataSrc);
+        if (property && property.dataSource) {
+            this.parent.dataModule.convertToFlatData(property.dataSource);
             dtSrc = this.parent.flatData;
-            this.parent.flatData = flatsData;
         }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({ json: dtSrc });
@@ -6205,8 +6220,18 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
                 return null;
             }
             dm.executeQuery(query).then(function (e) {
+                var customsData = null;
+                if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+                    customsData = pdfExportProperties.dataSource;
+                }
                 pdfExportProperties = _this.manipulatePdfProperties(pdfExportProperties, dtSrc, e);
                 return _this.parent.grid.pdfExportModule.Map(_this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob).then(function (document) {
+                    if (customsData != null) {
+                        pdfExportProperties.dataSource = customsData;
+                    }
+                    else {
+                        delete pdfExportProperties.dataSource;
+                    }
                     resolve(document);
                 });
             });
@@ -6243,12 +6268,9 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
         if (!isLocal) {
             this.parent.flatData = [];
         }
-        if (prop && prop.dataSource && isLocal) {
-            var flatDatas = this.parent.flatData;
-            var dataSrc = prop.dataSource instanceof DataManager ? prop.dataSource.dataSource.json : prop.dataSource;
-            this.parent.dataModule.convertToFlatData(dataSrc);
+        if (prop && prop.dataSource) {
+            this.parent.dataModule.convertToFlatData(prop.dataSource);
             dtSrc = this.parent.flatData;
-            this.parent.flatData = flatDatas;
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
         prop.dataSource = new DataManager({ json: dtSrc });
@@ -6758,13 +6780,26 @@ var Aggregate$1 = /** @__PURE__ @class */ (function () {
     return Aggregate$$1;
 }());
 
+var __extends$10 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 /**
  * ContextMenu Module for TreeGrid
  * @hidden
  */
 var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     function ContextMenu$$1(parent) {
-        Grid.Inject(ContextMenu);
+        Grid.Inject(TreeGridMenu);
         this.parent = parent;
         this.addEventListener();
     }
@@ -6786,6 +6821,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         this.parent.off('contextMenuClick', this.contextMenuClick);
     };
     ContextMenu$$1.prototype.contextMenuOpen = function (args) {
+        this.parent.grid.notify('collectTreeGrid', { tree: this.parent });
         var addRow = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
         var editRecord = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit');
         if (addRow) {
@@ -6831,6 +6867,51 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     };
     return ContextMenu$$1;
 }());
+var TreeGridMenu = /** @__PURE__ @class */ (function (_super) {
+    __extends$10(TreeGridMenu, _super);
+    function TreeGridMenu() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    TreeGridMenu.prototype.addEventListener = function () {
+        getValue('parent', this).on('collectTreeGrid', this.collectTreeGrid, this);
+        _super.prototype.addEventListener.call(this);
+    };
+    TreeGridMenu.prototype.collectTreeGrid = function (args) {
+        this.treegrid = args.tree;
+    };
+    TreeGridMenu.prototype.contextMenuItemClick = function (args) {
+        var item = getValue('getKeyFromId', this).apply(this, [args.item.id]);
+        var isPrevent = false;
+        switch (item) {
+            case 'PdfExport':
+                this.treegrid.pdfExport();
+                isPrevent = true;
+                break;
+            case 'ExcelExport':
+                this.treegrid.excelExport();
+                isPrevent = true;
+                break;
+            case 'CsvExport':
+                this.treegrid.csvExport();
+                isPrevent = true;
+                break;
+            case 'Save':
+                if (this.treegrid.editSettings.mode === 'Cell' && this.treegrid.grid.editSettings.mode === 'Batch') {
+                    isPrevent = true;
+                    this.treegrid.grid.editModule.saveCell();
+                }
+        }
+        if (!isPrevent) {
+            _super.prototype.contextMenuItemClick.call(this, args);
+        }
+        else {
+            args.column = getValue('targetColumn', this);
+            args.rowInfo = getValue('targetRowdata', this);
+            getValue('parent', this).trigger('contextMenuClick', args);
+        }
+    };
+    return TreeGridMenu;
+}(ContextMenu));
 
 /**
  * TreeGrid Edit Module
@@ -7548,7 +7629,7 @@ var DetailRow$1 = /** @__PURE__ @class */ (function () {
     return DetailRow$$1;
 }());
 
-var __extends$11 = (undefined && undefined.__extends) || (function () {
+var __extends$12 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7565,7 +7646,7 @@ var __extends$11 = (undefined && undefined.__extends) || (function () {
  * Content renderer for TreeGrid
  */
 var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
-    __extends$11(VirtualTreeContentRenderer, _super);
+    __extends$12(VirtualTreeContentRenderer, _super);
     function VirtualTreeContentRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         _this.isExpandCollapse = false;
@@ -7675,9 +7756,8 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.endIndex = lastIndex;
             this.translateY = scrollArgs.offset.top;
         }
-        if (((downScroll && (scrollArgs.offset.top +
-            (outBuffer * this.parent.getRowHeight())) < (this.parent.getRowHeight() * this.totalRecords))
-            || (upScroll))) {
+        if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
+            || (upScroll)) {
             var viewInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
             this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
         }
@@ -7703,7 +7783,7 @@ var VirtualTreeContentRenderer = /** @__PURE__ @class */ (function (_super) {
     return VirtualTreeContentRenderer;
 }(VirtualContentRenderer));
 var TreeInterSectionObserver = /** @__PURE__ @class */ (function (_super) {
-    __extends$11(TreeInterSectionObserver, _super);
+    __extends$12(TreeInterSectionObserver, _super);
     function TreeInterSectionObserver() {
         var _this = _super !== null && _super.apply(this, arguments) || this;
         _this.isWheeling = false;
@@ -7759,7 +7839,7 @@ var TreeInterSectionObserver = /** @__PURE__ @class */ (function (_super) {
     return TreeInterSectionObserver;
 }(InterSectionObserver));
 
-var __extends$10 = (undefined && undefined.__extends) || (function () {
+var __extends$11 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -7890,7 +7970,7 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
     return VirtualScroll$$1;
 }());
 var TreeVirtual = /** @__PURE__ @class */ (function (_super) {
-    __extends$10(TreeVirtual, _super);
+    __extends$11(TreeVirtual, _super);
     function TreeVirtual(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
         getValue('parent', _this).off('initial-load', getValue('instantiateRenderer', _this), _this);
@@ -7911,7 +7991,9 @@ var TreeVirtual = /** @__PURE__ @class */ (function (_super) {
         var vHeight = parentGrid.height.toString().indexOf('%') < 0 ? parentGrid.height :
             parentGrid.element.getBoundingClientRect().height;
         var blockSize = ~~(vHeight / rowHeight);
-        parentGrid.setProperties({ pageSettings: { pageSize: blockSize + 10 } }, true);
+        var height = blockSize * 2;
+        var size = parentGrid.pageSettings.pageSize;
+        parentGrid.setProperties({ pageSettings: { pageSize: size < height ? height : size } }, true);
     };
     return TreeVirtual;
 }(VirtualScroll));

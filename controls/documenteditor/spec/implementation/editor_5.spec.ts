@@ -871,3 +871,34 @@ describe('Insert table Multiple time', () => {
         }
     });
 });
+
+describe('Insert Field Format Validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory); editor.enableEditorHistory = true;
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+
+    it('insert field validation with current selection format', () => {
+        editor.selection.characterFormat.bold = true;
+        editor.editor.insertText('Hello');
+        editor.editor.insertField('MERGEFIELD ' + 'World' + ' \\* MERGEFORMAT');
+        let childWidgets: any = editor.selection.start.paragraph.childWidgets[0];
+        expect(childWidgets.children[4].characterFormat.bold).toBe(true);
+    });
+});

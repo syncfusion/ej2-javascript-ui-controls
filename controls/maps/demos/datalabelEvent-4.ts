@@ -8,6 +8,7 @@ let maps: Maps = new Maps({
     dataLabelRendering: (args: ILabelRenderingEventArgs) => {
        args.border.width = 2;
        args.border.color = 'red';
+       args.fill = 'White';
     },
     zoomSettings: {
         enable: false

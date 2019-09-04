@@ -10138,6 +10138,39 @@ describe('Tab Control', () => {
         });
     });
 
+    describe('Tab Header template', () => {
+        let tab: Tab;
+        let i: boolean;
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Rendering testing' , () => {
+            tab = new Tab({
+                items: [
+                    { headerTemplate:"item1" , content: "Content1" },
+                    { headerTemplate:"item2" , content: "Content2" },
+                    { headerTemplate:"item3" , content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("item1");
+            tab.items[0].headerTemplate = 'headerText1';
+            tab.dataBind();
+            expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("headerText1");
+            tab.addTab([ { headerTemplate: "Newitem1", content: "NewContent1" } ], 0);
+            expect(element.querySelectorAll(".e-toolbar-item")[0].querySelector(".e-tab-text").innerHTML).toBe("Newitem1");
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

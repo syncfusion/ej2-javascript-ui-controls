@@ -1,21 +1,17 @@
-import { isNullOrUndefined, isUndefined, extend, setValue, getValue, deleteObject, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, extend, setValue, getValue, deleteObject, createElement, isBlazor } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { TaskFieldsModel, EditSettingsModel } from '../models/models';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IValidateArgs, IParent, IPredecessor } from '../base/interface';
 import { IActionBeginEventArgs, ITaskAddedEventArgs, ITaskDeletedEventArgs } from '../base/interface';
-import { ColumnModel, Column as GanttColumn } from '../models/column';
+import { ColumnModel } from '../models/column';
 import { DataManager, DataUtil, Query } from '@syncfusion/ej2-data';
-import { ReturnType, RecordDoubleClickEventArgs, Row, Column, IEditCell, EJ2Intance } from '@syncfusion/ej2-grids';
+import { ReturnType, RecordDoubleClickEventArgs, Row, Column } from '@syncfusion/ej2-grids';
 import { getSwapKey, isScheduledTask, getTaskData, isRemoteData, getIndex } from '../base/utils';
 import { RowPosition } from '../base/enum';
 import { CellEdit } from './cell-edit';
 import { TaskbarEdit } from './taskbar-edit';
 import { DialogEdit } from './dialog-edit';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
-import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
-import { ConnectorLineEdit } from './connector-line-edit';
-
 
 /**
  * The Edit Module is used to handle editing actions.
@@ -43,9 +39,6 @@ export class Edit {
         if (this.parent.editSettings.allowEditing && this.parent.editSettings.mode === 'Auto') {
             this.cellEditModule = new CellEdit(this.parent);
         }
-        if (this.parent.taskFields.dependency) {
-            this.parent.connectorLineEditModule = new ConnectorLineEdit(this.parent);
-        }
         if (this.parent.editSettings.allowAdding || (this.parent.editSettings.allowEditing &&
             (this.parent.editSettings.mode === 'Dialog' || this.parent.editSettings.mode === 'Auto'))) {
             this.dialogModule = new DialogEdit(this.parent);
@@ -66,131 +59,10 @@ export class Edit {
         this.parent.treeGrid.editSettings.allowAdding = this.parent.editSettings.allowAdding;
         this.parent.treeGrid.editSettings.allowDeleting = this.parent.editSettings.allowDeleting;
         this.parent.treeGrid.editSettings.showDeleteConfirmDialog = this.parent.editSettings.showDeleteConfirmDialog;
-        this.updateDefaultColumnEditors();
     }
 
     private getModuleName(): string {
         return 'edit';
-    }
-
-    /**
-     * Method to update default edit params and editors for Gantt
-     */
-    private updateDefaultColumnEditors(): void {
-        let customEditorColumns: string[] =
-            [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo];
-        for (let i: number = 0; i < customEditorColumns.length; i++) {
-            if (!isNullOrUndefined(customEditorColumns[i]) && customEditorColumns[i].length > 0) {
-                let column: ColumnModel = this.parent.getColumnByField(customEditorColumns[i], this.parent.treeGridModule.treeGridColumns);
-                if (column) {
-                    if (column.field === this.parent.taskFields.id) {
-                        this.updateIDColumnEditParams(column);
-                    } else if (column.field === this.parent.taskFields.progress) {
-                        this.updateProgessColumnEditParams(column);
-                    } else if (column.field === this.parent.taskFields.resourceInfo) {
-                        this.updateResourceColumnEditor(column);
-                    }
-                }
-            }
-        }
-    }
-    /**
-     * Method to update editors for id column in Gantt
-     */
-    private updateIDColumnEditParams(column: ColumnModel): void {
-        let editParam: NumericTextBoxModel = {
-            min: 0,
-            decimals: 0,
-            validateDecimalOnType: true,
-            format: 'n0',
-            showSpinButton: false
-        };
-        this.updateEditParams(column, editParam);
-    }
-
-    /**
-     * Method to update edit params of default progress column
-     */
-    private updateProgessColumnEditParams(column: ColumnModel): void {
-        let editParam: NumericTextBoxModel = {
-            min: 0,
-            decimals: 0,
-            validateDecimalOnType: true,
-            max: 100,
-            format: 'n0'
-        };
-        this.updateEditParams(column, editParam);
-    }
-    /**
-     * Assign edit params for id and progress columns
-     */
-    private updateEditParams(column: ColumnModel, editParam: object): void {
-        if (isNullOrUndefined(column.edit)) {
-            column.edit = {};
-            column.edit.params = {};
-        } else if (isNullOrUndefined(column.edit.params)) {
-            column.edit.params = {};
-        }
-        extend(column.edit.params, editParam);
-        let ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
-        ganttColumn.edit = column.edit;
-    }
-    /**
-     * Method to update resource column editor for default resource column
-     */
-    private updateResourceColumnEditor(column: ColumnModel): void {
-        if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
-            column.editType = 'dropdownedit';
-            column.edit = this.getResourceEditor();
-            let ganttColumn: ColumnModel = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
-            ganttColumn.editType = 'dropdownedit';
-            ganttColumn.edit = column.edit;
-        }
-    }
-
-    /**
-     * Method to create resource custom editor
-     */
-    private getResourceEditor(): IEditCell {
-        let editObject: IEditCell = {};
-        let editor: MultiSelect;
-        MultiSelect.Inject(CheckBoxSelection);
-        editObject.write = (args: { rowData: Object, element: Element, column: GanttColumn, row: HTMLElement, requestType: string }) => {
-            this.parent.treeGridModule.currentEditRow = {};
-            editor = new MultiSelect({
-                dataSource: new DataManager(this.parent.resources),
-                fields: { text: this.parent.resourceNameMapping, value: this.parent.resourceIDMapping },
-                mode: 'CheckBox',
-                showDropDownIcon: true,
-                popupHeight: '350px',
-                delimiterChar: ',',
-                value: this.parent.treeGridModule.getResourceIds(args.rowData as IGanttData) as number[]
-            });
-            editor.appendTo(args.element as HTMLElement);
-        };
-        editObject.read = (element: HTMLElement): string => {
-            let value: Object[] = (<EJ2Intance>element).ej2_instances[0].value;
-            let resourcesName: string[] = [];
-            if (isNullOrUndefined(value)) {
-                value = [];
-            }
-            for (let i: number = 0; i < value.length; i++) {
-                for (let j: number = 0; j < this.parent.resources.length; j++) {
-                    if (this.parent.resources[j][this.parent.resourceIDMapping] === value[i]) {
-                        resourcesName.push(this.parent.resources[j][this.parent.resourceNameMapping]);
-                        break;
-                    }
-                }
-            }
-            this.parent.treeGridModule.currentEditRow[this.parent.taskFields.resourceInfo] = value;
-            return resourcesName.join(',');
-        };
-        editObject.destroy = () => {
-            if (editor) {
-                editor.destroy();
-            }
-        };
-        return editObject;
     }
 
     /**
@@ -266,11 +138,35 @@ export class Edit {
      * @param {Object} data - Defines new data to update.
      */
     public updateRecordByID(data: Object): void {
-        let tasks: TaskFieldsModel = this.parent.taskFields;
-        if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
+       let tasks: TaskFieldsModel = this.parent.taskFields;
+       if (isNullOrUndefined(data) || isNullOrUndefined(data[tasks.id])) {
             return;
         }
-        let ganttData: IGanttData = this.parent.getRecordByID(data[tasks.id]);
+       let ganttData: IGanttData = this.parent.getRecordByID(data[tasks.id]);
+        if (isBlazor()) {
+            let keys: string[] = Object.keys(data);
+            if (keys.indexOf(tasks.startDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.startDate, data))) {
+            setValue(
+                this.parent.taskFields.startDate,
+                this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.startDate, data)), data);
+            }
+            if (keys.indexOf(tasks.endDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.endDate, data))) {
+            setValue(
+                this.parent.taskFields.endDate,
+                this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.endDate, data)), data);
+            }
+            /* tslint:disable-next-line */
+            if (keys.indexOf(tasks.baselineStartDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineStartDate, data))) {
+                setValue(
+                    this.parent.taskFields.baselineStartDate,
+                    this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineStartDate, data)), data);
+            }
+            if (keys.indexOf(tasks.baselineEndDate) !== -1 && !isNullOrUndefined(getValue(this.parent.taskFields.baselineEndDate, data))) {
+                setValue(
+                    this.parent.taskFields.baselineEndDate,
+                    this.parent.dataOperation.getDateFromFormat(getValue(this.parent.taskFields.baselineEndDate, data)), data);
+            }
+        }
         if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
             this.parent.isOnEdit = true;
             this.validateUpdateValues(data, ganttData, true);
@@ -485,20 +381,20 @@ export class Edit {
         this.predecessorUpdated = this.isPredecessorUpdated(args.data);
         if (this.predecessorUpdated) {
             this.parent.isConnectorLineUpdate = true;
-            this.parent.connectorLineEditModule.addRemovePredecessor(args.data);
+            this.parent.predecessorModule.addRemovePredecessor(args.data);
         }
         let validateObject: object = {};
         if (isValidatePredecessor) {
-            validateObject = this.parent.connectorLineEditModule.validateTypes(args.data);
+            validateObject = this.parent.predecessorModule.validateTypes(args.data);
             this.parent.isConnectorLineUpdate = true;
             if (!isNullOrUndefined(getValue('violationType', validateObject))) {
                 let newArgs: IValidateArgs = this.validateTaskEvent(args);
                 if (newArgs.validateMode.preserveLinkWithEditing === false &&
                     newArgs.validateMode.removeLink === false &&
                     newArgs.validateMode.respectLink === false) {
-                    this.parent.connectorLineEditModule.openValidationDialog(validateObject);
+                    this.parent.predecessorModule.openValidationDialog(validateObject);
                 } else {
-                    this.parent.connectorLineEditModule.applyPredecessorOption();
+                    this.parent.predecessorModule.applyPredecessorOption();
                 }
             } else {
                 this.updateEditedTask(args);
@@ -817,29 +713,36 @@ export class Edit {
     public initiateSaveAction(args: ITaskbarEditedEventArgs): void {
         this.parent.showSpinner();
         let eventArgs: IActionBeginEventArgs = {};
+        let modifiedTaskData: IGanttData[] = [];
         eventArgs.requestType = 'beforeSave';
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
-        this.parent.trigger('actionBegin', eventArgs);
-        if (eventArgs.cancel) {
-            this.reUpdatePreviousRecords();
-            this.parent.chartRowsModule.refreshRecords([args.data]);
-            this.resetEditProperties();
-            // Trigger action complete event with save canceled request type
-        } else {
-            if (isRemoteData(this.parent.dataSource)) {
-                let data: DataManager = this.parent.dataSource as DataManager;
-                let updatedData: object = {
-                    changedRecords: eventArgs.modifiedTaskData
-                };
-                let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
-                crud.then((e: ReturnType) => this.dmSuccess(e, args))
-                    .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
-            } else {
-                this.saveSuccess(args);
-            }
+        if (isBlazor()) {
+           eventArgs = this.parent.updateDataArgs(eventArgs);
+           modifiedTaskData = eventArgs.modifiedTaskData;
         }
+        this.parent.trigger('actionBegin', eventArgs, (eventArgs: IActionBeginEventArgs) => {
+            if (eventArgs.cancel) {
+                this.reUpdatePreviousRecords();
+                this.parent.chartRowsModule.refreshRecords([args.data]);
+                this.resetEditProperties();
+                // Trigger action complete event with save canceled request type
+            } else {
+                if (isRemoteData(this.parent.dataSource)) {
+                    let data: DataManager = this.parent.dataSource as DataManager;
+                    let updatedData: object = {
+                        changedRecords: isBlazor() ? modifiedTaskData : eventArgs.modifiedTaskData
+                    };
+                    /* tslint:disable-next-line */
+                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
+                    crud.then((e: ReturnType) => this.dmSuccess(e, args))
+                        .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                } else {
+                    this.saveSuccess(args);
+                }
+            }
+        });
     }
 
     private dmSuccess(e: ReturnType, args: ITaskbarEditedEventArgs): void {
@@ -880,6 +783,9 @@ export class Edit {
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
         setValue('action', args.action, eventArgs);
         this.endEditAction(args);
+        if (isBlazor()) {
+            this.parent.updateDataArgs(eventArgs);
+        }
         this.parent.trigger('actionComplete', eventArgs);
     }
 
@@ -1191,30 +1097,38 @@ export class Edit {
         eventArgs.data = args.deletedRecordCollection;
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection);
-        this.parent.trigger('actionBegin', eventArgs);
-        if (eventArgs.cancel) {
-            let deleteRecords: IGanttData[] = this.deletedTaskDetails;
-            for (let d: number = 0; d < deleteRecords.length; d++) {
-                deleteRecords[d].isDelete = false;
-            }
-            this.deletedTaskDetails = [];
-            this.reUpdatePreviousRecords();
-            this.parent.initiateEditAction(false);
-            this.parent.hideSpinner();
-        } else {
-            if (isRemoteData(this.parent.dataSource)) {
-                let data: DataManager = this.parent.dataSource as DataManager;
-                let updatedData: object = {
-                    deletedRecords: getTaskData(eventArgs.data), // to check
-                    changedRecords: eventArgs.modifiedTaskData
-                };
-                let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
-                crud.then((e: ReturnType) => this.deleteSuccess(args))
-                    .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
-            } else {
-                this.deleteSuccess(args);
-            }
+        let blazorArgs: IActionBeginEventArgs = {};
+        if (isBlazor()) {
+            eventArgs = this.parent.updateDataArgs(eventArgs);
+            blazorArgs.modifiedTaskData = eventArgs.modifiedTaskData;
+            blazorArgs.data = eventArgs.data;
         }
+        this.parent.trigger('actionBegin', eventArgs, (eventArgs: IActionBeginEventArgs) => {
+            if (eventArgs.cancel) {
+                let deleteRecords: IGanttData[] = this.deletedTaskDetails;
+                for (let d: number = 0; d < deleteRecords.length; d++) {
+                    deleteRecords[d].isDelete = false;
+                }
+                this.deletedTaskDetails = [];
+                this.reUpdatePreviousRecords();
+                this.parent.initiateEditAction(false);
+                this.parent.hideSpinner();
+            } else {
+                if (isRemoteData(this.parent.dataSource)) {
+                    let data: DataManager = this.parent.dataSource as DataManager;
+                    let updatedData: object = {
+                        /* tslint:disable-next-line */
+                        deletedRecords: isBlazor() ? getTaskData(blazorArgs.data as IGanttData[]) : getTaskData(eventArgs.data as IGanttData[]), // to check
+                        changedRecords: isBlazor() ? blazorArgs.modifiedTaskData : eventArgs.modifiedTaskData
+                    };
+                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
+                    crud.then((e: ReturnType) => this.deleteSuccess(args))
+                        .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
+                } else {
+                    this.deleteSuccess(args);
+                }
+            }
+        });
     }
 
     private deleteSuccess(args: ITaskDeletedEventArgs): void {
@@ -1262,6 +1176,9 @@ export class Edit {
         eventArgs.modifiedRecords = args.updatedRecordCollection;
         eventArgs.modifiedTaskData = getTaskData(args.updatedRecordCollection);
         setValue('action', args.action, eventArgs);
+        if (isBlazor()) {
+            this.parent.updateDataArgs(eventArgs);
+        }
         this.parent.trigger('actionComplete', eventArgs);
         this.deletedTaskDetails = [];
         this.parent.initiateEditAction(false);
@@ -1667,7 +1584,6 @@ export class Edit {
             }
         }
     }
-
     /**
      * Method to add new record.
      * @param {Object | IGanttData} data - Defines the new data to add.
@@ -1676,6 +1592,7 @@ export class Edit {
      * @return {void}
      * @private
      */
+    /* tslint:disable-next-line:max-func-body-length */
     public addRecord(data?: Object | IGanttData, rowPosition?: RowPosition, rowIndex?: number): void {
         let selectedRowIndex: number = isNullOrUndefined(rowIndex) || isNaN(parseInt(rowIndex.toString(), 10)) ?
             this.parent.selectionModule ?
@@ -1720,55 +1637,71 @@ export class Edit {
         cAddedRecord = this.updateNewlyAddedDataBeforeAjax(data, level, rowPosition, parentItem);
         args = this.constructTaskAddedEventArgs(cAddedRecord, this.parent.editedRecords, 'beforeAdd');
         this.parent.showSpinner();
-        this.parent.trigger('actionBegin', args);
-        if (!args.cancel) {
-            if (isRemoteData(this.parent.dataSource)) {
-                let data: DataManager = this.parent.dataSource as DataManager;
-                let updatedData: object = {
-                    addedRecords: [args.newTaskData], // to check
-                    changedRecords: args.modifiedTaskData
-                };
-                let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
-                crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
-                    if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
-                        e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.taskId) {
-                        this.parent.setRecordValue(
-                            'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
-                        this.parent.setRecordValue(
-                            'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
-                        this.parent.setRecordValue(
-                            this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
-                    }
+        let blazorArgs: ITaskAddedEventArgs = {};
+        if (isBlazor()) {
+            if (!Array.isArray(args.data)) {
+                let customData: IGanttData[] = [];
+                customData.push(args.data);
+                setValue('data', customData, args);
+            }
+            blazorArgs = {...args};
+        }
+        this.parent.trigger('actionBegin', args, (args: ITaskAddedEventArgs) => {
+            if (!args.cancel) {
+                if (isBlazor()) {
+                    blazorArgs.data = blazorArgs.data[0];
+                    args = blazorArgs;
+                }
+                if (isRemoteData(this.parent.dataSource)) {
+                    let data: DataManager = this.parent.dataSource as DataManager;
+                    let updatedData: object = {
+                        addedRecords: [args.newTaskData], // to check
+                        changedRecords: args.modifiedTaskData
+                    };
+                    /* tslint:disable-next-line */
+                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
+                    crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
+                        if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
+                            e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.taskId) {
+                            this.parent.setRecordValue(
+                                'taskId', e.addedRecords[0][this.parent.taskFields.id], args.data.ganttProperties, true);
+                            this.parent.setRecordValue(
+                                'taskData.' + this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                            this.parent.setRecordValue(
+                                this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
+                        }
+                        if (cAddedRecord.level === 0) {
+                            this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+                        }
+                        this.RefreshNewlyAddedRecord(args, cAddedRecord);
+                    }).catch((e: { result: Object[] }) => {
+                        this.removeAddedRecord();
+                        this.dmFailure(e as { result: Object[] }, args);
+                    });
+                } else {
+                    this.updateRealDataSource(args.data, rowPosition);
                     if (cAddedRecord.level === 0) {
                         this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                     }
                     this.RefreshNewlyAddedRecord(args, cAddedRecord);
-                }).catch((e: { result: Object[] }) => {
-                    this.removeAddedRecord();
-                    this.dmFailure(e as { result: Object[] }, args);
-                });
-            } else {
-                this.updateRealDataSource(args.data, rowPosition);
-                if (cAddedRecord.level === 0) {
-                    this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                 }
-                this.RefreshNewlyAddedRecord(args, cAddedRecord);
+            } else {
+                args = isBlazor() ? blazorArgs : args;
+                this.removeAddedRecord();
+                this.reUpdatePreviousRecords();
+                if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                    this.dialogModule.dialogObj.hide();
+                }
+                this.dialogModule.dialogClose();
             }
-        } else {
-            this.removeAddedRecord();
-            this.reUpdatePreviousRecords();
-            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
-                this.dialogModule.dialogObj.hide();
-            }
-            this.dialogModule.dialogClose();
-        }
-        this.parent.isOnEdit = false;
-        this.parent.hideSpinner();
-        this.addRowSelectedItem = null;
-        this.newlyAddedRecordBackup = null;
-        this.isBreakLoop = false;
-        this.parent.element.tabIndex = 0;
-        this.parent.initiateEditAction(false);
+            this.parent.isOnEdit = false;
+            this.parent.hideSpinner();
+            this.addRowSelectedItem = null;
+            this.newlyAddedRecordBackup = null;
+            this.isBreakLoop = false;
+            this.parent.element.tabIndex = 0;
+            this.parent.initiateEditAction(false);
+        });
     }
 
     private RefreshNewlyAddedRecord(args: ITaskAddedEventArgs, cAddedRecord: IGanttData): void {
@@ -1788,6 +1721,9 @@ export class Edit {
         }
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
+        if (isBlazor()) {
+            this.parent.updateDataArgs(args);
+        }
         this.parent.trigger('actionComplete', args);
         if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
             this.dialogModule.dialogObj.hide();

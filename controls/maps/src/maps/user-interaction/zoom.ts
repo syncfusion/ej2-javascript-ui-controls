@@ -423,12 +423,16 @@ export class Zoom {
                     let eventArgs: IMarkerRenderingEventArgs = {
                         template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                         cancel: false, name: markerRendering, fill: markerSettings.fill, height: markerSettings.height,
-                        width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,                        
+                        width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
                         border: markerSettings.border
                     };
+                    if (this.maps.isBlazor) {
+                        const {maps, marker, ...blazorEventArgs } : IMarkerRenderingEventArgs = eventArgs;
+                        eventArgs = blazorEventArgs;
+                    }
                     this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                        let long: number = data['longitude'];
-                        let lati: number = data['latitude'];
+                        let long: number = data['longitude'] | data['Longitude'];
+                        let lati: number = data['latitude'] | data['Latitude'];
                         let offset: Point = markerSettings.offset;
                         if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                             let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'

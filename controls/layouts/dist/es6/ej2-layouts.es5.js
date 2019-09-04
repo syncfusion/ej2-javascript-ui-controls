@@ -50,6 +50,7 @@ var EXPAND_PANE = 'e-expanded';
 var COLLAPSE_PANE = 'e-collapsed';
 var PANE_HIDDEN = 'e-pane-hidden';
 var RESIZABLE_PANE = 'e-resizable';
+var LAST_BAR = 'e-last-bar';
 /**
  * Interface to configure pane properties such as its content, size, min, max, resizable, collapsed and collapsible.
  */
@@ -248,6 +249,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.setRTL(this.enableRtl);
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
+        this.renderComplete();
     };
     Splitter.prototype.onDocumentClick = function (e) {
         if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
@@ -465,8 +467,17 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.addSeparator(this.element);
     };
     Splitter.prototype.checkSplitPane = function (currentBar, elementIndex) {
-        var paneEle = currentBar.parentElement.children[elementIndex];
+        var paneEle = this.collectPanes(currentBar.parentElement.children)[elementIndex];
         return paneEle;
+    };
+    Splitter.prototype.collectPanes = function (childNodes) {
+        var elements = [];
+        for (var i = 0; i < childNodes.length; i++) {
+            if (childNodes[i].classList.contains('e-pane')) {
+                elements.push(childNodes[i]);
+            }
+        }
+        return elements;
     };
     Splitter.prototype.getPrevPane = function (currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -570,6 +581,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.updateResizablePanes(i);
+                addClass([separator], LAST_BAR);
             }
         }
     };
@@ -653,8 +665,8 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Splitter.prototype.wireResizeEvents = function () {
-        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mousemove', this.onMouseMove, this);
+        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         var touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         var touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -1057,13 +1069,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         return nextPaneIndex + 1;
     };
     Splitter.prototype.getPaneDetails = function () {
-        var prevPane = null;
-        var nextPane = null;
         this.order = parseInt(this.currentSeparator.style.order, 10);
-        if (this.allPanes.length > 1) {
-            prevPane = this.getPrevPane(this.currentSeparator, this.order);
-            nextPane = this.getNextPane(this.currentSeparator, this.order);
-        }
+        var prevPane = this.getPrevPane(this.currentSeparator, this.order);
+        var nextPane = this.getNextPane(this.currentSeparator, this.order);
         if (prevPane && nextPane) {
             this.previousPane = prevPane;
             this.nextPane = nextPane;
@@ -1564,9 +1572,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
-        if (this.allPanes.length > 0) {
-            this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
-        }
+        this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     };
     __decorate([
         Property('100%')
@@ -1800,6 +1806,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
+        this.updateDragArea();
+        this.renderComplete();
     };
     DashboardLayout.prototype.initGridLines = function () {
         this.table = document.createElement('table');
@@ -1896,9 +1904,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             this.cellSize[1] = this.cellSize[0] / this.cellAspectRatio;
         }
     };
-    DashboardLayout.prototype.maxRow = function () {
+    DashboardLayout.prototype.maxRow = function (recheck) {
         var maxRow = 1;
-        if (this.rows > 1) {
+        if (this.rows > 1 && isNullOrUndefined(recheck)) {
             maxRow = this.rows;
             return maxRow;
         }
@@ -2250,6 +2258,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.upTarget = this.downTarget;
         var el = closest((this.upTarget), '.e-panel');
         var args = { event: e, element: el };
+        this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
             var moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
@@ -2269,7 +2278,6 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
-        this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;
         this.mOffX = this.mOffY = 0;
@@ -2438,6 +2446,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     
     DashboardLayout.prototype.refresh = function () {
+        this.updateDragArea();
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
         }
@@ -3556,6 +3565,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                         _this.dragStopEventArgs = { event: args.event, element: args.element };
                         _this.trigger('dragStop', args);
                         _this.resizeEvents();
+                        _this.rows = _this.maxRow(true);
+                        _this.setHeightWidth();
+                        _this.updateDragArea();
                     },
                     drag: function (args) {
                         _this.draggedEventArgs = {
@@ -3579,6 +3591,18 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.updateOldRowColumn();
         this.sortedPanel();
     };
+    DashboardLayout.prototype.updateDragArea = function () {
+        this.dragCollection.forEach(function (dragobj) {
+            // tslint:disable-next-line
+            dragobj.setDragArea();
+        });
+    };
+    DashboardLayout.prototype.updateRowsHeight = function (row, sizeY, addRows) {
+        if (row + sizeY >= this.rows) {
+            this.rows = this.rows + addRows;
+            this.setHeightWidth();
+        }
+    };
     DashboardLayout.prototype.onDraggingStart = function (args) {
         this.dragStartArgs = { event: args.event, element: args.element, cancel: false };
         this.trigger('dragStart', this.dragStartArgs);
@@ -3588,12 +3612,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         var eleRowValue = this.startRow = parseInt(args.element.getAttribute('data-row'), 10);
         this.startCol = parseInt(args.element.getAttribute('data-col'), 10);
         var eleSizeY = parseInt(args.element.getAttribute('data-sizeY'), 10);
-        if (eleRowValue + eleSizeY === this.rows) {
-            this.rows = this.rows + eleSizeY;
-            this.setHeightWidth();
-            // tslint:disable-next-line
-            this.dragobj.setDragArea();
-        }
+        this.updateRowsHeight(eleRowValue, eleSizeY, eleSizeY);
+        this.updateDragArea();
         this.shadowEle = document.createElement('div');
         this.shadowEle.classList.add('e-holder');
         this.shadowEle.classList.add('e-holder-transition');
@@ -3632,8 +3652,13 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         var dragCol;
         var col = dragCol = this.getRowColumnDragValues(args)[1];
         var row = this.getRowColumnDragValues(args)[0];
+        if (col < 0 || row < 0) {
+            return;
+        }
         this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
         var panelModel = this.getCellInstance(args.element.id);
+        this.updateRowsHeight(panelModel.row, panelModel.sizeY, 1);
+        this.updateDragArea();
         if (this.allowPushing) {
             this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
             this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
@@ -3748,6 +3773,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Allows to add a panel to the Dashboardlayout.
+     * @param {panel: [`PanelModel`](./panelModel)} panel -  Defines the panel element.
+     * @returns void
      */
     DashboardLayout.prototype.addPanel = function (panel) {
         this.maxCol();
@@ -3814,6 +3841,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Allows to update a panel in the DashboardLayout.
+     * @param {panel: [`panelModel`](./panelModel)} panel - Defines the panel element.
+     * @returns void
      */
     DashboardLayout.prototype.updatePanel = function (panel) {
         if (!panel.id) {
@@ -3881,6 +3910,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Returns the panels object of the DashboardLayout.
+     * @returns [`PanelModel[]`](./panelModel)
      */
     DashboardLayout.prototype.serialize = function () {
         var cloneModel = this.cloneModels(this.panels);
@@ -3919,6 +3949,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Removes the panel from the DashboardLayout.
+     * @param {id: string} id -  Defines the panel ID.
+     * @returns void
      */
     DashboardLayout.prototype.removePanel = function (id) {
         var _this = this;
@@ -3943,6 +3975,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Moves the panel in the DashboardLayout.
+     * @param {id: string} id - Defines the panel ID.
+     * @param {row: number} row - Defines the row of dashboard layout.
+     * @param {col: number} col - Defines the column of dashboard layout.
+     * @returns void
      */
     DashboardLayout.prototype.movePanel = function (id, row, col) {
         this.movePanelCalled = true;
@@ -3996,6 +4032,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Resize the panel in the DashboardLayout.
+     * @param {id: string} id - Defines the panel ID.
+     * @param {sizeX: number} sizeX - Defines the sizeX of dashboard layout.
+     * @param {sizeY: number} sizeY - Defines the sizeY of dashboard layout.
      */
     DashboardLayout.prototype.resizePanel = function (id, sizeX, sizeY) {
         var panelInstance = this.getCellInstance(id);
@@ -4014,6 +4053,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Destroys the DashboardLayout component
+     * @returns void
      */
     DashboardLayout.prototype.destroy = function () {
         removeClass([this.element], ['e-dashboardlayout', 'e-lib', 'e-responsive', 'e-control']);

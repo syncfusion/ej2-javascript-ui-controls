@@ -1,7 +1,7 @@
 /**
  *  Toolbar default Sample
  */
-import { Accordion, AccordionClickArgs, ExpandEventArgs } from '../../src/accordion/index';
+import { Accordion, AccordionClickArgs, ExpandEventArgs, ExpandedEventArgs } from '../../src/accordion/index';
 import { detach,Effect } from '@syncfusion/ej2-base';
 
 let ctn: string = 'TypeScript is a free and open-source programming language developed and maintained by Microsoft. It is a strict syntactical superset of JavaScript, and adds optional static typing to the language';
@@ -38,7 +38,7 @@ function create( e: AccordionClickArgs) {
     acObj.appendTo('#nestAcrdion1'); }
   eventTrace("Event Name  " + e.name);
 }
-function expanded(e: ExpandEventArgs): void {
+function expanded(e: ExpandedEventArgs ): void {
   eventTrace("Event Name  " + e.name);
   eventTrace("Action isExpanded ->" + e.isExpanded);
 }

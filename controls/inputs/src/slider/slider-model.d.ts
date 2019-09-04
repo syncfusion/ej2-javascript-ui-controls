@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
+import { Component, EventHandler, Property, Event, EmitType, Complex, isBlazor } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import {Placement,TooltipPlacement,TooltipShowOn,SliderType,SliderOrientation,SliderChangeEventArgs,SliderTickEventArgs,SliderTickRenderedEventArgs,SliderTooltipEventArgs} from "./slider";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -290,7 +290,6 @@ export interface SliderModel extends ComponentModel{
     /**
      * We can trigger renderingTicks event when the ticks rendered on Slider,
      *  which is used to customize the ticks labels dynamically.
-     * @deprecated
      * @event
      * @blazorProperty 'TicksRendering'
      */

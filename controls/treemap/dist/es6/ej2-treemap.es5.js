@@ -895,8 +895,10 @@ function convertElement(element, labelId, data) {
         id: labelId,
         styles: 'position: absolute;pointer-events: auto;'
     });
-    while (element.length > 0) {
+    var elementLength = element.length;
+    while (elementLength > 0) {
         childElement.appendChild(element[0]);
+        elementLength--;
     }
     var templateHtml = childElement.innerHTML;
     var keys = Object.keys(data);
@@ -1455,6 +1457,15 @@ function pushCollection(collection, index, number, legendElement, shapeElement, 
     });
 }
 
+var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * To calculate and render the shape layer
  */
@@ -1941,6 +1952,10 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                 cancel: false, name: itemRendering, treemap: this_1.treemap,
                 currentItem: item, RenderItems: this_1.renderItems, options: item['options']
             };
+            if (this_1.treemap.isBlazor) {
+                var treemap = eventArgs.treemap, RenderItems = eventArgs.RenderItems, blazorEventArgs = __rest$1(eventArgs, ["treemap", "RenderItems"]);
+                eventArgs = blazorEventArgs;
+            }
             this_1.treemap.trigger(itemRendering, eventArgs, function (observedArgs) {
                 if (!observedArgs.cancel) {
                     rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
@@ -1952,7 +1967,7 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                         _this.renderItemText(renderText.toString(), itemGroup, textStyle, rect, interSectAction, groupId, fill, position, connectorText);
                     }
                     if (template) {
-                        templateEle = _this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
+                        templateEle = _this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
                         templateGroup.appendChild(templateEle);
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
@@ -1967,16 +1982,8 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
         }
         if (templateGroup.childNodes.length > 0) {
             secondaryEle.appendChild(templateGroup);
-            if (leaf.labelTemplate) {
-                for (var i = 0; i < templateGroup.childElementCount; i++) {
-                    updateBlazorTemplate(templateGroup.children[i].id, 'LabelTemplate');
-                }
-            }
-            else {
-                for (var j = 0; j < templateGroup.childElementCount; j++) {
-                    updateBlazorTemplate(templateGroup.children[j].id, 'HeaderTemplate');
-                }
-            }
+            updateBlazorTemplate(this.treemap.element.id + '_HeaderTemplate', 'HeaderTemplate', levels[levels.length - 1]);
+            updateBlazorTemplate(this.treemap.element.id + '_LabelTemplate', 'LabelTemplate', leaf);
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     };
@@ -2084,12 +2091,14 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
         var contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
         return contrast >= 128 ? 'black' : 'white';
     };
-    LayoutPanel.prototype.renderTemplate = function (secondaryEle, groupId, rect, position, template, item) {
+    LayoutPanel.prototype.renderTemplate = function (secondaryEle, groupId, rect, position, template, item, isLeafItem) {
         var templateElement;
         var labelEle;
         var templateSize;
         var templateFn;
         var templateLocation;
+        var templateId = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';
+        var baseTemplateId = isLeafItem ? '_LabelTemplate' : '_HeaderTemplate';
         if (isNullOrUndefined(template['prototype'])) {
             var keys = Object.keys(item['data']);
             for (var i = 0; i < keys.length; i++) {
@@ -2097,8 +2106,8 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
             }
         }
         templateFn = getTemplateFunction(template);
-        templateElement = templateFn(item['data'], this.treemap);
-        labelEle = convertElement(templateElement, groupId + '_Template', item['data']);
+        templateElement = templateFn(item['data'], null, null, this.treemap.element.id + baseTemplateId, false);
+        labelEle = convertElement(templateElement, templateId, item['data']);
         templateSize = measureElement(labelEle, secondaryEle);
         templateLocation = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
         labelEle.style.left = templateLocation.x + 'px';
@@ -2143,16 +2152,18 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
      * @param elements
      */
     ExportUtils.prototype.print = function (elements) {
+        var _this = this;
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
         this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
         var argsData = {
             cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
         };
-        this.control.trigger(beforePrint, argsData);
-        if (!argsData.cancel) {
-            print(argsData.htmlContent, this.printWindow);
-        }
+        this.control.trigger(beforePrint, argsData, function () {
+            if (!argsData.cancel) {
+                print(argsData.htmlContent, _this.printWindow);
+            }
+        });
     };
     /**
      * To get the html string of the Maps
@@ -2362,6 +2373,15 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __rest = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Represents the TreeMap control.
  * ```html
@@ -2390,14 +2410,16 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     TreeMap.prototype.preRender = function () {
+        var _this = this;
         var blazor = 'Blazor';
         this.isBlazor = window[blazor];
-        this.trigger(load, { treemap: this });
-        this.initPrivateVariable();
-        this.unWireEVents();
-        this.createSvg();
-        this.wireEVents();
-        this.setCulture();
+        this.trigger(load, { treemap: this.isBlazor ? null : this }, function () {
+            _this.initPrivateVariable();
+            _this.unWireEVents();
+            _this.createSvg();
+            _this.wireEVents();
+            _this.setCulture();
+        });
     };
     TreeMap.prototype.render = function () {
         this.createSecondaryElement();
@@ -2448,7 +2470,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         this.layout.processLayoutPanel();
         this.element.appendChild(this.svgObject);
         this.elementChange();
-        this.trigger(loaded, this.isBlazor ? {} : { treemap: this });
+        this.trigger(loaded, { treemap: this.isBlazor ? null : this });
+        this.renderComplete();
     };
     TreeMap.prototype.createSvg = function () {
         if (this.svgObject) {
@@ -2457,6 +2480,14 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             }
             if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
                 remove(this.svgObject);
+            }
+        }
+        if (this.leafItemSettings.labelTemplate) {
+            resetBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate');
+        }
+        for (var i = 0; i < this.levels.length; i++) {
+            if (this.levels[i].headerTemplate) {
+                resetBlazorTemplate(this.element.id + '_HeaderTemplate', 'HeaderTemplate');
             }
         }
         var containerWidth = this.element.clientWidth;
@@ -2835,7 +2866,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             cancel: false,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            treemap: this
+            treemap: this.isBlazor ? null : this
         };
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
@@ -2847,8 +2878,9 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 _this.refreshing = true;
                 _this.wireEVents();
                 args.currentSize = _this.availableSize;
-                _this.trigger(resize, _this.isBlazor ? {} : args);
-                _this.render();
+                _this.trigger(resize, args, function () {
+                    _this.render();
+                });
             }, 500);
         }
     };
@@ -2856,7 +2888,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var targetEle = e.target;
         var targetId = targetEle.id;
         var eventArgs;
-        var eventBlazorArgs;
         var itemIndex;
         var clickArgs = { cancel: false, name: click, treemap: this, mouseEvent: e };
         var clickBlazorArgs = { cancel: false, name: click, mouseEvent: e };
@@ -2868,11 +2899,11 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
                 groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
             };
-            eventBlazorArgs = {
-                cancel: false, name: itemClick, item: this.layout.renderItems[itemIndex], mouseEvent: e,
-                groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name']
-            };
-            this.trigger(itemClick, this.isBlazor ? eventBlazorArgs : eventArgs);
+            if (this.isBlazor) {
+                var treemap = eventArgs.treemap, blazorEventArgs = __rest(eventArgs, ["treemap"]);
+                eventArgs = blazorEventArgs;
+            }
+            this.trigger(itemClick, eventArgs);
         }
         var end = new Date().getMilliseconds();
         var doubleTapTimer1;
@@ -3070,6 +3101,10 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                         this.drilledItems[this.drilledItems.length - 1]['data']['name'] : item['name'],
                     rightClick: e.which === 3 ? true : false, childItems: null
                 };
+                if (this.isBlazor) {
+                    var treemap = startEvent.treemap, blazorEventArgs = __rest(startEvent, ["treemap"]);
+                    startEvent = blazorEventArgs;
+                }
                 this.trigger(drillStart, startEvent, function (observedArgs) {
                     _this.currentLevel = item['isDrilled'] && isNullOrUndefined(drillLevel) ? item['groupIndex'] :
                         (!isNullOrUndefined(drillLevel) && _this.enableBreadcrumb && item['isDrilled']) ? drillLevel : null;
@@ -3168,6 +3203,10 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         }
         return modules;
     };
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
     TreeMap.prototype.onPropertyChanged = function (newProp, oldProp) {
         var render = false;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -3178,6 +3217,9 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'height':
                 case 'width':
+                case 'layoutType':
+                case 'leafItemSettings':
+                case 'legendSettings':
                     render = true;
                     break;
             }
@@ -3360,6 +3402,15 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
     return TreeMap;
 }(Component));
 
+var __rest$2 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Legend module class
  */
@@ -3395,6 +3446,10 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
             cancel: false, name: legendRendering, treemap: this.treemap, _changePosition: this.treemap.legendSettings.position,
             position: this.treemap.legendSettings.position
         };
+        if (this.treemap.isBlazor) {
+            var treemap = eventArgs.treemap, blazorEventArgs = __rest$2(eventArgs, ["treemap"]);
+            eventArgs = blazorEventArgs;
+        }
         this.treemap.trigger(legendRendering, eventArgs, function (observedArgs) {
             if (!observedArgs.cancel && observedArgs._changePosition !== _this.treemap.legendSettings.position) {
                 _this.treemap.legendSettings.position = observedArgs._changePosition;
@@ -3982,6 +4037,10 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                     cancel: false, name: legendItemRendering, treemap: treemap, fill: collection['Fill'],
                     shape: legend.shape, imageUrl: legend.imageUrl
                 };
+                if (this_1.treemap.isBlazor) {
+                    var treemap_1 = eventArgs.treemap, blazorEventArgs = __rest$2(eventArgs, ["treemap"]);
+                    eventArgs = blazorEventArgs;
+                }
                 this_1.treemap.trigger(legendItemRendering, eventArgs, function (observedArgs) {
                     var renderOptions = new PathOption(shapeId, observedArgs.fill, strokeWidth_1, isLineShape_1 ? collection['Fill'] : strokeColor_1, legend.opacity, '');
                     legendElement.appendChild(drawSymbol(shapeLocation, observedArgs.shape, shapeSize, observedArgs.imageUrl, renderOptions, legendText));
@@ -4692,6 +4751,15 @@ var TreeMapSelection = /** @__PURE__ @class */ (function () {
     return TreeMapSelection;
 }());
 
+var __rest$3 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Render Tooltip
  */
@@ -4774,30 +4842,60 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                     treemap: this.treemap,
                     element: target, eventArgs: e
                 };
-                this.treemap.trigger(tooltipRendering, tootipArgs, function (observedArgs) {
-                    if (!observedArgs.cancel) {
-                        _this.svgTooltip = new Tooltip({
-                            enable: true,
-                            header: '',
-                            data: observedArgs.options['data'],
-                            template: observedArgs.options['template'],
-                            content: observedArgs.options['text'],
-                            shapes: [],
-                            location: observedArgs.options['location'],
-                            palette: [markerFill],
-                            areaBounds: _this.treemap.areaRect,
-                            textStyle: observedArgs.options['textStyle']
-                        });
-                        _this.svgTooltip.opacity = _this.treemap.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
-                        _this.svgTooltip.appendTo(tooltipEle);
-                        updateBlazorTemplate(_this.treemap.element.id + 'Template', 'Template');
-                    }
-                    else {
-                        _this.removeTooltip();
-                        resetBlazorTemplate(_this.treemap.element.id + 'Template', 'Template');
-                    }
-                });
+                if (this.treemap.isBlazor) {
+                    var tooltipArgs_1 = {
+                        cancel: false,
+                        location: tootipArgs.options['location'],
+                        text: tootipArgs.options['text'],
+                        textStyle: tootipArgs.options['textStyle'],
+                        data: tootipArgs.options['data'],
+                        template: tootipArgs.options['template'],
+                        name: tooltipRendering
+                    };
+                    this.treemap.trigger(tooltipRendering, tooltipArgs_1, function (args) {
+                        _this.addTooltip(null, markerFill, tooltipEle, tooltipArgs_1);
+                    });
+                }
+                else {
+                    this.treemap.trigger(tooltipRendering, tootipArgs, function (args) {
+                        _this.addTooltip(tootipArgs, markerFill, tooltipEle);
+                    });
+                }
             }
+        }
+        else {
+            this.removeTooltip();
+            resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
+        }
+    };
+    TreeMapTooltip.prototype.addTooltip = function (tootipArgs, markerFill, tooltipEle, eventArgs) {
+        var cancel;
+        var args;
+        if (!isNullOrUndefined(tootipArgs)) {
+            var c = tootipArgs.cancel, otherArgs = __rest$3(tootipArgs, ["cancel"]);
+            cancel = c;
+            args = otherArgs.options;
+        }
+        else {
+            cancel = eventArgs.cancel;
+            args = eventArgs;
+        }
+        if (!cancel) {
+            this.svgTooltip = new Tooltip({
+                enable: true,
+                header: '',
+                data: args['data'],
+                template: args['template'],
+                content: args['text'],
+                shapes: [],
+                location: args['location'],
+                palette: [markerFill],
+                areaBounds: this.treemap.areaRect,
+                textStyle: args['textStyle']
+            });
+            this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+            this.svgTooltip.appendTo(tooltipEle);
+            updateBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
         else {
             this.removeTooltip();

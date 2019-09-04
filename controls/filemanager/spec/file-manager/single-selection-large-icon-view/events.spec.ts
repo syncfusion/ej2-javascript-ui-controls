@@ -330,7 +330,7 @@ describe('FileManager control single selection LargeIcons view', () => {
                 mouseEventArgs.target = li[0];
                 expect(li[0].textContent).toBe('Documents');
                 feObj.largeiconsviewModule.clickObj.tap(tapEvent);
-                expect(i).toEqual(2);
+                expect(i).toEqual(3);
                 done();
             }, 500);
         });

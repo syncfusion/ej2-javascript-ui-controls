@@ -25,7 +25,6 @@ import { CalculatedField } from '../../common/calculatedfield/calculated-field';
 import { PivotContextMenu } from '../../common/popups/context-menu';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { PivotUtil } from '../../base/util';
-import { OlapEngine, IOlapFieldListOptions, IOlapCustomProperties, IOlapField } from '../../base/olap/engine';
 
 /**
  * Represents the PivotFieldList component.
@@ -46,13 +45,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /** @hidden */
     public isAdaptive: Boolean;
     /** @hidden */
-    public pivotFieldList: IFieldListOptions | IOlapFieldListOptions;
-    /** @hidden */
-    public dataType: string;
+    public pivotFieldList: IFieldListOptions;
     /** @hidden */
     public engineModule: PivotEngine;
-    /** @hidden */
-    public olapEngineModule: OlapEngine;
     /** @hidden */
     public isDragging: boolean;
     /** @hidden */
@@ -161,22 +156,6 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     @Property(1000)
     public maxNodeLimitInMemberEditor: number;
 
-    /**
-     * If `loadMaximumMembers` is set to true, then it will load all the level members from cube when doing member filtering initially.
-     * Note: This may cause performance lag based on members count that fetch from cube 
-     * while the member editor pop-up opens for the first time alone.
-     * @default false    
-     */
-    @Property(false)
-    public loadMaximumMembers: boolean;
-
-    /**
-     * It allows to customize the spinner.
-     * @default null
-     */
-    @Property()
-    public spinnerTemplate: string;
-
     //Event Declarations
     /**
      * This allows any customization of Pivot Field List properties before rendering.
@@ -250,14 +229,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     constructor(options?: PivotFieldListModel, element?: string | HTMLElement) {
         super(options, <string | HTMLElement>element);
-        if (this.dataSourceSettings && !isNullOrUndefined(this.dataSourceSettings.dataProviderType) &&
-            this.dataSourceSettings.dataProviderType !== '') {
-            this.olapEngineModule = new OlapEngine();
-            this.dataType = 'olap';
-        } else {
-            this.engineModule = new PivotEngine();
-            this.dataType = 'pivot';
-        }
+        this.engineModule = new PivotEngine();
     }
 
     /**
@@ -406,26 +378,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             deferLayoutUpdate: 'Defer Layout Update',
             null: 'null',
             undefined: 'undefined',
-            groupOutOfRange: 'Out of Range',
-            fieldDropErrorAction: 'The field you are moving cannot be placed in that area of the report',
-            memberType: 'Field Type',
-            selectedHierarchy: 'Parent Hierarchy',
-            formatString: 'Format String',
-            expressionField: 'Expression',
-            olapDropText: 'Example: [Measures].[Order Quantity] + ([Measures].[Order Quantity] * 0.10)',
-            customFormat: 'Enter custom format string',
-            Measure: 'Measure',
-            Dimension: 'Dimension',
-            Standard: 'Standard',
-            Currency: 'Currency',
-            Percent: 'Percent',
-            Custom: 'Custom',
-            blank: '(Blank)',
-            fieldTooltip: 'Drag and drop fields to create an expression. ' +
-                'And, if you want to edit the existing the calculated fields! ' +
-                'You can achieve it by simply selecting the field under "Calculated Members".',
-            fieldTitle: 'Field Name',
-            QuarterYear: 'Quarter Year'
+            groupOutOfRange: 'Out of Range'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -433,8 +386,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.wireEvent();
     }
 
-    /* tslint:disable-next-line:max-line-length */
-    private frameCustomProperties(fieldListData?: IOlapField[], fieldList?: IOlapFieldListOptions): ICustomProperties | IOlapCustomProperties {
+    private frameCustomProperties(): ICustomProperties {
         if (this.pivotGridModule) {
             this.pivotGridModule.updatePageSettings(false);
         }
@@ -442,27 +394,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         let isDrillThrough: boolean = this.pivotGridModule ?
             (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
         let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
-        let customProperties: ICustomProperties | IOlapCustomProperties;
-        if (this.dataType === 'olap') {
-            customProperties = {
-                mode: '',
-                savedFieldList: fieldList ? fieldList : undefined,
-                savedFieldListData: fieldListData ? fieldListData : undefined,
-                pageSettings: pageSettings,
-                enableValueSorting: enableValueSorting,
-                isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
-            };
-        } else {
-            customProperties = {
-                mode: '',
-                savedFieldList: undefined,
-                pageSettings: pageSettings,
-                enableValueSorting: enableValueSorting,
-                isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
-            };
-        }
+        let customProperties: ICustomProperties = {
+            mode: '',
+            savedFieldList: undefined,
+            pageSettings: pageSettings,
+            enableValueSorting: enableValueSorting,
+            isDrillThrough: isDrillThrough,
+            localeObj: this.localeObj
+        };
         return customProperties;
     }
 
@@ -490,7 +429,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             }
             this.notify(events.initialLoad, {});
         });
-        if (isBlazor()) {
+        if(isBlazor())
+        {
             this.renderComplete();
         }
     }
@@ -562,42 +502,26 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     private initEngine(): void {
         this.trigger(events.enginePopulating, { dataSourceSettings: this.dataSourceSettings }, (observedArgs: EnginePopulatingEventArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;
-            if (this.dataType === 'pivot') {
-                if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
-                    let pivotDataSet: IDataSet[] = this.dataSourceSettings.dataSource as IDataSet[];
-                    this.clonedDataSet = (this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet)) as IDataSet[];
-                    this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
-                    this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
-                    this.setProperties({ dataSourceSettings: { dataSource: pivotDataSet } }, true);
-                }
-                this.engineModule.renderEngine(this.dataSourceSettings as IDataOptions, this.frameCustomProperties(), this.getValueCellInfo.bind(this));
-                this.pivotFieldList = this.engineModule.fieldList;
-                let eventArgs: EnginePopulatedEventArgs = {
-                    pivotFieldList: this.pivotFieldList,
-                    pivotValues: this.engineModule.pivotValues
-                };
-                const this$: PivotFieldList = this;
-                this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-                    this$.pivotFieldList = observedArgs.pivotFieldList;
-                    this$.engineModule.pivotValues = observedArgs.pivotValues;
-                    this$.notify(events.dataReady, {});
-                    this$.trigger(events.dataBound);
-                });
-            } else if (this.dataType === 'olap') {
-                this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions, this.frameCustomProperties());
-                this.pivotFieldList = this.olapEngineModule.fieldList;
-                let eventArgs: EnginePopulatedEventArgs = {
-                    pivotFieldList: this.pivotFieldList,
-                    pivotValues: this.olapEngineModule.pivotValues
-                };
-                const this$: PivotFieldList = this;
-                this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-                    this$.pivotFieldList = observedArgs.pivotFieldList;
-                    this$.olapEngineModule.pivotValues = observedArgs.pivotValues;
-                    this$.notify(events.dataReady, {});
-                    this$.trigger(events.dataBound);
-                });
+            if (this.dataSourceSettings.groupSettings && this.dataSourceSettings.groupSettings.length > 0) {
+                let pivotDataSet: IDataSet[] = this.engineModule.data as IDataSet[];
+                this.clonedDataSet = this.clonedDataSet ? this.clonedDataSet : PivotUtil.getClonedData(pivotDataSet);
+                this.setProperties({ dataSourceSettings: { dataSource: [] } }, true);
+                this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+                this.setProperties({ dataSourceSettings: { dataSource: pivotDataSet } }, true);
             }
+            this.engineModule.renderEngine(this.dataSourceSettings, this.frameCustomProperties(), this.getValueCellInfo.bind(this));
+            this.pivotFieldList = this.engineModule.fieldList;
+            let eventArgs: EnginePopulatedEventArgs = {
+                pivotFieldList: this.pivotFieldList,
+                pivotValues: this.engineModule.pivotValues
+            };
+            const this$: PivotFieldList = this;
+            this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+                this$.pivotFieldList = observedArgs.pivotFieldList;
+                this$.engineModule.pivotValues = observedArgs.pivotValues;
+                this$.notify(events.dataReady, {});
+                this$.trigger(events.dataBound);
+            });
         });
     }
     /* tslint:enable */
@@ -605,12 +529,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
     /* tslint:enable */
     private generateData(): void {
         this.pivotFieldList = {};
-        if (this.dataSourceSettings && (this.dataSourceSettings.dataSource || this.dataSourceSettings.url)) {
-            if ((this.dataSourceSettings.url !== '' && this.dataType === 'olap') ||
-                (this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
-                if (this.dataType === 'pivot') {
-                    this.engineModule.data = this.dataSourceSettings.dataSource as IDataSet[];
-                }
+        if (this.dataSourceSettings && this.dataSourceSettings.dataSource) {
+            if ((this.dataSourceSettings.dataSource as IDataSet[]).length > 0) {
+                this.engineModule.data = this.dataSourceSettings.dataSource as IDataSet[];
                 this.initEngine();
             } else if (this.dataSourceSettings.dataSource instanceof DataManager) {
                 setTimeout(this.getData.bind(this), 100);
@@ -645,23 +566,17 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.renderModule.render();
         this.fieldListSpinnerElement = this.renderMode === 'Popup' ?
             this.dialogRenderer.fieldListDialog.element : this.element.querySelector('.e-pivotfieldlist-wrapper');
-        if (this.spinnerTemplate) {
-            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement, template: this.spinnerTemplate }, this.createElement);
-        } else {
-            createSpinner({ target: this.fieldListSpinnerElement as HTMLElement }, this.createElement);
-        }
-        let args: CommonArgs;
-        args = {
-            pivotEngine: this.dataType === 'olap' ? this.olapEngineModule : this.engineModule,
-            dataSourceSettings: this.dataSourceSettings as IDataOptions,
+        createSpinner({ target: this.fieldListSpinnerElement as HTMLElement }, this.createElement);
+        let args: CommonArgs = {
+            pivotEngine: this.engineModule,
+            dataSourceSettings: this.dataSourceSettings,
             id: this.element.id,
             element: document.getElementById(this.element.id + '_Wrapper'),
             moduleName: this.getModuleName(),
             enableRtl: this.enableRtl,
             isAdaptive: this.isAdaptive as boolean,
             renderMode: this.renderMode,
-            localeObj: this.localeObj,
-            dataType: this.dataType
+            localeObj: this.localeObj
         };
         this.pivotCommon = new PivotCommon(args);
         this.pivotCommon.control = this;
@@ -670,21 +585,18 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
         }
     }
-    private getFieldCaption(dataSourceSettings: DataSourceSettingsModel): void {
-        this.getFields(dataSourceSettings);
+    private getFieldCaption(dataSource: DataSourceSettingsModel): void {
+        this.getFields(dataSource);
         if (this.captionData.length > 0) {
             let lnt: number = this.captionData.length;
-            let engineModule: OlapEngine | PivotEngine = this.dataType === 'olap' ? this.olapEngineModule : this.engineModule;
             while (lnt--) {
                 if (this.captionData[lnt]) {
                     for (let obj of this.captionData[lnt]) {
                         if (obj) {
-                            if (engineModule.fieldList[obj.name]) {
-                                if (obj.caption) {
-                                    engineModule.fieldList[obj.name].caption = obj.caption;
-                                } else {
-                                    engineModule.fieldList[obj.name].caption = obj.name;
-                                }
+                            if (this.engineModule.fieldList[obj.name] && obj.caption) {
+                                this.engineModule.fieldList[obj.name].caption = obj.caption;
+                            } else {
+                                this.engineModule.fieldList[obj.name].caption = obj.name;
                             }
                         }
                     }
@@ -694,12 +606,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             return;
         }
     }
-    private getFields(dataSourceSettings: DataSourceSettingsModel): void {
-        /* tslint:disable-next-line:max-line-length */
-        this.captionData = [dataSourceSettings.rows, dataSourceSettings.columns, dataSourceSettings.values, dataSourceSettings.filters] as FieldOptionsModel[][];
+    private getFields(dataSource: DataSourceSettingsModel): void {
+        this.captionData = [dataSource.rows, dataSource.columns, dataSource.values, dataSource.filters] as FieldOptionsModel[][];
     }
 
-    /* tslint:disable */
     /**
      * Updates the PivotEngine using dataSource from Pivot Field List component.
      * @method updateDataSource
@@ -711,130 +621,83 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             showSpinner(this.pivotGridModule.element);
         }
         showSpinner(this.fieldListSpinnerElement as HTMLElement);
-        let pivot: PivotFieldList = this;
-        //setTimeout(() => {
-        let isAdaptiveOlapRefresh: boolean = false;
         if (isNullOrUndefined(isEngineRefresh)) {
-            let pageSettings: IPageSettings = pivot.pivotGridModule ? pivot.pivotGridModule.pageSettings : undefined;
-            let isCalcChange: boolean = Object.keys(pivot.lastCalcFieldInfo).length > 0 ? true : false;
-            let isSorted: boolean;
-            if (pivot.dataType === 'pivot') {
-                let customProperties: ICustomProperties = pivot.frameCustomProperties();
-                customProperties.savedFieldList = pivot.pivotFieldList;
-                let lastSortInfo: ISort = pivot.pivotGridModule ? pivot.pivotGridModule.lastSortInfo : pivot.lastSortInfo;
-                if (pivot.pivotGridModule) {
-                    pivot.pivotGridModule.lastSortInfo = {};
+            let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+            let customProperties: ICustomProperties = this.frameCustomProperties();
+            customProperties.savedFieldList = this.pivotFieldList;
+            let lastSortInfo: ISort = this.pivotGridModule ? this.pivotGridModule.lastSortInfo : this.lastSortInfo;
+            if (this.pivotGridModule) {
+                this.pivotGridModule.lastSortInfo = {};
+            }
+            this.lastSortInfo = {};
+            let isAggChange: boolean = Object.keys(this.lastAggregationInfo).length > 0 ? true : false;
+            let isCalcChange: boolean = Object.keys(this.lastCalcFieldInfo).length > 0 ? true : false;
+            let isSorted: boolean = Object.keys(lastSortInfo).length > 0 ? true : false;
+            let isFiltered: boolean = Object.keys(this.lastFilterInfo).length > 0 ? true : false;
+            if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
+                if (isSorted) {
+                    this.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                    this.engineModule.onSort(lastSortInfo);
                 }
-                pivot.lastSortInfo = {};
-                let isAggChange: boolean = Object.keys(pivot.lastAggregationInfo).length > 0 ? true : false;
-                isSorted = Object.keys(lastSortInfo).length > 0 ? true : false;
-                let isFiltered: boolean = Object.keys(pivot.lastFilterInfo).length > 0 ? true : false;
-                if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
-                    if (isSorted) {
-                        pivot.pivotGridModule.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
-                        pivot.engineModule.onSort(lastSortInfo);
-                    }
-                    if (isFiltered) {
-                        pivot.engineModule.onFilter(pivot.lastFilterInfo, pivot.dataSourceSettings as IDataOptions);
-                        pivot.lastFilterInfo = {};
-                    }
-                    if (isAggChange) {
-                        pivot.engineModule.onAggregation(pivot.lastAggregationInfo);
-                        pivot.lastAggregationInfo = {};
-                    }
-                    if (isCalcChange) {
-                        pivot.engineModule.onCalcOperation(pivot.lastCalcFieldInfo);
-                        pivot.lastCalcFieldInfo = {};
-                    }
-                } else {
-                    try {
-                        /* tslint:disable-next-line:max-line-length */
-                        pivot.engineModule.renderEngine(pivot.dataSourceSettings as IDataOptions, customProperties, pivot.getValueCellInfo.bind(pivot));
-                    } catch (exception) {
-                        if (this.calculatedFieldModule && this.calculatedFieldModule.isFormula) {
-                            this.calculatedFieldModule.showError();
-                        } else {
-                            throw exception;
-                        }
-                    }
+                if (isFiltered) {
+                    this.engineModule.onFilter(this.lastFilterInfo, this.dataSourceSettings);
+                    this.lastFilterInfo = {};
+                }
+                if (isAggChange) {
+                    this.engineModule.onAggregation(this.lastAggregationInfo);
+                    this.lastAggregationInfo = {};
+                }
+                if (isCalcChange) {
+                    this.engineModule.onCalcOperation(this.lastCalcFieldInfo);
+                    this.lastCalcFieldInfo = {};
                 }
             } else {
-                isAdaptiveOlapRefresh = pivot.updateOlapDataSource(isSorted, isCalcChange, isAdaptiveOlapRefresh);
+                this.engineModule.renderEngine(this.dataSourceSettings, customProperties, this.getValueCellInfo.bind(this));
             }
-            pivot.getFieldCaption(pivot.dataSourceSettings);
+            this.getFieldCaption(this.dataSourceSettings);
         } else {
-            pivot.axisFieldModule.render();
-            pivot.isRequiredUpdate = false;
+            this.axisFieldModule.render();
+            this.isRequiredUpdate = false;
         }
         let eventArgs: EnginePopulatedEventArgs = {
-            dataSourceSettings: pivot.dataSourceSettings as IDataOptions,
-            pivotFieldList: pivot.dataType === 'pivot' ? pivot.engineModule.fieldList : pivot.olapEngineModule.fieldList,
-            pivotValues: pivot.dataType === 'pivot' ? pivot.engineModule.pivotValues : pivot.olapEngineModule.pivotValues
+            dataSourceSettings: this.dataSourceSettings,
+            pivotFieldList: this.pivotFieldList,
+            pivotValues: this.engineModule.pivotValues
         };
-        pivot.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
-            pivot.dataSourceSettings = observedArgs.dataSourceSettings;
-            pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings as IDataOptions;
-            pivot.pivotFieldList = observedArgs.pivotFieldList;
-            if (pivot.dataType === 'olap') {
-                pivot.olapEngineModule.pivotValues = observedArgs.pivotValues;
-                pivot.pivotCommon.engineModule = pivot.olapEngineModule;
-            } else {
-                pivot.engineModule.pivotValues = observedArgs.pivotValues;
-                pivot.pivotCommon.engineModule = pivot.engineModule;
+        this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
+            this.dataSourceSettings = observedArgs.dataSourceSettings;
+            this.pivotFieldList = observedArgs.pivotFieldList;
+            this.engineModule.pivotValues = observedArgs.pivotValues;
+            this.pivotCommon.engineModule = this.engineModule;
+            this.pivotCommon.dataSourceSettings = this.dataSourceSettings;
+            this.pivotFieldList = this.engineModule.fieldList;
+            if (!isTreeViewRefresh && this.treeViewModule.fieldTable && !this.isAdaptive) {
+                this.notify(events.treeViewUpdate, {});
             }
-            if (!isTreeViewRefresh && pivot.treeViewModule.fieldTable && !pivot.isAdaptive) {
-                pivot.notify(events.treeViewUpdate, {});
-            }
-            if (pivot.isRequiredUpdate) {
-                if (pivot.allowDeferLayoutUpdate) {
-                    pivot.clonedDataSource = extend({}, pivot.dataSourceSettings, null, true) as IDataOptions;
-                    pivot.clonedFieldList = extend({}, pivot.pivotFieldList, null, true) as IFieldListOptions;
+            if (this.isRequiredUpdate) {
+                if (this.allowDeferLayoutUpdate) {
+                    this.clonedDataSource = extend({}, this.dataSourceSettings, null, true) as IDataOptions;
+                    this.clonedFieldList = extend({}, this.pivotFieldList, null, true) as IFieldListOptions;
                 }
-                pivot.updateView(pivot.pivotGridModule);
-            } else if (pivot.renderMode === 'Popup' && pivot.allowDeferLayoutUpdate) {
-                pivot.pivotGridModule.engineModule = pivot.engineModule;
+                this.updateView(this.pivotGridModule);
+            } else if (this.renderMode === 'Popup' && this.allowDeferLayoutUpdate) {
+                this.pivotGridModule.engineModule = this.engineModule;
                 /* tslint:disable:align */
-                pivot.pivotGridModule.setProperties({
-                    dataSourceSettings: (<{ [key: string]: Object }>pivot.dataSourceSettings).properties as IDataOptions
+                this.pivotGridModule.setProperties({
+                    dataSourceSettings: (<{ [key: string]: Object }>this.dataSourceSettings).properties as IDataOptions
                 }, true);
-                pivot.pivotGridModule.notify(events.uiUpdate, pivot);
-                hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
+                this.pivotGridModule.notify(events.uiUpdate, this);
+                hideSpinner(this.fieldListSpinnerElement as HTMLElement);
             }
-            pivot.isRequiredUpdate = true;
-            if (!pivot.pivotGridModule || (pivot.isAdaptive && pivot.pivotGridModule && isAdaptiveOlapRefresh)) {
-                hideSpinner(pivot.fieldListSpinnerElement as HTMLElement);
+            this.isRequiredUpdate = true;
+            if (!this.pivotGridModule) {
+                hideSpinner(this.fieldListSpinnerElement as HTMLElement);
             } else {
-                pivot.pivotGridModule.fieldListSpinnerElement = pivot.fieldListSpinnerElement as HTMLElement;
+                this.pivotGridModule.fieldListSpinnerElement = this.fieldListSpinnerElement as HTMLElement;
             }
         });
-        //});
     }
-    /* tslint:enable */
 
-    private updateOlapDataSource(isSorted: boolean, isCalcChange: boolean, isAdaptiveOlapRefresh: boolean): boolean {
-        let customProperties: IOlapCustomProperties =
-            this.frameCustomProperties(this.olapEngineModule.fieldListData, this.olapEngineModule.fieldList);
-        customProperties.savedFieldList = this.pivotFieldList;
-        isSorted = Object.keys(this.lastSortInfo).length > 0 ? true : false;
-        if (isCalcChange || isSorted) {
-            this.olapEngineModule.savedFieldList = this.pivotFieldList;
-            this.olapEngineModule.savedFieldListData = this.olapEngineModule.fieldListData;
-            if (isCalcChange) {
-                this.olapEngineModule.updateCalcFields(this.dataSourceSettings as IDataOptions, this.lastCalcFieldInfo);
-                this.lastCalcFieldInfo = {};
-                isAdaptiveOlapRefresh = true;
-                if (this.pivotGridModule && this.isAdaptive) {
-                    hideSpinner(this.pivotGridModule.element);
-                }
-            } else {
-                this.olapEngineModule.onSort(this.dataSourceSettings as IDataOptions);
-                this.lastSortInfo = {};
-            }
-        } else {
-            this.olapEngineModule.renderEngine(this.dataSourceSettings as IDataOptions, customProperties);
-        }
-        return isAdaptiveOlapRefresh;
-    }
     /**
      * Updates the Pivot Field List component using dataSource from PivotView component.
      * @method updateControl
@@ -846,16 +709,14 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.clonedDataSet = control.clonedDataSet;
             this.setProperties({ dataSourceSettings: control.dataSourceSettings }, true);
             this.engineModule = control.engineModule;
-            this.olapEngineModule = control.olapEngineModule;
-            this.dataType = control.dataType;
-            this.pivotFieldList = this.dataType === 'olap' ? control.olapEngineModule.fieldList : control.engineModule.fieldList;
+            this.pivotFieldList = control.engineModule.fieldList;
             if (this.renderMode === 'Popup') {
                 this.pivotGridModule = control;
             }
             this.getFieldCaption(control.dataSourceSettings);
-            this.pivotCommon.engineModule = this.dataType === 'olap' ? this.olapEngineModule : this.engineModule;
-            this.pivotCommon.dataSourceSettings = this.dataSourceSettings as IDataOptions;
-            this.pivotCommon.control = this;
+            this.pivotCommon.engineModule = this.engineModule;
+            this.pivotCommon.dataSourceSettings = this.dataSourceSettings;
+            this.pivotCommon.control = control;
             if (this.treeViewModule.fieldTable && !this.isAdaptive) {
                 this.notify(events.treeViewUpdate, {});
             }
@@ -878,12 +739,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             control.clonedDataSet = this.clonedDataSet;
             control.setProperties({ dataSourceSettings: this.dataSourceSettings }, true);
             control.engineModule = this.engineModule;
-            control.olapEngineModule = this.olapEngineModule;
-            control.dataType = this.dataType;
-            control.pivotValues = this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues;
+            control.pivotValues = this.engineModule.pivotValues;
             let eventArgs: FieldListRefreshedEventArgs = {
-                dataSourceSettings: control.dataSourceSettings,
-                pivotValues: control.pivotValues
+                dataSourceSettings: this.dataSourceSettings,
+                pivotValues: this.engineModule.pivotValues
             };
             control.trigger(events.fieldListRefreshed, eventArgs);
             control.dataBind();
@@ -896,9 +755,9 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     public triggerPopulateEvent(): void {
         let eventArgs: EnginePopulatedEventArgs = {
-            dataSourceSettings: this.dataSourceSettings as IDataOptions,
-            pivotFieldList: this.dataType === 'olap' ? this.olapEngineModule.fieldList : this.engineModule.fieldList,
-            pivotValues: this.dataType === 'olap' ? this.olapEngineModule.pivotValues : this.engineModule.pivotValues
+            dataSourceSettings: this.dataSourceSettings,
+            pivotFieldList: this.pivotFieldList,
+            pivotValues: this.engineModule.pivotValues
         };
         this.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
             this.dataSourceSettings = observedArgs.dataSourceSettings;

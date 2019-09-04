@@ -260,11 +260,12 @@ export class DragAndDrop extends ActionBase {
             return;
         }
         let dragArgs: DragEventArgs = { cancel: false, data: this.getChangedData(), event: e, element: this.actionObj.element };
-        this.parent.trigger(events.dragStop, dragArgs);
-        if (dragArgs.cancel) {
-            return;
-        }
-        this.saveChangedData(dragArgs);
+        this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
+            if (dragEventArgs.cancel) {
+                return;
+            }
+            this.saveChangedData(dragEventArgs);
+        });
     }
 
     public updateNavigatingPosition(e: MouseEvent & TouchEvent): void {

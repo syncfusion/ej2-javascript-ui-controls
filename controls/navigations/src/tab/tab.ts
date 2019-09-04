@@ -3,7 +3,7 @@ import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Animation
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import { TabModel, TabItemModel, HeaderModel, TabActionSettingsModel, TabAnimationSettingsModel } from './tab-model';
@@ -174,6 +174,12 @@ export class TabItem extends ChildProperty<TabItem> {
      */
     @Complex<HeaderModel>({}, Header)
     public header: HeaderModel;
+    /**
+     * Specifies the header text of Tab item.
+     * @default null
+     */
+    @Property(null)
+    public headerTemplate: string;
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
      * @default ''
@@ -358,6 +364,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      */
     @Property(false)
     public showCloseButton: boolean;
+    /**  
+     * Specifies the scrolling distance in scroller.
+     * @default null  
+     */
+    @Property()
+    public scrollStep: number;
     /**
      * Specifies the animation configuration settings while showing the content of the Tab.
      * @default 
@@ -489,6 +501,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     private renderContainer(): void {
         let ele: HTEle = this.element;
@@ -568,11 +583,19 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             height: (hdrPlace === 'Left' || hdrPlace === 'Right') ? '100%' : 'auto',
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
-            clicked: this.clickHandler.bind(this)
+            clicked: this.clickHandler.bind(this),
+            scrollStep: this.scrollStep
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(<HTEle> this.hdrEle);
+        for (let i: number = 0; i < this.items.length; i++) {
+            let item: TabItemModel = this.items[i];
+            if (item.headerTemplate && isBlazor() && !this.isStringTemplate &&
+             (<string>item.headerTemplate).indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + i + '_' + 'headerTemplate', 'HeaderTemplate', item);
+            }
+        }
         this.updateOrientationAttribute();
         this.setCloseButton(this.showCloseButton);
     }
@@ -603,14 +626,15 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         let txtWrapEle: HTEle;
         let spliceArray: number[] = [];
         let i: number = 0;
-        items.forEach((item: { [key: string]: Header }, i: number) => {
-            let pos: Str = (isNOU(item.header.iconPosition)) ? '' : item.header.iconPosition;
-            let css: Str = (isNOU(item.header.iconCss)) ? '' : item.header.iconCss;
-            if (isNOU(item.header) || isNOU(item.header.text) || (((<string>item.header.text).length === 0) && (css === ''))) {
+        items.forEach((item: TabItemModel, i: number) => {
+            let pos: Str = (isNOU(item.header) || isNOU(item.header.iconPosition)) ? '' : item.header.iconPosition;
+            let css: Str = (isNOU(item.header) || isNOU(item.header.iconCss)) ? '' : item.header.iconCss;
+            if ((isNOU(item.headerTemplate)) && (isNOU(item.header) || isNOU(item.header.text) ||
+             (((<string>item.header.text).length === 0)) && (css === ''))) {
                 spliceArray.push(i);
                 return;
             }
-            let txt: Str | HTEle = item.header.text;
+            let txt: Str | HTEle = item.headerTemplate || item.header.text;
             this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (index + i) : (this.lastIndex + 1)));
             let disabled: Str = (item.disabled) ? ' ' + CLS_DISABLE + ' ' + CLS_OVERLAY : '';
             txtWrapEle = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' }});
@@ -853,20 +877,17 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
-            let blazorContain: string[] = Object.keys(window) as string[];
             let item: TabItemModel = this.items[index];
             if (!isNOU(item)) {
-                if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
-                    (<string>item.content).indexOf('<div>Blazor') === 0) {
-                    updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+                if (item.content && isBlazor() && !this.isStringTemplate && (<string>item.content).indexOf('<div>Blazor') === 0) {
+                    updateBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate', item);
                 }
             }
         }
     }
     private compileElement(ele: HTEle, val: string, prop: string, index: number): void {
-      let blazorContain: string[] = Object.keys(window) as string[];
       let templateFn: Function;
-      if (typeof val === 'string' && blazorContain.indexOf('Blazor') > -1 && val.indexOf('<div>Blazor') !== 0) {
+      if (typeof val === 'string' && isBlazor() && val.indexOf('<div>Blazor') !== 0) {
         val = val.trim();
         ele.innerHTML = val;
       } else {
@@ -874,14 +895,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
       }
       let templateFUN: HTMLElement[];
       if (!isNOU(templateFn)) {
-        if (blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
-            let templateProps: string;
-            if (prop === 'headerText') {
-                templateProps = this.element.id + 'text';
-            } else if (prop === 'content') {
-                templateProps = this.element.id + index + '_content';
-            }
-            templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
+        if (isBlazor() && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+            templateFUN = templateFn({}, this, prop, this.element.id + index + '_' + prop, this.isStringTemplate);
         } else {
             templateFUN = templateFn({}, this, prop);
         }
@@ -893,7 +908,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
       }
     }
     private headerTextCompile (element: HTEle, text: string, index: number): void {
-      this.compileElement(element, text, 'headerText', index);
+      this.compileElement(element, text, 'headerTemplate', index);
     }
     private getContent(ele: HTEle, cnt: Str | HTEle, callType: string, index: number): void {
         let eleStr: Str;
@@ -1317,9 +1332,10 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 let newVal: Str | Object = Object(newProp.items[index])[property];
                 let hdrItem: HTEle = <HTEle>select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM + '_' + index, this.element);
                 let cntItem: HTEle = <HTEle>select('.' + CLS_CONTENT + ' #' + CLS_CONTENT + '_' + index, this.element);
-                if (property === 'header') {
-                    let icon: Str | Object = this.items[index].header.iconCss;
-                    let textVal: Str | Object = this.items[index].header.text;
+                if (property === 'header' || property === 'headerTemplate') {
+                    let icon: Str | Object = (isNOU(this.items[index].header) ||
+                     isNOU(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
+                    let textVal: Str | Object = this.items[index].headerTemplate || this.items[index].header.text;
                     if ((textVal === '') && (icon === '')) {
                         this.removeTab(index);
                     } else {
@@ -1434,8 +1450,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             let i: number = 0;
             let textValue: string | HTEle;
             items.forEach((item: TabItemModel, place: number) => {
-                textValue = item.header.text;
-                if (!((isNOU(item.header) || isNOU(textValue) || ((<string>textValue).length === 0) && isNOU(item.header.iconCss)))) {
+                textValue = item.headerTemplate || item.header.text;
+                if (!(isNOU(item.headerTemplate || item.header) ||
+                 isNOU(textValue) || ((<string>textValue).length === 0) && isNOU(item.header.iconCss))) {
                 this.items.splice((index + i), 0, item);
                 i++;
                 }
@@ -1647,7 +1664,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    this.setCssClass(this.element, newProp.cssClass, true);
+                    if (oldProp.cssClass !== '') {
+                        this.setCssClass(this.element, oldProp.cssClass, false);
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    } else {
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);
@@ -1673,6 +1695,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
                 case 'heightAdjustMode':
                     this.setContentHeight(false);
                     this.select(this.selectedItem);
+                    break;
+                case 'scrollStep':
+                    if (this.tbObj) {
+                        this.tbObj.scrollStep = this.scrollStep;
+                    }
                     break;
             }
         }

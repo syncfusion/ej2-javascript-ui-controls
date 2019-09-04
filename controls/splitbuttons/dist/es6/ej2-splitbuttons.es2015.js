@@ -1131,7 +1131,14 @@ let ProgressButton = class ProgressButton extends Button {
     }
     setContent() {
         let cont = this.element.innerHTML;
-        this.element.innerHTML = '';
+        if (Object.keys(window).indexOf('ejsInterop') === -1) {
+            while (this.element.firstChild) {
+                this.element.removeChild(this.element.firstChild);
+            }
+        }
+        else {
+            this.element.innerHTML = '';
+        }
         this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
     }
     clickHandler() {

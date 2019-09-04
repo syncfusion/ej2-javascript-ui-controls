@@ -4,7 +4,7 @@
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import {
     Diagram, NodeModel, ConnectorModel, TextStyleModel, UndoRedo,
-    DiagramContextMenu, Keys, KeyModifiers, Snapping, SnapConstraints, PageOrientation
+    DiagramContextMenu, Keys, KeyModifiers, Snapping, SnapConstraints, PageOrientation, ICommandExecuteEventArgs
 
 } from '../../src/diagram/index';
 import { NodeConstraints } from '../../src/diagram/index';
@@ -159,6 +159,10 @@ let diagram: Diagram = new Diagram({
         } else if (args.item.id === 'clear') {
             diagram.clear();
         }
+    },
+    commandExecute: function (args: ICommandExecuteEventArgs) {
+        if (args.gesture.key === Keys.C && args.gesture.keyModifiers == KeyModifiers.Control) {
+        }
     }
 });
 
@@ -210,4 +214,3 @@ document.getElementById('backgroundimage').onchange = () => {
     }
     diagram.dataBind();
 };
- 

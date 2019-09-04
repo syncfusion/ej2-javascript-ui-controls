@@ -141,7 +141,7 @@ describe('Switch', () => {
             let event: MouseEvent = document.createEvent('MouseEvent');
             event.initEvent('mousedown', true, true);
             element.parentElement.dispatchEvent(event);
-            expect(specSwitch.isKeyPressed).toEqual(false);
+            expect(specSwitch.isFocused).toEqual(false);
             let up: MouseEvent = document.createEvent('MouseEvent');
             up.initEvent('mouseup', true, true);
             element.parentElement.dispatchEvent(up);
@@ -314,10 +314,10 @@ describe('Switch', () => {
         it('Keyboard Event', () => {
             specSwitch = new Switch({}, '#specSwitch');
             element.parentElement.focus();
-            specSwitch.switchFocusHandler();
             specSwitch.focusHandler();
+            specSwitch.switchFocusHandler();
             expect(element.parentElement.classList.contains('e-focus')).toEqual(true);
-            specSwitch.isKeyPressed = false;
+            specSwitch.isFocused = false;
             specSwitch.focusOutHandler();
             expect(element.parentElement.classList.contains('e-focus')).toEqual(false);
         });
@@ -327,6 +327,7 @@ describe('Switch', () => {
             specSwitch = new Switch({}, '#ngswitch');
             expect(specSwitch.element.parentElement.tagName).toEqual('EJS-SWITCH');
             expect(specSwitch.element.parentElement.children[0].tagName).toEqual('INPUT');
+            specSwitch.element.click();
             specSwitch.destroy();
             expect((document.getElementById('ngswitch')).tagName).toBe('EJS-SWITCH');
             specSwitch = new Switch({}, document.body.appendChild(createElement('input')) as HTMLInputElement);

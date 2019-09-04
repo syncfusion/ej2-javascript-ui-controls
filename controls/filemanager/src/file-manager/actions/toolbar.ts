@@ -6,9 +6,10 @@ import * as CLS from '../base/classes';
 import { IFileManager, NotifyArgs, ToolbarClickEventArgs, ToolbarCreateEventArgs } from '../base/interface';
 import { refresh, getPathObject, getLocaleText, getCssClass, sortbyClickHandler } from '../common/utility';
 import { createDeniedDialog, updateLayout } from '../common/utility';
-import { Download, GetDetails } from '../common/operations';
+import { GetDetails } from '../common/operations';
 import { DropDownButton, ItemModel as SplitButtonItemModel } from '@syncfusion/ej2-splitbuttons';
-import { cutFiles, copyFiles, pasteHandler, hasEditAccess, hasContentAccess, hasUploadAccess, hasDownloadAccess } from '../common/index';
+import { cutFiles, copyFiles, pasteHandler, hasEditAccess } from '../common/index';
+import { doDownload, createNewFolder, uploadItem } from '../common/index';
 
 /**
  * Toolbar module
@@ -55,6 +56,16 @@ export class Toolbar {
         });
     }
 
+    public getItemIndex(item: string): number {
+        let itemId: string = this.getId(item);
+        for (let i: number = 0; i < this.items.length; i++) {
+            if (this.items[i].id === itemId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private getItems(items: string[]): string[] {
         let currItems: string[] = items.slice();
         if (this.parent.isDevice && this.parent.allowMultiSelection) { currItems.push('SelectAll'); }
@@ -83,11 +94,7 @@ export class Toolbar {
                         }
                         break;
                     case 'newfolder':
-                        if (!hasContentAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0]);
-                        } else {
-                            createDialog(this.parent, 'NewFolder');
-                        }
+                        createNewFolder(this.parent);
                         break;
                     case 'cut':
                         cutFiles(this.parent);
@@ -120,7 +127,7 @@ export class Toolbar {
                         refresh(this.parent);
                         break;
                     case 'download':
-                        this.doDownload();
+                        doDownload(this.parent);
                         break;
                     case 'rename':
                         if (!hasEditAccess(details[0])) {
@@ -131,13 +138,7 @@ export class Toolbar {
                         }
                         break;
                     case 'upload':
-                        if (!hasUploadAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0]);
-                        } else {
-                            let eleId: string = '#' + this.parent.element.id + CLS.UPLOAD_ID;
-                            let uploadEle: HTMLElement = <HTMLElement>select(eleId, this.parent.element);
-                            uploadEle.click();
-                        }
+                        uploadItem(this.parent);
                         break;
                     case 'selectall':
                         this.parent.notify(events.selectAllInit, {});
@@ -148,21 +149,6 @@ export class Toolbar {
                 }
             }
         });
-    }
-
-    private doDownload(): void {
-        let items: Object[] = this.parent.itemData;
-        for (let i: number = 0; i < items.length; i++) {
-            if (!hasDownloadAccess(items[i])) {
-                createDeniedDialog(this.parent, items[i]);
-                return;
-            }
-        }
-        if (this.parent.selectedItems.length > 0) {
-            Download(this.parent, this.parent.path, this.parent.selectedItems);
-        } else {
-            return;
-        }
     }
 
     private toolbarCreateHandler(): void {
@@ -222,21 +208,24 @@ export class Toolbar {
                 }
             };
         }
+        this.parent.refreshLayout();
     }
 
     private updateSortByButton(): void {
-        let items: SplitButtonItemModel[] = this.buttonObj.items;
-        for (let itemCount: number = 0; itemCount < items.length; itemCount++) {
-            if (items[itemCount].id === this.getPupupId('name')) {
-                items[itemCount].iconCss = this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : '';
-            } else if (items[itemCount].id === this.getPupupId('size')) {
-                items[itemCount].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
-            } else if (items[itemCount].id === this.getPupupId('date')) {
-                items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
-            } else if (items[itemCount].id === this.getPupupId('ascending')) {
-                items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
-            } else if (items[itemCount].id === this.getPupupId('descending')) {
-                items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : '';
+        if (this.buttonObj) {
+            let items: SplitButtonItemModel[] = this.buttonObj.items;
+            for (let itemCount: number = 0; itemCount < items.length; itemCount++) {
+                if (items[itemCount].id === this.getPupupId('name')) {
+                    items[itemCount].iconCss = this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : '';
+                } else if (items[itemCount].id === this.getPupupId('size')) {
+                    items[itemCount].iconCss = this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : '';
+                } else if (items[itemCount].id === this.getPupupId('date')) {
+                    items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? CLS.TB_OPTION_DOT : '';
+                } else if (items[itemCount].id === this.getPupupId('ascending')) {
+                    items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : '';
+                } else if (items[itemCount].id === this.getPupupId('descending')) {
+                    items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : '';
+                }
             }
         }
     }
@@ -468,6 +457,7 @@ export class Toolbar {
         if (this.buttonObj) { this.buttonObj.destroy(); }
         if (this.layoutBtnObj) { this.layoutBtnObj.destroy(); }
         this.toolbarObj.destroy();
+        this.parent.refreshLayout();
     }
 
     public enableItems(items: string[], isEnable?: boolean): void {

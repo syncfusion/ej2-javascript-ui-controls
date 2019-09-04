@@ -164,8 +164,6 @@ export type DateGroup =
     'Years' |
     /**  Defines group as 'Quarters' of date field */
     'Quarters' |
-    /**  Defines group as 'Quarter Year' of date field */
-    'QuarterYear' |
     /**  Defines group as 'Months' of date field */
     'Months' |
     /**  Defines group as 'Days' of date field */

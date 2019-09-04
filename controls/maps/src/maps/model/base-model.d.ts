@@ -652,6 +652,7 @@ export interface ZoomSettingsModel {
     /**
      * Configures tool bar orientation
      * @default Horizontal
+     * @blazorProperty 'ToolbarOrientation'
      */
     toolBarOrientation?: Orientation;
 
@@ -697,6 +698,7 @@ export interface ZoomSettingsModel {
     /**
      * Double tab zooming
      * @default false
+     * @blazorProperty 'ZoomOnDoubleClick'
      */
     doubleClickZoom?: boolean;
 
@@ -882,6 +884,7 @@ export interface LegendSettingsModel {
     /**
      * Enable or disable the visibility of legend
      * @default null
+     * @blazorProperty 'LegendPath'
      */
     showLegendPath?: string;
 

@@ -392,6 +392,24 @@ export class Layout {
         line.paragraph = paragraphWidget;
         return line;
     }
+    private isFirstElementWithPageBreak(paragraphWidget: ParagraphWidget): boolean {
+        let isPageBreak: boolean = false;
+        let lineWidget: LineWidget = paragraphWidget.childWidgets[0] as LineWidget;
+        if (lineWidget) {
+            let element: ElementBox = lineWidget.children[0];
+            while (element) {
+                if (element instanceof BookmarkElementBox && element.name.indexOf('_') >= 0) {
+                    element = element.nextElement;
+                    continue;
+                }
+                if (element instanceof TextElementBox && element.text === '\f') {
+                    isPageBreak = true;
+                }
+                break;
+            }
+        }
+        return isPageBreak;
+    };
     /**
      * Layouts specified paragraph.
      * @private
@@ -399,13 +417,21 @@ export class Layout {
      */
     public layoutParagraph(paragraph: ParagraphWidget, lineIndex: number): BlockWidget {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
-        this.layoutListItems(paragraph);
+        let isListLayout: boolean = true;
+        let isFirstElmIsparagraph: boolean = this.isFirstElementWithPageBreak(paragraph);
+        if (!isFirstElmIsparagraph) {
+            this.layoutListItems(paragraph);
+            isListLayout = false;
+        }
         if (paragraph.isEmpty()) {
             this.layoutEmptyLineWidget(paragraph, true);
         } else {
             let line: LineWidget = lineIndex < paragraph.childWidgets.length ?
                 paragraph.childWidgets[lineIndex] as LineWidget : undefined;
             while (line instanceof LineWidget) {
+                if (paragraph !== line.paragraph && line.indexInOwner === 0 && isListLayout) {
+                    this.layoutListItems(line.paragraph);
+                }
                 if (line.isFirstLine() && isNullOrUndefined(this.fieldBegin)) {
                     if (!isNullOrUndefined(paragraph.paragraphFormat)) {
                         // tslint:disable-next-line:max-line-length
@@ -1872,6 +1898,12 @@ export class Layout {
         let isCustomTab: boolean = false;
         let tabs: WTabStop[] = paragraph.paragraphFormat.getUpdatedTabs();
         let isList: boolean = false;
+        let isSingleTab: boolean = false;
+        // tslint:disable-next-line:max-line-length
+        if (element.previousElement instanceof TextElementBox && element.previousElement.previousElement instanceof FieldElementBox && tabs.length === 1) {
+            tabs.length = 0;
+            isSingleTab = true;
+        }
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
             let listFormat: WParagraphFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
@@ -1880,23 +1912,23 @@ export class Layout {
             }
         }
         //  Calculate hanging width
-        let clientWidth: number = 0;
-        if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
-            clientWidth = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
-        } else {
-            clientWidth = this.viewer.clientArea.x;
-        }
-        if (viewer.clientActiveArea.x < clientWidth) {
+        if (element instanceof ListTextElementBox &&  viewer.clientActiveArea.x < this.viewer.clientArea.x) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
+        let leftIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
+        let firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         let position: number = viewer.clientActiveArea.x -
-            (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
+            (viewer.clientArea.x - leftIndent);
         let defaultTabWidth: number = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
         if (tabs.length === 0) {
             if (position > 0 && defaultTabWidth > position && isList ||
                 defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
                 return defaultTabWidth - position;
+            } else if (isSingleTab) {
+                return defaultTabWidth - leftIndent;
+            } else if (defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth < position) {
+                return defaultTabWidth + firstLineIndent;
             }
             return defaultTabWidth;
         } else {
@@ -1940,6 +1972,11 @@ export class Layout {
                             }
                             break;
                         }
+                    } else if (element.previousElement instanceof TextElementBox && element.nextElement instanceof TextElementBox) {
+                        if (leftIndent > defaultTabWidth) {
+                            defaultTabWidth = leftIndent - defaultTabWidth;
+                        }
+                        break;
                     }
                 }
             }

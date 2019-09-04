@@ -256,6 +256,7 @@ export interface SmithchartSeriesModel {
     /**
  *  Specifies the dataSource
  * @default null
+ * @isdatamanager false
  */
 
     dataSource?: Object;

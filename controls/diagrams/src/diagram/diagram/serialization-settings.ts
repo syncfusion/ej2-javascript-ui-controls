@@ -20,8 +20,8 @@ export class SerializationSettings extends ChildProperty<SerializationSettings> 
 
     /**
      * Enables or Disables serialization of default values.
-     * @default 'false'
+     * @default false
      */
     @Property(false)
-    public preventDefaults: Boolean;
+    public preventDefaults: boolean;
 }

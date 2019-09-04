@@ -2242,7 +2242,7 @@ var AxisHelper = /** @__PURE__ @class */ (function () {
         var heatmap = this.heatMap;
         var axis;
         var axisCollection = heatmap.axisCollections;
-        var data = this.heatMap.dataSource;
+        var data = this.heatMap.dataSourceSettings;
         var processLabels = !(data && data.isJsonData && data.adaptorType === 'Cell');
         for (var i = 0, len = axisCollection.length; i < len; i++) {
             axis = axisCollection[i];
@@ -3221,7 +3221,7 @@ var Series = /** @__PURE__ @class */ (function () {
     Series.prototype.setTextAndColor = function (dataXIndex, dataYIndex) {
         var cellSetting = this.heatMap.cellSettings;
         this.bubbleColorValue = [];
-        var adaptData = this.heatMap.dataSource;
+        var adaptData = this.heatMap.dataSourceSettings;
         // tslint:disable-next-line:no-any
         var clonedDataSource = this.heatMap.clonedDataSource;
         if (this.heatMap.bubbleSizeWithColor) {
@@ -3231,11 +3231,11 @@ var Series = /** @__PURE__ @class */ (function () {
                 clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ?
                 this.cellColor.getColorByValue(clonedDataSource[dataXIndex][dataYIndex][1])
                 : this.heatMap.isColorValueExist ? this.heatMap.emptyPointColor : this.cellColor.getColorByValue(this.text);
-            var tempBubbleCollection = new BubbleTooltipData(adaptData.isJsonData && adaptData.adaptorType === 'Cell' ? this.heatMap.dataSource.bubbleDataMapping.size : null, this.text, 'Size');
+            var tempBubbleCollection = new BubbleTooltipData(adaptData.isJsonData && adaptData.adaptorType === 'Cell' ? adaptData.bubbleDataMapping.size : null, this.text, 'Size');
             this.bubbleColorValue.push(tempBubbleCollection);
             this.bubbleColorValue.push({
                 mappingName: adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                    this.heatMap.dataSource.bubbleDataMapping.color : null,
+                    adaptData.bubbleDataMapping.color : null,
                 bubbleData: !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
                     clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '',
                 valueType: 'Color'
@@ -3698,14 +3698,14 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
         var value;
         var content;
         var heatMap = this.heatMap;
-        var adaptData = this.heatMap.dataSource;
+        var adaptData = this.heatMap.dataSourceSettings;
         if (heatMap.bubbleSizeWithColor) {
             var xAxis = heatMap.xAxis.title && heatMap.xAxis.title.text !== '' ? heatMap.xAxis.title.text : 'X-Axis';
             var yAxis = heatMap.yAxis.title && heatMap.yAxis.title.text !== '' ? heatMap.yAxis.title.text : 'Y-Axis';
             var value1 = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                heatMap.dataSource.bubbleDataMapping.size : 'Value 1';
+                adaptData.bubbleDataMapping.size : 'Value 1';
             var value2 = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                heatMap.dataSource.bubbleDataMapping.color : 'Value 2';
+                adaptData.bubbleDataMapping.color : 'Value 2';
             value = hetmapSeries.getFormatedText(currentRect.value[0].bubbleData, this.heatMap.cellSettings.format);
             content = [xAxis + ' : ' + hetmapSeries.hoverXAxisLabel + '<br/>'
                     + yAxis + ' : ' + hetmapSeries.hoverYAxisLabel + '<br/>'
@@ -5281,6 +5281,432 @@ var Legend = /** @__PURE__ @class */ (function () {
     return Legend;
 }());
 
+var __extends$8 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the Adaptor Property in the Heatmap.
+ */
+var Data = /** @__PURE__ @class */ (function (_super) {
+    __extends$8(Data, _super);
+    function Data() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$7([
+        Property(false)
+    ], Data.prototype, "isJsonData", void 0);
+    __decorate$7([
+        Property('None')
+    ], Data.prototype, "adaptorType", void 0);
+    __decorate$7([
+        Property('')
+    ], Data.prototype, "xDataMapping", void 0);
+    __decorate$7([
+        Property('')
+    ], Data.prototype, "yDataMapping", void 0);
+    __decorate$7([
+        Property('')
+    ], Data.prototype, "valueMapping", void 0);
+    __decorate$7([
+        Complex({}, BubbleData)
+    ], Data.prototype, "bubbleDataMapping", void 0);
+    return Data;
+}(ChildProperty));
+var AdaptiveMinMax = /** @__PURE__ @class */ (function () {
+    function AdaptiveMinMax() {
+    }
+    return AdaptiveMinMax;
+}());
+/**
+ *
+ * The `Adaptor` module is used to handle JSON and Table data.
+ */
+var Adaptor = /** @__PURE__ @class */ (function () {
+    function Adaptor(heatMap) {
+        this.reconstructedXAxis = [];
+        this.reconstructedYAxis = [];
+        this.adaptiveXMinMax = new AdaptiveMinMax();
+        this.adaptiveYMinMax = new AdaptiveMinMax();
+        this.heatMap = heatMap;
+    }
+    /**
+     * Method to construct Two Dimentional Datasource.
+     * @return {void}
+     * @private
+     */
+    Adaptor.prototype.constructDatasource = function (dataSource, dataSourceSettings) {
+        if (dataSourceSettings.adaptorType === 'Cell') {
+            var xAxis = this.heatMap.xAxis;
+            var yAxis = this.heatMap.yAxis;
+            this.adaptiveXMinMax.min = xAxis.minimum;
+            this.adaptiveXMinMax.max = xAxis.maximum;
+            this.adaptiveYMinMax.min = yAxis.minimum;
+            this.adaptiveYMinMax.max = yAxis.maximum;
+            if (((xAxis.valueType === 'Numeric' || xAxis.valueType === 'DateTime') &&
+                (isNullOrUndefined(xAxis.minimum) || isNullOrUndefined(xAxis.maximum))) ||
+                ((yAxis.valueType === 'Numeric' || yAxis.valueType === 'DateTime') &&
+                    (isNullOrUndefined(yAxis.minimum) || isNullOrUndefined(yAxis.maximum)))) {
+                this.getMinMaxValue(dataSource, dataSourceSettings, xAxis, yAxis);
+            }
+            this.heatMap.isCellData = true;
+        }
+        if (dataSourceSettings.adaptorType === 'None') {
+            this.heatMap.completeAdaptDataSource = dataSource;
+        }
+        else if (!dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Table') {
+            this.heatMap.completeAdaptDataSource = dataSource;
+        }
+        else if (dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Table') {
+            this.heatMap.completeAdaptDataSource = this.processJsonTableData(dataSource, dataSourceSettings);
+        }
+        else if (dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Cell') {
+            this.heatMap.completeAdaptDataSource = this.processJsonCellData(dataSource, dataSourceSettings);
+        }
+        else if (!dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Cell') {
+            this.constructAdaptiveAxis();
+            this.heatMap.completeAdaptDataSource = this.processCellData(dataSource);
+            this.heatMap.isCellData = true;
+        }
+    };
+    /**
+     * Method to construct Axis Collection.
+     * @return {void}
+     * @private
+     */
+    Adaptor.prototype.constructAdaptiveAxis = function () {
+        var xAxis = this.heatMap.xAxis;
+        var yAxis = this.heatMap.yAxis;
+        if (xAxis.valueType === 'Numeric') {
+            this.reconstructedXAxis = this.getNumericAxisCollection(this.adaptiveXMinMax.min, this.adaptiveXMinMax.max, xAxis.increment);
+        }
+        if (yAxis.valueType === 'Numeric') {
+            this.reconstructedYAxis = this.getNumericAxisCollection(this.adaptiveYMinMax.min, this.adaptiveYMinMax.max, yAxis.increment);
+        }
+        if (xAxis.valueType === 'DateTime') {
+            this.reconstructedXAxis = this.getDateAxisCollection(this.adaptiveXMinMax.min, this.adaptiveXMinMax.max, xAxis.intervalType, xAxis.increment);
+        }
+        if (yAxis.valueType === 'DateTime') {
+            this.reconstructedYAxis = this.getDateAxisCollection(this.adaptiveYMinMax.min, this.adaptiveYMinMax.max, yAxis.intervalType, yAxis.increment);
+        }
+    };
+    /**
+     * Method to calculate Numeric Axis Collection.
+     * @return {string[]}
+     * @private
+     */
+    Adaptor.prototype.getNumericAxisCollection = function (min, max, increment) {
+        var loopIndex = min;
+        var tempAxisColl = [];
+        while (loopIndex <= max) {
+            tempAxisColl.push(loopIndex.toString());
+            loopIndex = loopIndex + increment;
+        }
+        return tempAxisColl;
+    };
+    /**
+     * Method to calculate DateTime Axis Collection.
+     * @return {string[]}
+     * @private
+     */
+    Adaptor.prototype.getDateAxisCollection = function (min, max, intervalType, increment) {
+        var option = {
+            skeleton: 'full',
+            type: 'dateTime'
+        };
+        var dateParser = this.heatMap.intl.getDateParser(option);
+        var dateFormatter = this.heatMap.intl.getDateFormat(option);
+        min = Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: min }).val))));
+        var tempInterval = min;
+        var tempAxisColl = [];
+        while (tempInterval <= max) {
+            tempAxisColl.push(new Date(tempInterval).toString());
+            tempInterval = increaseDateTimeInterval(tempInterval, 1, intervalType, increment).getTime();
+        }
+        return tempAxisColl;
+    };
+    /**
+     * Method to calculate Maximum and Minimum Value from datasource.
+     * @return {void}
+     * @private
+     */
+    Adaptor.prototype.getMinMaxValue = function (dataSource, adapData, xAxis, yAxis) {
+        var data = dataSource;
+        var label = Object.keys(data[0]);
+        if (data.length > 0) {
+            this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[0]] : data[0][0];
+            this.adaptiveYMinMax.min = !isNullOrUndefined(yAxis.minimum) ? yAxis.minimum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[1]] : data[0][1];
+            this.adaptiveXMinMax.max = !isNullOrUndefined(xAxis.maximum) ? xAxis.maximum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[0]] : data[0][0];
+            this.adaptiveYMinMax.max = !isNullOrUndefined(yAxis.maximum) ? yAxis.maximum : adapData.isJsonData ?
+                // tslint:disable-next-line:no-any
+                data[0][label[1]] : data[0][1];
+        }
+        for (var dataIndex = 0; dataIndex < data.length; dataIndex++) {
+            // tslint:disable-next-line:no-any
+            var xDataIndex = adapData.isJsonData ? data[dataIndex][label[0]] : data[dataIndex][0];
+            // tslint:disable-next-line:no-any
+            var yDataIndex = adapData.isJsonData ? data[dataIndex][label[1]] : data[dataIndex][1];
+            if (xDataIndex < this.adaptiveXMinMax.min && isNullOrUndefined(xAxis.minimum)) {
+                this.adaptiveXMinMax.min = xDataIndex;
+            }
+            if (xDataIndex > this.adaptiveXMinMax.max && isNullOrUndefined(xAxis.maximum)) {
+                this.adaptiveXMinMax.max = xDataIndex;
+            }
+            if (yDataIndex < this.adaptiveYMinMax.min && isNullOrUndefined(yAxis.minimum)) {
+                this.adaptiveYMinMax.min = yDataIndex;
+            }
+            if (yDataIndex > this.adaptiveYMinMax.max && isNullOrUndefined(yAxis.maximum)) {
+                this.adaptiveYMinMax.max = yDataIndex;
+            }
+        }
+    };
+    /**
+     * Method to process Cell datasource.
+     * @return {Object}
+     * @private
+     */
+    Adaptor.prototype.processCellData = function (dataSource) {
+        // tslint:disable-next-line:no-any 
+        var tempDataCollection = dataSource;
+        var xLabels = this.reconstructedXAxis;
+        var yLabels = this.reconstructedYAxis;
+        var currentDataXIndex = 0;
+        var currentDataYIndex = 0;
+        this.reconstructData = [];
+        if (tempDataCollection && tempDataCollection.length) {
+            for (var xindex = 0; xindex < tempDataCollection.length; xindex++) {
+                if (this.heatMap.xAxis.valueType === 'Category') {
+                    currentDataXIndex = tempDataCollection[xindex][0];
+                }
+                else {
+                    currentDataXIndex = xLabels.indexOf(tempDataCollection[xindex][0].toString());
+                }
+                if (currentDataXIndex > -1) {
+                    while (!this.reconstructData[currentDataXIndex]) {
+                        this.reconstructData.push([]);
+                    }
+                    if (this.heatMap.yAxis.valueType === 'Category') {
+                        currentDataYIndex = tempDataCollection[xindex][1];
+                    }
+                    else {
+                        currentDataYIndex = yLabels.indexOf(tempDataCollection[xindex][1].toString());
+                    }
+                    if (currentDataYIndex !== -1) {
+                        while (this.reconstructData[currentDataXIndex][currentDataYIndex] !== '') {
+                            this.reconstructData[currentDataXIndex].push('');
+                        }
+                        this.reconstructData[currentDataXIndex][currentDataYIndex] = isNullOrUndefined(tempDataCollection[xindex][2]) ?
+                            '' : tempDataCollection[xindex][2];
+                    }
+                }
+            }
+        }
+        return this.reconstructData;
+    };
+    /**
+     * Method to process JSON Cell datasource.
+     * @return {Object}
+     * @private
+     */
+    Adaptor.prototype.processJsonCellData = function (dataSource, adaptordata) {
+        // tslint:disable-next-line:no-any 
+        var tempDataCollection = dataSource;
+        var xAxisLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        var yAxisLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        var axisCollections = this.heatMap.axisCollections;
+        if (xAxisLabels.length === 0 || yAxisLabels.length === 0) {
+            this.generateAxisLabels(dataSource, adaptordata);
+        }
+        var xLabels = (this.heatMap.xAxis.valueType === 'Category') ? (xAxisLabels.length > 0 ?
+            this.heatMap.xAxis.labels : axisCollections[0].jsonCellLabel) : axisCollections[0].labelValue;
+        var yLabels = (this.heatMap.yAxis.valueType === 'Category') ? (yAxisLabels.length > 0 ?
+            this.heatMap.yAxis.labels : axisCollections[1].jsonCellLabel) : axisCollections[1].labelValue;
+        var currentDataXIndex = 0;
+        var currentDataYIndex = 0;
+        if (tempDataCollection.length) {
+            this.reconstructData = [];
+            for (var index = 0; index < tempDataCollection.length; index++) {
+                currentDataXIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
+                if (currentDataXIndex !== -1) {
+                    while (!this.reconstructData[currentDataXIndex]) {
+                        this.reconstructData.push([]);
+                    }
+                    currentDataYIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, yLabels, adaptordata.yDataMapping.split('.'), this.heatMap.yAxis.valueType);
+                    if (currentDataYIndex !== -1) {
+                        while (isNullOrUndefined(this.reconstructData[currentDataXIndex][currentDataYIndex])) {
+                            this.reconstructData[currentDataXIndex].push('');
+                        }
+                        if (this.heatMap.bubbleSizeWithColor) {
+                            this.reconstructData[currentDataXIndex][currentDataYIndex] = [
+                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.size.split('.'), ''),
+                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.color.split('.'), '')
+                            ];
+                        }
+                        else {
+                            this.reconstructData[currentDataXIndex][currentDataYIndex] = this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.valueMapping.split('.'), '');
+                        }
+                    }
+                }
+            }
+        }
+        return this.reconstructData;
+    };
+    /**
+     * Method to generate axis labels when labels are not given.
+     * @return {string}
+     * @private
+     */
+    Adaptor.prototype.generateAxisLabels = function (dataSource, adaptordata) {
+        // tslint:disable-next-line:no-any 
+        var tempDataCollection = dataSource;
+        var xLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        var yLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        var hasXLabels = xLabels.length > 0 ? true : false;
+        var hasYLabels = yLabels.length > 0 ? true : false;
+        var axisCollection = this.heatMap.axisCollections;
+        for (var index = 0; index < axisCollection.length; index++) {
+            var valueType = axisCollection[index].valueType;
+            var axis = axisCollection[index];
+            if (valueType === 'Category') {
+                var hasLabels = void 0;
+                var dataMapping = void 0;
+                var labels = void 0;
+                if (axis.orientation === 'Horizontal') {
+                    hasLabels = hasXLabels;
+                    dataMapping = adaptordata.xDataMapping;
+                    axis.jsonCellLabel = labels = [];
+                }
+                else {
+                    hasLabels = hasYLabels;
+                    dataMapping = adaptordata.yDataMapping;
+                    axis.jsonCellLabel = labels = [];
+                }
+                if (!hasLabels) {
+                    for (var i = 0; i < tempDataCollection.length; i++) {
+                        if (dataMapping in tempDataCollection[i]) {
+                            var xValue = tempDataCollection[i][dataMapping].toString();
+                            if (labels.indexOf(xValue.toString()) === -1) {
+                                labels.push(xValue);
+                            }
+                        }
+                    }
+                }
+            }
+            else if (valueType === 'DateTime') {
+                axis.clearAxisLabel();
+                axis.calculateDateTimeAxisLabel(this.heatMap);
+            }
+            else {
+                axis.clearAxisLabel();
+                axis.calculateNumericAxisLabels(this.heatMap);
+            }
+        }
+    };
+    /**
+     * Method to get data from complex mapping.
+     * @return {number|string}
+     * @private
+     */
+    Adaptor.prototype.getSplitDataValue = function (
+    // tslint:disable-next-line:no-any 
+    tempSplitDataCollection, adaptordata, labels, tempSplitData, valueType) {
+        var value = -1;
+        this.tempSplitDataCollection = tempSplitDataCollection;
+        for (var splitIndex = 0; splitIndex < tempSplitData.length; splitIndex++) {
+            value = !isNullOrUndefined(labels) ? (!(valueType === 'DateTime') ?
+                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex]]) :
+                labels.map(Number).indexOf(+this.tempSplitDataCollection[tempSplitData[splitIndex]])) : null;
+            if (!isNullOrUndefined(this.tempSplitDataCollection)) {
+                this.tempSplitDataCollection = value !== -1 && !isNullOrUndefined(labels) ?
+                    this.tempSplitDataCollection : this.tempSplitDataCollection[tempSplitData[splitIndex]];
+            }
+            if (isNullOrUndefined(this.tempSplitDataCollection)) {
+                break;
+            }
+        }
+        value = !isNullOrUndefined(labels) ? value : isNullOrUndefined(this.tempSplitDataCollection) ||
+            this.tempSplitDataCollection.toString() === '' ? '' : parseFloat(this.tempSplitDataCollection.toString());
+        return value;
+    };
+    /**
+     * Method to process JSON Table datasource.
+     * @return {Object}
+     * @private
+     */
+    Adaptor.prototype.processJsonTableData = function (dataSource, adaptordata) {
+        // tslint:disable-next-line:no-any 
+        var tempDataCollection = dataSource;
+        var currentDataXIndex = 0;
+        var currentDataYIndex = 0;
+        var xLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
+        var yLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
+        var key;
+        if (tempDataCollection.length) {
+            this.reconstructData = [];
+            for (var xindex = 0; xindex < tempDataCollection.length; xindex++) {
+                currentDataXIndex = this.getSplitDataValue(tempDataCollection[xindex], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
+                if (currentDataXIndex !== -1) {
+                    while (!this.reconstructData[currentDataXIndex]) {
+                        this.reconstructData.push([]);
+                    }
+                    for (var index = 0; index < Object.keys(this.tempSplitDataCollection).length; index++) {
+                        key = Object.keys(this.tempSplitDataCollection)[index];
+                        currentDataYIndex = key !== adaptordata.xDataMapping ? yLabels.indexOf(key) : -1;
+                        if (currentDataYIndex !== -1) {
+                            while (isNullOrUndefined(this.reconstructData[currentDataXIndex][currentDataYIndex])) {
+                                this.reconstructData[currentDataXIndex].push('');
+                            }
+                            this.reconstructData[currentDataXIndex][currentDataYIndex] =
+                                isNullOrUndefined(this.tempSplitDataCollection[key]) ?
+                                    '' : this.tempSplitDataCollection[key];
+                        }
+                    }
+                }
+            }
+        }
+        return this.reconstructData;
+    };
+    /**
+     * To destroy the Adaptor.
+     * @return {void}
+     * @private
+     */
+    Adaptor.prototype.destroy = function (heatMap) {
+        /**
+         * No Lines
+         */
+    };
+    
+    /**
+     * To get Module name
+     */
+    Adaptor.prototype.getModuleName = function () {
+        return 'Adaptor';
+    };
+    return Adaptor;
+}());
+
 /**
  * Heat Map Component
  */
@@ -5394,6 +5820,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         if (this.tooltipModule) {
             this.tooltipModule.showHideTooltip(false);
         }
+        this.renderComplete();
     };
     /**
      * To re-calculate the datasource while changing datasource property dynamically.
@@ -5415,7 +5842,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
      */
     HeatMap.prototype.processInitData = function () {
         if (this.adaptorModule) {
-            this.adaptorModule.constructDatasource(this.dataSource);
+            this.adaptorModule.constructDatasource(this.dataSource, this.dataSourceSettings);
         }
         else {
             this.completeAdaptDataSource = this.dataSource;
@@ -5489,6 +5916,10 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
     HeatMap.prototype.getPersistData = function () {
         return '';
     };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-func-body-length
     HeatMap.prototype.onPropertyChanged = function (newProp, oldProp) {
         var renderer = false;
         var refreshBounds = false;
@@ -5513,6 +5944,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                     refreshBounds = true;
                     break;
                 case 'dataSource':
+                case 'dataSourceSettings':
                     this.isCellData = false;
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {
@@ -6773,6 +7205,9 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], HeatMap.prototype, "dataSource", void 0);
     __decorate([
+        Complex({}, Data)
+    ], HeatMap.prototype, "dataSourceSettings", void 0);
+    __decorate([
         Property('Material')
     ], HeatMap.prototype, "theme", void 0);
     __decorate([
@@ -6819,435 +7254,6 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
     ], HeatMap);
     return HeatMap;
 }(Component));
-
-var __extends$8 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Configures the Adaptor Property in the Heatmap.
- */
-var Data = /** @__PURE__ @class */ (function (_super) {
-    __extends$8(Data, _super);
-    function Data() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$7([
-        Property(null)
-    ], Data.prototype, "data", void 0);
-    __decorate$7([
-        Property(false)
-    ], Data.prototype, "isJsonData", void 0);
-    __decorate$7([
-        Property('cell')
-    ], Data.prototype, "adaptorType", void 0);
-    __decorate$7([
-        Property('')
-    ], Data.prototype, "xDataMapping", void 0);
-    __decorate$7([
-        Property('')
-    ], Data.prototype, "yDataMapping", void 0);
-    __decorate$7([
-        Property('')
-    ], Data.prototype, "valueMapping", void 0);
-    __decorate$7([
-        Complex({}, BubbleData)
-    ], Data.prototype, "bubbleDataMapping", void 0);
-    return Data;
-}(ChildProperty));
-var AdaptiveMinMax = /** @__PURE__ @class */ (function () {
-    function AdaptiveMinMax() {
-    }
-    return AdaptiveMinMax;
-}());
-/**
- *
- * The `Adaptor` module is used to handle JSON and Table data.
- */
-var Adaptor = /** @__PURE__ @class */ (function () {
-    function Adaptor(heatMap) {
-        this.reconstructedXAxis = [];
-        this.reconstructedYAxis = [];
-        this.adaptiveXMinMax = new AdaptiveMinMax();
-        this.adaptiveYMinMax = new AdaptiveMinMax();
-        this.heatMap = heatMap;
-    }
-    /**
-     * Method to construct Two Dimentional Datasource.
-     * @return {void}
-     * @private
-     */
-    Adaptor.prototype.constructDatasource = function (adaptData) {
-        if (adaptData.adaptorType === 'Cell') {
-            var xAxis = this.heatMap.xAxis;
-            var yAxis = this.heatMap.yAxis;
-            this.adaptiveXMinMax.min = xAxis.minimum;
-            this.adaptiveXMinMax.max = xAxis.maximum;
-            this.adaptiveYMinMax.min = yAxis.minimum;
-            this.adaptiveYMinMax.max = yAxis.maximum;
-            if (((xAxis.valueType === 'Numeric' || xAxis.valueType === 'DateTime') &&
-                (isNullOrUndefined(xAxis.minimum) || isNullOrUndefined(xAxis.maximum))) ||
-                ((yAxis.valueType === 'Numeric' || yAxis.valueType === 'DateTime') &&
-                    (isNullOrUndefined(yAxis.minimum) || isNullOrUndefined(yAxis.maximum)))) {
-                this.getMinMaxValue(adaptData, xAxis, yAxis);
-            }
-            this.heatMap.isCellData = true;
-        }
-        if (adaptData && adaptData.data === undefined) {
-            this.heatMap.completeAdaptDataSource = adaptData;
-        }
-        else if (!adaptData.isJsonData && adaptData.adaptorType === 'Table' || adaptData.data === null) {
-            this.heatMap.completeAdaptDataSource = adaptData.data;
-        }
-        else if (adaptData.isJsonData && adaptData.adaptorType === 'Table') {
-            this.heatMap.completeAdaptDataSource = this.processJsonTableData(adaptData);
-        }
-        else if (adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
-            this.heatMap.completeAdaptDataSource = this.processJsonCellData(adaptData);
-        }
-        else if (!adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
-            this.constructAdaptiveAxis();
-            this.heatMap.completeAdaptDataSource = this.processCellData(adaptData);
-            this.heatMap.isCellData = true;
-        }
-    };
-    /**
-     * Method to construct Axis Collection.
-     * @return {void}
-     * @private
-     */
-    Adaptor.prototype.constructAdaptiveAxis = function () {
-        var xAxis = this.heatMap.xAxis;
-        var yAxis = this.heatMap.yAxis;
-        if (xAxis.valueType === 'Numeric') {
-            this.reconstructedXAxis = this.getNumericAxisCollection(this.adaptiveXMinMax.min, this.adaptiveXMinMax.max, xAxis.increment);
-        }
-        if (yAxis.valueType === 'Numeric') {
-            this.reconstructedYAxis = this.getNumericAxisCollection(this.adaptiveYMinMax.min, this.adaptiveYMinMax.max, yAxis.increment);
-        }
-        if (xAxis.valueType === 'DateTime') {
-            this.reconstructedXAxis = this.getDateAxisCollection(this.adaptiveXMinMax.min, this.adaptiveXMinMax.max, xAxis.intervalType, xAxis.increment);
-        }
-        if (yAxis.valueType === 'DateTime') {
-            this.reconstructedYAxis = this.getDateAxisCollection(this.adaptiveYMinMax.min, this.adaptiveYMinMax.max, yAxis.intervalType, yAxis.increment);
-        }
-    };
-    /**
-     * Method to calculate Numeric Axis Collection.
-     * @return {string[]}
-     * @private
-     */
-    Adaptor.prototype.getNumericAxisCollection = function (min, max, increment) {
-        var loopIndex = min;
-        var tempAxisColl = [];
-        while (loopIndex <= max) {
-            tempAxisColl.push(loopIndex.toString());
-            loopIndex = loopIndex + increment;
-        }
-        return tempAxisColl;
-    };
-    /**
-     * Method to calculate DateTime Axis Collection.
-     * @return {string[]}
-     * @private
-     */
-    Adaptor.prototype.getDateAxisCollection = function (min, max, intervalType, increment) {
-        var option = {
-            skeleton: 'full',
-            type: 'dateTime'
-        };
-        var dateParser = this.heatMap.intl.getDateParser(option);
-        var dateFormatter = this.heatMap.intl.getDateFormat(option);
-        min = Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: min }).val))));
-        var tempInterval = min;
-        var tempAxisColl = [];
-        while (tempInterval <= max) {
-            tempAxisColl.push(new Date(tempInterval).toString());
-            tempInterval = increaseDateTimeInterval(tempInterval, 1, intervalType, increment).getTime();
-        }
-        return tempAxisColl;
-    };
-    /**
-     * Method to calculate Maximum and Minimum Value from datasource.
-     * @return {void}
-     * @private
-     */
-    Adaptor.prototype.getMinMaxValue = function (adapData, xAxis, yAxis) {
-        var data = adapData.data;
-        var label = Object.keys(data[0]);
-        if (data.length > 0) {
-            this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : adapData.isJsonData ?
-                // tslint:disable-next-line:no-any
-                data[0][label[0]] : data[0][0];
-            this.adaptiveYMinMax.min = !isNullOrUndefined(yAxis.minimum) ? yAxis.minimum : adapData.isJsonData ?
-                // tslint:disable-next-line:no-any
-                data[0][label[1]] : data[0][1];
-            this.adaptiveXMinMax.max = !isNullOrUndefined(xAxis.maximum) ? xAxis.maximum : adapData.isJsonData ?
-                // tslint:disable-next-line:no-any
-                data[0][label[0]] : data[0][0];
-            this.adaptiveYMinMax.max = !isNullOrUndefined(yAxis.maximum) ? yAxis.maximum : adapData.isJsonData ?
-                // tslint:disable-next-line:no-any
-                data[0][label[1]] : data[0][1];
-        }
-        for (var dataIndex = 0; dataIndex < data.length; dataIndex++) {
-            // tslint:disable-next-line:no-any
-            var xDataIndex = adapData.isJsonData ? data[dataIndex][label[0]] : data[dataIndex][0];
-            // tslint:disable-next-line:no-any
-            var yDataIndex = adapData.isJsonData ? data[dataIndex][label[1]] : data[dataIndex][1];
-            if (xDataIndex < this.adaptiveXMinMax.min && isNullOrUndefined(xAxis.minimum)) {
-                this.adaptiveXMinMax.min = xDataIndex;
-            }
-            if (xDataIndex > this.adaptiveXMinMax.max && isNullOrUndefined(xAxis.maximum)) {
-                this.adaptiveXMinMax.max = xDataIndex;
-            }
-            if (yDataIndex < this.adaptiveYMinMax.min && isNullOrUndefined(yAxis.minimum)) {
-                this.adaptiveYMinMax.min = yDataIndex;
-            }
-            if (yDataIndex > this.adaptiveYMinMax.max && isNullOrUndefined(yAxis.maximum)) {
-                this.adaptiveYMinMax.max = yDataIndex;
-            }
-        }
-    };
-    /**
-     * Method to process Cell datasource.
-     * @return {Object}
-     * @private
-     */
-    Adaptor.prototype.processCellData = function (adaptordata) {
-        // tslint:disable-next-line:no-any 
-        var tempDataCollection = adaptordata.data;
-        var xLabels = this.reconstructedXAxis;
-        var yLabels = this.reconstructedYAxis;
-        var currentDataXIndex = 0;
-        var currentDataYIndex = 0;
-        if (tempDataCollection.length) {
-            this.reconstructData = [];
-            for (var xindex = 0; xindex < tempDataCollection.length; xindex++) {
-                if (this.heatMap.xAxis.valueType === 'Category') {
-                    currentDataXIndex = tempDataCollection[xindex][0];
-                }
-                else {
-                    currentDataXIndex = xLabels.indexOf(tempDataCollection[xindex][0].toString());
-                }
-                if (currentDataXIndex > -1) {
-                    while (!this.reconstructData[currentDataXIndex]) {
-                        this.reconstructData.push([]);
-                    }
-                    if (this.heatMap.yAxis.valueType === 'Category') {
-                        currentDataYIndex = tempDataCollection[xindex][1];
-                    }
-                    else {
-                        currentDataYIndex = yLabels.indexOf(tempDataCollection[xindex][1].toString());
-                    }
-                    if (currentDataYIndex !== -1) {
-                        while (this.reconstructData[currentDataXIndex][currentDataYIndex] !== '') {
-                            this.reconstructData[currentDataXIndex].push('');
-                        }
-                        this.reconstructData[currentDataXIndex][currentDataYIndex] = isNullOrUndefined(tempDataCollection[xindex][2]) ?
-                            '' : tempDataCollection[xindex][2];
-                    }
-                }
-            }
-        }
-        return this.reconstructData;
-    };
-    /**
-     * Method to process JSON Cell datasource.
-     * @return {Object}
-     * @private
-     */
-    Adaptor.prototype.processJsonCellData = function (adaptordata) {
-        // tslint:disable-next-line:no-any 
-        var tempDataCollection = adaptordata.data;
-        var xAxisLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
-        var yAxisLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
-        var axisCollections = this.heatMap.axisCollections;
-        if (xAxisLabels.length === 0 || yAxisLabels.length === 0) {
-            this.generateAxisLabels(adaptordata);
-        }
-        var xLabels = (this.heatMap.xAxis.valueType === 'Category') ? (xAxisLabels.length > 0 ?
-            this.heatMap.xAxis.labels : axisCollections[0].jsonCellLabel) : axisCollections[0].labelValue;
-        var yLabels = (this.heatMap.yAxis.valueType === 'Category') ? (yAxisLabels.length > 0 ?
-            this.heatMap.yAxis.labels : axisCollections[1].jsonCellLabel) : axisCollections[1].labelValue;
-        var currentDataXIndex = 0;
-        var currentDataYIndex = 0;
-        if (tempDataCollection.length) {
-            this.reconstructData = [];
-            for (var index = 0; index < tempDataCollection.length; index++) {
-                currentDataXIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
-                if (currentDataXIndex !== -1) {
-                    while (!this.reconstructData[currentDataXIndex]) {
-                        this.reconstructData.push([]);
-                    }
-                    currentDataYIndex = this.getSplitDataValue(tempDataCollection[index], adaptordata, yLabels, adaptordata.yDataMapping.split('.'), this.heatMap.yAxis.valueType);
-                    if (currentDataYIndex !== -1) {
-                        while (isNullOrUndefined(this.reconstructData[currentDataXIndex][currentDataYIndex])) {
-                            this.reconstructData[currentDataXIndex].push('');
-                        }
-                        if (this.heatMap.bubbleSizeWithColor) {
-                            this.reconstructData[currentDataXIndex][currentDataYIndex] = [
-                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.size.split('.'), ''),
-                                this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.bubbleDataMapping.color.split('.'), '')
-                            ];
-                        }
-                        else {
-                            this.reconstructData[currentDataXIndex][currentDataYIndex] = this.getSplitDataValue(tempDataCollection[index], adaptordata, null, adaptordata.valueMapping.split('.'), '');
-                        }
-                    }
-                }
-            }
-        }
-        return this.reconstructData;
-    };
-    /**
-     * Method to generate axis labels when labels are not given.
-     * @return {string}
-     * @private
-     */
-    Adaptor.prototype.generateAxisLabels = function (adaptordata) {
-        // tslint:disable-next-line:no-any 
-        var tempDataCollection = adaptordata.data;
-        var xLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
-        var yLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
-        var hasXLabels = xLabels.length > 0 ? true : false;
-        var hasYLabels = yLabels.length > 0 ? true : false;
-        var axisCollection = this.heatMap.axisCollections;
-        for (var index = 0; index < axisCollection.length; index++) {
-            var valueType = axisCollection[index].valueType;
-            var axis = axisCollection[index];
-            if (valueType === 'Category') {
-                var hasLabels = void 0;
-                var dataMapping = void 0;
-                var labels = void 0;
-                if (axis.orientation === 'Horizontal') {
-                    hasLabels = hasXLabels;
-                    dataMapping = adaptordata.xDataMapping;
-                    axis.jsonCellLabel = labels = [];
-                }
-                else {
-                    hasLabels = hasYLabels;
-                    dataMapping = adaptordata.yDataMapping;
-                    axis.jsonCellLabel = labels = [];
-                }
-                if (!hasLabels) {
-                    for (var i = 0; i < tempDataCollection.length; i++) {
-                        if (dataMapping in tempDataCollection[i]) {
-                            var xValue = tempDataCollection[i][dataMapping].toString();
-                            if (labels.indexOf(xValue.toString()) === -1) {
-                                labels.push(xValue);
-                            }
-                        }
-                    }
-                }
-            }
-            else if (valueType === 'DateTime') {
-                axis.clearAxisLabel();
-                axis.calculateDateTimeAxisLabel(this.heatMap);
-            }
-            else {
-                axis.clearAxisLabel();
-                axis.calculateNumericAxisLabels(this.heatMap);
-            }
-        }
-    };
-    /**
-     * Method to get data from complex mapping.
-     * @return {number|string}
-     * @private
-     */
-    Adaptor.prototype.getSplitDataValue = function (
-    // tslint:disable-next-line:no-any 
-    tempSplitDataCollection, adaptordata, labels, tempSplitData, valueType) {
-        var value = -1;
-        this.tempSplitDataCollection = tempSplitDataCollection;
-        for (var splitIndex = 0; splitIndex < tempSplitData.length; splitIndex++) {
-            value = !isNullOrUndefined(labels) ? (!(valueType === 'DateTime') ?
-                labels.indexOf(this.tempSplitDataCollection[tempSplitData[splitIndex]]) :
-                labels.map(Number).indexOf(+this.tempSplitDataCollection[tempSplitData[splitIndex]])) : null;
-            if (!isNullOrUndefined(this.tempSplitDataCollection)) {
-                this.tempSplitDataCollection = value !== -1 && !isNullOrUndefined(labels) ?
-                    this.tempSplitDataCollection : this.tempSplitDataCollection[tempSplitData[splitIndex]];
-            }
-            if (isNullOrUndefined(this.tempSplitDataCollection)) {
-                break;
-            }
-        }
-        value = !isNullOrUndefined(labels) ? value : isNullOrUndefined(this.tempSplitDataCollection) ||
-            this.tempSplitDataCollection.toString() === '' ? '' : parseFloat(this.tempSplitDataCollection.toString());
-        return value;
-    };
-    /**
-     * Method to process JSON Table datasource.
-     * @return {Object}
-     * @private
-     */
-    Adaptor.prototype.processJsonTableData = function (adaptordata) {
-        // tslint:disable-next-line:no-any 
-        var tempDataCollection = adaptordata.data;
-        var currentDataXIndex = 0;
-        var currentDataYIndex = 0;
-        var xLabels = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
-        var yLabels = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
-        var key;
-        if (tempDataCollection.length) {
-            this.reconstructData = [];
-            for (var xindex = 0; xindex < tempDataCollection.length; xindex++) {
-                currentDataXIndex = this.getSplitDataValue(tempDataCollection[xindex], adaptordata, xLabels, adaptordata.xDataMapping.split('.'), this.heatMap.xAxis.valueType);
-                if (currentDataXIndex !== -1) {
-                    while (!this.reconstructData[currentDataXIndex]) {
-                        this.reconstructData.push([]);
-                    }
-                    for (var index = 0; index < Object.keys(this.tempSplitDataCollection).length; index++) {
-                        key = Object.keys(this.tempSplitDataCollection)[index];
-                        currentDataYIndex = key !== adaptordata.xDataMapping ? yLabels.indexOf(key) : -1;
-                        if (currentDataYIndex !== -1) {
-                            while (isNullOrUndefined(this.reconstructData[currentDataXIndex][currentDataYIndex])) {
-                                this.reconstructData[currentDataXIndex].push('');
-                            }
-                            this.reconstructData[currentDataXIndex][currentDataYIndex] =
-                                isNullOrUndefined(this.tempSplitDataCollection[key]) ?
-                                    '' : this.tempSplitDataCollection[key];
-                        }
-                    }
-                }
-            }
-        }
-        return this.reconstructData;
-    };
-    /**
-     * To destroy the Adaptor.
-     * @return {void}
-     * @private
-     */
-    Adaptor.prototype.destroy = function (heatMap) {
-        /**
-         * No Lines
-         */
-    };
-    
-    /**
-     * To get Module name
-     */
-    Adaptor.prototype.getModuleName = function () {
-        return 'Adaptor';
-    };
-    return Adaptor;
-}());
 
 /**
  * Heatmap component exported items

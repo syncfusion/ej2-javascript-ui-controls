@@ -337,6 +337,8 @@ export const exportRowDataBound: string = 'export-RowDataBound';
 /** @hidden */
 export const rowPositionChanged: string = 'row-position-changed';
 /** @hidden */
+export const columnChooserOpened: string = 'columnChooserOpened';
+/** @hidden */
 export const batchForm: string = 'batchedit-form';
 /** @hidden */
 export const beforeStartEdit: string = 'edit-form';
@@ -347,4 +349,6 @@ export const batchEditFormRendered: string = 'batcheditform-rendered';
 /** @hidden */
 export const partialRefresh: string = 'partial-refresh';
 /** @hidden */
-export const blazorId: string = 'BlazorTemplateId';
+export const beforeCustomFilterOpen: string = 'beforeCustomFilterOpen';
+/** @hidden */
+export const selectVirtualRow: string = 'select-virtual-Row';

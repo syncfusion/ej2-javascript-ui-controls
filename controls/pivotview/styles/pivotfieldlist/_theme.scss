@@ -132,10 +132,6 @@
       display: flex;
       padding: 2px;
       width: 100%;
-
-      .e-title-content {
-        flex: auto;
-      }
     }
 
     .e-field-list-container {
@@ -178,52 +174,10 @@
           }
         }
 
-        .e-field-header-wrapper {
-          background-color: $field-list-header-background-color;
-          color: $field-list-default-header-font-color;
-          display: flex;
-          padding-right: $field-list-header-padding;
-
-          .e-field-header {
-            flex: auto;
-          }
-
-          .e-sort-none,
-          .e-sort-ascend,
-          .e-sort-descend {
-            color: $field-list-default-header-icon-font-color;
-            cursor: pointer;
-            font-size: $field-list-header-icon-size;
-            height: 20px;
-            padding: $field-list-tree-header-padding 0 0 $field-list-icon-to-icon-padding;
-            width: 20px;
-
-            &.e-selected::before {
-              color: $field-list-active-color;
-            }
-
-            &:hover {
-              font-weight: bold;
-            }
-
-            &:focus {
-              font-weight: bold;
-            }
-          }
-        }
-
-        .e-field-list-tree-outer-div {
-          display: inline-block;
+        .e-field-list {
           height: 310px;
           overflow: auto;
-          width: 100%;
-        }
-
-        .e-field-list {
-          display: inline-table;
-          height: 100%;
           padding-left: 2px;
-          width: 100%;
 
           ul {
             overflow: hidden;
@@ -249,27 +203,6 @@
                 width: 20px;
               }
 
-              .e-list-icon {
-                color: $field-list-tree-icon-color;
-                margin: 0;
-              }
-
-              // sass-lint:disable-all
-              .e-calc-measure-icon,
-              .e-calc-dimension-icon,
-              .e-attributeCDB-icon,
-              .e-hierarchyCDB-icon,
-              .e-level-members,
-              .e-namedSetCDB-icon,
-              .e-measure-icon,
-              .e-kpiGoal-icon,
-              .e-kpiStatus-icon,
-              .e-kpiTrend-icon,
-              .e-kpiValue-icon {
-                margin-left: 10px;
-              }
-              // sass-lint:enable-all
-
               .e-list-selected {
                 opacity: .5;
               }
@@ -283,38 +216,6 @@
               }
             }
           }
-
-          &.e-olap-field-list-tree {
-            ul {
-              li {
-                margin-left: 0;
-                margin-right: 0;
-              }
-
-              .e-list-icon {
-                font-size: $field-list-icon-size;
-                height: auto;
-                width: auto;
-              }
-            }
-
-            &.e-treeview ul:first-child {
-              padding-left: 10px;
-              padding-right: 10px;
-            }
-
-            &.e-rtl {
-              ul {
-                .e-list-icon {
-                  transform: rotateX(0deg) rotateY(180deg);
-                }
-              }
-            }
-          }
-        }
-
-        &.e-olap-field-table {
-          width: 40%;
         }
       }
 
@@ -567,10 +468,6 @@
         .e-right-axis-fields .e-field-list-values {
           margin-top: $field-list-default-padding-size;
         }
-
-        &.e-olap-axis-table {
-          width: 60%;
-        }
       }
     }
 
@@ -610,42 +507,15 @@
               margin-left: 6px !important;
               margin-right: 0 !important;
             }
-
-            .e-calc-measure-icon,
-            .e-calc-dimension-icon,
-            .e-attributeCDB-icon,
-            .e-hierarchyCDB-icon,
-            .e-level-members,
-            .e-namedSetCDB-icon,
-            .e-measure-icon,
-            .e-kpiGoal-icon,
-            .e-kpiStatus-icon,
-            .e-kpiTrend-icon,
-            .e-kpiValue-icon {
-              margin-left: 0;
-              margin-right: 10px;
-            }
             // sass-lint:enable-all
           }
         }
 
         .e-field-header {
-          padding-left: 0;
-          padding-right: $field-list-header-padding;
+          padding-right: $field-list-header-padding-size;
           text-align: right;
           @if ($field-list-skin == 'bootstrap4') {
             padding-right: 12px;
-          }
-        }
-
-        .e-field-header-wrapper {
-          padding-left: $field-list-header-padding;
-          padding-right: 0;
-
-          .e-sort-none,
-          .e-sort-ascend,
-          .e-sort-descend {
-            padding: $field-list-tree-header-padding $field-list-icon-to-icon-padding 0 0;
           }
         }
       }
@@ -689,7 +559,7 @@
           height: 210px;
           width: 100%;
 
-          .e-field-list-tree-outer-div {
+          .e-field-list {
             height: 175px;
           }
         }
@@ -756,10 +626,6 @@
 
     &.e-device {
       height: 100%;
-      // sass-lint:disable-all
-      max-height: 100% !important;
-      max-width: 100% !important;
-      // sass-lint:enable-all
       min-height: 500px;
       width: 100%;
 
@@ -770,13 +636,6 @@
         height: 48px;
         padding-bottom: 9px;
         padding-top: 9px;
-      }
-
-      .e-adaptive-field-list-dialog {
-        .e-dlg-header-content {
-          background-color: transparent;
-          color: $field-list-mobile-header-font-color;
-        }
       }
 
       .e-title-mobile-header {
@@ -962,16 +821,12 @@
               width: 90%;
             }
 
-            // sass-lint:disable-all
-            .e-pivot-calc-input-div,
-            .e-member-options,
-            .e-olap-calc-custom-format-div {
+            .e-pivot-calc-input-div {
               margin-left: 20px;
               margin-right: 20px;
               margin-top: 20px;
-              width: 90% !important;
+              width: 90%;
             }
-            // sass-lint:enable-all
 
             .e-accordion {
               margin-top: 20px;
@@ -1002,33 +857,13 @@
               margin-top: 32px;
             }
 
-            .e-pivot-ok-button {
-              bottom: 0;
-              position: sticky;
-            }
-
             .e-pivot-accord {
               max-height: 290px;
-              overflow: auto;
-
-              &.e-rtl {
-                ul {
-                  .e-list-icon {
-                    transform: rotateX(0deg) rotateY(180deg);
-                  }
-                }
-              }
             }
 
             .e-checkbox-wrapper .e-icons {
               height: 18px;
               width: 18px;
-            }
-
-            &.e-olap-calc-outer-div {
-              max-height: 350px;
-              overflow: hidden;
-              overflow-y: auto;
             }
           }
         }
@@ -1191,19 +1026,6 @@
         }
       }
 
-      .e-field-header-wrapper {
-        padding-right: $field-list-bigger-header-padding;
-
-        .e-sort-none,
-        .e-sort-ascend,
-        .e-sort-descend {
-          font-size: $field-list-bigger-header-icon-size;
-          height: 24px;
-          padding: $field-list-tree-header-padding 0 0 $field-list-bigger-icon-to-icon-padding;
-          width: 24px;
-        }
-      }
-
       .e-field-list {
         padding-left: 5px;
 
@@ -1219,29 +1041,6 @@
           margin-bottom: $field-list-treeview-drag-bigger-padding !important;
           margin-right: 4px !important;
           width: 24px !important;
-        }
-
-        // sass-lint:disable-all
-        .e-calc-measure-icon,
-        .e-calc-dimension-icon,
-        .e-attributeCDB-icon,
-        .e-hierarchyCDB-icon,
-        .e-level-members,
-        .e-namedSetCDB-icon,
-        .e-measure-icon,
-        .e-kpiGoal-icon,
-        .e-kpiStatus-icon,
-        .e-kpiTrend-icon,
-        .e-kpiValue-icon {
-          margin-left: 10px;
-        }
-
-        &.e-olap-field-list-tree {
-          ul {
-            .e-list-icon {
-              font-size: $field-list-bigger-icon-size;
-            }
-          }
         }
       }
 
@@ -1398,35 +1197,7 @@
             margin-right: 0 !important;
           }
 
-          .e-calc-measure-icon,
-          .e-calc-dimension-icon,
-          .e-attributeCDB-icon,
-          .e-hierarchyCDB-icon,
-          .e-level-members,
-          .e-namedSetCDB-icon,
-          .e-measure-icon,
-          .e-kpiGoal-icon,
-          .e-kpiStatus-icon,
-          .e-kpiTrend-icon,
-          .e-kpiValue-icon {
-            margin-left: 0;
-            margin-right: 10px;
-          }
           // sass-lint:enable-all
-        }
-
-        .e-field-header {
-          padding-right: $field-list-bigger-header-padding;
-        }
-
-        .e-field-header-wrapper {
-          padding-left: $field-list-bigger-header-padding;
-
-          .e-sort-none,
-          .e-sort-ascend,
-          .e-sort-descend {
-            padding: $field-list-tree-header-padding $field-list-bigger-icon-to-icon-padding 0 0;
-          }
         }
       }
 

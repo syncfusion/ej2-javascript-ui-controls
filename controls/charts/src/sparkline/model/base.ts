@@ -60,6 +60,7 @@ export class SparklineFont extends ChildProperty<SparklineFont> {
 
     /**
      * Opacity for the text.
+     * @default 1
      */
     @Property(1)
     public opacity: number;
@@ -212,31 +213,36 @@ export class RangeBandSettings extends ChildProperty<RangeBandSettings> {
 export class AxisSettings extends ChildProperty<AxisSettings> {
     /**
      * To configure Sparkline x axis min value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     @Property(null)
     public minX: number;
     /**
      * To configure Sparkline x axis max value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     @Property(null)
     public maxX: number;
     /**
      * To configure Sparkline y axis min value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     @Property(null)
     public minY: number;
     /**
      * To configure Sparkline y axis max value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     @Property(null)
     public maxY: number;
     /**
      * To configure Sparkline horizontal axis line position.
      * @default 0
+     * @blazorDefaultValue 0
      */
     @Property(0)
     public value: number;

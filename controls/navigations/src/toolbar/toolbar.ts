@@ -3,7 +3,7 @@ import { addClass, removeClass, isVisible, closest, attributes, detach, classLis
 import { selectAll, setStyleAttribute as setStyle, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, getUniqueID, formatUnit, Collection, compile as templateCompiler } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Browser } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { calculatePosition } from '@syncfusion/ej2-popups';
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
@@ -67,7 +67,6 @@ const CLS_HIDDEN: string = 'e-hidden';
 const CLS_MULTIROW: string = 'e-toolbar-multirow';
 const CLS_MULTIROWPOS: string = 'e-multirow-pos';
 const CLS_MULTIROW_SEPARATOR: string = 'e-multirow-separator';
-const CLS_EXTENDABLE_ITEM: string = 'e-extended-item';
 const CLS_EXTENDABLE_SEPARATOR: string = 'e-extended-separator';
 const CLS_EXTEANDABLE_TOOLBAR: Str = 'e-extended-toolbar';
 const CLS_EXTENDABLECLASS: Str = 'e-toolbar-extended';
@@ -86,7 +85,10 @@ interface ToolbarItemAlignIn {
 export interface ClickEventArgs extends BaseEventArgs {
     /** Defines the current Toolbar Item Object. */
     item: ItemModel;
-    /** Defines the current Event arguments. */
+    /** 
+     * Defines the current Event arguments. 
+     * @blazorType UIMouseEventArgs
+     */
     originalEvent: Event;
     /** Defines the prevent action. */
     cancel?: boolean;
@@ -95,6 +97,7 @@ export interface ClickEventArgs extends BaseEventArgs {
 export interface BeforeCreateArgs extends BaseEventArgs {
     /** Enable or disable the popup collision. */
     enableCollision: boolean;
+    /** Specifies the scrolling distance in scroller. */
     scrollStep: number;
 }
 
@@ -265,8 +268,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private activeEle: HTEle;
     private popupPriCount: number;
     private tbarItemsCol: ItemModel[];
-    private enableCollision: boolean;
-    private scrollStep: number;
     private isVertical: boolean;
     private tempId: string[];
     private isExtendedOpen: boolean;
@@ -316,6 +317,18 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      */
     @Property('Scrollable')
     public overflowMode: OverflowMode;
+    /**  
+     * Specifies the scrolling distance in scroller.
+     * @default null  
+     */
+    @Property()
+    public scrollStep: number;
+    /**
+     * Enable or disable the popup collision.
+     * @default true
+     */
+    @Property(true)
+    public enableCollision: boolean;
     /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
@@ -341,6 +354,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * The event will be fired before the control is rendered on a page.
      * @event
      * @blazorProperty 'OnCreate'
+     * @deprecated
      */
     @Event()
     public beforeCreate: EmitType<BeforeCreateArgs>;
@@ -376,7 +390,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
      * @private
      */
     protected preRender(): void {
-        let eventArgs: BeforeCreateArgs = { enableCollision: true, scrollStep: this.scrollStep };
+        let eventArgs: BeforeCreateArgs = { enableCollision: this.enableCollision, scrollStep: this.scrollStep };
         this.trigger('beforeCreate', eventArgs);
         this.enableCollision = eventArgs.enableCollision;
         this.scrollStep = eventArgs.scrollStep;
@@ -741,6 +755,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     private initialize(): void {
         let width: Str = formatUnit(this.width);
@@ -863,7 +880,8 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             switch (this.overflowMode) {
                 case 'Scrollable':
                     if (isNOU(this.scrollModule)) {
-                      this.initScroll(ele, ele.getElementsByClassName(CLS_ITEMS)); }
+                        this.initScroll(ele, [].slice.call(ele.getElementsByClassName(CLS_ITEMS)));
+                    }
                     break;
                 case 'Popup':
                     this.add(this.element, 'e-toolpop');
@@ -1511,14 +1529,15 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     }
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the command should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @returns void.
      */
-    public enableItems(items: HTMLElement | NodeList, isEnable?: boolean): void {
+    public enableItems(items: number | HTMLElement | NodeList, isEnable?: boolean): void {
         let elements: NodeList = <NodeList>items;
         let len: number = elements.length;
+        let ele: HTEle | number;
         if (isNOU(isEnable)) {
             isEnable = true;
         }
@@ -1531,16 +1550,39 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
-        if (len && len > 1) {
-            for (let ele of [].slice.call(elements)) {
+        if (!isNOU(len) && len >= 1) {
+            for (let a: number = 0, element: HTEle[] = [].slice.call(elements); a < len; a++) {
+                let itemElement: HTEle = element[a];
+                if (typeof (itemElement) === 'number') {
+                    ele = this.getElementByIndex(itemElement);
+                    if (isNOU(ele)) {
+                        return;
+                    } else {
+                        elements[a] = ele;
+                    }
+                } else {
+                    ele = itemElement;
+                }
                 enable(isEnable, ele);
             }
             isEnable ? removeClass(elements, CLS_DISABLE) : addClass(elements, CLS_DISABLE);
         } else {
-            let ele: HTEle;
-            ele = (len && len === 1) ? <HTEle>elements[0] : <HTEle>items;
+            if (typeof (elements) === 'number') {
+                ele = this.getElementByIndex(elements);
+                if (isNOU(ele)) {
+                    return;
+                }
+            } else {
+                ele = <HTEle>items;
+            }
             enable(isEnable, ele);
         }
+    }
+    private getElementByIndex(index: number): HTEle {
+        if (this.tbarEle[index]) {
+            return this.tbarEle[index];
+        }
+        return null;
     }
     /**
      * Adds new items to the Toolbar that accepts an array as Toolbar items.
@@ -1947,6 +1989,16 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                         newProp.enableRtl ? this.add(this.popObj.element, CLS_RTL) : this.remove(this.popObj.element, CLS_RTL);
                     }
                     if (this.tbarAlign) { this.itemPositioning(); }
+                    break;
+                case 'scrollStep':
+                    if (this.scrollModule) {
+                        this.scrollModule.scrollStep = this.scrollStep;
+                    }
+                    break;
+                case 'enableCollision':
+                    if (this.popObj) {
+                        this.popObj.collision = { Y: this.enableCollision ? 'flip' : 'none' };
+                    }
                     break;
             }
         }

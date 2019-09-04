@@ -1259,8 +1259,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (!this.showItemOnClick) {
                 this.clickHandler(e);
             }
-        } else if (this.isMenu && this.showItemOnClick) {
-            this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
         }
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
@@ -1573,6 +1571,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                 idx = navIdx.pop();
                                 item = this.getItems(navIdx);
                                 this.insertAfter([item[idx]], item[idx].text);
+                                item = this.getItems(navIdx);
                                 this.removeItem(item, navIdx, idx);
                             }
                             navIdx.length = 0;

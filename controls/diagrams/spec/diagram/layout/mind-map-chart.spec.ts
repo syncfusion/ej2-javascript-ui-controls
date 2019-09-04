@@ -303,5 +303,76 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+
+    describe('getBranch Support for the Blazor ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let data: object[] = [
+            { id: 1, Label: 'StackPanel', Branch: 'Left' },
+            { id: 2, Label: 'Label', parentId: 1, Branch: 'Left' },
+            { id: 3, Label: 'ListBox', parentId: 1, Branch: 'Left' },
+            { id: 4, Label: 'StackPanel', parentId: 1, Branch: 'Left' },
+            { id: 5, Label: 'Border', parentId: 2, Branch: 'Left' },
+            { id: 6, Label: 'Border', parentId: 3, Branch: 'Left' },
+            { id: 7, Label: 'Button', parentId: 4, Branch: 'Left' },
+            { id: 8, Label: 'ContentPresenter', parentId: 5, Branch: 'Left' },
+            { id: 9, Label: 'Text Block', parentId: 8, Branch: 'Left' },
+            { id: 10, Label: 'ScrollViewer', parentId: 6, Branch: 'Left' },
+            { id: 11, Label: 'Grid', parentId: 10, Branch: 'Left' },
+            { id: 12, Label: 'Rectangle', parentId: 11, Branch: 'Left' },
+            { id: 13, Label: 'ScrollContentPresenter', parentId: 11, Branch: 'Left' },
+            { id: 14, Label: 'ScrollBar', parentId: 11, Branch: 'Left' },
+            { id: 15, Label: 'ScrollBar', parentId: 11, Branch: 'Left' },
+            { id: 16, Label: 'ItemsPresenter', parentId: 13, Branch: 'Left' },
+            { id: 17, Label: 'AdornerLayer', parentId: 13, Branch: 'Left' },
+            { id: 18, Label: 'VirtualizingStackPanel', parentId: 15, Branch: 'Left' },
+            { id: 19, Label: 'ListBoxItem', parentId: 18, Branch: 'Left' },
+            { id: 20, Label: 'ListBoxItem', parentId: 18, Branch: 'Left' },
+            { id: 21, Label: 'Border', parentId: 19, Branch: 'Left' },
+            { id: 22, Label: 'ContentPresenter', parentId: 19, Branch: 'Left' },
+            { id: 23, Label: 'TextBlock', parentId: 19, Branch: 'Left' },
+            { id: 24, Label: 'Border', parentId: 20, Branch: 'Left' },
+            { id: 25, Label: 'ContentPresenter', parentId: 20, Branch: 'Left' },
+            { id: 26, Label: 'TextBlock', parentId: 20, Branch: 'Left' },
+            { id: 27, Label: 'ButtonChrome', parentId: 7, Branch: 'Left' },
+            { id: 28, Label: 'ContentPresenter', parentId: 27, Branch: 'Left' },
+            { id: 29, Label: 'TextBlock', parentId: 28, Branch: 'Left' }
+        ];
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            
+            diagram = new Diagram({
+                width: '100%', height: '550px',
+                layout: { type: 'MindMap' },
+                dataSourceSettings: {
+                    id: 'id', parentId: 'parentId', dataSource: items, root: String(1),
+                    dataMapSettings: [{ property: 'Branch', field: 'Branch' }]
+                },
+                getNodeDefaults: (obj: Node) => {
+                    obj.shape = { type: 'Text', content: (obj.data as { Label: 'string' }).Label };
+                    obj.style = { fill: 'lightgrey', strokeColor: 'none', strokeWidth: 2 };
+                    obj.borderColor = 'black';
+                    obj.backgroundColor = 'lightgrey';
+                    obj.borderWidth = 1;
+                    (obj.shape as TextModel).margin = { left: 5, right: 5, top: 5, bottom: 5 };
+                    return obj;
+                }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                    connector.type = 'Orthogonal';
+                    return connector;
+                }
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Without datasource without root', (done: Function) => {
+            expect(diagram.nodes[0].branch === 'Left').toBe(true);
+            done();
+        });
+    });
 });
 

@@ -7048,6 +7048,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 }
                 if (limit < this.maximumSelectionLength) {
                     this.updateListSelection(li, e);
+                    this.checkPlaceholderSize();
                     this.addListFocus(li);
                     if ((this.allowCustomValue || this.allowFiltering) && this.mainList && this.listData) {
                         if (this.mode !== 'CheckBox') {
@@ -7087,7 +7088,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
             }
             this.refreshPlaceHolder();
-            this.checkPlaceholderSize();
             this.findGroupStart(target);
         }
     };
@@ -8779,7 +8779,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 helper: function (e) {
                     var ele = e.sender.cloneNode(true);
                     ele.style.width = _this.getItems()[0].offsetWidth + 'px';
-                    if (_this.value.length > 1 && _this.isSelected(ele)) {
+                    if ((_this.value && _this.value.length) > 1 && _this.isSelected(ele)) {
                         ele.appendChild(_this.createElement('span', {
                             className: 'e-list-badge', innerHTML: _this.value.length + ''
                         }));
@@ -8965,7 +8965,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var toIdx_1 = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             listData.splice(toIdx_1, 0, listData.splice(listData.indexOf(this.getDataByValue(dropValue)), 1)[0]);
             if (this.allowDragAll) {
-                selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
+                selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach(function (value) {
                     if (value !== dropValue) {
                         var idx = listData.indexOf(_this.getDataByValue(value));
@@ -8985,7 +8985,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var currIdx_1 = args.currentIndex = this.getCurIdx(listObj, args.currentIndex);
             var ul_2 = listObj.ulElement;
             listData = [].slice.call(listObj.listData);
-            selectedOptions = (Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll) ? this.value : [dropValue];
+            selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
+                ? this.value : [dropValue];
             selectedOptions.forEach(function (value) {
                 droppedData = _this.getDataByValue(value);
                 _this.listData.splice(_this.listData.indexOf(droppedData), 1);
@@ -9176,9 +9177,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var valueindex = 0;
             var count = 0;
             for (listindex; listindex < this.mainList.childElementCount;) {
-                for (valueindex; valueindex < this.value.length; valueindex++) {
-                    if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
-                        count++;
+                if (this.value) {
+                    for (valueindex; valueindex < this.value.length; valueindex++) {
+                        if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                            count++;
+                        }
                     }
                 }
                 if (!count && this.selectionSettings.showCheckbox) {
@@ -9313,7 +9316,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 });
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
-            if (!isKey && (this.maximumSelectionLength > this.value.length || !isSelect) &&
+            if (!isKey && (this.maximumSelectionLength > (this.value && this.value.length) || !isSelect) &&
                 (this.maximumSelectionLength >= this.value.length || !isSelect) &&
                 !(this.maximumSelectionLength < this.value.length)) {
                 this.notify('updatelist', { li: li, e: e });

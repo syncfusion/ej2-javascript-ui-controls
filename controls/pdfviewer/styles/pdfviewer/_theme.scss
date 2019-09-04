@@ -2063,6 +2063,7 @@
   .e-pv-comment-title {
     color: $pv-comment-text-color;
     font-size: 14px;
+    max-width: 237px;
     padding-left: 32px;
     padding-top: $pv-comment-title-padding-top;
     position: absolute;
@@ -2071,6 +2072,7 @@
   .e-pv-reply-title {
     color: $pv-comment-text-color;
     font-size: 14px;
+    max-width: 212px;
     padding-left: 8px;
     padding-top: $pv-comment-title-padding-top;
     position: absolute;

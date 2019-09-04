@@ -230,8 +230,17 @@ export class Selection implements IAction {
         let selectedMovableRow: Element = this.getSelectedMovableRow(index);
         let selectData: Object;
         let isRemoved: boolean = false;
-        if (gObj.enableVirtualization && selectedRow) {
-            selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
+        if (gObj.enableVirtualization && index > -1) {
+            if (selectedRow) {
+                selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
+            } else {
+                let prevSelectedData: Object[] = this.parent.getSelectedRecords();
+                if (prevSelectedData.length > 0) {
+                    this.clearRowSelection();
+                }
+                this.parent.notify(events.selectVirtualRow, { selectedIndex: index });
+                return;
+            }
         } else {
             selectData = this.getCurrentBatchRecordChanges()[index];
         }
@@ -2100,7 +2109,7 @@ export class Selection implements IAction {
         if (this.parent.isCheckBoxSelection || this.parent.selectionSettings.checkboxMode === 'ResetOnRowClick') {
             let checkedLen: number = Object.keys(this.selectedRowState).length;
             if (!this.parent.isPersistSelection) {
-                checkedLen = this.selectedRecords.length;
+                checkedLen = this.selectedRowIndexes.length;
                 this.totalRecordsCount = this.getCurrentBatchRecordChanges().length;
             }
             if (this.getCheckAllBox()) {

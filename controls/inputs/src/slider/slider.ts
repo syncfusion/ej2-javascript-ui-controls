@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
@@ -559,7 +559,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     /**
      * We can trigger renderingTicks event when the ticks rendered on Slider,
      *  which is used to customize the ticks labels dynamically.
-     * @deprecated
      * @event
      * @blazorProperty 'TicksRendering'
      */
@@ -677,6 +676,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.initRender();
         this.wireEvents();
         this.setZindex();
+        this.renderComplete();
     }
 
     private initialize(): void {
@@ -1389,6 +1389,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         return tickCount;
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private renderScale(): void {
         let orien: string = this.orientation === 'Vertical' ? 'v' : 'h';
         let spanText: number;
@@ -1456,7 +1457,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 } else {
                     let largestep: number = this.fractionalToInteger(<number>this.ticks.largeStep);
                     let startValue: number = this.fractionalToInteger(<number>start);
-                    islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    if (orien === 'h') {
+                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    } else {
+                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
+                    }
                 }
             }
             if (islargeTick) {
@@ -1466,7 +1471,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             let repeat: number = islargeTick ? (this.ticks.placement === 'Both' ? 2 : 1) : 0;
             if (islargeTick) {
                 for (let j: number = 0; j < repeat; j++) {
-                    this.createTick(li, start);
+                    this.createTick(li, start, tickWidth);
                 }
             } else if (isNullOrUndefined(this.customValues)) {
                 this.formatTicksValue(li, start);
@@ -1488,10 +1493,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 left = this.makeRoundNumber(left + smallStep, decimalPoints);
             }
         }
-        this.tickesAlignment(orien, tickWidth);
+        this.ticksAlignment(orien, tickWidth);
     }
 
-    private tickesAlignment(orien: string, tickWidth: number): void {
+    private ticksAlignment(orien: string, tickWidth: number, triggerEvent: boolean = true): void {
         this.firstChild = this.ul.firstElementChild;
         this.lastChild = this.ul.lastElementChild;
         this.firstChild.classList.add(classNames.sliderFirstTick);
@@ -1505,24 +1510,26 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             (this.lastChild as HTMLElement).style.height = tickWidth / 2 + '%';
         }
         let eventArgs: SliderTickRenderedEventArgs = { ticksWrapper: this.ul, tickElements: this.tickElementCollection };
-        this.trigger('renderedTicks', eventArgs);
+        if (triggerEvent) {
+            this.trigger('renderedTicks', eventArgs);
+        }
         this.scaleAlignment();
     }
 
-    private createTick(li: HTMLElement, start: number | string): void {
+    private createTick(li: HTMLElement, start: number | string, tickWidth: number): void {
         let span: HTMLElement = this.createElement('span', {
             className: classNames.tickValue + ' ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
             attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
         });
         li.appendChild(span);
         if (isNullOrUndefined(this.customValues)) {
-            this.formatTicksValue(li, <number>start, span);
+            this.formatTicksValue(li, <number>start, span, tickWidth);
         } else {
             span.innerHTML = start.toString();
         }
     }
 
-    private formatTicksValue(li: HTMLElement, start: number, spanElement?: HTMLElement): void {
+    private formatTicksValue(li: HTMLElement, start: number, spanElement?: HTMLElement, tickWidth?: number): void {
         const tickText: string = this.formatNumber(start);
         const text: string = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
             this.formatString(start, this.ticksFormatInfo).formatString : tickText;
@@ -1531,6 +1538,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             li.setAttribute('title', observedArgs.text.toString());
             if (spanElement) {
                 spanElement.innerHTML = observedArgs.text.toString();
+            }
+            if (isBlazor()) {
+                const orien: string = this.orientation === 'Horizontal' ? 'h' : 'v';
+                this.ticksAlignment(orien, tickWidth, false);
             }
         });
     }

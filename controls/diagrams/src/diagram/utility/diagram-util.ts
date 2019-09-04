@@ -9,7 +9,7 @@ import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel
 import { Point } from './../primitives/point';
 import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes,
-    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform
+    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
@@ -19,7 +19,8 @@ import { TextElement } from '../core/elements/text-element';
 import { ImageElement } from '../core/elements/image-element';
 import { PathAnnotation, ShapeAnnotation } from './../objects/annotation';
 import {
-    PathModel, TextModel, ImageModel, FlowShapeModel, BasicShapeModel, NativeModel, HtmlModel, UmlActivityShapeModel, SwimLaneModel
+    PathModel, TextModel, ImageModel, FlowShapeModel, BasicShapeModel,
+    NativeModel, HtmlModel, UmlActivityShapeModel, SwimLaneModel, ShapeModel
 } from './../objects/node-model';
 import {
     Node, FlowShape, BasicShape, Native, Html, UmlActivityShape, BpmnGateway, BpmnDataObject, BpmnEvent, BpmnSubEvent, BpmnActivity,
@@ -27,14 +28,16 @@ import {
     Lane, Shape, Phase, ChildContainer, SwimLane, Path, Image, Text, BpmnShape, UmlClassifierShape, Header
 } from './../objects/node';
 import { NodeModel } from './../objects/node-model';
-import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment, BpmnFlow } from './../objects/connector';
+import { BpmnFlow, RelationShip } from './../objects/connector';
+import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment } from './../objects/connector';
 import { ConnectorModel } from './../objects/connector-model';
 import { DecoratorModel } from './../objects/connector-model';
 import { getBasicShape } from './../objects/dictionary/basic-shapes';
 import { getFlowShape } from './../objects/dictionary/flow-shapes';
 import { Diagram } from './../diagram';
 import { Intersection, findAngle } from './connector';
-import { SelectorModel, UserHandleModel } from '../interaction/selector-model';
+import { SelectorModel } from '../objects/node-model';
+import {  UserHandleModel } from '../interaction/selector-model';
 import { MarginModel } from '../core/appearance-model';
 import { PointPortModel } from './../objects/port-model';
 import { ShapeAnnotationModel, PathAnnotationModel, HyperlinkModel, AnnotationModel } from './../objects/annotation-model';
@@ -47,13 +50,18 @@ import { View } from '../objects/interface/interfaces';
 import { TransformFactor as Transforms, Segment } from '../interaction/scroller';
 import { SymbolPalette } from '../../symbol-palette/symbol-palette';
 import { canResize } from './constraints-util';
-import { Selector, UserHandle } from '../interaction/selector';
+import {  UserHandle } from '../interaction/selector';
+import { Selector } from '../objects/node';
 import { getUMLActivityShape } from '../objects/dictionary/umlactivity-shapes';
 import { Canvas } from '../core/containers/canvas';
 import { PointPort } from '../objects/port';
 import { Command } from '../diagram/keyboard-commands';
 import { pasteSwimLane } from './swim-lane-util';
 import { GridPanel } from '../core/containers/grid';
+import { isBlazor } from '@syncfusion/ej2-base';
+import { TreeInfo, INode } from '../layout/layout-base';
+import { MouseEventArgs } from '../interaction/event-handlers';
+import { IBlazorDropEventArgs, IBlazorCollectionChangeEventArgs } from '../objects/interface/IElement';
 
 
 
@@ -173,6 +181,111 @@ export function setUMLActivityDefaults(child: NodeModel | ConnectorModel, node: 
     }
 }
 
+/**
+ * @private
+ */
+export function setConnectorDefaults(child: ConnectorModel, node: ConnectorModel): void {
+    switch ((child.shape).type) {
+        case 'Bpmn':
+            switch ((child.shape as BpmnFlow).flow) {
+                case 'Sequence':
+                    if (((((child.shape as BpmnFlow).sequence) === 'Normal' && child.type !== 'Bezier')) ||
+                        (((child.shape as BpmnFlow).sequence) === 'Default') || (((child.shape as BpmnFlow).sequence) === 'Conditional')) {
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style
+                                && child.targetDecorator.style.fill) || 'black';
+                        }
+                        if (((child.shape as BpmnFlow).sequence) === 'Conditional' && node.sourceDecorator) {
+                            if (node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                                    child.sourceDecorator.style.fill) || 'white';
+                            }
+                            node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 20;
+                            node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.width) || 10;
+                        }
+                    }
+                    break;
+                case 'Association':
+                    if ((((child.shape as BpmnFlow).association) === 'Default') ||
+                        (((child.shape as BpmnFlow).association) === 'Directional') ||
+                        (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
+                        if (node.targetDecorator && node.targetDecorator.style) {
+                            node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                                child.targetDecorator.style.fill) || 'black';
+                        }
+                        if (((child.shape as BpmnFlow).association) === 'BiDirectional') {
+                            if (node.sourceDecorator && node.sourceDecorator.style) {
+                                node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                                    child.sourceDecorator.style.fill) || 'white';
+                                node.sourceDecorator.width = (child.sourceDecorator && child.sourceDecorator.width) || 5;
+                                node.sourceDecorator.height = (child.sourceDecorator && child.sourceDecorator.height) || 10;
+                            }
+                        }
+                    }
+                    break;
+                case 'Message':
+                    if (node.style && !node.style.strokeDashArray) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlActivity':
+            switch ((child.shape as ActivityFlow).flow) {
+                case 'Exception':
+                    if ((((child.shape as BpmnFlow).association) === 'Directional') ||
+                        (((child.shape as BpmnFlow).association) === 'BiDirectional')) {
+                        node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '2 2';
+                    }
+                    break;
+            }
+            break;
+        case 'UmlClassifier':
+            let hasRelation: boolean = false;
+            if ((child.shape as RelationShip).relationship === 'Association') {
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Inheritance') {
+                if (node.targetDecorator && node.targetDecorator.style) {
+                    node.targetDecorator.style.fill = (child.targetDecorator && child.targetDecorator.style &&
+                        child.targetDecorator.style.fill) || 'white';
+                }
+                if (node.style) {
+                    hasRelation = true;
+                    node.style.strokeDashArray = (child.style && child.style.strokeDashArray) || '4 4';
+                }
+            } else if ((child.shape as RelationShip).relationship === 'Composition') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'black';
+                }
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Aggregation') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+            } else if ((child.shape as RelationShip).relationship === 'Dependency') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+                node.style.strokeDashArray = '4 4';
+            } else if ((child.shape as RelationShip).relationship === 'Realization') {
+                if (node.sourceDecorator && node.sourceDecorator.style) {
+                    node.sourceDecorator.style.fill = (child.sourceDecorator && child.sourceDecorator.style &&
+                        child.sourceDecorator.style.fill) || 'white';
+                }
+                hasRelation = true;
+            }
+            if (hasRelation) {
+                node.style.strokeWidth = (child.style && child.style.strokeWidth) || 2;
+            }
+            break;
+    }
+}
+
 /** @private */
 export function findNearestPoint(reference: PointModel, start: PointModel, end: PointModel): PointModel {
     let shortestPoint: PointModel;
@@ -247,6 +360,96 @@ export function groupHasType(node: NodeModel, type: Shapes, nameTable: {}): bool
     }
     return contains;
 }
+
+/** @private */
+export function updateDefaultValues(
+    actualNode: NodeModel | ConnectorModel, plainValue: NodeModel | ConnectorModel,
+    defaultValue: object, property?: NodeModel | ConnectorModel, oldKey?: string):
+    void {
+    if (defaultValue && ((actualNode instanceof Connector) || actualNode
+        && ((actualNode.shape && actualNode.shape.type !== 'SwimLane') || actualNode.shape === undefined))) {
+        let keyObj: object;
+        for (let key of Object.keys(defaultValue)) {
+            keyObj = defaultValue[key];
+            if (key === 'shape' && (keyObj as ShapeModel).type) {
+                actualNode.shape = { type: (keyObj as ShapeModel).type };
+            }
+            if (keyObj) {
+                if (Array.isArray(keyObj) && keyObj.length && keyObj.length > 0 && (oldKey !== 'annotations' && oldKey !== 'ports')) {
+                    if (actualNode[key].length > 0) {
+                        for (let i: number = 0; i <= actualNode[key].length; i++) {
+                            updateDefaultValues(
+                                actualNode[key], plainValue ? plainValue[key] : undefined,
+                                defaultValue[key], (key === 'annotations' || key === 'ports') ? actualNode : undefined, key);
+                        }
+                    } else {
+                        updateDefaultValues(
+                            actualNode[key], plainValue ? plainValue[key] : undefined,
+                            defaultValue[key], (key === 'annotations' || key === 'ports') ? actualNode : undefined, key);
+                    }
+                } else if (keyObj instanceof Object && plainValue && (oldKey !== 'annotations' && oldKey !== 'ports')) {
+                    updateDefaultValues(actualNode[key], plainValue[key], defaultValue[key]);
+                } else if ((oldKey !== 'annotations' && oldKey !== 'ports')
+                    && (plainValue && !plainValue[key]) || (!plainValue && actualNode
+                        && (actualNode[key] || actualNode[key] !== undefined))) {
+                    actualNode[key] = defaultValue[key];
+                } else {
+                    let createObject: ShapeAnnotation | PathAnnotation | PointPort;
+                    if (oldKey === 'annotations' || oldKey === 'ports') {
+                        if (oldKey === 'annotations') {
+                            if (actualNode[key]) {
+                                updateDefaultValues(actualNode[key], plainValue[key], defaultValue[key]);
+                            }
+                            if (!actualNode[key]) {
+                                if (getObjectType(property) === Connector) {
+                                    createObject = new PathAnnotation(property, 'annotations', defaultValue[key]);
+                                    (property as Connector).annotations.push(createObject);
+                                } else {
+                                    createObject = new ShapeAnnotation(property, 'annotations', defaultValue[key]);
+                                    (property as Node).annotations.push(createObject);
+                                }
+                            }
+                        } else {
+                            if (actualNode[key]) {
+                                updateDefaultValues(actualNode[key], plainValue[key], defaultValue[key]);
+                            } else {
+                                createObject = new PointPort(property, 'ports', defaultValue[key]);
+                                property.ports.push(createObject);
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+}
+/* tslint:disable:no-string-literal */
+/** @private */
+export function updateLayoutValue(actualNode: TreeInfo, defaultValue: object, nodes?: INode[], node?: INode): void {
+    let keyObj: object;
+    if (defaultValue) {
+        for (let key of Object.keys(defaultValue)) {
+            keyObj = defaultValue[key];
+            if (key === 'getAssistantDetails') {
+                if (node.data['Role'] === defaultValue[key]['root']) {
+                    let assitants: string[] = defaultValue[key]['assistants'];
+                    for (let i: number = 0; i < assitants.length; i++) {
+                        for (let j: number = 0; j < nodes.length; j++) {
+                            if (nodes[j].data['Role'] === assitants[i]) {
+                                actualNode.assistants.push(nodes[j].id);
+                                actualNode.children.splice(0, 1);
+                            }
+                        }
+                    }
+                }
+            } else if (keyObj) {
+                actualNode[key] = defaultValue[key];
+            }
+        }
+    }
+}
+/* tslint:enable:no-string-literal */
 
 /** @private */
 export function isPointOverConnector(connector: ConnectorModel, reference: PointModel): boolean {
@@ -1075,7 +1278,7 @@ export function updateShapeContent(content: DiagramElement, actualObject: Node, 
     for (let elementId of diagram.views) {
         removeElement(actualObject.id + '_groupElement', elementId);
         removeElement(actualObject.id + '_content_groupElement', elementId);
-        removeElement(actualObject.id + '_content_html_element', elementId);
+        removeElement(actualObject.id + '_html_element', elementId);
     }
     actualObject.wrapper.children.splice(0, 1);
     actualObject.wrapper.children.splice(0, 0, content);
@@ -1136,7 +1339,7 @@ export function updateShape(node: Node, actualObject: Node, oldObject: Node, dia
             updateShapeContent(content, actualObject, diagram);
             break;
         case 'HTML':
-            let htmlContent: DiagramHtmlElement = new DiagramHtmlElement(node.id, diagram.element.id);
+            let htmlContent: DiagramHtmlElement = new DiagramHtmlElement(actualObject.id, diagram.element.id);
             htmlContent.content = (actualObject.shape as Html).content;
             content = htmlContent;
             updateShapeContent(content, actualObject, diagram);
@@ -1636,6 +1839,33 @@ function getPaletteSymbols(symbolPalette: SymbolPalette): NodeModel[] {
     return nodes;
 }
 /** @private */
+export function getCollectionChangeEventArguements(
+    args1: IBlazorCollectionChangeEventArgs,
+    obj: NodeModel | ConnectorModel, state: EventState, type: ChangeType):
+    IBlazorCollectionChangeEventArgs {
+    if (isBlazor()) {
+        args1 = {
+            cause: args1.cause, state: state, type: type, cancel: false,
+            element: getObjectType(obj) === Connector ?
+                { connector: cloneBlazorObject(obj) as ConnectorModel } : { node: cloneBlazorObject(obj) as NodeModel }
+        };
+    }
+    return args1;
+}
+/** @private */
+export function getDropEventArguements(args: MouseEventArgs, arg: IBlazorDropEventArgs): IBlazorDropEventArgs {
+    if (isBlazor()) {
+        let connector: boolean = (getObjectType(args.source) === Connector);
+        let object: NodeModel | ConnectorModel = cloneBlazorObject(args.source);
+        let target: NodeModel | ConnectorModel = cloneBlazorObject(this.currentTarget);
+        arg = {
+            element: connector ? { connector: object as ConnectorModel } : { node: object as NodeModel },
+            target: connector ? { connector: target } : { node: target }, position: this.currentPosition, cancel: false
+        } as IBlazorDropEventArgs;
+    }
+    return arg;
+}
+/** @private */
 export function getPoint(
     x: number, y: number, w: number, h: number, angle: number, offsetX: number, offsetY: number, cornerPoint: PointModel): PointModel {
     let pivot: PointModel = { x: 0, y: 0 };
@@ -1684,6 +1914,7 @@ export function getPoint(
     }
     return { x: pivot.x, y: pivot.y };
 }
+
 
 /**
  * Get the object as Node | Connector
@@ -1799,3 +2030,11 @@ export let findPath: Function = (sourcePoint: PointModel, targetPoint: PointMode
 export let findDistance: Function = (point1: PointModel, point2: PointModel): number => {
     return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
 };
+
+/** @private */
+export function cloneBlazorObject(args: object): Object {
+    if (isBlazor()) {
+        args = cloneObject(args);
+    }
+    return args;
+}

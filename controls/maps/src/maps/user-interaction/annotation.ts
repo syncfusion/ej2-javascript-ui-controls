@@ -48,6 +48,9 @@ export class Annotations {
             annotation: annotation
         };
         this.map.trigger(annotationRendering, argsData, (annotationArgs: IAnnotationRenderingEventArgs) => {
+            if (argsData.cancel) {
+                return;
+            }
             let blazor: string = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && (!window[blazor] ? templateFn(

@@ -396,7 +396,7 @@ describe('Diagram Control', () => {
         });
 
         it('Checking gradient property change on runtime', (done: Function) => {
-            debugger;
+           
             expect(document.getElementById('node1_content_linear') !== undefined).toBe(true);
             diagram.nodes[0].style.gradient = {
                 type: 'Radial', cx: 40, cy: 40, fx: 20, fy: 20, r: 20,

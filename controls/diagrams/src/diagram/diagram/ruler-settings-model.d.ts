@@ -77,15 +77,15 @@ export interface RulerSettingsModel {
 
     /**
      * Enables or disables both horizontal and vertical ruler.
-     * @default 'false'
+     * @default false
      */
-    showRulers?: Boolean;
+    showRulers?: boolean;
 
     /**
      * Updates the gridlines relative to the ruler ticks.
-     * @default 'true'
+     * @default true
      */
-    dynamicGrid?: Boolean;
+    dynamicGrid?: boolean;
 
     /**
      * Defines the appearance of horizontal ruler

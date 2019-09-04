@@ -549,7 +549,9 @@ export interface IGrid extends Component<HTMLElement> {
     isDetail?(): boolean;
     updateMediaColumns?(col: Column): void;
     hideScroll?(): void;
-    blazorTemplate?(): void;
+    grabColumnByFieldFromAllCols(field: string): Column;
+    grabColumnByUidFromAllCols(uid: string): Column;
+
     // public Events
     dataStateChange?: EmitType<DataStateChangeEventArgs>;
 }
@@ -1233,6 +1235,8 @@ export interface PdfBorder {
     width?: number;
     /** Defines the border dash style */
     dashStyle?: PdfDashStyle;
+    /**  Defines the line style of border */
+    lineStyle?: BorderLineStyle;
 }
 
 export interface ExcelCell {

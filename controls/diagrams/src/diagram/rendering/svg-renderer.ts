@@ -408,16 +408,27 @@ export class SvgRenderer implements IRenderer {
     /** @private */
     public drawHTMLContent(
         element: DiagramHtmlElement, canvas: HTMLElement, transform?: Transforms, value?: boolean, indexValue?: number): void {
-        let htmlElement: HTMLElement;
+        let htmlElement: HTMLElement; let parentHtmlElement: HTMLElement;
         if (canvas) {
-            let i: number;
+            let i: number; let j: number; let parentElement: HTMLElement;
             for (i = 0; i < canvas.childNodes.length; i++) {
-                if ((canvas.childNodes[i] as HTMLElement).id === element.id + '_html_element') {
-                    htmlElement = canvas.childNodes[i] as HTMLElement;
+                parentElement = canvas.childNodes[i] as HTMLElement;
+                for (j = 0; j < parentElement.childNodes.length; j++) {
+                    if ((parentElement.childNodes[j] as HTMLElement).id === element.id + '_html_element') {
+                        htmlElement = parentElement.childNodes[j] as HTMLElement;
+                    }
                 }
             }
         }
         if (!htmlElement) {
+            parentHtmlElement = canvas.querySelector(('#' + element.id + '_html_element'));
+            if (!parentHtmlElement) {
+                let attr: Object = {
+                    'id': element.nodeId + '_html_element',
+                    'class': 'foreign-object'
+                };
+                parentHtmlElement = createHtmlElement('div', attr);
+            }
             let attr: Object = {
                 'id': element.id + '_html_element',
                 'class': 'foreign-object'
@@ -428,7 +439,8 @@ export class SvgRenderer implements IRenderer {
                 canvas.insertBefore(htmlElement, canvas.childNodes[indexValue]);
 
             } else {
-                canvas.appendChild(htmlElement);
+                parentHtmlElement.appendChild(htmlElement);
+                canvas.appendChild(parentHtmlElement);
             }
 
         }

@@ -945,6 +945,7 @@ var __extends$1 = (undefined && undefined.__extends) || (function () {
  * @private
  */
 function measureText(text, font) {
+    var breakText = text || ''; // For avoid NuLL value
     var htmlObject = document.getElementById('chartmeasuretext');
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'chartmeasuretext' });
@@ -959,7 +960,7 @@ function measureText(text, font) {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = text;
+    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
@@ -1416,7 +1417,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 cancel: false, name: 'tooltipRender', tooltip: this
             };
             this.trigger('tooltipRender', argsData);
-            var markerSide = this.renderTooltipElement(this.areaBounds, this.location, this.availableSize);
+            var markerSide = this.renderTooltipElement(this.areaBounds, this.location);
             this.drawMarker(markerSide.isBottom, markerSide.isRight, this.markerSize);
         }
         else {
@@ -1433,10 +1434,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.textElements = [];
         if (!this.template || this.shared) {
             // SVG element for tooltip
-            var svgObject = document.getElementById(this.element.id + '_tooltip_svg');
-            if (!svgObject) {
-                svgObject = this.renderer.createSvg({ id: this.element.id + '_svg' });
-            }
+            var svgObject = this.renderer.createSvg({ id: this.element.id + '_svg' });
             this.element.appendChild(svgObject);
             // Group to hold text and path.
             var groupElement = document.getElementById(this.element.id + '_group');
@@ -1472,9 +1470,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         }
         groupElement.appendChild(markerGroup);
     };
-    Tooltip.prototype.renderTooltipElement = function (areaBounds, location, availableSize) {
-        var elementId = (this.template !== null) ? this.element.id : this.element.id + '_group';
-        var tooltipDiv = getElement(elementId);
+    Tooltip.prototype.renderTooltipElement = function (areaBounds, location) {
+        var tooltipDiv = getElement(this.element.id);
         var arrowLocation = new TooltipLocation(0, 0);
         var tipLocation = new TooltipLocation(0, 0);
         var svgObject = getElement(this.element.id + '_svg');
@@ -1528,12 +1525,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         else {
             this.updateDiv(tooltipDiv, rect.x, rect.y);
         }
-        var height = availableSize ? (availableSize.height).toString() :
-            (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding)).toString();
-        var width = availableSize ? (availableSize.width).toString() :
-            (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding)).toString();
-        svgObject.setAttribute('height', height);
-        svgObject.setAttribute('width', width);
+        svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
+        svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('opacity', '1');
         pathElement.setAttribute('d', findDirection(this.rx, this.ry, pointRect, arrowLocation, this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius));
         if (this.enableShadow && this.theme !== 'Bootstrap4') {
@@ -1544,7 +1537,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
             var defElement = this.renderer.createDefs();
-            defElement.setAttribute('id', 'SVG_tooltip_definition');
+            defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
             groupElement.appendChild(defElement);
             defElement.innerHTML = shadow;
         }
@@ -1598,7 +1591,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
             removeElement(this.element.id + '_trackball_group');
-            removeElement('SVG_tooltip_definition');
+            removeElement(this.element.id + 'SVG_tooltip_definition');
         }
         var options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), 'start', '');
         var parentElement = textElement(options, font, null, groupElement);
@@ -1802,34 +1795,16 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     };
     Tooltip.prototype.animateTooltipDiv = function (tooltipDiv, rect) {
         var _this = this;
-        var transform;
-        var translate;
-        var x;
-        var y;
-        if (this.template !== null) {
-            x = parseFloat(tooltipDiv.style.left);
-            y = parseFloat(tooltipDiv.style.top);
-        }
-        else {
-            transform = tooltipDiv.getAttribute('transform');
-            translate = transform.split(',');
-            x = parseFloat(translate[0].replace('translate(', ''));
-            y = parseFloat(translate[1]);
-        }
+        var x = parseFloat(tooltipDiv.style.left);
+        var y = parseFloat(tooltipDiv.style.top);
         var currenDiff;
         new Animation({}).animate(tooltipDiv, {
             duration: 300,
             progress: function (args) {
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;
-                if (_this.template !== null) {
-                    tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
-                    tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
-                }
-                else {
-                    tooltipDiv.setAttribute('transform', 'translate(' + (x + currenDiff * (rect.x - x)) + ',' +
-                        (y + currenDiff * (rect.y - y)) + ')');
-                }
+                tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
+                tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
             },
             end: function (model) {
                 _this.updateDiv(tooltipDiv, rect.x, rect.y);
@@ -1838,14 +1813,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         });
     };
     Tooltip.prototype.updateDiv = function (tooltipDiv, x, y) {
-        if (this.template !== null) {
-            tooltipDiv.style.position = 'absolute';
-            tooltipDiv.style.left = x + 'px';
-            tooltipDiv.style.top = y + 'px';
-        }
-        else {
-            tooltipDiv.setAttribute('transform', 'translate(' + x + ',' + y + ')');
-        }
+        tooltipDiv.style.left = x + 'px';
+        tooltipDiv.style.top = y + 'px';
     };
     Tooltip.prototype.updateTemplateFn = function () {
         if (this.template) {

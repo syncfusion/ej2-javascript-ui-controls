@@ -7,6 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
 import { data1, data4, data5, data12, UploadData, data24, data25  } from '../data';
+import { FileSelectEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -1083,6 +1084,9 @@ describe('FileManager control Grid view', () => {
         });
 
         it('ctrl + A key testing', () => {
+            feObj.fileSelect = (args:FileSelectEventArgs) =>{
+                expect(args.isInteracted).toEqual(true);
+            }
             let li: any = document.getElementById('file_grid').querySelectorAll('tr.e-row');
             expect(li[0].getAttribute('aria-selected')).toBe(null);
             expect(li[li.length - 1].getAttribute('aria-selected')).toBe(null);

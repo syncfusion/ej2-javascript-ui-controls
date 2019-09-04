@@ -1,4 +1,4 @@
-import { L10n, closest, EventHandler, isNullOrUndefined, formatUnit, append, AnimationModel } from '@syncfusion/ej2-base';
+import { L10n, closest, EventHandler, isNullOrUndefined, formatUnit, append, AnimationModel, isBlazor } from '@syncfusion/ej2-base';
 import { addClass, removeClass, createElement, remove, extend, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Dialog, Popup, isCollide, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -251,9 +251,7 @@ export class QuickPopups {
                 dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
         }
-        if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
-            this.showQuickDialog('RecurrenceValidationAlert');
-        }
+        this.showQuickDialog('RecurrenceValidationAlert');
     }
 
     public openDeleteAlert(): void {
@@ -324,13 +322,7 @@ export class QuickPopups {
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
-                let templateElement: HTMLElement[];
-                if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
-                    templateElement = this.parent.getAppointmentTemplate()(eventData);
-                    append(templateElement, appointmentEle);
-                } else {
-                    appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
-                }
+                appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     appointmentEle.setAttribute('data-group-index', groupIndex);
                 }
@@ -362,6 +354,9 @@ export class QuickPopups {
         this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
         let guid: string = target.getAttribute('data-guid');
         let eventObj: { [key: string]: Object } = this.parent.eventBase.getEventByGuid(guid) as { [key: string]: Object };
+        if (isNullOrUndefined(eventObj)) {
+            return;
+        }
         let eventTitle: string = (eventObj[this.parent.eventFields.subject] || this.l10n.getConstant('noTitle')) as string;
         let eventTemplate: string = `<div class="${cls.MULTIPLE_EVENT_POPUP_CLASS}"><div class="${cls.POPUP_HEADER_CLASS}">` +
             `<button class="${cls.CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button>` +
@@ -737,7 +732,10 @@ export class QuickPopups {
         } else {
             this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;
         }
-        let eventProp: PopupOpenEventArgs = { type: 'EventContainer', data: data, cancel: false, element: this.morePopup.element };
+        let eventProp: PopupOpenEventArgs = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
+        if (!isBlazor()) {
+            eventProp.data = data;
+        }
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             if (!popupArgs.cancel) {
                 this.morePopup.show();

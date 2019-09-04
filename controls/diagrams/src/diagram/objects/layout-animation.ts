@@ -7,6 +7,7 @@ import { Container } from '../core/containers/container';
 import { DiagramEvent } from '../enum/enum';
 import { IExpandStateChangeEventArgs } from '../objects/interface/IElement';
 import { cloneObject as clone } from '../utility/base-util';
+import { cloneBlazorObject } from '../utility/diagram-util';
 
 /**
  * Layout Animation function to enable or disable layout animation
@@ -69,7 +70,7 @@ export class LayoutAnimation {
             diagram.layout.fixedNode = '';
             diagram.protectPropertyChange(this.protectChange);
             let arg: IExpandStateChangeEventArgs = {
-                element: clone(node), state: (node.isExpanded) ? true : false
+                element: cloneBlazorObject(clone(node)), state: (node.isExpanded) ? true : false
             };
             diagram.triggerEvent(DiagramEvent.expandStateChange, arg);
         }

@@ -458,21 +458,21 @@ describe('Diagram Control', () => {
             expect((element.childNodes[0] as HTMLElement).id === "native1_content_groupElement"
                 && (diagramelement.childNodes[3] as HTMLElement).id === "native1_groupElement").toBe(true);
             var element1 = document.getElementById("diagram_htmlLayer_div");
-            expect((element1.childNodes[0] as HTMLElement).id === "html3_content_html_element").toBe(true);
+            expect((element1.childNodes[0] as HTMLElement).id === "html3_html_element").toBe(true);
             selArray[0] = diagram.nodes[4];
             diagram.select(selArray);
             diagram.sendBackward();
-            expect((element1.childNodes[1] as HTMLElement).id === "html2_content_html_element"
+            expect((element1.childNodes[1] as HTMLElement).id === "html2_html_element"
                 && (diagramelement.childNodes[5] as HTMLElement).id === "html2_groupElement").toBe(true);
             selArray[0] = diagram.nodes[4];
             diagram.select(selArray);
             diagram.moveForward();
-            expect((element1.childNodes[1] as HTMLElement).id === "html1_content_html_element"
+            expect((element1.childNodes[1] as HTMLElement).id === "html1_html_element"
                 && (diagramelement.childNodes[5] as HTMLElement).id === "html1_groupElement").toBe(true);
             selArray[0] = diagram.nodes[3];
             diagram.select(selArray);
             diagram.bringToFront();
-            expect((element1.childNodes[1] as HTMLElement).id === "html2_content_html_element"
+            expect((element1.childNodes[1] as HTMLElement).id === "html2_html_element"
                 && (diagramelement.childNodes[5] as HTMLElement).id === "html2_groupElement").toBe(true);
             done();
         });

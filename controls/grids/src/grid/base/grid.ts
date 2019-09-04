@@ -192,6 +192,8 @@ export class Predicate extends ChildProperty<Predicate> {
      * <br/>Number | Date<br/></td></tr> 
      * </table> 
      * @default null
+     * @blazorType Syncfusion.EJ2.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
      */
     @Property()
     public operator: string;
@@ -465,6 +467,8 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
      * @default 'contains'
+     * @blazorType Syncfusion.EJ2.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.Contains
      */
     @Property('contains')
     public operator: string;
@@ -1215,6 +1219,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * and child relationship. 
      * 
      * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
+     * @blazorType GridModel<object>
      */
     @Property()
     public childGrid: GridModel;
@@ -4378,6 +4383,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.dataBoundFunction = this.refreshMediaCol.bind(this);
         this.addEventListener(events.dataBound, this.dataBoundFunction);
         this.on(events.keyPressed, this.onKeyPressed, this);
+        this.on(events.contentReady, this.blazorTemplate, this);
     }
     /**
      * @hidden
@@ -4392,7 +4398,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
 
-    public blazorTemplate(): void {
+    private blazorTemplate(): void {
         if (isBlazor()) {
             for (let i: number = 0; i < this.columnModel.length; i++) {
 
@@ -4946,4 +4952,34 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         return -1;
     };
+     /** 
+     * @hidden
+     */
+    // Need to have all columns while filtering with ColumnVirtualization.
+    public grabColumnByFieldFromAllCols(field: string): Column {
+        let column : Column;
+        this.columnModel = [];
+        this.updateColumnModel(this.columns as Column[]);
+        this.columnModel.forEach((gCol: Column) => {
+            if (field === gCol.field) {
+                column = gCol;
+            }
+        });
+        return column;
+    }
+     /** 
+     * @hidden
+     */
+     // Need to have all columns while filtering with ColumnVirtualization.
+    public grabColumnByUidFromAllCols(uid: string): Column {
+        let column : Column;
+        this.columnModel = [];
+        this.updateColumnModel(this.columns as Column[]);
+        this.columnModel.forEach((gCol: Column) => {
+            if (uid === gCol.uid) {
+                column = gCol;
+            }
+        });
+        return column;
+    }
 }

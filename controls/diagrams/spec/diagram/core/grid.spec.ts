@@ -11,7 +11,7 @@ import { Margin } from '../../../src/diagram/core/appearance';
 import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
-import { Selector } from '../../../src/diagram/interaction/selector';
+import { Selector } from '../../../src/diagram/objects/node';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 function resize(diagram: Diagram, direction: string): void {
@@ -1308,7 +1308,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking grid container resize the row height', (done: Function) => {
-            debugger
             mouseevents.clickEvent(diagramCanvas, 10, 10);
             var node1 = diagram.nodes[6];
             mouseevents.clickEvent(diagramCanvas, node1.offsetX + diagram.element.offsetLeft, node1.offsetY + diagram.element.offsetTop);
@@ -1317,7 +1316,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking Select the node', (done: Function) => {
-            debugger
             let node: NodeModel = diagram.nodes[1];
             mouseevents.clickEvent(diagramCanvas, node.offsetX + diagram.element.offsetLeft, node.offsetY + diagram.element.offsetTop);
             resize(diagram, 'resizeEast');

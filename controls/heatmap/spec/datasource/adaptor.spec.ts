@@ -44,9 +44,6 @@ describe('Heatmap Control', () => {
         [9, 0, 47], [9, 1, 114], [9, 2, 31], [9, 3, 48], [9, 4, 91]]
 
         let adaptorData: Object = {
-            data: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-            [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
-            [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
             isJsonData: false,
             adaptorType: "Table",
         };
@@ -63,7 +60,10 @@ describe('Heatmap Control', () => {
                 yAxis: {
                     title: { text: "YAxis" },
                 },
-                dataSource: adaptorData,
+                dataSource: [[10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]],
+                dataSourceSettings: adaptorData,
                 paletteSettings: {
                     palette: [{ 'value': 100, 'color': "rgb(255, 255, 153)" },
                     { 'color': "rgb(153, 255, 187)" },
@@ -109,10 +109,9 @@ describe('Heatmap Control', () => {
             expect(heatmap.dataSourceMinValue).toBe(30);
         });
 
-        it('Check cell dataSource with x-axis & y-axis as catagory', () => {
+        it('Check cell dataSource with x-axis & y-axis as catagory1', () => {
 
-            adaptorData = {
-                data: cellNumericData,
+            adaptorData  = {
                 isJsonData: false,
                 adaptorType: "Cell",
             };
@@ -122,7 +121,8 @@ describe('Heatmap Control', () => {
             heatmap.xAxis.maximum = null;
             heatmap.xAxis.isInversed = false;
             heatmap.yAxis.isInversed = false;
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = cellNumericData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.dataBind();
             expect(heatmap.clonedDataSource.length).toBe(5);
             expect(heatmap.clonedDataSource[0].length).toBe(10);
@@ -130,7 +130,7 @@ describe('Heatmap Control', () => {
             expect(heatmap.dataSourceMinValue).toBe(1);
         });
 
-        it('Check cell dataSource with x-axis & y-axis as catagory', () => {
+        it('Check cell dataSource with x-axis & y-axis as catagory2', () => {
             heatmap.xAxis.minimum = 2;
             heatmap.xAxis.maximum = 8;
             heatmap.dataBind();
@@ -140,14 +140,14 @@ describe('Heatmap Control', () => {
             expect(heatmap.dataSourceMinValue).toBe(1);
         });
 
-        it('Check cell dataSource with x-axis & y-axis as catagory', () => {
+        it('Check cell dataSource with x-axis & y-axis as catagory3', () => {
 
             adaptorData = {
-                data: null,
                 isJsonData: false,
                 adaptorType: "Cell",
             };
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = null;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(1);
             expect(heatmap.clonedDataSource[0].length).toBe(7);
@@ -158,11 +158,11 @@ describe('Heatmap Control', () => {
         it('Check cell dataSource with x-axis as numeric & y-axis as catagory', () => {
 
             adaptorData = {
-                data: cellNumericData,
                 isJsonData: false,
                 adaptorType: "Cell",
             };
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = cellNumericData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.xAxis.minimum = null;
             heatmap.xAxis.maximum = null;
             heatmap.xAxis.valueType = 'Numeric';
@@ -176,11 +176,11 @@ describe('Heatmap Control', () => {
         it('Check cell dataSource with x-axis as catagory & y-axis as numeric', () => {
 
             adaptorData = {
-                data: cellNumericData,
                 isJsonData: false,
                 adaptorType: "Cell",
             };
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = cellNumericData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.yAxis.valueType = 'Numeric';
             heatmap.yAxis.minimum = 2;
             heatmap.xAxis.maximum = 5;
@@ -196,7 +196,6 @@ describe('Heatmap Control', () => {
         it('Check cell dataSource with x-axis as numeric & y-axis as numeric', () => {
 
             adaptorData = {
-                data: cellNumericData,
                 isJsonData: false,
                 adaptorType: "Cell",
             };
@@ -206,7 +205,8 @@ describe('Heatmap Control', () => {
             heatmap.xAxis.maximum = null;
             heatmap.xAxis.labels = [];
             heatmap.yAxis.labels = [];
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = cellNumericData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.xAxis.valueType = 'Numeric';
             heatmap.yAxis.valueType = 'Numeric';
             heatmap.refresh();
@@ -221,7 +221,6 @@ describe('Heatmap Control', () => {
             [new Date(2018, 1, 2), new Date(2018, 2, 1), 92], [new Date(2018, 1, 2), new Date(2018, 2, 2), 58], [new Date(2018, 1, 2), new Date(2018, 2, 3), 78], [new Date(2018, 1, 2), new Date(2018, 2, 4), 117], [new Date(2018, 1, 2), new Date(2018, 2, 5), 48]]
 
             adaptorData = {
-                data: cellDateData,
                 isJsonData: false,
                 adaptorType: "Cell",
             };
@@ -233,7 +232,8 @@ describe('Heatmap Control', () => {
             heatmap.yAxis.valueType = 'DateTime';
             heatmap.xAxis.labels = [];
             heatmap.yAxis.labels = [];
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = cellDateData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(5);
             expect(heatmap.clonedDataSource[0].length).toBe(2);
@@ -281,7 +281,6 @@ describe('Heatmap Control', () => {
             ]
 
             adaptorData = {
-                data: jsonTableData,
                 isJsonData: true,
                 adaptorType: "Table",
                 xDataMapping: "Region",
@@ -290,8 +289,8 @@ describe('Heatmap Control', () => {
             heatmap.yAxis.valueType = "Category";
             heatmap.xAxis.labels = ['TestX1', 'Pacific', 'TestX2', 'Moutain', 'TestX3'];
             heatmap.yAxis.labels = ['TestY1', 'Jan', 'Feb', 'Mar', 'TestY2', 'Apr', 'May', 'Jun', 'TestY3'];
-            heatmap.dataSource = adaptorData;
-
+            heatmap.dataSource = jsonTableData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(8);
             expect(heatmap.clonedDataSource[0].length).toBe(4);
@@ -313,13 +312,12 @@ describe('Heatmap Control', () => {
         it('Check cell dataSource Json Table dataSource', () => {
 
             adaptorData = {
-                data: [],
                 isJsonData: true,
                 adaptorType: "Table",
                 xDataMapping: "Region",
             };
-            heatmap.dataSource = adaptorData;
-
+            heatmap.dataSource = [];
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(1);
             expect(heatmap.clonedDataSource[0].length).toBe(1);
@@ -371,7 +369,6 @@ describe('Heatmap Control', () => {
                 }
             ];
             adaptorData = {
-                data: jsonCellData,
                 isJsonData: true,
                 adaptorType: "Cell",
                 xDataMapping: "rowid",
@@ -380,7 +377,8 @@ describe('Heatmap Control', () => {
             };
             heatmap.xAxis.labels = ['TestX1', 'Pacific', 'TestX2', 'Moutain', 'TestX3'];
             heatmap.yAxis.labels = ['TestY1', 'Jan', 'Feb', 'Mar', 'TestY2', 'Apr', 'May', 'Jun', 'TestY3'];
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = jsonCellData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(8);
             expect(heatmap.clonedDataSource[0].length).toBe(5);
@@ -398,14 +396,14 @@ describe('Heatmap Control', () => {
         });
         it('Check cell dataSource with Json Cell dataSource', () => {
             adaptorData = {
-                data: [],
                 isJsonData: true,
                 adaptorType: "Cell",
                 xDataMapping: "rowid",
                 yDataMapping: "columnid",
                 valueMapping: "value"
             };
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = [];
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(1);
             expect(heatmap.clonedDataSource[0].length).toBe(1);
@@ -486,7 +484,6 @@ describe('Heatmap Control', () => {
                 { 'rowid': { 'row1': 'Austria' }, 'columnid': { 'col1': { 'col2': '2016' } }, 'Men': { 'son1': '28.1' }, 'Women': { 'women1': { 'son1': '100' } } },
             ];
             adaptorData = {
-                data: jsonCellComplexData,
                 isJsonData: true,
                 adaptorType: 'Cell',
                 xDataMapping: 'rowid.row1',
@@ -496,7 +493,8 @@ describe('Heatmap Control', () => {
             };
             heatmap.xAxis.labels = ['Austria', 'China', 'France', 'Germany', 'Italy', 'Mexico', 'Spain', 'Thailand', 'UK', 'USA'];
             heatmap.yAxis.labels = ['2010', '2011', '2012', '2013', '2014', '2015', '2016'];
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = jsonCellComplexData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(7);
             expect(heatmap.clonedDataSource[0].length).toBe(10);
@@ -528,12 +526,12 @@ describe('Heatmap Control', () => {
             ];
             heatmap.xAxis.labels = ['China', 'France', 'GBR', 'Germany', 'Italy', 'Japan', 'KOR', 'Russia', 'USA'];
             heatmap.yAxis.labels = ['2000', '2004', '2008', '2012', '2016'];
-            heatmap.dataSource = {
-                data: jsonTableComplexData,
+            heatmap.dataSource = jsonTableComplexData,
+            heatmap.dataSourceSettings = {
                 isJsonData: true,
                 adaptorType: 'Table',
                 xDataMapping: 'split1.split2.Region',
-            };
+            }
             heatmap.refresh();
             expect(heatmap.clonedDataSource.length).toBe(5);
             expect(heatmap.clonedDataSource[0].length).toBe(9);
@@ -568,8 +566,8 @@ describe('Heatmap Control', () => {
                 { 'rowid': 'USA', 'columnid': new Date(2016, 0, 1), 'value': '77.6' },
             ];
             heatmap.cellSettings.tileType = 'Rect';
-            heatmap.dataSource = {
-                data: jsonData,
+            heatmap.dataSource = jsonData,
+            heatmap.dataSourceSettings = {
                 isJsonData: true,
                 adaptorType: 'Cell',
                 xDataMapping: 'rowid',

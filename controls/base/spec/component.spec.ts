@@ -833,7 +833,7 @@ describe('Component', () => {
             let obj: any = new Styler();
             delete window['Blazor'];
             obj.renderComplete();
-            // expect(obj.isRendered).toBe(true);
+            expect(obj.isRendered).toBe(true);
         });
         it(' - wrapper element and blazor testing', () => {
             window['Blazor'] = {};
@@ -846,7 +846,48 @@ describe('Component', () => {
             let obj: any = new Styler({ size: '10px' }, elem);
             let wrapper: HTMLElement = createElement('div');
             obj.renderComplete(wrapper);
-            // expect(obj.isRendered).toBe(true);
+            expect(obj.isRendered).toBe(true);
+        });
+    });
+
+    describe('blazor child save changes', () => {
+        it(' - before component render', () => {
+            window['Blazor'] = {};
+            window['ejsInterop'] = {
+                childSaveChanges: function (wrapper: any) {
+                    return wrapper;
+                }
+            };
+            let elem: HTMLElement = createElement('div');
+            let curSpy: jasmine.Spy = jasmine.createSpy('curChange');
+            window['ejsInterop'].childSaveChanges = curSpy;
+            let obj: any = new Styler({ size: '10px' }, elem);
+            obj.fields.name = 'childchange';
+            expect(curSpy).not.toHaveBeenCalled();
+            delete window['Blazor'];
+            delete window['ejsInterop'];
+        });
+        it(' - after component render', () => {
+            window['Blazor'] = {};
+            window['ejsInterop'] = {
+                childSaveChanges: function (wrapper: any) {
+                    return wrapper;
+                },
+                renderComplete: function (wrapper: any) {
+                    return wrapper;
+                }
+            };
+            let elem: HTMLElement = createElement('div');
+            let curSpy: jasmine.Spy = jasmine.createSpy('curChange');
+            window['ejsInterop'].childSaveChanges = curSpy;
+            let obj: any = new Styler({ size: '10px' }, elem);
+            let wrapper: HTMLElement = createElement('div');
+            obj.appendTo(wrapper);
+            obj.renderComplete(wrapper);
+            obj.fields.name = 'childchange';
+            expect(curSpy).toHaveBeenCalled();
+            delete window['Blazor'];
+            delete window['ejsInterop'];
         });
     });
 });

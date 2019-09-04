@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, AnimationOptions, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
+import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, AnimationOptions, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
 import {HeaderPosition,HeightStyles,AddEventArgs,SelectingEventArgs,SelectEventArgs,RemoveEventArgs} from "./tab";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -88,6 +88,12 @@ export interface TabItemModel {
      * @default {}
      */
     header?: HeaderModel;
+
+    /**
+     * Specifies the header text of Tab item.
+     * @default null
+     */
+    headerTemplate?: string;
 
     /**
      * Specifies the content of Tab item, that is displayed when concern item header is selected.
@@ -209,6 +215,12 @@ export interface TabModel extends ComponentModel{
      * @default false
      */
     showCloseButton?: boolean;
+
+    /**
+     * Specifies the scrolling distance in scroller.
+     * @default null  
+     */
+    scrollStep?: number;
 
     /**
      * Specifies the animation configuration settings while showing the content of the Tab.

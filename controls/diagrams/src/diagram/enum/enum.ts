@@ -753,8 +753,12 @@ export enum ConnectorConstraints {
     Interaction = 1 << 1 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 6 | 1 << 12,
     /** Enables ReadOnly */
     ReadOnly = 1 << 14,
+    /** Enables or disables routing to the connector. */
+    LineRouting = 1 << 15,
+    /** Enables or disables routing to the connector. */
+    InheritLineRouting = 1 << 16,
     /** Enables all constraints. */
-    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13
+    Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13 | 1 << 16
 }
 
 
@@ -991,6 +995,8 @@ export enum DiagramConstraints {
     ZoomTextEdit = 1 << 9,
     /** Enables/Disable Virtualization support the diagram */
     Virtualization = 1 << 10,
+    /** Enables/ Disable the line routing */
+    LineRouting = 1 << 11,
     /** Enables/Disable all constraints */
     Default = 1 << 2 | 1 << 4 | 1 << 5 | 1 << 6 | 1 << 7 | 1 << 8
 }
@@ -2183,7 +2189,8 @@ export enum DiagramAction {
     /** Use to prevent the icon while expand a node in diagram */
     PreventIconsUpdate = 1 << 11
 }
-
+/** @private */
+export type DiagramHistoryAction = 'AddNodeToLane';
 /**
  * Defines the Selector type to be drawn
  * None - Draws Normal selector with resize handles
@@ -2265,11 +2272,10 @@ export type IconShapes =
  * Horizontal - Aligns the child nodes in horizontal manner
  */
 export type SubTreeOrientation =
-    /** Vertical - Aligns the child nodes in vertical manner */
-    'Vertical' |
     /** Horizontal - Aligns the child nodes in horizontal manner */
-    'Horizontal';
-
+    'Horizontal'|
+    /** Vertical - Aligns the child nodes in vertical manner */
+    'Vertical' ;
 /**
  * Defines the collection of sub tree alignments in an organizational chart
  * Left - Aligns the child nodes at the left of the parent in a horizontal/vertical sub tree
@@ -2298,9 +2304,26 @@ export enum DiagramEvent {
     'collectionChange', 'rotateChange', 'positionChange', 'propertyChange', 'selectionChange', 'sizeChange', 'drop',
     'sourcePointChange', 'targetPointChange', 'connectionChange', 'animationComplete', 'click', 'doubleClick',
     'scrollChange', 'dragEnter', 'dragLeave', 'dragOver', 'textEdit', 'paletteSelectionChange', 'historyChange',
-    'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange'
+    'mouseEnter', 'mouseLeave', 'mouseOver', 'expandStateChange', 'segmentCollectionChange', 'commandExecute', 'historyStateChange'
 }
 
+export type HistoryEntryType =
+    /** Node - Defines the history entry type is node */
+    'Node' |
+    /** Connector - Defines the history entry type is Connector */
+    'Connector' |
+    /** Selector - Defines the history entry type is Selector Model */
+    'Selector' |
+    /** Diagram - Defines the history entry type is Diagram */
+    'Diagram' |
+    /** ShapeAnnotation - Defines the history entry type is ShapeAnnotation Model */
+    'ShapeAnnotation' |
+    /** PathAnnotation - Defines the history entry type is PathAnnotation Model */
+    'PathAnnotation' |
+    /** PortObject - Defines the history entry type is PortObject */
+    'PortObject' |
+    /** Object - Defines the history entry type is Custom Object */
+    'Object';
 /**
  * Defines the zoom type
  * ZoomIn - Zooms in the diagram control

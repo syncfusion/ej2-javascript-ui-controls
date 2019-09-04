@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -97,9 +97,15 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
             this.element.classList.add(CLS_DEVICE);
             this.createOverlay(this.element);
         }
+        this.setScrollState();
+    };
+    HScroll.prototype.setScrollState = function () {
         if (isNullOrUndefined(this.scrollStep) || this.scrollStep < 0) {
             this.scrollStep = this.scrollEle.offsetWidth;
             this.customStep = false;
+        }
+        else {
+            this.customStep = true;
         }
     };
     HScroll.prototype.initialize = function () {
@@ -472,6 +478,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'scrollStep':
+                    this.setScrollState();
                     break;
                 case 'enableRtl':
                     newProp.enableRtl ? this.element.classList.add(CLS_RTL) : this.element.classList.remove(CLS_RTL);
@@ -580,11 +587,17 @@ var VScroll = /** @__PURE__ @class */ (function (_super) {
             this.element.classList.add(CLS_DEVICE$1);
             this.createOverlayElement(this.element);
         }
+        this.setScrollState();
+        EventHandler.add(this.element, 'wheel', this.wheelEventHandler, this);
+    };
+    VScroll.prototype.setScrollState = function () {
         if (isNullOrUndefined(this.scrollStep) || this.scrollStep < 0) {
             this.scrollStep = this.scrollEle.offsetHeight;
             this.customStep = false;
         }
-        EventHandler.add(this.element, 'wheel', this.wheelEventHandler, this);
+        else {
+            this.customStep = true;
+        }
     };
     VScroll.prototype.initialize = function () {
         var scrollCnt = createElement('div', { className: CLS_VSCROLLCON });
@@ -913,6 +926,7 @@ var VScroll = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'scrollStep':
+                    this.setScrollState();
                     break;
                 case 'enableRtl':
                     newProp.enableRtl ? this.element.classList.add(CLS_RTL$1) : this.element.classList.remove(CLS_RTL$1);
@@ -1981,9 +1995,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 this.clickHandler(e);
             }
         }
-        else if (this.isMenu && this.showItemOnClick) {
-            this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
-        }
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
@@ -2299,6 +2310,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                 idx = navIdx.pop();
                                 item = this_1.getItems(navIdx);
                                 this_1.insertAfter([item[idx]], item[idx].text);
+                                item = this_1.getItems(navIdx);
                                 this_1.removeItem(item, navIdx, idx);
                             }
                             navIdx.length = 0;
@@ -2991,7 +3003,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Toolbar.prototype.preRender = function () {
-        var eventArgs = { enableCollision: true, scrollStep: this.scrollStep };
+        var eventArgs = { enableCollision: this.enableCollision, scrollStep: this.scrollStep };
         this.trigger('beforeCreate', eventArgs);
         this.enableCollision = eventArgs.enableCollision;
         this.scrollStep = eventArgs.scrollStep;
@@ -3385,6 +3397,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Toolbar.prototype.initialize = function () {
         var width = formatUnit(this.width);
@@ -3517,7 +3532,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             switch (this.overflowMode) {
                 case 'Scrollable':
                     if (isNullOrUndefined(this.scrollModule)) {
-                        this.initScroll(ele, ele.getElementsByClassName(CLS_ITEMS));
+                        this.initScroll(ele, [].slice.call(ele.getElementsByClassName(CLS_ITEMS)));
                     }
                     break;
                 case 'Popup':
@@ -4249,7 +4264,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the command should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @returns void.
@@ -4257,6 +4272,7 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.enableItems = function (items, isEnable) {
         var elements = items;
         var len = elements.length;
+        var ele;
         if (isNullOrUndefined(isEnable)) {
             isEnable = true;
         }
@@ -4270,18 +4286,43 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
-        if (len && len > 1) {
-            for (var _i = 0, _a = [].slice.call(elements); _i < _a.length; _i++) {
-                var ele = _a[_i];
+        if (!isNullOrUndefined(len) && len >= 1) {
+            for (var a = 0, element = [].slice.call(elements); a < len; a++) {
+                var itemElement = element[a];
+                if (typeof (itemElement) === 'number') {
+                    ele = this.getElementByIndex(itemElement);
+                    if (isNullOrUndefined(ele)) {
+                        return;
+                    }
+                    else {
+                        elements[a] = ele;
+                    }
+                }
+                else {
+                    ele = itemElement;
+                }
                 enable(isEnable, ele);
             }
             isEnable ? removeClass(elements, CLS_DISABLE$2) : addClass(elements, CLS_DISABLE$2);
         }
         else {
-            var ele = void 0;
-            ele = (len && len === 1) ? elements[0] : items;
+            if (typeof (elements) === 'number') {
+                ele = this.getElementByIndex(elements);
+                if (isNullOrUndefined(ele)) {
+                    return;
+                }
+            }
+            else {
+                ele = items;
+            }
             enable(isEnable, ele);
         }
+    };
+    Toolbar.prototype.getElementByIndex = function (index) {
+        if (this.tbarEle[index]) {
+            return this.tbarEle[index];
+        }
+        return null;
     };
     /**
      * Adds new items to the Toolbar that accepts an array as Toolbar items.
@@ -4718,6 +4759,16 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                         this.itemPositioning();
                     }
                     break;
+                case 'scrollStep':
+                    if (this.scrollModule) {
+                        this.scrollModule.scrollStep = this.scrollStep;
+                    }
+                    break;
+                case 'enableCollision':
+                    if (this.popObj) {
+                        this.popObj.collision = { Y: this.enableCollision ? 'flip' : 'none' };
+                    }
+                    break;
             }
         }
     };
@@ -4803,6 +4854,12 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     __decorate$3([
         Property('Scrollable')
     ], Toolbar.prototype, "overflowMode", void 0);
+    __decorate$3([
+        Property()
+    ], Toolbar.prototype, "scrollStep", void 0);
+    __decorate$3([
+        Property(true)
+    ], Toolbar.prototype, "enableCollision", void 0);
     __decorate$3([
         Event()
     ], Toolbar.prototype, "clicked", void 0);
@@ -5014,6 +5071,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Accordion.prototype.initialize = function () {
         var width = formatUnit(this.width);
@@ -5503,7 +5563,18 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Accordion.prototype.getIndexByItem = function (item) {
-        return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).indexOf(item);
+        var itemEle = this.getItemElements();
+        return [].slice.call(itemEle).indexOf(item);
+    };
+    Accordion.prototype.getItemElements = function () {
+        var itemEle = [];
+        var itemCollection = this.element.children;
+        [].slice.call(itemCollection).forEach(function (el) {
+            if (el.classList.contains(CLS_ITEM$1)) {
+                itemEle.push(el);
+            }
+        });
+        return itemEle;
     };
     Accordion.prototype.expandedItemsPop = function (item) {
         var index = this.getIndexByItem(item);
@@ -5604,7 +5675,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         return 'accordion';
     };
     Accordion.prototype.itemAttribUpdate = function () {
-        var itemEle = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
+        var itemEle = this.getItemElements();
         var itemLen = this.items.length;
         itemEle.forEach(function (ele) {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -5619,6 +5690,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      */
     Accordion.prototype.addItem = function (item, index) {
         var ele = this.element;
+        var itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             index = this.items.length;
         }
@@ -5629,7 +5701,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
                 ele.appendChild(innerItemEle);
             }
             else {
-                ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM$1)[index]);
+                ele.insertBefore(innerItemEle, itemEle[index]);
             }
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5643,7 +5715,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     };
     Accordion.prototype.expandedItemRefresh = function (ele) {
         var _this = this;
-        [].slice.call(ele.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
+        var itemEle = this.getItemElements();
+        [].slice.call(itemEle).forEach(function (el) {
             if (el.classList.contains(CLS_SLCTED)) {
                 _this.expandedItemsPush(el);
             }
@@ -5655,7 +5728,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.removeItem = function (index) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5672,7 +5746,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.select = function (index) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele) || isNullOrUndefined(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -5686,7 +5761,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.hideItem = function (index, isHidden) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5703,7 +5779,8 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
      * @returns void.
      */
     Accordion.prototype.enableItem = function (index, isEnable) {
-        var ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        var itemEle = this.getItemElements();
+        var ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5733,14 +5810,15 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.expandItem = function (isExpand, index) {
         var _this = this;
         var root = this.element;
+        var itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                var ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.querySelectorAll('.' + CLS_ITEM$1).length - 1];
+                var ele = itemEle[itemEle.length - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
                 var item = select('#' + this.lastActiveItemId, this.element);
-                [].slice.call(root.querySelectorAll('.' + CLS_ITEM$1)).forEach(function (el) {
+                [].slice.call(itemEle).forEach(function (el) {
                     _this.itemExpand(isExpand, el, _this.getIndexByItem(el));
                     el.classList.remove(CLS_EXPANDSTATE);
                 });
@@ -5754,7 +5832,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            var ele = root.querySelectorAll('.' + CLS_ITEM$1)[index];
+            var ele = itemEle[index];
             if (isNullOrUndefined(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             }
@@ -6427,6 +6505,9 @@ var TabItem = /** @__PURE__ @class */ (function (_super) {
         Complex({}, Header)
     ], TabItem.prototype, "header", void 0);
     __decorate$7([
+        Property(null)
+    ], TabItem.prototype, "headerTemplate", void 0);
+    __decorate$7([
         Property('')
     ], TabItem.prototype, "content", void 0);
     __decorate$7([
@@ -6547,6 +6628,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     };
     Tab.prototype.renderContainer = function () {
         var ele = this.element;
@@ -6633,11 +6717,19 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             height: (hdrPlace === 'Left' || hdrPlace === 'Right') ? '100%' : 'auto',
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
-            clicked: this.clickHandler.bind(this)
+            clicked: this.clickHandler.bind(this),
+            scrollStep: this.scrollStep
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(this.hdrEle);
+        for (var i = 0; i < this.items.length; i++) {
+            var item = this.items[i];
+            if (item.headerTemplate && isBlazor() && !this.isStringTemplate &&
+                item.headerTemplate.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + i + '_' + 'headerTemplate', 'HeaderTemplate', item);
+            }
+        }
         this.updateOrientationAttribute();
         this.setCloseButton(this.showCloseButton);
     };
@@ -6669,13 +6761,14 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         var txtWrapEle;
         var spliceArray = [];
         items.forEach(function (item, i) {
-            var pos = (isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
-            var css = (isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
-            if (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.text) || ((item.header.text.length === 0) && (css === ''))) {
+            var pos = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
+            var css = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
+            if ((isNullOrUndefined(item.headerTemplate)) && (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.text) ||
+                ((item.header.text.length === 0)) && (css === ''))) {
                 spliceArray.push(i);
                 return;
             }
-            var txt = item.header.text;
+            var txt = item.headerTemplate || item.header.text;
             _this.lastIndex = ((tbCount === 0) ? i : ((_this.isReplace) ? (index + i) : (_this.lastIndex + 1)));
             var disabled = (item.disabled) ? ' ' + CLS_DISABLE$4 + ' ' + CLS_OVERLAY$2 : '';
             txtWrapEle = _this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
@@ -6947,20 +7040,17 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
-            var blazorContain = Object.keys(window);
             var item = this.items[index];
             if (!isNullOrUndefined(item)) {
-                if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
-                    item.content.indexOf('<div>Blazor') === 0) {
-                    updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+                if (item.content && isBlazor() && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
+                    updateBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate', item);
                 }
             }
         }
     };
     Tab.prototype.compileElement = function (ele, val, prop, index) {
-        var blazorContain = Object.keys(window);
         var templateFn;
-        if (typeof val === 'string' && blazorContain.indexOf('Blazor') > -1 && val.indexOf('<div>Blazor') !== 0) {
+        if (typeof val === 'string' && isBlazor() && val.indexOf('<div>Blazor') !== 0) {
             val = val.trim();
             ele.innerHTML = val;
         }
@@ -6969,15 +7059,8 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
         var templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            if (blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
-                var templateProps = void 0;
-                if (prop === 'headerText') {
-                    templateProps = this.element.id + 'text';
-                }
-                else if (prop === 'content') {
-                    templateProps = this.element.id + index + '_content';
-                }
-                templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
+            if (isBlazor() && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+                templateFUN = templateFn({}, this, prop, this.element.id + index + '_' + prop, this.isStringTemplate);
             }
             else {
                 templateFUN = templateFn({}, this, prop);
@@ -6990,7 +7073,7 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Tab.prototype.headerTextCompile = function (element, text, index) {
-        this.compileElement(element, text, 'headerText', index);
+        this.compileElement(element, text, 'headerTemplate', index);
     };
     Tab.prototype.getContent = function (ele, cnt, callType, index) {
         var eleStr;
@@ -7491,9 +7574,10 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 var newVal = Object(newProp.items[index])[property];
                 var hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + '_' + index, this.element);
                 var cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + '_' + index, this.element);
-                if (property === 'header') {
-                    var icon = this.items[index].header.iconCss;
-                    var textVal = this.items[index].header.text;
+                if (property === 'header' || property === 'headerTemplate') {
+                    var icon = (isNullOrUndefined(this.items[index].header) ||
+                        isNullOrUndefined(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
+                    var textVal = this.items[index].headerTemplate || this.items[index].header.text;
                     if ((textVal === '') && (icon === '')) {
                         this.removeTab(index);
                     }
@@ -7643,8 +7727,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
             var i_1 = 0;
             var textValue_1;
             items.forEach(function (item, place) {
-                textValue_1 = item.header.text;
-                if (!((isNullOrUndefined(item.header) || isNullOrUndefined(textValue_1) || (textValue_1.length === 0) && isNullOrUndefined(item.header.iconCss)))) {
+                textValue_1 = item.headerTemplate || item.header.text;
+                if (!(isNullOrUndefined(item.headerTemplate || item.header) ||
+                    isNullOrUndefined(textValue_1) || (textValue_1.length === 0) && isNullOrUndefined(item.header.iconCss))) {
                     _this.items.splice((index + i_1), 0, item);
                     i_1++;
                 }
@@ -7891,7 +7976,13 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    this.setCssClass(this.element, newProp.cssClass, true);
+                    if (oldProp.cssClass !== '') {
+                        this.setCssClass(this.element, oldProp.cssClass, false);
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
+                    else {
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);
@@ -7917,6 +8008,11 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
                 case 'heightAdjustMode':
                     this.setContentHeight(false);
                     this.select(this.selectedItem);
+                    break;
+                case 'scrollStep':
+                    if (this.tbObj) {
+                        this.tbObj.scrollStep = this.scrollStep;
+                    }
                     break;
             }
         }
@@ -7951,6 +8047,9 @@ var Tab = /** @__PURE__ @class */ (function (_super) {
     __decorate$7([
         Property(false)
     ], Tab.prototype, "showCloseButton", void 0);
+    __decorate$7([
+        Property()
+    ], Tab.prototype, "scrollStep", void 0);
     __decorate$7([
         Complex({}, TabAnimationSettings)
     ], Tab.prototype, "animation", void 0);
@@ -10519,7 +10618,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
-        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     };
@@ -10593,27 +10691,29 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.appendNewText(liEle, txtEle, newText, true);
     };
     TreeView.prototype.appendNewText = function (liEle, txtEle, newText, isInput) {
+        var _this = this;
         var eventArgs = this.getEditEvent(liEle, newText, null);
-        this.trigger('nodeEdited', eventArgs);
-        newText = eventArgs.cancel ? eventArgs.oldText : eventArgs.newText;
-        var newData = setValue(this.editFields.text, newText, this.editData);
-        if (!isNullOrUndefined(this.nodeTemplateFn)) {
-            txtEle.innerHTML = '';
-            var tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, txtEle);
-            this.updateBlazorTemplate();
-        }
-        else {
-            txtEle.innerHTML = newText;
-        }
-        if (isInput) {
-            removeClass([liEle], EDITING);
-            txtEle.focus();
-        }
-        if (eventArgs.oldText !== newText) {
-            this.triggerEvent();
-        }
+        this.trigger('nodeEdited', eventArgs, function (observedArgs) {
+            newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
+            var newData = setValue(_this.editFields.text, newText, _this.editData);
+            if (!isNullOrUndefined(_this.nodeTemplateFn)) {
+                txtEle.innerHTML = '';
+                var tempArr = _this.nodeTemplateFn(newData, undefined, undefined, _this.element.id + 'nodeTemplate', _this.isStringTemplate);
+                tempArr = Array.prototype.slice.call(tempArr);
+                append(tempArr, txtEle);
+                _this.updateBlazorTemplate();
+            }
+            else {
+                txtEle.innerHTML = newText;
+            }
+            if (isInput) {
+                removeClass([liEle], EDITING);
+                txtEle.focus();
+            }
+            if (observedArgs.oldText !== newText) {
+                _this.triggerEvent();
+            }
+        });
     };
     TreeView.prototype.getElement = function (ele) {
         if (isNullOrUndefined(ele)) {
@@ -10623,7 +10723,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             return this.element.querySelector('[data-uid="' + ele + '"]');
         }
         else if (typeof ele === 'object') {
-            return ele;
+            return getElement(ele);
         }
         else {
             return null;
@@ -10637,7 +10737,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             return ele;
         }
         else if (typeof ele === 'object') {
-            return ele.getAttribute('data-uid');
+            return (getElement(ele)).getAttribute('data-uid');
         }
         else {
             return null;
@@ -12158,7 +12258,46 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
      */
     TreeView.prototype.getAllCheckedNodes = function () {
         var checkNodes = this.checkedNodes;
-        return checkNodes;
+        var newCheck = [];
+        var i = 0;
+        var id = this.fields.id;
+        for (i; i < this.treeData.length; i++) {
+            //Checks if isChecked is enabled while node is not loaded in DOM
+            var checked = null;
+            var childNode = null;
+            var isLoaded = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
+            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
+                //Checks if isChecked is enabled for parent
+                if (this.getTreeData()[i][this.fields.isChecked] === true
+                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
+                    newCheck.push(this.treeData[i][id].toString());
+                    checked = 2;
+                }
+                //Checks for child nodes with isChecked enabled
+                if (checked !== 2) {
+                    checked = 1;
+                }
+                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
+                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
+            }
+        }
+        i = 0;
+        //Gets checked nodes based on UI interaction
+        while (i < checkNodes.length) {
+            if (newCheck.indexOf(checkNodes[i]) !== -1) {
+                i++;
+                continue;
+            }
+            newCheck.push(checkNodes[i]);
+            //Gets all child which is not loaded while parent is checked
+            var parentNode = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
+            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
+                var child = this.getChildNodes(this.treeData, checkNodes[i].toString());
+                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
+            }
+            i++;
+        }
+        return newCheck;
     };
     /**
      * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
@@ -12594,36 +12733,37 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (isBlazor()) {
             delete closeArguments.model;
         }
-        this.trigger('close', closeArguments);
-        if (!closeArguments.cancel) {
-            if (this.element.classList.contains(CLOSE)) {
-                return;
+        this.trigger('close', closeArguments, function (observedcloseArgs) {
+            if (!observedcloseArgs.cancel) {
+                if (_this.element.classList.contains(CLOSE)) {
+                    return;
+                }
+                if (_this.element.classList.contains(OPEN) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                addClass([_this.element], CLOSE);
+                removeClass([_this.element], OPEN);
+                _this.enableDock ? setStyleAttribute(_this.element, { 'width': formatUnit(_this.dockSize) }) :
+                    setStyleAttribute(_this.element, { 'width': formatUnit(_this.width) });
+                _this.setType(_this.type);
+                var sibling = document.querySelector('.e-main-content') ||
+                    _this.element.nextElementSibling;
+                if (!_this.enableDock && sibling) {
+                    sibling.style.transform = 'translateX(' + 0 + 'px)';
+                    _this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+                }
+                _this.destroyBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.remove('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: false }, true);
+                if (_this.enableDock) {
+                    setTimeout(function () { return _this.setTimeOut(); }, 50);
+                }
+                EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
             }
-            if (this.element.classList.contains(OPEN) && !this.animate) {
-                this.triggerChange();
-            }
-            addClass([this.element], CLOSE);
-            removeClass([this.element], OPEN);
-            this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
-                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setType(this.type);
-            var sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
-            if (!this.enableDock && sibling) {
-                sibling.style.transform = 'translateX(' + 0 + 'px)';
-                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-            }
-            this.destroyBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.remove('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: false }, true);
-        }
-        if (this.enableDock) {
-            setTimeout(function () { return _this.setTimeOut(); }, 50);
-        }
-        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        });
     };
     Sidebar.prototype.setTimeOut = function () {
         var sibling = document.querySelector('.e-main-content') ||
@@ -12655,6 +12795,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Sidebar.prototype.show = function (e) {
+        var _this = this;
         var openArguments = {
             model: this,
             element: this.element,
@@ -12665,28 +12806,29 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         if (isBlazor()) {
             delete openArguments.model;
         }
-        this.trigger('open', openArguments);
-        if (!openArguments.cancel) {
-            removeClass([this.element], VISIBILITY);
-            if (this.element.classList.contains(OPEN)) {
-                return;
+        this.trigger('open', openArguments, function (observedopenArgs) {
+            if (!observedopenArgs.cancel) {
+                removeClass([_this.element], VISIBILITY);
+                if (_this.element.classList.contains(OPEN)) {
+                    return;
+                }
+                if (_this.element.classList.contains(CLOSE) && !_this.animate) {
+                    _this.triggerChange();
+                }
+                addClass([_this.element], [OPEN, TRASITION]);
+                setStyleAttribute(_this.element, { 'transform': '' });
+                removeClass([_this.element], CLOSE);
+                setStyleAttribute(_this.element, { 'width': formatUnit(_this.width) });
+                _this.setType(_this.type);
+                _this.createBackDrop();
+                _this.setAnimation();
+                if (_this.type === 'Slide') {
+                    document.body.classList.add('e-sidebar-overflow');
+                }
+                _this.setProperties({ isOpen: true }, true);
+                EventHandler.add(_this.element, 'transitionend', _this.transitionEnd, _this);
             }
-            if (this.element.classList.contains(CLOSE) && !this.animate) {
-                this.triggerChange();
-            }
-            addClass([this.element], [OPEN, TRASITION]);
-            setStyleAttribute(this.element, { 'transform': '' });
-            removeClass([this.element], CLOSE);
-            setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setType(this.type);
-            this.createBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.add('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: true }, true);
-        }
-        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        });
     };
     Sidebar.prototype.setAnimation = function () {
         if (this.animate) {
@@ -13075,5 +13217,5 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
  * Navigation all modules
  */
 
-export { MenuAnimationSettings, MenuItem, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es5.js.map

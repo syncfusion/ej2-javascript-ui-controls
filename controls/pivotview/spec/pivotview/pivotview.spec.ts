@@ -790,9 +790,8 @@ describe('PivotView spec', () => {
         });
 
         describe(' - dataSource empty combo cases - ', () => {
-            let originalTimeout: number;
             let pivotGridObj: PivotView;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px;' });
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
             let jsonData: DataManager = new DataManager({
                 json: pivot_dataset,
                 adaptor: new JsonAdaptor
@@ -804,14 +803,11 @@ describe('PivotView spec', () => {
                 }
                 remove(elem);
             });
-            beforeAll((done: Function) => {
-                originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            beforeAll(() => {
                 if (document.getElementById(elem.id)) {
                     remove(document.getElementById(elem.id));
                 }
                 document.body.appendChild(elem);
-                let dataBound: EmitType<Object> = () => { done(); };
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
                         expandAll: true,
@@ -819,8 +815,7 @@ describe('PivotView spec', () => {
                         rows: [{ name: 'eyeColor' }, { name: 'product' }],
                         columns: [{ name: 'isActive' }, { name: 'gender' }],
                         values: [{ name: 'balance' }, { name: 'quantity' }]
-                    },
-                    dataBound: dataBound
+                    }
                 });
                 pivotGridObj.appendTo('#PivotGrid');
             });
@@ -828,6 +823,7 @@ describe('PivotView spec', () => {
             let dataSourceSettings: IDataOptions
             it('pivotgrid render testing', (done: Function) => {
                 dataSourceSettings = extend({}, pivotGridObj.dataSourceSettings, null, true);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('td[aria-colindex="14"]')[0] as HTMLElement).innerText).toBe('1939');
                     done();
@@ -837,6 +833,7 @@ describe('PivotView spec', () => {
             it('pivotgrid empty all', (done: Function) => {
                 pivotGridObj.setProperties({ dataSourceSettings: { rows: [], columns: [] } }, true);
                 pivotGridObj.dataSourceSettings.values = [];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect((document.querySelectorAll('th[aria-colindex="1"]').length) === 0).toBeTruthy();
@@ -846,6 +843,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid fill value alone', (done: Function) => {
                 pivotGridObj.dataSourceSettings.values = [{ name: 'quantity' }];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect((document.querySelectorAll('th[aria-colindex="1"]').length) > 0).toBeTruthy();
@@ -855,6 +853,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid fill column alone', (done: Function) => {
                 pivotGridObj.dataSourceSettings.columns = [{ name: 'isActive' }];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect((document.querySelectorAll('th[aria-colindex="1"]').length) === 0).toBeFalsy();
@@ -864,6 +863,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid fill column and value', (done: Function) => {
                 pivotGridObj.dataSourceSettings.values = [{ name: 'quantity' }];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect((document.querySelectorAll('th[aria-colindex="3"]').length) > 0).toBeTruthy();
@@ -874,6 +874,7 @@ describe('PivotView spec', () => {
             it('pivotgrid fill row alone', (done: Function) => {
                 pivotGridObj.setProperties({ dataSourceSettings: { values: [], columns: [] } }, true);
                 pivotGridObj.dataSourceSettings.rows = [{ name: 'eyeColor' }];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect(document.querySelectorAll('td[aria-colindex="0"]').length === 4).toBeFalsy();
@@ -884,6 +885,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid fill row and value', (done: Function) => {
                 pivotGridObj.dataSourceSettings.values = [{ name: 'quantity' }];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect(document.querySelectorAll('td[aria-colindex="0"]').length === 4).toBeTruthy();
@@ -894,6 +896,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid fill row and column', (done: Function) => {
                 pivotGridObj.dataSourceSettings.columns = [{ name: 'isActive' }];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect(document.querySelectorAll('td[aria-colindex="0"]').length === 4).toBeTruthy();
@@ -904,6 +907,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid fill all', (done: Function) => {
                 pivotGridObj.dataSourceSettings.values = [{ name: 'quantity' }];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     expect(document.querySelectorAll('th[aria-colindex="3"]').length === 1).toBeTruthy();
@@ -914,6 +918,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid fill all 2 column', (done: Function) => {
                 pivotGridObj.dataSourceSettings.columns.push({ name: 'gender' });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     done();
@@ -922,6 +927,7 @@ describe('PivotView spec', () => {
 
             it('pivotgrid data empty', (done: Function) => {
                 pivotGridObj.dataSourceSettings.dataSource = [];
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect((document.querySelectorAll('.e-emptyrow').length) === 0).toBeTruthy();
                     done();
@@ -1305,25 +1311,25 @@ describe('PivotView spec', () => {
             });
             it('Value sort check', () => {
                 expect((pivotGridObj.pivotValues[2][0] as IDataSet).formattedText).toBe('Tamilnadu');
-                (document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).click();
             });
             it('First click', () => {
-                expect((pivotGridObj.pivotValues[2][0] as IDataSet).formattedText).toBe('New Jercy');
                 (document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).click();
+                expect((pivotGridObj.pivotValues[2][0] as IDataSet).formattedText).toBe('New Jercy');
             });
             it('Second click', () => {
+                (document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).click();
                 expect((pivotGridObj.pivotValues[2][0] as IDataSet).formattedText).toBe('Tamilnadu');
-                ((document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).querySelector('.e-headertext') as HTMLElement).click();
             });
             it('Cellvalue click', () => {
+                ((document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).querySelector('.e-headertext') as HTMLElement).click();
                 expect((pivotGridObj.pivotValues[2][0] as IDataSet).formattedText).toBe('New Jercy');
-                ((document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).querySelector('.e-descending') as HTMLElement).click();
             });
             it('Descending icon click', () => {
+                ((document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).querySelector('.e-descending') as HTMLElement).click();
                 expect((pivotGridObj.pivotValues[2][0] as IDataSet).formattedText).toBe('Tamilnadu');
-                ((document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).querySelector('.e-ascending') as HTMLElement).click();
             });
             it('Ascending icon click', (done: Function) => {
+                ((document.querySelectorAll('th[aria-colindex="1"]')[1] as HTMLElement).querySelector('.e-ascending') as HTMLElement).click();
                 expect((pivotGridObj.pivotValues[2][0] as IAxisSet).formattedText).toBe('New Jercy');
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(function () {
@@ -1725,7 +1731,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect(document.getElementsByClassName('e-dialog').length > 0).toBeTruthy();
-                    //cf.dialog.buttons[1].click();
+                    cf.dialog.buttons[1].click();
                     done();
                 }, 1000);
             });
@@ -1790,7 +1796,7 @@ describe('PivotView spec', () => {
             it('check context menu click', () => {
                 expect(document.querySelector('#' + cf.parentID + 'contextmenu')).toBeTruthy;
                 cf.dialog.buttons[1].click();
-                // remove(document.querySelector('.e-dialog'));
+                remove(document.querySelector('.e-dialog'));
             });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -3616,8 +3622,6 @@ describe('PivotView spec', () => {
                 let pivotGridObj: PivotView;
                 let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
                 beforeAll(() => {
-                    originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     document.body.appendChild(elem);
                     pivotGridObj = new PivotView(
                         {
@@ -3643,6 +3647,7 @@ describe('PivotView spec', () => {
                     setTimeout(() => { done(); }, 2000);
                 });
                 it('pivotgrid render testing', (done: Function) => {
+                    //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(() => {
                         expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
                         expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
@@ -3653,6 +3658,7 @@ describe('PivotView spec', () => {
                 it('state start with t', (done: Function) => {
                     pivotGridObj.dataSourceSettings.filterSettings = [
                         { name: 'state', type: 'Label', condition: 'BeginWith', value1: 't' }],
+                        //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(() => {
                             expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(13);
                             expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
@@ -3664,6 +3670,7 @@ describe('PivotView spec', () => {
                 it('state contains e', (done: Function) => {
                     pivotGridObj.dataSourceSettings.filterSettings = [
                         { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' }],
+                        //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(() => {
                             expect(document.querySelectorAll('.e-frozencontent tr').length).toBe(24);
                             expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelectorAll('td').length).toBe(14);
@@ -3690,6 +3697,7 @@ describe('PivotView spec', () => {
                     pivotGridObj.dataSourceSettings.filterSettings = [
                         { name: 'state', type: 'Label', condition: 'Contains', value1: 'e' },
                         { name: 'eyeColor', type: 'Label', condition: 'Equals', value1: 'blue' }],
+                        //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(() => {
                             expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('blue');
                             expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('male Total');
@@ -3714,6 +3722,7 @@ describe('PivotView spec', () => {
                 it('product quantity > 100', (done: Function) => {
                     pivotGridObj.dataSourceSettings.filterSettings = [
                         { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
+                        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(() => {
                         expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
                         expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
@@ -3725,6 +3734,7 @@ describe('PivotView spec', () => {
                 //     pivotGridObj.dataSource.filterSettings = [
                 //         { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' },
                 //         { name: 'eyeColor', type: 'Value', condition: 'LessThan', measure: 'quantity', value1: '100' }],
+                //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 //     setTimeout(() => {
                 //         expect(document.querySelectorAll('.e-movableheader th')[1].textContent).toBe('balance');
                 //         expect(document.querySelectorAll('.e-movableheader th')[2].textContent).toBe('quantity');
@@ -3734,6 +3744,7 @@ describe('PivotView spec', () => {
                 it('product quantity > 100', (done: Function) => {
                     pivotGridObj.dataSourceSettings.filterSettings = [
                         { name: 'product', type: 'Value', condition: 'GreaterThan', measure: 'quantity', value1: '100' }],
+                        //jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                         setTimeout(() => {
                             expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
                             expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
@@ -4986,17 +4997,18 @@ describe('PivotView spec', () => {
                     expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(5);
                     (document.querySelector('.e-ok-btn') as HTMLElement).click();
                 });
-                it('change mem limit to 10', () => {
+                it('change mem limit to 10', (done: Function) => {
+                    (document.querySelectorAll('.e-toggle-field-list')[0] as HTMLElement).click();
                     pivotGridObj.maxNodeLimitInMemberEditor = 10;
-                    pivotGridObj.pivotFieldListModule.maxNodeLimitInMemberEditor = 10;
                     let pivotButtons: HTMLElement[] =
                         [].slice.call(document.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
                     ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
-                });
-                it('change mem limit to 10-check', () => {
-                    expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(10);
-                    expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
-                    expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                    setTimeout(() => {
+                        expect(document.querySelectorAll('.e-member-editor-container li').length).toBe(10);
+                        expect(document.querySelectorAll('.e-select-all li .e-stop').length).toBe(1);
+                        expect(document.querySelectorAll('.e-member-editor-container li .e-check').length).toBe(1);
+                        done();
+                    }, 1000);
                 });
             });
         });
@@ -6346,7 +6358,7 @@ describe('PivotView spec', () => {
             let args: any;
             let selectArgs: PivotCellSelectedEventArgs;
             let headers: any;
-            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px;' });
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
             document.body.appendChild(elem);
             afterAll(() => {
                 if (pivotGridObj) {
@@ -6390,11 +6402,11 @@ describe('PivotView spec', () => {
                             eventName = 'beforeCopy';
                             args = args;
                         },
-                        beforePrint: (args: any): void => {
+                        beforePrint: (args): void => {
                             eventName = 'beforePrint';
                             args = args;
                         },
-                        printComplete: (args: any): void => {
+                        printComplete: (args): void => {
                             eventName = 'printComplete';
                             args = args;
                         },
@@ -6679,13 +6691,13 @@ describe('PivotView spec', () => {
                     height: 100,
                     gridSettings: {
                         allowReordering: true,
-                        pdfHeaderQueryCellInfo: (args: any): void => {
+                        pdfHeaderQueryCellInfo: (args): void => {
                         },
-                        pdfQueryCellInfo: (args: any): void => {
+                        pdfQueryCellInfo: (args): void => {
                         },
-                        excelHeaderQueryCellInfo: (args: any): void => {
+                        excelHeaderQueryCellInfo: (args): void => {
                         },
-                        excelQueryCellInfo: (args: any): void => {
+                        excelQueryCellInfo: (args): void => {
                         }
                     }
                 });
@@ -8784,7 +8796,7 @@ describe('PivotView spec', () => {
     describe('Group By Date feature', () => {
         describe(' -  Initial Rendering and Value Sorting', () => {
             let pivotGridObj: PivotView;
-            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -8855,7 +8867,7 @@ describe('PivotView spec', () => {
         });
         describe(' -  Initial Rendering with range', () => {
             let pivotGridObj: PivotView;
-            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -8929,7 +8941,7 @@ describe('PivotView spec', () => {
         });
         describe(' -  Initial Rendering with range value as string', () => {
             let pivotGridObj: PivotView;
-            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -9003,7 +9015,7 @@ describe('PivotView spec', () => {
         });
         describe('- Editing - normal', () => {
             let pivotGridObj: PivotView;
-            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -9106,7 +9118,7 @@ describe('PivotView spec', () => {
         });
         describe('- Grouping Bar with injected Module - ', () => {
             let pivotGridObj: PivotView;
-            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -9274,7 +9286,7 @@ describe('PivotView spec', () => {
 
         describe('- Field List with injected Module - ', () => {
             let pivotGridObj: PivotView;
-            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset) as IDataSet[];
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
             let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
             afterAll(() => {
                 if (pivotGridObj) {
@@ -11694,7 +11706,6 @@ describe('PivotView spec', () => {
                 }
                 //document.body.appendChild(elem);
                 let dataBound: EmitType<Object> = () => { done(); };
-                PivotView.Inject(CalculatedField, GroupingBar, FieldList);
                 pivotGridObj = new PivotView({
                     dataSourceSettings: {
                         dataSource: pivot_dataset as IDataSet[],
@@ -12405,7 +12416,7 @@ describe('PivotView spec', () => {
                 document.body.appendChild(elem);
             }
             let dataBound: EmitType<Object> = () => { done(); };
-            PivotView.Inject(GroupingBar, FieldList);
+            PivotView.Inject(GroupingBar);
             pivotGridObj = new PivotView({
                 dataSourceSettings: {
                     dataSource: pivot_dataset as IDataSet[],
@@ -12513,69 +12524,6 @@ describe('PivotView spec', () => {
                 }, true);
                 done();
             }, 2000);
-        });
-    });
-
-     describe('Grouping bar sort icon deferupdate', () => {
-        let pivotGridObj: PivotView;
-        let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-        let cf: any;
-        beforeAll(() => {
-            document.body.appendChild(elem);
-            PivotView.Inject(GroupingBar, FieldList);
-            pivotGridObj = new PivotView(
-                {
-                    dataSourceSettings: {
-                        dataSource: pivot_nodata as IDataSet[],
-                        enableSorting: true,
-                        expandAll: true,
-                        rows: [{ name: 'Country' }],
-                        columns: [{ name: 'Product' }],
-                        values: [{ name: 'Amount' }],
-                    },
-                    allowDeferLayoutUpdate: true,
-                    showFieldList: true,
-                    showGroupingBar: true,
-                    width: 600,
-                    height: 300
-                });
-            pivotGridObj.appendTo('#PivotGrid');
-        });
-        beforeEach((done: Function) => {
-            setTimeout(() => { done(); }, 1000);
-        });
-
-        let mouseup: MouseEvent = new MouseEvent('mouseup', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true
-        });
-        let mousedown: MouseEvent = new MouseEvent('mousedown', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true
-        });
-        let click: MouseEvent = new MouseEvent('click', {
-            'view': window,
-            'bubbles': true,
-            'cancelable': true
-        });
-        it('Country -> descending _using grouping bar sort icon', (done: Function) => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            setTimeout(() => {
-                document.querySelectorAll('.e-group-rows .e-sort')[0].dispatchEvent(click);
-                done();
-            }, 2000);
-        });
-        it('Country -> descending _result', () => {
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-            expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('United States');
-        });
-        afterAll(() => {
-            if (pivotGridObj) {
-                pivotGridObj.destroy();
-            }
-            remove(elem);
         });
     });
 

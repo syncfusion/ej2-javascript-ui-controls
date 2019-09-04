@@ -3,7 +3,7 @@ import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty,
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';
 import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate , isBlazor  } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate , isBlazor, getElement  } from '@syncfusion/ej2-base';
 import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';
@@ -276,6 +276,7 @@ export interface NodeKeyPressEventArgs {
     cancel: boolean;
     /**
      * Return the actual event.
+     * @blazorType UIKeyboardEventArgs
      */
     event: KeyboardEventArgs;
     /**
@@ -3218,7 +3219,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
-        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     }
@@ -3299,26 +3299,27 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private appendNewText(liEle: Element, txtEle: Element, newText: string, isInput: boolean): void {
         let eventArgs: NodeEditEventArgs = this.getEditEvent(liEle, newText, null);
-        this.trigger('nodeEdited', eventArgs);
-        newText = eventArgs.cancel ? eventArgs.oldText : eventArgs.newText;
-        let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
-        if (!isNOU(this.nodeTemplateFn)) {
-            txtEle.innerHTML = '';
-            let tempArr: Element[]  = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate',
-                                                          this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, txtEle);
-            this.updateBlazorTemplate();
-        } else {
-            txtEle.innerHTML = newText;
-        }
-        if (isInput) {
-            removeClass([liEle], EDITING);
-            (<HTMLElement>txtEle).focus();
-        }
-        if (eventArgs.oldText !== newText) {
-            this.triggerEvent();
-        }
+        this.trigger('nodeEdited', eventArgs, (observedArgs: NodeEditEventArgs) => {
+            newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
+            let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
+            if (!isNOU(this.nodeTemplateFn)) {
+                txtEle.innerHTML = '';
+                let tempArr: Element[] = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate',
+                    this.isStringTemplate);
+                tempArr = Array.prototype.slice.call(tempArr);
+                append(tempArr, txtEle);
+                this.updateBlazorTemplate();
+            } else {
+                txtEle.innerHTML = newText;
+            }
+            if (isInput) {
+                removeClass([liEle], EDITING);
+                (<HTMLElement>txtEle).focus();
+            }
+            if (observedArgs.oldText !== newText) {
+                this.triggerEvent();
+            }
+        });
     }
 
     private getElement(ele: string | Element): Element {
@@ -3327,7 +3328,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         } else if (typeof ele === 'string') {
             return this.element.querySelector('[data-uid="' + ele + '"]');
         } else if (typeof ele === 'object') {
-            return ele;
+            return getElement(ele);
         } else {
             return null;
         }
@@ -3339,7 +3340,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         } else if (typeof ele === 'string') {
             return ele;
         } else if (typeof ele === 'object') {
-            return ele.getAttribute('data-uid');
+            return (getElement(ele)).getAttribute('data-uid');
         } else {
             return null;
         }
@@ -4877,7 +4878,44 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getAllCheckedNodes(): string[] {
         let checkNodes: string[] = this.checkedNodes;
-        return checkNodes;
+        let newCheck: string[] = [];
+        let i: number = 0;
+        let id: string = this.fields.id;
+        for (i; i < this.treeData.length; i++) {
+            //Checks if isChecked is enabled while node is not loaded in DOM
+            let checked: number = null;
+            let childNode: { [key: string]: Object; }[] = null;
+            let isLoaded: Element = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
+            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
+                //Checks if isChecked is enabled for parent
+                if (this.getTreeData()[i][this.fields.isChecked] === true
+                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
+                    newCheck.push(this.treeData[i][id].toString());
+                    checked = 2;
+                }
+                //Checks for child nodes with isChecked enabled
+                if (checked !== 2) { checked = 1; }
+                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
+                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
+            }
+        }
+        i = 0;
+        //Gets checked nodes based on UI interaction
+        while (i < checkNodes.length) {
+            if (newCheck.indexOf(checkNodes[i]) !== -1) {
+                i++;
+                continue;
+            }
+            newCheck.push(checkNodes[i]);
+            //Gets all child which is not loaded while parent is checked
+            let parentNode: Element = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
+            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
+                let child: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkNodes[i].toString());
+                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
+            }
+            i++;
+        }
+        return newCheck;
     }
 
     /**

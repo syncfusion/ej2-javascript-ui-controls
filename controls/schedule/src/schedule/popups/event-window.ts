@@ -136,6 +136,12 @@ export class EventWindow {
         }
     }
 
+    public updateRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
+        if (this.parent.editorTemplate) {
+            this.recurrenceEditor = recurrenceEditor;
+        }
+    }
+
     public openEditor(data: Object, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
@@ -1001,7 +1007,7 @@ export class EventWindow {
         this.repeatStatus.setProperties({ label: data });
     }
 
-    public dialogClose(): void {
+    private dialogClose(): void {
         this.parent.activeEventData = { event: undefined, element: undefined };
         this.parent.currentAction = null;
         this.dialogObject.hide();
@@ -1083,8 +1089,7 @@ export class EventWindow {
             if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
                 isShowAlert = false;
             }
-            if (!isNullOrUndefined(alertType) && isShowAlert
-                && ((!this.parent.enableRecurrenceValidation && alertType === 'wrongPattern') || this.parent.enableRecurrenceValidation)) {
+            if (!isNullOrUndefined(alertType) && isShowAlert) {
                 this.parent.quickPopup.openRecurrenceValidationAlert(alertType);
                 return;
             }
@@ -1101,6 +1106,7 @@ export class EventWindow {
         let isResourceEventExpand: boolean = (this.parent.activeViewOptions.group.resources.length > 0 ||
             this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit
             && !isNullOrUndefined(resourceData);
+
         if (!isNullOrUndefined(eventId)) {
             let eveId: number | string = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData: { [key: string]: Object } = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
@@ -1121,7 +1127,7 @@ export class EventWindow {
                         eveId = eventObj[this.fields.recurrenceID] as number;
                         currentAction = null;
                     }
-                    if (this.parent.enableRecurrenceValidation && this.editOccurrenceValidation(eveId, eventObj)) {
+                    if (this.editOccurrenceValidation(eveId, eventObj)) {
                         this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                         return;
                     }

@@ -1,5 +1,5 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
@@ -792,14 +792,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public fireContentChange(): void {
-        let eventArgs: ContentChangeEventArgs = { source: this };
+        let eventArgs: ContentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     }
     /**
      * @private
      */
     public fireDocumentChange(): void {
-        let eventArgs: DocumentChangeEventArgs = { source: this };
+        let eventArgs: DocumentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     }
     /**
@@ -809,14 +809,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         if (!this.viewer.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
-        let eventArgs: SelectionChangeEventArgs = { source: this };
+        let eventArgs: SelectionChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('selectionChange', eventArgs);
     }
     /**
      * @private
      */
     public fireZoomFactorChange(): void {
-        let eventArgs: ZoomFactorChangeEventArgs = { source: this };
+        let eventArgs: ZoomFactorChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('zoomFactorChange', eventArgs);
     }
     /**
@@ -829,7 +829,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 let eventArgs: ViewChangeEventArgs = {
                     startPage: pages[0].index + 1,
                     endPage: pages[pages.length - 1].index + 1,
-                    source: this
+                    source: isBlazor() ? null : this
                 };
                 this.trigger('viewChange', eventArgs);
             }

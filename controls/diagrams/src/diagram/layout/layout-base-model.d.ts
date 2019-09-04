@@ -1,4 +1,5 @@
 import { PointModel } from '../primitives/point-model';import { Rect } from '../primitives/rect';import { MarginModel } from '../core/appearance-model';import { Margin } from '../core/appearance';import { HorizontalAlignment, VerticalAlignment, ConnectionDirection, } from '../enum/enum';import { LayoutOrientation, ConnectorSegments, LayoutType, SubTreeOrientation, SubTreeAlignments, Segments } from '../enum/enum';import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { OrthogonalSegmentModel, BezierSegmentModel, StraightSegmentModel } from '../objects/connector-model';
+import {TreeInfo} from "./layout-base";
 
 /**
  * Interface for a class Layout
@@ -166,6 +167,11 @@ export interface LayoutModel {
      * @deprecated
      */
     getLayoutInfo?: Function | string;
+
+    /**
+     * getLayoutInfo is used to configure every subtree of the organizational chart
+     */
+    layoutInfo?: TreeInfo;
 
     /**
      * Defines whether an object should be at the left/right of the mind map. Applicable only for the direct children of the root node

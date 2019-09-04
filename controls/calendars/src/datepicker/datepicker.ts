@@ -830,9 +830,25 @@ export class DatePicker extends Calendar implements IInput {
             && (!target.classList.contains('e-day'))) {
             this.hide(e);
             this.focusOut();
+        } else if (closest(target, '.e-datepicker.e-popup-wrapper')) {
+            // Fix for close the popup when select the previously selected value.
+            if ( target.classList.contains('e-day')
+            && !isNullOrUndefined((e.target as HTMLElement).parentElement)
+            && (e.target as HTMLElement).parentElement.classList.contains('e-selected')
+            && closest(target, '.e-content')
+            && closest(target, '.e-content').classList.contains('e-' + this.depth.toLowerCase())) {
+                this.hide(e);
+            } else if (closest(target, '.e-footer-container')
+                       && target.classList.contains('e-today')
+                       && target.classList.contains('e-btn')
+                       && +new Date(+this.value) === +super.generateTodayVal(this.value)) {
+                this.hide(e);
+            }
         }
     }
+
     protected inputKeyActionHandle(e: KeyboardEventArgs): void {
+        let clickedView: string = this.currentView();
         switch (e.action) {
             case 'altUpArrow':
                 this.isAltKeyPressed = false;
@@ -875,6 +891,10 @@ export class DatePicker extends Calendar implements IInput {
                 break;
             default:
                 this.defaultAction(e);
+                // Fix for close the popup when select the previously selected value.
+                if (e.action === 'select' && clickedView === this.depth) {
+                    this.hide(e);
+                }
         }
     }
     protected defaultAction(e: KeyboardEventArgs): void {

@@ -118,6 +118,14 @@ export class Selection {
     /**
      * @private
      */
+    public isHighlightNext: boolean = false;
+    /**
+     * @private
+     */
+    public hightLightNextParagraph: BlockWidget;
+    /**
+     * @private
+     */
     public editRegionHighlighters: Dictionary<LineWidget, SelectionWidgetInfo[]> = undefined;
     /**
      * @private
@@ -3141,6 +3149,11 @@ export class Selection {
                 }
             } else {
                 this.highlight(start.paragraph, start, end);
+                if (this.isHighlightNext) {
+                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
             }
         }
     }
@@ -3323,14 +3336,21 @@ export class Selection {
                     return;
                 }
             }
-            this.highlightNextBlock(paragraph, start, end);
+            this.isHighlightNext = true;
+            this.hightLightNextParagraph = paragraph;
         }
     }
     private highlightNextBlock(paragraph: BlockWidget, start: TextPosition, end: TextPosition): void {
         let block: BlockWidget = paragraph.nextRenderedWidget as BlockWidget;
         if (!isNullOrUndefined(block)) {
             if (block instanceof ParagraphWidget) {
+                this.isHighlightNext = false;
                 this.highlight(block, start, end);
+                if (this.isHighlightNext) {
+                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
             } else {
                 this.highlightTable(block as TableWidget, start, end);
             }
@@ -3713,6 +3733,11 @@ export class Selection {
                     } else {
                         if (startCell === containerCell) {
                             this.highlight(start.paragraph, start, end);
+                            if (this.isHighlightNext) {
+                                this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                                this.isHighlightNext = false;
+                                this.hightLightNextParagraph = undefined;
+                            }
                         } else {
                             this.highlightContainer(startCell, start, end);
                         }
@@ -7503,12 +7528,22 @@ export class Selection {
     private highlightEditRegions(editRangeStart: EditRangeStartElementBox, startPosition: TextPosition, endPosition: TextPosition): void {
         if (!editRangeStart.line.paragraph.isInsideTable) {
             this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
+            if (this.isHighlightNext) {
+                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                this.isHighlightNext = false;
+                this.hightLightNextParagraph = undefined;
+            }
         } else {
             let row: TableRowWidget = editRangeStart.line.paragraph.associatedCell.ownerRow as TableRowWidget;
             let cell: TableCellWidget = row.childWidgets[editRangeStart.columnFirst] as TableCellWidget;
             for (let i: number = 0; i < cell.childWidgets.length; i++) {
                 if (cell.childWidgets[i] instanceof ParagraphWidget) {
                     this.highlight(cell.childWidgets[i] as ParagraphWidget, startPosition, endPosition);
+                    if (this.isHighlightNext) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                        this.isHighlightNext = false;
+                        this.hightLightNextParagraph = undefined;
+                    }
                 }
             }
         }

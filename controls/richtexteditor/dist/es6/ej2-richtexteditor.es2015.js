@@ -3481,7 +3481,8 @@ class BaseQuickToolbar {
         this.popupObj.dataBind();
     }
     showPopup(x, y, target) {
-        let eventArgs = { popup: this.popupObj, cancel: false, targetElement: target };
+        let eventArgs = isBlazor() ? { cancel: false, targetElement: target } :
+            { popup: this.popupObj, cancel: false, targetElement: target };
         this.parent.trigger(beforeQuickToolbarOpen, eventArgs, (beforeQuickToolbarArgs) => {
             if (!beforeQuickToolbarArgs.cancel) {
                 let editPanelTop;
@@ -3594,7 +3595,8 @@ class BaseQuickToolbar {
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [CLS_POP]);
             detach(element);
-            this.parent.trigger(quickToolbarClose, this.popupObj);
+            let args = isBlazor() ? null : this.popupObj;
+            this.parent.trigger(quickToolbarClose, args);
         }
     }
     updateStatus(args) {
@@ -3677,7 +3679,8 @@ class PopupRenderer {
         this.parent = parent;
     }
     quickToolbarOpen() {
-        this.parent.trigger(quickToolbarOpen, this.popupObj);
+        let args = isBlazor() ? null : this.popupObj;
+        this.parent.trigger(quickToolbarOpen, args);
     }
     renderPopup(args) {
         this.setPanel(args.element);
@@ -4526,6 +4529,10 @@ class Formatter {
                     itemCollection: value
                 };
                 extend(args, args, items, true);
+                if (isBlazor()) {
+                    delete args.item;
+                    delete args.itemCollection;
+                }
                 self.trigger(actionBegin, args, (actionBeginArgs) => {
                     if (actionBeginArgs.cancel) {
                         if (action === 'paste' || action === 'cut' || action === 'copy') {
@@ -4589,6 +4596,9 @@ class Formatter {
         if (isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
             this.enableUndo(self);
             self.notify(execCommandCallBack, events);
+        }
+        if (isBlazor()) {
+            delete events.elements;
         }
         self.trigger(actionComplete, events, (callbackArgs) => {
             self.setPlaceHolder();
@@ -11903,7 +11913,8 @@ class PasteCleanup {
                         if (!dialog.isDestroyed) {
                             this.selectFormatting(value, args);
                             dialog.hide();
-                            this.dialogRenderObj.close(dialog);
+                            let argument = isBlazor() ? null : dialog;
+                            this.dialogRenderObj.close(argument);
                             dialog.destroy();
                         }
                     },
@@ -11917,7 +11928,8 @@ class PasteCleanup {
                     click: () => {
                         if (!dialog.isDestroyed) {
                             dialog.hide();
-                            this.dialogRenderObj.close(dialog);
+                            let args = isBlazor() ? null : dialog;
+                            this.dialogRenderObj.close(args);
                             dialog.destroy();
                         }
                     },
@@ -12518,7 +12530,8 @@ class Link {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                this.dialogRenderObj.close(this.dialogObj);
+                let args = isBlazor() ? null : this.dialogObj;
+                this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             },
         };
@@ -12535,9 +12548,9 @@ class Link {
             this.dialogObj.element.querySelector('.e-insertLink').textContent = inputDetails.btnText;
         }
         this.checkUrl(false);
-        if ((this.parent.editorMode === 'HTML' && isNullOrUndefined(inputDetails) && ((!isNullOrUndefined(selectText)
-            && selectText !== '') && (e.selection.range.startOffset === 0) || e.selection.range.startOffset !==
-            e.selection.range.endOffset)) || e.module === 'Markdown') {
+        if ((this.parent.editorMode === 'HTML' && ((!isNullOrUndefined(selectText) && selectText !== '') &&
+            (e.selection.range.startOffset === 0) || e.selection.range.startOffset !== e.selection.range.endOffset))
+            || e.module === 'Markdown') {
             linkText.value = selectText;
         }
         EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
@@ -12797,7 +12810,7 @@ class Image {
         if (Browser.isDevice) {
             removeClass([e.target.parentElement], 'e-mob-span');
         }
-        let args = { event: e, requestType: 'images' };
+        let args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(resizeStop, args);
         let pageX = this.getPointX(e);
         let pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset +
@@ -12843,7 +12856,7 @@ class Image {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             }
             else {
-                let args = { event: e, requestType: 'images' };
+                let args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
                 this.parent.trigger(resizeStart, args, (resizeStartArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -13009,7 +13022,7 @@ class Image {
         return expected / parseFloat(getComputedStyle(parentEle).width) * 100;
     }
     imgDupMouseMove(width, height, e) {
-        let args = { event: e, requestType: 'images' };
+        let args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(onResize, args, (resizingArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -13704,7 +13717,8 @@ class Image {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                this.dialogRenderObj.close(this.dialogObj);
+                let args = isBlazor() ? null : this.dialogObj;
+                this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             },
         };
@@ -13986,7 +14000,8 @@ class Image {
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
-                            }, height: {
+                            },
+                            height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
                             }
@@ -14826,7 +14841,7 @@ class Table {
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             }
             else {
-                let args = { event: e, requestType: 'Table' };
+                let args = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
                 this.parent.trigger(resizeStart, args, (resizeStartArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -14891,7 +14906,7 @@ class Table {
         let mouseY = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
-        let args = { event: e, requestType: 'table' };
+        let args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(onResize, args, (resizingArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -14972,7 +14987,7 @@ class Table {
             this.pageY = null;
             this.moveEle = null;
         }
-        let args = { event: e, requestType: 'table' };
+        let args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(resizeStop, args);
         this.parent.formatter.saveData();
     }
@@ -15225,7 +15240,7 @@ class Table {
                 this.parent.isBlur = false;
                 this.editdlgObj.destroy();
                 detach(this.editdlgObj.element);
-                this.dialogRenderObj.close(this.editdlgObj);
+                this.dialogRenderObj.close(event);
                 this.editdlgObj = null;
             }
         };
@@ -16298,6 +16313,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             }
         }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        this.renderComplete();
     }
     /**
      * For internal use only - Initialize the event handler
@@ -17334,8 +17350,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     contextHandler(e) {
         let closestElem = closest(e.target, 'a, table, img');
-        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && (closestElem.tagName === 'IMG' ||
-            closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && this.inputElement.contains(closestElem)
+            && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
             e.preventDefault();
         }
     }

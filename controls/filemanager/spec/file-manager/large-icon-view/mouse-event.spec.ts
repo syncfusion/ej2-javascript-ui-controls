@@ -8,6 +8,7 @@ import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19 } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
+import { FileSelectEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -87,6 +88,9 @@ describe('FileManager control LargeIcons view', () => {
             expect(li[4].getAttribute('aria-selected')).toBe(null);
             expect(li[4].getAttribute('tabindex')).toBe(null);
             expect(document.getElementById('file_largeicons').getAttribute('tabindex')).toBe('0');
+            feObj.fileSelect = (args:FileSelectEventArgs) =>{
+                expect(args.isInteracted).toEqual(true);
+            }
             mouseEventArgs.target = li[4];
             feObj.largeiconsviewModule.clickObj.tap(tapEvent);
             let nli: any = document.getElementById('file_largeicons').querySelectorAll('li');

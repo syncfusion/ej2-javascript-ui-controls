@@ -269,8 +269,8 @@ export class Data implements IDataProcessor {
             }
             if (defaultFltrCols.length) {
                 for (let col of defaultFltrCols) {
-                    col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
-                    let column: Column = this.parent.getColumnByUid(col.uid);
+                    col.uid = col.uid || this.parent.grabColumnByFieldFromAllCols(col.field).uid;
+                    let column: Column = this.parent.grabColumnByUidFromAllCols(col.uid);
                     if (!column) {
                         this.parent.log('initial_action', {moduleName: 'filter', columnName: col.field});
                     }

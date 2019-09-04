@@ -345,7 +345,6 @@ describe('Heatmap Control', () => {
                 }
             ];
             adaptorData = {
-                data: jsonCellData,
                 isJsonData: true,
                 adaptorType: "Cell",
                 xDataMapping: "rowid",
@@ -353,9 +352,11 @@ describe('Heatmap Control', () => {
                 valueMapping: "value",
                 bubbleDataMapping: { size: 'Men', color: 'Women' }
             };
+            
             heatmap.xAxis.labels = ['TestX1', 'Pacific', 'TestX2', 'Moutain', 'TestX3'];
             heatmap.yAxis.labels = ['TestY1', 'Jan', 'Feb', 'Mar', 'TestY2', 'Apr', 'May', 'Jun', 'TestY3'];
-            heatmap.dataSource = adaptorData;
+            heatmap.dataSource = jsonCellData;
+            heatmap.dataSourceSettings = adaptorData;
             heatmap.refresh();
             tempElement = document.getElementById('container_HeatMapRect_0');
             trigger.mousemoveEvent(tempElement, 0, 0, 0, 20, false);

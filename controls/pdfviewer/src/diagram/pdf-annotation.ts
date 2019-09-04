@@ -4,7 +4,7 @@ import { Point } from '@syncfusion/ej2-drawings';
 import { Size } from '@syncfusion/ej2-drawings';
 import { PdfBoundsModel, PdfAnnotationBaseModel } from './pdf-annotation-model';
 import { Container } from '@syncfusion/ej2-drawings';
-import { AnnotationType } from './enum';
+import { PdfAnnotationType } from './enum';
 import { ICommentsCollection, IReviewCollection } from '../pdfviewer';
 /**
  * The `PdfBounds` is base for annotation bounds.
@@ -101,7 +101,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      * @default 'Rectangle'
      */
     @Property('Rectangle')
-    public shapeAnnotationType: AnnotationType;
+    public shapeAnnotationType: PdfAnnotationType;
 
     /**
      * Represents the measure type of the annotation

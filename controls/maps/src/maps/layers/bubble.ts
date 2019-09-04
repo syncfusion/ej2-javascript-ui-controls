@@ -89,9 +89,13 @@ export class Bubble {
                 eventArgs = {
                     cancel: false, name: bubbleRendering, border: bubbleSettings.border,
                     cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
-                    data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
+                    data: shapeData, fill: bubbleColor, maps: this.maps,
                     radius: radius
                 };
+                if (this.maps.isBlazor) {
+                    const { maps, ...blazorEventArgs } : IBubbleRenderingEventArgs = eventArgs;
+                    eventArgs = blazorEventArgs;
+                }
             }
             this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs: IBubbleRenderingEventArgs) => {
                 if (eventArgs.cancel) {
@@ -175,10 +179,11 @@ export class Bubble {
             cancel: false, name: bubbleClick, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs: IBubbleClickEventArgs = {
-            cancel: false, name: bubbleClick, data: data, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(bubbleClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        if (this.maps.isBlazor) {
+            const {maps, ...blazorEventArgs}:  IBubbleClickEventArgs = eventArgs;
+            eventArgs = blazorEventArgs;
+        }
+        this.maps.trigger(bubbleClick, eventArgs);
     }
     /**
      * To get bubble from target id
@@ -213,10 +218,11 @@ export class Bubble {
             cancel: false, name: bubbleMouseMove, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs: IBubbleMoveEventArgs = {
-            cancel: false, name: bubbleMouseMove, data: data, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(bubbleMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        if (this.maps.isBlazor) {
+            const {maps, ...blazorEventArgs} :  IBubbleMoveEventArgs = eventArgs;
+            eventArgs = blazorEventArgs;
+        }
+        this.maps.trigger(bubbleMouseMove, eventArgs);
     }
     /**
      * Get module name.

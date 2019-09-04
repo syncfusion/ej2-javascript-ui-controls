@@ -1,6 +1,7 @@
 import { ContextMenuType } from './enum';
 import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { RowSelectingEventArgs as GridRowSelectingEventArgs } from '@syncfusion/ej2-grids';
+import { CellSelectingEventArgs as GridCellSelectingEventArgs} from '@syncfusion/ej2-grids';
 import { RowSelectEventArgs as GridRowSelectEventArgs, RowDataBoundEventArgs as GridRowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { IGanttData, IValidateMode } from '../base/interface';
@@ -509,6 +510,48 @@ export interface RowDataBoundEventArgs extends GridRowDataBoundEventArgs {
     data: IGanttData;
 }
 
+export interface ActionCompleteArgs extends ZoomEventArgs, IKeyPressedEventArgs {
+    element?: HTMLElement;
+    requestType?: string;
+    data?: IGanttData[];
+    modifiedRecords?: IGanttData[];
+    modifiedTaskData?: IGanttData[];
+    cancel?: boolean;
+    /** Specifies the newly added task data without custom Gantt properties.
+     * @isGenericType true
+     */
+    newTaskData?: object;
+    /** Defines the record index. */
+    recordIndex?: number;
+    /** Defines the action. */
+    action?: string;
+    /** Defines the type of event. */
+    type?: string;
+}
+
+export interface ActionBeginArgs extends IDependencyEventArgs {
+    rowData?: IGanttData;
+    name?: string;
+    requestType?: string;
+    cancel?: boolean;
+    data?:  IGanttData[];
+    modifiedRecords?: IGanttData[];
+    /**
+     * @isGenericType true
+     */
+    modifiedTaskData?: object[];
+    /** Specifies the newly added task data without custom Gantt properties.
+     * @isGenericType true
+     */
+    newTaskData?: object;
+    /** Defines the record index. */
+    recordIndex?: number;
+    /** Defines the action. */
+    action?: string;
+    /** Defines the type of event. */
+    type?: string;
+}
+
 export interface CellEditArgs  {
     /** Defines the cancel option value. */
     cancel?: boolean;
@@ -534,4 +577,11 @@ export interface CellEditArgs  {
     isForeignKey?: boolean;
     /** Defines the primaryKey. */
     primaryKey?: string[];
+}
+
+export interface CellSelectingEventArgs extends GridCellSelectingEventArgs {
+    /** Defines the previously selected cell index.
+     * @blazorType object
+     */
+    previousRowCellIndex?: number;
 }

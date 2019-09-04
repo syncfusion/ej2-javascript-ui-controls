@@ -1,4 +1,4 @@
-import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, closest } from '@syncfusion/ej2-base';
+import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, closest, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, EJ2Instance, SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -17,7 +17,7 @@ import { AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, TaskFieldsMo
 import { CObject } from '../base/enum';
 import { ColumnModel as GanttColumnModel } from '../models/column';
 import { TextBox, NumericTextBox, NumericTextBoxModel, MaskedTextBox } from '@syncfusion/ej2-inputs';
-import { IGanttData, ITaskData, IDependencyEditData, IPredecessor, ITaskbarEditedEventArgs } from '../base/interface';
+import { IGanttData, ITaskData, IDependencyEditData, IPredecessor, ITaskbarEditedEventArgs, ActionBeginArgs } from '../base/interface';
 import { CheckBox, CheckBoxModel } from '@syncfusion/ej2-buttons';
 import { DatePicker, DateTimePicker, DatePickerModel } from '@syncfusion/ej2-calendars';
 import { DropDownList, ComboBox, ComboBoxModel, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
@@ -353,24 +353,7 @@ export class DialogEdit {
             buttonModel: { cssClass: 'e-flat', content: this.localeObj.getConstant('cancel') },
             click: this.buttonClick.bind(this)
         }];
-        let tabElement: HTMLElement = this.createTab();
-        if (!this.beforeOpenArgs.cancel) {
-            dialogModel.content = tabElement;
-            this.dialogObj = new Dialog(dialogModel);
-            this.dialogObj.isStringTemplate = true;
-            this.dialogObj.appendTo(this.dialog);
-            let args: CObject = {
-                requestType: this.isEdit ? 'openEditDialog' : 'openAddDialog',
-                data: this.beforeOpenArgs.rowData,
-                element: this.dialog,
-                cancel: false
-            };
-            this.parent.trigger('actionComplete', args);
-            if (args.cancel) {
-                this.resetValues();
-            }
-        }
-
+        this.createTab(dialogModel);
     }
 
     private buttonClick(e: MouseEvent): void {
@@ -474,7 +457,8 @@ export class DialogEdit {
 
         }
     }
-    private createTab(): HTMLElement {
+    /* tslint:disable-next-line:max-func-body-length */
+    private createTab(dialogModel: DialogModel): void {
         let ganttObj: Gantt = this.parent;
         let tabModel: TabModel = {}; let tabItems: TabItemModel[] = [];
         let dialogSettings: AddDialogFieldSettingsModel[] = this.getEditFields();
@@ -542,18 +526,41 @@ export class DialogEdit {
         }
         this.beforeOpenArgs.requestType = this.isEdit ? 'beforeOpenEditDialog' : 'beforeOpenAddDialog';
         this.renderTabItems();
-        this.parent.trigger('actionBegin', this.beforeOpenArgs);
-        if (this.beforeOpenArgs.cancel) {
-            return tabElement;
-        }
-        tabModel.selected = this.tabSelectedEvent.bind(this);
-        tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
-        tabModel.overflowMode = 'Scrollable';
-        this.tabObj = new Tab(tabModel);
-        this.tabObj.isStringTemplate = true;
-        tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
-        this.tabObj.appendTo(tabElement);
-        return tabElement;
+        let args: ActionBeginArgs = {
+            rowData : this.beforeOpenArgs.rowData as IGanttData,
+            name : this.beforeOpenArgs.name as string,
+            requestType : this.beforeOpenArgs.requestType as string,
+            cancel: this.beforeOpenArgs.cancel as boolean
+        };
+        this.parent.trigger('actionBegin', isBlazor() ? args : this.beforeOpenArgs, (args: ActionBeginArgs | CObject) => {
+            if (!args.cancel) {
+                tabModel.selected = this.tabSelectedEvent.bind(this);
+                tabModel.height = this.parent.isAdaptive ? '100%' : 'auto';
+                tabModel.overflowMode = 'Scrollable';
+                this.tabObj = new Tab(tabModel);
+                this.tabObj.isStringTemplate = true;
+                tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
+                this.tabObj.appendTo(tabElement);
+                dialogModel.content = tabElement;
+                this.dialogObj = new Dialog(dialogModel);
+                this.dialogObj.isStringTemplate = true;
+                this.dialogObj.appendTo(this.dialog);
+                let actionCompleteArgs: CObject = {
+                    requestType: this.isEdit ? 'openEditDialog' : 'openAddDialog',
+                    data: this.beforeOpenArgs.rowData,
+                    element: this.dialog,
+                    cancel: false
+                };
+                if (isBlazor()) {
+                    this.parent.updateDataArgs(actionCompleteArgs);
+                }
+                this.parent.trigger('actionComplete', actionCompleteArgs, (actionCompleteArgs: CObject) => {
+                    if (actionCompleteArgs.cancel) {
+                        this.resetValues();
+                    }
+                });
+            }
+        });
     }
 
     private tabSelectedEvent(args: SelectEventArgs): void {

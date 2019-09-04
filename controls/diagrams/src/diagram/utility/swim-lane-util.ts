@@ -16,7 +16,7 @@ import { HistoryEntry } from '../diagram/history';
 import { StackEntryObject } from '../objects/interface/IElement';
 import { Connector } from '../objects/connector';
 import { ConnectorModel } from '../objects/connector-model';
-import { SelectorModel } from '../interaction/selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { checkParentAsContainer, findBounds } from '../interaction/container-interaction';
 import { IElement } from '../objects/interface/IElement';
 import { ClipBoardObject } from '../interaction/command-manager';
@@ -1280,8 +1280,9 @@ export function gridSelection(diagram: Diagram, selectorModel: SelectorModel, id
     return canvas;
 }
 
-export function removeLaneChildNode(diagram: Diagram, swimLaneNode: NodeModel, currentObj: NodeModel, isChildNode?: NodeModel): void {
-    let laneIndex: number = findLaneIndex(swimLaneNode, currentObj);
+export function removeLaneChildNode(
+    diagram: Diagram, swimLaneNode: NodeModel, currentObj: NodeModel, isChildNode?: NodeModel, laneIndex?: number): void {
+    laneIndex = (laneIndex !== undefined) ? laneIndex : findLaneIndex(swimLaneNode, currentObj);
     let preventHistory: boolean = false;
     let lanenode: LaneModel = (swimLaneNode.shape as SwimLaneModel).lanes[laneIndex];
     for (let j: number = lanenode.children.length - 1; j >= 0; j--) {
@@ -1353,60 +1354,63 @@ function deleteNode(diagram: Diagram, node: NodeModel): void {
     diagram.removeElements(node);
 }
 
-export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeModel): void {
-    let shape: SwimLaneModel = swimLane.shape as SwimLaneModel;
-    if (shape.lanes.length === 1) {
-        diagram.remove(swimLane);
-    } else {
-        let x: number = swimLane.wrapper.bounds.x; let y: number = swimLane.wrapper.bounds.y;
-        let row: GridRow; let i: number; let cell: GridCell; let j: number; let child: Canvas;
-
-        let grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
-        let laneIndex: number = findLaneIndex(swimLane, lane);
-        let undoObj: LaneModel = cloneObject(shape.lanes[laneIndex]) as LaneModel;
-
-        removeLaneChildNode(diagram, swimLane, lane as NodeModel);
-        if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
-            let entry: HistoryEntry = {
-                type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
-                redoObject: cloneObject(lane), category: 'Internal'
-            };
-            diagram.addHistoryEntry(entry);
-        }
-        shape.lanes.splice(laneIndex, 1);
-
-        if (shape.orientation === 'Horizontal') {
-            row = grid.rows[lane.rowIndex];
-            for (i = 0; i < row.cells.length; i++) {
-                cell = row.cells[i];
-                if (cell && cell.children.length > 0) {
-                    for (j = 0; j < cell.children.length; j++) {
-                        child = cell.children[j] as Canvas;
-                        removeChildren(diagram, child);
-                    }
-                }
-            }
-            grid.removeRow(lane.rowIndex);
+export function removeLane(diagram: Diagram, lane: NodeModel, swimLane: NodeModel, lanes?: LaneModel): void {
+    if (swimLane.shape.type === 'SwimLane') {
+        let shape: SwimLaneModel = swimLane.shape as SwimLaneModel; let laneIndex: number;
+        if (shape.lanes.length === 1) {
+            diagram.remove(swimLane);
         } else {
-            swimLane.width = (swimLane.width !== undefined) ?
-                swimLane.width - grid.rows[0].cells[lane.columnIndex].actualSize.width : swimLane.width;
-            for (i = 0; i < grid.rows.length; i++) {
-                cell = grid.rows[i].cells[lane.columnIndex];
-                if (cell && cell.children.length > 0) {
-                    for (j = 0; j < cell.children.length; j++) {
-                        child = cell.children[j] as Canvas;
-                        removeChildren(diagram, child);
+            let x: number = swimLane.wrapper.bounds.x; let y: number = swimLane.wrapper.bounds.y;
+            let row: GridRow; let i: number; let cell: GridCell; let j: number; let child: Canvas;
+
+            let grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
+            laneIndex = (lanes) ? (shape.lanes.indexOf(lanes)) : findLaneIndex(swimLane, lane);
+            let undoObj: LaneModel = cloneObject(shape.lanes[laneIndex]) as LaneModel;
+
+            removeLaneChildNode(diagram, swimLane, lane as NodeModel, undefined, laneIndex);
+            if (!(diagram.diagramActions & DiagramAction.UndoRedo)) {
+                let entry: HistoryEntry = {
+                    type: 'LaneCollectionChanged', changeType: 'Remove', undoObject: undoObj,
+                    redoObject: cloneObject(lane), category: 'Internal'
+                };
+                diagram.addHistoryEntry(entry);
+            }
+            shape.lanes.splice(laneIndex, 1);
+            let index: number = (lane) ? (shape.orientation === 'Horizontal' ? lane.rowIndex : lane.columnIndex) :
+                (findStartLaneIndex(swimLane) + laneIndex);
+            if (shape.orientation === 'Horizontal') {
+                row = grid.rows[index];
+                for (i = 0; i < row.cells.length; i++) {
+                    cell = row.cells[i];
+                    if (cell && cell.children.length > 0) {
+                        for (j = 0; j < cell.children.length; j++) {
+                            child = cell.children[j] as Canvas;
+                            removeChildren(diagram, child);
+                        }
                     }
                 }
+                grid.removeRow(index);
+            } else {
+                swimLane.width = (swimLane.width !== undefined) ?
+                    swimLane.width - grid.rows[0].cells[index].actualSize.width : swimLane.width;
+                for (i = 0; i < grid.rows.length; i++) {
+                    cell = grid.rows[i].cells[index];
+                    if (cell && cell.children.length > 0) {
+                        for (j = 0; j < cell.children.length; j++) {
+                            child = cell.children[j] as Canvas;
+                            removeChildren(diagram, child);
+                        }
+                    }
+                }
+                grid.removeColumn(index);
             }
-            grid.removeColumn(lane.columnIndex);
+            swimLane.width = swimLane.wrapper.width = grid.width;
+            swimLane.height = swimLane.wrapper.height = grid.height;
+            swimLaneMeasureAndArrange(swimLane);
+            ChangeLaneIndex(diagram, swimLane, index);
+            diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
+            diagram.updateDiagramObject(swimLane);
         }
-        swimLane.width = swimLane.wrapper.width = grid.width;
-        swimLane.height = swimLane.wrapper.height = grid.height;
-        swimLaneMeasureAndArrange(swimLane);
-        ChangeLaneIndex(diagram, swimLane, (lane as Node).rowIndex);
-        diagram.drag(swimLane, x - swimLane.wrapper.bounds.x, y - swimLane.wrapper.bounds.y);
-        diagram.updateDiagramObject(swimLane);
     }
 }
 
@@ -1426,13 +1430,13 @@ export function removeChildren(diagram: Diagram, canvas: Canvas): void {
 }
 
 
-export function removePhase(diagram: Diagram, phase: NodeModel, swimLane: NodeModel): void {
+export function removePhase(diagram: Diagram, phase: NodeModel, swimLane: NodeModel, swimLanePhases?: PhaseModel): void {
     diagram.protectPropertyChange(true);
     let x: number = swimLane.wrapper.bounds.x; let y: number = swimLane.wrapper.bounds.y;
     let isLastPhase: boolean = false; let previousPhase: PhaseModel;
     let shape: SwimLaneModel = swimLane.shape as SwimLaneModel;
     let grid: GridPanel = swimLane.wrapper.children[0] as GridPanel;
-    let phaseIndex: number = findPhaseIndex(phase, swimLane);
+    let phaseIndex: number = swimLanePhases ? shape.phases.indexOf(swimLanePhases) : findPhaseIndex(phase, swimLane);
     let phaseLength: number = shape.phases.length;
     if (shape.phases.length > 1) {
         if (phaseIndex === phaseLength - 1) {
@@ -1449,7 +1453,7 @@ export function removePhase(diagram: Diagram, phase: NodeModel, swimLane: NodeMo
             diagram.addHistoryEntry(entry);
         }
         if (shape.orientation === 'Horizontal') {
-            removeHorizontalPhase(diagram, grid, phase);
+            removeHorizontalPhase(diagram, grid, phase, phaseIndex);
         } else {
             removeVerticalPhase(diagram, grid, phase, phaseIndex, swimLane);
         }
@@ -1461,16 +1465,16 @@ export function removePhase(diagram: Diagram, phase: NodeModel, swimLane: NodeMo
     }
 }
 
-export function removeHorizontalPhase(diagram: Diagram, grid: GridPanel, phase: NodeModel): void {
+export function removeHorizontalPhase(diagram: Diagram, grid: GridPanel, phase: NodeModel, phaseIndex?: number): void {
     let row: GridRow; let cell: GridCell; let prevCell: Canvas; let actualChild: Canvas; let prevChild: Canvas;
-    let prevCanvas: Canvas; let width: number;
+    let prevCanvas: Canvas; let width: number; phaseIndex = (phaseIndex !== undefined) ? phaseIndex : phase.columnIndex;
     let i: number; let j: number; let k: number; let child: Canvas; let node: Node; let object: Node;
     for (i = 0; i < grid.rows.length; i++) {
         row = grid.rows[i];
         if (row.cells.length > 1) {
-            cell = row.cells[phase.columnIndex];
-            prevCell = (row.cells.length - 1 === phase.columnIndex) ? row.cells[phase.columnIndex - 1] :
-                row.cells[phase.columnIndex + 1];
+            cell = row.cells[phaseIndex];
+            prevCell = (row.cells.length - 1 === phaseIndex) ? row.cells[phaseIndex - 1] :
+                row.cells[phaseIndex + 1];
             prevCanvas = prevCell.children[0] as Canvas;
             if (cell.children.length > 0) {
                 actualChild = cell.children[0] as Canvas;
@@ -1486,7 +1490,7 @@ export function removeHorizontalPhase(diagram: Diagram, grid: GridPanel, phase: 
                             if (!object.isLane) {
                                 object.parentId = prevCanvas.id;
                             }
-                            if ((row.cells.length - 1 === phase.columnIndex)) {
+                            if ((row.cells.length - 1 === phaseIndex)) {
                                 object.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
                                 child.margin.left = object.wrapper.bounds.x - prevCanvas.bounds.x;
                             }
@@ -1503,7 +1507,7 @@ export function removeHorizontalPhase(diagram: Diagram, grid: GridPanel, phase: 
                                 node.children.splice(node.children.indexOf(object.id), 1);
                             }
                         }
-                        if ((row.cells.length - 1 !== phase.columnIndex)) {
+                        if ((row.cells.length - 1 !== phaseIndex)) {
                             for (k = 0; k < prevCanvas.children.length; k++) {
                                 let prevChild: Canvas = prevCanvas.children[k] as Canvas;
                                 if (prevChild instanceof Canvas) {
@@ -1525,16 +1529,17 @@ export function removeHorizontalPhase(diagram: Diagram, grid: GridPanel, phase: 
             }
         }
     }
-    grid.removeColumn(phase.columnIndex);
+    let prevWidth: number = grid.columnDefinitions()[phaseIndex].width;
+    grid.removeColumn(phaseIndex);
 
-    if ((phase.columnIndex < grid.columnDefinitions().length)) {
-        width = grid.columnDefinitions()[phase.columnIndex].width;
-        width += phase.wrapper.actualSize.width;
-        grid.updateColumnWidth(phase.columnIndex, width, true);
+    if ((phaseIndex < grid.columnDefinitions().length)) {
+        width = grid.columnDefinitions()[phaseIndex].width;
+        width += prevWidth;
+        grid.updateColumnWidth(phaseIndex, width, true);
     } else {
-        width = grid.columnDefinitions()[phase.columnIndex - 1].width;
-        width += phase.wrapper.actualSize.width;
-        grid.updateColumnWidth(phase.columnIndex - 1, width, true);
+        width = grid.columnDefinitions()[phaseIndex - 1].width;
+        width += prevWidth;
+        grid.updateColumnWidth(phaseIndex - 1, width, true);
     }
 
 }
@@ -1542,14 +1547,16 @@ export function removeHorizontalPhase(diagram: Diagram, grid: GridPanel, phase: 
 export function removeVerticalPhase(diagram: Diagram, grid: GridPanel, phase: NodeModel, phaseIndex: number, swimLane: NodeModel): void {
     let row: GridRow; let cell: GridCell; let prevRow: GridRow; let height: number;
     let i: number; let j: number; let k: number;
-    row = grid.rows[phase.rowIndex]; let prevCell: GridCell; let prevChild: Canvas;
+    let prevCell: GridCell; let prevChild: Canvas;
     let shape: SwimLaneModel = swimLane.shape as SwimLaneModel; let child: Canvas; let object: Node;
+    let phaseRowIndex: number = (phaseIndex !== undefined) ? ((shape.header) ? phaseIndex + 1 : phaseIndex) : phase.rowIndex;
+    row = grid.rows[phaseRowIndex];
     let top: number = swimLane.wrapper.bounds.y;
     let phaseCount: number = shape.phases.length;
     if (shape.header !== undefined && (shape as SwimLane).hasHeader) {
         top += grid.rowDefinitions()[0].height;
     }
-    prevRow = (phaseIndex === phaseCount) ? grid.rows[phase.rowIndex - 1] : grid.rows[phase.rowIndex + 1];
+    prevRow = (phaseIndex === phaseCount) ? grid.rows[phaseRowIndex - 1] : grid.rows[phaseRowIndex + 1];
     for (i = 0; i < row.cells.length; i++) {
         cell = row.cells[i];
         prevCell = prevRow.cells[i]; prevChild = prevCell.children[0] as Canvas;
@@ -1585,16 +1592,17 @@ export function removeVerticalPhase(diagram: Diagram, grid: GridPanel, phase: No
             deleteNode(diagram, node);
         }
     }
-    grid.removeRow(phase.rowIndex);
+    let prevHeight: number = grid.rowDefinitions()[phaseRowIndex].height;
+    grid.removeRow(phaseRowIndex);
 
-    if ((phase.rowIndex < grid.rowDefinitions().length)) {
-        height = grid.rowDefinitions()[phase.rowIndex].height;
-        height += phase.wrapper.actualSize.height;
-        grid.updateRowHeight(phase.rowIndex, height, true);
+    if ((phaseRowIndex < grid.rowDefinitions().length)) {
+        height = grid.rowDefinitions()[phaseRowIndex].height;
+        height += prevHeight;
+        grid.updateRowHeight(phaseRowIndex, height, true);
     } else {
-        height = grid.rowDefinitions()[phase.rowIndex - 1].height;
-        height += phase.wrapper.actualSize.height;
-        grid.updateRowHeight(phase.rowIndex - 1, height, true);
+        height = grid.rowDefinitions()[phaseRowIndex - 1].height;
+        height += prevHeight;
+        grid.updateRowHeight(phaseRowIndex - 1, height, true);
     }
 }
 

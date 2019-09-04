@@ -26,10 +26,10 @@ const ACTIVE: string = 'e-switch-active';
 @NotifyPropertyChanges
 export class Switch extends Component<HTMLInputElement> implements INotifyPropertyChanged {
     private tagName: string;
-    private isKeyPressed: boolean = false;
+    private isFocused: boolean = false;
     private isDrag: boolean = false;
     private delegateMouseUpHandler: Function;
-    private delegateKeyDownHandler: Function;
+    private delegateKeyUpHandler: Function;
     private formElement: HTMLFormElement;
     private initialSwitchCheckedValue: boolean;
 
@@ -157,9 +157,7 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         destroy(this, this.getWrapper(), this.tagName);
     }
     private focusHandler(): void {
-        if (this.isKeyPressed) {
-            this.getWrapper().classList.add('e-focus');
-        }
+        this.isFocused = true;
     }
     private focusOutHandler(): void {
         this.getWrapper().classList.remove('e-focus');
@@ -301,13 +299,14 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (!this.disabled) {
             this.wireEvents();
         }
+        this.renderComplete();
     }
     private rippleHandler(e: MouseEvent): void {
         let rippleSpan: Element = this.getWrapper().getElementsByClassName(RIPPLE)[0];
         rippleMouseHandler(e, rippleSpan);
         if (e.type === 'mousedown' && (e.currentTarget as Element).classList.contains('e-switch-wrapper') && e.which === 1) {
             this.isDrag = true;
-            this.isKeyPressed = false;
+            this.isFocused = false;
         }
     }
     private rippleTouchHandler(eventType: string): void {
@@ -334,7 +333,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
     private switchFocusHandler(): void {
-        this.isKeyPressed = true;
+        if (this.isFocused) {
+            this.getWrapper().classList.add('e-focus');
+        }
     }
     private switchMouseUp(e: MouseEventArgs): void {
         let target: Element = e.target as Element;
@@ -355,6 +356,10 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
 
+    private changeHandler(e: MouseEvent): void {
+        e.stopPropagation();
+    }
+
     private formResetHandler(): void {
         this.checked = this.initialSwitchCheckedValue;
         attributes(this.element, { 'checked': this.initialSwitchCheckedValue.toString() });
@@ -370,17 +375,21 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         let wrapper: Element = this.getWrapper();
         let handle: Element = wrapper.querySelector('.e-switch-handle');
         this.delegateMouseUpHandler = this.switchMouseUp.bind(this);
-        this.delegateKeyDownHandler = this.switchFocusHandler.bind(this);
+        this.delegateKeyUpHandler = this.switchFocusHandler.bind(this);
         EventHandler.add(wrapper, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
         EventHandler.add(this.element, 'focusout', this.focusOutHandler, this);
-        EventHandler.add(document, 'mouseup', this.delegateMouseUpHandler, this);
-        EventHandler.add(document, 'keydown', this.delegateKeyDownHandler, this);
+        EventHandler.add(this.element, 'mouseup', this.delegateMouseUpHandler, this);
+        EventHandler.add(this.element, 'keyup', this.delegateKeyUpHandler, this);
         EventHandler.add(wrapper, 'mousedown mouseup', this.rippleHandler, this);
         EventHandler.add(wrapper, 'touchstart touchmove touchend', this.switchMouseUp, this);
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
+        if (this.tagName === 'EJS-SWITCH') {
+            EventHandler.add(this.element, 'change', this.changeHandler, this);
+        }
+
     }
     private unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
@@ -388,13 +397,17 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         EventHandler.remove(wrapper, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
-        EventHandler.remove(document, 'mouseup', this.delegateMouseUpHandler);
-        EventHandler.remove(document, 'keydown', this.delegateKeyDownHandler);
+        EventHandler.remove(this.element, 'mouseup', this.delegateMouseUpHandler);
+        EventHandler.remove(this.element, 'keyup', this.delegateKeyUpHandler);
         EventHandler.remove(wrapper, 'mousedown mouseup', this.rippleHandler);
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
+        if (this.tagName === 'EJS-SWITCH') {
+            EventHandler.remove(this.element, 'change', this.changeHandler);
+        }
+
     }
 
     /**

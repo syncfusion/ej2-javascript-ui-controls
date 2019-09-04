@@ -49,6 +49,7 @@ export interface SparklineFontModel {
 
     /**
      * Opacity for the text.
+     * @default 1
      */
     opacity?: number;
 
@@ -213,31 +214,36 @@ export interface AxisSettingsModel {
 
     /**
      * To configure Sparkline x axis min value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     minX?: number;
 
     /**
      * To configure Sparkline x axis max value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     maxX?: number;
 
     /**
      * To configure Sparkline y axis min value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     minY?: number;
 
     /**
      * To configure Sparkline y axis max value.
-     * @aspDefaultValueIgnore 
+     * @aspDefaultValueIgnore
+     * @blazorDefaultValue null
      */
     maxY?: number;
 
     /**
      * To configure Sparkline horizontal axis line position.
      * @default 0
+     * @blazorDefaultValue 0
      */
     value?: number;
 

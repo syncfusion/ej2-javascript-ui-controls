@@ -13,7 +13,6 @@ Diagram.Inject(LayoutAnimation);
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { Animation } from '../../../src/diagram/objects/interface/IElement'
 
-
 import { DataManager, Query } from '@syncfusion/ej2-data';
 /**
  * Organizational Chart
@@ -404,7 +403,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -122 && bounds.y == 50 && bounds.width == 1445 && bounds.height == 1290).toBe(true);
-            expect(diagram.nodes[0].offsetX == 407.5&& diagram.nodes[0].offsetY == 150).toBe(true);
+            expect(diagram.nodes[0].offsetX == 407.5 && diagram.nodes[0].offsetY == 150).toBe(true);
             diagram.getNodeDefaults = reset;
             done();
         });
@@ -470,7 +469,7 @@ describe('Diagram Control', () => {
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -1700 && bounds.y == -130
                 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-                expect(diagram.nodes[0].offsetX == 90 && diagram.nodes[0].offsetY == 360).toBe(true);
+            expect(diagram.nodes[0].offsetX == 90 && diagram.nodes[0].offsetY == 360).toBe(true);
             done();
         });
         it('Checking fixed node - bottom to top orientation', (done: Function) => {
@@ -1822,7 +1821,7 @@ describe('Layout collapse  ', () => {
         var mouseEvents = new MouseEvents();
         var diagramCanvas = document.getElementById(diagram3.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 748, 129);
-        expect((Math.ceil(diagram3.nodes[3].offsetX) === 645 || Math.floor )&& Math.round(diagram3.nodes[3].offsetY) === 190).toBe(true);
+        expect((Math.ceil(diagram3.nodes[3].offsetX) === 645 || Math.floor) && Math.round(diagram3.nodes[3].offsetY) === 190).toBe(true);
         done();
     });
 });
@@ -1972,3 +1971,328 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
     });
 
 });
+
+describe('Node and connector default for layout', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    Diagram.Inject(LayoutAnimation);
+    let data: object[] = [
+        {
+            'Id': 'parent1', 'Name': 'Maria ', 'Designation': 'Managing Director',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': 'parent', 'Name': ' sam', 'Designation': 'Managing Director', 'ReportingPerson': 'parent1',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': 'parent3', 'Name': ' sam geo', 'Designation': 'Managing Director', 'ReportingPerson': 'parent1',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': '80', 'Name': ' david', 'Designation': 'Managing Director', 'ReportingPerson': 'parent3',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': '81', 'Name': ' andres', 'Designation': 'Managing Director', 'ReportingPerson': 'parent3',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': '82', 'Name': ' pirlo', 'Designation': 'Managing Director', 'ReportingPerson': '81',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': '83', 'Name': ' antonio', 'Designation': 'Managing Director', 'ReportingPerson': '81',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': '84', 'Name': ' antonio', 'Designation': 'Managing Director', 'ReportingPerson': '84',
+            'ImageUrl': '../content/images/orgchart/Clayton.png', 'IsExpand': 'true', 'RatingColor': '#C34444'
+        },
+        {
+            'Id': 1, 'Name': 'Ana Trujillo', 'Designation': 'Project Manager',
+            'ImageUrl': '../content/images/orgchart/Thomas.PNG', 'IsExpand': 'true',
+            'RatingColor': '#68C2DE', 'ReportingPerson': 'parent'
+        },
+        {
+            'Id': 1111, 'Name': 'Ana Trujillo', 'Designation': 'Project Manager',
+            'ImageUrl': '../content/images/orgchart/Thomas.PNG', 'IsExpand': 'true',
+            'RatingColor': '#68C2DE', 'ReportingPerson': 'parent'
+        },
+        {
+            'Id': 2, 'Name': 'Anto damien', 'Designation': 'Project Lead',
+            'ImageUrl': '../content/images/orgchart/image53.png', 'IsExpand': 'false',
+            'RatingColor': '#93B85A', 'ReportingPerson': '1111'
+        },
+        {
+            'Id': 39, 'Name': 'sathik', 'Designation': 'Project Lead',
+            'ImageUrl': '../content/images/orgchart/image53.png', 'IsExpand': 'false',
+            'RatingColor': '#93B85A', 'ReportingPerson': '2'
+        },
+        {
+            'Id': 69, 'Name': 'Anto savilla', 'Designation': 'Project Lead',
+            'ImageUrl': '../content/images/orgchart/image53.png', 'IsExpand': 'false',
+            'RatingColor': '#93B85A', 'ReportingPerson': '39    '
+        },
+
+    ];
+    let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+
+
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramConnectorUpdateInLayoutIssue' });
+        document.body.appendChild(ele);
+
+
+        diagram = new Diagram({
+            width: '1250px', height: '590px',
+            snapSettings: { constraints: 0 },
+            layout: {
+                enableAnimation: true,
+                type: 'OrganizationalChart', margin: { top: 20 },
+                layoutInfo: { type: 'Left', offset: -20, orientation: 'Vertical' },
+            },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items
+            },
+            nodeDefaults: {
+                expandIcon: { height: 15, width: 15, shape: "Plus", fill: 'lightgray', borderColor: 'red', borderWidth: 3, offset: { x: .5, y: .85 } },
+                height: 50, backgroundColor: 'lightgrey', style: { fill: 'transparent', strokeWidth: 2 },
+                collapseIcon: { height: 15, width: 15, shape: "Minus", fill: 'lightgray', borderColor: 'red', borderWidth: 3, offset: { x: .5, y: .85 } }
+            },
+            connectorDefaults: {
+                type: 'Orthogonal',
+                style: { strokeColor: 'red' },
+                targetDecorator: {
+                    shape: 'None',
+
+                },
+            },
+
+            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+                let content: StackPanel = new StackPanel();
+                content.id = obj.id + '_outerstack';
+                content.style.strokeColor = 'darkgreen';
+                content.orientation = 'Horizontal';
+                content.padding = { left: 5, right: 10, top: 5, bottom: 5 };
+                let innerStack: StackPanel = new StackPanel();
+                innerStack.style.strokeColor = 'none';
+                innerStack.margin = { left: 15, right: 15, top: 15, bottom: 15 };
+                innerStack.id = obj.id + '_innerstack';
+
+                let text: TextElement = new TextElement();
+                text.content = obj.data['Name'];
+
+                text.style.color = 'blue';
+                text.style.strokeColor = 'none';
+                text.style.fill = 'none';
+                text.id = obj.id + '_text1';
+
+                let desigText: TextElement = new TextElement();
+                desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+                desigText.content = obj.data['Designation'];
+                desigText.style.color = 'blue';
+                desigText.style.strokeColor = 'none';
+                desigText.style.fill = 'none';
+                desigText.style.textWrapping = 'Wrap';
+                desigText.id = obj.id + '_desig';
+                innerStack.children = [text, desigText];
+
+                content.children = [innerStack];
+
+                return content;
+            }
+        });
+        diagram.appendTo('#diagramConnectorUpdateInLayoutIssue');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Node and connector default for layout', (done: Function) => {
+        let iconElement = document.getElementById(diagram.nodes[0].id + '_icon_content_shape')
+        let connectorElement = document.getElementById(diagram.connectors[0].id + '_path');
+        expect(iconElement.getAttribute('d') === 'M3,0 L3,6 M0,3 L6,3 ' && iconElement.getAttribute('stroke') === 'red'
+            && iconElement.getAttribute('stroke-width') === '3' && connectorElement.getAttribute('stroke') === 'red'
+            && connectorElement.getAttribute('d') === 'M0,0 L0,7.5 L35,7.5 L35,51.9 L20,51.9 ').toBe(true)
+        done();
+    });
+
+    it('get layout info test cases', (done: Function) => {
+        let node = diagram.nodes[0]
+        let nodeElement: any = document.getElementById(node.id)
+        expect(Math.round(nodeElement.getAttribute('x')) === 632).toBe(true)
+        nodeElement = document.getElementById(diagram.nodes[1].id)
+       expect(Math.round(nodeElement.getAttribute('x')) === 579||Math.round(nodeElement.getAttribute('x')) === 580).toBe(true)
+        done();
+    });
+
+});
+describe('Data Map - Blazor Support', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    function nodeDefaults(node: any) {
+        node.annotations[0].style.color = "white";
+        node.width = 120;
+        node.height = 50;
+        node.expandIcon = { shape: 'Minus' };
+        node.collapseIcon = { shape: 'Plus' };
+        return node;
+    }
+
+    //The below method used to define the common settings for connectors.
+    function connectorDefaults(connector: any) {
+        connector.type = 'Orthogonal';
+        connector.targetDecorator = { shape: 'None' };
+        return connector;
+    }
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramdataMap' });
+        document.body.appendChild(ele);
+        let data: object[] = [{ 'Name': 'Customer Support', 'fillColor': '#0f688d' },
+        { 'Name': 'OEM Support', 'fillColor': '#0f688d' },
+        { 'Name': 'Customer Care', 'ReportingPerson': ['Customer Support', 'OEM Support'], 'fillColor': '#14ad85' },
+        { 'Name': 'Central Region', 'fillColor': '#0f688d' },
+        { 'Name': 'Eastern Region', 'fillColor': '#0f688d' },
+        { 'Name': 'ServiceCare', 'ReportingPerson': ['Central Region', 'Eastern Region'], 'fillColor': '#14ad85' },
+        { 'Name': 'National Channel Marketing', 'fillColor': '#0f688d' },
+        { 'Name': 'Retail Channel Marketing', 'fillColor': '#0f688d' },
+        {
+            'Name': 'Channel Marketing', 'ReportingPerson': ['National Channel Marketing', 'Retail Channel Marketing'],
+            'fillColor': '#14ad85'
+        },
+        { 'Name': 'Northern Region', 'fillColor': '#0f688d' },
+        { 'Name': 'Western Region', 'fillColor': '#0f688d' },
+        { 'Name': 'Channel Field Sales', 'ReportingPerson': ['Northern Region', 'Western Region'], 'fillColor': '#14ad85' },
+        { 'Name': 'Customer', 'ReportingPerson': ['Customer Care', 'ServiceCare'], 'fillColor': '#0aa6ce' },
+        { 'Name': 'SalesMan', 'ReportingPerson': ['Channel Marketing', 'Channel Field Sales'], 'fillColor': '#0aa6ce' },
+        { 'Name': 'Adventure Work Cycle', 'ReportingPerson': ['Customer', 'SalesMan'], 'fillColor': '#f16f62' },
+        ];
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        diagram = new Diagram({
+            width: 1500, height: 2500,
+            layout: { type: 'HierarchicalTree', verticalSpacing: 40 },
+            dataSourceSettings: {
+                id: 'Name', parentId: 'ReportingPerson', dataSource: items,
+                doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                    nodeModel.annotations = [{
+                        margin: { top: 10 }
+                    }];
+                },
+                dataMapSettings: [{
+                    property: 'Annotations[0].Style.Fill', field: 'fillColor'
+                },
+                {
+                    property: 'Annotations[0].Content', field: 'Name'
+                },
+                {
+                    property: 'Style.Fill', field: 'fillColor'
+                }]
+            },
+            getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                obj.width = 150; obj.height = 50; obj.shape = { type: 'Basic', shape: 'Rectangle' };
+                obj.style = { fill: 'transparent', strokeWidth: 2 };
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.type = 'Orthogonal';
+                return connector;
+            }
+        });
+        diagram.appendTo('#diagramdataMap');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Diagram Data Map property for Layout', (done: Function) => {
+        expect(diagram.nodes[0].annotations[0].style.fill === '#0f688d').toBe(true);
+        done();
+    });
+
+});
+
+describe('layout-info assistant support', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    function nodeDefaults(node: any) {
+        node.annotations[0].style.color = "white";
+        node.width = 120;
+        node.height = 50;
+        node.expandIcon = { shape: 'Minus' };
+        node.collapseIcon = { shape: 'Plus' };
+        return node;
+    }
+
+    //The below method used to define the common settings for connectors.
+    function connectorDefaults(connector: any) {
+        connector.type = 'Orthogonal';
+        connector.targetDecorator = { shape: 'None' };
+        return connector;
+    }
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramdataMap' });
+        document.body.appendChild(ele);
+        let data: object[] = [
+            { 'Id': 'parent', 'Role': 'Board', 'color': '#71AF17' },
+            { 'Id': '1', 'Role': 'General Manager', 'Manager': 'parent', 'ChartType': 'right', 'color': '#71AF17' },
+            { 'Id': '11', 'Role': 'Assistant Manager', 'Manager': '1', 'color': '#71AF17' },
+            { 'Id': '110', 'Role': 'Assistant Manager1', 'Manager': '1', 'color': '#71AF17' },
+            { 'Id': '2', 'Role': 'Human Resource Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '3', 'Role': 'Trainers', 'Manager': '2', 'color': '#2E95D8' },
+            { 'Id': '4', 'Role': 'Recruiting Team', 'Manager': '2', 'color': '#2E95D8' },
+            { 'Id': '5', 'Role': 'Finance Asst. Manager', 'Manager': '2', 'color': '#2E95D8' },
+            { 'Id': '6', 'Role': 'Design Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '7', 'Role': 'Design Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+            { 'Id': '8', 'Role': 'Development Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+            { 'Id': '9', 'Role': 'Drafting Supervisor', 'Manager': '6', 'color': '#2E95D8' },
+            { 'Id': '10', 'Role': 'Operation Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '11', 'Role': 'Statistic Department', 'Manager': '10', 'color': '#2E95D8' },
+            { 'Id': '12', 'Role': 'Logistic Department', 'Manager': '10', 'color': '#2E95D8' },
+            { 'Id': '16', 'Role': 'Marketing Manager', 'Manager': '1', 'ChartType': 'right', 'color': '#1859B7' },
+            { 'Id': '17', 'Role': 'Oversea sales Manager', 'Manager': '16', 'color': '#2E95D8' },
+            { 'Id': '18', 'Role': 'Petroleum Manager', 'Manager': '16', 'color': '#2E95D8' },
+            { 'Id': '20', 'Role': 'Service Dept. Manager', 'Manager': '16', 'color': '#2E95D8' },
+            { 'Id': '21', 'Role': 'Quality Department', 'Manager': '16', 'color': '#2E95D8' }
+        ];
+        
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        diagram = new Diagram({
+            width: '4000px', height: '2000px',
+            snapSettings: { constraints: 0 },
+            layout: {
+                type: 'OrganizationalChart',
+                layoutInfo: { getAssistantDetails: { root: "General Manager", assistants: ["Assistant Manager","Assistant Manager1"] } },
+            },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'Manager', dataSource: items
+            },
+        
+            getNodeDefaults: (obj: Node, diagram: Diagram) => {
+                obj.width = 150;
+                obj.height = 50;
+                obj.style.fill = obj.data['color'];
+                obj.annotations = [{ content: obj.data['Role'], style: { color: 'white' } }];
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                connector.targetDecorator.shape = 'None';
+                connector.type = 'Orthogonal';
+                return connector;
+            }
+        });
+        diagram.appendTo('#diagramdataMap');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('layout-info assistant support', (done: Function) => {
+        expect(diagram.nodes[2].offsetY===235&&diagram.nodes[3].offsetY===235).toBe(true);
+        done();
+    });
+
+});
+
+
+
+
+

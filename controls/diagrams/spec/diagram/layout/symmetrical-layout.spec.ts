@@ -109,4 +109,93 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+
+    describe('Layout for group node', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            populateNodes();
+            function createNode(id:string, width:number, height:number, offsetX:number, offsetY:number, content:string) {
+                var node:NodeModel = {};
+                node.id = id;
+                node.width = width;
+                node.height = height;
+                node.offsetX = offsetX;
+                node.offsetY = offsetY;
+                node.annotations = [{ content: content }];
+                return node;
+            }
+            diagram = new Diagram({
+                width: '1200px', height: '580px',
+                nodes: [
+                    createNode("firstRectangle", 400, 200, 500, 300, ""),
+                    createNode("Image", 100, 100, 400, 300, "Image"),
+                    createNode("MyNode", 200, 60, 600, 300, "MyNode"),
+                    createNode("A", 20, 20, 310, 210, "A"),
+                    createNode("B", 20, 20, 310, 410, "B"),
+                    createNode("C", 20, 20, 500, 410, "C"),
+                    createNode("D", 20, 20, 690, 410, "D"),
+                    {
+                        id: 'group',
+                        style: {
+                            fill: 'transparent',
+                            strokeWidth: 0
+                        },
+                        children: ['firstRectangle', 'Image', 'MyNode', 'A', 'B', 'C', 'D']
+                    },
+                    createNode("secondRectangle", 400, 200, 1000, 300, ""),
+                    createNode("Image1", 100, 100, 900, 300, "Image"),
+                    createNode("MyNode1", 200, 60, 1100, 300, "MyNode"),
+                    createNode("AA", 20, 20, 810, 210, "A"),
+                    createNode("BB", 20, 20, 810, 410, "B"),
+                    createNode("CC", 20, 20, 1000, 410, "C"),
+                    createNode("DD", 20, 20, 1190, 410, "D"),
+                    {
+                        id: 'secondGroup',
+                        style: {
+                            fill: 'transparent',
+                            strokeWidth: 0
+                        },
+                        children: ['secondRectangle', 'Image1', 'MyNode1', 'AA', 'BB', 'CC', 'DD']
+                    },
+                    createNode("firstRectanglqqe", 400, 200, 500, 300, ""),
+                    createNode("Imageq", 100, 100, 400, 300, "Image"),
+                    createNode("MyNodeq", 200, 60, 600, 300, "MyNode"),
+                    createNode("AAA", 20, 20, 310, 210, "A"),
+                    createNode("BBB", 20, 20, 310, 410, "B"),
+                    createNode("CCC", 20, 20, 500, 410, "C"),
+                    createNode("DDD", 20, 20, 690, 410, "D"),
+                    {
+                        id: 'groupqq1',
+                        style: {
+                            fill: 'transparent',
+                            strokeWidth: 0
+                        },
+                        children: ['firstRectanglqqe', 'Imageq', 'MyNodeq', 'AAA', 'BBB', 'CCC', 'DDD']
+                    },
+                ],
+                connectors: [
+                    {
+                        id: 'connector', sourceID: 'group', targetID: 'secondGroup'
+                    },
+                      {
+                        id: 'connecto1r', sourceID: 'group', targetID: 'groupqq1'
+                    }
+                ],
+                layout: { type: 'HierarchicalTree'},
+            });
+            diagram.appendTo('#diagram');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking group node at layout', (done: Function) => {
+            expect(diagram.nameTable['group'].offsetX == 600 && diagram.nameTable['group'].offsetY == 160).toBe(true);
+            done();
+        });
+    });
 });

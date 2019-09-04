@@ -7,6 +7,7 @@ import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement } from '@syncfusion/ej2-base';
 import { data1, data4, data5, data12, accessData1, accessData5, accessDetails1, accessDetails2, accessData2, UploadData, data24, data25  } from '../data';
+import { FileSelectEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -1325,6 +1326,9 @@ describe('FileManager control LargeIcons view', () => {
             expect(newli1[1].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
         });
         it('ctrl + A key testing', () => {
+            feObj.fileSelect = (args:FileSelectEventArgs) =>{
+                expect(args.isInteracted).toEqual(true);
+            }
             let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(li[0].classList.contains('e-active')).toBe(false);
             expect(li[0].classList.contains('e-focus')).toBe(false);

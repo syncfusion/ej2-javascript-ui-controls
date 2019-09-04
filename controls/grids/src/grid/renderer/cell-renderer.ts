@@ -6,7 +6,7 @@ import { ICellRenderer, IValueFormatter, ICellFormatter, IGrid, ICell } from '..
 import { doesImplementInterface, setStyleAndAttributes, appendChildren, extendObjWithFn } from '../base/util';
 import { ServiceLocator } from '../services/service-locator';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
-import { foreignKeyData, blazorId } from '../base/constant';
+import { foreignKeyData } from '../base/constant';
 
 /**
  * CellRenderer class which responsible for building cell content. 
@@ -58,17 +58,17 @@ export class CellRenderer implements ICellRenderer<Column> {
             let str: string = 'isStringTemplate';
             let index: string = 'index';
             if (isBlazor() && isEdit) {
+                let rNumber: number = this.parent.editSettings.mode !== 'Batch' ? parseInt(attributes[index], 10) : null;
                 result = cell.column.getColumnTemplate()(
                     extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str],
-                    parseInt(attributes[index], 10));
+                    rNumber);
+                window[templateID] = null;
                 if (this.parent.editSettings.mode !== 'Batch') {
                     updateBlazorTemplate(templateID, 'Template', cell.column, false);
                 }
             } else {
-                let tData: Object = extend({ 'index': attributes[literals[0]] }, dummyData);
-                result = cell.column.getColumnTemplate()(tData, this.parent, 'template', templateID, this.parent[str]);
-                window[templateID] = window[templateID] || {};
-                window[templateID][tData[blazorId]] = node;
+                result = cell.column.getColumnTemplate()(
+                    extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template', templateID, this.parent[str]);
             }
             appendChildren(node, result);
             this.parent.notify('template-result', { template: result });
@@ -120,7 +120,8 @@ export class CellRenderer implements ICellRenderer<Column> {
      * @param  {Element}
      */
     public refreshTD(td: Element, cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): void {
-        let node: Element = this.refreshCell(cell, data, attributes);
+        let isEdit: boolean = this.parent.editSettings.mode === 'Batch' && td.classList.contains('e-editedbatchcell');
+        let node: Element = this.refreshCell(cell, data, attributes, isEdit);
         td.innerHTML = '';
         td.setAttribute('aria-label', node.getAttribute('aria-label'));
         let elements: Element[] = [].slice.call(node.childNodes);

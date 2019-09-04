@@ -14,6 +14,7 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { removeClass } from '@syncfusion/ej2-base';
+import * as events from '../../../src/grid/base/constant';
 
 
 Grid.Inject(Page, Toolbar, ColumnChooser, Freeze, DetailRow);
@@ -675,6 +676,19 @@ describe('Column chooser module', () => {
             let btn: Button = (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
             btn.click();
             expect(gridObj.getVisibleColumns()[0].type).toBe(colType);
+        });
+
+        it('Column chooser open event testing', (done: Function) => {
+            gridObj.columnChooserModule.openColumnChooser();
+            (gridObj.element.querySelectorAll('.e-cc-chbox')[2] as any).click();
+            let columnChooserOpenedHandler : any = (args: any): void => {
+                let name: string = 'columnChooserOpened';
+                expect(args.name).toBe(name);
+                gridObj.off(events.columnChooserOpened, columnChooserOpenedHandler);  
+            }
+            gridObj.on(events.columnChooserOpened, columnChooserOpenedHandler);
+            (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0].click();
+            done();
         });
         
         afterAll(() => {

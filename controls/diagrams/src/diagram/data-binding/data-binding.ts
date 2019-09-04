@@ -6,6 +6,8 @@ import { DataSourceModel } from '../diagram/data-source-model';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Diagram } from '../diagram';
 import { randomId, getFunction } from '../utility/base-util';
+import { cloneBlazorObject } from '../utility/diagram-util';
+import { updateDefaultValues } from '../utility/diagram-util';
 
 /**
  * data source defines the basic unit of diagram
@@ -90,7 +92,7 @@ export class DataBinding {
                 if (!diagram.isDestroyed) {
                     this.applyDataSource(data, result, diagram);
                     diagram.refreshDiagram();
-                    diagram.trigger('dataLoaded', { diagram: diagram });
+                    diagram.trigger('dataLoaded', { diagram: cloneBlazorObject(diagram) });
                 }
             });
         }
@@ -176,14 +178,52 @@ export class DataBinding {
     private applyNodeTemplate(mapper: DataSourceModel, item: Object, diagram: Diagram): Node {
         let root: Object = item;
         let id: string = randomId();
+        let blazor: string = 'Blazor';
         let nodeModel: NodeModel = { id: id, data: item };
         let doBinding: Function = getFunction(mapper.doBinding);
         if (doBinding) {
             doBinding(nodeModel, item, diagram);
         }
-
         let obj: Node = new Node(diagram, 'nodes', nodeModel, true);
-
+        updateDefaultValues(obj, nodeModel, diagram.nodeDefaults);
+        if (mapper.dataMapSettings) {
+            let index: number;
+            let arrayProperty: string[] = [];
+            let innerProperty: string[] = [];
+            for (let i: number = 0; i < mapper.dataMapSettings.length; i++) {
+                if (mapper.dataMapSettings[i].property.indexOf('.') !== -1) {
+                    innerProperty = this.splitString(mapper.dataMapSettings[i].property);
+                    for (let p: number = 0; p < innerProperty.length; p++) {
+                        if (innerProperty[p].indexOf('[') !== -1) {
+                            index = innerProperty[p].indexOf('[');
+                            arrayProperty = innerProperty[p].split('[');
+                        }
+                    }
+                    if (index) {
+                        if (innerProperty[2]) {
+                            obj[arrayProperty[0]][innerProperty[0].charAt(index + 1)][innerProperty[1]][innerProperty[2]] =
+                                item[mapper.dataMapSettings[i].field];
+                        } else {
+                            let value: string = item[mapper.dataMapSettings[i].field];
+                            obj[arrayProperty[0]][innerProperty[0].charAt(index + 1)][innerProperty[1]] = value;
+                        }
+                    } else {
+                        if (innerProperty[2]) {
+                            obj[innerProperty[0]][innerProperty[1]][innerProperty[2]] = item[mapper.dataMapSettings[i].field];
+                        } else {
+                            obj[innerProperty[0]][innerProperty[1]] = item[mapper.dataMapSettings[i].field];
+                        }
+                    }
+                } else {
+                    let property: string = mapper.dataMapSettings[i].property;
+                    property = property.charAt(0).toLowerCase() + property.slice(1);
+                    obj[property] = item[mapper.dataMapSettings[i].field];
+                }
+                index = 0;
+                arrayProperty = [];
+                innerProperty = [];
+            }
+        }
         if (!this.collectionContains(obj, diagram, mapper.id, mapper.parentId)) {
             return obj;
         } else {
@@ -191,6 +231,14 @@ export class DataBinding {
         }
     }
 
+    private splitString(property: string): string[] {
+        let temp: string[] = [];
+        temp = property.split('.');
+        for (let i: number = 0; i < temp.length; i++) {
+            temp[i] = temp[i].charAt(0).toLowerCase() + temp[i].slice(1);
+        }
+        return temp;
+    }
 
     private renderChildNodes(mapper: DataSourceModel, parent: Object, value: string, rtNodes: Object[], diagram: Diagram): void {
         let child: Object; let nextLevel: Object; let node: Node;
@@ -259,6 +307,7 @@ export class DataBinding {
             id: randomId(), sourceID: sNode, targetID: tNode
         };
         let obj: Connector = new Connector(diagram, 'connectors', connModel, true);
+        updateDefaultValues(obj, connModel, diagram.connectorDefaults);
         return obj;
     }
 }

@@ -1,4 +1,4 @@
-import { Base } from './base';import { Browser } from './browser';import { isVisible } from './dom';import { Property, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Event } from './notify-property-change';import { EventHandler } from './event-handler';import { ChildProperty } from './child-property';import { select, closest, setStyleAttribute, addClass, createElement } from './dom';import { extend, isUndefined, isNullOrUndefined, compareElementParent } from './util';
+import { Base } from './base';import { Browser } from './browser';import { isVisible } from './dom';import { Property, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Event } from './notify-property-change';import { EventHandler } from './event-handler';import { ChildProperty } from './child-property';import { select, closest, setStyleAttribute, addClass, createElement } from './dom';import { extend, isUndefined, isNullOrUndefined, compareElementParent, isBlazor } from './util';
 import {DragDirection} from "./draggable";
 
 /**

@@ -337,7 +337,13 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
 
     private setContent(): void {
         let cont: string = this.element.innerHTML;
-        this.element.innerHTML = '';
+        if (Object.keys(window).indexOf('ejsInterop') === -1) {
+            while (this.element.firstChild) {
+                this.element.removeChild(this.element.firstChild);
+            }
+        } else {
+            this.element.innerHTML = '';
+        }
         this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
     }
 

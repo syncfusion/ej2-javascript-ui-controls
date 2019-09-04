@@ -6926,6 +6926,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 }
                 if (limit < this.maximumSelectionLength) {
                     this.updateListSelection(li, e);
+                    this.checkPlaceholderSize();
                     this.addListFocus(li);
                     if ((this.allowCustomValue || this.allowFiltering) && this.mainList && this.listData) {
                         if (this.mode !== 'CheckBox') {
@@ -6965,7 +6966,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
             }
             this.refreshPlaceHolder();
-            this.checkPlaceholderSize();
             this.findGroupStart(target);
         }
     }
@@ -8622,7 +8622,7 @@ let ListBox = class ListBox extends DropDownBase {
                 helper: (e) => {
                     let ele = e.sender.cloneNode(true);
                     ele.style.width = this.getItems()[0].offsetWidth + 'px';
-                    if (this.value.length > 1 && this.isSelected(ele)) {
+                    if ((this.value && this.value.length) > 1 && this.isSelected(ele)) {
                         ele.appendChild(this.createElement('span', {
                             className: 'e-list-badge', innerHTML: this.value.length + ''
                         }));
@@ -8805,7 +8805,7 @@ let ListBox = class ListBox extends DropDownBase {
             let toIdx = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             listData.splice(toIdx, 0, listData.splice(listData.indexOf(this.getDataByValue(dropValue)), 1)[0]);
             if (this.allowDragAll) {
-                selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
+                selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach((value) => {
                     if (value !== dropValue) {
                         let idx = listData.indexOf(this.getDataByValue(value));
@@ -8825,7 +8825,8 @@ let ListBox = class ListBox extends DropDownBase {
             let currIdx = args.currentIndex = this.getCurIdx(listObj, args.currentIndex);
             let ul = listObj.ulElement;
             listData = [].slice.call(listObj.listData);
-            selectedOptions = (Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll) ? this.value : [dropValue];
+            selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
+                ? this.value : [dropValue];
             selectedOptions.forEach((value) => {
                 droppedData = this.getDataByValue(value);
                 this.listData.splice(this.listData.indexOf(droppedData), 1);
@@ -9003,9 +9004,11 @@ let ListBox = class ListBox extends DropDownBase {
             let valueindex = 0;
             let count = 0;
             for (listindex; listindex < this.mainList.childElementCount;) {
-                for (valueindex; valueindex < this.value.length; valueindex++) {
-                    if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
-                        count++;
+                if (this.value) {
+                    for (valueindex; valueindex < this.value.length; valueindex++) {
+                        if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                            count++;
+                        }
                     }
                 }
                 if (!count && this.selectionSettings.showCheckbox) {
@@ -9140,7 +9143,7 @@ let ListBox = class ListBox extends DropDownBase {
                 });
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
-            if (!isKey && (this.maximumSelectionLength > this.value.length || !isSelect) &&
+            if (!isKey && (this.maximumSelectionLength > (this.value && this.value.length) || !isSelect) &&
                 (this.maximumSelectionLength >= this.value.length || !isSelect) &&
                 !(this.maximumSelectionLength < this.value.length)) {
                 this.notify('updatelist', { li: li, e: e });

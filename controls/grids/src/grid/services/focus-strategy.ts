@@ -25,6 +25,7 @@ export class FocusStrategy {
     private passiveHandler: EventListener;
     private prevIndexes: IIndex = {};
     private focusedColumnUid: string;
+    private refMatrix: Function = this.refreshMatrix(true);
     constructor(parent: IGrid) {
         this.parent = parent;
         this.addEventListener();
@@ -266,17 +267,17 @@ export class FocusStrategy {
         EventHandler.add(this.parent.element, 'focusout', this.onBlur, this);
         this.parent.on(event.keyPressed, this.onKeyPress, this);
         this.parent.on(event.click, this.onClick, this);
-        this.parent.on(event.contentReady, this.refreshMatrix(true), this);
-        this.parent.on(event.partialRefresh, this.refreshMatrix(true), this);
+        this.parent.on(event.contentReady, this.refMatrix, this);
+        this.parent.on(event.partialRefresh, this.refMatrix, this);
         this.parent.on(event.headerRefreshed, this.refreshMatrix(), this);
         this.parent.on('close-edit', this.restoreFocus, this);
         ['start-edit', 'start-add'].forEach((evt: string) => this.parent.on(evt, this.clearIndicator, this));
         ['sorting'].forEach((action: string) => this.parent.on(`${action}-complete`, this.restoreFocus, this));
-        this.parent.on(event.batchAdd, this.refreshMatrix(true), this);
-        this.parent.on(event.batchCancel, this.refreshMatrix(true), this);
-        this.parent.on(event.batchDelete, this.refreshMatrix(true), this);
-        this.parent.on(event.detailDataBound, this.refreshMatrix(true), this);
-        this.parent.on(event.onEmpty, this.refreshMatrix(true), this);
+        this.parent.on(event.batchAdd, this.refMatrix, this);
+        this.parent.on(event.batchCancel, this.refMatrix, this);
+        this.parent.on(event.batchDelete, this.refMatrix, this);
+        this.parent.on(event.detailDataBound, this.refMatrix, this);
+        this.parent.on(event.onEmpty, this.refMatrix, this);
         this.parent.on(event.cellFocused, this.internalCellFocus, this);
     }
 
@@ -288,17 +289,17 @@ export class FocusStrategy {
         this.parent.element.removeEventListener('focus', this.passiveHandler, true);
         this.parent.off(event.keyPressed, this.onKeyPress);
         this.parent.off(event.click, this.onClick);
-        this.parent.off(event.contentReady, this.refreshMatrix(true));
-        this.parent.off(event.partialRefresh, this.refreshMatrix(true));
+        this.parent.off(event.contentReady, this.refMatrix);
+        this.parent.off(event.partialRefresh, this.refMatrix);
         this.parent.off(event.headerRefreshed, this.refreshMatrix());
         this.parent.off('close-edit', this.restoreFocus);
         ['start-edit', 'start-add'].forEach((evt: string) => this.parent.off(evt, this.clearOutline));
         ['sorting'].forEach((action: string) => this.parent.off(`${action}-complete`, this.restoreFocus));
-        this.parent.off(event.batchAdd, this.refreshMatrix(true));
-        this.parent.off(event.batchDelete, this.refreshMatrix(true));
-        this.parent.off(event.batchCancel, this.refreshMatrix(true));
-        this.parent.off(event.detailDataBound, this.refreshMatrix(true));
-        this.parent.off(event.onEmpty, this.refreshMatrix(true));
+        this.parent.off(event.batchAdd, this.refMatrix);
+        this.parent.off(event.batchDelete, this.refMatrix);
+        this.parent.off(event.batchCancel, this.refMatrix);
+        this.parent.off(event.detailDataBound, this.refMatrix);
+        this.parent.off(event.onEmpty, this.refMatrix);
         this.parent.off(event.cellFocused, this.internalCellFocus);
     }
 

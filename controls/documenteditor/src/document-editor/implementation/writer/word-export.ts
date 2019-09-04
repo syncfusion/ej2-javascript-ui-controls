@@ -3773,22 +3773,19 @@ export class WordExport {
         // }
 
 
-        writer.writeAttributeString(undefined, 'line', this.wNamespace, '240');
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
-
-        switch (paragraphFormat.lineSpacingType) {
-            case 'AtLeast':
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'atLeast');
-                break;
-            case 'Exactly':
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'exact');
-                break;
-            default:
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'auto');
-                break;
+        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+            // tslint:disable-next-line:max-line-length
+            let lineSpacingValue: number = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
+            let lineSpacingType: string = 'auto';
+            if (paragraphFormat.lineSpacingType === 'AtLeast') {
+                lineSpacingType = 'atLeast';
+            } else if (paragraphFormat.lineSpacingType === 'Exactly') {
+                lineSpacingType = 'exact';
+            }
+            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
+            writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, lineSpacingType);
         }
-
-
         writer.writeEndElement();
     }
     // Serializes the paragraph indentation

@@ -4,14 +4,17 @@ import { TextDecoration, WhiteSpace, TextWrap, TextAlign, GradientType, TextOver
 
 /**   @private  */
 let getGradientType: Function = (obj: Gradient): Object => {
-    switch (obj.type) {
-        case 'Linear':
-            return LinearGradient;
-        case 'Radial':
-            return RadialGradient;
-        default:
-            return LinearGradient;
+    if (obj) {
+        switch (obj.type) {
+            case 'Linear':
+                return LinearGradient;
+            case 'Radial':
+                return RadialGradient;
+            default:
+                return LinearGradient;
+        }
     }
+    return LinearGradient;
 };
 
 /**

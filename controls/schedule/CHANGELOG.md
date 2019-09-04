@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 17.2.49 (2019-09-04)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#244555` - An issue with recurrence editor change event is not populate the updated rule value has been fixed.
+
+## 17.2.47 (2019-08-27)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#245942` - An issue with `quick popup` open on tab hold action in mobile mode has been fixed.
+- `#242531` - An issue with events not updated properly while changing Scheduler time zone dynamically has been fixed.
+- `#244512` - An issue with recurrence editor value not mapping in custom editor window has been fixed.
+
 ## 17.2.41 (2019-08-14)
 
 ### Schedule

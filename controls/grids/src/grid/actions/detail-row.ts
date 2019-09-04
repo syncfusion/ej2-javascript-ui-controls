@@ -87,8 +87,6 @@ export class DetailRow {
                     let detailTemplateID: string = gObj.element.id + 'detailTemplate';
                     appendChildren(detailCell, gObj.getDetailTemplate()(data, gObj, 'detailTemplate', detailTemplateID));
                     if (isBlazor()) {
-                        window[detailTemplateID] = window[detailTemplateID] || {};
-                        window[detailTemplateID][data[events.blazorId]] = detailCell;
                         //resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
                         updateBlazorTemplate(detailTemplateID, 'DetailTemplate', gObj, false);
                     }

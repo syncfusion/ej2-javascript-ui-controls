@@ -1,8 +1,8 @@
-import { merge, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { merge, isNullOrUndefined, extend, Property } from '@syncfusion/ej2-base';
 import { NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
-import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter } from '../base/interface';
-import { TextAlign, ClipMode, Action, SortDirection } from '../base/enum';
+import { ICellFormatter, IFilterUI, IEditCell, CommandModel, IFilter, CommandButtonOptions } from '../base/interface';
+import { TextAlign, ClipMode, Action, SortDirection, EditType, ColumnType, CommandButtonType } from '../base/enum';
 import { PredicateModel } from '../base/grid-model';
 import { ValueFormatter } from '../services/value-formatter';
 import { ValueAccessor, SortComparer } from '../base/type';
@@ -94,7 +94,8 @@ export class Column {
 
     /**    
      * Defines the data type of the column.    
-     * @default null    
+     * @default null
+     * @blazorType ColumnType
      */
 
     public type: string;
@@ -306,7 +307,9 @@ export class Column {
 
     /**    
      * Defines the type of component for editable.
-     * @default 'stringedit'         
+     * @default 'stringedit'   
+     * @blazorType EditType
+     * @blazorDefaultValue EditType.DefaultEdit
      */
     public editType: string;
 
@@ -418,6 +421,10 @@ export class Column {
 
     constructor(options: ColumnModel) {
         merge(this, options);
+        this.type = this.type === 'none' ? null : (this.type ? this.type.toLowerCase() : this.type);
+        if (this.editType) {
+            this.editType = this.editType.toLowerCase();
+        }
         this.uid = getUid('grid-column');
         let valueFormatter: ValueFormatter = new ValueFormatter();
         if (options.format && ((<DateFormatOptions>options.format).skeleton || (<DateFormatOptions>options.format).format)) {
@@ -671,7 +678,8 @@ export interface ColumnModel {
 
     /**    
      * Defines the data type of the column.    
-     * @default null    
+     * @default null   
+     * @blazorType ColumnType 
      */
     type?: string;
 
@@ -922,7 +930,9 @@ export interface ColumnModel {
 
     /**    
      * Defines the type of component for editing.
-     * @default 'stringedit'         
+     * @default 'stringedit'  
+     * @blazorType EditType  
+     * @blazorDefaultValue EditType.DefaultEdit
      */
     editType?: string;
 
@@ -1135,4 +1145,26 @@ export interface ActionEventArgs {
     primaryKeyValue?: Object[];
     /** Defines the edited rowIndex */
     rowIndex?: number;
+}
+
+/**
+ * Define options for custom command buttons.
+ */
+export class CommandColumnModel {
+    /**  
+     * Define the command Button tooltip.
+     */
+    @Property()
+    public title: string;
+    /**  
+     * Define the command Button type.
+     * @blazorDefaultValue none
+     */
+    @Property()
+    public type: CommandButtonType;
+    /**  
+     * Define the button model
+     */
+    @Property()
+    public buttonOption: CommandButtonOptions;
 }

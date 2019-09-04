@@ -3525,7 +3525,8 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
     };
     BaseQuickToolbar.prototype.showPopup = function (x, y, target) {
         var _this = this;
-        var eventArgs = { popup: this.popupObj, cancel: false, targetElement: target };
+        var eventArgs = isBlazor() ? { cancel: false, targetElement: target } :
+            { popup: this.popupObj, cancel: false, targetElement: target };
         this.parent.trigger(beforeQuickToolbarOpen, eventArgs, function (beforeQuickToolbarArgs) {
             if (!beforeQuickToolbarArgs.cancel) {
                 var editPanelTop = void 0;
@@ -3638,7 +3639,8 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [CLS_POP]);
             detach(element);
-            this.parent.trigger(quickToolbarClose, this.popupObj);
+            var args = isBlazor() ? null : this.popupObj;
+            this.parent.trigger(quickToolbarClose, args);
         }
     };
     BaseQuickToolbar.prototype.updateStatus = function (args) {
@@ -3723,7 +3725,8 @@ var PopupRenderer = /** @__PURE__ @class */ (function () {
         this.parent = parent;
     }
     PopupRenderer.prototype.quickToolbarOpen = function () {
-        this.parent.trigger(quickToolbarOpen, this.popupObj);
+        var args = isBlazor() ? null : this.popupObj;
+        this.parent.trigger(quickToolbarOpen, args);
     };
     PopupRenderer.prototype.renderPopup = function (args) {
         this.setPanel(args.element);
@@ -4586,6 +4589,10 @@ var Formatter = /** @__PURE__ @class */ (function () {
                     itemCollection: value
                 };
                 extend(args, args, items, true);
+                if (isBlazor()) {
+                    delete args.item;
+                    delete args.itemCollection;
+                }
                 self.trigger(actionBegin, args, function (actionBeginArgs) {
                     if (actionBeginArgs.cancel) {
                         if (action_1 === 'paste' || action_1 === 'cut' || action_1 === 'copy') {
@@ -4650,6 +4657,9 @@ var Formatter = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
             this.enableUndo(self);
             self.notify(execCommandCallBack, events);
+        }
+        if (isBlazor()) {
+            delete events.elements;
         }
         self.trigger(actionComplete, events, function (callbackArgs) {
             self.setPlaceHolder();
@@ -11997,7 +12007,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                         if (!dialog.isDestroyed) {
                             _this.selectFormatting(value, args);
                             dialog.hide();
-                            _this.dialogRenderObj.close(dialog);
+                            var argument = isBlazor() ? null : dialog;
+                            _this.dialogRenderObj.close(argument);
                             dialog.destroy();
                         }
                     },
@@ -12011,7 +12022,8 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                     click: function () {
                         if (!dialog.isDestroyed) {
                             dialog.hide();
-                            _this.dialogRenderObj.close(dialog);
+                            var args_1 = isBlazor() ? null : dialog;
+                            _this.dialogRenderObj.close(args_1);
                             dialog.destroy();
                         }
                     },
@@ -12613,7 +12625,8 @@ var Link = /** @__PURE__ @class */ (function () {
                 }
                 _this.dialogObj.destroy();
                 detach(_this.dialogObj.element);
-                _this.dialogRenderObj.close(_this.dialogObj);
+                var args = isBlazor() ? null : _this.dialogObj;
+                _this.dialogRenderObj.close(args);
                 _this.dialogObj = null;
             },
         };
@@ -12630,9 +12643,9 @@ var Link = /** @__PURE__ @class */ (function () {
             this.dialogObj.element.querySelector('.e-insertLink').textContent = inputDetails.btnText;
         }
         this.checkUrl(false);
-        if ((this.parent.editorMode === 'HTML' && isNullOrUndefined(inputDetails) && ((!isNullOrUndefined(selectText)
-            && selectText !== '') && (e.selection.range.startOffset === 0) || e.selection.range.startOffset !==
-            e.selection.range.endOffset)) || e.module === 'Markdown') {
+        if ((this.parent.editorMode === 'HTML' && ((!isNullOrUndefined(selectText) && selectText !== '') &&
+            (e.selection.range.startOffset === 0) || e.selection.range.startOffset !== e.selection.range.endOffset))
+            || e.module === 'Markdown') {
             linkText.value = selectText;
         }
         EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
@@ -12893,7 +12906,7 @@ var Image = /** @__PURE__ @class */ (function () {
         if (Browser.isDevice) {
             removeClass([e.target.parentElement], 'e-mob-span');
         }
-        var args = { event: e, requestType: 'images' };
+        var args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(resizeStop, args);
         var pageX = this.getPointX(e);
         var pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset +
@@ -12940,7 +12953,7 @@ var Image = /** @__PURE__ @class */ (function () {
                 addClass([this.imgResizeDiv], 'e-mob-span');
             }
             else {
-                var args = { event: e, requestType: 'images' };
+                var args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
                 this.parent.trigger(resizeStart, args, function (resizeStartArgs) {
                     if (resizeStartArgs.cancel) {
                         _this.cancelResizeAction();
@@ -13107,7 +13120,7 @@ var Image = /** @__PURE__ @class */ (function () {
     };
     Image.prototype.imgDupMouseMove = function (width, height, e) {
         var _this = this;
-        var args = { event: e, requestType: 'images' };
+        var args = isBlazor() ? { requestType: 'images' } : { event: e, requestType: 'images' };
         this.parent.trigger(onResize, args, function (resizingArgs) {
             if (resizingArgs.cancel) {
                 _this.cancelResizeAction();
@@ -13807,7 +13820,8 @@ var Image = /** @__PURE__ @class */ (function () {
                 }
                 _this.dialogObj.destroy();
                 detach(_this.dialogObj.element);
-                _this.dialogRenderObj.close(_this.dialogObj);
+                var args = isBlazor() ? null : _this.dialogObj;
+                _this.dialogRenderObj.close(args);
                 _this.dialogObj = null;
             },
         };
@@ -14090,7 +14104,8 @@ var Image = /** @__PURE__ @class */ (function () {
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
-                            }, height: {
+                            },
+                            height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
                             }
@@ -14934,7 +14949,7 @@ var Table = /** @__PURE__ @class */ (function () {
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             }
             else {
-                var args = { event: e, requestType: 'Table' };
+                var args = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
                 this.parent.trigger(resizeStart, args, function (resizeStartArgs) {
                     if (resizeStartArgs.cancel) {
                         _this.cancelResizeAction();
@@ -15000,7 +15015,7 @@ var Table = /** @__PURE__ @class */ (function () {
         var mouseY = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
-        var args = { event: e, requestType: 'table' };
+        var args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(onResize, args, function (resizingArgs) {
             if (resizingArgs.cancel) {
                 _this.cancelResizeAction();
@@ -15081,7 +15096,7 @@ var Table = /** @__PURE__ @class */ (function () {
             this.pageY = null;
             this.moveEle = null;
         }
-        var args = { event: e, requestType: 'table' };
+        var args = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(resizeStop, args);
         this.parent.formatter.saveData();
     };
@@ -15337,7 +15352,7 @@ var Table = /** @__PURE__ @class */ (function () {
                 _this.parent.isBlur = false;
                 _this.editdlgObj.destroy();
                 detach(_this.editdlgObj.element);
-                _this.dialogRenderObj.close(_this.editdlgObj);
+                _this.dialogRenderObj.close(event);
                 _this.editdlgObj = null;
             }
         };
@@ -16544,6 +16559,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             }
         }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        this.renderComplete();
     };
     /**
      * For internal use only - Initialize the event handler
@@ -17585,8 +17601,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.contextHandler = function (e) {
         var closestElem = closest(e.target, 'a, table, img');
-        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && (closestElem.tagName === 'IMG' ||
-            closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+        if (this.inlineMode.onSelection === false || (!isNullOrUndefined(closestElem) && this.inputElement.contains(closestElem)
+            && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
             e.preventDefault();
         }
     };

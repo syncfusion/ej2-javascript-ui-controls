@@ -1,4 +1,4 @@
-﻿import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
+import { Component, formatUnit, EventHandler, Event, isNullOrUndefined, closest, isBlazor } from '@syncfusion/ej2-base';import { Property, EmitType, NotifyPropertyChanges, INotifyPropertyChanged, Browser } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, removeClass, createElement, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';
 import {SidebarPosition,SidebarType,EventArgs,ChangeEventArgs} from "./sidebar";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -26,6 +26,7 @@ export interface SidebarModel extends ComponentModel{
      * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
      * @default null
      * @aspType string
+     * @blazorType string
      */
     mediaQuery?: string | MediaQueryList;
 
@@ -140,36 +141,44 @@ export interface SidebarModel extends ComponentModel{
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
      * @default 1000
      * @aspType double
+     * @blazorType double
      */
     zIndex?: string | number;
 
     /**
      * Triggers when component is created.
      * @event 
+     * @blazorproperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
      * Triggers when component is closed.
      * @event 
+     * @blazorproperty 'OnClose'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.EventArgs
      */
     close?: EmitType<EventArgs>;
 
     /**
      * Triggers when component is opened.
      * @event 
+     * @blazorproperty 'OnOpen'
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.EventArgs
      */
     open?: EmitType<EventArgs>;
 
     /**
      * Triggers when the state(expand/collapse) of the component is changed.
      * @event 
+     * @blazorproperty 'Changed'
      */
     change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when component gets destroyed.
      * @event 
+     * @blazorproperty 'Destroyed'
      */
     destroyed?: EmitType<Object>;
 

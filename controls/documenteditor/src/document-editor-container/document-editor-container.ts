@@ -1,5 +1,5 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
@@ -521,7 +521,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        let eventArgs: ContainerContentChangeEventArgs = { source: this };
+        let eventArgs: ContainerContentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     }
     /**
@@ -537,7 +537,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        let eventArgs: ContainerDocumentChangeEventArgs = { source: this };
+        let eventArgs: ContainerDocumentChangeEventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     }
     /**
@@ -546,7 +546,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public onSelectionChange(): void {
         setTimeout(() => {
             this.showPropertiesPaneOnSelection();
-            let eventArgs: ContainerSelectionChangeEventArgs = { source: this };
+            let eventArgs: ContainerSelectionChangeEventArgs = { source: isBlazor() ? null : this };
             this.trigger('selectionChange', eventArgs);
         });
     }

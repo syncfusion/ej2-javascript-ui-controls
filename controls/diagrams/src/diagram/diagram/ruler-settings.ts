@@ -97,17 +97,17 @@ export abstract class DiagramRuler extends ChildProperty<DiagramRuler> {
 export class RulerSettings extends ChildProperty<RulerSettings> {
     /**
      * Enables or disables both horizontal and vertical ruler.
-     * @default 'false'
+     * @default false
      */
     @Property(false)
-    public showRulers: Boolean;
+    public showRulers: boolean;
 
     /**
      * Updates the gridlines relative to the ruler ticks.
-     * @default 'true'
+     * @default true
      */
     @Property(true)
-    public dynamicGrid: Boolean;
+    public dynamicGrid: boolean;
 
     /** 
      * Defines the appearance of horizontal ruler

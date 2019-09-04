@@ -2,7 +2,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
-import { SelectorModel } from '../../../src/diagram/interaction/selector-model';
+import { SelectorModel } from '../../../src/diagram/objects/node-model';
 import { Rect } from "../../../src/index";
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 
@@ -157,7 +157,7 @@ describe('Diagram Control', () => {
         });
 
         it('Remove node from diagram 2', (done: Function) => {
-            debugger
+            
             expect(diagram2.nodes.length === 1).toBe(true);
             expect(document.getElementById('multiple_Diagram2').querySelector('#' + 'node1_groupElement') !== null).toBe(true);
             diagram2.remove(diagram2.nodes[0]);

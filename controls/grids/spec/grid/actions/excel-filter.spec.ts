@@ -14,6 +14,7 @@ import { filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
+import * as events from '../../../src/grid/base/constant';
 
 Grid.Inject(Filter, Page, Selection, Group, Freeze);
 
@@ -671,6 +672,42 @@ describe('Excel Filter =>', () => {
             });
         });
 
+        describe('Excel filter test case => ', () => {
+            let gridObj: Grid;
+            beforeAll((done: Function) => {
+                gridObj = createGrid(
+                    {
+                        dataSource: filterData,
+                        allowFiltering: true,
+                        allowPaging: false,
+                        pageSettings: { currentPage: 1 },
+                        filterSettings: { type: 'Excel' },
+                        columns: [
+                            { field: 'OrderID', visible: true,filter:{operator:"equal" } },
+                            { field: 'CustomerID', headerText: 'CustomerID', filter:{operator:"contains" }},
+                            { field:'Fright',headerText:'Frieght', width:130 , filter:{operator:"equal" }},
+                            { field: 'ShipCountry',  headerText: 'Ship Country', width: 120,filter:{operator:"startswith" } }
+                        ],
+                    }, done);
+                });
+                it('BeforeCustomFilterOpen event Check', (done: Function) => {
+                    let fltrElement: Element =  document.getElementsByClassName('e-filtermenudiv')[0];
+                    (gridObj.filterModule as any).filterDialogOpen(gridObj.getColumnByIndex(0),fltrElement,100,100);
+                    (gridObj.filterModule as any).filterModule.closeDialog();
+                    let formFunc: any = (args?: any): void => {
+                        expect(args.name).toBe('beforeCustomFilterOpen');
+                        gridObj.off(events.beforeCustomFilterOpen, formFunc);
+                    };
+                    gridObj.on(events.beforeCustomFilterOpen, formFunc, this);
+                    (gridObj.filterModule as any).filterModule.renderDialogue({element:''});   
+                    (document.getElementsByClassName('e-btn')[0] as HTMLElement).click();
+                    done();
+                });
+            afterAll(() => {
+                destroy(gridObj);
+                gridObj = null;
+            });
+        });
 
 
     });

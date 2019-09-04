@@ -2674,6 +2674,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                 }
                 if (limit < this.maximumSelectionLength) {
                     this.updateListSelection(li, e);
+                    this.checkPlaceholderSize();
                     this.addListFocus(<HTMLElement>li);
                     if ((this.allowCustomValue || this.allowFiltering) && this.mainList && this.listData) {
                         if (this.mode !== 'CheckBox') {
@@ -2709,7 +2710,6 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
             }
             this.refreshPlaceHolder();
-            this.checkPlaceholderSize();
             this.findGroupStart(target as HTMLElement);
         }
     }

@@ -7,7 +7,7 @@ import { Download, GetDetails } from './../common/operations';
 import { createDialog } from './dialog';
 import { cutFiles, copyFiles, refresh, getPathObject, getLocaleText, updateLayout, getFullPath } from './../common/utility';
 import { getCssClass, sortbyClickHandler, pasteHandler } from './../common/utility';
-import { createDeniedDialog, hasContentAccess, hasUploadAccess, hasEditAccess, hasDownloadAccess } from './../common/utility';
+import { createDeniedDialog, createNewFolder, uploadItem, hasEditAccess, hasDownloadAccess } from './../common/utility';
 import * as events from './../base/constant';
 import * as CLS from '../base/classes';
 
@@ -22,6 +22,9 @@ export class ContextMenu {
     private keyConfigs: { [key: string]: string };
     private keyboardModule: KeyboardEvents;
     private menuType: string;
+    private currentItems: MenuItemModel[] = [];
+    private currentElement: HTMLElement = null;
+    private disabledItems: string[] = [];
     public menuItemData: object;
     /**
      * Constructor for the ContextMenu module
@@ -74,6 +77,7 @@ export class ContextMenu {
 
     /* istanbul ignore next */
     public onBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        this.disabledItems = [];
         let selected: boolean = false;
         let uid: string;
         // tslint:disable-next-line
@@ -81,6 +85,7 @@ export class ContextMenu {
         let treeFolder: boolean = false;
         let target: Element = args.event.target as Element;
         this.menuTarget = <HTMLElement>target;
+        this.currentElement = args.element;
         if (target.classList.contains('e-spinner-pane')) {
             target = this.parent.navigationpaneModule.activeNode.getElementsByClassName(CLS.FULLROW)[0];
             this.menuTarget = <HTMLElement>target;
@@ -139,7 +144,7 @@ export class ContextMenu {
             } else if (treeFolder) {
                 this.setFolderItem(true);
                 if (uid === this.parent.pathId[0]) {
-                    this.enableItems(['Delete', 'Rename', 'Cut', 'Copy'], false, true);
+                    this.disabledItems.push('Delete', 'Rename', 'Cut', 'Copy');
                 }
                 /* istanbul ignore next */
                 // tslint:disable-next-line
@@ -153,27 +158,45 @@ export class ContextMenu {
         let pasteEle: Element = select('#' + this.getMenuId('Paste'), this.contextMenu.element);
         if (!args.cancel && !this.parent.enablePaste &&
             pasteEle && !pasteEle.classList.contains('e-disabled')) {
-            this.enableItems(['Paste'], false, true);
+            this.disabledItems.push('Paste');
         }
         if (args.cancel) {
+            this.menuTarget = this.currentElement = null;
             return;
         }
         this.contextMenu.dataBind();
-        this.menuItemData = this.getMenuItemData();
+        let isSubMenu: boolean = false;
+        if (target.classList.contains(CLS.MENU_ITEM) ||
+            target.classList.contains(CLS.MENU_ICON) || target.classList.contains(CLS.SUBMENU_ICON)) {
+            isSubMenu = true;
+        }
+        this.menuItemData = isSubMenu ? this.menuItemData : this.getMenuItemData();
         let eventArgs: MenuOpenEventArgs = {
             fileDetails: [this.menuItemData],
             element: args.element,
             target: target,
-            items: this.contextMenu.items,
+            items: isSubMenu ? args.items : this.contextMenu.items,
             menuModule: this.contextMenu,
             cancel: false,
-            menuType: this.menuType
+            menuType: this.menuType,
+            isSubMenu: isSubMenu
         };
         if (isBlazor()) {
+            this.enableItems(this.disabledItems, false, true);
             delete eventArgs.menuModule;
         }
+        this.currentItems = eventArgs.items;
         this.parent.trigger('menuOpen', eventArgs, (menuOpenArgs: MenuOpenEventArgs) => {
+            if (!isSubMenu) {
+                this.contextMenu.dataBind();
+                this.contextMenu.items = menuOpenArgs.items;
+                this.contextMenu.dataBind();
+            }
+            this.enableItems(this.disabledItems, false, true);
             args.cancel = menuOpenArgs.cancel;
+            if (menuOpenArgs.cancel) {
+                this.menuTarget = this.currentElement = null;
+            }
         });
     }
 
@@ -194,10 +217,28 @@ export class ContextMenu {
                         'LargeIcon' : '';
     }
 
+    public getItemIndex(item: string): number {
+        let itemId: string = this.getMenuId(item);
+        for (let i: number = 0; i < this.currentItems.length; i++) {
+            if ((this.currentItems[i].id === itemId) || (this.currentItems[i].id === item)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public disableItem(items: string[]): void {
+        if (items.length !== 0) {
+            this.disabledItems = this.disabledItems.concat(items);
+        }
+    }
+
     private enableItems(items: string[], enable?: boolean, isUniqueId?: boolean): void {
         for (let i: number = 0; i < items.length; i++) {
-            if (this.checkValidItem(items[i])) {
+            if (this.checkValidItem(items[i]) === 1) {
                 this.contextMenu.enableItems([this.getMenuId(items[i])], enable, isUniqueId);
+            } else if (this.checkValidItem(items[i]) === 2) {
+                this.contextMenu.enableItems([items[i]], enable, isUniqueId);
             }
         }
     }
@@ -207,9 +248,9 @@ export class ContextMenu {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
         if (isTree) {
-            this.enableItems(['Open'], false, true);
+            this.disabledItems.push('Open');
         } else if (this.parent.selectedItems.length !== 1) {
-            this.enableItems(['Rename', 'Paste'], false, true);
+            this.disabledItems.push('Rename', 'Paste');
         }
     }
 
@@ -218,7 +259,7 @@ export class ContextMenu {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.file.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
         if (this.parent.selectedItems.length !== 1) {
-            this.enableItems(['Rename'], false, true);
+            this.disabledItems.push('Rename');
         }
     }
 
@@ -226,20 +267,26 @@ export class ContextMenu {
         this.menuType = 'layout';
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.layout.map((item: string) => item.trim()));
         this.contextMenu.dataBind();
-        if ((this.parent.view === 'LargeIcons' &&
+        if (!this.parent.allowMultiSelection || ((this.parent.view === 'LargeIcons' &&
             (closest(target, '#' + this.parent.element.id + CLS.LARGEICON_ID).getElementsByClassName(CLS.EMPTY).length !== 0))
             || (this.parent.view === 'Details' &&
-                (closest(target, '#' + this.parent.element.id + CLS.GRID_ID).getElementsByClassName(CLS.EMPTY).length !== 0))) {
-            this.enableItems(['SelectAll'], false, true);
+                (closest(target, '#' + this.parent.element.id + CLS.GRID_ID).getElementsByClassName(CLS.EMPTY).length !== 0)))) {
+            this.disabledItems.push('SelectAll');
         }
         if (this.parent.selectedNodes.length === 0) {
-            this.enableItems(['Paste'], false, true);
+            this.disabledItems.push('Paste');
         }
         this.contextMenu.dataBind();
     }
 
-    private checkValidItem(nameEle: string): boolean {
-        return !isNOU(select('#' + this.getMenuId(nameEle), this.contextMenu.element));
+    private checkValidItem(nameEle: string): number {
+        if (!isNOU(select('#' + this.getMenuId(nameEle), this.currentElement))) {
+            return 1;
+        } else if (!isNOU(select('#' + nameEle, this.currentElement))) {
+            return 2;
+        } else {
+            return -1;
+        }
     }
 
     private getMenuItemData(): object {
@@ -344,18 +391,10 @@ export class ContextMenu {
                         GetDetails(this.parent, sItems, this.parent.path, 'details');
                         break;
                     case 'newfolder':
-                        if (!hasContentAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0]);
-                        } else {
-                            createDialog(this.parent, 'NewFolder');
-                        }
+                        createNewFolder(this.parent);
                         break;
                     case 'upload':
-                        if (!hasUploadAccess(details[0])) {
-                            createDeniedDialog(this.parent, details[0]);
-                        } else {
-                            document.getElementById(this.parent.element.id + '_upload').click();
-                        }
+                        uploadItem(this.parent);
                         break;
                     /* istanbul ignore next */
                     case 'name':

@@ -144,7 +144,6 @@ export class TextMarkupAnnotation {
                 for (let i: number = 0; i < annotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = annotations[i];
-                    annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.Subject);
                     let annotationObject: ITextMarkupAnnotation = null;
                     if (annotation.TextMarkupAnnotationType) {
                         // tslint:disable-next-line:max-line-length

@@ -419,6 +419,7 @@ export class Splitter extends Component<HTMLElement> {
         this.setRTL(this.enableRtl);
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
+        this.renderComplete();
     }
 
     private onDocumentClick(e: Event | MouseEvent): void {
@@ -656,8 +657,18 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private checkSplitPane(currentBar: Element, elementIndex: number): HTMLElement {
-        let paneEle: HTMLElement = currentBar.parentElement.children[elementIndex] as HTMLElement;
+        let paneEle: HTMLElement = this.collectPanes(currentBar.parentElement.children)[elementIndex] as HTMLElement;
         return paneEle;
+    }
+
+    private collectPanes(childNodes: HTMLCollection): HTMLElement[] {
+        let elements: HTMLElement[] = [];
+        for (let i: number = 0; i < childNodes.length; i++) {
+          if (childNodes[i].classList.contains('e-pane')) {
+              elements.push(childNodes[i] as HTMLElement);
+          }
+        }
+        return elements;
     }
 
     private getPrevPane(currentBar: Element, order: number): HTMLElement {
@@ -768,6 +779,7 @@ export class Splitter extends Component<HTMLElement> {
                 }
             } else {
                 this.updateResizablePanes(i);
+                addClass([separator], LAST_BAR );
             }
         }
     }
@@ -858,8 +870,8 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private wireResizeEvents(): void {
-        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mousemove', this.onMouseMove, this);
+        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         let touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         let touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -1267,13 +1279,9 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private getPaneDetails(): void {
-        let prevPane: HTMLElement = null;
-        let nextPane: HTMLElement = null;
         this.order = parseInt(this.currentSeparator.style.order, 10);
-        if (this.allPanes.length > 1) {
-            prevPane = this.getPrevPane(this.currentSeparator, this.order);
-            nextPane = this.getNextPane(this.currentSeparator, this.order);
-        }
+        let prevPane: HTMLElement = this.getPrevPane(this.currentSeparator, this.order);
+        let nextPane: HTMLElement = this.getNextPane(this.currentSeparator, this.order);
         if (prevPane && nextPane) {
             this.previousPane = prevPane;
             this.nextPane = nextPane;
@@ -1787,9 +1795,7 @@ export class Splitter extends Component<HTMLElement> {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
-        if (this.allPanes.length > 0) {
-            this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
-        }
+        this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     }
 }
 

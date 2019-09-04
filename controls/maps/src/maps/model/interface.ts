@@ -28,15 +28,14 @@ export interface IPrintEventArgs extends IMapsEventArgs {
  */
 export interface ILoadedEventArgs extends IMapsEventArgs {
     /** Defines the current Maps instance */
-    maps: Maps;
+    maps?: Maps;
 }
 /**
  * Specifies the Load Event arguments.
- * @deprecated
  */
 export interface ILoadEventArgs extends IMapsEventArgs {
     /** Defines the current Maps instance */
-    maps: Maps;
+    maps?: Maps;
 }
 /**
  * Specifies the data label Event arguments.
@@ -97,7 +96,6 @@ export interface IFontMapping {
 }
 /**
  * Specifies TooltipRender event arguments for maps.
- * @deprecated
  */
 export interface ITooltipRenderEventArgs extends IMapsEventArgs {
     /** Defines the current TreeMap instance */
@@ -133,7 +131,6 @@ export interface ITooltipRenderEventArgs extends IMapsEventArgs {
 }
 /**
  * Specifies itemSelection event arguments for maps.
- * @deprecated
  */
 export interface ISelectionEventArgs extends IMapsEventArgs {
     /**
@@ -203,7 +200,6 @@ export interface IShapes {
 }
 /**
  * Specifies layerRendering event arguments for maps.
- * @deprecated
  */
 export interface ILayerRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -222,7 +218,6 @@ export interface ILayerRenderingEventArgs extends IMapsEventArgs {
 
 /**
  * Specifies shapeRendering event arguments for maps.
- * @deprecated
  */
 export interface IShapeRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -252,7 +247,6 @@ export interface IShapeRenderingEventArgs extends IMapsEventArgs {
 }
 /**
  * Specifies markerRendering event arguments for maps.
- * @deprecated
  */
 export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -410,7 +404,6 @@ export interface IMarkerClusterMoveEventArgs extends IMouseEventArgs {
 
 /**
  * Specifies labelRendering event arguments for maps.
- * @deprecated
  */
 export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     /**
@@ -539,7 +532,6 @@ export interface ILegendRenderingEventArgs extends IMapsEventArgs {
 
 /**
  * Specifies annotationRendering event arguments for maps.
- * @deprecated
  */
 export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
     /**

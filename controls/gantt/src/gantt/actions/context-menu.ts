@@ -155,7 +155,7 @@ export class ContextMenu {
                 this.parent.treeGrid.endEdit();
                 break;
             case 'Dependency' + index:
-                this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
+                this.parent.predecessorModule.removePredecessor(this.rowData, index);
                 break;
         }
         args.type = 'Content';
@@ -241,8 +241,9 @@ export class ContextMenu {
             this.parent.trigger('contextMenuOpen', args, (args: CMenuOpenEventArgs) => {
                 callBackPromise.resolve(args);
                 if (isBlazor()) {
-                    args.element = getElement(args.element);
-                    args.gridRow = getElement(args.gridRow);
+                    args.element = !isNullOrUndefined(args.element) ? getElement(args.element) : args.element;
+                    args.gridRow = !isNullOrUndefined(args.gridRow) ? getElement(args.gridRow) : args.gridRow;
+                    args.chartRow = !isNullOrUndefined(args.chartRow) ? getElement(args.chartRow) : args.chartRow;
                 }
                 this.hideItems = args.hideItems;
                 this.disableItems = args.disableItems;

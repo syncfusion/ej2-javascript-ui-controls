@@ -214,7 +214,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before maps rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'OnLoad'
      */
     @Event()
@@ -264,7 +263,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps tooltip rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'TooltipRendering'
      */
     @Event()
@@ -279,7 +277,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before selection applied
      * @event
-     * @deprecated
      * @blazorProperty 'OnItemSelect'
      */
     @Event()
@@ -287,7 +284,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Trigger before highlight applied
      * @event
-     * @deprecated
      * @blazorProperty 'OnItemHighlight'
      */
     @Event()
@@ -302,7 +298,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps layer rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'LayerRendering'
      */
     @Event()
@@ -311,7 +306,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps shape rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'ShapeRendering'
      */
     @Event()
@@ -320,7 +314,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps marker rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'MarkerRendering'
      */
     @Event()
@@ -365,7 +358,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the data label get rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'DataLabelRendering'
      */
     @Event()
@@ -406,7 +398,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before annotation rendering.
      * @event
-     * @deprecated
      * @blazorProperty 'AnnotationRendering'
      */
     @Event()
@@ -577,16 +568,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.initPrivateVariable();
 
-        this.trigger(load, { maps: this });
-
-        this.unWireEVents();
-
-        this.createSVG();
-
-        this.wireEVents();
-
-        this.setCulture();
-
+        this.trigger(load, this.isBlazor ? {} : { maps: this }, () => {
+            this.unWireEVents();
+            this.createSVG();
+            this.wireEVents();
+            this.setCulture();
+        });
     }
 
     /**
@@ -1041,6 +1028,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To handle the click event for the maps.
+     * @blazorProperty 'PerformClick'
      */
     /* tslint:disable:no-string-literal */
     public mapsOnClick(e: PointerEvent): void {
@@ -1133,6 +1121,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * To handle the double click event for the maps.
+     * @blazorProperty 'PerformDoubleClick'
      */
     public mapsOnDoubleClick(e: PointerEvent): void {
         this.notify('dblclick', e);
@@ -1372,6 +1361,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 case 'layers':
                 case 'projectionType':
                 case 'legendSettings':
+                case 'zoomSettings':
                     render = true;
                     break;
             }

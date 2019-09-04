@@ -1,4 +1,4 @@
-import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
@@ -6,6 +6,7 @@ const CLASSNAMES = {
     RTL: 'e-rtl',
     DISABLE: 'e-disabled',
     INPUT: 'e-input',
+    TEXTAREA: 'e-multi-line-input',
     INPUTGROUP: 'e-input-group',
     FLOATINPUT: 'e-float-input',
     FLOATLINE: 'e-float-line',
@@ -74,6 +75,9 @@ var Input;
             for (let i = 0; i < args.buttons.length; i++) {
                 inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
             }
+        }
+        if (!isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
+            addClass([inputObject.container], CLASSNAMES.TEXTAREA);
         }
         inputObject = setPropertyValue(args, inputObject);
         return inputObject;
@@ -320,12 +324,14 @@ var Input;
         }
         if (!isNullOrUndefined(clearButton) && clearButton) {
             let parentElement = getParentNode(element);
-            let button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
-            if (element.value && parentElement.classList.contains('e-input-focus')) {
-                removeClass([button], CLASSNAMES.CLEARICONHIDE);
-            }
-            else {
-                addClass([button], CLASSNAMES.CLEARICONHIDE);
+            if (!isNullOrUndefined(parentElement)) {
+                let button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
+                if (element.value && parentElement.classList.contains('e-input-focus')) {
+                    removeClass([button], CLASSNAMES.CLEARICONHIDE);
+                }
+                else {
+                    addClass([button], CLASSNAMES.CLEARICONHIDE);
+                }
             }
         }
         checkInputValue(floatLabelType, element);
@@ -713,8 +719,11 @@ let NumericTextBox = class NumericTextBox extends Component {
             setValue('ej2_instances', ejInstance, this.element);
         }
         attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
-        let localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: '' };
+        let localeText = { incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder };
         this.l10n = new L10n('numerictextbox', localeText, this.locale);
+        if (this.l10n.getConstant('placeholder') !== '') {
+            this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+        }
         this.isValidState = true;
         this.inputStyle = null;
         this.inputName = null;
@@ -722,7 +731,7 @@ let NumericTextBox = class NumericTextBox extends Component {
         this.initCultureInfo();
         this.initCultureFunc();
         this.updateHTMLAttrToElement();
-        this.checkAttributes(true);
+        this.checkAttributes(false);
         this.prevValue = this.value;
         if (this.formEle) {
             this.inputEleValue = this.value;
@@ -759,66 +768,68 @@ let NumericTextBox = class NumericTextBox extends Component {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     }
     checkAttributes(isDynamic) {
-        let attributes$$1 = ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'readonly':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || isDynamic) {
                             let readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                                 || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ readonly: readonly }, isDynamic);
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || isDynamic) {
                             let setNumber = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
-                            this.setProperties(setValue(prop, setNumber, {}), isDynamic);
+                            this.setProperties(setValue(prop, setNumber, {}), !isDynamic);
                         }
                         break;
                     case 'min':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || isDynamic) {
                             let minValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (minValue !== null && !isNaN(minValue)) {
-                                this.setProperties(setValue(prop, minValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, minValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'max':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || isDynamic) {
                             let maxValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (maxValue !== null && !isNaN(maxValue)) {
-                                this.setProperties(setValue(prop, maxValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, maxValue, {}), !isDynamic);
                             }
                         }
                         break;
                     case 'step':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || isDynamic) {
                             let stepValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
                             if (stepValue !== null && !isNaN(stepValue)) {
-                                this.setProperties(setValue(prop, stepValue, {}), isDynamic);
+                                this.setProperties(setValue(prop, stepValue, {}), !isDynamic);
                             }
                         }
                         break;
@@ -882,26 +893,30 @@ let NumericTextBox = class NumericTextBox extends Component {
         }
     }
     updateHTMLAttrToElement() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) < 0) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     updateHTMLAttrToWrapper() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttributes.indexOf(pro) > -1) {
-                if (pro === 'class') {
-                    addClass([this.container], this.htmlAttributes[pro].split(' '));
-                }
-                else if (pro === 'style') {
-                    let numericStyle = this.container.getAttribute(pro);
-                    numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
-                        this.htmlAttributes[pro];
-                    this.container.setAttribute(pro, numericStyle);
-                }
-                else {
-                    this.container.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttributes.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                    }
+                    else if (pro === 'style') {
+                        let numericStyle = this.container.getAttribute(pro);
+                        numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.container.setAttribute(pro, numericStyle);
+                    }
+                    else {
+                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -1077,6 +1092,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         }
     }
     pasteHandler() {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         let beforeUpdate = this.element.value;
         setTimeout(() => {
             if (!this.numericRegex().test(this.element.value)) {
@@ -1160,6 +1178,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         });
     }
     keyUpHandler(event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         if (!iOS && Browser.isDevice) {
             this.preventHandler();
@@ -1177,6 +1198,9 @@ let NumericTextBox = class NumericTextBox extends Component {
     }
     ;
     inputHandler(event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
         let fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
         if ((fireFox || iOS) && Browser.isDevice) {
@@ -1330,6 +1354,9 @@ let NumericTextBox = class NumericTextBox extends Component {
         return false;
     }
     keyPressHandler(event) {
+        if (!this.enabled || this.readonly) {
+            return true;
+        }
         if (!Browser.isDevice && Browser.info.version === '11.0' && event.keyCode === 13) {
             let parsedInput = this.instance.getNumberParser({ format: 'n' })(this.element.value);
             this.updateValue(parsedInput, event);
@@ -1399,10 +1426,15 @@ let NumericTextBox = class NumericTextBox extends Component {
             let formatValue = this.formatNumber();
             this.setElementValue(formatValue);
             if (!this.isPrevFocused) {
-                let delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
-                setTimeout(() => {
+                if (!Browser.isDevice && Browser.info.version === '11.0') {
                     this.element.setSelectionRange(0, formatValue.length);
-                }, delay);
+                }
+                else {
+                    let delay = (Browser.isDevice && Browser.isIos) ? 600 : 0;
+                    setTimeout(() => {
+                        this.element.setSelectionRange(0, formatValue.length);
+                    }, delay);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -1413,6 +1445,9 @@ let NumericTextBox = class NumericTextBox extends Component {
     focusOutHandler(event) {
         this.blurEventArgs = { event: event, value: this.value, container: this.container };
         this.trigger('blur', this.blurEventArgs);
+        if (!this.enabled || this.readonly) {
+            return;
+        }
         if (this.isPrevFocused) {
             event.preventDefault();
             if (Browser.isDevice) {
@@ -1628,7 +1663,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkAttributes(false);
+                    this.checkAttributes(true);
                     break;
                 case 'placeholder':
                     Input.setPlaceholder(newProp.placeholder, this.element);
@@ -2083,7 +2118,7 @@ function maskInputBlurHandler(event) {
     }
 }
 function maskInputPasteHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let sIndex = this.element.selectionStart;
         let eIndex = this.element.selectionEnd;
         let oldValue = this.element.value;
@@ -2121,7 +2156,7 @@ function maskInputPasteHandler(event) {
     }
 }
 function maskInputCutHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let preValue = this.element.value;
         let sIndex = this.element.selectionStart;
         let eIndex = this.element.selectionEnd;
@@ -2184,7 +2219,7 @@ function maskInputHandler(event) {
     }
 }
 function maskInputKeyDownHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         if (event.keyCode !== 229) {
             if (event.ctrlKey && (event.keyCode === 89 || event.keyCode === 90)) {
                 event.preventDefault();
@@ -2354,7 +2389,7 @@ function removeMaskInputValues(event) {
     }
 }
 function maskInputKeyPressHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let oldValue = this.element.value;
         if ((!event.ctrlKey) || (event.ctrlKey && event.code !== 'KeyA' && event.code !== 'KeyY'
             && event.code !== 'KeyZ' && event.code !== 'KeyX' && event.code !== 'KeyC' && event.code !== 'KeyV')) {
@@ -2406,7 +2441,7 @@ function triggerMaskChangeEvent(event, oldValue) {
     attributes(this.element, { 'aria-valuenow': this.element.value });
 }
 function maskInputKeyUpHandler(event) {
-    if (this.mask) {
+    if (this.mask && !this.readonly) {
         let collec;
         if (!this.maskKeyPress && event.keyCode === 229) {
             let oldEventVal;
@@ -2900,7 +2935,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        this.checkHtmlAttributes(true);
+        this.checkHtmlAttributes(false);
         if (this.formElement) {
             this.initInputValue = this.value;
         }
@@ -2939,29 +2974,34 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             if (this.element.getAttribute('value') || this.value) {
                 this.element.setAttribute('value', this.element.value);
             }
+            this.renderComplete();
         }
     }
     updateHTMLAttrToElement() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) < 0) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }
     updateHTMLAttrToWrapper() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    let maskStyle = this.inputObj.container.getAttribute(key);
-                    maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.inputObj.container.setAttribute(key, maskStyle);
-                }
-                else {
-                    this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        let maskStyle = this.inputObj.container.getAttribute(key);
+                        maskStyle = !isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.inputObj.container.setAttribute(key, maskStyle);
+                    }
+                    else {
+                        this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
@@ -3007,28 +3047,37 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         }
     }
     checkHtmlAttributes(isDynamic) {
-        let attributes$$1 = ['placeholder', 'disabled', 'value'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
+            : ['placeholder', 'disabled', 'value', 'readonly'];
         for (let key of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
                     case 'placeholder':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || !isDynamic) {
-                            this.setProperties({ placeholder: this.element.placeholder }, isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
                             let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                                 this.element.getAttribute(key) === 'true' ? false : true;
-                            this.setProperties({ enabled: enabled }, isDynamic);
+                            this.setProperties({ enabled: enabled }, !isDynamic);
                         }
                         break;
                     case 'value':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || !isDynamic) {
-                            this.setProperties({ value: this.element.value }, isDynamic);
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
+                        }
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
+                            let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
                         }
                         break;
                 }
@@ -3043,6 +3092,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                 enableRtl: this.enableRtl,
                 cssClass: this.cssClass,
                 enabled: this.enabled,
+                readonly: this.readonly,
                 placeholder: this.placeholder,
                 showClearButton: this.showClearButton
             }
@@ -3074,6 +3124,9 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
                     break;
+                case 'readonly':
+                    Input.setReadonly(newProp.readonly, this.element);
+                    break;
                 case 'enableRtl':
                     Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);
                     break;
@@ -3093,7 +3146,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHtmlAttributes(false);
+                    this.checkHtmlAttributes(true);
                     break;
                 case 'mask':
                     let strippedValue$$1 = this.value;
@@ -3192,6 +3245,9 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], MaskedTextBox.prototype, "enabled", void 0);
+__decorate$1([
+    Property(false)
+], MaskedTextBox.prototype, "readonly", void 0);
 __decorate$1([
     Property(false)
 ], MaskedTextBox.prototype, "showClearButton", void 0);
@@ -3492,6 +3548,7 @@ let Slider = class Slider extends Component {
         this.initRender();
         this.wireEvents();
         this.setZindex();
+        this.renderComplete();
     }
     initialize() {
         addClass([this.element], classNames.root);
@@ -4178,6 +4235,7 @@ let Slider = class Slider extends Component {
         }
         return tickCount;
     }
+    // tslint:disable-next-line:max-func-body-length
     renderScale() {
         let orien = this.orientation === 'Vertical' ? 'v' : 'h';
         this.noOfDecimals = this.numberOfDecimals(this.step);
@@ -4252,7 +4310,12 @@ let Slider = class Slider extends Component {
                 else {
                     let largestep = this.fractionalToInteger(this.ticks.largeStep);
                     let startValue = this.fractionalToInteger(start);
-                    islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    if (orien === 'h') {
+                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    }
+                    else {
+                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
+                    }
                 }
             }
             if (islargeTick) {
@@ -4262,7 +4325,7 @@ let Slider = class Slider extends Component {
             let repeat = islargeTick ? (this.ticks.placement === 'Both' ? 2 : 1) : 0;
             if (islargeTick) {
                 for (let j = 0; j < repeat; j++) {
-                    this.createTick(li, start);
+                    this.createTick(li, start, tickWidth);
                 }
             }
             else if (isNullOrUndefined(this.customValues)) {
@@ -4287,9 +4350,9 @@ let Slider = class Slider extends Component {
                 left = this.makeRoundNumber(left + smallStep, decimalPoints);
             }
         }
-        this.tickesAlignment(orien, tickWidth);
+        this.ticksAlignment(orien, tickWidth);
     }
-    tickesAlignment(orien, tickWidth) {
+    ticksAlignment(orien, tickWidth, triggerEvent = true) {
         this.firstChild = this.ul.firstElementChild;
         this.lastChild = this.ul.lastElementChild;
         this.firstChild.classList.add(classNames.sliderFirstTick);
@@ -4304,23 +4367,25 @@ let Slider = class Slider extends Component {
             this.lastChild.style.height = tickWidth / 2 + '%';
         }
         let eventArgs = { ticksWrapper: this.ul, tickElements: this.tickElementCollection };
-        this.trigger('renderedTicks', eventArgs);
+        if (triggerEvent) {
+            this.trigger('renderedTicks', eventArgs);
+        }
         this.scaleAlignment();
     }
-    createTick(li, start) {
+    createTick(li, start, tickWidth) {
         let span = this.createElement('span', {
             className: classNames.tickValue + ' ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
             attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
         });
         li.appendChild(span);
         if (isNullOrUndefined(this.customValues)) {
-            this.formatTicksValue(li, start, span);
+            this.formatTicksValue(li, start, span, tickWidth);
         }
         else {
             span.innerHTML = start.toString();
         }
     }
-    formatTicksValue(li, start, spanElement) {
+    formatTicksValue(li, start, spanElement, tickWidth) {
         const tickText = this.formatNumber(start);
         const text = !isNullOrUndefined(this.ticks) && !isNullOrUndefined(this.ticks.format) ?
             this.formatString(start, this.ticksFormatInfo).formatString : tickText;
@@ -4329,6 +4394,10 @@ let Slider = class Slider extends Component {
             li.setAttribute('title', observedArgs.text.toString());
             if (spanElement) {
                 spanElement.innerHTML = observedArgs.text.toString();
+            }
+            if (isBlazor()) {
+                const orien = this.orientation === 'Horizontal' ? 'h' : 'v';
+                this.ticksAlignment(orien, tickWidth, false);
             }
         });
     }
@@ -6679,6 +6748,14 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 const CONTROL_WRAPPER = 'e-upload';
 const INPUT_WRAPPER = 'e-file-select';
 const DROP_AREA = 'e-file-drop';
@@ -6775,6 +6852,7 @@ let Uploader = class Uploader extends Component {
         this.fileList = [];
         this.filesData = [];
         this.uploadedFilesData = [];
+        this.base64String = [];
         this.isForm = false;
         this.allTypes = false;
         this.pausedData = [];
@@ -6822,7 +6900,7 @@ let Uploader = class Uploader extends Component {
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
-                    this.checkHTMLAttributes(false);
+                    this.checkHTMLAttributes(true);
                     break;
                 case 'files':
                     this.renderPreLoadFiles();
@@ -6928,7 +7006,7 @@ let Uploader = class Uploader extends Component {
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.updateHTMLAttrToElement();
-        this.checkHTMLAttributes(true);
+        this.checkHTMLAttributes(false);
         let parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
@@ -7018,6 +7096,7 @@ let Uploader = class Uploader extends Component {
         this.renderPreLoadFiles();
         this.setControlStatus();
         this.setCSSClass();
+        this.renderComplete();
     }
     renderBrowseButton() {
         this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
@@ -7188,26 +7267,30 @@ let Uploader = class Uploader extends Component {
         this.bindDropEvents();
     }
     updateHTMLAttrToElement() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr$1.indexOf(pro) < 0) {
-                this.element.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr$1.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
             }
         }
     }
     updateHTMLAttrToWrapper() {
-        for (let pro of Object.keys(this.htmlAttributes)) {
-            if (wrapperAttr$1.indexOf(pro) > -1) {
-                if (pro === 'class') {
-                    addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
-                }
-                else if (pro === 'style') {
-                    let uploadStyle = this.uploadWrapper.getAttribute(pro);
-                    uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
-                        this.htmlAttributes[pro];
-                    this.uploadWrapper.setAttribute(pro, uploadStyle);
-                }
-                else {
-                    this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let pro of Object.keys(this.htmlAttributes)) {
+                if (wrapperAttr$1.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                    }
+                    else if (pro === 'style') {
+                        let uploadStyle = this.uploadWrapper.getAttribute(pro);
+                        uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.uploadWrapper.setAttribute(pro, uploadStyle);
+                    }
+                    else {
+                        this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
                 }
             }
         }
@@ -7539,6 +7622,19 @@ let Uploader = class Uploader extends Component {
             }
         }
     }
+    /* istanbul ignore next */
+    updateCustomheader(request, currentRequest) {
+        if (currentRequest.length > 0 && currentRequest[0]) {
+            for (let i = 0; i < currentRequest.length; i++) {
+                let data = currentRequest[i];
+                // tslint:disable-next-line
+                let value = Object.keys(data).map(function (e) {
+                    return data[e];
+                });
+                request.setRequestHeader(Object.keys(data)[0], value);
+            }
+        }
+    }
     removeCompleted(e, files, customTemplate) {
         let response = e && e.currentTarget ? this.getResponse(e) : null;
         let args = {
@@ -7656,7 +7752,7 @@ let Uploader = class Uploader extends Component {
                 this.getFilesFromFolder(args);
             }
             else {
-                let files = args.dataTransfer.files;
+                let files = this.sortFilesList = args.dataTransfer.files;
                 this.element.files = files;
                 targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
                 this.renderSelectedFiles(args, targetFiles);
@@ -7667,96 +7763,120 @@ let Uploader = class Uploader extends Component {
             this.renderSelectedFiles(args, targetFiles);
         }
     }
+    /* istanbul ignore next */
+    getBase64(file) {
+        return new Promise((resolve, reject) => {
+            let fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = () => resolve(fileReader.result);
+            fileReader.onerror = (error) => reject(error);
+        });
+    }
+    /* istanbul ignore next */
     renderSelectedFiles(args, 
     // tslint:disable-next-line
     targetFiles, directory, paste) {
-        let eventArgs = {
-            event: args,
-            cancel: false,
-            filesData: [],
-            isModified: false,
-            modifiedFilesData: [],
-            progressInterval: '',
-            isCanceled: false
-        };
-        /* istanbul ignore next */
-        if (targetFiles.length < 1) {
-            eventArgs.isCanceled = true;
-            this.trigger('selected', eventArgs);
-            return;
-        }
-        this.flag = true;
-        let fileData = [];
-        if (!this.multiple) {
-            this.clearData(true);
-            targetFiles = [targetFiles[0]];
-        }
-        for (let i = 0; i < targetFiles.length; i++) {
-            let file = directory ? targetFiles[i].file : targetFiles[i];
-            let fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
-                getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
-                this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
-            let fileDetails = {
-                name: fileName,
-                rawFile: file,
-                size: file.size,
-                status: this.localizedTexts('readyToUploadMessage'),
-                type: this.getFileType(file.name),
-                validationMessages: this.validatedFileSize(file.size),
-                statusCode: '1'
+        return __awaiter(this, void 0, void 0, function* () {
+            let eventArgs = {
+                event: args,
+                cancel: false,
+                filesData: [],
+                isModified: false,
+                modifiedFilesData: [],
+                progressInterval: '',
+                isCanceled: false,
+                currentRequest: null,
+                customFormData: null
             };
             /* istanbul ignore next */
-            if (paste) {
-                fileDetails.fileSource = 'paste';
+            if (targetFiles.length < 1) {
+                eventArgs.isCanceled = true;
+                this.trigger('selected', eventArgs);
+                return;
             }
-            fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
-                fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
-            if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
-                fileDetails.statusCode = '0';
-                this.checkActionComplete(true);
+            this.flag = true;
+            let fileData = [];
+            if (!this.multiple) {
+                this.clearData(true);
+                targetFiles = [targetFiles[0]];
             }
-            fileData.push(fileDetails);
-        }
-        eventArgs.filesData = fileData;
-        if (this.allowedExtensions.indexOf('*') > -1) {
-            this.allTypes = true;
-        }
-        if (!this.allTypes) {
-            fileData = this.checkExtension(fileData);
-        }
-        this.trigger('selected', eventArgs, (eventArgs) => {
-            if (!eventArgs.cancel) {
-                this.selectedFiles = fileData;
-                this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
-                if (this.showFileList) {
-                    if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
-                        let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
-                            this.checkExtension(eventArgs.modifiedFilesData);
-                        this.updateSortedFileList(dataFiles);
-                        this.filesData = dataFiles;
-                        if (!this.isForm || this.allowUpload()) {
-                            this.checkAutoUpload(dataFiles);
+            for (let i = 0; i < targetFiles.length; i++) {
+                let file = directory ? targetFiles[i].file : targetFiles[i];
+                /* istanbul ignore next */
+                if (isBlazor()) {
+                    let data = yield this.getBase64(file);
+                    this.base64String.push(data);
+                }
+                let fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
+                    getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
+                    this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
+                let fileDetails = {
+                    name: fileName,
+                    rawFile: file,
+                    size: file.size,
+                    status: this.localizedTexts('readyToUploadMessage'),
+                    type: this.getFileType(file.name),
+                    validationMessages: this.validatedFileSize(file.size),
+                    statusCode: '1'
+                };
+                /* istanbul ignore next */
+                if (paste) {
+                    fileDetails.fileSource = 'paste';
+                }
+                fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                    fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
+                if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
+                    fileDetails.statusCode = '0';
+                    this.checkActionComplete(true);
+                }
+                fileData.push(fileDetails);
+            }
+            eventArgs.filesData = fileData;
+            if (this.allowedExtensions.indexOf('*') > -1) {
+                this.allTypes = true;
+            }
+            if (!this.allTypes) {
+                fileData = this.checkExtension(fileData);
+            }
+            this.trigger('selected', eventArgs, (eventArgs) => {
+                if (!eventArgs.cancel) {
+                    /* istanbul ignore next */
+                    if (isBlazor()) {
+                        this.currentRequestHeader = eventArgs.currentRequest;
+                        this.customFormDatas = eventArgs.customFormData;
+                    }
+                    this.selectedFiles = fileData;
+                    this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
+                    if (this.showFileList) {
+                        if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                            let dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
+                                this.checkExtension(eventArgs.modifiedFilesData);
+                            this.updateSortedFileList(dataFiles);
+                            this.filesData = dataFiles;
+                            if (!this.isForm || this.allowUpload()) {
+                                this.checkAutoUpload(dataFiles);
+                            }
+                        }
+                        else {
+                            this.createFileList(fileData);
+                            this.filesData = this.filesData.concat(fileData);
+                            if (!this.isForm || this.allowUpload()) {
+                                this.checkAutoUpload(fileData);
+                            }
+                        }
+                        if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                            this.progressInterval = eventArgs.progressInterval;
                         }
                     }
                     else {
-                        this.createFileList(fileData);
                         this.filesData = this.filesData.concat(fileData);
-                        if (!this.isForm || this.allowUpload()) {
-                            this.checkAutoUpload(fileData);
+                        if (this.autoUpload) {
+                            this.upload(this.filesData, true);
                         }
                     }
-                    if (!isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
-                        this.progressInterval = eventArgs.progressInterval;
-                    }
+                    this.raiseActionComplete();
                 }
-                else {
-                    this.filesData = this.filesData.concat(fileData);
-                    if (this.autoUpload) {
-                        this.upload(this.filesData, true);
-                    }
-                }
-                this.raiseActionComplete();
-            }
+            });
         });
     }
     allowUpload() {
@@ -7866,10 +7986,9 @@ let Uploader = class Uploader extends Component {
         for (let listItem of fileData) {
             let liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
             this.uploadTemplateFn = this.templateComplier(this.template);
-            let fromElements = [].slice.call(this.uploadTemplateFn(listItem));
+            let fromElements = [].slice.call(this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
             let index = fileData.indexOf(listItem);
             append(fromElements, liElement);
-            updateBlazorTemplate(this.element.id + 'Template', 'Template');
             let eventArgs = {
                 element: liElement,
                 fileInfo: listItem,
@@ -7887,6 +8006,7 @@ let Uploader = class Uploader extends Component {
             this.listParent.appendChild(liElement);
             this.fileList.push(liElement);
         }
+        updateBlazorTemplate(this.element.id + 'Template', 'Template', this);
     }
     createParentUL() {
         if (isNullOrUndefined(this.listParent)) {
@@ -8399,49 +8519,51 @@ let Uploader = class Uploader extends Component {
         }
     }
     checkHTMLAttributes(isDynamic) {
-        let attributes$$1 = ['accept', 'multiple', 'disabled'];
+        let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['accept', 'multiple', 'disabled'];
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'accept':
                         // tslint:disable-next-line
                         if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined))
-                            || !isDynamic) {
-                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, isDynamic);
+                            || isDynamic) {
+                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, !isDynamic);
                             this.initialAttr.accept = this.allowedExtensions;
                         }
                         break;
                     case 'multiple':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || isDynamic) {
                             let isMutiple = this.element.getAttribute(prop) === 'multiple' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
-                            this.setProperties({ multiple: isMutiple }, isDynamic);
+                            this.setProperties({ multiple: isMutiple }, !isDynamic);
                             this.initialAttr.multiple = true;
                         }
                         break;
                     case 'disabled':
                         // tslint:disable-next-line
-                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || !isDynamic) {
+                        if ((isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || isDynamic) {
                             let isDisabled = this.element.getAttribute(prop) === 'disabled' ||
                                 this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
-                            this.setProperties({ enabled: isDisabled }, isDynamic);
+                            this.setProperties({ enabled: isDisabled }, !isDynamic);
                             this.initialAttr.disabled = true;
                         }
                 }
             }
         }
     }
-    chunkUpload(file, custom) {
+    chunkUpload(file, custom, fileIndex) {
         let start = 0;
         let end = Math.min(this.asyncSettings.chunkSize, file.size);
         let index = 0;
         let blob = file.rawFile.slice(start, end);
         let metaData = { chunkIndex: index, blob: blob, file: file, start: start, end: end, retryCount: 0, request: null };
-        this.sendRequest(file, metaData, custom);
+        this.sendRequest(file, metaData, custom, fileIndex);
     }
-    sendRequest(file, metaData, custom) {
+    sendRequest(file, metaData, custom, fileIndex) {
         let formData = new FormData();
+        let cloneFile;
         let blob = file.rawFile.slice(metaData.start, metaData.end);
         formData.append('chunkFile', blob, file.name);
         formData.append('chunk-index', metaData.chunkIndex.toString());
@@ -8465,14 +8587,31 @@ let Uploader = class Uploader extends Component {
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
             eventArgs.currentChunkIndex = metaData.chunkIndex;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                cloneFile = new File([file.rawFile], file.name);
+                eventArgs.fileData.rawFile = fileIndex ? this.base64String[fileIndex] : null;
+                if (this.currentRequestHeader) {
+                    this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                }
+                if (this.customFormDatas) {
+                    this.updateFormData(formData, this.customFormDatas);
+                }
+            }
             if (eventArgs.currentChunkIndex === 0) {
                 // This event is currently not required but to avoid breaking changes for previous customer, we have included.
                 this.trigger('uploading', eventArgs, (eventArgs) => {
+                    if (isBlazor()) {
+                        eventArgs.fileData.rawFile = cloneFile;
+                    }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
             else {
                 this.trigger('chunkUploading', eventArgs, (eventArgs) => {
+                    if (isBlazor()) {
+                        eventArgs.fileData.rawFile = cloneFile;
+                    }
                     this.uploadingEventCallback(formData, eventArgs, e, file);
                 });
             }
@@ -8901,6 +9040,7 @@ let Uploader = class Uploader extends Component {
      */
     /* istanbul ignore next */
     sortFileList(filesData) {
+        filesData = filesData ? filesData : this.sortFilesList;
         let files = filesData;
         let fileNames = [];
         for (let i = 0; i < files.length; i++) {
@@ -8952,6 +9092,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     upload(files, custom) {
+        files = files ? files : this.filesData;
         let uploadFiles = this.validateFileType(files);
         this.uploadFiles(uploadFiles, custom);
     }
@@ -8967,6 +9108,7 @@ let Uploader = class Uploader extends Component {
     }
     uploadFiles(files, custom) {
         let selectedFiles = [];
+        let cloneFiles = [];
         if (this.asyncSettings.saveUrl === '' || isNullOrUndefined(this.asyncSettings.saveUrl)) {
             return;
         }
@@ -8987,15 +9129,35 @@ let Uploader = class Uploader extends Component {
         for (let i = 0; i < selectedFiles.length; i++) {
             let ajax = new Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
             ajax.emitError = false;
+            let getFileData;
+            /* istanbul ignore next */
+            if (isBlazor()) {
+                getFileData = selectedFiles.slice(0);
+                cloneFiles.push(new File([getFileData[i].rawFile], getFileData[i].name));
+            }
             let eventArgs = {
-                fileData: selectedFiles[i],
+                fileData: (isBlazor()) ? getFileData[i] : selectedFiles[i],
                 customFormData: [],
                 cancel: false
             };
             let formData = new FormData();
             ajax.beforeSend = (e) => {
                 eventArgs.currentRequest = ajax.httpRequest;
+                /* istanbul ignore next */
+                if (isBlazor()) {
+                    eventArgs.fileData.rawFile = this.base64String[i];
+                    if (this.currentRequestHeader) {
+                        this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                    }
+                    if (this.customFormDatas) {
+                        this.updateFormData(formData, this.customFormDatas);
+                    }
+                }
                 this.trigger('uploading', eventArgs, (eventArgs) => {
+                    /* istanbul ignore next */
+                    if (isBlazor()) {
+                        selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
+                    }
                     if (eventArgs.cancel) {
                         this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
                     }
@@ -9006,13 +9168,26 @@ let Uploader = class Uploader extends Component {
                 let name = this.element.getAttribute('name');
                 formData.append(name, selectedFiles[i].rawFile, selectedFiles[i].name);
                 if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
-                    this.chunkUpload(selectedFiles[i], custom);
+                    this.chunkUpload(selectedFiles[i], custom, i);
                 }
                 else {
-                    ajax.onLoad = (e) => { this.uploadComplete(e, selectedFiles[i], custom); return {}; };
+                    ajax.onLoad = (e) => {
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        }
+                        else {
+                            this.uploadComplete(e, selectedFiles[i], custom);
+                            return {};
+                        }
+                    };
                     ajax.onUploadProgress = (e) => {
-                        this.uploadInProgress(e, selectedFiles[i], custom, ajax);
-                        return {};
+                        if (eventArgs.cancel && isBlazor()) {
+                            return {};
+                        }
+                        else {
+                            this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                            return {};
+                        }
                     };
                     /* istanbul ignore next */
                     ajax.onError = (e) => { this.uploadFailed(e, selectedFiles[i]); return {}; };
@@ -9121,7 +9296,15 @@ let Uploader = class Uploader extends Component {
      * @returns FileInfo[]
      */
     getFilesData() {
-        return this.filesData;
+        if (!isBlazor()) {
+            return this.filesData;
+        }
+        else {
+            for (let i = 0; i < this.filesData.length; i++) {
+                this.filesData[i].rawFile = this.base64String[i];
+            }
+            return this.filesData;
+        }
     }
     /**
      * Pauses the in-progress chunked upload based on the file data.
@@ -9130,6 +9313,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     pause(fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
         let fileDataFiles = this.validateFileType(fileData);
         this.pauseUploading(fileDataFiles, custom);
     }
@@ -9158,6 +9342,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     resume(fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
         let fileDataFiles = this.validateFileType(fileData);
         this.resumeFiles(fileDataFiles, custom);
     }
@@ -9176,6 +9361,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     retry(fileData, fromcanceledStage, custom) {
+        fileData = fileData ? fileData : this.filesData;
         let fileDataFiles = this.validateFileType(fileData);
         this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
     }
@@ -9203,6 +9389,7 @@ let Uploader = class Uploader extends Component {
      * @returns void
      */
     cancel(fileData) {
+        fileData = fileData ? fileData : this.filesData;
         let cancelingFiles = this.validateFileType(fileData);
         this.cancelUpload(cancelingFiles);
     }
@@ -9440,6 +9627,7 @@ let ColorPicker = class ColorPicker extends Component {
         if (!this.enableOpacity) {
             addClass([this.container.parentElement], HIDEOPACITY);
         }
+        this.renderComplete();
     }
     initWrapper() {
         let wrapper = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
@@ -9501,8 +9689,8 @@ let ColorPicker = class ColorPicker extends Component {
             target: this.container,
             disabled: this.disabled,
             enableRtl: this.enableRtl,
-            beforeOpen: this.beforeOpenFn.bind(this),
             open: this.onOpen.bind(this),
+            beforeOpen: this.beforeOpenFn.bind(this),
             beforeClose: this.beforePopupClose.bind(this),
             click: (args) => {
                 this.trigger('change', {
@@ -10946,7 +11134,7 @@ let ColorPicker = class ColorPicker extends Component {
                 this.element.value = this.roundValue(value).slice(0, 7);
                 let preview = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element);
                 if (preview) {
-                    preview.style.backgroundColor = newProp.value;
+                    preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value));
                 }
             }
             else {
@@ -11160,7 +11348,6 @@ let TextBox = class TextBox extends Component {
         this.isForm = false;
         this.inputPreviousValue = null;
         this.isVue = false;
-        this.isReact = false;
         this.textboxOptions = options;
     }
     /**
@@ -11191,12 +11378,11 @@ let TextBox = class TextBox extends Component {
                     this.inputPreviousValue = this.respectiveElement.value;
                     /* istanbul ignore next */
                     if ((this.isAngular || this.isVue) && this.preventChange === true) {
-                        this.previousValue = this.value;
+                        this.previousValue = this.isAngular ? this.value : this.previousValue;
                         this.preventChange = false;
                     }
-                    else if ((isNullOrUndefined(this.isAngular) || isNullOrUndefined(this.isVue)) || (!this.isAngular || !this.isVue)
-                        || ((this.isAngular || this.isVue) && !this.preventChange) || ((this.isAngular || this.isVue)
-                        && isNullOrUndefined(this.preventChange))) {
+                    else if (isNullOrUndefined(this.isAngular) || !this.isAngular
+                        || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
                         this.raiseChangeEvent();
                     }
                     break;
@@ -11204,7 +11390,7 @@ let TextBox = class TextBox extends Component {
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
                     let attributes$$1 = this.element.attributes;
-                    this.checkAttributes(attributes$$1, false);
+                    this.checkAttributes(true);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -11277,8 +11463,7 @@ let TextBox = class TextBox extends Component {
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        let attributes$$1 = this.element.attributes;
-        this.checkAttributes(attributes$$1, true);
+        this.checkAttributes(false);
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
@@ -11314,44 +11499,47 @@ let TextBox = class TextBox extends Component {
             }
         }
     }
-    checkAttributes(attrs, isDynamic) {
-        for (let i = 0; i < attrs.length; i++) {
-            let key = attrs[i].nodeName;
-            switch (key) {
-                case 'disabled':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || !isDynamic) {
-                        let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
-                            this.element.getAttribute(key) === 'true' ? false : true;
-                        this.setProperties({ enabled: enabled }, isDynamic);
-                    }
-                    break;
-                case 'readonly':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || !isDynamic) {
-                        let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
-                            || this.element.getAttribute(key) === 'true' ? true : false;
-                        this.setProperties({ readonly: readonly }, isDynamic);
-                    }
-                    break;
-                case 'placeholder':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || !isDynamic) {
-                        this.setProperties({ placeholder: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
-                case 'value':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || !isDynamic) {
-                        this.setProperties({ value: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
-                case 'type':
-                    // tslint:disable-next-line
-                    if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || !isDynamic) {
-                        this.setProperties({ type: attrs[i].nodeValue }, isDynamic);
-                    }
-                    break;
+    checkAttributes(isDynamic) {
+        let attrs = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        for (let key of attrs) {
+            if (!isNullOrUndefined(this.element.getAttribute(key))) {
+                switch (key) {
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
+                            let enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                                this.element.getAttribute(key) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
+                        }
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
+                            let readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        }
+                        break;
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
+                        }
+                        break;
+                    case 'type':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
+                            this.setProperties({ type: this.element.type }, !isDynamic);
+                        }
+                        break;
+                }
             }
         }
     }
@@ -11390,29 +11578,34 @@ let TextBox = class TextBox extends Component {
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        this.renderComplete();
     }
     updateHTMLAttrToWrapper() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) > -1) {
-                if (key === 'class') {
-                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
-                }
-                else if (key === 'style') {
-                    let setStyle = this.textboxWrapper.container.getAttribute(key);
-                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                        this.htmlAttributes[key];
-                    this.textboxWrapper.container.setAttribute(key, setStyle);
-                }
-                else {
-                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                    }
+                    else if (key === 'style') {
+                        let setStyle = this.textboxWrapper.container.getAttribute(key);
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.textboxWrapper.container.setAttribute(key, setStyle);
+                    }
+                    else {
+                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
     updateHTMLAttrToElement() {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) < 0) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if (!isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }

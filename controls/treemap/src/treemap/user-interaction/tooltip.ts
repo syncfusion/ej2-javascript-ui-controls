@@ -3,7 +3,7 @@ import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { Browser, createElement, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { Location, getMousePosition, textFormatter, formatValue } from '../utils/helper';
 import { TooltipSettingsModel } from '../model/base-model';
-import { ITreeMapTooltipRenderEventArgs } from '../model/interface';
+import { ITreeMapTooltipRenderEventArgs, ITreeMapTooltipArgs } from '../model/interface';
 import { tooltipRendering } from '../model/constants';
 /**
  * Render Tooltip
@@ -84,33 +84,64 @@ export class TreeMapTooltip {
                     treemap: this.treemap,
                     element: target, eventArgs: e
                 };
-                this.treemap.trigger(tooltipRendering, tootipArgs, (observedArgs: ITreeMapTooltipRenderEventArgs) => {
-                    if (!observedArgs.cancel) {
-                        this.svgTooltip = new Tooltip({
-                            enable: true,
-                            header: '',
-                            data: observedArgs.options['data'],
-                            template: observedArgs.options['template'],
-                            content: observedArgs.options['text'],
-                            shapes: [],
-                            location: observedArgs.options['location'],
-                            palette: [markerFill],
-                            areaBounds: this.treemap.areaRect,
-                            textStyle: observedArgs.options['textStyle']
-                        });
-                        this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                        this.svgTooltip.appendTo(tooltipEle);
-                        updateBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
-                    } else {
-                        this.removeTooltip();
-                        resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
-                    }
-                });
+                if (this.treemap.isBlazor) {
+                    const tooltipArgs : ITreeMapTooltipArgs = {
+                        cancel : false,
+                        location :  tootipArgs.options['location'],
+                        text :  tootipArgs.options['text'],
+                        textStyle :  tootipArgs.options['textStyle'],
+                        data :  tootipArgs.options['data'],
+                        template :  tootipArgs.options['template'],
+                        name : tooltipRendering
+                    };
+                    this.treemap.trigger(tooltipRendering, tooltipArgs, (args?: ITreeMapTooltipArgs) => {
+                        this.addTooltip(null, markerFill, tooltipEle, tooltipArgs);
+                    });
+                } else {
+                    this.treemap.trigger(tooltipRendering, tootipArgs, (args?: ITreeMapTooltipRenderEventArgs) => {
+                        this.addTooltip(tootipArgs, markerFill, tooltipEle);
+                    });
+                }
             }
         } else {
             this.removeTooltip();
             resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
+    }
+
+    private addTooltip(
+        tootipArgs: ITreeMapTooltipRenderEventArgs, markerFill: string, tooltipEle: HTMLElement, eventArgs?: ITreeMapTooltipArgs
+        ) : void {
+            let cancel : boolean;
+            let args : object;
+            if (!isNullOrUndefined(tootipArgs)) {
+                let {cancel : c, ...otherArgs} : ITreeMapTooltipRenderEventArgs = tootipArgs;
+                cancel = c;
+                args = otherArgs.options;
+            } else {
+                cancel = eventArgs.cancel;
+                args = eventArgs as object;
+            }
+            if (!cancel) {
+                this.svgTooltip = new Tooltip({
+                    enable: true,
+                    header: '',
+                    data: args['data'],
+                    template: args['template'],
+                    content: args['text'],
+                    shapes: [],
+                    location: args['location'],
+                    palette: [markerFill],
+                    areaBounds: this.treemap.areaRect,
+                    textStyle: args['textStyle']
+                });
+                this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.appendTo(tooltipEle);
+                updateBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
+            } else {
+                this.removeTooltip();
+                resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
+            }
     }
 
     public mouseUpHandler(e: PointerEvent): void {

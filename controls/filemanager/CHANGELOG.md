@@ -2,6 +2,29 @@
 
 ## [Unreleased]
 
+## 17.2.49 (2019-09-04)
+
+### File Manager
+
+#### Bug Fixes
+
+- The issue `the file manager throws script error when performing sorting in details view when the SortBy button is not present in toolbar` has been fixed.
+- The issue `the file manager throws script error when return null response from server for search operation` has been fixed.
+
+#### New Features
+
+- New events have been provided to customize the dialog in file manager.
+- New methods have been provided to select all files and clear the selection in current path of the file manager.
+- New methods have been provided to customize the context menu items in file manager.
+
+## 17.2.47 (2019-08-27)
+
+### File Manager
+
+#### New Features
+
+- Methods have been provided to perform file operations such as create, upload, download, delete, rename, and open in file manager.
+
 ## 17.2.41 (2019-08-14)
 
 ### File Manager

@@ -67,6 +67,7 @@ export interface ErrorArgs {
 }
 
 export interface DialogOptions {
+    dialogName?: string;
     header?: string;
     content?: string;
     buttons?: ButtonPropsModel[];
@@ -185,6 +186,36 @@ export interface FileOpenEventArgs {
     fileDetails?: Object;
 }
 
+export interface PopupOpenCloseEventArgs {
+    /**
+     * Returns the current dialog component instance.
+     */
+    popupModule?: Dialog;
+    /**
+     * Returns the current dialog element.
+     */
+    element: HTMLElement;
+    /**
+     * Returns the current dialog action name.
+     */
+    popupName: string;
+}
+
+export interface BeforePopupOpenCloseEventArgs {
+    /**
+     * Returns the current dialog component instance.
+     */
+    popupModule: Dialog;
+    /**
+     * Returns the current dialog action name.
+     */
+    popupName: string;
+    /**
+     * Prevents the dialog from opening when it is set to true.
+     */
+    cancel: boolean;
+}
+
 export interface FileSelectEventArgs {
     /**
      * Return the name of action like select or unselect.
@@ -194,6 +225,10 @@ export interface FileSelectEventArgs {
      * Return the currently selected item as JSON object.
      */
     fileDetails?: Object;
+    /**
+     * Defines whether event is triggered by interaction or not.
+     */
+    isInteracted?: boolean;
 }
 
 export interface ToolbarCreateEventArgs {
@@ -263,6 +298,10 @@ export interface MenuOpenEventArgs {
      * @blazorType Syncfusion.EJ2.Blazor.Navigations.ContextMenuModel
      */
     menuModule?: ContextMenu;
+    /**
+     * Returns whether the current context menu is sub-menu or not.
+     */
+    isSubMenu?: boolean;
     /**
      * Returns the target element of context menu.
      */
@@ -442,6 +481,7 @@ export interface IFileManager extends Component<HTMLElement> {
     droppedObjects: Object[];
     uploadEventArgs: BeforeSendEventArgs;
     destinationPath: string;
+    refreshLayout(): void;
 }
 
 /** @hidden */
@@ -456,6 +496,8 @@ export interface ITreeView extends Component<HTMLElement> {
 
 /** @hidden */
 export interface IContextMenu extends Component<HTMLElement> {
+    disableItem(items: string[]): void;
+    getItemIndex(item: string): number;
     contextMenu: ContextMenu;
     contextMenuBeforeOpen: Function;
     items: MenuItemModel[];

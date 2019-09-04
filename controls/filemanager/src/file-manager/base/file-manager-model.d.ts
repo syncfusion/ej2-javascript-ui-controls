@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { createDialog, createExtDialog } from '../pop-up/dialog';import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';import { Toolbar } from '../actions/toolbar';import { DetailsView } from '../layout/details-view';import { LargeIconsView } from '../layout/large-icons-view';import { Uploader, UploadingEventArgs, SelectedEventArgs, FileInfo } from '@syncfusion/ej2-inputs';import { UploadSettingsModel } from '../models/upload-settings-model';import { UploadSettings } from '../models/upload-settings';import * as events from './constant';import * as CLS from './classes';import { read, filter } from '../common/operations';import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs } from './interface';import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog } from '../common/utility';import { hasContentAccess, hasUploadAccess, updateLayout } from '../common/utility';import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';import { ContextMenuSettings } from '../models/contextMenu-settings';import { BreadCrumbBar } from '../actions/breadcrumb-bar';import { ContextMenu } from '../pop-up/context-menu';import { defaultLocale } from '../models/default-locale';import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
+﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, isBlazor } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';import { Dialog, createSpinner, hideSpinner, showSpinner, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';import { createDialog, createExtDialog } from '../pop-up/dialog';import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';import { Toolbar } from '../actions/toolbar';import { DetailsView } from '../layout/details-view';import { LargeIconsView } from '../layout/large-icons-view';import { Uploader, UploadingEventArgs, SelectedEventArgs, FileInfo } from '@syncfusion/ej2-inputs';import { UploadSettingsModel } from '../models/upload-settings-model';import { UploadSettings } from '../models/upload-settings';import * as events from './constant';import * as CLS from './classes';import { read, filter, createFolder } from '../common/operations';import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs } from './interface';import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from './interface';import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog } from '../common/utility';import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem } from '../common/utility';import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';import { ContextMenuSettings } from '../models/contextMenu-settings';import { BreadCrumbBar } from '../actions/breadcrumb-bar';import { ContextMenu } from '../pop-up/context-menu';import { defaultLocale } from '../models/default-locale';import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -175,6 +175,20 @@ export interface FileManagerModel extends ComponentModel{
     fileOpen?: EmitType<FileOpenEventArgs>;
 
     /**
+     * Triggers before the dialog is closed.
+     * @event
+     * @blazorproperty 'BeforePopupClose'
+     */
+    beforePopupClose?: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
+     * Triggers before the dialog is opened.
+     * @event
+     * @blazorproperty 'BeforePopupOpen'
+     */
+    beforePopupOpen?: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
      * Triggers before sending the AJAX request to the server.
      * @event
      * @blazorproperty 'OnSend'
@@ -250,6 +264,20 @@ export interface FileManagerModel extends ComponentModel{
      * @blazorproperty 'OnError'
      */
     failure?: EmitType<FailureEventArgs>;
+
+    /**
+     * Triggers when the dialog is closed.
+     * @event
+     * @blazorproperty 'PopupClosed'
+     */
+    popupClose?: EmitType<PopupOpenCloseEventArgs>;
+
+    /**
+     * Triggers when the dialog is opened.
+     * @event
+     * @blazorproperty 'PopupOpened'
+     */
+    popupOpen?: EmitType<PopupOpenCloseEventArgs>;
 
     /**
      * Triggers when the AJAX request is success.

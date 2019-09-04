@@ -9,7 +9,7 @@ import { BpmnDiagrams } from '../../src/diagram/objects/bpmn';
 import { Connector } from '../../src/diagram/objects/connector';
 import { NodeModel } from '../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../src/diagram/objects/connector-model';
-import { NodeConstraints, SelectorConstraints } from '../../src/diagram/enum/enum';
+import { NodeConstraints, SelectorConstraints, PortVisibility, PortConstraints } from '../../src/diagram/enum/enum';
 import { UndoRedo } from '../../src/diagram/objects/undo-redo'
 import {
     SymbolPalette, SymbolInfo, PaletteModel,
@@ -1401,6 +1401,131 @@ describe('Symbol Palette', () => {
             events.mouseUpEvent(diagram.element, 300, 300, false, false);
             expect(diagram.nodes[1].zIndex).toBe(1);
             done();
+        });
+    });
+
+    describe('Node default connector default test cases', () => {
+        let diagram: Diagram;
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+
+        let palettes: PaletteModel[] = [
+            {
+                id: 'basicShapes', expanded: true,
+                title: 'Basic Shapes',
+                symbols: [
+                    {
+                        id: 'symbol1', shape: { type: 'Basic', shape: 'Rectangle' }, height: 100, width: 100
+                    }
+                ]
+            }
+        ];
+        beforeAll((): void => {
+            ele = createElement('div', { styles: 'width:100%;height:500px;' });
+            ele.appendChild(createElement('div', { id: 'symbolPaletteOrder', styles: 'width:25%;height:500px;float:left;' }));
+            ele.appendChild(createElement('div', { id: 'diagramOrder', styles: 'width:74%;height:500px;float:left;' }));
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: '100%', height: '500px',
+
+
+            });
+            diagram.appendTo('#diagramOrder');
+            function getFlowShapes(): NodeModel[] {
+
+                let flowShapes: NodeModel[] = [
+                    {
+                        id: 'Terminator', shape: { type: 'Flow', shape: 'Terminator' },
+                        ports: [{ id: 'port1', visibility: PortVisibility.Visible, offset: { x: 1, y: 0 } }, { id: 'port2', offset: { x: 0, y: 1 }, visibility: PortVisibility.Visible }],
+                        style: { strokeWidth: 2 }, annotations: [{ id: 'dd', content: 'df' }]
+                    },
+                ];
+
+                return flowShapes;
+            }
+            function getConnectors(): ConnectorModel[] {
+
+                let connectorSymbols: ConnectorModel[] = [
+                    {
+                        id: 'Link1', type: 'Orthogonal', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 },
+                        targetDecorator: { shape: 'Arrow' }, style: { strokeWidth: 2 }
+                    },
+                    {
+                        id: 'Link3', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 },
+
+                    },
+                ];
+
+                return connectorSymbols;
+            }
+            palette = new SymbolPalette({
+                expandMode: 'Multiple',
+                palettes: [
+                    { id: 'flow', expanded: true, symbols: getFlowShapes(), title: 'Flow Shapes' },
+                    { id: 'connectors', expanded: true, symbols: getConnectors(), title: 'Connectors' }
+                ],
+                width: '100%', height: '100%', symbolHeight: 50, symbolWidth: 50,
+                ignoreSymbolsOnSearch: ['Terminator'],
+                symbolPreview: { height: 100, width: 100 },
+                enableSearch: true,
+                connectorDefaults: {
+                    type: 'Bezier', style: { strokeColor: 'red' }, targetDecorator: {
+                        style: { fill: 'blue' },
+                        pivot: { x: 0, y: 0.5 }
+                    }
+                },
+                nodeDefaults: {
+                    width: 200,
+                    ports: [{ style: { fill: 'gray' }, constraints: PortConstraints.Drag }],
+                    height: 200, style: { fill: 'red' }, annotations: [{ content: 'ss', style: { fill: 'red' } }]
+                },
+                symbolMargin: { left: 12, right: 12, top: 12, bottom: 12 },
+                getSymbolInfo: (symbol: NodeModel): SymbolInfo => {
+                    return { fit: true };
+                }
+            });
+            palette.appendTo('#symbolPaletteOrder');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            palette.destroy();
+            ele.remove();
+        });
+
+
+        it('Node default connector default test cases', (done: Function) => {
+            
+            var shape: NodeModel | ConnectorModel;;
+            expect((palette.palettes[0].symbols[0].wrapper.children[0] as any).children[0].style.strokeWidth === 2
+                && (palette.palettes[0].symbols[0].wrapper.children[0] as any).children[0].style.fill === 'red'
+                && (palette.palettes[1].symbols[0].wrapper.children[0] as any).children[0].children[0].style.strokeColor === 'red'
+                && (palette.palettes[1].symbols[0].wrapper.children[0] as any).children[0].children[2].style.fill === 'blue'
+            ).toBe(true)
+            shape = { id: 'newflow' + randomId(), shape: { type: 'Flow', shape: 'Process' } };
+            palette.addPaletteItem('flow', shape);
+            palette.dataBind();
+            shape = { id: 'Link33', sourcePoint: { x: 0, y: 0 }, targetPoint: { x: 40, y: 40 } }
+            palette.addPaletteItem('flow', shape);
+            palette.dataBind();
+            expect((palette.palettes[0].symbols[1].wrapper.children[0] as any).children[0].style.fill === 'red'
+                && (palette.palettes[0].symbols[2].wrapper.children[0] as any).children[0].children[0].style.strokeColor === 'red').toBe(true)
+            done();
+        });
+        it('ignore search test case', (done: Function) => {
+            palette.enableSearch = true;
+            palette.dataBind();
+            let element: HTMLElement = document.getElementById("textEnter");
+            element.focus();
+            (document.getElementById("textEnter") as HTMLInputElement).value = "ter";
+            let eventName = "keyUp";
+            palette[eventName]({ target: element });
+            setTimeout(() => {
+                expect(document.getElementById('SearchPalette').children[0].id === 'EmptyDiv').toBe(true);
+                done();
+            }, 500);
+
         });
     });
 });

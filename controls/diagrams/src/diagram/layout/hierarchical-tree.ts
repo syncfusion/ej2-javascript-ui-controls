@@ -7,6 +7,7 @@ import { OrthogonalSegmentModel } from '../objects/connector-model';
 import { OrthogonalSegment } from '../objects/connector';
 import { getFunction } from '../utility/base-util';
 import { Point } from '../primitives/point';
+import { updateLayoutValue } from '../utility/diagram-util';
 
 /**
  * Hierarchical Tree and Organizational Chart 
@@ -62,7 +63,8 @@ export class HierarchicalTree {
             orientation: layoutProp.orientation,
             horizontalSpacing: layoutProp.horizontalSpacing, verticalSpacing: layoutProp.verticalSpacing,
             verticalAlignment: layoutProp.verticalAlignment, horizontalAlignment: layoutProp.horizontalAlignment,
-            fixedNode: layoutProp.fixedNode, getLayoutInfo: getFunction(layoutProp.getLayoutInfo), margin: layoutProp.margin,
+            fixedNode: layoutProp.fixedNode, getLayoutInfo: getFunction(layoutProp.getLayoutInfo)
+            , layoutInfo: layoutProp.layoutInfo, margin: layoutProp.margin,
             bounds: layoutProp.bounds, objects: [], root: layoutProp.root
         };
         this.doLayout(layout, nodes, viewport, uniqueId, action);
@@ -85,7 +87,11 @@ export class HierarchicalTree {
                 layoutInfo.tree.hasSubTree = false;
                 if (!layout.nameTable[layout.root]) {
                     if (!node.inEdges || !node.inEdges.length) {
-                        rootNodes.push(node as INode);
+                        let parentId: string = 'parentId';
+                        let processId: string = 'processId';
+                        if (!node[parentId] && !node[processId]) {
+                            rootNodes.push(node as INode);
+                        }
                         if (node.data && String(node.data[uniqueId]) === layout.root) {
                             layout.firstLevelNodes.push(node as INode);
                         }
@@ -98,7 +104,7 @@ export class HierarchicalTree {
         //Update relationship(parent and children)
         for (i = 0; i < layout.firstLevelNodes.length; i++) {
             node = layout.firstLevelNodes[i];
-            this.updateEdges(layout, node, 1, action);
+            this.updateEdges(layout, node, 1, action, nodes);
         }
         if (layout.firstLevelNodes.length > 0) {
             layout.rootNode = layout.firstLevelNodes[0];
@@ -1090,7 +1096,7 @@ export class HierarchicalTree {
         return layout.nameTable[layout.nameTable[node.inEdges[0]].sourceID];
     }
 
-    private updateEdges(layout: ILayout, node: INode, depth: number, action?: DiagramAction): void {
+    private updateEdges(layout: ILayout, node: INode, depth: number, action?: DiagramAction, nodes?: INode[]): void {
         let layoutInfo: LayoutInfo;
         layoutInfo = layout.graphNodes[node.id];
         let j: number;
@@ -1105,7 +1111,7 @@ export class HierarchicalTree {
                     if (edge.outEdges && edge.outEdges.length && edge.isExpanded) {
                         layoutInfo.tree.hasSubTree = true;
                     }
-                    this.updateEdges(layout, edge, depth + 1, action);
+                    this.updateEdges(layout, edge, depth + 1, action, nodes);
                 }
             }
         }
@@ -1118,8 +1124,9 @@ export class HierarchicalTree {
         }
         //Customizing assistants and children collection
         //Performance-Instead of reading the method everytime, we can set once and can reuse that
-        if (layout.getLayoutInfo && layout.type === 'OrganizationalChart') {
-            layout.getLayoutInfo(node, layoutInfo.tree);
+        if ((layout.getLayoutInfo || layout.layoutInfo) && layout.type === 'OrganizationalChart') {
+            layout.getLayoutInfo ?
+                layout.getLayoutInfo(node, layoutInfo.tree) : updateLayoutValue(layoutInfo.tree, layout.layoutInfo, nodes, node);
             if (layoutInfo.tree.type === 'Balanced' && layoutInfo.tree.hasSubTree) {
                 layoutInfo.tree.type = 'Center'; layoutInfo.tree.orientation = 'Horizontal';
             }

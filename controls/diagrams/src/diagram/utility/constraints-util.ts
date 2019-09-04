@@ -7,8 +7,8 @@ import { AnnotationConstraints, PortConstraints } from '../enum/enum';
 import { Connector } from './../objects/connector';
 import { AnnotationModel, PathAnnotationModel, ShapeAnnotationModel } from './../objects/annotation-model';
 import { PointPortModel } from './../objects/port-model';
-import { Selector } from './../interaction/selector';
-import { SelectorModel } from './../interaction/selector-model';
+import { Selector } from './../objects/node';
+import { SelectorModel } from './../objects/node-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 
 /**
@@ -80,6 +80,17 @@ export function canBridge(connector: Connector, diagram: Diagram): number {
         state = diagram.constraints & DiagramConstraints.Bridging;
     } else {
         state = 0;
+    }
+    return state;
+}
+
+/** @private */
+export function canEnableRouting(connector: Connector, diagram: Diagram): number {
+    let state: number = 0;
+    if (connector.constraints & ConnectorConstraints.LineRouting) {
+        state = connector.constraints & ConnectorConstraints.LineRouting;
+    } else if (connector.constraints & ConnectorConstraints.InheritLineRouting) {
+        state = diagram.constraints & DiagramConstraints.LineRouting;
     }
     return state;
 }

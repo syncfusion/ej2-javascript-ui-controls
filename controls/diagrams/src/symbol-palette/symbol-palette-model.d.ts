@@ -1,4 +1,5 @@
-import { Component, Property, Complex, CollectionFactory, ChildProperty, Event } from '@syncfusion/ej2-base';import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, EmitType } from '@syncfusion/ej2-base';import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';import { DiagramElement, TextElement, MarginModel, Canvas, BpmnShape, PointModel, IElement } from '../diagram/index';import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';import { SvgRenderer } from '../diagram/rendering/svg-renderer';import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';import { removeElementsByClass } from '../diagram/utility/dom-util';import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults } from '../diagram/utility/diagram-util';import { getFunction, randomId } from '../diagram/utility/base-util';import { getOuterBounds } from '../diagram/utility/connector';import { Point } from '../diagram/primitives/point';import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';import { Rect } from '../diagram/primitives/rect';
+import { Component, Property, Complex, CollectionFactory, ChildProperty, Event } from '@syncfusion/ej2-base';import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';import { remove, EmitType } from '@syncfusion/ej2-base';import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';import { NodeModel, ConnectorModel, Node, Connector, Shape, Size, Transform, SwimLane, PathModel } from '../diagram/index';import { DiagramRenderer, Container, StackPanel, Margin, BpmnDiagrams, ShapeStyleModel, TextStyleModel } from '../diagram/index';import { DiagramElement, TextElement, MarginModel, Canvas, BpmnShape, PointModel, IElement } from '../diagram/index';import { TextWrap, TextOverflow, IPaletteSelectionChangeArgs, HeaderModel, SwimLaneModel } from '../diagram/index';import { SvgRenderer } from '../diagram/rendering/svg-renderer';import { parentsUntil, createSvgElement, createHtmlElement, createMeasureElements } from '../diagram/utility/dom-util';import { removeElementsByClass } from '../diagram/utility/dom-util';import { scaleElement, arrangeChild, groupHasType, setUMLActivityDefaults, updateDefaultValues } from '../diagram/utility/diagram-util';import { getFunction, randomId } from '../diagram/utility/base-util';import { getOuterBounds } from '../diagram/utility/connector';import { Point } from '../diagram/primitives/point';import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';import { Rect } from '../diagram/primitives/rect';
+import {SymbolInfo} from "./symbol-palette";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -148,13 +149,22 @@ export interface SymbolPaletteModel extends ComponentModel{
     getSymbolInfo?: Function | string;
 
     /**
+     * Defines the size, appearance and description of a symbol
+     */
+    symbolInfo?: SymbolInfo;
+
+    /**
      * Defines the symbols to be added in search palette
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @default undefined
      * @deprecated
      */
     filterSymbols?: Function | string;
+
+    /**
+     * Defines the symbols to be added in search palette
+     */
+    ignoreSymbolsOnSearch?: string[];
 
     /**
      * Defines the content of a symbol
@@ -232,9 +242,21 @@ export interface SymbolPaletteModel extends ComponentModel{
     getNodeDefaults?: Function | string;
 
     /**
+     * Helps to return the default properties of node
+     * @blazorType DiagramNode
+     */
+    nodeDefaults?: NodeModel;
+
+    /**
      * Helps to return the default properties of connector
      * @deprecated
      */
     getConnectorDefaults?: Function | string;
+
+    /**
+     * Helps to return the default properties of connectors
+     * @blazorType DiagramConnector
+     */
+    connectorDefaults?: ConnectorModel;
 
 }

@@ -94,6 +94,35 @@ describe('FileManager control single selection Gid view', () => {
             feObj.destroy();
             expect(feObj.element.style.height).toEqual('');
         });
+        it('for toolbarSettings view height testing', () => {
+            feObj = new FileManager({
+                view: 'Details',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                height:'400px',
+                showThumbnail: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            expect((<HTMLElement>document.getElementById('file_grid').querySelector('.e-content')).style.height).toEqual('288px');
+            expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
+            feObj.toolbarSettings = { visible: false };
+            feObj.dataBind();
+            expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(false);
+            expect(feObj.element.querySelectorAll('.e-toolbar-item').length).toEqual(0);
+            expect((<HTMLElement>document.getElementById('file_grid').querySelector('.e-content')).style.height).toEqual('331px');
+            feObj.toolbarSettings = { visible: true };
+            feObj.dataBind();
+            expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
+            expect((<HTMLElement>document.getElementById('file_grid').querySelector('.e-content')).style.height).toEqual('288px');
+        });
         it('for toolbarSettings', () => {
             feObj = new FileManager({
                 view: 'Details',

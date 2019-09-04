@@ -390,7 +390,7 @@ export class ListBox extends DropDownBase {
                 helper: (e: { sender: Element }) => {
                     let ele: HTMLElement = e.sender.cloneNode(true) as HTMLElement;
                     ele.style.width = (this.getItems()[0] as HTMLElement).offsetWidth + 'px';
-                    if (this.value.length > 1 && this.isSelected(ele)) {
+                    if ((this.value && this.value.length) > 1 && this.isSelected(ele)) {
                         ele.appendChild(this.createElement('span', {
                             className: 'e-list-badge', innerHTML: this.value.length + ''
                         }));
@@ -591,7 +591,7 @@ export class ListBox extends DropDownBase {
             let toIdx: number = args.currentIndex = this.getCurIdx(this, args.currentIndex);
             listData.splice(toIdx, 0, listData.splice(listData.indexOf(this.getDataByValue(dropValue)), 1)[0] as obj);
             if (this.allowDragAll) {
-                selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
+                selectedOptions = this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
                 selectedOptions.forEach((value: string) => {
                     if (value !== dropValue) {
                         let idx: number = listData.indexOf(this.getDataByValue(value));
@@ -610,7 +610,8 @@ export class ListBox extends DropDownBase {
             let currIdx: number = args.currentIndex = this.getCurIdx(listObj, args.currentIndex);
             let ul: Element = listObj.ulElement;
             listData = [].slice.call(listObj.listData);
-            selectedOptions = (Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll) ? this.value : [dropValue];
+            selectedOptions = (this.value && Array.prototype.indexOf.call(this.value, dropValue) > -1 && this.allowDragAll)
+            ? this.value : [dropValue];
             selectedOptions.forEach((value: string) => {
                 droppedData = this.getDataByValue(value);
                 this.listData.splice((this.listData as dataType[]).indexOf(droppedData), 1);
@@ -798,9 +799,11 @@ export class ListBox extends DropDownBase {
             let valueindex: number = 0;
             let count: number = 0;
             for (listindex; listindex < this.mainList.childElementCount; ) {
-                for (valueindex; valueindex < this.value.length; valueindex++) {
-                    if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
-                        count++;
+                if (this.value) {
+                    for (valueindex; valueindex < this.value.length; valueindex++) {
+                        if (this.mainList.getElementsByTagName('li')[listindex].getAttribute('data-value') === this.value[valueindex]) {
+                            count++;
+                        }
                     }
                 }
                 if (!count && this.selectionSettings.showCheckbox) {
@@ -940,7 +943,7 @@ export class ListBox extends DropDownBase {
                 });
                 this.list.setAttribute('aria-activedescendant', li.id);
             }
-            if (!isKey && (this.maximumSelectionLength > this.value.length || !isSelect) &&
+            if (!isKey && (this.maximumSelectionLength > (this.value && this.value.length) || !isSelect) &&
                 (this.maximumSelectionLength >= this.value.length || !isSelect) &&
                 !(this.maximumSelectionLength < this.value.length)) {
                 this.notify('updatelist', { li: li, e: e });

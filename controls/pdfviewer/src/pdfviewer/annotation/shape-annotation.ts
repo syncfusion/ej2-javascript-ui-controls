@@ -7,7 +7,7 @@ import { ColorPicker } from '@syncfusion/ej2-inputs';
 import { PointModel } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
-import { AnnotationType } from '../../diagram/enum';
+import { PdfAnnotationType } from '../../diagram/enum';
 
 /**
  * @hidden
@@ -194,24 +194,18 @@ export class ShapeAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public renderShapeAnnotations(shapeAnnotations: any, pageNumber: number): void {
+    public renderShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAcion?: boolean): void {
         if (shapeAnnotations) {
             if (shapeAnnotations.length >= 1) {
                 // tslint:disable-next-line
                 let shapeAnnots: any[] = this.pdfViewer.annotation.getStoredAnnotations(pageNumber, shapeAnnotations, '_annotations_shape');
-                if (!shapeAnnots) {
+                if (!shapeAnnots || isImportAcion) {
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = shapeAnnotations[i];
                     let annotationObject: IShapeAnnotation = null;
                     this.shapeCount = this.shapeCount + 1;
                     if (annotation.ShapeAnnotationType) {
-                        if (annotation.Subject === 'Line' && annotation.ShapeAnnotationType === 'Polygon') {
-                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', 'Polygon');
-                        } else {
-                            // tslint:disable-next-line:max-line-length
-                            annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('shape', annotation.ShapeAnnotationType);
-                        }
                         let vertexPoints: IPoint[] = null;
                         if (annotation.VertexPoints) {
                             vertexPoints = [];
@@ -339,8 +333,8 @@ export class ShapeAnnotation {
         }
     }
 
-    private setShapeType(shape: string): AnnotationType {
-        let shapeType: AnnotationType;
+    private setShapeType(shape: string): PdfAnnotationType {
+        let shapeType: PdfAnnotationType;
         switch (shape) {
             case 'Line':
                 shapeType = 'Line';
@@ -361,8 +355,8 @@ export class ShapeAnnotation {
         return shapeType;
     }
 
-    private getShapeType(shape: IShapeAnnotation): AnnotationType {
-        let shapeType: AnnotationType;
+    private getShapeType(shape: IShapeAnnotation): PdfAnnotationType {
+        let shapeType: PdfAnnotationType;
         switch (shape.shapeAnnotationType) {
             case 'Line':
                 shapeType = 'Line';
@@ -387,7 +381,7 @@ export class ShapeAnnotation {
         return shapeType;
     }
 
-    private getShapeAnnotType(shape: AnnotationType): string {
+    private getShapeAnnotType(shape: PdfAnnotationType): string {
         let shapeType: string;
         switch (shape) {
             case 'Line':

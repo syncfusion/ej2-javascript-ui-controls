@@ -60,7 +60,6 @@ export class DataManipulation {
       this.parent.off('dataProcessor', this.dataProcessor);
       this.parent.grid.off('sorting-begin', this.beginSorting);
     }
-
     /**
      * To destroy the dataModule
      * @return {void}
@@ -447,8 +446,8 @@ public isRemote(): boolean {
     args.result = results; args.count = count;
     this.parent.notify('updateResults', args);
   }
-  /* tslint:disable */
-  private paging(results: ITreeData[], count: number, isExport: boolean, isPrinting: boolean, exportType: string, args: object): BeforeDataBoundArgs {
+  private paging(results: ITreeData[], count: number, isExport: boolean,
+                 isPrinting: boolean, exportType: string, args: object): BeforeDataBoundArgs {
     if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
      && (!isPrinting || this.parent.printMode === 'CurrentPage'))  {
       this.parent.notify(events.pagingActions, {result: results, count: count});

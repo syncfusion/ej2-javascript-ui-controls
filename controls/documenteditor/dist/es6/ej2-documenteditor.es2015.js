@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, classList, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, classList, createElement, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Save, StreamWriter, XmlWriter } from '@syncfusion/ej2-file-utils';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { ListView } from '@syncfusion/ej2-lists';
@@ -7938,7 +7938,8 @@ class LineWidget {
      */
     isFirstLine() {
         let index = this.indexInOwner;
-        if (index > -1 && this.paragraph.previousSplitWidget === undefined) {
+        // tslint:disable-next-line:max-line-length
+        if (index > -1 && (this.paragraph.previousSplitWidget === undefined || (this.paragraph.previousSplitWidget instanceof ParagraphWidget && this.paragraph.previousSplitWidget.isEndsWithPageBreak))) {
             return index === 0;
         }
         return false;
@@ -12559,14 +12560,14 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
      * @private
      */
     fireContentChange() {
-        let eventArgs = { source: this };
+        let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     }
     /**
      * @private
      */
     fireDocumentChange() {
-        let eventArgs = { source: this };
+        let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     }
     /**
@@ -12576,14 +12577,14 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
         if (!this.viewer.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
-        let eventArgs = { source: this };
+        let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('selectionChange', eventArgs);
     }
     /**
      * @private
      */
     fireZoomFactorChange() {
-        let eventArgs = { source: this };
+        let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('zoomFactorChange', eventArgs);
     }
     /**
@@ -12596,7 +12597,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                 let eventArgs = {
                     startPage: pages[0].index + 1,
                     endPage: pages[pages.length - 1].index + 1,
-                    source: this
+                    source: isBlazor() ? null : this
                 };
                 this.trigger('viewChange', eventArgs);
             }
@@ -14854,6 +14855,25 @@ class Layout {
         line.paragraph = paragraphWidget;
         return line;
     }
+    isFirstElementWithPageBreak(paragraphWidget) {
+        let isPageBreak = false;
+        let lineWidget = paragraphWidget.childWidgets[0];
+        if (lineWidget) {
+            let element = lineWidget.children[0];
+            while (element) {
+                if (element instanceof BookmarkElementBox && element.name.indexOf('_') >= 0) {
+                    element = element.nextElement;
+                    continue;
+                }
+                if (element instanceof TextElementBox && element.text === '\f') {
+                    isPageBreak = true;
+                }
+                break;
+            }
+        }
+        return isPageBreak;
+    }
+    ;
     /**
      * Layouts specified paragraph.
      * @private
@@ -14861,7 +14881,12 @@ class Layout {
      */
     layoutParagraph(paragraph, lineIndex) {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
-        this.layoutListItems(paragraph);
+        let isListLayout = true;
+        let isFirstElmIsparagraph = this.isFirstElementWithPageBreak(paragraph);
+        if (!isFirstElmIsparagraph) {
+            this.layoutListItems(paragraph);
+            isListLayout = false;
+        }
         if (paragraph.isEmpty()) {
             this.layoutEmptyLineWidget(paragraph, true);
         }
@@ -14869,6 +14894,9 @@ class Layout {
             let line = lineIndex < paragraph.childWidgets.length ?
                 paragraph.childWidgets[lineIndex] : undefined;
             while (line instanceof LineWidget) {
+                if (paragraph !== line.paragraph && line.indexInOwner === 0 && isListLayout) {
+                    this.layoutListItems(line.paragraph);
+                }
                 if (line.isFirstLine() && isNullOrUndefined(this.fieldBegin)) {
                     if (!isNullOrUndefined(paragraph.paragraphFormat)) {
                         // tslint:disable-next-line:max-line-length
@@ -16385,6 +16413,12 @@ class Layout {
         let isCustomTab = false;
         let tabs = paragraph.paragraphFormat.getUpdatedTabs();
         let isList = false;
+        let isSingleTab = false;
+        // tslint:disable-next-line:max-line-length
+        if (element.previousElement instanceof TextElementBox && element.previousElement.previousElement instanceof FieldElementBox && tabs.length === 1) {
+            tabs.length = 0;
+            isSingleTab = true;
+        }
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
             let listFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
@@ -16393,24 +16427,25 @@ class Layout {
             }
         }
         //  Calculate hanging width
-        let clientWidth = 0;
-        if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
-            clientWidth = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
-        }
-        else {
-            clientWidth = this.viewer.clientArea.x;
-        }
-        if (viewer.clientActiveArea.x < clientWidth) {
+        if (element instanceof ListTextElementBox && viewer.clientActiveArea.x < this.viewer.clientArea.x) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
+        let leftIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
+        let firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         let position = viewer.clientActiveArea.x -
-            (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
+            (viewer.clientArea.x - leftIndent);
         let defaultTabWidth = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
         if (tabs.length === 0) {
             if (position > 0 && defaultTabWidth > position && isList ||
                 defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
                 return defaultTabWidth - position;
+            }
+            else if (isSingleTab) {
+                return defaultTabWidth - leftIndent;
+            }
+            else if (defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth < position) {
+                return defaultTabWidth + firstLineIndent;
             }
             return defaultTabWidth;
         }
@@ -16460,6 +16495,12 @@ class Layout {
                             }
                             break;
                         }
+                    }
+                    else if (element.previousElement instanceof TextElementBox && element.nextElement instanceof TextElementBox) {
+                        if (leftIndent > defaultTabWidth) {
+                            defaultTabWidth = leftIndent - defaultTabWidth;
+                        }
+                        break;
                     }
                 }
             }
@@ -22129,6 +22170,11 @@ class LayoutViewer {
         };
         // tslint:enable:no-any 
         this.onKeyPressInternal = (event) => {
+            let key = event.which || event.keyCode;
+            let ctrl = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
+            if (ctrl && event.key === 'v') {
+                return;
+            }
             if (!this.owner.isReadOnlyMode) {
                 let key = event.keyCode || event.charCode;
                 let char = '';
@@ -31044,6 +31090,10 @@ class Selection {
         /**
          * @private
          */
+        this.isHighlightNext = false;
+        /**
+         * @private
+         */
         this.editRegionHighlighters = undefined;
         /**
          * @private
@@ -34161,6 +34211,11 @@ class Selection {
             }
             else {
                 this.highlight(start.paragraph, start, end);
+                if (this.isHighlightNext) {
+                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
             }
         }
     }
@@ -34356,14 +34411,21 @@ class Selection {
                     return;
                 }
             }
-            this.highlightNextBlock(paragraph, start, end);
+            this.isHighlightNext = true;
+            this.hightLightNextParagraph = paragraph;
         }
     }
     highlightNextBlock(paragraph, start, end) {
         let block = paragraph.nextRenderedWidget;
         if (!isNullOrUndefined(block)) {
             if (block instanceof ParagraphWidget) {
+                this.isHighlightNext = false;
                 this.highlight(block, start, end);
+                if (this.isHighlightNext) {
+                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
             }
             else {
                 this.highlightTable(block, start, end);
@@ -34750,6 +34812,11 @@ class Selection {
                     else {
                         if (startCell === containerCell) {
                             this.highlight(start.paragraph, start, end);
+                            if (this.isHighlightNext) {
+                                this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                                this.isHighlightNext = false;
+                                this.hightLightNextParagraph = undefined;
+                            }
                         }
                         else {
                             this.highlightContainer(startCell, start, end);
@@ -38636,6 +38703,11 @@ class Selection {
     highlightEditRegions(editRangeStart, startPosition, endPosition) {
         if (!editRangeStart.line.paragraph.isInsideTable) {
             this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
+            if (this.isHighlightNext) {
+                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                this.isHighlightNext = false;
+                this.hightLightNextParagraph = undefined;
+            }
         }
         else {
             let row = editRangeStart.line.paragraph.associatedCell.ownerRow;
@@ -38643,6 +38715,11 @@ class Selection {
             for (let i = 0; i < cell.childWidgets.length; i++) {
                 if (cell.childWidgets[i] instanceof ParagraphWidget) {
                     this.highlight(cell.childWidgets[i], startPosition, endPosition);
+                    if (this.isHighlightNext) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                        this.isHighlightNext = false;
+                        this.hightLightNextParagraph = undefined;
+                    }
                 }
             }
         }
@@ -42237,8 +42314,11 @@ class Editor {
             }
         }
         let paragraph = new ParagraphWidget();
+        let insertFormat = new WCharacterFormat();
+        let selectionFormat = this.copyInsertFormat(insertFormat, false);
         let line = new LineWidget(paragraph);
         let fieldBegin = new FieldElementBox(0);
+        fieldBegin.characterFormat.mergeFormat(selectionFormat);
         line.children.push(fieldBegin);
         let fieldCodeSpan = new TextElementBox();
         fieldCodeSpan.text = code;
@@ -42249,8 +42329,10 @@ class Editor {
         line.children.push(fieldSeparator);
         let fieldResultSpan = new TextElementBox();
         fieldResultSpan.text = result;
+        fieldResultSpan.characterFormat.mergeFormat(selectionFormat);
         line.children.push(fieldResultSpan);
         let fieldEnd = new FieldElementBox(1);
+        fieldEnd.characterFormat.mergeFormat(selectionFormat);
         fieldEnd.fieldSeparator = fieldSeparator;
         fieldEnd.fieldBegin = fieldBegin;
         fieldBegin.fieldEnd = fieldEnd;
@@ -59886,18 +59968,19 @@ class WordExport {
         //         writer.WriteAttributeString('afterAutospacing', this.wNamespace, '0');
         //     }
         // }
-        writer.writeAttributeString(undefined, 'line', this.wNamespace, '240');
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
-        switch (paragraphFormat.lineSpacingType) {
-            case 'AtLeast':
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'atLeast');
-                break;
-            case 'Exactly':
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'exact');
-                break;
-            default:
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'auto');
-                break;
+        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+            // tslint:disable-next-line:max-line-length
+            let lineSpacingValue = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
+            let lineSpacingType = 'auto';
+            if (paragraphFormat.lineSpacingType === 'AtLeast') {
+                lineSpacingType = 'atLeast';
+            }
+            else if (paragraphFormat.lineSpacingType === 'Exactly') {
+                lineSpacingType = 'exact';
+            }
+            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
+            writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, lineSpacingType);
         }
         writer.writeEndElement();
     }
@@ -74247,7 +74330,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        let eventArgs = { source: this };
+        let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     }
     /**
@@ -74263,7 +74346,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        let eventArgs = { source: this };
+        let eventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     }
     /**
@@ -74272,7 +74355,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
     onSelectionChange() {
         setTimeout(() => {
             this.showPropertiesPaneOnSelection();
-            let eventArgs = { source: this };
+            let eventArgs = { source: isBlazor() ? null : this };
             this.trigger('selectionChange', eventArgs);
         });
     }

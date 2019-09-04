@@ -6,13 +6,6 @@ import { HeatMap } from '../heatmap';import { isNullOrUndefined, DateFormatOptio
 export interface DataModel {
 
     /**
-     * Property to provide Datasource.
-     * @default null
-     */
-
-    data?: Object;
-
-    /**
      * Specifies the provided datasource is an JSON data. 
      * @default false
      */
@@ -21,7 +14,7 @@ export interface DataModel {
 
     /**
      * specifies Adaptor type
-     * @default cell
+     * @default None
      */
     adaptorType?: AdaptorType;
 

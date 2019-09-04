@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 17.2.48-beta (2019-08-28)
+## 17.2.40 (2019-08-06)
 
 ### In-place Editor
 
@@ -24,7 +24,7 @@
 
 #### Bug Fixes
 
-- #237441 - Modified value not updated, when using `RichTextEditor` with `Markdown` mode issue has been resolved
+- `#237441` - Modified value not updated, when using `RichTextEditor` with `Markdown` mode issue has been resolved
 
 ## 17.1.48 (2019-05-21)
 
@@ -32,7 +32,7 @@
 
 #### Bug Fixes
 
-- #235175 - Issue with modules injection in Angular production mode that issue has been resolved.
+- `#235175` - Issue with modules injection in Angular production mode that issue has been resolved.
 
 ## 17.1.47 (2019-05-14)
 

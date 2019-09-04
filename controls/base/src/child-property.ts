@@ -1,4 +1,4 @@
-import { getValue, setValue, merge } from './util';
+import { getValue, setValue, merge, isBlazor } from './util';
 import { Base } from './base';
 
 /**
@@ -106,6 +106,12 @@ export class ChildProperty<T> {
      * @returns {void}
      */
     protected saveChanges(key: string, newValue: Object, oldValue: Object): void {
+        if (this.controlParent.isRendered && isBlazor()) {
+            let ejsInterop: string = 'ejsInterop';
+            if (window && window[ejsInterop]) {
+                window[ejsInterop].childSaveChanges.call(this, key, newValue, oldValue);
+            }
+        }
         if (this.controlParent.isProtectedOnChange) { return; }
         this.oldProperties[key] = oldValue;
         this.changedProperties[key] = newValue;
@@ -130,4 +136,5 @@ interface ParentObject {
     dataBind: Function;
     isProtectedOnChange: boolean;
     controlParent: ParentObject;
+    isRendered: boolean;
 }

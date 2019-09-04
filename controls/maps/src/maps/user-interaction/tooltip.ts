@@ -132,6 +132,9 @@ export class MapsTooltip {
                 maps: this.maps,
                 element: target, eventArgs: e
             };
+            if (this.maps.isBlazor) {
+                const {maps, ...blazorEventArgs} : ITooltipRenderEventArgs = tootipArgs;
+            }
             this.maps.trigger('tooltipRender', tootipArgs, (observedArgs: ITooltipRenderEventArgs) => {
                 if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
@@ -158,7 +161,6 @@ export class MapsTooltip {
                     this.removeTooltip();
                 }
             });
-
         } else {
             this.removeTooltip();
         }

@@ -37,6 +37,7 @@ const EXPAND_PANE = 'e-expanded';
 const COLLAPSE_PANE = 'e-collapsed';
 const PANE_HIDDEN = 'e-pane-hidden';
 const RESIZABLE_PANE = 'e-resizable';
+const LAST_BAR = 'e-last-bar';
 /**
  * Interface to configure pane properties such as its content, size, min, max, resizable, collapsed and collapsible.
  */
@@ -227,6 +228,7 @@ let Splitter = class Splitter extends Component {
         this.setRTL(this.enableRtl);
         this.isCollapsed();
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
+        this.renderComplete();
     }
     onDocumentClick(e) {
         if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
@@ -444,8 +446,17 @@ let Splitter = class Splitter extends Component {
         this.addSeparator(this.element);
     }
     checkSplitPane(currentBar, elementIndex) {
-        let paneEle = currentBar.parentElement.children[elementIndex];
+        let paneEle = this.collectPanes(currentBar.parentElement.children)[elementIndex];
         return paneEle;
+    }
+    collectPanes(childNodes) {
+        let elements = [];
+        for (let i = 0; i < childNodes.length; i++) {
+            if (childNodes[i].classList.contains('e-pane')) {
+                elements.push(childNodes[i]);
+            }
+        }
+        return elements;
     }
     getPrevPane(currentBar, order) {
         return this.checkSplitPane(currentBar, ((order - 1) / (2)));
@@ -549,6 +560,7 @@ let Splitter = class Splitter extends Component {
             }
             else {
                 this.updateResizablePanes(i);
+                addClass([separator], LAST_BAR);
             }
         }
     }
@@ -631,8 +643,8 @@ let Splitter = class Splitter extends Component {
         }
     }
     wireResizeEvents() {
-        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mousemove', this.onMouseMove, this);
+        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         let touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -1032,13 +1044,9 @@ let Splitter = class Splitter extends Component {
         return nextPaneIndex + 1;
     }
     getPaneDetails() {
-        let prevPane = null;
-        let nextPane = null;
         this.order = parseInt(this.currentSeparator.style.order, 10);
-        if (this.allPanes.length > 1) {
-            prevPane = this.getPrevPane(this.currentSeparator, this.order);
-            nextPane = this.getNextPane(this.currentSeparator, this.order);
-        }
+        let prevPane = this.getPrevPane(this.currentSeparator, this.order);
+        let nextPane = this.getNextPane(this.currentSeparator, this.order);
         if (prevPane && nextPane) {
             this.previousPane = prevPane;
             this.nextPane = nextPane;
@@ -1539,9 +1547,7 @@ let Splitter = class Splitter extends Component {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
-        if (this.allPanes.length > 0) {
-            this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
-        }
+        this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
     }
 };
 __decorate([
@@ -1754,6 +1760,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
+        this.updateDragArea();
+        this.renderComplete();
     }
     initGridLines() {
         this.table = document.createElement('table');
@@ -1850,9 +1858,9 @@ let DashboardLayout = class DashboardLayout extends Component {
             this.cellSize[1] = this.cellSize[0] / this.cellAspectRatio;
         }
     }
-    maxRow() {
+    maxRow(recheck) {
         let maxRow = 1;
-        if (this.rows > 1) {
+        if (this.rows > 1 && isNullOrUndefined(recheck)) {
             maxRow = this.rows;
             return maxRow;
         }
@@ -2203,6 +2211,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.upTarget = this.downTarget;
         let el = closest((this.upTarget), '.e-panel');
         let args = { event: e, element: el };
+        this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
             let moveEventName = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
@@ -2222,7 +2231,6 @@ let DashboardLayout = class DashboardLayout extends Component {
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
-        this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;
         this.mOffX = this.mOffY = 0;
@@ -2391,6 +2399,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     ;
     refresh() {
+        this.updateDragArea();
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
         }
@@ -3486,6 +3495,9 @@ let DashboardLayout = class DashboardLayout extends Component {
                         this.dragStopEventArgs = { event: args.event, element: args.element };
                         this.trigger('dragStop', args);
                         this.resizeEvents();
+                        this.rows = this.maxRow(true);
+                        this.setHeightWidth();
+                        this.updateDragArea();
                     },
                     drag: (args) => {
                         this.draggedEventArgs = {
@@ -3509,6 +3521,18 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.updateOldRowColumn();
         this.sortedPanel();
     }
+    updateDragArea() {
+        this.dragCollection.forEach((dragobj) => {
+            // tslint:disable-next-line
+            dragobj.setDragArea();
+        });
+    }
+    updateRowsHeight(row, sizeY, addRows) {
+        if (row + sizeY >= this.rows) {
+            this.rows = this.rows + addRows;
+            this.setHeightWidth();
+        }
+    }
     onDraggingStart(args) {
         this.dragStartArgs = { event: args.event, element: args.element, cancel: false };
         this.trigger('dragStart', this.dragStartArgs);
@@ -3518,12 +3542,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         let eleRowValue = this.startRow = parseInt(args.element.getAttribute('data-row'), 10);
         this.startCol = parseInt(args.element.getAttribute('data-col'), 10);
         let eleSizeY = parseInt(args.element.getAttribute('data-sizeY'), 10);
-        if (eleRowValue + eleSizeY === this.rows) {
-            this.rows = this.rows + eleSizeY;
-            this.setHeightWidth();
-            // tslint:disable-next-line
-            this.dragobj.setDragArea();
-        }
+        this.updateRowsHeight(eleRowValue, eleSizeY, eleSizeY);
+        this.updateDragArea();
         this.shadowEle = document.createElement('div');
         this.shadowEle.classList.add('e-holder');
         this.shadowEle.classList.add('e-holder-transition');
@@ -3562,8 +3582,13 @@ let DashboardLayout = class DashboardLayout extends Component {
         let dragCol;
         let col = dragCol = this.getRowColumnDragValues(args)[1];
         let row = this.getRowColumnDragValues(args)[0];
+        if (col < 0 || row < 0) {
+            return;
+        }
         this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
         let panelModel = this.getCellInstance(args.element.id);
+        this.updateRowsHeight(panelModel.row, panelModel.sizeY, 1);
+        this.updateDragArea();
         if (this.allowPushing) {
             this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
             this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
@@ -3678,6 +3703,8 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     /**
      * Allows to add a panel to the Dashboardlayout.
+     * @param {panel: [`PanelModel`](./panelModel)} panel -  Defines the panel element.
+     * @returns void
      */
     addPanel(panel) {
         this.maxCol();
@@ -3744,6 +3771,8 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     /**
      * Allows to update a panel in the DashboardLayout.
+     * @param {panel: [`panelModel`](./panelModel)} panel - Defines the panel element.
+     * @returns void
      */
     updatePanel(panel) {
         if (!panel.id) {
@@ -3811,6 +3840,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     /**
      * Returns the panels object of the DashboardLayout.
+     * @returns [`PanelModel[]`](./panelModel)
      */
     serialize() {
         let cloneModel = this.cloneModels(this.panels);
@@ -3849,6 +3879,8 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     /**
      * Removes the panel from the DashboardLayout.
+     * @param {id: string} id -  Defines the panel ID.
+     * @returns void
      */
     removePanel(id) {
         for (let i = 0; i < this.panelCollection.length; i++) {
@@ -3872,6 +3904,10 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     /**
      * Moves the panel in the DashboardLayout.
+     * @param {id: string} id - Defines the panel ID.
+     * @param {row: number} row - Defines the row of dashboard layout.
+     * @param {col: number} col - Defines the column of dashboard layout.
+     * @returns void
      */
     movePanel(id, row, col) {
         this.movePanelCalled = true;
@@ -3925,6 +3961,9 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     /**
      * Resize the panel in the DashboardLayout.
+     * @param {id: string} id - Defines the panel ID.
+     * @param {sizeX: number} sizeX - Defines the sizeX of dashboard layout.
+     * @param {sizeY: number} sizeY - Defines the sizeY of dashboard layout.
      */
     resizePanel(id, sizeX, sizeY) {
         let panelInstance = this.getCellInstance(id);
@@ -3943,6 +3982,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     /**
      * Destroys the DashboardLayout component
+     * @returns void
      */
     destroy() {
         removeClass([this.element], ['e-dashboardlayout', 'e-lib', 'e-responsive', 'e-control']);

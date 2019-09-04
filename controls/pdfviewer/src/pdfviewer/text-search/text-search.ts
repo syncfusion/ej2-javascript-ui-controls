@@ -676,18 +676,20 @@ export class TextSearch {
         this.searchRequestHandler.onSuccess = function (result: any) {
             // tslint:disable-next-line
             let data: any = result.data;
-            if (typeof data !== 'object') {
-                try {
-                    data = JSON.parse(data);
-                } catch (error) {
-                    proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderPages);
-                    data = null;
-                }
-            }
             if (data) {
-                if (data.pageText) {
-                    proxy.pdfViewerBase.storeWinData(data, pageIndex);
-                    proxy.initSearch(pageIndex, false);
+                if (typeof data !== 'object') {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (error) {
+                        proxy.pdfViewerBase.onControlError(500, data, this.pdfViewer.serverActionSettings.renderPages);
+                        data = null;
+                    }
+                }
+                if (data) {
+                    if (data.pageText) {
+                        proxy.pdfViewerBase.storeWinData(data, pageIndex);
+                        proxy.initSearch(pageIndex, false);
+                    }
                 }
             }
         };

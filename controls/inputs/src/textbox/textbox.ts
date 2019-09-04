@@ -73,7 +73,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private textboxOptions: TextBoxModel;
     private inputPreviousValue: string = null;
     private isVue: boolean = false;
-    private isReact: boolean = false;
 
     /**
      * Specifies the behavior of the TextBox such as text, password, email, etc.
@@ -237,11 +236,10 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     this.inputPreviousValue = this.respectiveElement.value;
                     /* istanbul ignore next */
                     if ((this.isAngular || this.isVue) && this.preventChange === true) {
-                        this.previousValue = this.value;
+                        this.previousValue = this.isAngular ? this.value : this.previousValue;
                         this.preventChange = false;
-                    } else if ((isNullOrUndefined(this.isAngular) || isNullOrUndefined(this.isVue)) || (!this.isAngular || !this.isVue)
-                    || ((this.isAngular || this.isVue) && !this.preventChange) || ((this.isAngular || this.isVue)
-                    && isNullOrUndefined(this.preventChange))) {
+                    } else if (isNullOrUndefined(this.isAngular) || !this.isAngular
+                    || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
                         this.raiseChangeEvent();
                     }
                     break;
@@ -249,7 +247,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     this.updateHTMLAttrToElement();
                     this.updateHTMLAttrToWrapper();
                     let attributes: NamedNodeMap = this.element.attributes;
-                    this.checkAttributes(attributes, false);
+                    this.checkAttributes(true);
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -325,8 +323,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             setValue('ej2_instances', ejInstance, this.element);
         }
         this.updateHTMLAttrToElement();
-        let attributes: NamedNodeMap = this.element.attributes;
-        this.checkAttributes(attributes, true);
+        this.checkAttributes(false);
         if (this.element.tagName !== 'TEXTAREA') {
             this.element.setAttribute('type', this.type);
         }
@@ -363,44 +360,47 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
     }
 
-    private checkAttributes(attrs: NamedNodeMap, isDynamic: boolean): void {
-        for (let i: number = 0; i < attrs.length; i++) {
-            let key: string = attrs[i].nodeName;
+    private checkAttributes(isDynamic: boolean): void {
+        let attrs: string[]  = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+        for (let key of attrs) {
+            if (!isNullOrUndefined(this.element.getAttribute(key))) {
             switch (key) {
                 case 'disabled':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || !isDynamic) {
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
                         let enabled: boolean = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
                             this.element.getAttribute(key) === 'true' ? false : true;
-                        this.setProperties({enabled: enabled}, isDynamic);
+                        this.setProperties({enabled: enabled}, !isDynamic);
                     }
                     break;
                 case 'readonly':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || !isDynamic) {
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
                         let readonly: boolean = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
                             || this.element.getAttribute(key) === 'true' ? true : false;
-                        this.setProperties({readonly: readonly}, isDynamic);
+                        this.setProperties({readonly: readonly}, !isDynamic);
                     }
                     break;
                 case 'placeholder':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || !isDynamic) {
-                        this.setProperties({placeholder: attrs[i].nodeValue}, isDynamic);
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
+                        this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
                     }
                     break;
                 case 'value':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || !isDynamic) {
-                        this.setProperties({value: attrs[i].nodeValue}, isDynamic);
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
+                        this.setProperties({value: this.element.value}, !isDynamic);
                     }
                     break;
                 case 'type':
                     // tslint:disable-next-line
-                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || !isDynamic) {
-                        this.setProperties({type: attrs[i].nodeValue}, isDynamic);
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
+                        this.setProperties({type: this.element.type}, !isDynamic);
                     }
                     break;
+                }
             }
         }
     }
@@ -440,29 +440,34 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        this.renderComplete();
     }
 
     private updateHTMLAttrToWrapper(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) > -1 ) {
-                if (key === 'class') {
-                    addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
-                } else if (key === 'style') {
-                    let setStyle: string = this.textboxWrapper.container.getAttribute(key);
-                    setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
-                    this.htmlAttributes[key];
-                    this.textboxWrapper.container.setAttribute(key, setStyle);
-                } else {
-                    this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) > -1 ) {
+                    if (key === 'class') {
+                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                    } else if (key === 'style') {
+                        let setStyle: string = this.textboxWrapper.container.getAttribute(key);
+                        setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                        this.htmlAttributes[key];
+                        this.textboxWrapper.container.setAttribute(key, setStyle);
+                    } else {
+                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
                 }
             }
         }
     }
 
     private updateHTMLAttrToElement(): void {
-        for (let key of Object.keys(this.htmlAttributes)) {
-            if (containerAttr.indexOf(key) < 0 ) {
-                this.element.setAttribute(key, this.htmlAttributes[key]);
+        if ( !isNullOrUndefined(this.htmlAttributes)) {
+            for (let key of Object.keys(this.htmlAttributes)) {
+                if (containerAttr.indexOf(key) < 0 ) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
             }
         }
     }

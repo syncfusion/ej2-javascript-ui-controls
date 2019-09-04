@@ -281,8 +281,7 @@ export class NumberFormatting implements IAction {
                     this.formatDropDown.value = first === 'n' ? this.parent.localeObj.getConstant('number') : first === 'p' ?
                         this.parent.localeObj.getConstant('percentage') : this.parent.localeObj.getConstant('number');
                     this.decimalDropDown.value = Number(fString.split('')[1]);
-                    this.groupingDropDown.value = format[i].useGrouping ? this.parent.localeObj.getConstant('true') :
-                        this.parent.localeObj.getConstant('false');
+                    this.groupingDropDown.value = format[i].useGrouping;
                 } else {
                     this.formatDropDown.value = this.parent.localeObj.getConstant('currency');
                     let pattern: string[] = this.parent.globalize.formatNumber(11111, { format: fString }).split('1').join('#').

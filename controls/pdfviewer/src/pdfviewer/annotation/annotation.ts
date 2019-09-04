@@ -1643,8 +1643,8 @@ export class Annotation {
                     let annotation: any = commentsAnnotations[i];
                     annotationObject = {
                         // tslint:disable-next-line:max-line-length
-                        shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, note: annotation.Note, state: annotation.state, stateModel: annotation.stateModel,
-                        comments: [], review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: author },
+                        shapeAnnotationType: 'sticky', author: annotation.Author, modifiedDate: annotation.ModifiedDate, note: annotation.Note, state: annotation.state, stateModel: annotation.stateModel,
+                        comments: [], review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author },
                         annotName: annotation.AnnotName, parentId: parentAnnotation.AnnotName, subject: 'Comments'
                     };
                     newArray[newArray.length] = annotationObject;
@@ -1686,14 +1686,21 @@ export class Annotation {
      * @private
      */
     // tslint:disable-next-line
-    public renderAnnotations(pageNumber: number, shapeAnnotation: any, measureShapeAnnotation: any, textMarkupAnnotation: any, canvas?: any, isImportTextMarkup?: boolean): void {
+    public renderAnnotations(pageNumber: number, shapeAnnotation: any, measureShapeAnnotation: any, textMarkupAnnotation: any, canvas?: any, isImportAnnotations?: boolean): void {
         this.clearAnnotationCanvas(pageNumber);
         if (this.shapeAnnotationModule) {
-            // tslint:disable-next-line
-            this.shapeAnnotationModule.renderShapeAnnotations(shapeAnnotation, pageNumber);
+            if (isImportAnnotations) {
+                this.shapeAnnotationModule.renderShapeAnnotations(shapeAnnotation, pageNumber, true);
+            } else {
+                this.shapeAnnotationModule.renderShapeAnnotations(shapeAnnotation, pageNumber);
+            }
         }
         if (this.measureAnnotationModule) {
-            this.measureAnnotationModule.renderMeasureShapeAnnotations(measureShapeAnnotation, pageNumber);
+            if (isImportAnnotations) {
+                this.measureAnnotationModule.renderMeasureShapeAnnotations(measureShapeAnnotation, pageNumber, true);
+            } else {
+                this.measureAnnotationModule.renderMeasureShapeAnnotations(measureShapeAnnotation, pageNumber);
+            }
         }
         if (canvas !== null && canvas !== undefined) {
             canvas = canvas;
@@ -1701,7 +1708,7 @@ export class Annotation {
             canvas = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
         }
         this.pdfViewer.drawing.refreshCanvasDiagramLayer(canvas as HTMLCanvasElement, pageNumber);
-        if (isImportTextMarkup) {
+        if (isImportAnnotations) {
             // tslint:disable-next-line
             this.textMarkupAnnotationModule.renderTextMarkupAnnotationsInPage(textMarkupAnnotation, pageNumber, true);
         } else {

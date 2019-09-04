@@ -1,8 +1,7 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, BasicShapeModel } from '../../../src/diagram/objects/node-model';
-import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
-import { UserHandleModel } from '../../../src/diagram/interaction/selector-model';
+import { ConnectorModel } from '../../../src/diagram/objects/connector-model'; 
 import { HorizontalAlignment, Side, VerticalAlignment, DiagramTools } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { Canvas, ToolBase, MouseEventArgs, IElement, cloneObject, randomId, SelectorConstraints, PathModel, MoveTool } from '../../../src/index';

@@ -556,7 +556,7 @@ describe('Splitter Control', () => {
             document.dispatchEvent(mouseEvent);
         });
     });
-
+    
     describe('Mouse Move with pixel and percentage combination for Horizontal splitter', () => {
         appendSplitterStyles();
         let splitterObj: any;
@@ -2222,45 +2222,6 @@ describe('Splitter Control', () => {
                 expect(splitterObj.allPanes.length).toEqual(4);
                 expect(splitterObj.allBars.length).toEqual(3);
              })
-        });
-
-        describe('Checking removePane method  for single pane', () => {
-            appendSplitterStyles();
-            let splitterObj: any;
-            beforeAll((): void => {
-                let element: HTMLElement = createElement('div', { id: 'default'});
-                let child1: HTMLElement = createElement('div');
-                child1.innerHTML =  "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism.";
-                let child2: HTMLElement = createElement('div');
-                child2.innerHTML = "Paris, the city of lights and love - this short guide is full of ideas for how to make the most of the romanticism...";
-                element.appendChild(child1);
-                element.appendChild(child2);
-                document.body.appendChild(element);
-                splitterObj = new Splitter({
-                    width: '800px', 
-                    height: '500px',
-                    paneSettings: [
-                        {
-                            size: '200px', min: '10px'
-                        },
-                        {
-                            size: '300px', min: '40px'
-                        }
-                    ]
-                });
-                splitterObj.appendTo(document.getElementById('default'));
-            });
-            afterAll((): void => {
-                document.body.innerHTML = '';
-            });
-            it('Remove Pane -single pane', function () {
-                splitterObj.removePane(1);
-                expect(splitterObj.allPanes.length).toEqual(1);
-                expect(splitterObj.allBars.length).toEqual(0);
-                splitterObj.removePane(0);
-                expect(splitterObj.allPanes.length).toEqual(0);
-                expect(splitterObj.allBars.length).toEqual(0);
-            });
         });
 
         describe('Get Previous and next pane on RTL mode', () => {

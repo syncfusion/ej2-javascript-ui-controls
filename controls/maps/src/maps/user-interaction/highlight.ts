@@ -146,8 +146,13 @@ export class Highlight {
             shapeData: shapeData,
             data: data
         };
-        this.maps.trigger(itemHighlight, eventArgs);
-        this.highlightMap(targetEle, eventArgs);
+        if (this.maps.isBlazor) {
+            const {shapeData, ...blazorEventArgs } : ISelectionEventArgs = eventArgs;
+            eventArgs = blazorEventArgs;
+        }
+        this.maps.trigger(itemHighlight, eventArgs, () => {
+            this.highlightMap(targetEle, eventArgs);
+        });
     }
     }
     private highlightMap(targetEle: Element, eventArgs: ISelectionEventArgs): void {

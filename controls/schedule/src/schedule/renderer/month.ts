@@ -77,6 +77,10 @@ export class Month extends ViewBase implements IRenderer {
         }
         // tslint:enable:no-any
         this.setColWidth(content);
+        if (args.scrollPosition) {
+            content.scrollTop = args.scrollPosition.top as number;
+            content.scrollLeft = args.scrollPosition.left as number;
+        }
     }
     public setContentHeight(content: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
         content.style.height = 'auto';

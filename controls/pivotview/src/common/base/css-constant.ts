@@ -16,10 +16,7 @@ export const ICON_DISABLE: string = 'e-disable';
 export const ICON_HIDDEN: string = 'e-hide';
 /** @hidden */
 export const AXISFIELD_ICON_CLASS: string = 'e-dropdown-icon';
-/** @hidden */
 export const WRAPPER_CLASS: string = 'e-pivotfieldlist-wrapper';
-/** @hidden */
-export const OLAP_WRAPPER_CLASS: string = 'e-olapfieldlist-wrapper';
 /** @hidden */
 export const CONTAINER_CLASS: string = 'e-field-list-container';
 /** @hidden */
@@ -31,11 +28,7 @@ export const TOGGLE_SELECT_CLASS: string = 'e-select-table';
 /** @hidden */
 export const FIELD_TABLE_CLASS: string = 'e-field-table';
 /** @hidden */
-export const OLAP_FIELD_TABLE_CLASS: string = 'e-olap-field-table';
-/** @hidden */
 export const FIELD_LIST_CLASS: string = 'e-field-list';
-/** @hidden */
-export const OLAP_FIELD_LIST_CLASS: string = 'e-olap-field-list-tree';
 /** @hidden */
 export const FIELD_LIST_TREE_CLASS: string = 'e-field-list-tree';
 /** @hidden */
@@ -54,8 +47,6 @@ export const FLAT_CLASS: string = 'e-flat e-primary';
 export const OUTLINE_CLASS: string = 'e-outline';
 /** @hidden */
 export const AXIS_TABLE_CLASS: string = 'e-axis-table';
-/** @hidden */
-export const OLAP_AXIS_TABLE_CLASS: string = 'e-olap-axis-table';
 /** @hidden */
 export const LEFT_AXIS_PANEL_CLASS: string = 'e-left-axis-fields';
 /** @hidden */
@@ -229,8 +220,6 @@ export const FILTER_INPUT_DIV_2_CLASS: string = 'e-filter-input-div-2';
 /** @hidden */
 export const VALUE_OPTIONS_CLASS: string = 'e-value-options';
 /** @hidden */
-export const LEVEL_OPTIONS_CLASS: string = 'e-level-options';
-/** @hidden */
 export const FILTER_OPERATOR_CLASS: string = 'e-filter-operator';
 
 /** @hidden */
@@ -288,37 +277,15 @@ export const PIVOTCALC: string = 'e-pivot-calc';
 /** @hidden */
 export const CALCDIALOG: string = 'e-pivot-calc-dialog-div';
 /** @hidden */
-export const OLAP_CALCDIALOG: string = 'e-olap-calc-dialog-div';
-/** @hidden */
 export const CALCRADIO: string = 'e-pivot-calc-radio';
 /** @hidden */
 export const CALCCHECK: string = 'e-pivot-calc-check';
 /** @hidden */
 export const CALCINPUT: string = 'e-pivot-calc-input';
 /** @hidden */
-export const CALC_FORMAT_INPUT: string = 'e-custom-format-input';
-/** @hidden */
 export const CALCINPUTDIV: string = 'e-pivot-calc-input-div';
 /** @hidden */
-export const CALC_CUSTOM_FORMAT_INPUTDIV: string = 'e-olap-calc-custom-format-div';
-/** @hidden */
-export const CALC_HIERARCHY_LIST_DIV: string = 'e-olap-calc-hierarchy-list-div';
-/** @hidden */
-export const CALC_FORMAT_TYPE_DIV: string = 'e-olap-calc-format-type-div';
-/** @hidden */
-export const CALC_MEMBER_TYPE_DIV: string = 'e-olap-calc-member-type-div';
-/** @hidden */
-export const MEMBER_OPTIONS_CLASS: string = 'e-member-options';
-/** @hidden */
-export const HIERARCHY_OPTIONS_CLASS: string = 'e-hierarchy-options';
-/** @hidden */
-export const FORMAT_OPTIONS_CLASS: string = 'e-format-options';
-/** @hidden */
-export const FORMAT_INPUT_CLASS: string = 'e-format-input-options';
-/** @hidden */
 export const CALCOUTERDIV: string = 'e-pivot-calc-outer-div';
-/** @hidden */
-export const OLAP_CALCOUTERDIV: string = 'e-olap-calc-outer-div';
 /** @hidden */
 export const FLAT: string = 'e-flat';
 /** @hidden */
@@ -366,15 +333,7 @@ export const PIVOT_VIEW_CLASS: string = 'e-pivotview';
 /** @hidden */
 export const PIVOT_ALL_FIELD_TITLE_CLASS: string = 'e-pivot-all-field-title';
 /** @hidden */
-export const PIVOT_FIELD_TITLE_CLASS: string = 'e-pivot-field-name-title';
-/** @hidden */
 export const PIVOT_FORMULA_TITLE_CLASS: string = 'e-pivot-formula-title';
-/** @hidden */
-export const OLAP_HIERARCHY_TITLE_CLASS: string = 'e-olap-hierarchy-title';
-/** @hidden */
-export const OLAP_FORMAT_TITLE_CLASS: string = 'e-olap-format-title';
-/** @hidden */
-export const OLAP_MEMBER_TITLE_CLASS: string = 'e-olap-member-title';
 /** @hidden */
 export const PIVOT_CONTEXT_MENU_CLASS: string = 'e-pivot-context-menu';
 /** @hidden */
@@ -387,8 +346,6 @@ export const EMPTY_MEMBER_CLASS: string = 'e-member-prompt';
 export const CALC_EDIT: string = 'e-edit';
 /** @hidden */
 export const CALC_EDITED: string = 'e-edited';
-/** @hidden */
-export const CALC_INFO: string = 'e-info';
 /** @hidden */
 export const EMPTY_FIELD: string = 'e-empty-field';
 /** @hidden */
@@ -500,12 +457,6 @@ export const GRID_EXCEL_EXPORT: string = 'e-pivotview-excel-export';
 /** @hidden */
 export const GRID_CSV_EXPORT: string = 'e-pivotview-csv-export';
 /** @hidden */
-export const GRID_PNG_EXPORT: string = 'e-pivotview-png-export';
-/** @hidden */
-export const GRID_JPEG_EXPORT: string = 'e-pivotview-jpeg-export';
-/** @hidden */
-export const GRID_SVG_EXPORT: string = 'e-pivotview-svg-export';
-/** @hidden */
 export const GRID_LOAD: string = 'e-load-report';
 /** @hidden */
 export const GRID_NEW: string = 'e-new-report';
@@ -571,14 +522,6 @@ export const ICON_ASC: string = 'e-icon-ascending';
 export const ICON_DESC: string = 'e-icon-descending';
 /** @hidden */
 export const GRID_GROUPING_BAR_CLASS: string = 'e-pivot-grouping-bar';
-/** @hidden */
-export const MDX_QUERY: string = 'e-mdx-query';
-/** @hidden */
-export const MDX_QUERY_CONTENT: string = 'e-mdx-query-content';
-/** @hidden */
-export const GRID_MDX_DIALOG: string = 'e-pivotview-mdx-dialog';
-/** @hidden */
-export const GRID_MDX: string = 'e-mdx';
 /** @hidden */
 export const FORMATTING_DIALOG: string = 'e-pivot-format-dialog';
 /** @hidden */

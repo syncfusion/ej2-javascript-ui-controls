@@ -181,11 +181,14 @@ var ChartComponent = /** @__PURE__ @class */ (function () {
             series.size = 'size' + count;
         }
         var seriesFormat = seriesData.dataPoints[0];
+        if (seriesData.hasOwnProperty('firstSliceAngle')) {
+            series.startAngle = seriesData.firstSliceAngle;
+            series.endAngle = seriesData.firstSliceAngle;
+        }
         if (this.isPieType) {
             series.pointColorMapping = 'color';
             if (type === 'Doughnut') {
-                series.innerRadius = '75%';
-                series.radius = '70%';
+                series.innerRadius = seriesData.holeSize + '%';
             }
         }
         else {
@@ -279,6 +282,7 @@ var ChartComponent = /** @__PURE__ @class */ (function () {
                 labelPosition = 'Top';
                 break;
             case 'OutsideBase':
+            case 'Below':
                 labelPosition = 'Bottom';
                 break;
         }
@@ -296,11 +300,15 @@ var ChartComponent = /** @__PURE__ @class */ (function () {
     ChartComponent.prototype.chartPrimaryXAxis = function (data, type) {
         // json data
         var primaryXAxis = {};
+        var categoryType;
+        var isScatterType = (type === 'Scatter_Markers' || type === 'Bubble');
         if (data.chartTitle) {
             primaryXAxis.title = data.chartTitle;
         }
-        var categoryType = this.chartCategoryType(data.categoryType);
-        primaryXAxis.valueType = categoryType;
+        if (!isScatterType) {
+            categoryType = this.chartCategoryType(data.categoryType);
+            primaryXAxis.valueType = categoryType;
+        }
         if (categoryType === 'DateTime') {
             primaryXAxis.intervalType = 'Days';
             primaryXAxis.labelFormat = 'M/d/yyyy';

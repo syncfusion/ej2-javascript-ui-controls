@@ -80,7 +80,9 @@
 
   .e-ddl#{&}.e-popup {
     background: $ddl-popup-background-color;
-    border: 1px solid $ddl-default-border-color;
+    @if $skin-name != 'material' {
+      border: 1px solid $ddl-default-border-color;
+    }
     position: absolute;
     @at-root {
       & .e-search-icon {

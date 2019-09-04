@@ -495,6 +495,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         if (this.showGridLines && !this.checkMediaQuery()) {
             this.initGridLines();
         }
+        this.updateDragArea();
+        this.renderComplete();
     }
 
     private initGridLines(): void {
@@ -592,9 +594,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.cellSize[1] = <number>this.cellSize[0] / this.cellAspectRatio;
         }
     }
-    protected maxRow(): number {
+    protected maxRow(recheck?: boolean): number {
         let maxRow: number = 1;
-        if (this.rows > 1) {
+        if (this.rows > 1 && isNullOrUndefined(recheck)) {
             maxRow = this.rows;
             return maxRow;
         }
@@ -943,6 +945,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.upTarget = (<HTMLElement>this.downTarget);
         let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.upTarget), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
+        this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
             let moveEventName: string = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
@@ -962,7 +965,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
-        this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;
         this.mOffX = this.mOffY = 0;
@@ -1133,6 +1135,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     };
 
     public refresh(): void {
+        this.updateDragArea();
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
         } else {
@@ -2223,6 +2226,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                         this.dragStopEventArgs = { event: args.event, element: args.element };
                         this.trigger('dragStop', args);
                         this.resizeEvents();
+                        this.rows = this.maxRow(true);
+                        this.setHeightWidth();
+                        this.updateDragArea();
                     },
                     drag: (args: DragEventArgs) => {
                         this.draggedEventArgs = {
@@ -2247,6 +2253,20 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.sortedPanel();
     }
 
+    protected updateDragArea(): void {
+        this.dragCollection.forEach((dragobj: Draggable) => {
+            // tslint:disable-next-line
+            (<any>dragobj).setDragArea();
+        });
+    }
+
+    protected updateRowsHeight(row: number, sizeY: number, addRows: number): void {
+        if (row + sizeY >= this.rows) {
+            this.rows = this.rows + addRows;
+            this.setHeightWidth();
+        }
+    }
+
     private onDraggingStart(args: DragEventArgs): void {
         this.dragStartArgs = { event: args.event, element: args.element, cancel: false };
         this.trigger('dragStart', this.dragStartArgs);
@@ -2256,12 +2276,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let eleRowValue: number = this.startRow = parseInt(args.element.getAttribute('data-row'), 10);
         this.startCol = parseInt(args.element.getAttribute('data-col'), 10);
         let eleSizeY: number = parseInt(args.element.getAttribute('data-sizeY'), 10);
-        if (eleRowValue + eleSizeY === this.rows) {
-            this.rows = this.rows + eleSizeY;
-            this.setHeightWidth();
-            // tslint:disable-next-line
-            (<any>this.dragobj).setDragArea();
-        }
+        this.updateRowsHeight(eleRowValue, eleSizeY, eleSizeY);
+        this.updateDragArea();
         this.shadowEle = document.createElement('div');
         this.shadowEle.classList.add('e-holder');
         this.shadowEle.classList.add('e-holder-transition');
@@ -2299,8 +2315,13 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         let dragCol: number;
         let col: number = dragCol = this.getRowColumnDragValues(args)[1];
         let row: number = this.getRowColumnDragValues(args)[0];
+        if (col < 0 || row < 0) {
+            return;
+        }
         this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
         let panelModel: PanelModel = this.getCellInstance(args.element.id);
+        this.updateRowsHeight(panelModel.row, panelModel.sizeY, 1);
+        this.updateDragArea();
         if (this.allowPushing) {
             this.setAttributes({ value: { col: col.toString(), row: row.toString() } }, args.element);
             this.panelPropertyChange(this.getCellInstance(args.element.id), { row: row, col: col });
@@ -2418,6 +2439,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Allows to add a panel to the Dashboardlayout.
+     * @param {panel: [`PanelModel`](./panelModel)} panel -  Defines the panel element.
+     * @returns void
      */
     public addPanel(panel: PanelModel): void {
         this.maxCol();
@@ -2484,6 +2507,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Allows to update a panel in the DashboardLayout.
+     * @param {panel: [`panelModel`](./panelModel)} panel - Defines the panel element.
+     * @returns void
      */
     public updatePanel(panel: PanelModel): void {
         if (!panel.id) {
@@ -2551,6 +2576,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Returns the panels object of the DashboardLayout.
+     * @returns [`PanelModel[]`](./panelModel)
      */
     public serialize(): PanelModel[] {
         let cloneModel: PanelModel[] = this.cloneModels(this.panels);
@@ -2596,6 +2622,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Removes the panel from the DashboardLayout.
+     * @param {id: string} id -  Defines the panel ID.
+     * @returns void
      */
     public removePanel(id: string): void {
         for (let i: number = 0; i < this.panelCollection.length; i++) {
@@ -2624,6 +2652,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Moves the panel in the DashboardLayout.
+     * @param {id: string} id - Defines the panel ID.
+     * @param {row: number} row - Defines the row of dashboard layout.
+     * @param {col: number} col - Defines the column of dashboard layout.
+     * @returns void
      */
     public movePanel(id: string, row: number, col: number): void {
         this.movePanelCalled = true;
@@ -2678,6 +2710,9 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Resize the panel in the DashboardLayout.
+     * @param {id: string} id - Defines the panel ID.
+     * @param {sizeX: number} sizeX - Defines the sizeX of dashboard layout.
+     * @param {sizeY: number} sizeY - Defines the sizeY of dashboard layout.
      */
     public resizePanel(id: string, sizeX: number, sizeY: number): void {
         let panelInstance: PanelModel = this.getCellInstance(id);
@@ -2697,6 +2732,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
 
     /**
      * Destroys the DashboardLayout component
+     * @returns void
      */
     public destroy(): void {
         removeClass([this.element], ['e-dashboardlayout', 'e-lib', 'e-responsive', 'e-control']);

@@ -966,7 +966,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     public setRecurrenceRule(rule: string, startDate: Date = this.startDate): void {
         if (!rule) {
             this.repeatType.setProperties({ value: NONE });
+            return;
         }
+        this.renderStatus = false;
         this.ruleObject = extractObjectFromRule(rule);
         let endon: string = this.ruleObject.count ? COUNT : (this.ruleObject.until ? UNTIL : NEVER);
         switch (this.ruleObject.freq) {
@@ -987,6 +989,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 this.updateUI(YEARLY, endon);
                 break;
         }
+        this.renderStatus = true;
+        this.triggerChangeEvent();
     }
     /**
      * Destroys the widget.

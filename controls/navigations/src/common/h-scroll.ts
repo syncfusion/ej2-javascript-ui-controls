@@ -94,9 +94,14 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
              this.element.classList.add(CLS_DEVICE);
              this.createOverlay(this.element);
         }
+        this.setScrollState();
+    }
+    private setScrollState(): void {
         if (isNullOrUndefined(this.scrollStep) || this.scrollStep < 0) {
             this.scrollStep = this.scrollEle.offsetWidth;
             this.customStep = false;
+        } else {
+            this.customStep = true;
         }
     }
     /**
@@ -444,6 +449,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'scrollStep':
+                    this.setScrollState();
                     break;
                 case 'enableRtl':
                     newProp.enableRtl ? this.element.classList.add(CLS_RTL) : this.element.classList.remove(CLS_RTL);

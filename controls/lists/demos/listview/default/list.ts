@@ -27,4 +27,4 @@ listObj.appendTo('#default-list');
 
 document.getElementById('list_disable').onclick = function () {
     listObj.enable = false;
-};
+}; 

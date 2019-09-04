@@ -13,12 +13,13 @@ import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze);
+Grid.Inject(Selection, Page, Sort, Group, Edit, Toolbar, Freeze, VirtualScroll);
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -47,6 +48,17 @@ function getEventObject(eventType: string, eventName: string, target?: Element, 
 
     return returnObject;
 }
+
+let ctr: number = 0;
+let count500: string[] = Array.apply(null, Array(5)).map(() => 'Column' + ++ctr + '');
+let virtualData: Object[] = (() => {
+    let arr: Object[] = [];
+    for (let i: number = 0, o: Object = {}, j: number = 0; i < 1000; i++ , j++ , o = {}) {
+        count500.forEach((lt: string) => o[lt] = 'Column' + lt + 'Row' + i);
+        arr[j] = o;
+    }
+    return arr;
+})();
 
 
 describe('Selection Shortcuts testing', () => {
@@ -908,7 +920,6 @@ describe('Grid Selection module', () => {
                     gridObj.selectRow(0);
                     expect(gridObj.getRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
                     expect(gridObj.getMovableRowByIndex(0).querySelector('td').classList.contains('e-selectionbackground')).toBeTruthy;
-                    expect(selectionModule.getSelectedRecords().length).toBe(1);
                     done();
                 }
             };
@@ -3776,6 +3787,58 @@ describe('enableToggle property Testing => ', () => {
     });
 });
 
+describe('grid checkbox selection functionalities with Freeze pane', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                frozenColumns: 2,
+                frozenRows: 1,
+                dataSource: data,
+                allowSelection: true,
+                allowPaging: true,
+                pageSettings: { pageSize: 6},
+                columns: [
+                    { type:'checkbox', width: 40},
+                    { headerText: 'OrderID', field: 'OrderID' },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+                
+            }, done);
+    });
+
+    it('checkbox type check', () =>{
+        let colType: string = 'checkbox';
+        expect(gridObj.getVisibleColumns()[0].type).toBe(colType);
+    });
+
+    it('Checkbox select all', () => {
+        (gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-frame.e-icons')[0] as any).click();
+        expect(gridObj.getSelectedRowIndexes().length).toBe(6);
+        expect(gridObj.element.querySelectorAll('.e-frame.e-icons.e-check').length).toBe(7);
+    });
+
+    it('checkbox deselect check', () => {
+        (gridObj.element.querySelector('.e-headercontent').querySelectorAll('.e-rowcell')[0] as any).click();
+        expect(gridObj.getSelectedRowIndexes().length).toBe(5);
+        expect(gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-stop').length).toBe(1);
+        (gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-frame.e-icons')[0] as any).click();
+    });
+
+    it('checkbox unselect all check', () => {
+        (gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-frame.e-icons')[0] as any).click();
+        expect(gridObj.element.querySelector('.e-headercelldiv').querySelectorAll('.e-uncheck').length).toBe(1);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
+});
+
 describe('grid selection functionalities with Frozen rows', function () {
     let gridObj: Grid;
     beforeAll(function (done) {
@@ -3811,5 +3874,32 @@ describe('grid selection functionalities with Frozen rows', function () {
     });
     afterAll(function () {
         destroy(gridObj);
+    });
+});
+
+describe('selectRow with virtualScrolling', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: virtualData,
+                enableVirtualization: true,
+                height: 300,
+                columns: count500
+            }, done);
+    });
+
+    it('select 100th row in vitualized Grid', (done: Function) => {
+        let dataBound = () => {
+            expect(gridObj.getSelectedRecords().length).toBe(1);
+            done();
+        }
+        gridObj.dataBound = dataBound;
+        gridObj.selectRow(100);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

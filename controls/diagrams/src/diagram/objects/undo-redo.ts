@@ -1,23 +1,27 @@
 import { Diagram } from '../diagram';
 import { DiagramModel } from '../diagram-model';
 import { HistoryEntry, History, } from '../diagram/history';
-import { SelectorModel } from '../interaction/selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { NodeModel, PhaseModel, LaneModel } from '../objects/node-model';
-import { SwimLane } from '../objects/node';
+import { SwimLane, Selector } from '../objects/node';
 import { Node, BpmnAnnotation } from './node';
 import { Connector } from './connector';
 import { ConnectorModel } from '../objects/connector-model';
-import { DiagramAction } from '../enum/enum';
+import { DiagramAction, HistoryEntryType } from '../enum/enum';
 import { removeItem, getObjectType } from '../utility/diagram-util';
 import { cloneObject, getFunction } from '../utility/base-util';
-import { IElement, StackEntryObject } from '../objects/interface/IElement';
+import { IElement, StackEntryObject, IBlazorCustomHistoryChangeArgs, HistoryChangeEventObject } from '../objects/interface/IElement';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
-import { PointPortModel } from '../objects/port-model';
+import { PointPortModel, PortModel } from '../objects/port-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
 import { findAnnotation, findPort } from '../utility/diagram-util';
 import { PointPort } from './port';
 import { Size, GridPanel, addChildToContainer } from '../index';
 import { swimLaneMeasureAndArrange, laneInterChanged, findLaneIndex, updateSwimLaneObject, pasteSwimLane } from '../utility/swim-lane-util';
+import { ICustomHistoryChangeArgs } from '../objects/interface/IElement';
+import { DiagramEvent } from '../enum/enum';
+import { isBlazor } from '@syncfusion/ej2-base';
+
 
 /**
  * Undo redo function used for revert and restore the changes
@@ -165,8 +169,51 @@ export class UndoRedo {
                 }
             } else {
                 diagram.historyManager.undo(entry);
+                let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
+                    entryType: 'undo', oldValue: entry.undoObject, newValue: entry.redoObject
+                };
+                if (isBlazor()) {
+                    arg = {
+                        entryType: 'undo', oldValue: this.getHistoryChangeEvent(entry.undoObject, entry.blazorHistoryEntryType),
+                        newValue: this.getHistoryChangeEvent(entry.redoObject, entry.blazorHistoryEntryType)
+                    };
+                }
+                diagram.triggerEvent(DiagramEvent.historyStateChange, arg);
             }
         }
+    }
+
+    private getHistoryChangeEvent(
+        object: NodeModel | ConnectorModel | SelectorModel | DiagramModel | ShapeAnnotation | PathAnnotation | PointPortModel,
+        prop: HistoryEntryType):
+        HistoryChangeEventObject {
+        let value: HistoryChangeEventObject = {};
+        switch (prop) {
+            case 'Node':
+                value.node = object as Node;
+                break;
+            case 'Connector':
+                value.connector = object as Connector;
+                break;
+            case 'Selector':
+                value.selector = object as Selector;
+                break;
+            case 'Diagram':
+                value.diagram = object as Diagram;
+                break;
+            case 'ShapeAnnotation':
+                value.shapeAnnotation = object as ShapeAnnotation;
+                break;
+            case 'PathAnnotation':
+                value.pathAnnotation = object as PathAnnotation;
+                break;
+            case 'PortObject':
+                value.pointPortModel = object as PortModel;
+                break;
+            case 'Object':
+                value.object = object;
+        }
+        return value;
     }
 
     private getHistoryList(diagram: Diagram): void {
@@ -432,7 +479,7 @@ export class UndoRedo {
         let parentNode: NodeModel = diagram.nameTable[(entryObject as Node).parentId];
         let actualObject: Node = diagram.nameTable[(entryObject as Node).id];
         if (parentNode) {
-            addChildToContainer(diagram, parentNode, actualObject, !isRedo);
+            addChildToContainer(diagram, parentNode, actualObject, !isRedo, entry.historyAction === 'AddNodeToLane');
         } else {
             if (actualObject.parentId) {
                 parentNode = diagram.nameTable[actualObject.parentId];
@@ -864,6 +911,16 @@ export class UndoRedo {
                 }
             } else {
                 diagram.historyManager.redo(entry);
+                let arg: ICustomHistoryChangeArgs | IBlazorCustomHistoryChangeArgs = {
+                    entryType: 'redo', oldValue: entry.redoObject, newValue: entry.undoObject
+                };
+                if (isBlazor()) {
+                    arg = {
+                        entryType: 'undo', oldValue: this.getHistoryChangeEvent(entry.redoObject, entry.blazorHistoryEntryType),
+                        newValue: this.getHistoryChangeEvent(entry.undoObject, entry.blazorHistoryEntryType)
+                    };
+                }
+                diagram.triggerEvent(DiagramEvent.historyStateChange, arg);
             }
         }
     }

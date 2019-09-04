@@ -151,6 +151,10 @@ export class DataLabel {
                 name: dataLabelRendering, maps: this.maps, cancel: false, border: dataLabel.border, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
+            if (this.maps.isBlazor) {
+                const {maps, ...blazorEventArgs } : ILabelRenderingEventArgs = eventargs;
+                eventargs = blazorEventArgs;
+            }
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs: ILabelRenderingEventArgs) => {
                 let border: Object = { color: 'yellow' };
                 let position: MapLocation[] = [];
@@ -306,10 +310,10 @@ export class DataLabel {
                     labelIndex: sublayerIndexLabel ? oldIndex : index,
                     dataLabelText: dataLabelText
                 });
+                if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
+                    document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                }
             });
-            if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
-                document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
-            }
         }
     }
     private getPoint(shapes: object[], points: MapLocation[]): MapLocation[] {

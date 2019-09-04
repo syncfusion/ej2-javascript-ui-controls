@@ -5,7 +5,7 @@ import { FileManager } from '../../../src/file-manager/base/file-manager';
 import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
-import { createElement, isNullOrUndefined,select } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, select } from '@syncfusion/ej2-base';
 import { data1, dataDelete, folderRename, rename, singleSelectionDetails, dataSortbySize, data5, dataContextMenu, data11, accessData1, accessDetails1, accessDetails2, accessData2, data18, accessSearchData } from '../data';
 import { MenuOpenEventArgs, MenuClickEventArgs } from '../../../src';
 import { ContextMenu } from '@syncfusion/ej2-navigations';
@@ -274,18 +274,20 @@ describe('FileManager control Grid view', () => {
             type = eventArgs.menuType;
         }
         function addCustomItems(args: MenuOpenEventArgs) {
-            for (var item = 0; item < args.items.length; item++) {
-                if ((args.items[item].text == "Custom1") && (args.items[item].items.length === 0)) {
-                    args.items[item].items = [{
-                        text: 'Google',
-                        iconCss: "e-fe-tick e-icons",
-                        id: 'item1'
-                    },
-                    {
-                        text: 'Gmail',
-                        id: 'item2'
-                    }];
-                }
+            let item: number = (<FileManager>feObj).getMenuItemIndex('Custom1');
+            if ((item !== -1) && (args.items[item].items.length === 0)) {
+                args.items[item].items = [{
+                    text: 'Google',
+                    iconCss: "e-fe-tick e-icons",
+                    id: 'item1'
+                },
+                {
+                    text: 'Gmail',
+                    id: 'item2'
+                }];
+            }
+            if (args.isSubMenu) {
+                (<FileManager>feObj).disableMenuItems(['item2']);
             }
             menuopened(args);
         }
@@ -778,6 +780,25 @@ describe('FileManager control Grid view', () => {
             expect(count).toBe(1);
             expect(type).toBe('folder');
         })
+        it('folder context menu based on target - menuType', () => {
+            let itemCount: number = 0;
+            feObj.menuOpen = (args: MenuOpenEventArgs) => {
+                menuopened(args);
+                itemCount = args.items.length;
+                if ((<any>args.fileDetails[0]).name === 'test1') {
+                    args.items.splice((<FileManager>feObj).getMenuItemIndex('Delete'), 1);
+                }
+            };
+            feObj.dataBind();
+            feObj.detailsviewModule.gridObj.selectRows([1]);
+            let Li: Element = feObj.detailsviewModule.gridObj.getRowByIndex(1).getElementsByTagName('td')[2];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            Li.dispatchEvent(evt);
+            expect(count).toBe(1);
+            expect(document.getElementById(feObj.element.id + '_contextmenu').querySelectorAll('li').length).toBe(itemCount-1);
+            expect(type).toBe('folder');
+        })
         it('file context menu - menuType', () => {
             feObj.menuOpen = menuopened;
             feObj.dataBind();
@@ -884,6 +905,7 @@ describe('FileManager control Grid view', () => {
             mouseEventArgs.target = menuItem;
             mouseEventArgs.type = 'mouseover';
             sourceElement.moverHandler(mouseEventArgs);
+            expect(document.getElementById('item2').classList.contains('e-disabled')).toBe(true);
             document.getElementById('item1').click();
             expect(click).toBe(true);
             expect(count).toBe(2);
@@ -1217,7 +1239,7 @@ describe('access control context menu testing', () => {
             feObj.detailsviewModule.gridObj.selectRows([1]);
             let evt = document.createEvent('MouseEvents');
             evt.initEvent('contextmenu', true, true);
-            select('.e-fe-grid-name',gridLi[1]).dispatchEvent(evt);
+            select('.e-fe-grid-name', gridLi[1]).dispatchEvent(evt);
             document.getElementById('file_cm_rename').click();
             let dialogObj: any = (document.getElementById("file_dialog") as any).ej2_instances[0];
             expect(dialogObj.element.querySelector('.e-dlg-header').innerHTML).toEqual("Access Denied");

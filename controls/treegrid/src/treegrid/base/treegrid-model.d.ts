@@ -718,18 +718,21 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * Triggers when row element’s drag(move) starts.
    * @event
+   * @deprecated
    */
     rowDragStart?: EmitType<RowDragEventArgs>;
 
     /**
    * Triggers when row element’s before drag(move).
    * @event
+   * @deprecated
    */
     rowDragStartHelper?: EmitType<RowDragEventArgs>;
 
     /**
    * Triggers when row elements are dropped on the target row.
    * @event
+   * @deprecated
    */
     rowDrop?: EmitType<RowDragEventArgs>;
 

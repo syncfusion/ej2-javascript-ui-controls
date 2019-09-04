@@ -64,7 +64,7 @@ export * from './objects/undo-redo';
 export * from './objects/tooltip';
 export * from './objects/layout-animation';
 
-//interaction
+//interaction 
 export * from './interaction/selector';
 export * from './interaction/selector-model';
 export * from './interaction/tool';
@@ -73,6 +73,7 @@ export * from './interaction/command-manager';
 export * from './interaction/actions';
 export * from './interaction/connector-editing';
 export * from './interaction/container-interaction';
+export * from './interaction/line-routing';
 
 export * from './diagram/data-source';
 export * from './diagram/grid-lines';
@@ -84,6 +85,11 @@ export * from './diagram/keyboard-commands-model';
 export * from './diagram/layer-model';
 export * from './diagram/page-settings-model';
 export * from './diagram/ruler-settings-model';
+export * from './diagram/custom-cursor';
+export * from './diagram/custom-cursor-model';
+export * from './diagram/data-mapping';
+export * from './diagram/data-mapping-model';
+
 
 //layout
 export * from './layout/layout-base';

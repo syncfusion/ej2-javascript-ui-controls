@@ -1033,7 +1033,6 @@ describe('Schedule base module', () => {
             (<HTMLElement>schObj.quickPopup.quickPopup.element.querySelector('.e-close')).click();
         });
     });
-
     describe('CR Issue EJ2-28683 recurrence appoinments', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
@@ -1102,6 +1101,7 @@ describe('Schedule base module', () => {
             schObj.dataBind();
         });
     });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

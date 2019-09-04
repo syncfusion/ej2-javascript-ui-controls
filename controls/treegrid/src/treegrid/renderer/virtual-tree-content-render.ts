@@ -117,9 +117,8 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         this.endIndex = lastIndex;
         this.translateY = scrollArgs.offset.top;
       }
-      if (((downScroll && (scrollArgs.offset.top +
-        (outBuffer * this.parent.getRowHeight())) < (this.parent.getRowHeight() * this.totalRecords))
-        || (upScroll))) {
+      if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
+          || (upScroll)) {
         let viewInfo: VirtualInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
         this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
       }

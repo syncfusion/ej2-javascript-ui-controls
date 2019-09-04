@@ -190,6 +190,12 @@ export class Layout extends ChildProperty<Layout> {
     public getLayoutInfo: Function | string;
 
     /**
+     * getLayoutInfo is used to configure every subtree of the organizational chart
+     */
+    @Property()
+    public layoutInfo: TreeInfo;
+
+    /**
      * Defines whether an object should be at the left/right of the mind map. Applicable only for the direct children of the root node
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
@@ -321,6 +327,16 @@ export interface Bounds {
     canMoveBy?: number;
 }
 
+/**
+ * Defines the assistant details for the layout
+ */
+export interface AssistantsDetails {
+    /** returns the root value */
+    root: string;
+    /** returns the assistant in the string collection  */
+    assistants: string[];
+}
+
 export interface TreeInfo {
     orientation?: SubTreeOrientation;
     type?: SubTreeAlignments;
@@ -331,6 +347,7 @@ export interface TreeInfo {
     level?: number;
     hasSubTree?: boolean;
     rows?: number;
+    getAssistantDetails?: AssistantsDetails;
 }
 
 /**
@@ -378,11 +395,13 @@ export interface ILayout {
     /**
      * Provides horizontal alignment of the diagram layout
      * @default undefined
+     * @blazorDefaultValueIgnore
      */
     horizontalAlignment?: HorizontalAlignment;
     /**
      * Provides horizontal alignment of the diagram layout
      * @default undefined
+     * @blazorDefaultValueIgnore
      */
     verticalAlignment?: VerticalAlignment;
     /**
@@ -396,6 +415,7 @@ export interface ILayout {
      */
     bounds?: Rect;
     getLayoutInfo?: Function;
+    layoutInfo?: TreeInfo;
     getBranch?: Function;
     getConnectorSegments?: Function;
     level?: number;

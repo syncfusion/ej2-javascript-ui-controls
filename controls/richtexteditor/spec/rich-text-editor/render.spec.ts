@@ -12,6 +12,12 @@ export function renderRTE(options: RichTextEditorModel): RichTextEditor {
     document.body.appendChild(element);
     extend(options, options, { saveInterval: 0 })
     let rteObj: RichTextEditor = new RichTextEditor(options);
+    if ((window as any).Blazor ===null){
+      (window as any).ejsInterop={};
+      (window as any).ejsInterop.renderComplete =()=>{ return;}
+    }else if((window as any).ejsInterop){
+        delete (window as any).ejsInterop;
+    }
     rteObj.appendTo(element);
     return rteObj;
 }

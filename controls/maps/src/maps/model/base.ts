@@ -668,6 +668,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     /**
      * Configures tool bar orientation
      * @default Horizontal
+     * @blazorProperty 'ToolbarOrientation'
      */
     @Property('Horizontal')
     public toolBarOrientation: Orientation;
@@ -717,6 +718,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     /**
      * Double tab zooming
      * @default false
+     * @blazorProperty 'ZoomOnDoubleClick'
      */
     @Property(false)
     public doubleClickZoom: boolean;
@@ -922,6 +924,7 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
      * Enable or disable the visibility of legend
      * @default null
+     * @blazorProperty 'LegendPath'
      */
     @Property(null)
     public showLegendPath: string;

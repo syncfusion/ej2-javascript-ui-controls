@@ -2073,6 +2073,20 @@ describe('Datepicker', () => {
             expect((document.querySelectorAll('.e-selected')).length == 0);
             expect((datePicker.popupObj) !== null).toBe(true);
         });
+
+        it('enter key on already selected value test cases', function () {
+            datePicker = new DatePicker({
+                close:function(e){ e.preventDefault()},
+                value: new Date('2/2/2017')
+            });
+            datePicker.appendTo('#date');
+            (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);	  
+            keyEventArgs.action = 'enter';
+            datePicker.inputKeyActionHandle(keyEventArgs);
+            expect(datePicker.value.valueOf()).toBe(new Date('2/2/2017').valueOf());
+            expect((document.querySelectorAll('.e-selected')).length !== 0);
+            expect((datePicker.popupObj) !== null).toBe(true);
+        });
     });
     describe('Check placeholder after load culture', () => {
         let datePicker: any;

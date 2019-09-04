@@ -128,11 +128,9 @@ export class Render {
         if (gObj.detailTemplate) {
             let detailTemplateID: string = gObj.element.id + 'detailTemplate';
             blazorTemplates[detailTemplateID] = [];
-            window[detailTemplateID] = null;
             resetBlazorTemplate(detailTemplateID, 'DetailTemplate');
         }
         if (gObj.groupSettings.captionTemplate) {
-            window[gObj.element.id + 'captionTemplate'] = null;
             resetBlazorTemplate(gObj.element.id + 'captionTemplate', 'CaptionTemplate');
         }
         if (gObj.rowTemplate) {
@@ -144,7 +142,6 @@ export class Render {
         for (let i: number = 0; i < gridColumns.length; i++) {
             if (gridColumns[i].template) {
                 blazorTemplates[gObj.element.id + gridColumns[i].uid] = [];
-                window[gObj.element.id + gridColumns[i].uid] = null;
                 resetBlazorTemplate(gObj.element.id + gridColumns[i].uid, 'Template');
             }
             if (gridColumns[i].headerTemplate) {
@@ -374,7 +371,9 @@ export class Render {
             if (!len && dataArgs.count && gObj.allowPaging && args && args.requestType !== 'delete' as Action) {
                 gObj.prevPageMoving = true;
                 gObj.pageSettings.totalRecordsCount = dataArgs.count;
-                gObj.pageSettings.currentPage = Math.ceil(dataArgs.count / gObj.pageSettings.pageSize);
+                if (args.requestType !== 'paging' as Action) {
+                    gObj.pageSettings.currentPage = Math.ceil(dataArgs.count / gObj.pageSettings.pageSize);
+                }
                 gObj.dataBind();
                 return;
             }

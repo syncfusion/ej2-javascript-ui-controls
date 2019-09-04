@@ -38,11 +38,6 @@
       }
     }
 
-    .e-treegridexpand:hover::before,
-    .e-treegridcollapse:hover::before {
-      color: $treegrid-right-arrow-hover-color;
-    }
-
     .e-rowcell.e-treerowcell {
       padding-left: $treegrid-treecell-padding;
     }

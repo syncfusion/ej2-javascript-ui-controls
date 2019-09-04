@@ -75,9 +75,18 @@ export class ExcelExport {
               return null;
           }
           dm.executeQuery(query).then((e: Object) => {
+            let customData: object = null;
+            if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)) {
+              customData = excelExportProperties.dataSource;
+            }
             excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Ajax>e);
             return this.parent.grid.excelExportModule.Map(
               this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then((book: Object) => {
+                if (customData != null) {
+                  excelExportProperties.dataSource = customData;
+                } else {
+                  delete excelExportProperties.dataSource;
+                }
                 resolve(book);
               });
           });
@@ -113,12 +122,9 @@ export class ExcelExport {
         if (!this.isLocal()) {
           this.parent.flatData = [];
         }
-        if (property && property.dataSource && this.isLocal()) {
-          let flatsData: object[] = this.parent.flatData;
-          let dataSrc: object = property.dataSource instanceof DataManager ? property.dataSource.dataSource.json : property.dataSource;
-          this.parent.dataModule.convertToFlatData(dataSrc);
+        if (property && property.dataSource) {
+          this.parent.dataModule.convertToFlatData(property.dataSource);
           dtSrc = this.parent.flatData;
-          this.parent.flatData = flatsData;
         }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({json: <Object[]>dtSrc});

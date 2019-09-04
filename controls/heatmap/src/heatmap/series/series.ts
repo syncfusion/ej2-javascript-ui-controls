@@ -299,7 +299,7 @@ export class Series {
     private setTextAndColor(dataXIndex: number, dataYIndex: number): void {
         let cellSetting: CellSettingsModel = this.heatMap.cellSettings;
         this.bubbleColorValue = [];
-        let adaptData: DataModel = this.heatMap.dataSource;
+        let adaptData: DataModel = this.heatMap.dataSourceSettings;
         // tslint:disable-next-line:no-any
         let clonedDataSource: any[] = this.heatMap.clonedDataSource;
         if (this.heatMap.bubbleSizeWithColor) {
@@ -310,13 +310,12 @@ export class Series {
                 this.cellColor.getColorByValue(clonedDataSource[dataXIndex][dataYIndex][1])
                 : this.heatMap.isColorValueExist ? this.heatMap.emptyPointColor : this.cellColor.getColorByValue(this.text);
             let tempBubbleCollection: BubbleTooltipData = new BubbleTooltipData(
-                adaptData.isJsonData && adaptData.adaptorType === 'Cell' ? (
-                    this.heatMap.dataSource as DataModel).bubbleDataMapping.size : null,
+                adaptData.isJsonData && adaptData.adaptorType === 'Cell' ? adaptData.bubbleDataMapping.size : null,
                 this.text, 'Size');
             this.bubbleColorValue.push(tempBubbleCollection);
             this.bubbleColorValue.push({
                 mappingName: adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                    (this.heatMap.dataSource as DataModel).bubbleDataMapping.color : null,
+                    adaptData.bubbleDataMapping.color : null,
                 bubbleData: !isNullOrUndefined(clonedDataSource[dataXIndex][dataYIndex][1]) &&
                     clonedDataSource[dataXIndex][dataYIndex][1].toString() !== '' ? clonedDataSource[dataXIndex][dataYIndex][1] : '',
                 valueType: 'Color'

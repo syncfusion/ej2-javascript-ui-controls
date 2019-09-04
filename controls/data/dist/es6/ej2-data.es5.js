@@ -933,7 +933,7 @@ var DataUtil = /** @__PURE__ @class */ (function () {
         while (left.length > 0 || right.length > 0) {
             if (left.length > 0 && right.length > 0) {
                 if (comparer) {
-                    current = comparer(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName)) <= 0 ? left : right;
+                    current = comparer(this.getVal(left, 0, fieldName), this.getVal(right, 0, fieldName), left[0], right[0]) <= 0 ? left : right;
                 }
                 else {
                     current = left[0][fieldName] < left[0][fieldName] ? left : right;
@@ -1091,6 +1091,11 @@ var DataUtil = /** @__PURE__ @class */ (function () {
      * @default null
      */
     DataUtil.serverTimezoneOffset = null;
+    /**
+     * Species whether are not to be parsed with serverTimezoneOffset value.
+     * @hidden
+     */
+    DataUtil.timeZoneHandling = true;
     /**
      * Throw error with the given string as message.
      * @param  {string} er
@@ -2328,13 +2333,14 @@ var DataUtil = /** @__PURE__ @class */ (function () {
             var dupValue = value;
             if (typeof value === 'string') {
                 var ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
+                var offSet = DataUtil.timeZoneHandling ? DataUtil.serverTimezoneOffset : null;
                 if (ms) {
-                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), DataUtil.serverTimezoneOffset, true);
+                    return DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), offSet, true);
                 }
                 else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
                     var arr = dupValue.split(/[^0-9]/);
                     value = DataUtil.dateParse
-                        .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), DataUtil.serverTimezoneOffset, true);
+                        .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), offSet, true);
                 }
             }
             return value;
@@ -2412,6 +2418,40 @@ var DataUtil = /** @__PURE__ @class */ (function () {
                 }
             }
             return val;
+        },
+        /**
+         * It will replace the Date object with respective to UTC format value.
+         * @param  {string} key
+         * @param  {any} value
+         * @hidden
+         */
+        /* tslint:disable-next-line:no-any */
+        jsonDateReplacer: function (key, value) {
+            if (key === 'value' && value) {
+                if (typeof value === 'string') {
+                    var ms = /^\/Date\(([+-]?[0-9]+)([+-][0-9]{4})?\)\/$/.exec(value);
+                    if (ms) {
+                        value = DataUtil.dateParse.toTimeZone(new Date(parseInt(ms[1], 10)), null, true);
+                    }
+                    else if (/^(\d{4}\-\d\d\-\d\d([tT][\d:\.]*){1})([zZ]|([+\-])(\d\d):?(\d\d))?$/.test(value)) {
+                        var arr = value.split(/[^0-9]/);
+                        value = DataUtil.dateParse
+                            .toTimeZone(new Date(parseInt(arr[0], 10), parseInt(arr[1], 10) - 1, parseInt(arr[2], 10), parseInt(arr[3], 10), parseInt(arr[4], 10), parseInt(arr[5], 10)), null, true);
+                    }
+                }
+                if (value instanceof Date) {
+                    value = DataUtil.dateParse.addSelfOffset(value);
+                    if (DataUtil.serverTimezoneOffset === null) {
+                        return DataUtil.dateParse.toTimeZone(DataUtil.dateParse.addSelfOffset(value), null).toJSON();
+                    }
+                    else {
+                        value = DataUtil.dateParse.toTimeZone(value, (((value.getTimezoneOffset() / 60) * 2)
+                            - DataUtil.serverTimezoneOffset), false);
+                        return value.toJSON();
+                    }
+                }
+            }
+            return value;
         }
     };
     /**
@@ -2899,7 +2939,7 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
         this.pvt = {};
         if (this.options.requestType === 'json') {
             return {
-                data: JSON.stringify(req),
+                data: JSON.stringify(req, DataUtil.parse.jsonDateReplacer),
                 url: url,
                 pvtData: p,
                 type: 'POST',
@@ -2961,7 +3001,12 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
     UrlAdaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes) {
         if (xhr && xhr.getResponseHeader('Content-Type') &&
             xhr.getResponseHeader('Content-Type').indexOf('application/json') !== -1) {
+            var handleTimeZone = DataUtil.timeZoneHandling;
+            if (ds && !ds.timeZoneHandling) {
+                DataUtil.timeZoneHandling = false;
+            }
             data = DataUtil.parse.parseJson(data);
+            DataUtil.timeZoneHandling = handleTimeZone;
         }
         var requests = request;
         var pvt = requests.pvtData || {};
@@ -3620,7 +3665,19 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
         var req = '';
         var stat = {
             'method': 'DELETE ',
-            'url': function (data, i, key) { return '(' + data[i][key] + ')'; },
+            'url': function (data, i, key) {
+                var url = DataUtil.getObject(key, data[i]);
+                if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                    return '(' + url + ')';
+                }
+                else if (url instanceof Date) {
+                    var dateTime = data[i][key];
+                    return '(' + dateTime.toJSON() + ')';
+                }
+                else {
+                    return "('" + url + "')";
+                }
+            },
             'data': function (data, i) { return ''; }
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3660,7 +3717,18 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
         arr.forEach(function (change) { return change = _this.compareAndRemove(change, org.filter(function (o) { return DataUtil.getObject(e.key, o) === DataUtil.getObject(e.key, change); })[0], e.key); });
         var stat = {
             'method': this.options.updateType + ' ',
-            'url': function (data, i, key) { return '(' + data[i][key] + ')'; },
+            'url': function (data, i, key) {
+                if (typeof data[i][key] === 'number' || DataUtil.parse.isGuid(data[i][key])) {
+                    return '(' + data[i][key] + ')';
+                }
+                else if (data[i][key] instanceof Date) {
+                    var date = data[i][key];
+                    return '(' + date.toJSON() + ')';
+                }
+                else {
+                    return "('" + data[i][key] + "')";
+                }
+            },
             'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
         };
         req = this.generateBodyContent(arr, e, stat, dm);
@@ -3821,6 +3889,9 @@ var ODataV4Adaptor = /** @__PURE__ @class */ (function (_super) {
         returnValue = _super.prototype.onPredicate.call(this, predicate, query, requiresCast);
         if (isDate) {
             returnValue = returnValue.replace(/datetime'(.*)'$/, '$1');
+        }
+        if (DataUtil.parse.isGuid(val)) {
+            returnValue = returnValue.replace('guid', '').replace(/'/g, '');
         }
         return returnValue;
     };
@@ -3994,6 +4065,92 @@ var WebApiAdaptor = /** @__PURE__ @class */ (function (_super) {
             type: 'PUT',
             url: dm.dataSource.url,
             data: JSON.stringify(value)
+        };
+    };
+    WebApiAdaptor.prototype.batchRequest = function (dm, changes, e) {
+        var _this = this;
+        var initialGuid = e.guid = DataUtil.getGuid(this.options.batchPre);
+        var url = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
+        var req = [];
+        var _loop_1 = function (i, x) {
+            changes.addedRecords.forEach(function (j, d) {
+                var stat = {
+                    'method': 'POST ',
+                    'url': function (data, i, key) { return ''; },
+                    'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('POST ' + '/api/' + (dm.dataSource.insertUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.addedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        };
+        //insertion
+        for (var i = 0, x = changes.addedRecords.length; i < x; i++) {
+            _loop_1(i, x);
+        }
+        var _loop_2 = function (i, x) {
+            changes.changedRecords.forEach(function (j, d) {
+                var stat = {
+                    'method': _this.options.updateType + ' ',
+                    'url': function (data, i, key) { return ''; },
+                    'data': function (data, i) { return JSON.stringify(data[i]) + '\n\n'; }
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('PUT ' + '/api/' + (dm.dataSource.updateUrl || dm.dataSource.crudUrl || e.url)
+                    + stat.url(changes.changedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        };
+        //updation 
+        for (var i = 0, x = changes.changedRecords.length; i < x; i++) {
+            _loop_2(i, x);
+        }
+        var _loop_3 = function (i, x) {
+            changes.deletedRecords.forEach(function (j, d) {
+                var state = {
+                    'mtd': 'DELETE ',
+                    'url': function (data, i, key) {
+                        var url = DataUtil.getObject(key, data[i]);
+                        if (typeof url === 'number' || DataUtil.parse.isGuid(url)) {
+                            return '/' + url;
+                        }
+                        else if (url instanceof Date) {
+                            var datTime = data[i][key];
+                            return '/' + datTime.toJSON();
+                        }
+                        else {
+                            return "/'" + url + "'";
+                        }
+                    },
+                    'data': function (data, i) { return ''; }
+                };
+                req.push('--' + initialGuid);
+                req.push('Content-Type: application/http; msgtype=request', '');
+                req.push('DELETE ' + '/api/' + (dm.dataSource.removeUrl || dm.dataSource.crudUrl || e.url)
+                    + state.url(changes.deletedRecords, i, e.key) + ' HTTP/1.1');
+                req.push('Content-Type: ' + 'application/json; charset=utf-8');
+                req.push('Host: ' + location.host);
+                req.push('', j ? JSON.stringify(j) : '');
+            });
+        };
+        //deletion
+        for (var i = 0, x = changes.deletedRecords.length; i < x; i++) {
+            _loop_3(i, x);
+        }
+        req.push('--' + initialGuid + '--', '');
+        return {
+            type: 'POST',
+            url: url,
+            contentType: 'multipart/mixed; boundary=' + initialGuid,
+            data: req.join('\r\n')
         };
     };
     /**
@@ -4342,7 +4499,8 @@ var CacheAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @param  {Ajax} settings?
      */
     CacheAdaptor.prototype.beforeSend = function (dm, request, settings) {
-        if (DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch) && settings.type.toLowerCase() === 'post') {
+        if (!isNullOrUndefined(this.cacheAdaptor.options.batch) && DataUtil.endsWith(settings.url, this.cacheAdaptor.options.batch)
+            && settings.type.toLowerCase() === 'post') {
             request.setRequestHeader('Accept', this.cacheAdaptor.options.multipartAccept);
         }
         if (!dm.dataSource.crossDomain) {
@@ -4409,11 +4567,16 @@ var DataManager = /** @__PURE__ @class */ (function () {
         var _this = this;
         /** @hidden */
         this.dateParse = true;
+        /** @hidden */
+        this.timeZoneHandling = true;
         this.requests = [];
         if (!dataSource && !this.dataSource) {
             dataSource = [];
         }
         adaptor = adaptor || dataSource.adaptor;
+        if (dataSource && dataSource.timeZoneHandling === false) {
+            this.timeZoneHandling = dataSource.timeZoneHandling;
+        }
         var data;
         if (dataSource instanceof Array) {
             data = {
@@ -4553,8 +4716,12 @@ var DataManager = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(this.adaptor[makeRequest])) {
                 this.adaptor[makeRequest](result, deffered, args, query);
             }
-            else {
+            else if (!isNullOrUndefined(result.url)) {
                 this.makeRequest(result, deffered, args, query);
+            }
+            else {
+                args = DataManager.getDeferedArgs(query, result, args);
+                deffered.resolve(args);
             }
         }
         else {

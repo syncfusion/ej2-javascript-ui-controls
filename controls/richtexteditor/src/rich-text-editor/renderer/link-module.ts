@@ -1,4 +1,4 @@
-import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
+import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
 import { IDropDownItemModel } from './../base/interface';
@@ -192,8 +192,7 @@ export class Link {
         if (this.parent.editorMode === 'HTML' && (e.selectParent.length > 0 &&
             !isNullOrUndefined((e.selectParent[0] as HTMLElement).classList) &&
             (e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor')) && isNullOrUndefined(inputDetails)) {
-            this.editLink(e); return;
-        }
+            this.editLink(e); return; }
         let selectText: string; let linkWebAddress: string = this.i10n.getConstant('linkWebUrl');
         let linkDisplayText: string = this.i10n.getConstant('linkText');
         let linkTooltip: string = this.i10n.getConstant('linkTooltipLabel');
@@ -214,7 +213,6 @@ export class Link {
             '<div class="e-rte-label">' + '<label>' + linkDisplayText + '</label></div><div class="e-rte-field"> ' +
             '<input type="text" data-role ="none" spellcheck="false" class="e-input e-rte-linkText" placeholder="' + textPlace + '">' +
             '</div><div class="e-rte-label">' + htmlTextbox;
-
         let contentElem: DocumentFragment = parseHtml(content);
         linkContent.appendChild(contentElem);
         let linkTarget: HTMLInputElement = linkContent.querySelector('.e-rte-linkTarget') as HTMLInputElement;
@@ -258,7 +256,8 @@ export class Link {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                this.dialogRenderObj.close(this.dialogObj);
+                let args: Dialog = isBlazor() ? null : this.dialogObj;
+                this.dialogRenderObj.close(args);
                 this.dialogObj = null;
             },
         };
@@ -275,9 +274,9 @@ export class Link {
             this.dialogObj.element.querySelector('.e-insertLink').textContent = inputDetails.btnText;
         }
         this.checkUrl(false);
-        if ((this.parent.editorMode === 'HTML' && isNullOrUndefined(inputDetails) && ((!isNullOrUndefined(selectText)
-            && selectText !== '') && (e.selection.range.startOffset === 0) || e.selection.range.startOffset !==
-            e.selection.range.endOffset)) || e.module === 'Markdown') { linkText.value = selectText; }
+        if ((this.parent.editorMode === 'HTML' && ((!isNullOrUndefined(selectText) && selectText !== '') &&
+            (e.selection.range.startOffset === 0) || e.selection.range.startOffset !== e.selection.range.endOffset))
+            || e.module === 'Markdown') { linkText.value = selectText; }
         EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();

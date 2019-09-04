@@ -1,6 +1,6 @@
 import { Gantt } from '../base/gantt';
-import { createElement, formatUnit, EventHandler, Browser, KeyboardEvents } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, closest, addClass, removeClass, getValue } from '@syncfusion/ej2-base';
+import { createElement, formatUnit, EventHandler, Browser, KeyboardEvents, isBlazor, getElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, addClass, removeClass, getValue, setValue } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import { ChartScroll } from '../actions/chart-scroll';
 import { IGanttData } from '../base/interface';
@@ -323,11 +323,15 @@ export class GanttChart {
         } else {
         this.parent.trigger('collapsing', args, (args: object) => {
             if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+                if (isBlazor()) {
+                setValue('chartRow', getElement(getValue('chartRow', args)), args);
+                setValue('gridRow', getElement(getValue('gridRow', args)), args);
+                }
                 this.collapsedGanttRow(args);
             }
+            this.isExpandCollapseFromChart = false;
         });
-    }
-        this.isExpandCollapseFromChart = false;
+      }
     }
 
     /**
@@ -357,13 +361,22 @@ export class GanttChart {
      * @param args
      * @private
      */
-    public expandGanttRow(args: object): void {
-        this.parent.trigger('expanding', args);
-        if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+    public expandGanttRow(args: object, isCancel?: boolean): void {
+        if (isCancel) {
             this.expandedGanttRow(args);
-        }
-        this.isExpandCollapseFromChart = false;
+        } else {
+        this.parent.trigger('expanding', args, (args: object) => {
+            if (isBlazor()) {
+                setValue('chartRow', getElement(getValue('chartRow', args)), args);
+                setValue('gridRow', getElement(getValue('gridRow', args)), args);
+                }
+            if (this.isExpandCollapseFromChart && !getValue('cancel', args)) {
+                this.expandedGanttRow(args);
+            }
+            this.isExpandCollapseFromChart = false;
+        });
     }
+}
 
     /**
      * @return {void}

@@ -606,5 +606,49 @@ describe('PageSettings boundary constraints', () => {
         });
     
     });
+    
+    describe('Diagram Get Custom Cursor - Blazor Support', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+    
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: "node1",
+                offsetX: 300,
+                offsetY: 200,
+                width: 100,
+                height: 100,
+            };
+            diagram = new Diagram({
+                width: '900', height: '900', nodes: [node],
+                customCursor: [{
+                    action: "Select", cursor: "crosshair"
+                }],
+            });
+            diagram.appendTo('#diagram');
+        });
+    
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    
+        it('Checking Diagram Cursor', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let mouseEvents: MouseEvents = new MouseEvents();
+            mouseEvents.mouseMoveEvent(diagramCanvas, 300, 200);
+            expect(diagramCanvas.style.cursor === 'crosshair').toBe(true);
+            done();
+        });
+    
+    });
 
 });

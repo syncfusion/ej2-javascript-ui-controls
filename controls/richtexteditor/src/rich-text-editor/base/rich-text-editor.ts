@@ -9,7 +9,7 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs} from './interface';
+import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';
 import { BeforeQuickToolbarOpenArgs } from './interface';
 import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs } from './interface';
@@ -312,6 +312,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specifies the width of the RichTextEditor.
      * @default '100%'
+     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -357,6 +358,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**    
      * Specifies the height of the RichTextEditor component.    
      * @default "auto"    
+     * @blazorType string
      */
     @Property('auto')
     public height: string | number;
@@ -1032,6 +1034,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
         (!this.enabled) ? this.unWireEvents() : this.eventInitializer();
+        this.renderComplete();
     }
 
     /**
@@ -1807,10 +1810,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.sourceCode, {});
     }
 
-    /**
-     * Returns the maximum number of characters in the Rich Text Editor.
-     * @public
-     */
+     /**
+      * Returns the maximum number of characters in the Rich Text Editor.
+      * @public
+      */
     public getCharCount(): number {
         let htmlText : string = this.editorMode === 'Markdown' ? (this.inputElement as HTMLTextAreaElement).value.trim() :
             (this.inputElement as HTMLTextAreaElement).textContent.trim();
@@ -2055,8 +2058,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private contextHandler(e: MouseEvent): void {
         let closestElem: Element = closest((e.target as HTMLElement), 'a, table, img');
-        if (this.inlineMode.onSelection === false ||  (!isNOU(closestElem) && (closestElem.tagName === 'IMG' ||
-        closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
+        if (this.inlineMode.onSelection === false ||  (!isNOU(closestElem) && this.inputElement.contains(closestElem)
+        && (closestElem.tagName === 'IMG' || closestElem.tagName === 'TABLE' || closestElem.tagName === 'A'))) {
             e.preventDefault();
         }
     }
@@ -2092,6 +2095,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.readonly && this.enabled) { return; }
         this.bindEvents();
     }
+
     private restrict(e: MouseEvent | KeyboardEvent): void {
         if (this.maxLength >= 0 ) {
             let element: string = ((e as MouseEvent).currentTarget as HTMLElement).textContent.trim();

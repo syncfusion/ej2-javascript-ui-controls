@@ -29,7 +29,7 @@ import { TwoDimensional } from './datasource/twodimensional';
 import { Tooltip } from './utils/tooltip';
 import { LegendSettingsModel } from '../heatmap/legend/legend-model';
 import { LegendSettings, Legend } from '../heatmap/legend/legend';
-import { Adaptor } from './datasource/adaptor';
+import { Adaptor, Data } from './datasource/adaptor';
 import { DataModel } from './datasource/adaptor-model';
 import { ILegendRenderEventArgs } from './model/interface';
 
@@ -120,7 +120,13 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
 
     @Property(null)
-    public dataSource: Object | DataModel;
+    public dataSource: Object ;
+
+    /**
+     * Specifies the datasource settings for heat map.
+     */
+    @Complex<DataModel>({}, Data)
+    public dataSourceSettings : DataModel;
 
     /**
      *  Specifies the theme for heatmap.
@@ -437,6 +443,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.tooltipModule) {
             this.tooltipModule.showHideTooltip(false);
         }
+        this.renderComplete();
     }
 
     /**
@@ -460,7 +467,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     private processInitData(): void {
         if (this.adaptorModule) {
-            this.adaptorModule.constructDatasource(this.dataSource);
+            this.adaptorModule.constructDatasource(this.dataSource, this.dataSourceSettings);
         } else {
             this.completeAdaptDataSource = this.dataSource;
         }
@@ -533,6 +540,11 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public getPersistData(): string {
         return '';
     }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: HeatMapModel, oldProp: HeatMapModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
@@ -556,6 +568,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     refreshBounds = true;
                     break;
                 case 'dataSource':
+                case 'dataSourceSettings':
                     this.isCellData = false;
                     this.updateBubbleHelperProperty();
                     if (this.legendVisibilityByCellType) {

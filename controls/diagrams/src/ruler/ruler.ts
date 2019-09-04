@@ -127,6 +127,7 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public render(): void {
         this.updateRulerGeometry();
+        this.renderComplete();
     }
 
     /**

@@ -184,14 +184,14 @@ export class Tooltip {
         let value: number | string;
         let content: string[];
         let heatMap: HeatMap = this.heatMap;
-        let adaptData: DataModel = this.heatMap.dataSource;
+        let adaptData: DataModel = this.heatMap.dataSourceSettings;
         if (heatMap.bubbleSizeWithColor) {
             let xAxis: string = heatMap.xAxis.title && heatMap.xAxis.title.text !== '' ? heatMap.xAxis.title.text : 'X-Axis';
             let yAxis: string = heatMap.yAxis.title && heatMap.yAxis.title.text !== '' ? heatMap.yAxis.title.text : 'Y-Axis';
             let value1: string = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                (heatMap.dataSource as DataModel).bubbleDataMapping.size : 'Value 1';
+                adaptData.bubbleDataMapping.size : 'Value 1';
             let value2: string = adaptData.isJsonData && adaptData.adaptorType === 'Cell' ?
-                (heatMap.dataSource as DataModel).bubbleDataMapping.color : 'Value 2';
+                adaptData.bubbleDataMapping.color : 'Value 2';
             value = hetmapSeries.getFormatedText(
                 (currentRect.value as BubbleTooltipData[])[0].bubbleData, this.heatMap.cellSettings.format);
             content = [xAxis + ' : ' + hetmapSeries.hoverXAxisLabel + '<br/>'

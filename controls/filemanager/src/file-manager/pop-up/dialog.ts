@@ -1,6 +1,8 @@
-import { Dialog } from '@syncfusion/ej2-popups';
-import { select, isNullOrUndefined as isNOU, createElement, Internationalization, getValue, remove, selectAll } from '@syncfusion/ej2-base';
+import { Dialog, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
+import { select, isNullOrUndefined as isNOU, createElement, Internationalization } from '@syncfusion/ej2-base';
+import { getValue, remove, selectAll, isBlazor } from '@syncfusion/ej2-base';
 import { IFileManager, ReadArgs, DialogOptions, FileDetails, FileDragEventArgs } from '../base/interface';
+import { BeforePopupOpenCloseEventArgs, PopupOpenCloseEventArgs } from '../base/interface';
 import { createFolder } from '../common/operations';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
@@ -14,7 +16,10 @@ export function createDialog(parent: IFileManager, text: string, e?: ReadArgs | 
     let options: DialogOptions = getOptions(parent, text, e, details, replaceItems);
     if (isNOU(parent.dialogObj)) {
         parent.dialogObj = new Dialog({
-            beforeOpen: keydownAction.bind(this, parent),
+            beforeOpen: keydownAction.bind(this, parent, options.dialogName),
+            beforeClose: (args: BeforeCloseEventArgs) => {
+                triggerPopupBeforeClose(parent, parent.dialogObj, args, options.dialogName);
+            },
             header: options.header,
             content: options.content,
             buttons: options.buttons,
@@ -22,6 +27,7 @@ export function createDialog(parent: IFileManager, text: string, e?: ReadArgs | 
             showCloseIcon: true,
             closeOnEscape: true,
             visible: true,
+            allowDragging: true,
             isModal: true,
             target: '#' + parent.element.id,
             width: '350px',
@@ -41,10 +47,14 @@ export function createExtDialog(parent: IFileManager, text: string, replaceItems
     parent.isApplySame = false;
     if (isNOU(parent.extDialogObj)) {
         parent.extDialogObj = new Dialog({
-            beforeOpen: beforeExtOpen.bind(this, parent),
+            beforeOpen: beforeExtOpen.bind(this, parent, extOptions.dialogName),
+            beforeClose: (args: BeforeCloseEventArgs) => {
+                triggerPopupBeforeClose(parent, parent.extDialogObj, args, extOptions.dialogName);
+            },
             content: extOptions.content,
             header: extOptions.header,
             closeOnEscape: true,
+            allowDragging: true,
             animationSettings: { effect: 'None' },
             target: '#' + parent.element.id,
             enableRtl: parent.enableRtl,
@@ -71,9 +81,51 @@ export function createExtDialog(parent: IFileManager, text: string, replaceItems
         parent.extDialogObj.show();
     }
 }
+
+function triggerPopupBeforeOpen(parent: IFileManager, dlgModule: Dialog, args: BeforeOpenEventArgs, dialogName: string): void {
+    let eventArgs: BeforePopupOpenCloseEventArgs = {
+        cancel: args.cancel, popupName: dialogName, popupModule: dlgModule
+    };
+    /* istanbul ignore next */
+    if (isBlazor()) { delete eventArgs.popupModule; }
+    parent.trigger('beforePopupOpen', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
+        args.cancel = eventargs.cancel;
+    });
+}
+function triggerPopupBeforeClose(parent: IFileManager, dlgModule: Dialog, args: BeforeCloseEventArgs, dialogName: string): void {
+    let eventArgs: BeforePopupOpenCloseEventArgs = {
+        cancel: args.cancel, popupModule: dlgModule, popupName: dialogName
+    };
+    /* istanbul ignore next */
+    if (isBlazor()) { delete eventArgs.popupModule; }
+    parent.trigger('beforePopupClose', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
+        args.cancel = eventargs.cancel;
+        if (!args.cancel && args.isInteracted && ((dialogName === 'Rename') || (dialogName === 'Create Folder'))) {
+            parent.trigger(events.actionFailure, {});
+        }
+    });
+}
+function triggerPopupOpen(parent: IFileManager, dlgModule: Dialog, dialogName: string): void {
+    let args: PopupOpenCloseEventArgs = { popupModule: dlgModule, element: dlgModule.element, popupName: dialogName };
+    /* istanbul ignore next */
+    if (isBlazor()) { delete args.popupModule; }
+    parent.trigger('popupOpen', args);
+}
+
+function triggerPopupClose(parent: IFileManager, dlgModule: Dialog, dialogName: string): void {
+    let args: PopupOpenCloseEventArgs = { popupModule: dlgModule, element: dlgModule.element, popupName: dialogName };
+    /* istanbul ignore next */
+    if (isBlazor()) { delete args.popupModule; }
+    parent.trigger('popupClose', args);
+}
+
 // tslint:disable-next-line:max-func-body-length
 function getExtOptions(parent: IFileManager, text: string, replaceItems?: string[], newPath?: string): DialogOptions {
-    let options: DialogOptions = { header: '', content: '', buttons: [], open: null, close: null };
+    let options: DialogOptions = {
+        header: '', content: '', buttons: [], dialogName: ''
+    };
+    options.open = () => { triggerPopupOpen(parent, parent.extDialogObj, options.dialogName); };
+    options.close = () => { triggerPopupClose(parent, parent.extDialogObj, options.dialogName); };
     switch (text) {
         case 'Extension':
             options.header = getLocaleText(parent, 'Header-Rename-Confirmation');
@@ -92,8 +144,10 @@ function getExtOptions(parent: IFileManager, text: string, replaceItems?: string
                     parent.dialogObj.hide();
                 }
             }];
+            options.dialogName = 'Extension Change';
             break;
         case 'DuplicateItems':
+            options.dialogName = 'Duplicate Items';
             parent.replaceItems = replaceItems;
             let item: string = parent.replaceItems[parent.fileLength];
             let index: number = item.lastIndexOf('/');
@@ -107,6 +161,7 @@ function getExtOptions(parent: IFileManager, text: string, replaceItems?: string
                     parent.trigger('fileDropped', args);
                     parent.isDropEnd = parent.isDragDrop = false;
                 }
+                triggerPopupClose(parent, parent.extDialogObj, options.dialogName);
             };
             options.buttons = [
                 {
@@ -160,11 +215,16 @@ function getExtOptions(parent: IFileManager, text: string, replaceItems?: string
             ];
             break;
         case 'UploadRetry':
+            options.dialogName = 'Retry Upload';
             options.header = getLocaleText(parent, 'Header-Retry');
             options.content = parent.retryFiles[0].name + '<div class="e-fe-retrycontent">' +
                 (getLocaleText(parent, 'Content-Retry')) + '</div>';
             options.open = onRetryOpen.bind(this, parent);
-            options.close = () => { parent.isRetryOpened = false; retryDlgClose(parent); };
+            options.close = () => {
+                parent.isRetryOpened = false;
+                retryDlgClose(parent);
+                triggerPopupClose(parent, parent.extDialogObj, options.dialogName);
+            };
             options.buttons = [
                 {
                     buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Keep-Both') },
@@ -239,6 +299,7 @@ function onRetryOpen(parent: IFileManager, args: object): void {
         }
     });
     checkBoxObj.appendTo('#' + parent.element.id + '_applyall');
+    triggerPopupOpen(parent, parent.extDialogObj, 'Retry Upload');
 }
 
 function onKeepBothAll(parent: IFileManager): void {
@@ -281,6 +342,7 @@ function onFolderDialogOpen(parent: IFileManager): void {
         }
     };
     focusInput(parent);
+    triggerPopupOpen(parent, parent.dialogObj, 'Create Folder');
 }
 
 function onRenameDialogOpen(parent: IFileManager): void {
@@ -299,6 +361,7 @@ function onRenameDialogOpen(parent: IFileManager): void {
         }
     };
     onFocusRenameInput(parent, inputEle);
+    triggerPopupOpen(parent, parent.dialogObj, 'Rename');
 }
 
 function onFocusRenameInput(parent: IFileManager, inputEle: HTMLInputElement): void {
@@ -323,10 +386,15 @@ function createInput(ele: HTMLInputElement, placeholder: string): void {
 // tslint:disable-next-line
 /* istanbul ignore next */
 function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedEventArgs, details?: FileDetails, replaceItems?: string[]): DialogOptions {
-    let options: DialogOptions = { header: '', content: '', buttons: [], open: null };
+    let options: DialogOptions = {
+        header: '', content: '', buttons: [], dialogName: ''
+    };
+    options.open = () => { triggerPopupOpen(parent, parent.dialogObj, options.dialogName); };
+    options.close = () => { triggerPopupClose(parent, parent.dialogObj, options.dialogName); };
     text = (details && details.multipleFiles === true) ? 'MultipleFileDetails' : text;
     switch (text) {
         case 'NewFolder':
+            options.dialogName = 'Create Folder';
             options.header = getLocaleText(parent, 'Header-NewFolder');
             options.content = '<input type="text" value="New folder" id="newname"><div class="e-fe-error"></div>';
             options.buttons = [
@@ -341,6 +409,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             options.open = onFolderDialogOpen.bind(this, parent);
             break;
         case 'Delete':
+            options.dialogName = 'Delete';
             if (parent.selectedItems.length > 1) {
                 options.content = ('<div>' + getLocaleText(parent, 'Content-Multiple-Delete') + '</div>')
                     .replace('{0}', parent.selectedItems.length.toString());
@@ -365,6 +434,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             ];
             break;
         case 'Rename':
+            options.dialogName = 'Rename';
             options.header = getLocaleText(parent, 'Header-Rename');
             options.content = '<input type="text" class="e-input" id="rename"><div class="e-fe-error"></div>';
             options.buttons = [
@@ -379,6 +449,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             options.open = onRenameDialogOpen.bind(this, parent);
             break;
         case 'details':
+            options.dialogName = 'File Details';
             let intl: Internationalization = new Internationalization();
             let formattedString: string = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
             let permission: string = '';
@@ -407,6 +478,7 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             ];
             break;
         case 'MultipleFileDetails':
+            options.dialogName = 'File Details';
             let strArr: string[] = details.name.split(',').map((val: string) => {
                 let index: number = val.indexOf('.') + 1;
                 return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
@@ -433,6 +505,8 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             ];
             break;
         case 'Error':
+            parent.notify(events.actionFailure, {});
+            options.dialogName = 'Error';
             let event: ReadArgs = (<ReadArgs>e);
             if (event.error.code === '401') {
                 options.header = getLocaleText(parent, 'Access-Denied');
@@ -453,14 +527,16 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
     return options;
 }
 
-function keydownAction(parent: IFileManager): void {
+function keydownAction(parent: IFileManager, dialogName: string, args: BeforeOpenEventArgs): void {
     let btnElement: HTMLInputElement[] = (selectAll('.e-btn', parent.dialogObj.element) as HTMLInputElement[]);
     preventKeydown(btnElement);
+    triggerPopupBeforeOpen(parent, parent.dialogObj, args, dialogName);
 }
 
-function beforeExtOpen(parent: IFileManager): void {
+function beforeExtOpen(parent: IFileManager, dlgName: string, args: BeforeOpenEventArgs): void {
     let btnElement: HTMLInputElement[] = (selectAll('.e-btn', parent.extDialogObj.element) as HTMLInputElement[]);
     preventKeydown(btnElement);
+    triggerPopupBeforeOpen(parent, parent.extDialogObj, args, dlgName);
 }
 
 function preventKeydown(btnElement: HTMLInputElement[]): void {
@@ -603,6 +679,13 @@ export function createImageDialog(parent: IFileManager, header: string, imageUrl
             position: { X: 'center', Y: 'center' },
             enableRtl: parent.enableRtl,
             open: openImage.bind(this, parent),
+            close: () => { triggerPopupClose(parent, parent.viewerObj, 'Image Preview'); },
+            beforeOpen: (args: BeforeOpenEventArgs) => {
+                triggerPopupBeforeOpen(parent, parent.viewerObj, args, 'Image Preview');
+            },
+            beforeClose: (args: BeforeCloseEventArgs) => {
+                triggerPopupBeforeClose(parent, parent.viewerObj, args, 'Image Preview');
+            },
             resizing: updateImage.bind(this, parent),
             resizeStop: updateImage.bind(this, parent)
         });
@@ -625,6 +708,7 @@ function openImage(parent: IFileManager): void {
         }
     });
     updateImage(parent);
+    triggerPopupOpen(parent, parent.viewerObj, 'Image Preview');
 }
 
 function updateImage(parent: IFileManager): void {

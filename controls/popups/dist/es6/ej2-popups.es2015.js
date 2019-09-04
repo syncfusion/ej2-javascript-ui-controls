@@ -531,7 +531,6 @@ let Popup = class Popup extends Component {
         this.fixedParent = false;
         this.setEnableRtl();
         this.setContent();
-        this.wireEvents();
     }
     wireEvents() {
         if (Browser.isDevice) {
@@ -890,6 +889,7 @@ let Popup = class Popup extends Component {
      * @param { HTMLElement } relativeElement? - To calculate the zIndex value dynamically.
      */
     show(animationOptions, relativeElement) {
+        this.wireEvents();
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {
             let zIndexElement = (isNullOrUndefined(relativeElement)) ? this.element : relativeElement;
             this.zIndex = getZindexPartial(zIndexElement);
@@ -946,6 +946,7 @@ let Popup = class Popup extends Component {
             addClass([this.element], CLASSNAMES.CLOSE);
             this.trigger('close');
         }
+        this.unwireEvents();
     }
     /**
      * Gets scrollable parent elements for the given element.
@@ -1609,6 +1610,7 @@ let Dialog = class Dialog extends Component {
                 this.getMinHeight();
             }
         }
+        this.renderComplete();
     }
     /**
      * Initialize the event handler
@@ -1617,6 +1619,7 @@ let Dialog = class Dialog extends Component {
     preRender() {
         this.headerContent = null;
         this.allowMaxHeight = true;
+        this.preventVisibility = true;
         let classArray = [];
         for (let j = 0; j < this.element.classList.length; j++) {
             if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
@@ -2312,7 +2315,9 @@ let Dialog = class Dialog extends Component {
                     if (this.isModal) {
                         this.setOverlayZindex(this.zIndex);
                     }
-                    this.calculatezIndex = false;
+                    if (this.element.style.zIndex !== this.zIndex.toString()) {
+                        this.calculatezIndex = false;
+                    }
                     break;
                 case 'cssClass':
                     this.setCSSClass(oldProp.cssClass);
@@ -2550,6 +2555,7 @@ let Dialog = class Dialog extends Component {
                     let prevOnChange = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
                     this.visible = true;
+                    this.preventVisibility = true;
                     this.isProtectedOnChange = prevOnChange;
                 }
             });
@@ -2563,7 +2569,7 @@ let Dialog = class Dialog extends Component {
         if (!this.element.classList.contains(ROOT)) {
             return;
         }
-        if (this.visible) {
+        if (this.preventVisibility) {
             let eventArgs = isBlazor() ? {
                 cancel: false,
                 isInteraction: event ? true : false,
@@ -2597,6 +2603,7 @@ let Dialog = class Dialog extends Component {
                     let prevOnChange = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
                     this.visible = false;
+                    this.preventVisibility = false;
                     this.isProtectedOnChange = prevOnChange;
                 }
             });
@@ -3045,7 +3052,7 @@ let Tooltip = class Tooltip extends Component {
         this.popupObj.dataBind();
     }
     openPopupHandler() {
-        if (this.needTemplateReposition()) {
+        if (this.needTemplateReposition() && !this.mouseTrail) {
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
@@ -3200,13 +3207,16 @@ let Tooltip = class Tooltip extends Component {
             if (this.content instanceof HTMLElement) {
                 tooltipContent.appendChild(this.content);
             }
-            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') !== 0) {
+            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
                 tooltipContent.innerHTML = this.content;
             }
             else {
                 let templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
+                    this.isBlazorTemplate = true;
+                    updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                }
             }
         }
         else {
@@ -3348,7 +3358,7 @@ let Tooltip = class Tooltip extends Component {
                 this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
                 const this$ = this;
-                if (this.needTemplateReposition()) {
+                if (this.needTemplateReposition() && !this.mouseTrail) {
                     this.tooltipEle.style.display = 'none';
                 }
                 this.trigger('beforeOpen', this.tooltipEventArgs, (observedArgs) => {
@@ -3388,7 +3398,7 @@ let Tooltip = class Tooltip extends Component {
         const tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || isBlazor();
+            || isBlazor() && this.isBlazorTemplate;
     }
     checkCollision(target, x, y) {
         let elePos = {
@@ -3607,6 +3617,7 @@ let Tooltip = class Tooltip extends Component {
     render() {
         this.initialize();
         this.wireEvents(this.opensOn);
+        this.renderComplete();
     }
     /**
      * Initializes the values of private members.

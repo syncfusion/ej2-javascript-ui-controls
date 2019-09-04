@@ -2746,10 +2746,12 @@ function getMonthSummary(ruleObject, cldrObj, localeObj) {
     }
     return summary;
 }
-function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, viewDate, calendarMode) {
+function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, viewDate, calendarMode, oldTimezone, newTimezone) {
     if (maximumCount === void 0) { maximumCount = MAXOCCURRENCE; }
     if (viewDate === void 0) { viewDate = null; }
     if (calendarMode === void 0) { calendarMode = 'Gregorian'; }
+    if (oldTimezone === void 0) { oldTimezone = null; }
+    if (newTimezone === void 0) { newTimezone = null; }
     var ruleObject = extractObjectFromRule(rule);
     var cacheDate;
     calendarUtil = getCalendarUtil(calendarMode);
@@ -2757,8 +2759,12 @@ function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount, vi
     var modifiedDate = new Date(startDate.getTime());
     tempExcludeDate = [];
     var tempDate = isNullOrUndefined(excludeDate) ? [] : excludeDate.split(',');
+    var tz = new Timezone();
     tempDate.forEach(function (content) {
         var parsedDate = getDateFromRecurrenceDateString(content);
+        if (oldTimezone && newTimezone) {
+            parsedDate = tz.convert(new Date(parsedDate.getTime()), oldTimezone, newTimezone);
+        }
         tempExcludeDate.push(new Date(parsedDate.getTime()).setHours(0, 0, 0, 0));
     });
     ruleObject.recExceptionCount = !isNullOrUndefined(ruleObject.count) ? tempExcludeDate.length : 0;
@@ -3870,7 +3876,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 event_1[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event_1[fields.recurrenceRule]) && isNullOrUndefined(event_1[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event_1));
+                processed = processed.concat(this.generateOccurrence(event_1, null, oldTimezone));
             }
             else {
                 event_1.Guid = this.generateGuid();
@@ -4389,35 +4395,52 @@ var EventBase = /** @__PURE__ @class */ (function () {
         if (target.classList.contains(DRAG_CLONE_CLASS) || target.classList.contains(RESIZE_CLONE_CLASS)) {
             return;
         }
-        var raiseClickEvent = function (isMultiple) {
-            _this.activeEventData(eventData, isMultiple);
-            var selectArgs = {
-                data: _this.parent.activeEventData.event,
-                element: _this.parent.activeEventData.element,
-                event: eventData, requestType: 'eventSelect'
-            };
-            _this.parent.trigger(select, selectArgs);
-            var args = extend(_this.parent.activeEventData, { cancel: false, originalEvent: eventData });
-            _this.parent.trigger(eventClick, args);
-            return args.cancel;
-        };
         if (eventData.ctrlKey && eventData.which === 1 && this.parent.keyboardInteractionModule) {
             this.parent.quickPopup.quickPopup.hide();
             this.parent.selectedElements = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_BORDER));
             var target_1 = closest(eventData.target, '.' + APPOINTMENT_CLASS);
             this.getSelectedEventElements(target_1);
-            raiseClickEvent(false);
-            return;
+            this.activeEventData(eventData, false);
+            var selectArgs = {
+                data: this.parent.activeEventData.event,
+                element: this.parent.activeEventData.element,
+                event: eventData, requestType: 'eventSelect'
+            };
+            this.parent.trigger(select, selectArgs);
+            var args = extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
+            this.parent.trigger(eventClick, args);
         }
-        this.removeSelectedAppointmentClass();
-        if (raiseClickEvent(true)) {
+        else {
             this.removeSelectedAppointmentClass();
-            return;
+            this.activeEventData(eventData, true);
+            var selectEventArgs = {
+                data: this.parent.activeEventData.event,
+                element: this.parent.activeEventData.element,
+                event: eventData, requestType: 'eventSelect'
+            };
+            this.parent.trigger(select, selectEventArgs);
+            var args = extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
+            this.parent.trigger(eventClick, args, function (eventClickArgs) {
+                if (isBlazor()) {
+                    var eventFields = _this.parent.eventFields;
+                    var eventObj = eventClickArgs.event;
+                    eventObj.startTime = _this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj.endTime = _this.parent.getDateTime(eventObj[eventFields.endTime]);
+                    if (eventClickArgs.element) {
+                        eventClickArgs.element = getElement(eventClickArgs.element);
+                    }
+                }
+                if (eventClickArgs.cancel) {
+                    _this.removeSelectedAppointmentClass();
+                }
+                else {
+                    if (_this.parent.currentView === 'Agenda' || _this.parent.currentView === 'MonthAgenda') {
+                        addClass([_this.parent.activeEventData.element], AGENDA_SELECTED_CELL);
+                    }
+                    _this.parent.notify(eventClick, eventClickArgs);
+                }
+            });
         }
-        if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
-            addClass([this.parent.activeEventData.element], AGENDA_SELECTED_CELL);
-        }
-        this.parent.notify(eventClick, this.parent.activeEventData);
     };
     EventBase.prototype.eventDoubleClick = function (e) {
         this.parent.quickPopup.quickPopupHide(true);
@@ -4493,7 +4516,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         }
         this.parent.activeEventData = { event: eventObject, element: target };
     };
-    EventBase.prototype.generateOccurrence = function (event, viewDate) {
+    EventBase.prototype.generateOccurrence = function (event, viewDate, oldTimezone) {
         var startDate = event[this.parent.eventFields.startTime];
         var endDate = event[this.parent.eventFields.endTime];
         var eventRule = event[this.parent.eventFields.recurrenceRule];
@@ -4504,7 +4527,10 @@ var EventBase = /** @__PURE__ @class */ (function () {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        var dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
+        var newTimezone = this.parent.timezone || this.timezone.getLocalTimezoneName();
+        var firstDay = this.parent.firstDayOfWeek;
+        var calendarMode = this.parent.calendarMode;
+        var dates = generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -5606,9 +5632,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                 dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
         }
-        if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
-            this.showQuickDialog('RecurrenceValidationAlert');
-        }
+        this.showQuickDialog('RecurrenceValidationAlert');
     };
     QuickPopups.prototype.openDeleteAlert = function () {
         if (this.parent.activeViewOptions.readonly) {
@@ -5678,14 +5702,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
-                var templateElement = void 0;
-                if (!isNullOrUndefined(this_1.parent.activeViewOptions.eventTemplate)) {
-                    templateElement = this_1.parent.getAppointmentTemplate()(eventData);
-                    append(templateElement, appointmentEle);
-                }
-                else {
-                    appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
-                }
+                appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
                 if (this_1.parent.activeViewOptions.group.resources.length > 0) {
                     appointmentEle.setAttribute('data-group-index', groupIndex);
                 }
@@ -5721,6 +5738,9 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
         var guid = target.getAttribute('data-guid');
         var eventObj = this.parent.eventBase.getEventByGuid(guid);
+        if (isNullOrUndefined(eventObj)) {
+            return;
+        }
         var eventTitle = (eventObj[this.parent.eventFields.subject] || this.l10n.getConstant('noTitle'));
         var eventTemplate = "<div class=\"" + MULTIPLE_EVENT_POPUP_CLASS + "\"><div class=\"" + POPUP_HEADER_CLASS + "\">" +
             ("<button class=\"" + CLOSE_CLASS + "\" title=\"" + this.l10n.getConstant('close') + "\"></button>") +
@@ -6105,7 +6125,10 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         else {
             this.morePopup.relateTo = closest(target, '.' + WORK_CELLS_CLASS);
         }
-        var eventProp = { type: 'EventContainer', data: data, cancel: false, element: this.morePopup.element };
+        var eventProp = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
+        if (!isBlazor()) {
+            eventProp.data = data;
+        }
         this.parent.trigger(popupOpen, eventProp, function (popupArgs) {
             if (!popupArgs.cancel) {
                 _this.morePopup.show();
@@ -7587,7 +7610,9 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         if (startDate === void 0) { startDate = this.startDate; }
         if (!rule) {
             this.repeatType.setProperties({ value: NONE });
+            return;
         }
+        this.renderStatus = false;
         this.ruleObject = extractObjectFromRule(rule);
         var endon = this.ruleObject.count ? COUNT : (this.ruleObject.until ? UNTIL$1 : NEVER);
         switch (this.ruleObject.freq) {
@@ -7608,6 +7633,8 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
                 this.updateUI(YEARLY, endon);
                 break;
         }
+        this.renderStatus = true;
+        this.triggerChangeEvent();
     };
     /**
      * Destroys the widget.
@@ -7823,6 +7850,11 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             var recurrenceEditor = this.recurrenceEditor.element;
             this.recurrenceEditor.destroy();
             this.createRecurrenceEditor(recurrenceEditor);
+        }
+    };
+    EventWindow.prototype.updateRecurrenceEditor = function (recurrenceEditor) {
+        if (this.parent.editorTemplate) {
+            this.recurrenceEditor = recurrenceEditor;
         }
     };
     EventWindow.prototype.openEditor = function (data, type, isEventData, repeatType) {
@@ -8755,8 +8787,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
                 isShowAlert = false;
             }
-            if (!isNullOrUndefined(alertType) && isShowAlert
-                && ((!this.parent.enableRecurrenceValidation && alertType === 'wrongPattern') || this.parent.enableRecurrenceValidation)) {
+            if (!isNullOrUndefined(alertType) && isShowAlert) {
                 this.parent.quickPopup.openRecurrenceValidationAlert(alertType);
                 return;
             }
@@ -8794,7 +8825,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                         eveId = eventObj[this.fields.recurrenceID];
                         currentAction = null;
                     }
-                    if (this.parent.enableRecurrenceValidation && this.editOccurrenceValidation(eveId, eventObj)) {
+                    if (this.editOccurrenceValidation(eveId, eventObj)) {
                         this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                         return;
                     }
@@ -12148,7 +12179,7 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             startTime: startTime,
             endTime: endTime,
             isAllDay: this.isAllDayCell(firstTd),
-            element: tdCol
+            element: isBlazor() ? firstTd : tdCol
         };
         var groupIndex = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
@@ -12336,6 +12367,13 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         return this.activeView ? this.activeView.renderDates : [];
     };
     /**
+     * Update the recurrence editor instance from custom editor template.
+     * @method updateRecurrenceEditor
+     */
+    Schedule.prototype.updateRecurrenceEditor = function (recurrenceEditor) {
+        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
+    };
+    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -12448,26 +12486,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.activeEventData.event = data;
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
-    };
-    /**
-     * To manually close the event editor window
-     * @method closeEditor
-     * @return {void}
-     */
-    Schedule.prototype.closeEditor = function () {
-        if (this.eventWindow) {
-            this.eventWindow.dialogClose();
-        }
-    };
-    /**
-     * To manually close the quick info popup
-     * @method closeQuickInfoPopup
-     * @return {void}
-     */
-    Schedule.prototype.closeQuickInfoPopup = function () {
-        if (this.quickPopup) {
-            this.quickPopup.quickPopupHide(true);
-        }
     };
     /**
      * Adds the resources to the specified index.
@@ -12608,9 +12626,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Schedule.prototype, "hideEmptyAgendaDays", void 0);
     __decorate([
-        Property(true)
-    ], Schedule.prototype, "enableRecurrenceValidation", void 0);
-    __decorate([
         Property()
     ], Schedule.prototype, "timezone", void 0);
     __decorate([
@@ -12741,6 +12756,10 @@ var ActionBase = /** @__PURE__ @class */ (function () {
     ActionBase.prototype.saveChangedData = function (eventArgs) {
         this.parent.activeEventData.event = this.actionObj.event;
         this.parent.currentAction = 'Save';
+        if (isBlazor()) {
+            eventArgs.data[this.parent.eventFields.startTime] = this.parent.getDateTime(eventArgs.data[this.parent.eventFields.startTime]);
+            eventArgs.data[this.parent.eventFields.endTime] = this.parent.getDateTime(eventArgs.data[this.parent.eventFields.endTime]);
+        }
         var eventObj = eventArgs.data;
         var isSameResource = (this.parent.activeViewOptions.group.resources.length > 0) ?
             parseInt(this.actionObj.element.getAttribute('data-group-index'), 10) === this.actionObj.groupIndex : true;
@@ -12755,8 +12774,7 @@ var ActionBase = /** @__PURE__ @class */ (function () {
                 eventObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
                 currentAction = 'EditOccurrence';
             }
-            if (this.parent.enableRecurrenceValidation
-                && this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
+            if (this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return;
             }
@@ -13073,6 +13091,11 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         return _this;
     }
     MonthEvent.prototype.renderAppointments = function () {
+        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        if (this.parent.rowAutoHeight) {
+            this.parent.uiStateValues.top = conWrap.scrollTop;
+            this.parent.uiStateValues.left = conWrap.scrollLeft;
+        }
         var appointmentWrapper = [].slice.call(this.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
         for (var _i = 0, appointmentWrapper_1 = appointmentWrapper; _i < appointmentWrapper_1.length; _i++) {
             var wrap = appointmentWrapper_1[_i];
@@ -13083,7 +13106,6 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.eventHeight = getElementHeightFromClass(this.element, APPOINTMENT_CLASS);
-        var conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         var scrollTop = conWrap.scrollTop;
         if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
@@ -13099,7 +13121,8 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
             var data = {
                 cssProperties: this.parent.getCssProperties(),
                 module: this.parent.getModuleName(),
-                isPreventScrollUpdate: true
+                isPreventScrollUpdate: true,
+                scrollPosition: { left: this.parent.uiStateValues.left, top: this.parent.uiStateValues.top }
             };
             if (this.parent.virtualScrollModule) {
                 if (this.parent.currentAction) {
@@ -13621,6 +13644,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Resize.prototype.resizeStart = function (e) {
+        var _this = this;
         this.actionObj.action = 'resize';
         this.actionObj.slotInterval = this.parent.activeViewOptions.timeScale.interval / this.parent.activeViewOptions.timeScale.slotCount;
         this.actionObj.interval = this.actionObj.slotInterval;
@@ -13636,51 +13660,55 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             interval: this.actionObj.interval,
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
-        this.parent.trigger(resizeStart, resizeArgs);
-        if (resizeArgs.cancel) {
-            return;
-        }
-        this.actionClass('addClass');
-        this.parent.uiStateValues.action = true;
-        this.resizeEdges = {
-            left: resizeTarget.classList.contains(LEFT_RESIZE_HANDLER),
-            right: resizeTarget.classList.contains(RIGHT_RESIZE_HANDLER),
-            top: resizeTarget.classList.contains(TOP_RESIZE_HANDLER),
-            bottom: resizeTarget.classList.contains(BOTTOM_RESIZE_HANDLER)
-        };
-        this.actionObj.groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : 0;
-        var workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
-        this.actionObj.cellWidth = workCell.offsetWidth;
-        this.actionObj.cellHeight = workCell.offsetHeight;
-        var headerRows = this.parent.activeViewOptions.headerRows.map(function (row) {
-            return row.option;
+        this.parent.trigger(resizeStart, resizeArgs, function (resizeEventArgs) {
+            if (resizeEventArgs.cancel) {
+                return;
+            }
+            if (isBlazor()) {
+                resizeEventArgs.element = getElement(resizeEventArgs.element);
+            }
+            _this.actionClass('addClass');
+            _this.parent.uiStateValues.action = true;
+            _this.resizeEdges = {
+                left: resizeTarget.classList.contains(LEFT_RESIZE_HANDLER),
+                right: resizeTarget.classList.contains(RIGHT_RESIZE_HANDLER),
+                top: resizeTarget.classList.contains(TOP_RESIZE_HANDLER),
+                bottom: resizeTarget.classList.contains(BOTTOM_RESIZE_HANDLER)
+            };
+            _this.actionObj.groupIndex = _this.parent.uiStateValues.isGroupAdaptive ? _this.parent.uiStateValues.groupIndex : 0;
+            var workCell = _this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
+            _this.actionObj.cellWidth = workCell.offsetWidth;
+            _this.actionObj.cellHeight = workCell.offsetHeight;
+            var headerRows = _this.parent.activeViewOptions.headerRows.map(function (row) {
+                return row.option;
+            });
+            if (_this.parent.activeView.isTimelineView() && headerRows.length > 0 &&
+                ['Date', 'Hour'].indexOf(headerRows.slice(-1)[0]) < 0) {
+                var tr = _this.parent.getContentTable().querySelector('tr');
+                var noOfDays_1 = 0;
+                var tdCollections = [].slice.call(tr.childNodes);
+                tdCollections.forEach(function (td) { return noOfDays_1 += parseInt(td.getAttribute('colspan'), 10); });
+                _this.actionObj.cellWidth = tr.offsetWidth / noOfDays_1;
+                _this.actionObj.cellHeight = tr.offsetHeight;
+            }
+            var pages = _this.getPageCoordinates(e);
+            _this.actionObj.X = pages.pageX;
+            _this.actionObj.Y = pages.pageY;
+            _this.actionObj.groupIndex = parseInt(_this.actionObj.element.getAttribute('data-group-index') || '0', 10);
+            _this.actionObj.interval = resizeEventArgs.interval;
+            _this.actionObj.scroll = resizeEventArgs.scroll;
+            _this.actionObj.start = new Date(eventObj[_this.parent.eventFields.startTime].getTime());
+            _this.actionObj.end = new Date(eventObj[_this.parent.eventFields.endTime].getTime());
+            _this.actionObj.originalElement = _this.getOriginalElement(_this.actionObj.element);
+            if (_this.parent.currentView === 'Month') {
+                _this.daysVariation = -1;
+                _this.monthEvent = new MonthEvent(_this.parent);
+            }
+            var viewElement = _this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+            _this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
+            EventHandler.add(document, Browser.touchMoveEvent, _this.resizing, _this);
+            EventHandler.add(document, Browser.touchEndEvent, _this.resizeStop, _this);
         });
-        if (this.parent.activeView.isTimelineView() && headerRows.length > 0 &&
-            ['Date', 'Hour'].indexOf(headerRows.slice(-1)[0]) < 0) {
-            var tr = this.parent.getContentTable().querySelector('tr');
-            var noOfDays_1 = 0;
-            var tdCollections = [].slice.call(tr.childNodes);
-            tdCollections.forEach(function (td) { return noOfDays_1 += parseInt(td.getAttribute('colspan'), 10); });
-            this.actionObj.cellWidth = tr.offsetWidth / noOfDays_1;
-            this.actionObj.cellHeight = tr.offsetHeight;
-        }
-        var pages = this.getPageCoordinates(e);
-        this.actionObj.X = pages.pageX;
-        this.actionObj.Y = pages.pageY;
-        this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
-        this.actionObj.interval = resizeArgs.interval;
-        this.actionObj.scroll = resizeArgs.scroll;
-        this.actionObj.start = new Date(eventObj[this.parent.eventFields.startTime].getTime());
-        this.actionObj.end = new Date(eventObj[this.parent.eventFields.endTime].getTime());
-        this.actionObj.originalElement = this.getOriginalElement(this.actionObj.element);
-        if (this.parent.currentView === 'Month') {
-            this.daysVariation = -1;
-            this.monthEvent = new MonthEvent(this.parent);
-        }
-        var viewElement = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
-        this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
-        EventHandler.add(document, Browser.touchMoveEvent, this.resizing, this);
-        EventHandler.add(document, Browser.touchEndEvent, this.resizeStop, this);
     };
     Resize.prototype.resizing = function (e) {
         this.parent.quickPopup.quickPopupHide();
@@ -13783,6 +13811,7 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Resize.prototype.resizeStop = function (e) {
+        var _this = this;
         EventHandler.remove(document, Browser.touchMoveEvent, this.resizing);
         EventHandler.remove(document, Browser.touchEndEvent, this.resizeStop);
         clearInterval(this.actionObj.scrollInterval);
@@ -13792,11 +13821,12 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
         this.actionClass('removeClass');
         this.parent.uiStateValues.action = false;
         var resizeArgs = { cancel: false, data: this.getChangedData(), element: this.actionObj.element, event: e };
-        this.parent.trigger(resizeStop, resizeArgs);
-        if (resizeArgs.cancel) {
-            return;
-        }
-        this.saveChangedData(resizeArgs);
+        this.parent.trigger(resizeStop, resizeArgs, function (resizeEventArgs) {
+            if (resizeEventArgs.cancel) {
+                return;
+            }
+            _this.saveChangedData(resizeEventArgs);
+        });
     };
     Resize.prototype.verticalResizing = function (isTop) {
         var offsetValue = this.actionObj.clone.offsetTop;
@@ -13804,7 +13834,11 @@ var Resize = /** @__PURE__ @class */ (function (_super) {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
         var minutes = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        var resizeTime = resetTime(new Date(parseInt(this.actionObj.clone.offsetParent.getAttribute('data-date'), 10)));
+        var element = this.actionObj.clone.offsetParent;
+        if (isNullOrUndefined(element)) {
+            return;
+        }
+        var resizeTime = resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {
@@ -14651,6 +14685,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DragAndDrop.prototype.dragStop = function (e) {
+        var _this = this;
         this.removeCloneElementClasses();
         this.removeCloneElement();
         clearInterval(this.actionObj.navigationInterval);
@@ -14664,11 +14699,12 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         var dragArgs = { cancel: false, data: this.getChangedData(), event: e, element: this.actionObj.element };
-        this.parent.trigger(dragStop, dragArgs);
-        if (dragArgs.cancel) {
-            return;
-        }
-        this.saveChangedData(dragArgs);
+        this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
+            if (dragEventArgs.cancel) {
+                return;
+            }
+            _this.saveChangedData(dragEventArgs);
+        });
     };
     DragAndDrop.prototype.updateNavigatingPosition = function (e) {
         var _this = this;
@@ -15706,10 +15742,15 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
             this.parent.activeCellsData = this.parent.getCellDetails(target);
             var args = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
             this.parent.trigger(cellClick, args, function (clickArgs) {
-                clickArgs.startTime = _this.parent.getDateTime(clickArgs.startTime);
-                clickArgs.endTime = _this.parent.getDateTime(clickArgs.endTime);
-                if (clickArgs.element) {
-                    clickArgs.element = getElement(clickArgs.element);
+                if (isBlazor()) {
+                    clickArgs.startTime = _this.parent.getDateTime(clickArgs.startTime);
+                    clickArgs.endTime = _this.parent.getDateTime(clickArgs.endTime);
+                    if (clickArgs.element) {
+                        clickArgs.element = getElement(clickArgs.element);
+                    }
+                    if (clickArgs.event) {
+                        clickArgs.event = e;
+                    }
                 }
                 if (!clickArgs.cancel) {
                     if (isWorkCell_1) {
@@ -17324,6 +17365,10 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         }
         // tslint:enable:no-any
         this.setColWidth(content);
+        if (args.scrollPosition) {
+            content.scrollTop = args.scrollPosition.top;
+            content.scrollLeft = args.scrollPosition.left;
+        }
     };
     Month.prototype.setContentHeight = function (content, leftPanelElement, height) {
         content.style.height = 'auto';

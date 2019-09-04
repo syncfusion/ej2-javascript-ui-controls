@@ -26,7 +26,7 @@ export function read(parent: IFileManager, event: string, path: string): void {
  */
 export function createFolder(parent: IFileManager, itemName: string): void {
     let data: Object = { action: 'create', path: parent.path, name: itemName, data: parent.itemData };
-    createAjax(parent, data, createSuccess);
+    createAjax(parent, data, createSuccess, itemName);
 }
 
 /**
@@ -130,6 +130,18 @@ function createAjax(
                 data: getValue('data', beforeSendArgs.ajaxSettings),
                 beforeSend: getValue('beforeSend', beforeSendArgs.ajaxSettings),
                 onSuccess: (result: ReadArgs) => {
+                    if (isNOU(result)) {
+                        let result: ReadArgs = {
+                            error: {
+                                fileExists: null,
+                                message: 'ServerError: Invalid response from ' + parent.ajaxSettings.url,
+                                code: '406',
+                            },
+                            files: null,
+                        };
+                        triggerAjaxFailure(parent, beforeSendArgs, fn, result, event, operation, targetPath);
+                        return;
+                    }
                     if (typeof (result) === 'string') {
                         result = JSON.parse(result);
                     }
@@ -178,18 +190,22 @@ function createAjax(
                             fileExists: null
                         },
                     };
-                    parent.notify(events.afterRequest, { action: 'failure' });
-                    fn(parent, result, event, operation, targetPath);
-                    if (typeof getValue('onFailure', beforeSendArgs.ajaxSettings) === 'function') {
-                        getValue('onFailure', beforeSendArgs.ajaxSettings)();
-                    }
+                    triggerAjaxFailure(parent, beforeSendArgs, fn, result, event, operation, targetPath);
                 }
             });
             ajax.send();
         }
     });
 }
-
+function triggerAjaxFailure(
+    parent: IFileManager, beforeSendArgs: BeforeSendEventArgs, fn: Function,
+    result: ReadArgs, event?: string, operation?: string, targetPath?: string): void {
+    parent.notify(events.afterRequest, { action: 'failure' });
+    fn(parent, result, event, operation, targetPath);
+    if (typeof getValue('onFailure', beforeSendArgs.ajaxSettings) === 'function') {
+        getValue('onFailure', beforeSendArgs.ajaxSettings)();
+    }
+}
 function readSuccess(parent: IFileManager, result: ReadArgs, event: string): void {
     if (!isNOU(result.files)) {
         parent.notify(event, result);
@@ -224,9 +240,9 @@ function filterSuccess(parent: IFileManager, result: ReadArgs, event: string, ac
 }
 
 /* istanbul ignore next */
-function createSuccess(parent: IFileManager, result: ReadArgs): void {
+function createSuccess(parent: IFileManager, result: ReadArgs, itemName: string): void {
     if (!isNOU(result.files)) {
-        parent.dialogObj.hide();
+        if (parent.dialogObj && parent.dialogObj.visible) { parent.dialogObj.hide(); }
         parent.createdItem = result.files[0];
         parent.breadcrumbbarModule.searchObj.value = '';
         let args: SuccessEventArgs = { action: 'create', result: result };
@@ -235,11 +251,25 @@ function createSuccess(parent: IFileManager, result: ReadArgs): void {
         read(parent, events.createEnd, parent.path);
     } else {
         if (result.error.code === '400') {
-            let ele: HTMLInputElement = select('#newname', parent.dialogObj.element) as HTMLInputElement;
-            let error: string = getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + ele.value + '"');
-            ele.parentElement.nextElementSibling.innerHTML = error;
+            if (parent.dialogObj && parent.dialogObj.visible) {
+                let ele: HTMLInputElement = select('#newname', parent.dialogObj.element) as HTMLInputElement;
+                let error: string = getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + ele.value + '"');
+                ele.parentElement.nextElementSibling.innerHTML = error;
+            } else {
+                let result: ReadArgs = {
+                    files: null,
+                    error: {
+                        code: '400',
+                        message: getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + itemName + '"'),
+                        fileExists: null
+                    }
+                };
+                createDialog(parent, 'Error', result);
+            }
+            let args: FailureEventArgs = { action: 'create', error: result.error };
+            parent.trigger('failure', args);
         } else {
-            parent.dialogObj.hide();
+            if (parent.dialogObj && parent.dialogObj.visible) { parent.dialogObj.hide(); }
             onFailure(parent, result, 'create');
         }
     }
@@ -252,7 +282,7 @@ function createSuccess(parent: IFileManager, result: ReadArgs): void {
 /* istanbul ignore next */
 function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): void {
     if (!isNOU(result.files)) {
-        parent.dialogObj.hide();
+        if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
         let args: SuccessEventArgs = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
@@ -273,13 +303,15 @@ function renameSuccess(parent: IFileManager, result: ReadArgs, path: string): vo
             }
         }
     } else {
-        if (result.error.code === '400') {
+        if (result.error.code === '400' && parent.dialogObj && parent.dialogObj.visible) {
             let ele: HTMLInputElement = select('#rename', parent.dialogObj.element) as HTMLInputElement;
             let error: string = getLocaleText(parent, 'Validation-Rename-Exists').replace('{0}', '"' + parent.currentItemText + '"');
             error = error.replace('{1}', '"' + ele.value + '"');
             ele.parentElement.nextElementSibling.innerHTML = error;
+            let args: FailureEventArgs = { action: 'rename', error: result.error };
+            parent.trigger('failure', args);
         } else {
-            parent.dialogObj.hide();
+            if (!isNOU(parent.dialogObj)) { parent.dialogObj.hide(); }
             onFailure(parent, result, 'rename');
         }
     }

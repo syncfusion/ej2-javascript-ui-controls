@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, classList, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Component, Event, EventHandler, L10n, NotifyPropertyChanges, Property, classList, createElement, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Save, StreamWriter, XmlWriter } from '@syncfusion/ej2-file-utils';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { ListView } from '@syncfusion/ej2-lists';
@@ -8605,7 +8605,8 @@ var LineWidget = /** @__PURE__ @class */ (function () {
      */
     LineWidget.prototype.isFirstLine = function () {
         var index = this.indexInOwner;
-        if (index > -1 && this.paragraph.previousSplitWidget === undefined) {
+        // tslint:disable-next-line:max-line-length
+        if (index > -1 && (this.paragraph.previousSplitWidget === undefined || (this.paragraph.previousSplitWidget instanceof ParagraphWidget && this.paragraph.previousSplitWidget.isEndsWithPageBreak))) {
             return index === 0;
         }
         return false;
@@ -13758,14 +13759,14 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     DocumentEditor.prototype.fireContentChange = function () {
-        var eventArgs = { source: this };
+        var eventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     };
     /**
      * @private
      */
     DocumentEditor.prototype.fireDocumentChange = function () {
-        var eventArgs = { source: this };
+        var eventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     };
     /**
@@ -13775,14 +13776,14 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         if (!this.viewer.isCompositionStart && Browser.isDevice && this.editorModule) {
             this.editorModule.predictText();
         }
-        var eventArgs = { source: this };
+        var eventArgs = { source: isBlazor() ? null : this };
         this.trigger('selectionChange', eventArgs);
     };
     /**
      * @private
      */
     DocumentEditor.prototype.fireZoomFactorChange = function () {
-        var eventArgs = { source: this };
+        var eventArgs = { source: isBlazor() ? null : this };
         this.trigger('zoomFactorChange', eventArgs);
     };
     /**
@@ -13795,7 +13796,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                 var eventArgs = {
                     startPage: pages[0].index + 1,
                     endPage: pages[pages.length - 1].index + 1,
-                    source: this
+                    source: isBlazor() ? null : this
                 };
                 this.trigger('viewChange', eventArgs);
             }
@@ -16103,6 +16104,25 @@ var Layout = /** @__PURE__ @class */ (function () {
         line.paragraph = paragraphWidget;
         return line;
     };
+    Layout.prototype.isFirstElementWithPageBreak = function (paragraphWidget) {
+        var isPageBreak = false;
+        var lineWidget = paragraphWidget.childWidgets[0];
+        if (lineWidget) {
+            var element = lineWidget.children[0];
+            while (element) {
+                if (element instanceof BookmarkElementBox && element.name.indexOf('_') >= 0) {
+                    element = element.nextElement;
+                    continue;
+                }
+                if (element instanceof TextElementBox && element.text === '\f') {
+                    isPageBreak = true;
+                }
+                break;
+            }
+        }
+        return isPageBreak;
+    };
+    
     /**
      * Layouts specified paragraph.
      * @private
@@ -16110,7 +16130,12 @@ var Layout = /** @__PURE__ @class */ (function () {
      */
     Layout.prototype.layoutParagraph = function (paragraph, lineIndex) {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
-        this.layoutListItems(paragraph);
+        var isListLayout = true;
+        var isFirstElmIsparagraph = this.isFirstElementWithPageBreak(paragraph);
+        if (!isFirstElmIsparagraph) {
+            this.layoutListItems(paragraph);
+            isListLayout = false;
+        }
         if (paragraph.isEmpty()) {
             this.layoutEmptyLineWidget(paragraph, true);
         }
@@ -16118,6 +16143,9 @@ var Layout = /** @__PURE__ @class */ (function () {
             var line = lineIndex < paragraph.childWidgets.length ?
                 paragraph.childWidgets[lineIndex] : undefined;
             while (line instanceof LineWidget) {
+                if (paragraph !== line.paragraph && line.indexInOwner === 0 && isListLayout) {
+                    this.layoutListItems(line.paragraph);
+                }
                 if (line.isFirstLine() && isNullOrUndefined(this.fieldBegin)) {
                     if (!isNullOrUndefined(paragraph.paragraphFormat)) {
                         // tslint:disable-next-line:max-line-length
@@ -17634,6 +17662,12 @@ var Layout = /** @__PURE__ @class */ (function () {
         var isCustomTab = false;
         var tabs = paragraph.paragraphFormat.getUpdatedTabs();
         var isList = false;
+        var isSingleTab = false;
+        // tslint:disable-next-line:max-line-length
+        if (element.previousElement instanceof TextElementBox && element.previousElement.previousElement instanceof FieldElementBox && tabs.length === 1) {
+            tabs.length = 0;
+            isSingleTab = true;
+        }
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
             var listFormat = paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat;
@@ -17642,24 +17676,25 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
         }
         //  Calculate hanging width
-        var clientWidth = 0;
-        if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
-            clientWidth = this.viewer.clientArea.x + HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
-        }
-        else {
-            clientWidth = this.viewer.clientArea.x;
-        }
-        if (viewer.clientActiveArea.x < clientWidth) {
+        if (element instanceof ListTextElementBox && viewer.clientActiveArea.x < this.viewer.clientArea.x) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
+        var leftIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent);
+        var firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         var position = viewer.clientActiveArea.x -
-            (viewer.clientArea.x - HelperMethods.convertPointToPixel(paragraph.paragraphFormat.leftIndent));
+            (viewer.clientArea.x - leftIndent);
         var defaultTabWidth = HelperMethods.convertPointToPixel(viewer.defaultTabWidth);
         if (tabs.length === 0) {
             if (position > 0 && defaultTabWidth > position && isList ||
                 defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth > position) {
                 return defaultTabWidth - position;
+            }
+            else if (isSingleTab) {
+                return defaultTabWidth - leftIndent;
+            }
+            else if (defaultTabWidth === this.defaultTabWidthPixel && defaultTabWidth < position) {
+                return defaultTabWidth + firstLineIndent;
             }
             return defaultTabWidth;
         }
@@ -17709,6 +17744,12 @@ var Layout = /** @__PURE__ @class */ (function () {
                             }
                             break;
                         }
+                    }
+                    else if (element.previousElement instanceof TextElementBox && element.nextElement instanceof TextElementBox) {
+                        if (leftIndent > defaultTabWidth) {
+                            defaultTabWidth = leftIndent - defaultTabWidth;
+                        }
+                        break;
                     }
                 }
             }
@@ -23435,11 +23476,16 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         };
         // tslint:enable:no-any 
         this.onKeyPressInternal = function (event) {
+            var key = event.which || event.keyCode;
+            var ctrl = (event.ctrlKey || event.metaKey) ? true : ((key === 17) ? true : false); // ctrl detection
+            if (ctrl && event.key === 'v') {
+                return;
+            }
             if (!_this.owner.isReadOnlyMode) {
-                var key = event.keyCode || event.charCode;
+                var key_1 = event.keyCode || event.charCode;
                 var char = '';
-                if (key) {
-                    char = String.fromCharCode(key);
+                if (key_1) {
+                    char = String.fromCharCode(key_1);
                 }
                 else if (event.key) {
                     char = event.key;
@@ -32701,6 +32747,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * @private
          */
+        this.isHighlightNext = false;
+        /**
+         * @private
+         */
         this.editRegionHighlighters = undefined;
         /**
          * @private
@@ -35890,6 +35940,11 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             else {
                 this.highlight(start.paragraph, start, end);
+                if (this.isHighlightNext) {
+                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
             }
         }
     };
@@ -36085,14 +36140,21 @@ var Selection = /** @__PURE__ @class */ (function () {
                     return;
                 }
             }
-            this.highlightNextBlock(paragraph, start, end);
+            this.isHighlightNext = true;
+            this.hightLightNextParagraph = paragraph;
         }
     };
     Selection.prototype.highlightNextBlock = function (paragraph, start, end) {
         var block = paragraph.nextRenderedWidget;
         if (!isNullOrUndefined(block)) {
             if (block instanceof ParagraphWidget) {
+                this.isHighlightNext = false;
                 this.highlight(block, start, end);
+                if (this.isHighlightNext) {
+                    this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                    this.isHighlightNext = false;
+                    this.hightLightNextParagraph = undefined;
+                }
             }
             else {
                 this.highlightTable(block, start, end);
@@ -36479,6 +36541,11 @@ var Selection = /** @__PURE__ @class */ (function () {
                     else {
                         if (startCell === containerCell) {
                             this.highlight(start.paragraph, start, end);
+                            if (this.isHighlightNext) {
+                                this.highlightNextBlock(this.hightLightNextParagraph, start, end);
+                                this.isHighlightNext = false;
+                                this.hightLightNextParagraph = undefined;
+                            }
                         }
                         else {
                             this.highlightContainer(startCell, start, end);
@@ -40367,6 +40434,11 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.highlightEditRegions = function (editRangeStart, startPosition, endPosition) {
         if (!editRangeStart.line.paragraph.isInsideTable) {
             this.highlight(editRangeStart.line.paragraph, startPosition, endPosition);
+            if (this.isHighlightNext) {
+                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                this.isHighlightNext = false;
+                this.hightLightNextParagraph = undefined;
+            }
         }
         else {
             var row = editRangeStart.line.paragraph.associatedCell.ownerRow;
@@ -40374,6 +40446,11 @@ var Selection = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < cell.childWidgets.length; i++) {
                 if (cell.childWidgets[i] instanceof ParagraphWidget) {
                     this.highlight(cell.childWidgets[i], startPosition, endPosition);
+                    if (this.isHighlightNext) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                        this.isHighlightNext = false;
+                        this.hightLightNextParagraph = undefined;
+                    }
                 }
             }
         }
@@ -44055,8 +44132,11 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
         var paragraph = new ParagraphWidget();
+        var insertFormat = new WCharacterFormat();
+        var selectionFormat = this.copyInsertFormat(insertFormat, false);
         var line = new LineWidget(paragraph);
         var fieldBegin = new FieldElementBox(0);
+        fieldBegin.characterFormat.mergeFormat(selectionFormat);
         line.children.push(fieldBegin);
         var fieldCodeSpan = new TextElementBox();
         fieldCodeSpan.text = code;
@@ -44067,8 +44147,10 @@ var Editor = /** @__PURE__ @class */ (function () {
         line.children.push(fieldSeparator);
         var fieldResultSpan = new TextElementBox();
         fieldResultSpan.text = result;
+        fieldResultSpan.characterFormat.mergeFormat(selectionFormat);
         line.children.push(fieldResultSpan);
         var fieldEnd = new FieldElementBox(1);
+        fieldEnd.characterFormat.mergeFormat(selectionFormat);
         fieldEnd.fieldSeparator = fieldSeparator;
         fieldEnd.fieldBegin = fieldBegin;
         fieldBegin.fieldEnd = fieldEnd;
@@ -61858,18 +61940,19 @@ var WordExport = /** @__PURE__ @class */ (function () {
         //         writer.WriteAttributeString('afterAutospacing', this.wNamespace, '0');
         //     }
         // }
-        writer.writeAttributeString(undefined, 'line', this.wNamespace, '240');
         //TODO:ISSUEFIX((paragraphFormat.lineSpacing) * this.twentiethOfPoint).toString());
-        switch (paragraphFormat.lineSpacingType) {
-            case 'AtLeast':
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'atLeast');
-                break;
-            case 'Exactly':
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'exact');
-                break;
-            default:
-                writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, 'auto');
-                break;
+        if (!isNullOrUndefined(paragraphFormat.lineSpacingType)) {
+            // tslint:disable-next-line:max-line-length
+            var lineSpacingValue = (paragraphFormat.lineSpacingType === 'AtLeast' || paragraphFormat.lineSpacingType === 'Exactly') ? this.roundToTwoDecimal(paragraphFormat.lineSpacing * this.twentiethOfPoint) : this.roundToTwoDecimal(paragraphFormat.lineSpacing * 240);
+            var lineSpacingType = 'auto';
+            if (paragraphFormat.lineSpacingType === 'AtLeast') {
+                lineSpacingType = 'atLeast';
+            }
+            else if (paragraphFormat.lineSpacingType === 'Exactly') {
+                lineSpacingType = 'exact';
+            }
+            writer.writeAttributeString(undefined, 'line', this.wNamespace, lineSpacingValue.toString());
+            writer.writeAttributeString(undefined, 'lineRule', this.wNamespace, lineSpacingType);
         }
         writer.writeEndElement();
     };
@@ -76425,7 +76508,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        var eventArgs = { source: this };
+        var eventArgs = { source: isBlazor() ? null : this };
         this.trigger('contentChange', eventArgs);
     };
     /**
@@ -76441,7 +76524,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
-        var eventArgs = { source: this };
+        var eventArgs = { source: isBlazor() ? null : this };
         this.trigger('documentChange', eventArgs);
     };
     /**
@@ -76451,7 +76534,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         setTimeout(function () {
             _this.showPropertiesPaneOnSelection();
-            var eventArgs = { source: _this };
+            var eventArgs = { source: isBlazor() ? null : _this };
             _this.trigger('selectionChange', eventArgs);
         });
     };

@@ -1,6 +1,6 @@
 import { Component, EventHandler, Property, Event, EmitType, AnimationModel, KeyboardEvents, rippleEffect } from '@syncfusion/ej2-base';
 import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templateCompiler } from '@syncfusion/ej2-base';
-import { isVisible, closest, attributes, detach, select } from '@syncfusion/ej2-base';
+import { isVisible, closest, attributes, detach, select, isBlazor } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, Complex, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, selectAll } from '@syncfusion/ej2-base';
@@ -72,6 +72,19 @@ export interface ExpandEventArgs extends BaseEventArgs {
   isExpanded?: boolean;
   /** Defines the prevent action. */
   cancel?: boolean;
+  /** Defines the Accordion Item Index */
+  index?: number;
+  /** Defines the Accordion Item Content */
+  content?: HTMLElement;
+}
+
+export interface ExpandedEventArgs extends BaseEventArgs {
+  /** Defines the current Accordion Item Object. */
+  item?: AccordionItemModel;
+  /** Defines the current Accordion Item Element. */
+  element?: HTMLElement;
+  /** Defines the expand/collapse state. */
+  isExpanded?: boolean;
   /** Defines the Accordion Item Index */
   index?: number;
   /** Defines the Accordion Item Content */
@@ -263,26 +276,26 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     @Complex<AccordionAnimationSettingsModel>({}, AccordionAnimationSettings)
     public animation: AccordionAnimationSettingsModel;
     /**
-     * The eventÂ willÂ beÂ firedÂ while clicking anywhere within the Accordion.
+     * The event will be fired while clicking anywhere within the Accordion.
      * @event
      * @blazorProperty 'Clicked'
      */
     @Event()
     public clicked: EmitType<AccordionClickArgs>;
     /**
-     * The eventÂ willÂ beÂ firedÂ before the item gets collapsed/expanded.
+     * The event will be fired before the item gets collapsed/expanded.
      * @event
      * @blazorProperty 'Expanding'
      */
     @Event()
     public expanding: EmitType<ExpandEventArgs>;
     /**
-     * The eventÂ willÂ beÂ firedÂ after the item gets collapsed/expanded.
+     * The event will be fired after the item gets collapsed/expanded.
      * @event
      * @blazorProperty 'Expanded'
      */
     @Event()
-    public expanded: EmitType<ExpandEventArgs>;
+    public expanded: EmitType<ExpandedEventArgs>;
     /**
      * The event will be fired once the control rendering is completed.
      * @event
@@ -359,6 +372,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        if (isBlazor()) {
+          this.renderComplete();
+        }
     }
     private initialize(): void {
         let width: Str = formatUnit(this.width);
@@ -804,7 +820,16 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         this.expandedItems.push (index);  }
     }
     private getIndexByItem(item: HTEle): number {
-      return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).indexOf(item);
+      let itemEle: HTEle[] = this.getItemElements();
+      return [].slice.call(itemEle).indexOf(item);
+    }
+    private getItemElements(): HTEle[] {
+      let itemEle: HTEle[] = [];
+      let itemCollection: HTMLCollection = this.element.children;
+      [].slice.call(itemCollection).forEach((el: HTEle) => {
+         if (el.classList.contains(CLS_ITEM)) { itemEle.push(el); }
+      });
+      return itemEle;
     }
     private expandedItemsPop(item: HTEle): void {
       let index: number = this.getIndexByItem(item);
@@ -896,7 +921,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         return 'accordion';
     }
     private itemAttribUpdate(): void {
-      let itemEle: HTEle[] = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM));
+      let itemEle: HTEle[] = this.getItemElements();
       let itemLen: number = this.items.length;
       itemEle.forEach((ele: HTEle): void => {
         select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -911,6 +936,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public addItem (item: AccordionItemModel, index?: number): void {
       let ele: HTEle = this.element;
+      let itemEle: HTEle[] = this.getItemElements();
       if (isNOU(index)) {
         index = this.items.length; }
       if (ele.childElementCount >= index) {
@@ -919,7 +945,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (ele.childElementCount === index) {
           ele.appendChild(innerItemEle);
         } else {
-          ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM)[index]);
+          ele.insertBefore(innerItemEle, itemEle[index]);
         }
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
         EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -932,7 +958,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       }
     }
     private expandedItemRefresh(ele: HTEle): void {
-      [].slice.call(ele.querySelectorAll('.' + CLS_ITEM)).forEach( (el: HTEle) => {
+      let itemEle: HTEle[] = this.getItemElements();
+      [].slice.call(itemEle).forEach( (el: HTEle) => {
         if (el.classList.contains(CLS_SLCTED)) {
           this.expandedItemsPush(el);
         }
@@ -944,7 +971,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public removeItem(index: number): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele)) { return; }
       this.restoreContent(index);
       detach(ele);
@@ -959,7 +987,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public select(index: number): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele) || isNOU(select('.' + CLS_HEADER, ele))) {
            return; }
       (<HTEle>ele.children[0]).focus();
@@ -972,7 +1001,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public hideItem(index: number, isHidden?: Boolean): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele)) {
            return; }
       if (isNOU(isHidden)) {
@@ -987,7 +1017,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      * @returns void.
      */
     public enableItem(index: number,  isEnable: boolean): void {
-      let ele: HTEle = <HTEle>this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      let itemEle: HTEle[] = this.getItemElements();
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele)) {
            return; }
       let eleHeader: HTEle = <HTEle>ele.firstElementChild;
@@ -1013,13 +1044,14 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public expandItem(isExpand: boolean, index?: number): void {
       let root: HTEle = this.element;
+      let itemEle: HTEle[] = this.getItemElements();
       if (isNOU(index)) {
        if (this.expandMode === 'Single' && isExpand) {
-        let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[root.querySelectorAll('.' + CLS_ITEM).length - 1];
+        let ele: HTEle = <HTEle>itemEle[itemEle.length - 1];
         this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
        } else {
         let item: HTMLElement = <HTMLElement>select('#' + this.lastActiveItemId, this.element);
-        [].slice.call(root.querySelectorAll('.' + CLS_ITEM)).forEach( (el: HTEle) => {
+        [].slice.call(itemEle).forEach( (el: HTEle) => {
           this.itemExpand(isExpand, el, this.getIndexByItem(el));
           el.classList.remove(CLS_EXPANDSTATE);
         });
@@ -1028,7 +1060,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         if (item) { item.classList.add(CLS_EXPANDSTATE); }
       }
       } else {
-      let ele: HTEle = <HTEle>root.querySelectorAll('.' + CLS_ITEM)[index];
+      let ele: HTEle = <HTEle>itemEle[index];
       if (isNOU(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
            return; } else {
             if (this.expandMode === 'Single') {

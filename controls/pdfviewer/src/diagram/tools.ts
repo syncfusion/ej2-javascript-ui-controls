@@ -1000,12 +1000,17 @@ export class PolygonDrawingTool extends ToolBase {
     /**   @private  */
     public mouseUp(args: MouseEventArgs, isDoubleClineck?: boolean): void {
         super.mouseMove(args);
-        let bounds: Rect = new Rect(args.position.x - 5, args.position.y - 5, args.position.x + 5, args.position.y + 5);
-        if (((this.drawingObject && bounds.containsPoint((this.drawingObject.vertexPoints[0]))) || isDoubleClineck) && this.dragging) {
+        if (this.drawingObject) {
+        // tslint:disable-next-line:max-line-length
+        let bounds: Rect = new Rect(this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].x - 20, this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].y - 20, 40, 40);
+        let point: PointModel = { x: this.drawingObject.vertexPoints[0].x, y: this.drawingObject.vertexPoints[0].y };
+        if ((bounds.containsPoint(point) || isDoubleClineck) && this.dragging) {
             if (this.inAction) {
                 this.inAction = false;
                 if (this.drawingObject) {
-                    this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
+                    if (this.drawingObject.vertexPoints.length > 2) {
+                        this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
+                    }
                     if (this.action === 'Polygon') {
                         this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1] = this.drawingObject.vertexPoints[0];
                         this.commandHandler.nodePropertyChange(this.drawingObject, { vertexPoints: this.drawingObject.vertexPoints });
@@ -1091,6 +1096,7 @@ export class PolygonDrawingTool extends ToolBase {
         } else if (this.inAction && !this.dragging) {
             this.commandHandler.remove(this.drawingObject);
         }
+    }
     }
 
     /**   @private  */

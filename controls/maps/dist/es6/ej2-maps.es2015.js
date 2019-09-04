@@ -3,6 +3,15 @@ import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 
+var __rest = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Helper functions for maps control
  */
@@ -601,6 +610,10 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                     width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
                     data: data, maps: maps, cluster: clusters, border: clusters.border
                 };
+                if (maps.isBlazor) {
+                    const { data, maps, cluster } = eventArg, blazorEventArgs = __rest(eventArg, ["data", "maps", "cluster"]);
+                    eventArg = blazorEventArgs;
+                }
                 shapeCustom['fill'] = eventArg.fill;
                 shapeCustom['size']['width'] = eventArg.width;
                 shapeCustom['size']['height'] = eventArg.height;
@@ -1251,6 +1264,10 @@ function triggerShapeEvent(targetId, selection, maps, eventName) {
         data: shape.data,
         target: targetId
     };
+    if (maps.isBlazor) {
+        const { shapeData, data } = eventArgs, blazorEventArgs = __rest(eventArgs, ["shapeData", "data"]);
+        eventArgs = blazorEventArgs;
+    }
     maps.trigger(eventName, eventArgs);
     return eventArgs;
 }
@@ -2868,6 +2885,15 @@ __decorate$1([
     Complex({ color: 'transparent', width: 1 }, Border)
 ], MapsAreaSettings.prototype, "border", void 0);
 
+var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Marker class
  */
@@ -2903,9 +2929,13 @@ class Marker {
                     template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                     border: markerSettings.border
                 };
+                if (this.maps.isBlazor) {
+                    const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
+                    eventArgs = blazorEventArgs;
+                }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
-                    let lng = data['longitude'];
-                    let lat = data['latitude'];
+                    let lng = data['longitude'] | data['Longitude'];
+                    let lat = data['latitude'] | data['Latitude'];
                     let offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -2958,9 +2988,13 @@ class Marker {
             return;
         }
         let eventArgs = {
-            cancel: false, name: markerClick, data: options.data, maps: this.maps.isBlazor ? null : this.maps,
-            marker: this.maps.isBlazor ? null : options.marker, target: target, x: e.clientX, y: e.clientY
+            cancel: false, name: markerClick, data: options.data, maps: this.maps,
+            marker: options.marker, target: target, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClick, eventArgs);
     }
     /**
@@ -2979,6 +3013,10 @@ class Marker {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const { maps } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClusterClick, eventArgs);
     }
     /**
@@ -3015,8 +3053,12 @@ class Marker {
         }
         let eventArgs = {
             cancel: false, name: markerMouseMove, data: options.data,
-            maps: this.maps.isBlazor ? null : this.maps, target: targetId, x: e.clientX, y: e.clientY
+            maps: this.maps, target: targetId, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const { maps } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerMouseMove, eventArgs);
     }
     /**
@@ -3035,6 +3077,10 @@ class Marker {
             cancel: false, name: markerClusterMouseMove, data: options.data, maps: this.maps,
             target: targetId, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const { maps } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClusterMouseMove, eventArgs);
     }
     /**
@@ -3453,6 +3499,15 @@ class ColorMapping {
     }
 }
 
+var __rest$2 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * To calculate and render the shape layer
  */
@@ -3524,7 +3579,11 @@ class LayerPanel {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject
         };
-        this.mapObject.trigger('layerRendering', eventArgs, (observedArgs) => {
+        if (this.mapObject.isBlazor) {
+            const { cancel, name, index } = eventArgs;
+            eventArgs = { cancel, name, index };
+        }
+        this.mapObject.trigger('layerRendering', eventArgs, () => {
             if (!eventArgs.cancel) {
                 if (layer.layerType !== 'Geometry') {
                     if (layer.layerType !== 'Bing' || this.bing) {
@@ -3557,6 +3616,9 @@ class LayerPanel {
                         };
                         ajax.send();
                     }
+                    if (this.tileSvgObject) {
+                        this.tileSvgObject.appendChild(this.layerGroup);
+                    }
                 }
                 else {
                     if (!isNullOrUndefined(layer.shapeData) && (!isNullOrUndefined(layer.shapeData['geometries']) ||
@@ -3583,17 +3645,16 @@ class LayerPanel {
                             //     this.mapObject.baseSize = new Size(Math.abs(minSize.x - maxSize.x), Math.abs(minSize.y - maxSize.y));
                             // }
                         }
-                        this.calculatePathCollection(layerIndex, featureData);
+                        this.calculatePathCollection(layerIndex, featureData, () => {
+                            this.mapObject.svgObject.appendChild(this.layerGroup);
+                        });
+                    }
+                    else {
+                        this.mapObject.svgObject.appendChild(this.layerGroup);
                     }
                 }
             }
         });
-        if (!this.mapObject.isTileMap) {
-            this.mapObject.svgObject.appendChild(this.layerGroup);
-        }
-        else if (this.tileSvgObject) {
-            this.tileSvgObject.appendChild(this.layerGroup);
-        }
     }
     //tslint:disable:max-func-body-length
     bubbleCalculation(bubbleSettings, range) {
@@ -3615,7 +3676,7 @@ class LayerPanel {
         }
     }
     // tslint:disable-next-line:max-func-body-length
-    calculatePathCollection(layerIndex, renderData) {
+    calculatePathCollection(layerIndex, renderData, appendLayerGroup) {
         this.groupElements = [];
         if ((!isCustomPath(renderData))) {
             this.currentFactor = this.calculateFactor(this.currentLayer);
@@ -3680,10 +3741,14 @@ class LayerPanel {
                 data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null, maps: this.mapObject,
                 shape: shapeSettings, fill: fill, border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
             };
+            if (this.mapObject.isBlazor) {
+                const { data, maps } = eventArgs, blazorEventArgs = __rest$2(eventArgs, ["data", "maps"]);
+                eventArgs = blazorEventArgs;
+            }
             // tslint:disable-next-line:max-func-body-length
-            this.mapObject.trigger('shapeRendering', eventArgs, (shapeArgs) => {
-                let drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
-                    ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+            this.mapObject.trigger('shapeRendering', eventArgs, () => {
+                let drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon']) ?
+                    'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
                 drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
                 if (this.groupElements.length < 1) {
                     groupElement = this.mapObject.renderer.createGroup({
@@ -3759,8 +3824,14 @@ class LayerPanel {
                     pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
                     groupElement.appendChild(pathEle);
                 }
+                if (i === this.currentLayer.layerData.length - 1) {
+                    this.addItemsInLayer(layerIndex, colors, renderData, labelTemplateEle);
+                }
+                appendLayerGroup();
             });
         }
+    }
+    addItemsInLayer(layerIndex, colors, renderData, labelTemplateEle) {
         let bubbleG;
         if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
             let length = this.currentLayer.bubbleSettings.length;
@@ -4205,6 +4276,9 @@ class Annotations {
             annotation: annotation
         };
         this.map.trigger(annotationRendering, argsData, (annotationArgs) => {
+            if (argsData.cancel) {
+                return;
+            }
             let blazor = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && (!window[blazor] ? templateFn(this.map, null, null, this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
@@ -4460,11 +4534,12 @@ let Maps = class Maps extends Component {
         let blazor = 'Blazor';
         this.isBlazor = window[blazor];
         this.initPrivateVariable();
-        this.trigger(load, { maps: this });
-        this.unWireEVents();
-        this.createSVG();
-        this.wireEVents();
-        this.setCulture();
+        this.trigger(load, this.isBlazor ? {} : { maps: this }, () => {
+            this.unWireEVents();
+            this.createSVG();
+            this.wireEVents();
+            this.setCulture();
+        });
     }
     /**
      * To Initialize the control rendering.
@@ -4872,6 +4947,7 @@ let Maps = class Maps extends Component {
     }
     /**
      * To handle the click event for the maps.
+     * @blazorProperty 'PerformClick'
      */
     /* tslint:disable:no-string-literal */
     mapsOnClick(e) {
@@ -4963,6 +5039,7 @@ let Maps = class Maps extends Component {
     }
     /**
      * To handle the double click event for the maps.
+     * @blazorProperty 'PerformDoubleClick'
      */
     mapsOnDoubleClick(e) {
         this.notify('dblclick', e);
@@ -5180,6 +5257,7 @@ let Maps = class Maps extends Component {
                 case 'layers':
                 case 'projectionType':
                 case 'legendSettings':
+                case 'zoomSettings':
                     render = true;
                     break;
             }
@@ -5596,6 +5674,15 @@ Maps = __decorate([
     NotifyPropertyChanges
 ], Maps);
 
+var __rest$3 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Bubble module class
  */
@@ -5682,9 +5769,13 @@ class Bubble {
                 eventArgs = {
                     cancel: false, name: bubbleRendering, border: bubbleSettings.border,
                     cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
-                    data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
+                    data: shapeData, fill: bubbleColor, maps: this.maps,
                     radius: radius
                 };
+                if (this.maps.isBlazor) {
+                    const { maps } = eventArgs, blazorEventArgs = __rest$3(eventArgs, ["maps"]);
+                    eventArgs = blazorEventArgs;
+                }
             }
             this.maps.trigger('bubbleRendering', eventArgs, (bubbleArgs) => {
                 if (eventArgs.cancel) {
@@ -5762,10 +5853,11 @@ class Bubble {
             cancel: false, name: bubbleClick, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs = {
-            cancel: false, name: bubbleClick, data: data, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(bubbleClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        if (this.maps.isBlazor) {
+            const { maps } = eventArgs, blazorEventArgs = __rest$3(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
+        this.maps.trigger(bubbleClick, eventArgs);
     }
     /**
      * To get bubble from target id
@@ -5800,10 +5892,11 @@ class Bubble {
             cancel: false, name: bubbleMouseMove, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        let eventBlazorArgs = {
-            cancel: false, name: bubbleMouseMove, data: data, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(bubbleMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        if (this.maps.isBlazor) {
+            const { maps } = eventArgs, blazorEventArgs = __rest$3(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
+        this.maps.trigger(bubbleMouseMove, eventArgs);
     }
     /**
      * Get module name.
@@ -5823,6 +5916,15 @@ class Bubble {
     }
 }
 
+var __rest$4 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * DataLabel Module used to render the maps datalabel
  */
@@ -5957,6 +6059,10 @@ class DataLabel {
                 name: dataLabelRendering, maps: this.maps, cancel: false, border: dataLabel.border, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
+            if (this.maps.isBlazor) {
+                const { maps } = eventargs, blazorEventArgs = __rest$4(eventargs, ["maps"]);
+                eventargs = blazorEventArgs;
+            }
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs) => {
                 let position = [];
                 let width = zoomLabelsPosition && scaleZoomValue > 1
@@ -6114,10 +6220,10 @@ class DataLabel {
                     labelIndex: sublayerIndexLabel ? oldIndex : index,
                     dataLabelText: dataLabelText
                 });
+                if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
+                    document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                }
             });
-            if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
-                document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
-            }
         }
     }
     getPoint(shapes, points) {
@@ -6188,7 +6294,7 @@ class NavigationLine {
             latitude = navigation[i]['properties']['latitude'];
             longitude = navigation[i]['properties']['longitude'];
             visible = navigation[i]['properties']['visible'];
-            angle = navigation[i]['properties']['angle'];
+            angle = navigation[i]['angle'];
             width = navigation[i]['width'] || 1;
             color = navigation[i]['color'];
             dashArray = navigation[i]['properties']['dashArray'];
@@ -6605,21 +6711,25 @@ class Legend {
                 let bounds = new Rect(item['x'], item['y'], item['width'], item['height']);
                 let textLocation = new Point(item['textX'], item['textY']);
                 eventArgs.fill = item['fill'];
-                map.trigger(legendRendering, eventArgs);
-                textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
-                let rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
-                textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
-                textFont.size = map.themeStyle.legendFontSize || textFont.size;
-                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
-                this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                map.trigger(legendRendering, eventArgs, () => {
+                    textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
+                    let rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
+                    textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
+                    textFont.size = map.themeStyle.legendFontSize || textFont.size;
+                    renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                    this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                    if (i === this.legendRenderingCollections.length - 1) {
+                        this.renderLegendBorder();
+                    }
+                });
             }
-            this.renderLegendBorder();
         }
         else {
             this.drawLegendItem(this.currentPage);
         }
     }
+    // tslint:disable-next-line:max-func-body-length
     drawLegendItem(page) {
         let map = this.maps;
         let legend = map.legendSettings;
@@ -6628,9 +6738,7 @@ class Legend {
         let textOptions;
         let render = map.renderer;
         let shapeBorder = legend.shapeBorder;
-        let eventArgs = {
-            name: legendRendering, cancel: false, fill: '', shape: legend.shape
-        };
+        let eventArgs = { name: legendRendering, cancel: false, fill: '', shape: legend.shape };
         if (page >= 0 && page < this.totalPages.length) {
             if (querySelector(this.legendGroup.id, this.maps.element.id)) {
                 remove(querySelector(this.legendGroup.id, this.maps.element.id));
@@ -6648,70 +6756,74 @@ class Legend {
                 eventArgs.fill = collection['Fill'];
                 eventArgs.shape = ((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
                     legend.shape : 'Image') : legend.shape);
-                map.trigger(legendRendering, eventArgs);
-                let shapeId = map.element.id + '_Legend_Shape_Index_' + i;
-                let textId = map.element.id + '_Legend_Text_Index_' + i;
-                let shapeLocation = collection['Shape'];
-                let textLocation = collection['Text'];
-                let imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
-                let renderOptions = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
-                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color : this.maps.themeStyle.legendTextColor;
-                legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
-                legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
-                legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
-                this.legendGroup.appendChild(legendElement);
+                map.trigger(legendRendering, eventArgs, () => {
+                    let shapeId = map.element.id + '_Legend_Shape_Index_' + i;
+                    let textId = map.element.id + '_Legend_Text_Index_' + i;
+                    let shapeLocation = collection['Shape'];
+                    let textLocation = collection['Text'];
+                    let imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
+                    let renderOptions = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
+                    legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
+                        this.maps.themeStyle.legendTextColor;
+                    legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
+                    legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                    legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
+                    renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                    this.legendGroup.appendChild(legendElement);
+                    if (i === (this.totalPages[page]['Collection'].length - 1)) {
+                        let pagingGroup;
+                        let width = spacing;
+                        let height = (spacing / 2);
+                        if (this.page !== 0) {
+                            let pagingText = (page + 1) + '/' + this.totalPages.length;
+                            let pagingFont = legend.textStyle;
+                            let pagingTextSize = measureText(pagingText, pagingFont);
+                            let leftPageX = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
+                                (width * 2) - spacing;
+                            let rightPageX = (this.legendItemRect.x + this.legendItemRect.width);
+                            let locY = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
+                            let pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
+                            pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
+                            let leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
+                            let rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
+                            let rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
+                                ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
+                            let leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
+                                ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
+                            let leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
+                            leftPageElement.appendChild(render.drawPath(leftPageOptions));
+                            let leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
+                            leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
+                            this.wireEvents(leftPageElement);
+                            let rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
+                            rightPageElement.appendChild(render.drawPath(rightPageOptions));
+                            let rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
+                            rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
+                            this.wireEvents(rightPageElement);
+                            pagingGroup.appendChild(leftPageElement);
+                            pagingGroup.appendChild(rightPageElement);
+                            let pageTextOptions = {
+                                'id': map.element.id + '_Paging_Text',
+                                'x': pageTextX,
+                                'y': locY + (pagingTextSize.height / 4),
+                                'fill': '#a6a6a6',
+                                'font-size': '14px',
+                                'font-style': pagingFont.fontStyle,
+                                'font-family': pagingFont.fontFamily,
+                                'font-weight': pagingFont.fontWeight,
+                                'text-anchor': 'middle',
+                                'transform': '',
+                                'opacity': 1,
+                                'dominant-baseline': ''
+                            };
+                            pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
+                            this.legendGroup.appendChild(pagingGroup);
+                        }
+                        this.renderLegendBorder();
+                    }
+                });
             }
-            let pagingGroup;
-            let width = spacing;
-            let height = (spacing / 2);
-            if (this.page !== 0) {
-                let pagingText = (page + 1) + '/' + this.totalPages.length;
-                let pagingFont = legend.textStyle;
-                let pagingTextSize = measureText(pagingText, pagingFont);
-                let leftPageX = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
-                    (width * 2) - spacing;
-                let rightPageX = (this.legendItemRect.x + this.legendItemRect.width);
-                let locY = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
-                let pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
-                pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
-                let leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
-                let rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
-                let rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
-                    ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
-                let leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
-                    ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
-                let leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
-                leftPageElement.appendChild(render.drawPath(leftPageOptions));
-                let leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
-                leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
-                this.wireEvents(leftPageElement);
-                let rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
-                rightPageElement.appendChild(render.drawPath(rightPageOptions));
-                let rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
-                rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
-                this.wireEvents(rightPageElement);
-                pagingGroup.appendChild(leftPageElement);
-                pagingGroup.appendChild(rightPageElement);
-                let pageTextOptions = {
-                    'id': map.element.id + '_Paging_Text',
-                    'x': pageTextX,
-                    'y': locY + (pagingTextSize.height / 4),
-                    'fill': '#a6a6a6',
-                    'font-size': '14px',
-                    'font-style': pagingFont.fontStyle,
-                    'font-family': pagingFont.fontFamily,
-                    'font-weight': pagingFont.fontWeight,
-                    'text-anchor': 'middle',
-                    'transform': '',
-                    'opacity': 1,
-                    'dominant-baseline': ''
-                };
-                pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
-                this.legendGroup.appendChild(pagingGroup);
-            }
-            this.renderLegendBorder();
         }
     }
     // tslint:disable-next-line:max-func-body-length
@@ -7085,7 +7197,7 @@ class Legend {
                 let imageSrc = null;
                 let showLegend = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
                     data[this.maps.legendSettings.showLegendPath];
-                if (marker$$1.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
+                if (marker$$1.visible && showLegend && (!isNullOrUndefined(data['latitude'] | data['Latitude'])) && (!isNullOrUndefined(data['longitude'] | data['Longitude']))) {
                     if (marker$$1.template) {
                         templateFn = getTemplateFunction(marker$$1.template);
                         let templateElement = templateFn(this.maps);
@@ -7536,6 +7648,15 @@ class Legend {
     }
 }
 
+var __rest$5 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Highlight module class
  */
@@ -7684,8 +7805,13 @@ class Highlight {
                 shapeData: shapeData,
                 data: data
             };
-            this.maps.trigger(itemHighlight, eventArgs);
-            this.highlightMap(targetEle, eventArgs);
+            if (this.maps.isBlazor) {
+                const { shapeData } = eventArgs, blazorEventArgs = __rest$5(eventArgs, ["shapeData"]);
+                eventArgs = blazorEventArgs;
+            }
+            this.maps.trigger(itemHighlight, eventArgs, () => {
+                this.highlightMap(targetEle, eventArgs);
+            });
         }
     }
     highlightMap(targetEle, eventArgs) {
@@ -7731,6 +7857,15 @@ class Highlight {
     }
 }
 
+var __rest$6 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Selection module class
  */
@@ -7848,6 +7983,10 @@ class Selection {
             shapeData: shapeData,
             data: data
         };
+        if (this.maps.isBlazor) {
+            const { shapeData } = eventArgs, blazorEventArgs = __rest$6(eventArgs, ["shapeData"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs) => {
             // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility
             // && this.maps.legendSettings.legendSelection) {
@@ -7918,6 +8057,15 @@ class Selection {
     }
 }
 
+var __rest$7 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Map Tooltip
  */
@@ -8046,6 +8194,9 @@ class MapsTooltip {
                 maps: this.maps,
                 element: target, eventArgs: e
             };
+            if (this.maps.isBlazor) {
+                const { maps } = tootipArgs, blazorEventArgs = __rest$7(tootipArgs, ["maps"]);
+            }
             this.maps.trigger('tooltipRender', tootipArgs, (observedArgs) => {
                 if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
@@ -8159,6 +8310,15 @@ class MapsTooltip {
     }
 }
 
+var __rest$8 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Zoom module used to process the zoom for maps
  */
@@ -8532,9 +8692,13 @@ class Zoom {
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
                     border: markerSettings.border
                 };
+                if (this.maps.isBlazor) {
+                    const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$8(eventArgs, ["maps", "marker"]);
+                    eventArgs = blazorEventArgs;
+                }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs) => {
-                    let long = data['longitude'];
-                    let lati = data['latitude'];
+                    let long = data['longitude'] | data['Longitude'];
+                    let lati = data['latitude'] | data['Latitude'];
                     let offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         let markerID = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'

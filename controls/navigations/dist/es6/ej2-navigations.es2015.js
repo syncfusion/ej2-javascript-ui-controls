@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -83,9 +83,15 @@ let HScroll = class HScroll extends Component {
             this.element.classList.add(CLS_DEVICE);
             this.createOverlay(this.element);
         }
+        this.setScrollState();
+    }
+    setScrollState() {
         if (isNullOrUndefined(this.scrollStep) || this.scrollStep < 0) {
             this.scrollStep = this.scrollEle.offsetWidth;
             this.customStep = false;
+        }
+        else {
+            this.customStep = true;
         }
     }
     initialize() {
@@ -451,6 +457,7 @@ let HScroll = class HScroll extends Component {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'scrollStep':
+                    this.setScrollState();
                     break;
                 case 'enableRtl':
                     newProp.enableRtl ? this.element.classList.add(CLS_RTL) : this.element.classList.remove(CLS_RTL);
@@ -544,11 +551,17 @@ let VScroll = class VScroll extends Component {
             this.element.classList.add(CLS_DEVICE$1);
             this.createOverlayElement(this.element);
         }
+        this.setScrollState();
+        EventHandler.add(this.element, 'wheel', this.wheelEventHandler, this);
+    }
+    setScrollState() {
         if (isNullOrUndefined(this.scrollStep) || this.scrollStep < 0) {
             this.scrollStep = this.scrollEle.offsetHeight;
             this.customStep = false;
         }
-        EventHandler.add(this.element, 'wheel', this.wheelEventHandler, this);
+        else {
+            this.customStep = true;
+        }
     }
     initialize() {
         let scrollCnt = createElement('div', { className: CLS_VSCROLLCON });
@@ -870,6 +883,7 @@ let VScroll = class VScroll extends Component {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'scrollStep':
+                    this.setScrollState();
                     break;
                 case 'enableRtl':
                     newProp.enableRtl ? this.element.classList.add(CLS_RTL$1) : this.element.classList.remove(CLS_RTL$1);
@@ -1892,9 +1906,6 @@ let MenuBase = class MenuBase extends Component {
                 this.clickHandler(e);
             }
         }
-        else if (this.isMenu && this.showItemOnClick) {
-            this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
-        }
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
@@ -2203,6 +2214,7 @@ let MenuBase = class MenuBase extends Component {
                                 idx = navIdx.pop();
                                 item = this.getItems(navIdx);
                                 this.insertAfter([item[idx]], item[idx].text);
+                                item = this.getItems(navIdx);
                                 this.removeItem(item, navIdx, idx);
                             }
                             navIdx.length = 0;
@@ -2857,7 +2869,7 @@ let Toolbar = class Toolbar extends Component {
      * @private
      */
     preRender() {
-        let eventArgs = { enableCollision: true, scrollStep: this.scrollStep };
+        let eventArgs = { enableCollision: this.enableCollision, scrollStep: this.scrollStep };
         this.trigger('beforeCreate', eventArgs);
         this.enableCollision = eventArgs.enableCollision;
         this.scrollStep = eventArgs.scrollStep;
@@ -3250,6 +3262,9 @@ let Toolbar = class Toolbar extends Component {
         this.separator();
         this.refreshToolbarTemplate();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     initialize() {
         let width = formatUnit(this.width);
@@ -3381,7 +3396,7 @@ let Toolbar = class Toolbar extends Component {
             switch (this.overflowMode) {
                 case 'Scrollable':
                     if (isNullOrUndefined(this.scrollModule)) {
-                        this.initScroll(ele, ele.getElementsByClassName(CLS_ITEMS));
+                        this.initScroll(ele, [].slice.call(ele.getElementsByClassName(CLS_ITEMS)));
                     }
                     break;
                 case 'Popup':
@@ -4103,7 +4118,7 @@ let Toolbar = class Toolbar extends Component {
     }
     /**
      * Enables or disables the specified Toolbar item.
-     * @param  {HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
+     * @param  {number|HTMLElement|NodeList} items - DOM element or an array of items to be enabled or disabled.
      * @param  {boolean} isEnable  - Boolean value that determines whether the command should be enabled or disabled.
      * By default, `isEnable` is set to true.
      * @returns void.
@@ -4111,6 +4126,7 @@ let Toolbar = class Toolbar extends Component {
     enableItems(items, isEnable) {
         let elements = items;
         let len = elements.length;
+        let ele;
         if (isNullOrUndefined(isEnable)) {
             isEnable = true;
         }
@@ -4124,17 +4140,43 @@ let Toolbar = class Toolbar extends Component {
                 ele.setAttribute('aria-disabled', 'true');
             }
         };
-        if (len && len > 1) {
-            for (let ele of [].slice.call(elements)) {
+        if (!isNullOrUndefined(len) && len >= 1) {
+            for (let a = 0, element = [].slice.call(elements); a < len; a++) {
+                let itemElement = element[a];
+                if (typeof (itemElement) === 'number') {
+                    ele = this.getElementByIndex(itemElement);
+                    if (isNullOrUndefined(ele)) {
+                        return;
+                    }
+                    else {
+                        elements[a] = ele;
+                    }
+                }
+                else {
+                    ele = itemElement;
+                }
                 enable(isEnable, ele);
             }
             isEnable ? removeClass(elements, CLS_DISABLE$2) : addClass(elements, CLS_DISABLE$2);
         }
         else {
-            let ele;
-            ele = (len && len === 1) ? elements[0] : items;
+            if (typeof (elements) === 'number') {
+                ele = this.getElementByIndex(elements);
+                if (isNullOrUndefined(ele)) {
+                    return;
+                }
+            }
+            else {
+                ele = items;
+            }
             enable(isEnable, ele);
         }
+    }
+    getElementByIndex(index) {
+        if (this.tbarEle[index]) {
+            return this.tbarEle[index];
+        }
+        return null;
     }
     /**
      * Adds new items to the Toolbar that accepts an array as Toolbar items.
@@ -4568,6 +4610,16 @@ let Toolbar = class Toolbar extends Component {
                         this.itemPositioning();
                     }
                     break;
+                case 'scrollStep':
+                    if (this.scrollModule) {
+                        this.scrollModule.scrollStep = this.scrollStep;
+                    }
+                    break;
+                case 'enableCollision':
+                    if (this.popObj) {
+                        this.popObj.collision = { Y: this.enableCollision ? 'flip' : 'none' };
+                    }
+                    break;
             }
         }
     }
@@ -4654,6 +4706,12 @@ __decorate$3([
 __decorate$3([
     Property('Scrollable')
 ], Toolbar.prototype, "overflowMode", void 0);
+__decorate$3([
+    Property()
+], Toolbar.prototype, "scrollStep", void 0);
+__decorate$3([
+    Property(true)
+], Toolbar.prototype, "enableCollision", void 0);
 __decorate$3([
     Event()
 ], Toolbar.prototype, "clicked", void 0);
@@ -4832,6 +4890,9 @@ let Accordion = class Accordion extends Component {
         this.initialize();
         this.renderControl();
         this.wireEvents();
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     initialize() {
         let width = formatUnit(this.width);
@@ -5316,7 +5377,18 @@ let Accordion = class Accordion extends Component {
         }
     }
     getIndexByItem(item) {
-        return [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).indexOf(item);
+        let itemEle = this.getItemElements();
+        return [].slice.call(itemEle).indexOf(item);
+    }
+    getItemElements() {
+        let itemEle = [];
+        let itemCollection = this.element.children;
+        [].slice.call(itemCollection).forEach((el) => {
+            if (el.classList.contains(CLS_ITEM$1)) {
+                itemEle.push(el);
+            }
+        });
+        return itemEle;
     }
     expandedItemsPop(item) {
         let index = this.getIndexByItem(item);
@@ -5415,7 +5487,7 @@ let Accordion = class Accordion extends Component {
         return 'accordion';
     }
     itemAttribUpdate() {
-        let itemEle = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
+        let itemEle = this.getItemElements();
         let itemLen = this.items.length;
         itemEle.forEach((ele) => {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
@@ -5430,6 +5502,7 @@ let Accordion = class Accordion extends Component {
      */
     addItem(item, index) {
         let ele = this.element;
+        let itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             index = this.items.length;
         }
@@ -5440,7 +5513,7 @@ let Accordion = class Accordion extends Component {
                 ele.appendChild(innerItemEle);
             }
             else {
-                ele.insertBefore(innerItemEle, ele.querySelectorAll('.' + CLS_ITEM$1)[index]);
+                ele.insertBefore(innerItemEle, itemEle[index]);
             }
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
             EventHandler.add(innerItemEle.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
@@ -5453,7 +5526,8 @@ let Accordion = class Accordion extends Component {
         }
     }
     expandedItemRefresh(ele) {
-        [].slice.call(ele.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
+        let itemEle = this.getItemElements();
+        [].slice.call(itemEle).forEach((el) => {
             if (el.classList.contains(CLS_SLCTED)) {
                 this.expandedItemsPush(el);
             }
@@ -5465,7 +5539,8 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     removeItem(index) {
-        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        let itemEle = this.getItemElements();
+        let ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5482,7 +5557,8 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     select(index) {
-        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        let itemEle = this.getItemElements();
+        let ele = itemEle[index];
         if (isNullOrUndefined(ele) || isNullOrUndefined(select('.' + CLS_HEADER, ele))) {
             return;
         }
@@ -5496,7 +5572,8 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     hideItem(index, isHidden) {
-        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        let itemEle = this.getItemElements();
+        let ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5513,7 +5590,8 @@ let Accordion = class Accordion extends Component {
      * @returns void.
      */
     enableItem(index, isEnable) {
-        let ele = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        let itemEle = this.getItemElements();
+        let ele = itemEle[index];
         if (isNullOrUndefined(ele)) {
             return;
         }
@@ -5542,14 +5620,15 @@ let Accordion = class Accordion extends Component {
      */
     expandItem(isExpand, index) {
         let root = this.element;
+        let itemEle = this.getItemElements();
         if (isNullOrUndefined(index)) {
             if (this.expandMode === 'Single' && isExpand) {
-                let ele = root.querySelectorAll('.' + CLS_ITEM$1)[root.querySelectorAll('.' + CLS_ITEM$1).length - 1];
+                let ele = itemEle[itemEle.length - 1];
                 this.itemExpand(isExpand, ele, this.getIndexByItem(ele));
             }
             else {
                 let item = select('#' + this.lastActiveItemId, this.element);
-                [].slice.call(root.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
+                [].slice.call(itemEle).forEach((el) => {
                     this.itemExpand(isExpand, el, this.getIndexByItem(el));
                     el.classList.remove(CLS_EXPANDSTATE);
                 });
@@ -5563,7 +5642,7 @@ let Accordion = class Accordion extends Component {
             }
         }
         else {
-            let ele = root.querySelectorAll('.' + CLS_ITEM$1)[index];
+            let ele = itemEle[index];
             if (isNullOrUndefined(ele) || !ele.classList.contains(CLS_SLCT) || (ele.classList.contains(CLS_ACTIVE) && isExpand)) {
                 return;
             }
@@ -6170,6 +6249,9 @@ __decorate$7([
     Complex({}, Header)
 ], TabItem.prototype, "header", void 0);
 __decorate$7([
+    Property(null)
+], TabItem.prototype, "headerTemplate", void 0);
+__decorate$7([
     Property('')
 ], TabItem.prototype, "content", void 0);
 __decorate$7([
@@ -6285,6 +6367,9 @@ let Tab = class Tab extends Component {
         this.renderContainer();
         this.wireEvents();
         this.initRender = false;
+        if (isBlazor()) {
+            this.renderComplete();
+        }
     }
     renderContainer() {
         let ele = this.element;
@@ -6370,11 +6455,19 @@ let Tab = class Tab extends Component {
             height: (hdrPlace === 'Left' || hdrPlace === 'Right') ? '100%' : 'auto',
             overflowMode: this.overflowMode,
             items: (tabItems.length !== 0) ? tabItems : [],
-            clicked: this.clickHandler.bind(this)
+            clicked: this.clickHandler.bind(this),
+            scrollStep: this.scrollStep
         });
         this.tbObj.isStringTemplate = true;
         this.tbObj.createElement = this.createElement;
         this.tbObj.appendTo(this.hdrEle);
+        for (let i = 0; i < this.items.length; i++) {
+            let item = this.items[i];
+            if (item.headerTemplate && isBlazor() && !this.isStringTemplate &&
+                item.headerTemplate.indexOf('<div>Blazor') === 0) {
+                updateBlazorTemplate(this.element.id + i + '_' + 'headerTemplate', 'HeaderTemplate', item);
+            }
+        }
         this.updateOrientationAttribute();
         this.setCloseButton(this.showCloseButton);
     }
@@ -6405,13 +6498,14 @@ let Tab = class Tab extends Component {
         let txtWrapEle;
         let spliceArray = [];
         items.forEach((item, i) => {
-            let pos = (isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
-            let css = (isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
-            if (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.text) || ((item.header.text.length === 0) && (css === ''))) {
+            let pos = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconPosition)) ? '' : item.header.iconPosition;
+            let css = (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.iconCss)) ? '' : item.header.iconCss;
+            if ((isNullOrUndefined(item.headerTemplate)) && (isNullOrUndefined(item.header) || isNullOrUndefined(item.header.text) ||
+                ((item.header.text.length === 0)) && (css === ''))) {
                 spliceArray.push(i);
                 return;
             }
-            let txt = item.header.text;
+            let txt = item.headerTemplate || item.header.text;
             this.lastIndex = ((tbCount === 0) ? i : ((this.isReplace) ? (index + i) : (this.lastIndex + 1)));
             let disabled = (item.disabled) ? ' ' + CLS_DISABLE$4 + ' ' + CLS_OVERLAY$2 : '';
             txtWrapEle = this.createElement('div', { className: CLS_TEXT, attrs: { 'role': 'presentation' } });
@@ -6680,20 +6774,17 @@ let Tab = class Tab extends Component {
         this.compileElement(tempEle, cnt, 'content', index);
         if (tempEle.childNodes.length !== 0) {
             ele.appendChild(tempEle);
-            let blazorContain = Object.keys(window);
             let item = this.items[index];
             if (!isNullOrUndefined(item)) {
-                if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate &&
-                    item.content.indexOf('<div>Blazor') === 0) {
-                    updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+                if (item.content && isBlazor() && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
+                    updateBlazorTemplate(this.element.id + index + '_' + 'content', 'ContentTemplate', item);
                 }
             }
         }
     }
     compileElement(ele, val, prop, index) {
-        let blazorContain = Object.keys(window);
         let templateFn;
-        if (typeof val === 'string' && blazorContain.indexOf('Blazor') > -1 && val.indexOf('<div>Blazor') !== 0) {
+        if (typeof val === 'string' && isBlazor() && val.indexOf('<div>Blazor') !== 0) {
             val = val.trim();
             ele.innerHTML = val;
         }
@@ -6702,15 +6793,8 @@ let Tab = class Tab extends Component {
         }
         let templateFUN;
         if (!isNullOrUndefined(templateFn)) {
-            if (blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
-                let templateProps;
-                if (prop === 'headerText') {
-                    templateProps = this.element.id + 'text';
-                }
-                else if (prop === 'content') {
-                    templateProps = this.element.id + index + '_content';
-                }
-                templateFUN = templateFn({}, this, prop, templateProps, this.isStringTemplate);
+            if (isBlazor() && !this.isStringTemplate && val.indexOf('<div>Blazor') === 0) {
+                templateFUN = templateFn({}, this, prop, this.element.id + index + '_' + prop, this.isStringTemplate);
             }
             else {
                 templateFUN = templateFn({}, this, prop);
@@ -6723,7 +6807,7 @@ let Tab = class Tab extends Component {
         }
     }
     headerTextCompile(element, text, index) {
-        this.compileElement(element, text, 'headerText', index);
+        this.compileElement(element, text, 'headerTemplate', index);
     }
     getContent(ele, cnt, callType, index) {
         let eleStr;
@@ -7224,9 +7308,10 @@ let Tab = class Tab extends Component {
                 let newVal = Object(newProp.items[index])[property];
                 let hdrItem = select('.' + CLS_TB_ITEMS + ' #' + CLS_ITEM$2 + '_' + index, this.element);
                 let cntItem = select('.' + CLS_CONTENT$1 + ' #' + CLS_CONTENT$1 + '_' + index, this.element);
-                if (property === 'header') {
-                    let icon = this.items[index].header.iconCss;
-                    let textVal = this.items[index].header.text;
+                if (property === 'header' || property === 'headerTemplate') {
+                    let icon = (isNullOrUndefined(this.items[index].header) ||
+                        isNullOrUndefined(this.items[index].header.iconCss)) ? '' : this.items[index].header.iconCss;
+                    let textVal = this.items[index].headerTemplate || this.items[index].header.text;
                     if ((textVal === '') && (icon === '')) {
                         this.removeTab(index);
                     }
@@ -7374,8 +7459,9 @@ let Tab = class Tab extends Component {
             let i = 0;
             let textValue;
             items.forEach((item, place) => {
-                textValue = item.header.text;
-                if (!((isNullOrUndefined(item.header) || isNullOrUndefined(textValue) || (textValue.length === 0) && isNullOrUndefined(item.header.iconCss)))) {
+                textValue = item.headerTemplate || item.header.text;
+                if (!(isNullOrUndefined(item.headerTemplate || item.header) ||
+                    isNullOrUndefined(textValue) || (textValue.length === 0) && isNullOrUndefined(item.header.iconCss))) {
                     this.items.splice((index + i), 0, item);
                     i++;
                 }
@@ -7619,7 +7705,13 @@ let Tab = class Tab extends Component {
                     this.setContentHeight(false);
                     break;
                 case 'cssClass':
-                    this.setCssClass(this.element, newProp.cssClass, true);
+                    if (oldProp.cssClass !== '') {
+                        this.setCssClass(this.element, oldProp.cssClass, false);
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
+                    else {
+                        this.setCssClass(this.element, newProp.cssClass, true);
+                    }
                     break;
                 case 'items':
                     this.evalOnPropertyChangeItems(newProp, oldProp);
@@ -7645,6 +7737,11 @@ let Tab = class Tab extends Component {
                 case 'heightAdjustMode':
                     this.setContentHeight(false);
                     this.select(this.selectedItem);
+                    break;
+                case 'scrollStep':
+                    if (this.tbObj) {
+                        this.tbObj.scrollStep = this.scrollStep;
+                    }
                     break;
             }
         }
@@ -7680,6 +7777,9 @@ __decorate$7([
 __decorate$7([
     Property(false)
 ], Tab.prototype, "showCloseButton", void 0);
+__decorate$7([
+    Property()
+], Tab.prototype, "scrollStep", void 0);
 __decorate$7([
     Complex({}, TabAnimationSettings)
 ], Tab.prototype, "animation", void 0);
@@ -10200,7 +10300,6 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
-        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     }
@@ -10274,26 +10373,27 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     appendNewText(liEle, txtEle, newText, isInput) {
         let eventArgs = this.getEditEvent(liEle, newText, null);
-        this.trigger('nodeEdited', eventArgs);
-        newText = eventArgs.cancel ? eventArgs.oldText : eventArgs.newText;
-        let newData = setValue(this.editFields.text, newText, this.editData);
-        if (!isNullOrUndefined(this.nodeTemplateFn)) {
-            txtEle.innerHTML = '';
-            let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
-            tempArr = Array.prototype.slice.call(tempArr);
-            append(tempArr, txtEle);
-            this.updateBlazorTemplate();
-        }
-        else {
-            txtEle.innerHTML = newText;
-        }
-        if (isInput) {
-            removeClass([liEle], EDITING);
-            txtEle.focus();
-        }
-        if (eventArgs.oldText !== newText) {
-            this.triggerEvent();
-        }
+        this.trigger('nodeEdited', eventArgs, (observedArgs) => {
+            newText = observedArgs.cancel ? observedArgs.oldText : observedArgs.newText;
+            let newData = setValue(this.editFields.text, newText, this.editData);
+            if (!isNullOrUndefined(this.nodeTemplateFn)) {
+                txtEle.innerHTML = '';
+                let tempArr = this.nodeTemplateFn(newData, undefined, undefined, this.element.id + 'nodeTemplate', this.isStringTemplate);
+                tempArr = Array.prototype.slice.call(tempArr);
+                append(tempArr, txtEle);
+                this.updateBlazorTemplate();
+            }
+            else {
+                txtEle.innerHTML = newText;
+            }
+            if (isInput) {
+                removeClass([liEle], EDITING);
+                txtEle.focus();
+            }
+            if (observedArgs.oldText !== newText) {
+                this.triggerEvent();
+            }
+        });
     }
     getElement(ele) {
         if (isNullOrUndefined(ele)) {
@@ -10303,7 +10403,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             return this.element.querySelector('[data-uid="' + ele + '"]');
         }
         else if (typeof ele === 'object') {
-            return ele;
+            return getElement(ele);
         }
         else {
             return null;
@@ -10317,7 +10417,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             return ele;
         }
         else if (typeof ele === 'object') {
-            return ele.getAttribute('data-uid');
+            return (getElement(ele)).getAttribute('data-uid');
         }
         else {
             return null;
@@ -11833,7 +11933,46 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      */
     getAllCheckedNodes() {
         let checkNodes = this.checkedNodes;
-        return checkNodes;
+        let newCheck = [];
+        let i = 0;
+        let id = this.fields.id;
+        for (i; i < this.treeData.length; i++) {
+            //Checks if isChecked is enabled while node is not loaded in DOM
+            let checked = null;
+            let childNode = null;
+            let isLoaded = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
+            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
+                //Checks if isChecked is enabled for parent
+                if (this.getTreeData()[i][this.fields.isChecked] === true
+                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
+                    newCheck.push(this.treeData[i][id].toString());
+                    checked = 2;
+                }
+                //Checks for child nodes with isChecked enabled
+                if (checked !== 2) {
+                    checked = 1;
+                }
+                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
+                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
+            }
+        }
+        i = 0;
+        //Gets checked nodes based on UI interaction
+        while (i < checkNodes.length) {
+            if (newCheck.indexOf(checkNodes[i]) !== -1) {
+                i++;
+                continue;
+            }
+            newCheck.push(checkNodes[i]);
+            //Gets all child which is not loaded while parent is checked
+            let parentNode = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
+            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
+                let child = this.getChildNodes(this.treeData, checkNodes[i].toString());
+                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
+            }
+            i++;
+        }
+        return newCheck;
     }
     /**
      * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
@@ -12251,36 +12390,37 @@ let Sidebar = class Sidebar extends Component {
         if (isBlazor()) {
             delete closeArguments.model;
         }
-        this.trigger('close', closeArguments);
-        if (!closeArguments.cancel) {
-            if (this.element.classList.contains(CLOSE)) {
-                return;
+        this.trigger('close', closeArguments, (observedcloseArgs) => {
+            if (!observedcloseArgs.cancel) {
+                if (this.element.classList.contains(CLOSE)) {
+                    return;
+                }
+                if (this.element.classList.contains(OPEN) && !this.animate) {
+                    this.triggerChange();
+                }
+                addClass([this.element], CLOSE);
+                removeClass([this.element], OPEN);
+                this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
+                    setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
+                this.setType(this.type);
+                let sibling = document.querySelector('.e-main-content') ||
+                    this.element.nextElementSibling;
+                if (!this.enableDock && sibling) {
+                    sibling.style.transform = 'translateX(' + 0 + 'px)';
+                    this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
+                }
+                this.destroyBackDrop();
+                this.setAnimation();
+                if (this.type === 'Slide') {
+                    document.body.classList.remove('e-sidebar-overflow');
+                }
+                this.setProperties({ isOpen: false }, true);
+                if (this.enableDock) {
+                    setTimeout(() => this.setTimeOut(), 50);
+                }
+                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
             }
-            if (this.element.classList.contains(OPEN) && !this.animate) {
-                this.triggerChange();
-            }
-            addClass([this.element], CLOSE);
-            removeClass([this.element], OPEN);
-            this.enableDock ? setStyleAttribute(this.element, { 'width': formatUnit(this.dockSize) }) :
-                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setType(this.type);
-            let sibling = document.querySelector('.e-main-content') ||
-                this.element.nextElementSibling;
-            if (!this.enableDock && sibling) {
-                sibling.style.transform = 'translateX(' + 0 + 'px)';
-                this.position === 'Left' ? sibling.style.marginLeft = '0px' : sibling.style.marginRight = '0px';
-            }
-            this.destroyBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.remove('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: false }, true);
-        }
-        if (this.enableDock) {
-            setTimeout(() => this.setTimeOut(), 50);
-        }
-        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        });
     }
     setTimeOut() {
         let sibling = document.querySelector('.e-main-content') ||
@@ -12322,28 +12462,29 @@ let Sidebar = class Sidebar extends Component {
         if (isBlazor()) {
             delete openArguments.model;
         }
-        this.trigger('open', openArguments);
-        if (!openArguments.cancel) {
-            removeClass([this.element], VISIBILITY);
-            if (this.element.classList.contains(OPEN)) {
-                return;
+        this.trigger('open', openArguments, (observedopenArgs) => {
+            if (!observedopenArgs.cancel) {
+                removeClass([this.element], VISIBILITY);
+                if (this.element.classList.contains(OPEN)) {
+                    return;
+                }
+                if (this.element.classList.contains(CLOSE) && !this.animate) {
+                    this.triggerChange();
+                }
+                addClass([this.element], [OPEN, TRASITION]);
+                setStyleAttribute(this.element, { 'transform': '' });
+                removeClass([this.element], CLOSE);
+                setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
+                this.setType(this.type);
+                this.createBackDrop();
+                this.setAnimation();
+                if (this.type === 'Slide') {
+                    document.body.classList.add('e-sidebar-overflow');
+                }
+                this.setProperties({ isOpen: true }, true);
+                EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
             }
-            if (this.element.classList.contains(CLOSE) && !this.animate) {
-                this.triggerChange();
-            }
-            addClass([this.element], [OPEN, TRASITION]);
-            setStyleAttribute(this.element, { 'transform': '' });
-            removeClass([this.element], CLOSE);
-            setStyleAttribute(this.element, { 'width': formatUnit(this.width) });
-            this.setType(this.type);
-            this.createBackDrop();
-            this.setAnimation();
-            if (this.type === 'Slide') {
-                document.body.classList.add('e-sidebar-overflow');
-            }
-            this.setProperties({ isOpen: true }, true);
-        }
-        EventHandler.add(this.element, 'transitionend', this.transitionEnd, this);
+        });
     }
     setAnimation() {
         if (this.animate) {
@@ -12730,5 +12871,5 @@ Sidebar = __decorate$9([
  * Navigation all modules
  */
 
-export { MenuAnimationSettings, MenuItem, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es2015.js.map

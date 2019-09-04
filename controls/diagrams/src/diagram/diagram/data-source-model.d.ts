@@ -1,4 +1,4 @@
-import { DataManager } from '@syncfusion/ej2-data';import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
+import { DataManager } from '@syncfusion/ej2-data';import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { DataMappingItems as DataMappingItems } from './data-mapping';import { DataMappingItemsModel } from './data-mapping-model';
 
 /**
  * Interface for a class CrudAction
@@ -149,6 +149,12 @@ export interface DataSourceModel {
      * @deprecated
      */
     doBinding?: Function | string;
+
+    /**
+     * A collection of JSON objects where each object represents an Data Map Items.
+     * @default []
+     */
+    dataMapSettings?: DataMappingItemsModel[];
 
     /**
      * Add CrudAction to data source

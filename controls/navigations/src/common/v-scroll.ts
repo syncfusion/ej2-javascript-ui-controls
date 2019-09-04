@@ -94,11 +94,16 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
             this.element.classList.add(CLS_DEVICE);
             this.createOverlayElement(this.element);
         }
+        this.setScrollState();
+        EventHandler.add(this.element, 'wheel', this.wheelEventHandler, this);
+    }
+    private setScrollState(): void {
         if (isNullOrUndefined(this.scrollStep) || this.scrollStep < 0) {
             this.scrollStep = this.scrollEle.offsetHeight;
             this.customStep = false;
+        } else {
+            this.customStep = true;
         }
-        EventHandler.add(this.element, 'wheel', this.wheelEventHandler, this);
     }
     /**
      * Initializes a new instance of the VScroll class.
@@ -414,6 +419,7 @@ export class VScroll extends Component<HTMLElement> implements INotifyPropertyCh
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'scrollStep':
+                    this.setScrollState();
                     break;
                 case 'enableRtl':
                     newProp.enableRtl ? this.element.classList.add(CLS_RTL) : this.element.classList.remove(CLS_RTL);

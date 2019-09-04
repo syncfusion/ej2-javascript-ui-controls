@@ -20,8 +20,13 @@ import { getElement } from './diagram-util';
  */
 
 /** @private */
-export function removeElementsByClass(className: string): void {
-    let elements: HTMLCollectionOf<Element> = document.getElementsByClassName(className);
+export function removeElementsByClass(className: string, id?: string): void {
+    let elements: HTMLCollectionOf<Element> | NodeListOf<Element>;
+    if (id) {
+        elements = document.getElementById(id).getElementsByClassName(className);
+    } else {
+        elements = document.getElementsByClassName(className);
+    }
     while (elements.length > 0) {
         elements[0].parentNode.removeChild(elements[0]);
     }
@@ -387,7 +392,7 @@ export function getDomIndex(viewId: string, elementId: string, layer: string): n
         postId = '_content_groupElement';
     } else if (layer === 'html') {
         parentElement = getHTMLLayer(viewId).childNodes[0] as HTMLElement;
-        postId = '_content_html_element';
+        postId = '_html_element';
     } else {
         parentElement = getDiagramLayer(viewId);
         postId = '_groupElement';
@@ -641,7 +646,7 @@ export function getContent(element: DiagramHtmlElement | DiagramNativeElement, i
             let text: string = 'content';
             let annotations: string = 'annotations';
             let addInfo: string = 'addInfo';
-            content = element.diagramId + 'content_diagram';
+            content = node[id] + 'content_diagram';
             sentNode[id] = node[id];
             sentNode[height] = node[height];
             sentNode[width] = node[width];
@@ -661,10 +666,15 @@ export function getContent(element: DiagramHtmlElement | DiagramNativeElement, i
     }
     let item: HTMLElement | SVGElement;
     if (typeof element.content === 'string') {
-        let compiledString: Function;
-        compiledString = compile(element.content);
-        for (item of compiledString(sentNode, null, null, content)) {
-            div.appendChild(item);
+        let template: HTMLElement = document.getElementById(element.content);
+        if (template) {
+            div.appendChild(template);
+        } else {
+            let compiledString: Function;
+            compiledString = compile(element.content);
+            for (item of compiledString(sentNode, null, null, content)) {
+                div.appendChild(item);
+            }
         }
     } else {
         div.appendChild(element.content);

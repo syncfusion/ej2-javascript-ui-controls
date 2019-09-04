@@ -9,7 +9,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';
 import { ListViewModel, FieldSettingsModel } from './list-view-model';
-import { updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates } from '@syncfusion/ej2-base';
 
 // Effect Configuration Effect[] =  [fromViewBackward,fromViewForward,toViewBackward,toviewForward];
 const effectsConfig: { [key: string]: Effect[] } = {
@@ -1407,10 +1407,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private resetBlazorTemplates(): void {
+        // tslint:disable-next-line:no-any
+        let templateCollection: any = blazorTemplates;
         if (this.template) {
+            templateCollection[this.LISTVIEW_TEMPLATE_ID] = [];
             resetBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
         }
         if (this.groupTemplate) {
+            templateCollection[this.LISTVIEW_GROUPTEMPLATE_ID] = [];
             resetBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
         }
         if (this.headerTemplate) {
@@ -2070,6 +2074,7 @@ export interface SelectedItem {
 
     /**
      * It denotes the Selected Item list element.
+     * @blazorType DOM
      */
     item: HTMLElement | Element;
 

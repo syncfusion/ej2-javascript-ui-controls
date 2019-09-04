@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.2.48-beta (2019-08-28)
+## 17.2.49 (2019-09-04)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved `draggable` issue while setting `clone` as `false`.
+
+## 17.2.47 (2019-08-27)
 
 ### Common
 

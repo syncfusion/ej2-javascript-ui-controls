@@ -101,20 +101,22 @@ export class ThumbnailView {
         this.thumbnailRequestHandler.onSuccess = function (result: any) {
             // tslint:disable-next-line    
             let data: any = result.data;
-            if (typeof data !== 'object') {
-                try {
-                    data = JSON.parse(data);
-                } catch (error) {
-                    proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
-                    data = null;
-                }
-            }
             if (data) {
-                proxy.renderThumbnailImage(data);
-                if (!proxy.isThumbnailCompleted) {
-                    let index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;
-                    proxy.startIndex = index;
-                    proxy.isThumbnailCompleted = true;
+                if (typeof data !== 'object') {
+                    try {
+                        data = JSON.parse(data);
+                    } catch (error) {
+                        proxy.pdfViewerBase.onControlError(500, data, proxy.pdfViewer.serverActionSettings.renderThumbnail);
+                        data = null;
+                    }
+                }
+                if (data) {
+                    proxy.renderThumbnailImage(data);
+                    if (!proxy.isThumbnailCompleted) {
+                        let index: number = (data && isNaN(data.endPage)) ? data.endPage : proxy.thumbnailLimit;
+                        proxy.startIndex = index;
+                        proxy.isThumbnailCompleted = true;
+                    }
                 }
             }
         };

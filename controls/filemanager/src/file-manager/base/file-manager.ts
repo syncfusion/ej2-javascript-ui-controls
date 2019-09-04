@@ -1,10 +1,10 @@
-﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest, isBlazor } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';
 import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { Event, EventHandler, getValue, setValue } from '@syncfusion/ej2-base';
 import { Splitter, PanePropertiesModel } from '@syncfusion/ej2-layouts';
-import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
+import { Dialog, createSpinner, hideSpinner, showSpinner, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { createDialog, createExtDialog } from '../pop-up/dialog';
 import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';
 import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';
@@ -17,14 +17,15 @@ import { UploadSettingsModel } from '../models/upload-settings-model';
 import { UploadSettings } from '../models/upload-settings';
 import * as events from './constant';
 import * as CLS from './classes';
-import { read, filter } from '../common/operations';
+import { read, filter, createFolder } from '../common/operations';
 import { FileManagerModel } from './file-manager-model';
-import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs } from './interface';
+import { ITreeView, IContextMenu, ViewType, SortOrder, FileDragEventArgs, RetryArgs, ReadArgs } from './interface';
 import { BeforeSendEventArgs, SuccessEventArgs, FailureEventArgs, FileLoadEventArgs } from './interface';
 import { FileOpenEventArgs, FileSelectEventArgs, MenuClickEventArgs, MenuOpenEventArgs } from './interface';
 import { ToolbarClickEventArgs, ToolbarCreateEventArgs, UploadListCreateArgs } from './interface';
+import { PopupOpenCloseEventArgs, BeforePopupOpenCloseEventArgs } from './interface';
 import { refresh, getPathObject, getLocaleText, setNextPath, createDeniedDialog } from '../common/utility';
-import { hasContentAccess, hasUploadAccess, updateLayout } from '../common/utility';
+import { hasContentAccess, hasUploadAccess, updateLayout, createNewFolder, uploadItem } from '../common/utility';
 import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';
 import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';
 import { ContextMenuSettings } from '../models/contextMenu-settings';
@@ -343,6 +344,22 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public fileOpen: EmitType<FileOpenEventArgs>;
 
     /**
+     * Triggers before the dialog is closed.
+     * @event
+     * @blazorproperty 'BeforePopupClose'
+     */
+    @Event()
+    public beforePopupClose: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
+     * Triggers before the dialog is opened.
+     * @event
+     * @blazorproperty 'BeforePopupOpen'
+     */
+    @Event()
+    public beforePopupOpen: EmitType<BeforePopupOpenCloseEventArgs>;
+
+    /**
      * Triggers before sending the AJAX request to the server.
      * @event
      * @blazorproperty 'OnSend'
@@ -429,6 +446,22 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     @Event()
     public failure: EmitType<FailureEventArgs>;
+
+    /**
+     * Triggers when the dialog is closed.
+     * @event
+     * @blazorproperty 'PopupClosed'
+     */
+    @Event()
+    public popupClose: EmitType<PopupOpenCloseEventArgs>;
+
+    /**
+     * Triggers when the dialog is opened.
+     * @event
+     * @blazorproperty 'PopupOpened'
+     */
+    @Event()
+    public popupOpen: EmitType<PopupOpenCloseEventArgs>;
 
     /**
      * Triggers when the AJAX request is success.
@@ -677,7 +710,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     private adjustHeight(): void {
         let toolbar: HTMLElement = <HTMLElement>select('#' + this.element.id + CLS.TOOLBAR_ID, this.element);
-        let toolBarHeight: number = this.toolbarModule ? toolbar.offsetHeight : 0;
+        let toolBarHeight: number = toolbar ? toolbar.offsetHeight : 0;
         this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
         this.splitterObj.dataBind();
     }
@@ -743,6 +776,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             enableRtl: this.enableRtl,
             open: this.onOpen.bind(this),
             close: this.onClose.bind(this),
+            beforeOpen: this.onBeforeOpen.bind(this),
+            beforeClose: this.onBeforeClose.bind(this),
         });
         this.uploadDialogObj.appendTo('#' + this.element.id + CLS.UPLOAD_DIALOG_ID);
         this.renderUploadBox();
@@ -785,15 +820,50 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.uploadObj.dataBind();
     }
 
-    /* istanbul ignore next */
+    private onBeforeOpen(args: BeforeOpenEventArgs): void {
+        let eventArgs: BeforePopupOpenCloseEventArgs = {
+            cancel: args.cancel, popupName: 'Upload', popupModule: this.uploadDialogObj
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) { delete eventArgs.popupModule; }
+        this.trigger('beforePopupOpen', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
+            args.cancel = eventargs.cancel;
+        });
+    }
+
+    private onBeforeClose(args: BeforeCloseEventArgs): void {
+        let eventArgs: BeforePopupOpenCloseEventArgs = {
+            cancel: args.cancel, popupName: 'Upload', popupModule: this.uploadDialogObj
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) { delete eventArgs.popupModule; }
+        this.trigger('beforePopupClose', eventArgs, (eventargs: BeforePopupOpenCloseEventArgs) => {
+            args.cancel = eventargs.cancel;
+        });
+    }
+
     private onOpen(): void {
         this.isOpened = true;
         this.uploadDialogObj.element.focus();
+        let args: PopupOpenCloseEventArgs = {
+            popupModule: this.uploadDialogObj, popupName: 'Upload',
+            element: this.uploadDialogObj.element
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) { delete args.popupModule; }
+        this.trigger('popupOpen', args);
     }
-    /* istanbul ignore next */
+
     private onClose(): void {
         this.isOpened = false;
         this.uploadObj.clearAll();
+        let args: PopupOpenCloseEventArgs = {
+            popupModule: this.uploadDialogObj, popupName: 'Upload',
+            element: this.uploadDialogObj.element
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) { delete args.popupModule; }
+        this.trigger('popupClose', args);
     }
     /* istanbul ignore next */
     private onUploading(args: UploadingEventArgs): void {
@@ -1149,6 +1219,51 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
+     * Creates a new folder in file manager.
+     * @param {name: string} name – Specifies the name of new folder in current path.
+     * If it is not specified, then the default new folder dialog will be opened.
+     * @returns void
+     */
+    public createFolder(name?: string): void {
+        this.notify(events.methodCall, { action: 'createFolder' });
+        let details: Object[] = [getPathObject(this)];
+        this.itemData = details;
+        if (name) {
+            if (/[/\\|*?"<>:]/.test(name)) {
+                let result: ReadArgs = {
+                    files: null,
+                    error: {
+                        code: '402',
+                        message: getLocaleText(this, 'Validation-Invalid').replace('{0}', '"' + name + '"'),
+                        fileExists: null
+                    }
+                };
+                createDialog(this, 'Error', result);
+            } else {
+                if (!hasContentAccess(details[0])) {
+                    createDeniedDialog(this, details[0]);
+                } else {
+                    createFolder(this, name);
+                }
+            }
+        } else {
+            createNewFolder(this);
+        }
+    }
+
+    /**
+     * Deletes the folders or files from the given unique identifiers.
+     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to delete the nested level folders or
+     * files, then specify the filter path along with name of the folders or files when performing the search or custom filtering.
+     * For ID based file provider, specify the unique identifier of folders or files.
+     * If it is not specified, then delete confirmation dialog will be opened for selected item.
+     * @returns void
+     */
+    public deleteFiles(ids?: string[]): void {
+        this.notify(events.methodCall, { action: 'deleteFiles', ids: ids });
+    }
+
+    /**
      * Disables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be disabled.
      * @returns void
@@ -1160,6 +1275,18 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
+     * Downloads the folders or files from the given unique identifiers.
+     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to download the nested level folders
+     * or files, then specify the filter path along with name of the folders or files when performing search or custom filtering.
+     * For ID based file provider, specify the unique identifier of folders or files.
+     * If it is not specified, then the selected items will be downloaded.
+     * @returns void
+     */
+    public downloadFiles(ids?: string[]): void {
+        this.notify(events.methodCall, { action: 'downloadFiles', ids: ids });
+    }
+
+    /**
      * Enables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be enabled.
      * @returns void
@@ -1167,6 +1294,42 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public enableToolbarItems(items: string[]): void {
         if (!isNOU(items)) {
             this.toolbarModule.enableItems(items, true);
+        }
+    }
+    /**
+     * Disables the specified context menu items in file manager. This method is used only in the menuOpen event.
+     * @param {items: string[]} items - Specifies an array of items to be disabled.
+     * @returns void
+     */
+    public disableMenuItems(items: string[]): void {
+        if (!isNOU(items) && !isNOU(this.contextmenuModule.contextMenu)) {
+            this.contextmenuModule.disableItem(items);
+        }
+    }
+
+    /**
+     * Returns the index position of given current context menu item in file manager.
+     * @param {item: string} item - Specifies an item to get the index position.
+     * @returns number
+     */
+    public getMenuItemIndex(item: string): number {
+        if (this.contextmenuModule) {
+            return this.contextmenuModule.getItemIndex(item);
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * Returns the index position of given toolbar item in file manager.
+     * @param {item: string} item - Specifies an item to get the index position.
+     * @returns number
+     */
+    public getToolbarItemIndex(item: string): number {
+        if (this.toolbarModule) {
+            return this.toolbarModule.getItemIndex(item);
+        } else {
+            return -1;
         }
     }
 
@@ -1189,11 +1352,22 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Gets the details of the selected files in the file manager.
-     * @returns void
+     * @returns Object[]
      */
     public getSelectedFiles(): Object[] {
         this.notify(events.updateSelectionData, {});
         return this.itemData;
+    }
+
+    /**
+     * Opens the corresponding file or folder from the given unique identifier.
+     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to open the nested level folder or
+     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
+     * file provider, specify the unique identifier of folder or file.
+     * @returns void
+     */
+    public openFile(id: string): void {
+        this.notify(events.methodCall, { action: 'openFile', id: id });
     }
 
     /**
@@ -1211,6 +1385,46 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public refreshLayout(): void {
         this.adjustHeight();
         this.notify(events.layoutRefresh, {});
+    }
+
+    /**
+     * Selects the entire folders and files in current path.
+     * @returns void
+     */
+    public selectAll(): void {
+        this.notify(events.methodCall, { action: 'selectAll' });
+    }
+
+    /**
+     * Deselects the currently selected folders and files in current path.
+     * @returns void
+     */
+    public clearSelection(): void {
+        this.notify(events.methodCall, { action: 'clearSelection' });
+    }
+
+    /**
+     * Renames the file or folder with given new name in file manager.
+     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to rename the nested level folder or
+     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
+     * file provider, specify the unique identifier of folder or file. 
+     * If it is not specified, then rename dialog will be opened for selected item.
+     * @param {name: string} name – Specifies the new name of the file or folder in current path. If it is not specified, then rename dialog
+     * will be opened for given identifier.
+     * @returns void
+     */
+    public renameFile(id?: string, name?: string): void {
+        this.notify(events.methodCall, { action: 'renameFile', id: id, newName: name });
+    }
+
+    /**
+     * Opens the upload dialog in file manager.
+     * @returns void
+     */
+    public uploadFiles(): void {
+        let details: Object[] = [getPathObject(this)];
+        this.itemData = details;
+        uploadItem(this);
     }
 
     /**

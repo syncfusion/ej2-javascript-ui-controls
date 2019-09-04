@@ -121,7 +121,7 @@ export class Toolbar {
         let toolbar: HTMLElement = this.toolbarElement;
         if (enableToolbar) {
             toolbar.style.display = 'block';
-            if (Browser.isDevice) {
+            if (Browser.isDevice && this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
                 this.pdfViewer.toolbarModule.annotationToolbarModule.hideMobileAnnotationToolbar();
             }
         } else {

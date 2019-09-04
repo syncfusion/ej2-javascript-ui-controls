@@ -4,10 +4,10 @@
 import { createElement, closest, Browser } from '@syncfusion/ej2-base';
 import {
     Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs,
-    Day, Week, WorkWeek, Month, Agenda, EJ2Instance, SelectEventArgs, PopupOpenEventArgs, ViewsModel
+    Day, Week, WorkWeek, Month, Agenda, EJ2Instance, SelectEventArgs, PopupOpenEventArgs
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/recurrence-editor';
-import { resourceData, testData, defaultData } from '../base/datasource.spec';
+import { resourceData, testData } from '../base/datasource.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { blockData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
@@ -1352,73 +1352,6 @@ describe('Schedule Month view', () => {
                 expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
             });
         });    
-    });
-
-    describe('More indicator event rendering based on the provided template', () => {
-        let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let mt: string = '<div class="template-wrap" style="background:#007EE3;width:-webkit-fill-available;">' +
-                '<div class="subject" style="background:#007EE3">${Subject}</div></div>';
-            let scriptMonthEvent: HTMLScriptElement = document.createElement('script');
-            scriptMonthEvent.type = 'text/x-template';
-            scriptMonthEvent.id = 'month-event-template';
-            scriptMonthEvent.appendChild(document.createTextNode(mt));
-            document.getElementsByTagName('head')[0].appendChild(scriptMonthEvent);
-            let viewCollection: ViewsModel[] = [{ option: 'Month', eventTemplate: '#month-event-template' }];
-            let schOptions: ScheduleModel = {
-                height: '900px',
-                selectedDate: new Date(2017, 10, 5),
-                currentView: 'Month',
-                views: viewCollection,
-            }
-            schObj = util.createSchedule(schOptions, defaultData, done);
-        });
-        afterAll(() => {
-            util.destroy(schObj);
-            document.getElementById('month-event-template').remove();
-        });
-        it('Checking the template applied to the events or not', () => {
-            let moreIndicator: HTMLElement = document.querySelector('.e-more-indicator');
-            util.triggerMouseEvent(moreIndicator, 'click');
-            let elementList: NodeListOf<Element> = document.querySelectorAll('.e-more-appointment-wrapper');
-            let templateElement: string = elementList[0].children[0].innerHTML;
-            expect(templateElement).toEqual('<div class="template-wrap" style="background:#007EE3;' +
-                'width:-webkit-fill-available;"><div class="subject" style="background:#007EE3">Conference</div></div>');
-            templateElement = elementList[0].children[6].innerHTML;
-            expect(templateElement).toEqual('<div class="template-wrap" style="background:#007EE3;width:-webkit-fill-available;">'
-                + '<div class="subject" style="background:#007EE3">Same Time</div></div>');
-            let closeButton: HTMLElement = document.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS);
-            util.triggerMouseEvent(closeButton, 'click');
-        });
-    });
-
-    describe('CR Issue EJ2- Getting Week numbers while changing firstdayofWeek', () => {
-        let schObj: Schedule;
-        beforeAll((done: Function) => {
-            let schOptions: ScheduleModel = {
-                selectedDate: new Date(2017, 10, 6),
-                currentView: 'Month',
-                showWeekNumber: true
-            };
-            schObj = util.createSchedule(schOptions, testData, done);
-        });
-        afterAll(() => {
-            util.destroy(schObj);
-        });
-        it('Week number testing for when firstdayofWeek set to Sunday', ()  => {
-            schObj.firstDayOfWeek = 0;
-            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
-        });
-        it('Week number testing for when firstdayofWeek set to Monday', ()  => {
-            schObj.firstDayOfWeek = 1;
-            schObj.dataBind();
-            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('46');
-        });
-        it('Week number testing for when firstdayofWeek set to saturday', ()  => {
-            schObj.firstDayOfWeek = 6;
-            schObj.dataBind();
-            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
-        });
     });
 
     it('memory leak', () => {

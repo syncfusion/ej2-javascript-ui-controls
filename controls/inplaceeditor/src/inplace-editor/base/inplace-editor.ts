@@ -173,6 +173,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
      * @default ''
+     * @blazorType string
      */
     @Property('')
     public primaryKey: string | number;
@@ -374,6 +375,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.setRtl(this.enableRtl);
         this.enableEditor(this.enableEditMode);
         this.setClass('add', this.cssClass);
+        this.renderComplete();
     }
     /**
      * Initializes a new instance of the In-place editor class.

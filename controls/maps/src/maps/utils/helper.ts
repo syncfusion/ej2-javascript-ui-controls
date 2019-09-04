@@ -10,6 +10,7 @@ import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettin
     MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
 IMarkerClusterRenderingEventArgs} from '../index';
 import { CenterPositionModel } from '../model/base-model';
+import { map } from '../../../spec/maps/data/mappoint.spec';
 
 /**
  * Maps internal use of `Size` type
@@ -729,6 +730,10 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                 width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
                 data: data, maps: maps, cluster: clusters, border: clusters.border
             }
+            if (maps.isBlazor) {
+                const {data, maps, cluster, ...blazorEventArgs}: IMarkerClusterRenderingEventArgs = eventArg;
+                eventArg = blazorEventArgs;
+            }
             shapeCustom['fill'] = eventArg.fill;
             shapeCustom['size']['width'] = eventArg.width
             shapeCustom['size']['height'] = eventArg.height
@@ -1386,6 +1391,10 @@ export function triggerShapeEvent(
         data: shape.data,
         target: targetId
     };
+    if (maps.isBlazor) {
+        const {shapeData, data, ...blazorEventArgs} : IShapeSelectedEventArgs = eventArgs;
+        eventArgs = blazorEventArgs;
+    }
     maps.trigger(eventName, eventArgs);
     return eventArgs;
 }

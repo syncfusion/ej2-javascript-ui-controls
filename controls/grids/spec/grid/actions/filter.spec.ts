@@ -9,6 +9,7 @@ import { Page } from '../../../src/grid/actions/page';
 import { ForeignKey } from '../../../src/grid/actions/foreign-key';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { ValueFormatter } from '../../../src/grid/services/value-formatter';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
 import { filterData, foreigndata, normalData } from '../base/datasource.spec';
@@ -19,7 +20,7 @@ import { ColumnMenu } from '../../../src/grid/actions/column-menu';
 import * as events from '../../../src/grid/base/constant';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(Filter, Page, Selection, Group, Freeze, Reorder, ColumnMenu, ForeignKey);
+Grid.Inject(Filter, Page, Selection, Group, Freeze, Reorder, ColumnMenu, ForeignKey,VirtualScroll);
 
 describe('Filtering module => ', () => {
 
@@ -1751,4 +1752,56 @@ describe('Filtering module => ', () => {
             gridObj = dBound = null;
         });
     });
+
+    describe('Filtering with ColumnVirtualization', ()=>{
+        let ctr: number = 0;
+        let count: string[] = Array.apply(null, Array(60)).map(() => 'Column' + ++ctr + '');
+        let data1: Object[] = (() => {
+            let arr: Object[] = [];
+            for (let i: number = 0, o: Object = {}, j: number = 0; i < 60; i++ , j++ , o = {}) {
+                count.forEach((lt: string) => o[lt] = 'Column' + lt + 'Row' + i);
+                arr[j] = o;
+            }
+            return arr;
+        })();
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            
+            gridObj = createGrid(
+                {
+                    dataSource: data1,
+                    allowFiltering: true,
+                    enableColumnVirtualization: true,
+                    columns:count
+                }, done);
+        });
+        it('filtering with columnVirtualization', (done: Function) => {
+            actionComplete = () => {
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(11);
+                done();
+            };
+            filterColumn(gridObj, 'Column1', 'ColumnColumn1Row5');
+            gridObj.actionComplete = actionComplete;
+        });
+        it('columnVirtualization scrolling', (done: Function) => {
+            (<HTMLElement>gridObj.getContent().firstChild).scrollLeft = 4000;
+            setTimeout(done, 200);
+        });
+        it('Multiple filtering with columnVirtualization', (done: Function) => {
+            actionComplete = () => {                
+                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+               
+                done();
+            };            
+            filterColumn(gridObj, 'Column25', 'ColumnColumn25Row50');
+            gridObj.actionComplete = actionComplete;
+        });  
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete  = null;
+        });
+
+});
 });

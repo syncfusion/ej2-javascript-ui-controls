@@ -324,7 +324,7 @@ export class Filter implements IAction {
         ignoreAccent?: boolean, actualFilterValue?: Object, actualOperator?: Object): void {
         let gObj: IGrid = this.parent;
         let filterCell: HTMLInputElement;
-        this.column = gObj.getColumnByField(fieldName);
+        this.column = gObj.grabColumnByFieldFromAllCols(fieldName);
         if (this.filterSettings.type === 'FilterBar') {
             filterCell = gObj.getHeaderContent().querySelector('[id=\'' + this.column.field + '_filterBarcell\']') as HTMLInputElement;
         }
@@ -425,7 +425,7 @@ export class Filter implements IAction {
     private refreshFilterSettings(): void {
         if (this.filterSettings.type === 'FilterBar') {
             for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
-                this.column = this.parent.getColumnByUid(this.filterSettings.columns[i].uid);
+                this.column = this.parent.grabColumnByUidFromAllCols(this.filterSettings.columns[i].uid);
                 let filterValue: string | number | Date | boolean = this.filterSettings.columns[i].value;
                 filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
                 if (!isNullOrUndefined(this.column.format)) {
@@ -571,7 +571,7 @@ export class Filter implements IAction {
         for (let i: number = 0, len: number = filteredColsUid.length; i < len; i++) {
             cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
             let len: number = cols.length;
-            let column: Column = this.parent.getColumnByUid(filteredColsUid[i]);
+            let column: Column = this.parent.grabColumnByUidFromAllCols(filteredColsUid[i]);
             if (column.field === field || (column.field === column.foreignKeyValue && column.isForeignColumn())) {
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
                     let selector: string = '[id=\'' + column.field + '_filterBarcell\']';
@@ -660,7 +660,7 @@ export class Filter implements IAction {
             if (columns.length > 0 && this.filterStatusMsg !== this.l10n.getConstant('InvalidFilterMessage')) {
                 this.filterStatusMsg = '';
                 for (let index: number = 0; index < columns.length; index++) {
-                    column = gObj.getColumnByUid(columns[index].uid);
+                    column = gObj.grabColumnByUidFromAllCols(columns[index].uid);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -813,7 +813,11 @@ export class Filter implements IAction {
                     this.value = (this.value as string).slice(1);
                     this.operator = this.filterOperators.endsWith;
                 } else {
+                    if (this.column.filter.operator) {
+                        this.operator = this.column.filter.operator as string;
+                    } else {
                         this.operator = this.filterOperators.startsWith;
+                    }
                 }
                 break;
             case 'boolean':
@@ -827,8 +831,12 @@ export class Filter implements IAction {
                 this.operator = this.filterOperators.equal;
                 break;
             default:
-                this.operator = this.filterOperators.equal;
-        }
+                if (this.column.filter.operator) {
+                    this.operator = this.column.filter.operator as string;
+                } else {
+                    this.operator = this.filterOperators.equal;
+                }
+            }
     }
 
     private getOperator(value: string): void {
@@ -922,7 +930,7 @@ export class Filter implements IAction {
             } else if (this.filterModule &&
                 (!parentsUntil(target, 'e-popup-wrapper')
                     && (!closest(target, '.e-filter-item.e-menu-item'))
-                    && (!parentsUntil(target, 'e-popup'))) && !datepickerEle) {
+                    && (!parentsUntil(target, 'e-filter-popup'))) && !datepickerEle) {
                 this.filterModule.closeDialog(target);
             }
             if (this.filterSettings.mode === 'Immediate' && target.classList.contains('e-clear-icon')) {
@@ -1001,7 +1009,7 @@ export class Filter implements IAction {
             type: type
             };
         this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
-        let field: string = uid ? this.parent.getColumnByUid(uid).field : fieldName;
+        let field: string = uid ? this.parent.grabColumnByUidFromAllCols(uid).field : fieldName;
         this.addFilteredClass(field);
     }
 
@@ -1009,7 +1017,7 @@ export class Filter implements IAction {
         let filterIconElement: Element;
         if (this.parent.showColumnMenu) {
             filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-columnmenu');
-        } else {
+        } else if (this.parent.getColumnByField(fieldName)) {
             filterIconElement = this.parent.getColumnHeaderByField(fieldName).querySelector('.e-icon-filter');
         }
         if (filterIconElement) {

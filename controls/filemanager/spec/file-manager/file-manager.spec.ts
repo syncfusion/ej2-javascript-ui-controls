@@ -7,6 +7,7 @@ import { DetailsView } from '../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../src/file-manager/actions/toolbar';
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { data1, data10, data11, stringData, accessData1, idData1 } from './data';
+import { FailureEventArgs } from '../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -715,6 +716,51 @@ describe('FileManager control', () => {
                 expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
                 expect(treeLi.length).toEqual(5);
                 expect(largeLi.length).toEqual(5);
+                done();
+            }, 500);
+        });
+    });
+    describe('worst case response Testing', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('Null response', (done: Function) => {
+            let flag: boolean = false;
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                failure: (args: FailureEventArgs) => {
+                    expect((<any>args.error).code).toEqual('406');
+                    flag = false;
+                }
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: null
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(document.getElementById('file_dialog').classList.contains('e-popup-open')).toBe(true);
+                expect(document.getElementById('file_dialog').querySelector('.e-dlg-header').textContent).toEqual("Error");
                 done();
             }, 500);
         });

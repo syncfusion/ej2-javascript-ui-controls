@@ -617,3 +617,51 @@ export type NewRowPosition =
     'Top' |
     /**  Defines row adding position as Top */
     'Bottom';
+
+/** 
+ * Defines the Edit Type of the column
+ * * DefaultEdit
+ * * DropdownEdit 
+ * * BooleanEdit
+ * * DatepickerEdit 
+ * * DatetimepickerEdit
+ * * NumericEdit
+ */
+export type EditType =
+    /**  Defines EditType as DefaultEdit */
+    'defaultEdit' |
+    /**  Defines EditMode as Dropdownedit */
+    'dropDownEdit' |
+    /**  Defines EditMode as Booleanedit */
+    'booleanEdit' |
+    /**  Defines EditMode as Datepickeredit */
+    'datePickerEdit' |
+    /**  Defines EditType as Datetimepickeredit */
+    'dateTimePickerEdit' |
+    /**  Defines EditMode as Numericedit */
+    'numericEdit' ;
+
+/**
+ * Defines the Column Type
+ * * String
+ * * Number 
+ * * Boolean
+ * * Date 
+ * * DateTime
+ * * checkBox
+ */
+export type ColumnType =
+    /**  Defines ColumnType as Null */
+    'none' |
+    /**  Defines ColumnType as String */
+    'string' |
+    /**  Defines ColumnType as Number */
+    'number' |
+    /**  Defines ColumnType as Boolean */
+    'boolean' |
+    /**  Defines ColumnType as Date */
+    'date' |
+    /**  Defines ColumnType as DateTime */
+    'dateTime' |
+    /**  Defines ColumnType as checkBox */
+    'checkBox';

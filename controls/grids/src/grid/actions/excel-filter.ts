@@ -339,6 +339,7 @@ export class ExcelFilter extends CheckBoxFilter {
         if (Browser.isDevice && window.innerWidth < 440) {
             this.dlgObj.element.style.width = '90%';
         }
+        this.parent.notify(events.beforeCustomFilterOpen, { column: column, dialog: this.dialogObj });
         this.dlgObj.show();
         this.parent.applyBiggerTheme(this.dlgObj.element.parentElement);
     }

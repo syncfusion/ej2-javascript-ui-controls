@@ -4,19 +4,20 @@ import { ConnectorModel, OrthogonalSegmentModel } from '../objects/connector-mod
 import { Point } from '../primitives/point';
 import { CommandHandler } from './command-manager';
 import { Rect } from '../primitives/rect';
-import { intersect3 } from '../utility/diagram-util';
+import { intersect3, cloneBlazorObject } from '../utility/diagram-util';
 import { cloneObject } from '../utility/base-util';
 import { HistoryEntry } from '../diagram/history';
 import { Direction, DiagramEvent } from './../enum/enum';
 import { contains } from './actions';
-import { SelectorModel } from './selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { MouseEventArgs } from './event-handlers';
 import { getOppositeDirection } from '../utility/connector';
 import { StraightSegment, BezierSegment, OrthogonalSegment } from '../objects/connector';
 import { ToolBase } from './tool';
 import { Corners } from '../core/elements/diagram-element';
 import { Segment } from './scroller';
-import { ISegmentCollectionChangeEventArgs } from '../objects/interface/IElement';
+import { ISegmentCollectionChangeEventArgs, IBlazorSegmentCollectionChangeEventArgs } from '../objects/interface/IElement';
+import { isBlazor } from '@syncfusion/ej2-base';
 
 /**
  * Multiple segments editing for Connector
@@ -73,7 +74,7 @@ export class ConnectorEditing extends ToolBase {
             if (args.source && (args.source as SelectorModel).connectors) {
                 connector = (args.source as SelectorModel).connectors[0];
             }
-            if ((this.inAction  && this.selectedSegment !== undefined && this.endPoint !== undefined) && (diffX !== 0 || diffY !== 0)) {
+            if ((this.inAction && this.selectedSegment !== undefined && this.endPoint !== undefined) && (diffX !== 0 || diffY !== 0)) {
                 if (this.endPoint === 'OrthoThumb') {
                     this.blocked = !this.dragOrthogonalSegment(
                         connector, this.selectedSegment as OrthogonalSegment, this.currentPosition, this.segmentIndex);
@@ -144,6 +145,12 @@ export class ConnectorEditing extends ToolBase {
             let args: ISegmentCollectionChangeEventArgs = {
                 element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
             };
+            if (isBlazor()) {
+                args = {
+                    element: cloneBlazorObject(connector), removeSegments: cloneBlazorObject(removeSegments) as OrthogonalSegmentModel[],
+                    type: 'Removal', cancel: args.cancel
+                };
+            }
             this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
             if (!args.cancel) {
                 let last: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
@@ -176,12 +183,22 @@ export class ConnectorEditing extends ToolBase {
         let first: OrthogonalSegment = connector.segments[index - 1] as OrthogonalSegment;
         let last: OrthogonalSegment = connector.segments[index + 2] as OrthogonalSegment;
         let next: OrthogonalSegment = connector.segments[index + 1] as OrthogonalSegment;
-        let removeSegments: OrthogonalSegmentModel[]; let args: ISegmentCollectionChangeEventArgs;
+        let removeSegments: OrthogonalSegmentModel[]; let args: ISegmentCollectionChangeEventArgs|IBlazorSegmentCollectionChangeEventArgs;
         if (next.length || next.length === 0) {
             removeSegments = connector.segments.slice(index, 2);
             args = {
                 element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
             };
+            args = {
+                element: cloneBlazorObject(connector), removeSegments: cloneBlazorObject(removeSegments) as OrthogonalSegmentModel[],
+                type: 'Removal', cancel: false
+            };
+            if (isBlazor()) {
+                args = {
+                    element: cloneBlazorObject(connector), removeSegments: cloneBlazorObject(removeSegments) as OrthogonalSegmentModel[],
+                    type: 'Removal', cancel: false
+                };
+            }
             this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
             if (!args.cancel) {
                 connector.segments.splice(index, 2);
@@ -198,6 +215,11 @@ export class ConnectorEditing extends ToolBase {
             args = {
                 element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
             };
+            if (isBlazor()) {
+                args = {
+                    element: connector, removeSegments: removeSegments, type: 'Removal', cancel: false
+                };
+            }
             this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
             if (!args.cancel) {
                 connector.segments.splice(index + 1, 1);
@@ -336,6 +358,12 @@ export class ConnectorEditing extends ToolBase {
         let args: ISegmentCollectionChangeEventArgs = {
             element: obj, addSegments: segments, type: 'Addition', cancel: false
         };
+        if (isBlazor()) {
+            args = {
+                addSegments: cloneBlazorObject(segments) as OrthogonalSegmentModel[], type: 'Addition',
+                cancel: args.cancel, element: cloneBlazorObject(obj),
+            };
+        }
         this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
         if (!args.cancel) {
             obj.segments = segments.concat(obj.segments);
@@ -379,9 +407,15 @@ export class ConnectorEditing extends ToolBase {
             segments.push(insertseg);
 
         }
-        let args: ISegmentCollectionChangeEventArgs = {
+        let args: ISegmentCollectionChangeEventArgs|IBlazorSegmentCollectionChangeEventArgs = {
             element: obj, addSegments: segments, type: 'Addition', cancel: false
         };
+        if (isBlazor()) {
+            args = {
+                element: cloneBlazorObject(obj), addSegments: cloneBlazorObject(segments) as OrthogonalSegmentModel[], type: 'Addition',
+                cancel: args.cancel
+            };
+        }
         this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
         if (!args.cancel) {
 
@@ -452,8 +486,19 @@ export class ConnectorEditing extends ToolBase {
         let args: ISegmentCollectionChangeEventArgs = {
             element: connector, addSegments: segments, type: 'Addition', cancel: false
         };
-        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args);
-        if (!args.cancel) {
+        let args1: ISegmentCollectionChangeEventArgs | IBlazorSegmentCollectionChangeEventArgs;
+        args1 = {
+            element: cloneBlazorObject(connector), addSegments: cloneBlazorObject(segments) as OrthogonalSegmentModel[],
+            type: 'Addition', cancel: args.cancel
+        };
+        if (isBlazor()) {
+            args1 = {
+                element: cloneBlazorObject(connector), addSegments: cloneBlazorObject(segments) as OrthogonalSegmentModel[],
+                type: 'Addition', cancel: args.cancel
+            };
+        }
+        this.commandHandler.triggerEvent(DiagramEvent.segmentCollectionChange, args1);
+        if (!args1.cancel) {
             connector.segments = connector.segments.concat(segments);
             index = index + segmentIndex;
         } else {

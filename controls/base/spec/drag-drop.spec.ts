@@ -40,6 +40,9 @@ export function getEventObject(eventType: string, eventName: string): Object {
     return returnObject;
 }
 describe('draggable', () => {
+    beforeAll(() => {
+        delete window['Blazor'];
+    });
     describe('Initialize of draggable', () => {
         let instance: Draggable;
         let eventlist: any;

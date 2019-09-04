@@ -930,6 +930,7 @@ function getTooltipThemeColor(theme) {
  * @private
  */
 function measureText(text, font) {
+    let breakText = text || ''; // For avoid NuLL value
     let htmlObject = document.getElementById('chartmeasuretext');
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'chartmeasuretext' });
@@ -944,7 +945,7 @@ function measureText(text, font) {
         }
         text = textArray.join(' ');
     }
-    htmlObject.innerHTML = text;
+    htmlObject.innerHTML = (breakText.indexOf('<br>') > -1) ? breakText : text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
@@ -1355,7 +1356,7 @@ let Tooltip = class Tooltip extends Component {
                 cancel: false, name: 'tooltipRender', tooltip: this
             };
             this.trigger('tooltipRender', argsData);
-            let markerSide = this.renderTooltipElement(this.areaBounds, this.location, this.availableSize);
+            let markerSide = this.renderTooltipElement(this.areaBounds, this.location);
             this.drawMarker(markerSide.isBottom, markerSide.isRight, this.markerSize);
         }
         else {
@@ -1372,10 +1373,7 @@ let Tooltip = class Tooltip extends Component {
         this.textElements = [];
         if (!this.template || this.shared) {
             // SVG element for tooltip
-            let svgObject = document.getElementById(this.element.id + '_tooltip_svg');
-            if (!svgObject) {
-                svgObject = this.renderer.createSvg({ id: this.element.id + '_svg' });
-            }
+            let svgObject = this.renderer.createSvg({ id: this.element.id + '_svg' });
             this.element.appendChild(svgObject);
             // Group to hold text and path.
             let groupElement = document.getElementById(this.element.id + '_group');
@@ -1410,9 +1408,8 @@ let Tooltip = class Tooltip extends Component {
         }
         groupElement.appendChild(markerGroup);
     }
-    renderTooltipElement(areaBounds, location, availableSize) {
-        let elementId = (this.template !== null) ? this.element.id : this.element.id + '_group';
-        let tooltipDiv = getElement(elementId);
+    renderTooltipElement(areaBounds, location) {
+        let tooltipDiv = getElement(this.element.id);
         let arrowLocation = new TooltipLocation(0, 0);
         let tipLocation = new TooltipLocation(0, 0);
         let svgObject = getElement(this.element.id + '_svg');
@@ -1466,12 +1463,8 @@ let Tooltip = class Tooltip extends Component {
         else {
             this.updateDiv(tooltipDiv, rect.x, rect.y);
         }
-        let height = availableSize ? (availableSize.height).toString() :
-            (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding)).toString();
-        let width = availableSize ? (availableSize.width).toString() :
-            (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding)).toString();
-        svgObject.setAttribute('height', height);
-        svgObject.setAttribute('width', width);
+        svgObject.setAttribute('height', (rect.height + this.border.width + (!((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
+        svgObject.setAttribute('width', (rect.width + this.border.width + (((!this.inverted)) ? 0 : this.arrowPadding) + 5).toString());
         svgObject.setAttribute('opacity', '1');
         pathElement.setAttribute('d', findDirection(this.rx, this.ry, pointRect, arrowLocation, this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius));
         if (this.enableShadow && this.theme !== 'Bootstrap4') {
@@ -1482,7 +1475,7 @@ let Tooltip = class Tooltip extends Component {
             shadow += '<feOffset dx="3" dy="3" result="offsetblur"/><feComponentTransfer><feFuncA type="linear" slope="0.5"/>';
             shadow += '</feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
             let defElement = this.renderer.createDefs();
-            defElement.setAttribute('id', 'SVG_tooltip_definition');
+            defElement.setAttribute('id', this.element.id + 'SVG_tooltip_definition');
             groupElement.appendChild(defElement);
             defElement.innerHTML = shadow;
         }
@@ -1536,7 +1529,7 @@ let Tooltip = class Tooltip extends Component {
             removeElement(this.element.id + '_text');
             removeElement(this.element.id + '_header_path');
             removeElement(this.element.id + '_trackball_group');
-            removeElement('SVG_tooltip_definition');
+            removeElement(this.element.id + 'SVG_tooltip_definition');
         }
         let options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), 'start', '');
         let parentElement = textElement(options, font, null, groupElement);
@@ -1739,34 +1732,16 @@ let Tooltip = class Tooltip extends Component {
         return new Rect(location.x, location.y, width, height);
     }
     animateTooltipDiv(tooltipDiv, rect) {
-        let transform;
-        let translate;
-        let x;
-        let y;
-        if (this.template !== null) {
-            x = parseFloat(tooltipDiv.style.left);
-            y = parseFloat(tooltipDiv.style.top);
-        }
-        else {
-            transform = tooltipDiv.getAttribute('transform');
-            translate = transform.split(',');
-            x = parseFloat(translate[0].replace('translate(', ''));
-            y = parseFloat(translate[1]);
-        }
+        let x = parseFloat(tooltipDiv.style.left);
+        let y = parseFloat(tooltipDiv.style.top);
         let currenDiff;
         new Animation({}).animate(tooltipDiv, {
             duration: 300,
             progress: (args) => {
                 currenDiff = (args.timeStamp / args.duration);
                 tooltipDiv.style.animation = null;
-                if (this.template !== null) {
-                    tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
-                    tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
-                }
-                else {
-                    tooltipDiv.setAttribute('transform', 'translate(' + (x + currenDiff * (rect.x - x)) + ',' +
-                        (y + currenDiff * (rect.y - y)) + ')');
-                }
+                tooltipDiv.style.left = (x + currenDiff * (rect.x - x)) + 'px';
+                tooltipDiv.style.top = (y + currenDiff * (rect.y - y)) + 'px';
             },
             end: (model) => {
                 this.updateDiv(tooltipDiv, rect.x, rect.y);
@@ -1775,14 +1750,8 @@ let Tooltip = class Tooltip extends Component {
         });
     }
     updateDiv(tooltipDiv, x, y) {
-        if (this.template !== null) {
-            tooltipDiv.style.position = 'absolute';
-            tooltipDiv.style.left = x + 'px';
-            tooltipDiv.style.top = y + 'px';
-        }
-        else {
-            tooltipDiv.setAttribute('transform', 'translate(' + x + ',' + y + ')');
-        }
+        tooltipDiv.style.left = x + 'px';
+        tooltipDiv.style.top = y + 'px';
     }
     updateTemplateFn() {
         if (this.template) {

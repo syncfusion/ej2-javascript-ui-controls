@@ -1,4 +1,4 @@
-import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Base, ChildProperty, Complex, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, blazorTemplates, closest, compareElementParent, compile, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isBlazor, isNullOrUndefined, isVisible, merge, prepend, remove, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 
@@ -1844,10 +1844,14 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.updateBlazorTemplates(true);
     };
     ListView.prototype.resetBlazorTemplates = function () {
+        // tslint:disable-next-line:no-any
+        var templateCollection = blazorTemplates;
         if (this.template) {
+            templateCollection[this.LISTVIEW_TEMPLATE_ID] = [];
             resetBlazorTemplate(this.LISTVIEW_TEMPLATE_ID, LISTVIEW_TEMPLATE_PROPERTY);
         }
         if (this.groupTemplate) {
+            templateCollection[this.LISTVIEW_GROUPTEMPLATE_ID] = [];
             resetBlazorTemplate(this.LISTVIEW_GROUPTEMPLATE_ID, LISTVIEW_GROUPTEMPLATE_PROPERTY);
         }
         if (this.headerTemplate) {

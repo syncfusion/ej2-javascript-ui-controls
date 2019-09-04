@@ -12,7 +12,7 @@ import { DiagramNativeElement } from '../../../src/diagram/core/elements/native-
 import { TextElement } from '../../../src/diagram/core/elements/text-element';
 import { Native, NodeConstraints, accessibilityElement, HtmlModel, Ruler, ComplexHierarchicalTree } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel } from '../../../src/diagram/index';
+import { SnapConstraints, PointPort, Annotation, IconShapes, Decorator, PortVisibility, ConnectorModel, PointModel, PortConstraints, AnnotationConstraints, ConnectorConstraints } from '../../../src/diagram/index';
 import { PointPortModel } from '../../../src/diagram/objects/port-model';
 import { IconShape } from '../../../src/diagram/objects/icon';
 import { DiagramHtmlElement } from '../../../src/diagram/core/elements/html-element';
@@ -1638,4 +1638,135 @@ describe('Diagram Control', () => {
         });
 
 });
+
+describe('node default connector default check', () => {
+    let diagram: Diagram; let ele: HTMLElement;
+
+    beforeAll((): void => {
+        ele = createElement('div', { id: 'diagramNodeZindexDefault' });
+        document.body.appendChild(ele);
+        let nodes: NodeModel[] = [
+            {
+                id: 'node1', offsetX: 300, offsetY: 300, annotations: [{ id: 'node1', offset: { x: 0, y: 0 } }, { id: 'node2' }],
+                ports: [{ id: 'port1', visibility: PortVisibility.Visible, offset: { x: 1, y: 0 } }, { id: 'port2', offset: { x: 0, y: 1 }, visibility: PortVisibility.Visible }]
+            },
+            {
+                id: 'node2122', offsetX: 100, offsetY: 100, annotations: [{ id: 'node2', offset: { x: 0, y: 0 } }, { id: 'node211' }],
+                ports: [{ id: 'po1rt1', visibility: PortVisibility.Visible, offset: { x: 1, y: 0 } }, { id: 'po1rt2', offset: { x: 0, y: 1 }, visibility: PortVisibility.Visible }]
+            },
+        ];
+        let connectors: ConnectorModel[] = [
+            {
+                id: 'connector1',
+                sourcePoint: { x: 100, y: 100 },
+                targetPoint: { x: 200, y: 200 },
+                annotations:[{id:'s',offset:0},{id:'ss'}]
+            },
+            {
+                id: 'connector2',
+                sourcePoint: { x: 300, y: 100 },
+                targetPoint: { x: 400, y: 200 },
+                annotations:[{id:'ssss'}]
+            },]
+
+        diagram = new Diagram({
+            width: '100%', height: 900, nodes: nodes,
+            connectors: connectors,
+            connectorDefaults:{ 
+                annotations: [{ content: 'ss', style: { fill: 'red' }, constraints: AnnotationConstraints.Interaction }, { content: 'aaa', style: { fill: 'blue' } }],
+                type: 'Bezier',
+                constraints :ConnectorConstraints.Select,
+                style: { strokeColor: 'red' },
+                 targetDecorator: {
+                    style: { fill: 'blue' },
+                    pivot: { x: 0, y: 0.5 }
+                } ,
+                sourceDecorator: {
+                    style: { fill: 'yellow' },
+                    shape: 'Arrow',
+                    pivot: { x: 0, y: 0.5 }
+                }
+            },
+            nodeDefaults: { width: 50,
+                offsetX: 100, offsetY: 100,
+                constraints: NodeConstraints.Default & ~NodeConstraints.Rotate, borderWidth: 4, height: 50, rotateAngle: 30, maxWidth: 200, backgroundColor: 'red', borderColor: "yellow", shape: { type: 'Basic', shape: 'Heptagon' }, style: { fill: '#D5EDED', strokeColor: '#7DCFC9', strokeWidth: 1 },
+                    ports: [{ style: { fill: 'gray' }, constraints: PortConstraints.Drag }, { style: { fill: 'yellow' }, constraints: PortConstraints.Draw }],
+                    annotations: [{ content: 'ss', style: { fill: 'red' }, constraints: AnnotationConstraints.Interaction }, { content: 'aaa', style: { fill: 'blue' } }] },
+        });
+        diagram.appendTo('#diagramNodeZindexDefault');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('check node default and connector default', (done: Function) => {
+        let nodeelement = document.getElementById('node2122_groupElement')
+        let nodeElementValue = document.getElementById(diagram.nodes[1].id)
+        let nodeBG = document.getElementById(diagram.nodes[1].id+'_content')
+        let nodeannotation = document.getElementById(diagram.nodes[1].id+'_node2')
+        let nodeTextAnnotation = document.getElementById(diagram.nodes[1].id+'_node2_text')
+        let element = document.getElementById('node2122_node211')
+        let portelement = document.getElementById('node2122_po1rt1');
+        expect(nodeElementValue.getAttribute('stroke')=== 'yellow'&&nodeBG.getAttribute('fill')==='#D5EDED'&&
+        nodeannotation.getAttribute('fill')==='red'
+        &&(nodeTextAnnotation.children[0].childNodes[0] as any).data === 'ss'&&element.getAttribute('fill')==='blue'
+        &&portelement.getAttribute('d') === 'M0,0 L12,0 L12,12 L0,12 Z '
+        &&portelement.getAttribute('fill') === 'gray'
+        ).toBe(true)
+        nodeElementValue = document.getElementById(diagram.nodes[0].id)
+         nodeBG = document.getElementById(diagram.nodes[0].id+'_content')
+         nodeannotation = document.getElementById(diagram.nodes[0].id+'_node1')
+        nodeTextAnnotation = document.getElementById(diagram.nodes[0].id + '_node1_text')
+        element = document.getElementById('node1_node1')
+        portelement = document.getElementById('node1_port1');
+        nodeelement = document.getElementById('node1_groupElement')
+        expect(nodeElementValue.getAttribute('stroke') === 'yellow' && nodeBG.getAttribute('fill') === '#D5EDED' && nodeannotation.getAttribute('fill') === 'red'
+            && (nodeTextAnnotation.children[0].childNodes[0] as any).data === 'ss' && element.getAttribute('fill') === 'red'
+            && portelement.getAttribute('d') === 'M0,0 L12,0 L12,12 L0,12 Z '
+            && portelement.getAttribute('fill') === 'gray'
+        ).toBe(true)
+        let node: NodeModel = {};
+        node.id = 'group1';
+        node.shape = { type: 'Basic', shape: 'Rectangle', }
+        node.annotations = [{
+            id: 'AGroup1',
+            content: 'Group'
+        }];
+        node.ports = [{
+            id: 'PGroup1', offset: { x: 0.5, y: 0.5 },
+        }];
+        diagram.add(node);
+        nodeelement = document.getElementById('group1_groupElement')
+        let element11 = document.getElementById(diagram.nodes[2].id)
+        let element12 = document.getElementById(diagram.nodes[2].id + '_content')
+        let element13 = document.getElementById(diagram.nodes[2].id + '_AGroup1')
+        let element14 = document.getElementById(diagram.nodes[2].id + '_AGroup1_text')
+        expect(element11.getAttribute('fill') === 'red' && element12.getAttribute('fill') === '#D5EDED' && element13.getAttribute('fill') === 'red' &&
+            (element14.children[0].childNodes[0] as any).data === 'Group').toBe(true)
+        let connectorElement = document.getElementById('connector1_groupElement')
+        let pathElement = document.getElementById(diagram.connectors[0].id + '_path')
+        let srcElement = document.getElementById(diagram.connectors[0].id + '_srcDec')
+        let tarElement = document.getElementById(diagram.connectors[0].id + '_tarDec')
+        expect(pathElement.getAttribute('stroke') === 'red'
+            && srcElement.getAttribute('fill')
+            && tarElement.getAttribute('fill') === 'blue').toBe(true)
+        let sourcePoint = { x: 900, y: 100 };
+        let targetPoint = { x: 1000, y: 200 };
+        let connector: ConnectorModel = { id: 'addconnector', sourcePoint: sourcePoint, targetPoint: targetPoint }
+        diagram.add(connector);
+        pathElement = document.getElementById(diagram.connectors[1].id + '_path')
+        srcElement = document.getElementById(diagram.connectors[1].id + '_srcDec')
+        tarElement = document.getElementById(diagram.connectors[1].id + '_tarDec')
+        connectorElement = document.getElementById('addconnector_groupElement')
+        expect(pathElement.getAttribute('stroke') === 'red'
+            && srcElement.getAttribute('fill')
+            && tarElement.getAttribute('fill') === 'blue').toBe(true)
+            done();
+    });
+
+});
+
+
 });

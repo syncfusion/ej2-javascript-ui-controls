@@ -1,4 +1,5 @@
 import { addClass, Browser, EventHandler, closest, extend, formatUnit, setStyleAttribute, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getElement, isBlazor } from '@syncfusion/ej2-base';
 import { ResizeEventArgs } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import * as util from '../base/util';
@@ -48,50 +49,54 @@ export class Resize extends ActionBase {
             interval: this.actionObj.interval,
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
-        this.parent.trigger(event.resizeStart, resizeArgs);
-        if (resizeArgs.cancel) {
-            return;
-        }
-        this.actionClass('addClass');
-        this.parent.uiStateValues.action = true;
-        this.resizeEdges = {
-            left: resizeTarget.classList.contains(cls.LEFT_RESIZE_HANDLER),
-            right: resizeTarget.classList.contains(cls.RIGHT_RESIZE_HANDLER),
-            top: resizeTarget.classList.contains(cls.TOP_RESIZE_HANDLER),
-            bottom: resizeTarget.classList.contains(cls.BOTTOM_RESIZE_HANDLER)
-        };
-        this.actionObj.groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : 0;
-        let workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
-        this.actionObj.cellWidth = workCell.offsetWidth;
-        this.actionObj.cellHeight = workCell.offsetHeight;
-        let headerRows: string[] = this.parent.activeViewOptions.headerRows.map((row: { [key: string]: Object }) =>
-            row.option as string);
-        if (this.parent.activeView.isTimelineView() && headerRows.length > 0 &&
-            ['Date', 'Hour'].indexOf(headerRows.slice(-1)[0]) < 0) {
-            let tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
-            let noOfDays: number = 0;
-            let tdCollections: HTMLElement[] = [].slice.call(tr.childNodes);
-            tdCollections.forEach((td: HTMLElement) => noOfDays += parseInt(td.getAttribute('colspan'), 10));
-            this.actionObj.cellWidth = tr.offsetWidth / noOfDays;
-            this.actionObj.cellHeight = tr.offsetHeight;
-        }
-        let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
-        this.actionObj.X = pages.pageX;
-        this.actionObj.Y = pages.pageY;
-        this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
-        this.actionObj.interval = resizeArgs.interval;
-        this.actionObj.scroll = resizeArgs.scroll;
-        this.actionObj.start = new Date((eventObj[this.parent.eventFields.startTime] as Date).getTime());
-        this.actionObj.end = new Date((eventObj[this.parent.eventFields.endTime] as Date).getTime());
-        this.actionObj.originalElement = this.getOriginalElement(this.actionObj.element);
-        if (this.parent.currentView === 'Month') {
-            this.daysVariation = -1;
-            this.monthEvent = new MonthEvent(this.parent);
-        }
-        let viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
-        EventHandler.add(document, Browser.touchMoveEvent, this.resizing, this);
-        EventHandler.add(document, Browser.touchEndEvent, this.resizeStop, this);
+        this.parent.trigger(event.resizeStart, resizeArgs, (resizeEventArgs: ResizeEventArgs) => {
+            if (resizeEventArgs.cancel) {
+                return;
+            }
+            if (isBlazor()) {
+                resizeEventArgs.element = getElement(resizeEventArgs.element);
+            }
+            this.actionClass('addClass');
+            this.parent.uiStateValues.action = true;
+            this.resizeEdges = {
+                left: resizeTarget.classList.contains(cls.LEFT_RESIZE_HANDLER),
+                right: resizeTarget.classList.contains(cls.RIGHT_RESIZE_HANDLER),
+                top: resizeTarget.classList.contains(cls.TOP_RESIZE_HANDLER),
+                bottom: resizeTarget.classList.contains(cls.BOTTOM_RESIZE_HANDLER)
+            };
+            this.actionObj.groupIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : 0;
+            let workCell: HTMLElement = this.parent.element.querySelector('.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+            this.actionObj.cellWidth = workCell.offsetWidth;
+            this.actionObj.cellHeight = workCell.offsetHeight;
+            let headerRows: string[] = this.parent.activeViewOptions.headerRows.map((row: { [key: string]: Object }) =>
+                row.option as string);
+            if (this.parent.activeView.isTimelineView() && headerRows.length > 0 &&
+                ['Date', 'Hour'].indexOf(headerRows.slice(-1)[0]) < 0) {
+                let tr: HTMLTableRowElement = this.parent.getContentTable().querySelector('tr') as HTMLTableRowElement;
+                let noOfDays: number = 0;
+                let tdCollections: HTMLElement[] = [].slice.call(tr.childNodes);
+                tdCollections.forEach((td: HTMLElement) => noOfDays += parseInt(td.getAttribute('colspan'), 10));
+                this.actionObj.cellWidth = tr.offsetWidth / noOfDays;
+                this.actionObj.cellHeight = tr.offsetHeight;
+            }
+            let pages: (MouseEvent & TouchEvent) | Touch = this.getPageCoordinates(e);
+            this.actionObj.X = pages.pageX;
+            this.actionObj.Y = pages.pageY;
+            this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
+            this.actionObj.interval = resizeEventArgs.interval;
+            this.actionObj.scroll = resizeEventArgs.scroll;
+            this.actionObj.start = new Date((eventObj[this.parent.eventFields.startTime] as Date).getTime());
+            this.actionObj.end = new Date((eventObj[this.parent.eventFields.endTime] as Date).getTime());
+            this.actionObj.originalElement = this.getOriginalElement(this.actionObj.element);
+            if (this.parent.currentView === 'Month') {
+                this.daysVariation = -1;
+                this.monthEvent = new MonthEvent(this.parent);
+            }
+            let viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
+            EventHandler.add(document, Browser.touchMoveEvent, this.resizing, this);
+            EventHandler.add(document, Browser.touchEndEvent, this.resizeStop, this);
+        });
     }
 
     private resizing(e: MouseEvent & TouchEvent): void {
@@ -202,11 +207,12 @@ export class Resize extends ActionBase {
         this.actionClass('removeClass');
         this.parent.uiStateValues.action = false;
         let resizeArgs: ResizeEventArgs = { cancel: false, data: this.getChangedData(), element: this.actionObj.element, event: e };
-        this.parent.trigger(event.resizeStop, resizeArgs);
-        if (resizeArgs.cancel) {
-            return;
-        }
-        this.saveChangedData(resizeArgs);
+        this.parent.trigger(event.resizeStop, resizeArgs, (resizeEventArgs: ResizeEventArgs) => {
+            if (resizeEventArgs.cancel) {
+                return;
+            }
+            this.saveChangedData(resizeEventArgs);
+        });
     }
 
     private verticalResizing(isTop: boolean): void {
@@ -215,7 +221,11 @@ export class Resize extends ActionBase {
             offsetValue += this.actionObj.clone.offsetHeight;
         }
         let minutes: number = (offsetValue / this.actionObj.cellHeight) * this.actionObj.slotInterval;
-        let resizeTime: Date = util.resetTime(new Date(parseInt(this.actionObj.clone.offsetParent.getAttribute('data-date'), 10)));
+        let element: Element = this.actionObj.clone.offsetParent;
+        if (isNullOrUndefined(element)) {
+            return;
+        }
+        let resizeTime: Date = util.resetTime(new Date(parseInt(element.getAttribute('data-date'), 10)));
         resizeTime.setHours(this.parent.activeView.getStartHour().getHours());
         resizeTime.setMinutes(minutes);
         if (isTop) {

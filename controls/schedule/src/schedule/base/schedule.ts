@@ -43,6 +43,7 @@ import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, Dra
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
 import { ViewsData } from '../base/interface';
 import { ResourceBase } from '../base/resource';
+import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
@@ -373,15 +374,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public hideEmptyAgendaDays: boolean;
-
-    /**
-     * The recurrence validation will be done by default
-     *  When this property is set to `false`, the recurrence validation will be skipped.
-     * @default true
-     */
-    @Property(true)
-    public enableRecurrenceValidation: boolean;
-
     /**
      * Schedule will be assigned with specific timezone, so as to display the events in it accordingly. By default,
      *  Schedule dates are processed with System timezone, as no timezone will be assigned specifically to the Schedule at the initial time.
@@ -482,6 +474,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when multiple cells or events are selected on the Scheduler.
      * @event
      * @blazorproperty 'OnSelect'
+     * @deprecated
      */
     @Event()
     public select: EmitType<SelectEventArgs>;
@@ -544,6 +537,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before the data binds to the scheduler.
      * @event
      * @blazorproperty 'DataBinding'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.DataBindingEventArgs<TValue>
      */
     @Event()
     public dataBinding: EmitType<ReturnType>;
@@ -575,7 +569,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when the dragging of appointment is stopped.
      * @event
      * @blazorproperty 'Dragged'
-     * @deprecated
      */
     @Event()
     public dragStop: EmitType<DragEventArgs>;
@@ -583,7 +576,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when an appointment is started to resize.
      * @event
      * @blazorproperty 'OnResizeStart'
-     * @deprecated
      */
     @Event()
     public resizeStart: EmitType<ResizeEventArgs>;
@@ -599,7 +591,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when the resizing of appointment is stopped.
      * @event
      * @blazorproperty 'Resized'
-     * @deprecated
      */
     @Event()
     public resizeStop: EmitType<ResizeEventArgs>;
@@ -607,6 +598,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers once the event data is bound to the scheduler.
      * @event
      * @blazorproperty 'DataBound'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.DataBoundEventArgs<TValue>
      */
     @Event()
     public dataBound: EmitType<ReturnType>;
@@ -1800,7 +1792,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             startTime: startTime,
             endTime: endTime,
             isAllDay: this.isAllDayCell(firstTd),
-            element: tdCol as HTMLElement | HTMLElement[]
+            element: isBlazor() ? firstTd as HTMLElement : tdCol as HTMLElement | HTMLElement[]
         };
         let groupIndex: string = firstTd.getAttribute('data-group-index');
         if (!isNullOrUndefined(groupIndex)) {
@@ -1997,6 +1989,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Update the recurrence editor instance from custom editor template.
+     * @method updateRecurrenceEditor
+     */
+    public updateRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
+        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
+    }
+
+    /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
      * @method getCurrentViewEvents
      * @returns {Object[]} Returns the collection of events.
@@ -2108,28 +2108,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.activeEventData.event = data as { [key: string]: Object };
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
-    }
-
-    /**
-     * To manually close the event editor window
-     * @method closeEditor
-     * @return {void}
-     */
-    public closeEditor(): void {
-        if (this.eventWindow) {
-            this.eventWindow.dialogClose();
-        }
-    }
-
-    /**
-     * To manually close the quick info popup
-     * @method closeQuickInfoPopup
-     * @return {void}
-     */
-    public closeQuickInfoPopup(): void {
-        if (this.quickPopup) {
-            this.quickPopup.quickPopupHide(true);
-        }
     }
 
     /**

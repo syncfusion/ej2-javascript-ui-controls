@@ -1,7 +1,7 @@
 /**
  * @hidden
  */
-export type AnnotationType =
+export type PdfAnnotationType =
     /**
      * Rectangle - Represents the annotation type as Rectangle.
      */

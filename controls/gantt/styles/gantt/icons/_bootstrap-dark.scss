@@ -76,14 +76,6 @@
     .e-add-below::before {
       content: '\e659';
     }
-
-    .e-csvexport::before {
-      content: '\e241';
-    }
-
-    .e-excelexport::before {
-      content: '\e242';
-    }
   }
 
   #{&}.e-gantt.e-device {

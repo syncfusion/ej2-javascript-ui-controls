@@ -11,7 +11,8 @@ import { GanttTreeGrid } from './tree-grid';
 import { Toolbar } from '../actions/toolbar';
 import { IGanttData, IWorkingTimeRange, IQueryTaskbarInfoEventArgs, BeforeTooltipRenderEventArgs, IDependencyEventArgs } from './interface';
 import { ITaskbarEditedEventArgs, IParent, ITaskData, ISplitterResizedEventArgs, ICollapsingEventArgs, CellEditArgs } from './interface';
-import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs, ZoomEventArgs } from './interface';
+import { IConnectorLineObject, IValidateArgs, IValidateMode, ITaskAddedEventArgs, IKeyPressedEventArgs } from './interface';
+import { ZoomEventArgs, IActionBeginEventArgs, CellSelectingEventArgs } from './interface';
 import { ITimeSpanEventArgs, ZoomTimelineSettings, QueryCellInfoEventArgs, RowDataBoundEventArgs, RowSelectEventArgs } from './interface';
 import { TaskFieldsModel, TimelineSettingsModel, SplitterSettingsModel, SortSettings, SortSettingsModel } from '../models/models';
 import { EventMarkerModel, AddDialogFieldSettingsModel, EditDialogFieldSettingsModel, EditSettingsModel } from '../models/models';
@@ -28,11 +29,10 @@ import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column, ColumnModel } from '../models/column';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
-import { CellSelectEventArgs, CellSelectingEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
+import { CellSelectEventArgs, ISelectedCell, ContextMenuItemModel } from '@syncfusion/ej2-grids';
 import { RowDeselectEventArgs, CellDeselectEventArgs, IIndex, FailureEventArgs } from '@syncfusion/ej2-grids';
 import { HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
-import { ColumnMenuItemModel, ExcelQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { ExcelExportProperties, ExcelExportCompleteArgs, ExcelHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { ColumnMenuItemModel } from '@syncfusion/ej2-grids';
 import { Filter } from '../actions/filter';
 import { PageEventArgs, FilterEventArgs, SortEventArgs, ResizeArgs, ColumnDragEventArgs, getActualProperties } from '@syncfusion/ej2-grids';
 import { RenderDayCellEventArgs } from '@syncfusion/ej2-calendars';
@@ -45,7 +45,6 @@ import { TooltipSettingsModel } from '../models/tooltip-settings-model';
 import { Tooltip } from '../renderer/tooltip';
 import { ToolbarItem, ColumnMenuItem, RowPosition, DurationUnit, SortDirection, GridLine, ContextMenuItem } from './enum';
 import { Selection } from '../actions/selection';
-import { ExcelExport } from '../actions/excel-export';
 import { DayMarkers } from '../actions/day-markers';
 import { ContextMenu } from './../actions/context-menu';
 import { RowSelectingEventArgs } from './interface';
@@ -201,10 +200,6 @@ export class Gantt extends Component<HTMLElement>
      * The `selectionModule` is used to manipulate selection operation in Gantt.
      */
     public selectionModule: Selection;
-    /**
-     * The `excelExportModule` is used to exporting Gantt data in excel format.
-     */
-    public excelExportModule: ExcelExport;
     /**
      * The `dayMarkersModule` is used to manipulate event markers operation in Gantt.
      */
@@ -412,8 +407,6 @@ export class Gantt extends Component<HTMLElement>
      * * ZoomIn: ZoomIn the Gantt control.
      * * ZoomOut: ZoomOut the Gantt control.
      * * ZoomToFit: Display the all tasks within the viewable Gantt chart.
-     * * ExcelExport: To export in Excel format
-     * * CsvExport : To export in CSV format
      * @default null
      */
     @Property()
@@ -606,16 +599,6 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public allowFiltering: boolean;
-
-   /**
-    * If `allowExcelExport` set to true, then it will allow the user to export Gantt to Excel file.
-    *
-    * > Check the [`ExcelExport`](./excel-exporting.html) to configure exporting document.
-    * @default false
-    */
-    @Property(false)
-    public allowExcelExport: boolean;
-
     /**
      * If `allowReordering` is set to true, Gantt columns can be reordered. 
      * Reordering can be done by drag and drop of a particular column from one index to another index.  
@@ -688,38 +671,6 @@ export class Gantt extends Component<HTMLElement>
     @Event()
     public queryTaskbarInfo: EmitType<IQueryTaskbarInfoEventArgs>;
 
-    /**
-     * Triggers before Gantt data is exported to Excel file.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public beforeExcelExport: EmitType<Object>;
-    /**
-     * Triggers after Gantt data is exported to Excel file.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public excelExportComplete: EmitType<ExcelExportCompleteArgs>;
-    /** 
-     * Triggers before exporting each cell to Excel file.
-     * You can also customize the Excel cells.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public excelQueryCellInfo: EmitType<ExcelQueryCellInfoEventArgs>;
-
-    /**
-     * Triggers before exporting each header cell to Excel file.
-     * You can also customize the Excel cells.
-     * @deprecated
-     * @event
-     */
-    @Event()
-    public excelHeaderQueryCellInfo: EmitType<ExcelHeaderQueryCellInfoEventArgs>;
-
     /** 
      * This will be triggered before the row getting collapsed.
      * @event
@@ -750,7 +701,8 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc., starts.
-     * @deprecated
+     * @blazorproperty 'OnActionBegin'
+     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionBeginArgs<TValue>
      * @event
      */
     /* tslint:disable-next-line */
@@ -759,7 +711,8 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers when Gantt actions such as sorting, filtering, searching etc. are completed.
      * @event
-     * @deprecated
+     * @blazorproperty 'OnActionComplete'
+     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ActionCompleteArgs<TValue>
      */
     @Event()
     public actionComplete: EmitType<FilterEventArgs | SortEventArgs | ITaskAddedEventArgs | IKeyPressedEventArgs | ZoomEventArgs>;
@@ -802,20 +755,6 @@ export class Gantt extends Component<HTMLElement>
      */
     @Event()
     public load: EmitType<Object>;
-
-    /** 
-     * Triggers when the component is created.
-     * @event
-     */
-    @Event()
-    public created: EmitType<Object>;
-
-    /** 
-     * Triggers when the component is destroyed.
-     * @event
-     */
-    @Event()
-    public destroyed: EmitType<Object>;
 
     /** 
      * This event will be triggered when taskbar was in dragging state.
@@ -944,7 +883,6 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Triggers before any cell selection occurs.
      * @event
-     * @blazorType Syncfusion.EJ2.Blazor.Grids.CellSelectingEventArgs<TValue>
      */
     @Event()
     public cellSelecting: EmitType<CellSelectingEventArgs>;
@@ -1029,8 +967,9 @@ export class Gantt extends Component<HTMLElement>
 
     /** 
      * Triggers when click on context menu.
-     * @deprecated
      * @event
+     * @blazorproperty 'ContextMenuItemClicked'
+     * @blazorType Syncfusion.EJ2.Blazor.Gantt.ContextMenuClickEventArgs<TValue>
      */
     @Event()
     public contextMenuClick: EmitType<CMenuClickEventArgs>;
@@ -1297,6 +1236,7 @@ export class Gantt extends Component<HTMLElement>
         this.dateValidationModule = new DateProcessor(this);
         this.predecessorModule = new Dependency(this);
         this.connectorLineModule = new ConnectorLine(this);
+        this.connectorLineEditModule = new ConnectorLineEdit(this);
         this.splitterModule = new Splitter(this);
         this.tooltipModule = new Tooltip(this);
         this.keyConfig = {
@@ -1427,7 +1367,13 @@ export class Gantt extends Component<HTMLElement>
             }
             this.renderTreeGrid();
             this.wireEvents();
-            this.notify('initPredessorDialog', {});
+            if (this.taskFields.dependency && this.isInPredecessorValidation) {
+                let dialogElement: HTMLElement = createElement('div', {
+                    id: this.element.id + '_dialogValidationRule',
+                });
+                this.element.appendChild(dialogElement);
+                this.predecessorModule.renderValidationDialog();
+            }
         }
         this.splitterModule.updateSplitterPosition();
         if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
@@ -1742,7 +1688,6 @@ export class Gantt extends Component<HTMLElement>
             this.notify('tree-grid-created', {});
             this.createGanttPopUpElement();
             this.hideSpinner();
-            setValue('isGanttCreated', true, args);
             this.renderComplete();
         }
         if (this.taskFields.dependency) {
@@ -2020,12 +1965,6 @@ export class Gantt extends Component<HTMLElement>
                 args: [this]
             });
         }
-        if (this.allowExcelExport) {
-            modules.push({
-                member: 'excelExport',
-                args: [this]
-            });
-        }
         if (this.allowResizing) {
             modules.push({
                 member: 'resize',
@@ -2259,8 +2198,6 @@ export class Gantt extends Component<HTMLElement>
             zoomIn: 'Zoom in',
             zoomOut: 'Zoom out',
             zoomToFit: 'Zoom to fit',
-            excelExport: 'Excel export',
-            csvExport: 'Csv export',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',
@@ -2404,36 +2341,6 @@ export class Gantt extends Component<HTMLElement>
         );
     }
 
-    /**
-     * Export Gantt data to Excel file(.xlsx).
-     * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the Gantt.
-     * @param  {boolean} isMultipleExport - Define to enable multiple export.
-     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
-     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @return {Promise<any>}
-     */
-    public excelExport(
-        excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
-        /* tslint:disable-next-line:no-any */
-        workbook?: any, isBlob?: boolean): Promise<any> {
-        return this.excelExportModule ? this.treeGrid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
-    }
-
-    /**
-     * Export Gantt data to CSV file.
-     * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the Gantt.
-     * @param  {boolean} isMultipleExport - Define to enable multiple export.
-     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
-     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
-     * @return {Promise<any>}
-     */
-    public csvExport(
-        excelExportProperties?: ExcelExportProperties,
-        /* tslint:disable-next-line:no-any */
-        isMultipleExport?: boolean, workbook?: any, isBlob?: boolean): Promise<any> {
-        return this.excelExportModule ? this.treeGrid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
-    }
-
     /** 
      * Clears all the filtered columns in Gantt.
      * @return {void} 
@@ -2498,6 +2405,10 @@ export class Gantt extends Component<HTMLElement>
      * @public
      */
     public updateProjectDates(startDate: Date, endDate: Date, isTimelineRoundOff: boolean): void {
+        if (isBlazor()) {
+            startDate = this.dataOperation.getDateFromFormat(startDate);
+            endDate = this.dataOperation.getDateFromFormat(endDate);
+        }
         this.timelineModule.totalTimelineWidth = 0;
         this.cloneProjectStartDate = startDate;
         this.cloneProjectEndDate = endDate;
@@ -2523,7 +2434,7 @@ export class Gantt extends Component<HTMLElement>
      * @return {void}
      * @public
      */
-    public reorderColumns(fromFName: string, toFName: string): void {
+    public reorderColumns(fromFName: string | string[], toFName: string): void {
         this.treeGrid.reorderColumns(fromFName, toFName);
     }
     /**
@@ -2817,7 +2728,7 @@ export class Gantt extends Component<HTMLElement>
      * @return {void}
      * @public
      */
-    public openEditDialog(taskId: number): void {
+    public openEditDialog(taskId?: number): void {
         if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
             this.editModule.dialogModule.openEditDialog(taskId);
         }
@@ -2998,19 +2909,6 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Method to column from given column collection based on field value
-     * @param field 
-     * @param columns 
-     * @private
-     */
-    public getColumnByField(field: string, columns: ColumnModel[]): ColumnModel {
-        let column: ColumnModel[] = columns.filter((value: ColumnModel) => {
-            return value.field === field;
-        });
-        return column.length > 0 ? column[0] : null;
-    }
-
-    /**
      * Gets the Gantt columns.
      * @return {ColumnModel[]}
      * @public
@@ -3066,12 +2964,21 @@ export class Gantt extends Component<HTMLElement>
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
      */
-    public selectCells(cellIndex: IIndex, isToggle?: boolean): void {
+    public selectCell(cellIndex: IIndex, isToggle?: boolean): void {
         if (this.selectionModule) {
             this.selectionModule.selectCell(cellIndex, isToggle);
         }
     }
-
+    /**
+     * Selects a collection of cells by row and column indexes. 
+     * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
+     * @return {void}
+     */
+    public selectCells(rowCellIndexes: ISelectedCell[]): void {
+        if (this.selectionModule) {
+            this.selectionModule.selectCells(rowCellIndexes);
+        }
+    }
     /**
      * Selects a row by given index. 
      * @param  {number} index - Defines the row index. 
@@ -3093,5 +3000,38 @@ export class Gantt extends Component<HTMLElement>
         if (this.selectionModule) {
             this.selectionModule.selectRows(records);
         }
+    }
+    /**
+     * Method to delete record.
+     * @param {number | string } taskDetail - Defines the details of data to delete. 
+     * @public
+     */
+    public deleteRecord(taskDetail: number | string | number[] | string[] | IGanttData | IGanttData[]): void {
+        if (this.editModule) {
+           this.editModule.deleteRecord(taskDetail);
+        }
+    }
+    /**
+     * Enables or disables ToolBar items.
+     * @param {string[]} items - Defines the collection of itemID of ToolBar items.
+     * @param {boolean} isEnable - Defines the items to be enabled or disabled.
+     * @return {void}
+     */
+    public enableItems(items: string[], isEnable: boolean): void {
+      if (this.toolbarModule) {
+          this.toolbarModule.enableItems(items, isEnable);
+      }
+    }
+    /**
+     * @param args
+     * @hidden
+     */
+    public updateDataArgs(args: ITaskAddedEventArgs | IActionBeginEventArgs): ITaskAddedEventArgs | IActionBeginEventArgs  {
+        if (!Array.isArray(args.data)) {
+            let customData: IGanttData[] = [];
+            customData.push(args.data);
+            setValue('data', customData, args);
+        }
+        return args;
     }
 }

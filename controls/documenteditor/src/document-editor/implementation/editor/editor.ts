@@ -161,8 +161,11 @@ export class Editor {
             }
         }
         let paragraph: ParagraphWidget = new ParagraphWidget();
+        let insertFormat: WCharacterFormat = new WCharacterFormat();
+        let selectionFormat: WCharacterFormat = this.copyInsertFormat(insertFormat, false);
         let line: LineWidget = new LineWidget(paragraph);
         let fieldBegin: FieldElementBox = new FieldElementBox(0);
+        fieldBegin.characterFormat.mergeFormat(selectionFormat);
         line.children.push(fieldBegin);
         let fieldCodeSpan: TextElementBox = new TextElementBox();
         fieldCodeSpan.text = code;
@@ -173,8 +176,10 @@ export class Editor {
         line.children.push(fieldSeparator);
         let fieldResultSpan: TextElementBox = new TextElementBox();
         fieldResultSpan.text = result;
+        fieldResultSpan.characterFormat.mergeFormat(selectionFormat);
         line.children.push(fieldResultSpan);
         let fieldEnd: FieldElementBox = new FieldElementBox(1);
+        fieldEnd.characterFormat.mergeFormat(selectionFormat);
         fieldEnd.fieldSeparator = fieldSeparator;
         fieldEnd.fieldBegin = fieldBegin;
         fieldBegin.fieldEnd = fieldEnd;

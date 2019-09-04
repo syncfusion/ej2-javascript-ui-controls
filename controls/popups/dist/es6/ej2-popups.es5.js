@@ -556,7 +556,6 @@ var Popup = /** @__PURE__ @class */ (function (_super) {
         this.fixedParent = false;
         this.setEnableRtl();
         this.setContent();
-        this.wireEvents();
     };
     Popup.prototype.wireEvents = function () {
         if (Browser.isDevice) {
@@ -919,6 +918,7 @@ var Popup = /** @__PURE__ @class */ (function (_super) {
      */
     Popup.prototype.show = function (animationOptions, relativeElement) {
         var _this = this;
+        this.wireEvents();
         if (this.zIndex === 1000 || !isNullOrUndefined(relativeElement)) {
             var zIndexElement = (isNullOrUndefined(relativeElement)) ? this.element : relativeElement;
             this.zIndex = getZindexPartial(zIndexElement);
@@ -976,6 +976,7 @@ var Popup = /** @__PURE__ @class */ (function (_super) {
             addClass([this.element], CLASSNAMES.CLOSE);
             this.trigger('close');
         }
+        this.unwireEvents();
     };
     /**
      * Gets scrollable parent elements for the given element.
@@ -1665,6 +1666,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 this.getMinHeight();
             }
         }
+        this.renderComplete();
     };
     /**
      * Initialize the event handler
@@ -1674,6 +1676,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.headerContent = null;
         this.allowMaxHeight = true;
+        this.preventVisibility = true;
         var classArray = [];
         for (var j = 0; j < this.element.classList.length; j++) {
             if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
@@ -2375,7 +2378,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     if (this.isModal) {
                         this.setOverlayZindex(this.zIndex);
                     }
-                    this.calculatezIndex = false;
+                    if (this.element.style.zIndex !== this.zIndex.toString()) {
+                        this.calculatezIndex = false;
+                    }
                     break;
                 case 'cssClass':
                     this.setCSSClass(oldProp.cssClass);
@@ -2614,6 +2619,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     var prevOnChange = _this.isProtectedOnChange;
                     _this.isProtectedOnChange = true;
                     _this.visible = true;
+                    _this.preventVisibility = true;
                     _this.isProtectedOnChange = prevOnChange;
                 }
             });
@@ -2628,7 +2634,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (!this.element.classList.contains(ROOT)) {
             return;
         }
-        if (this.visible) {
+        if (this.preventVisibility) {
             var eventArgs = isBlazor() ? {
                 cancel: false,
                 isInteraction: event ? true : false,
@@ -2662,6 +2668,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     var prevOnChange = _this.isProtectedOnChange;
                     _this.isProtectedOnChange = true;
                     _this.visible = false;
+                    _this.preventVisibility = false;
                     _this.isProtectedOnChange = prevOnChange;
                 }
             });
@@ -3131,7 +3138,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.popupObj.dataBind();
     };
     Tooltip.prototype.openPopupHandler = function () {
-        if (this.needTemplateReposition()) {
+        if (this.needTemplateReposition() && !this.mouseTrail) {
             this.reposition(this.findTarget());
         }
         this.trigger('afterOpen', this.tooltipEventArgs);
@@ -3286,13 +3293,16 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             if (this.content instanceof HTMLElement) {
                 tooltipContent.appendChild(this.content);
             }
-            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') !== 0) {
+            else if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') < 0) {
                 tooltipContent.innerHTML = this.content;
             }
             else {
                 var templateFunction = compile(this.content);
                 append(templateFunction({}, null, null, this.element.id + 'content'), tooltipContent);
-                updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                if (typeof this.content === 'string' && this.content.indexOf('<div>Blazor') >= 0) {
+                    this.isBlazorTemplate = true;
+                    updateBlazorTemplate(this.element.id + 'content', 'Content', this);
+                }
             }
         }
         else {
@@ -3437,7 +3447,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
                 _this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: _this.tooltipEle } :
                     { type: null, cancel: false, target: target, event: null, element: _this.tooltipEle };
                 var this$_1 = _this;
-                if (_this.needTemplateReposition()) {
+                if (_this.needTemplateReposition() && !_this.mouseTrail) {
                     _this.tooltipEle.style.display = 'none';
                 }
                 _this.trigger('beforeOpen', _this.tooltipEventArgs, function (observedArgs) {
@@ -3477,7 +3487,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         var tooltip = this;
         return !isNullOrUndefined(tooltip.viewContainerRef)
             && typeof tooltip.viewContainerRef !== 'string'
-            || isBlazor();
+            || isBlazor() && this.isBlazorTemplate;
     };
     Tooltip.prototype.checkCollision = function (target, x, y) {
         var elePos = {
@@ -3697,6 +3707,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     Tooltip.prototype.render = function () {
         this.initialize();
         this.wireEvents(this.opensOn);
+        this.renderComplete();
     };
     /**
      * Initializes the values of private members.

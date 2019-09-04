@@ -475,6 +475,10 @@ export class LayoutPanel {
                 cancel: false, name: itemRendering, treemap: this.treemap,
                 currentItem: item, RenderItems: this.renderItems, options: item['options']
             };
+            if (this.treemap.isBlazor) {
+                const { treemap, RenderItems, ...blazorEventArgs} : IItemRenderingEventArgs = eventArgs;
+                eventArgs = blazorEventArgs;
+            }
             this.treemap.trigger(itemRendering, eventArgs, (observedArgs: IItemRenderingEventArgs) => {
                 if (!observedArgs.cancel) {
                     rectPath = ' M ' + rect.x + ' ' + rect.y + ' L ' + (rect.x + rect.width) + ' ' + rect.y +
@@ -489,7 +493,7 @@ export class LayoutPanel {
                         );
                     }
                     if (template) {
-                        templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item);
+                        templateEle = this.renderTemplate(secondaryEle, groupId, rect, templatePosition, template, item, isLeafItem);
                         templateGroup.appendChild(templateEle);
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
@@ -500,15 +504,8 @@ export class LayoutPanel {
         }
         if (templateGroup.childNodes.length > 0) {
             secondaryEle.appendChild(templateGroup);
-            if (leaf.labelTemplate) {
-                for (let i: number = 0; i < templateGroup.childElementCount; i++) {
-                    updateBlazorTemplate(templateGroup.children[i].id, 'LabelTemplate');
-                }
-            } else {
-                for (let j: number = 0; j < templateGroup.childElementCount; j++) {
-                    updateBlazorTemplate(templateGroup.children[j].id, 'HeaderTemplate');
-                }
-            }
+            updateBlazorTemplate(this.treemap.element.id + '_HeaderTemplate', 'HeaderTemplate', levels[levels.length - 1]);
+            updateBlazorTemplate(this.treemap.element.id + '_LabelTemplate', 'LabelTemplate', leaf);
         }
         this.treemap.svgObject.appendChild(this.layoutGroup);
     }
@@ -622,11 +619,13 @@ export class LayoutPanel {
     }
 
     private renderTemplate(
-        secondaryEle: HTMLElement, groupId: string, rect: Rect, position: LabelPosition, template: string, item: Object
+        secondaryEle: HTMLElement, groupId: string, rect: Rect, position: LabelPosition, template: string, item: Object, isLeafItem: boolean
     ): HTMLElement {
         let templateElement: HTMLCollection; let labelEle: HTMLElement;
         let templateSize: Size; let templateFn: Function;
         let templateLocation: Location;
+        let templateId: string = isLeafItem ? groupId + '_LabelTemplate' : groupId + '_HeaderTemplate';
+        let baseTemplateId: string = isLeafItem ? '_LabelTemplate' : '_HeaderTemplate';
         if (isNullOrUndefined(template['prototype'])) {
             let keys: Object[] = Object.keys(item['data']);
             for (let i: number = 0; i < keys.length; i++) {
@@ -634,8 +633,8 @@ export class LayoutPanel {
             }
         }
         templateFn = getTemplateFunction(template);
-        templateElement = templateFn(item['data'], this.treemap);
-        labelEle = convertElement(templateElement, groupId + '_Template', item['data']);
+        templateElement = templateFn(item['data'], null, null, this.treemap.element.id + baseTemplateId, false);
+        labelEle = convertElement(templateElement, templateId, item['data']);
         templateSize = measureElement(labelEle, secondaryEle);
         templateLocation = findLabelLocation(rect, position, templateSize, 'Template', this.treemap);
         labelEle.style.left = templateLocation.x + 'px';

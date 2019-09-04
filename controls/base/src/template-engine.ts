@@ -75,11 +75,13 @@ export function compile(templateString: string, helper?: Object): (data: Object 
     };
 }
 
-export function updateBlazorTemplate(templateId?: string, templateName?: string, comp?: object, isEmpty?: boolean): void {
+export function updateBlazorTemplate(
+    templateId?: string, templateName?: string, comp?: object,
+    isEmpty?: boolean, callBack?: Function): void {
     let blazor: string = 'Blazor';
     if (window && window[blazor]) {
         let ejsIntrop: string = 'ejsInterop';
-        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp);
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
         if (isEmpty !== false) {
             blazorTemplates[templateId] = [];
         }

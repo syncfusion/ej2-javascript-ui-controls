@@ -10,7 +10,7 @@ import { Thickness } from '../../../src/diagram/core/appearance';
 import { DiagramModel, Container, NodeConstraints } from '../../../src/diagram/index';
 import { Size, NodeModel } from '../../../src/index';
 import { MouseEvents } from '../interaction/mouseevents.spec';
-import { Selector } from '../../../src/diagram/interaction/selector';
+import { Selector } from '../../../src/diagram/objects/node';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Node, ChildContainer, Html } from '../../../src/diagram/objects/node';

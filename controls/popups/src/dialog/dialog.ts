@@ -220,6 +220,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     private closeArgs: Object;
     private calculatezIndex: boolean;
     private allowMaxHeight: boolean;
+    private preventVisibility: boolean;
     /**
      * Specifies the value that can be displayed in dialog's content area.
      * It can be information, list, or other HTML elements.
@@ -482,6 +483,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.getMinHeight();
             }
         }
+        this.renderComplete();
     }
     /**
      * Initialize the event handler
@@ -490,6 +492,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     protected preRender(): void {
         this.headerContent = null;
         this.allowMaxHeight = true;
+        this.preventVisibility = true;
         let classArray: string[] = [];
         for (let j: number = 0; j < this.element.classList.length; j++) {
             if (!isNullOrUndefined(this.element.classList[j].match('e-control')) ||
@@ -1156,8 +1159,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'visible':
                     this.visible ? this.show() : this.hide(); break;
                 case 'isModal':
-                    this.updateIsModal();
-                    break;
+                    this.updateIsModal(); break;
                 case 'height':
                     setStyleAttribute(this.element, { 'height': formatUnit(newProp.height) }); break;
                 case 'width':
@@ -1165,8 +1167,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'zIndex':
                     this.popupObj.zIndex = this.zIndex;
                     if (this.isModal) { this.setOverlayZindex(this.zIndex); }
-                    this.calculatezIndex = false;
-                    break;
+                    if (this.element.style.zIndex !== this.zIndex.toString()) {
+                        this.calculatezIndex = false;
+                    } break;
                 case 'cssClass':
                     this.setCSSClass(oldProp.cssClass); break;
                 case 'buttons':
@@ -1396,6 +1399,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     let prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
                     this.visible = true;
+                    this.preventVisibility = true;
                     this.isProtectedOnChange = prevOnChange;
                  }
              });
@@ -1407,7 +1411,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      */
     public hide(event?: Event): void {
         if (!this.element.classList.contains(ROOT)) { return; }
-        if (this.visible) {
+        if (this.preventVisibility) {
             let eventArgs: BeforeCloseEventArgs = isBlazor() ? {
                 cancel: false,
                 isInteraction: event ? true : false,
@@ -1440,6 +1444,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     let prevOnChange: boolean = this.isProtectedOnChange;
                     this.isProtectedOnChange = true;
                     this.visible = false;
+                    this.preventVisibility = false;
                     this.isProtectedOnChange = prevOnChange;
                 }
             });

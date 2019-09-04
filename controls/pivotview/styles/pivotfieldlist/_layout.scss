@@ -280,28 +280,17 @@
     }
 
     .e-pivot-all-field-title,
-    .e-pivot-field-name-title,
-    .e-pivot-formula-title,
-    .e-olap-hierarchy-title,
-    .e-olap-format-title,
-    .e-olap-member-title {
+    .e-pivot-formula-title {
       color: $field-list-default-header-font-color;
       font-size: $field-list-header-font-size;
       margin-top: 15px;
-      overflow: hidden;
       padding: $pivot-calculated-header-padding;
       padding-bottom: 0;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .e-treeview {
       .e-sibling {
         display: none;
-      }
-
-      .e-list-selected {
-        opacity: .5;
       }
     }
 
@@ -313,11 +302,6 @@
 
         .e-list-text {
           font-family: $field-list-font-family;
-        }
-
-        .e-list-icon {
-          color: $field-list-tree-icon-color;
-          margin: 0;
         }
       }
 
@@ -384,16 +368,6 @@
         padding: 5px;
         width: 24px;
       }
-
-      .e-treeview ul {
-        margin-right: 0;
-
-        li {
-          .e-text-content {
-            padding: 0 24px 0 0;
-          }
-        }
-      }
     }
 
     // sass-lint:disable-all
@@ -430,10 +404,6 @@
       padding: $pivot-calculated-formula-font-padding;
       resize: none;
       width: 100%;
-
-      &.e-copy-drop {
-        cursor: copy;
-      }
     }
 
     .e-list-parent .e-list-text {
@@ -453,185 +423,6 @@
       margin-top: 5px;
       overflow: auto;
     }
-
-    // sass-lint:disable-all
-    &.e-olap-calc-dialog-div {
-      min-width: 550px;
-
-      .e-pivot-calc-outer-div {
-        display: flex;
-
-        .e-olap-field-tree-div {
-          height: $olap-tree-wrapper-height;
-          width: 50%;
-
-          .e-pivot-treeview-outer {
-            height: 100%;
-            margin-top: 0;
-            overflow: hidden;
-
-            .e-pivot-treeview-outer-div {
-              display: inline-block;
-              height: $olap-tree-outer-div-height;
-              overflow: auto;
-              width: 100%;
-            }
-
-            .e-treeview {
-              display: inline-table;
-              height: 100%;
-              width: 100%;
-
-              ul {
-                .e-fullrow {
-                  cursor: move;
-                }
-
-                .e-list-text {
-                  margin-bottom: 0; 
-                  overflow: unset;
-                  width: 100%;
-                }
-
-                .e-list-item .e-text-content {
-                  height: 30px;
-                  margin: 0;
-                  padding: 0 0 0 24px;
-                }
-
-                .e-list-icon {
-                  cursor: auto;
-                  font-size: $field-list-icon-size;
-                  width: auto;
-
-                  &.e-edit {
-                    cursor: pointer;
-                    padding: 7px !important;
-                  }
-
-                  &.e-edited {
-                    cursor: pointer;
-                    padding: 7px !important;
-                  }
-                }
-
-                .e-list-item div.e-icons {
-                  padding: 0;
-                  height: auto;
-                }
-              }
-
-              &.e-rtl {
-                ul {
-                  .e-list-icon {
-                    transform: rotateX(0deg) rotateY(180deg);
-                  }
-
-                  .e-list-item .e-text-content {
-                    padding: 0 24px 0 0;
-                  }
-                } 
-              }
-            }
-
-            .e-treeview ul:first-child {
-              padding-left: 10px;
-              padding-right: 10px;
-            }
-
-            .e-pivot-all-field-title {
-              color: $field-list-default-header-font-color;
-              flex: auto;
-              margin-top: 0;
-              padding-bottom: $pivot-calculated-header-padding;
-              padding-left: $field-list-header-padding;
-              padding-right: $field-list-header-padding;
-            }
-
-            .e-pivot-all-field-title-wrapper {
-              background-color: $field-list-header-background-color;
-              color: $field-list-default-header-font-color;
-              display: flex;
-              font-size: $field-list-header-font-size;
-
-              // .e-edit,
-              // .e-edited {
-              //   cursor: pointer;
-              //   padding: 7px !important;
-
-              //   &:hover {
-              //     font-weight: bold;
-              //   }
-    
-              //   &:focus {
-              //     font-weight: bold;
-              //   }
-              // }
-
-              .e-info {
-                padding: 7px !important;
-
-                &:hover {
-                  color: $field-list-active-color;
-                }
-              }
-            }
-          }
-        }
-
-        .e-olap-calculated-div {
-          flex: auto;
-          margin-left: 18px;
-
-          .e-pivot-formula {
-            height: 100px;
-          }
-
-          .e-olap-calc-custom-format-div {
-            margin-top: 15px;
-          }
-
-          .e-pivot-formula-title,
-          .e-pivot-field-name-title,
-          .e-olap-hierarchy-title,
-          .e-olap-format-title,
-          .e-olap-member-title {
-            padding-left: 0;
-            padding-right: 0; 
-          }
-
-          .e-pivot-field-name-title {
-            margin-top: 0;
-            padding-top: 0;
-          }
-        }
-      }
-
-      &.e-dialog {
-        max-height: 700px !important;
-
-        .e-calc-clear-btn {
-          float: left;
-          margin: 0;
-        }
-      }
-
-      &.e-rtl {
-        .e-pivot-calc-outer-div {
-           .e-olap-calculated-div {
-            margin-left: 0;
-            margin-right: 18px;
-          }
-        }
-
-        &.e-dialog {
-          .e-calc-clear-btn {
-            float: right;
-          }
-        }
-      }
-    }
-    // sass-lint:enable-all
   }
 
   .e-bigger#{&}.e-pivot-calc-dialog-div,
@@ -641,11 +432,7 @@
     min-width: 310px;
 
     .e-pivot-all-field-title,
-    .e-pivot-field-name-title,
-    .e-pivot-formula-title,
-    .e-olap-hierarchy-title,
-    .e-olap-format-title,
-    .e-olap-member-title {
+    .e-pivot-formula-title {
       font-size: $field-list-bigger-header-font-size;
       padding: $pivot-calculated-bigger-header-padding;
       padding-bottom: 0;
@@ -669,51 +456,6 @@
       padding-right: $pivot-dialog-footer-paddingright;
       padding-top: $pivot-dialog-footer-padding;
     }
-
-    // sass-lint:disable-all
-    &.e-olap-calc-dialog-div {
-      min-width: 580px;
-
-      .e-pivot-calc-outer-div {
-        .e-olap-field-tree-div {
-          height: $olap-bigger-tree-wrapper-height;
-
-          .e-pivot-treeview-outer {
-            .e-pivot-treeview-outer-div {
-              height: $olap-bigger-tree-outer-div-height;
-            }
-
-            .e-pivot-all-field-title {
-              padding-bottom: $pivot-calculated-bigger-header-padding;
-            }
-
-            .e-pivot-all-field-title-wrapper {
-              font-size: $field-list-bigger-header-font-size;
-            }
-
-            .e-treeview ul {
-              .e-list-icon {
-                font-size: $field-list-bigger-icon-size;
-              }
-            }
-          }
-        }
-
-        .e-olap-calculated-div {
-          margin-left: 24px;
-        }
-      }
-
-      &.e-rtl {
-        .e-pivot-calc-outer-div {
-           .e-olap-calculated-div {
-            margin-left: 0;
-            margin-right: 24px;
-          }
-        }
-      }
-    }
-    // sass-lint:enable-all
   }
 
   #{&}.e-pivotfieldlist-wrapper {
@@ -741,7 +483,6 @@
 
         .e-clear-filter-button {
           float: left;
-          margin: 0;
 
           &.e-disable {
             display: none;
@@ -822,26 +563,11 @@
             width: 100%;
           }
 
-          .e-member-editor-container-outer-div {
-            display: inline-block;
+          .e-member-editor-container {
             height: $field-list-member-filter-list-height;
             max-width: 400px;
             overflow: auto;
-            width: 100%;
-          }
-
-          .e-member-editor-container {
-            display: inline-table;
-            height: 100%;
-            width: 100%;
-
-            &.e-rtl {
-              ul {
-                .e-list-icon {
-                  transform: rotateX(0deg) rotateY(180deg);
-                }
-              }
-            }
+            overflow-x: hidden;
           }
 
           .e-select-all-wrapper ul,
@@ -853,34 +579,15 @@
               .e-list-text {
                 font-family: $field-list-font-family;
               }
-
-              .e-list-icon {
-                margin: 0;
-              }
-
-              // sass-lint:disable-all
-              .e-calc-measure-icon,
-              .e-calc-dimension-icon,
-              .e-attributeCDB-icon,
-              .e-hierarchyCDB-icon,
-              .e-level-members,
-              .e-namedSetCDB-icon,
-              .e-measure-icon,
-              .e-kpiGoal-icon,
-              .e-kpiStatus-icon,
-              .e-kpiTrend-icon,
-              .e-kpiValue-icon {
-                margin-left: 10px;
-              }
             }
           }
-          
+
           .e-disable {
-            display: none !important;
+            display: none;
           }
         }
 
-        
+        // sass-lint:disable-all
         .e-filter-tab-wrapper {
           border: none;
           // sass-lint:enable-all
@@ -915,7 +622,7 @@
         .e-excelfilter {
           padding-top: 20px;
 
-          .e-member-editor-container-outer-div {
+          .e-member-editor-container {
             height: $field-list-excel-member-filter-height;
           }
         }
@@ -993,63 +700,6 @@
           }
         }
       }
-
-      &.e-olap-editor-dialog {
-        .e-member-editor-wrapper {
-          .e-select-all-wrapper ul,
-          .e-member-editor-container ul {
-            margin-left: 0;
-          }
-
-          .e-treeview ul:first-child {
-            padding-left: 10px;
-            padding-right: 10px;
-          }
-
-          .e-editor-search-wrapper {
-            display: flex;
-
-            .e-level-drop {
-              margin: 0 5px;
-
-              .e-caret {
-                display: none;
-              }
-
-              li .e-disabled {
-                opacity: .5;
-                pointer-events: none;
-              }
-            }
-          }
-        }
-
-        // sass-lint:disable-all
-        &.e-rtl {
-          .e-member-editor-wrapper {
-            ul {
-              margin-right: 0;
-
-              li {
-                .e-calc-measure-icon,
-                .e-calc-dimension-icon,
-                .e-attributeCDB-icon,
-                .e-hierarchyCDB-icon,
-                .e-level-members,
-                .e-namedSetCDB-icon,
-                .e-measure-icon,
-                .e-kpiGoal-icon,
-                .e-kpiStatus-icon,
-                .e-kpiTrend-icon,
-                .e-kpiValue-icon {
-                  margin-left: 0;
-                  margin-right: 10px;
-                }
-              }
-            }
-          }
-        }
-      }
     }
 
     .e-member-editor-dialog {
@@ -1068,7 +718,7 @@
     .e-adaptive-field-list-dialog {
       .e-dlg-content {
         .e-member-editor-wrapper {
-          .e-member-editor-container-outer-div {
+          .e-member-editor-container {
             height: $field-list-member-field-list-height;
           }
         }
@@ -1103,57 +753,20 @@
         font-size: $field-list-drag-clone-font-size;
         line-height: 1em;
         width: 100%;
-        // @if ($field-list-skin == 'bootstrap4') {
-        //   line-height: 0;
-        // }
+        @if ($field-list-skin == 'bootstrap4') {
+          line-height: 0;
+        }
       }
     }
 
     .e-text-content>.e-icons,
-    .e-checkbox-wrapper,
-    .e-list-icon {
+    .e-checkbox-wrapper {
       display: none;
     }
 
     &.e-rtl {
       .e-text-content {
         padding-right: 0;
-      }
-    }
-
-    &.e-drag-restrict {
-      .e-text-content {
-        padding-left: 24px;
-
-        .e-list-text {
-          padding: 0;
-        }
-      }
-
-      .e-no-drop {
-        display: inline-block !important;
-        line-height: 0em;
-        @if ($field-list-skin == 'bootstrap4') {
-          color: $field-list-drag-clone-text-color;
-          opacity: 0.7;
-        }
-
-        &::before {
-          float: left;
-          font-size: $field-list-drag-clone-font-size;
-          padding: 5px 0;
-        }
-      }
-
-      &.e-rtl {
-        .e-text-content {
-          padding-left: 0;
-          padding-right: 24px;
-
-          .e-icons {
-            transform: rotateY(180deg);
-          }
-        }
       }
     }
   }
@@ -1175,18 +788,10 @@
     .e-text-content {
       .e-list-text {
         line-height: 1.5em;
-        // @if ($field-list-skin == 'bootstrap4') {
-        //   line-height: 0;
-        // }
-      }
-    }
-
-    &.e-drag-restrict {
-      .e-no-drop {
-          &::before {
-           padding: 4px;
-          }
+        @if ($field-list-skin == 'bootstrap4') {
+          line-height: 0;
         }
+      }
     }
   }
 
@@ -1254,8 +859,8 @@
   .e-bigger#{&}.e-pivotfieldlist-wrapper,
   .e-bigger .e-pivotfieldlist-wrapper,
   .e-bigger.e-pivotfieldlist-wrapper {
-    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div ,
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div {
+    .e-adaptive-field-list-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container ,
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container {
       height: $field-list-member-filter-list-bigger-height;
     }
 
@@ -1265,44 +870,12 @@
         @if ($field-list-skin == 'bootstrap4') {
           margin-left: -30px;
         }
-
-        li {
-          .e-calc-measure-icon,
-          .e-calc-dimension-icon,
-          .e-attributeCDB-icon,
-          .e-hierarchyCDB-icon,
-          .e-level-members,
-          .e-namedSetCDB-icon,
-          .e-measure-icon,
-          .e-kpiGoal-icon,
-          .e-kpiStatus-icon,
-          .e-kpiTrend-icon,
-          .e-kpiValue-icon {
-            margin-left: 10px;
-          }
-        }
       }
 
       &.e-rtl {
         .e-member-editor-wrapper ul {
           @if ($field-list-skin == 'bootstrap4') {
             margin-right: -30px;
-          }
-
-          li {
-            .e-calc-measure-icon,
-            .e-calc-dimension-icon,
-            .e-attributeCDB-icon,
-            .e-hierarchyCDB-icon,
-            .e-level-members,
-            .e-namedSetCDB-icon,
-            .e-measure-icon,
-            .e-kpiGoal-icon,
-            .e-kpiStatus-icon,
-            .e-kpiTrend-icon,
-            .e-kpiValue-icon {
-              margin-left: 10px;
-            }
           }
         }
       }
@@ -1337,7 +910,7 @@
         }
 
         .e-excelfilter {
-          .e-member-editor-container-outer-div {
+          .e-member-editor-container {
             height: $field-list-excel-member-filter-bigger-height;
           }
         }

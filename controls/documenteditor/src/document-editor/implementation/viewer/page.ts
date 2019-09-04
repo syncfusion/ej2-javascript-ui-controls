@@ -3308,7 +3308,8 @@ export class LineWidget implements IWidget {
      */
     public isFirstLine(): boolean {
         let index: number = this.indexInOwner;
-        if (index > -1 && this.paragraph.previousSplitWidget === undefined) {
+        // tslint:disable-next-line:max-line-length
+        if (index > -1 && (this.paragraph.previousSplitWidget === undefined || (this.paragraph.previousSplitWidget instanceof ParagraphWidget && (this.paragraph.previousSplitWidget as ParagraphWidget).isEndsWithPageBreak))) {
             return index === 0;
         }
         return false;

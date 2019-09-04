@@ -8,6 +8,7 @@ import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select, closest } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19, doubleClickEmpty } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
+import { FileSelectEventArgs } from '../../../src';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -400,6 +401,9 @@ describe('FileManager control Grid view', () => {
             expect(nli[4].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
         });
         it('mouse double click on file', () => {
+            feObj.fileSelect = (args:FileSelectEventArgs) =>{
+                expect(args.isInteracted).toEqual(true);
+            }
             let li: any = document.getElementById('file_grid').querySelectorAll('.e-row');
             expect(li[4].getAttribute('aria-selected')).toEqual(null);
             expect(li[4].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
@@ -683,6 +687,65 @@ describe('FileManager control Grid view', () => {
             expect(document.getElementById('file_grid').classList.contains('e-resize-lines')).toEqual(true);
             expect(document.getElementById('file_grid').querySelectorAll('.e-rhandler').length).toBe(4);
             done();
+        });
+    });
+    describe('Grid viewtesting', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                toolbarSettings: {
+                    visible: true,
+                    items: ['NewFolder']
+                },
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                done();
+            }, 500);
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('script error for grid header sort with no sortby in toolbar', () => {
+            expect(feObj.sortOrder).toBe('Ascending');
+            (<HTMLElement>document.getElementsByClassName('e-sortfilterdiv')[2]).click();
+            expect(feObj.sortOrder).toBe( 'Descending');
         });
     });
     describe('Grid viewtesting', () => {

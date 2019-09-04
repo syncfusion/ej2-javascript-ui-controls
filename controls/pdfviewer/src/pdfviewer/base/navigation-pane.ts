@@ -1,7 +1,7 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context, } from '@syncfusion/ej2-navigations';
+import { Toolbar as Tool, ItemModel, ClickEventArgs, MenuItemModel, ContextMenu as Context } from '@syncfusion/ej2-navigations';
 import { Tooltip, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import { Toast, ToastCloseArgs } from '@syncfusion/ej2-notifications';
 
@@ -36,7 +36,10 @@ export class NavigationPane {
     private isThumbnail: boolean = false;
     private annotationInputElement: HTMLElement;
     private annotationContextMenu: MenuItemModel[] = [];
-    private annotationMenuObj: Context;
+    /**
+     * @private
+     */
+    public annotationMenuObj: Context;
     /**
      * @private
      */

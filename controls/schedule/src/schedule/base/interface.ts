@@ -9,7 +9,10 @@ import { ResourcesModel, ViewsModel } from '../models/models';
 export interface ActionEventArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
-    /** Defines the type of the event. */
+    /**
+     * Defines the type of the event.
+     * @blazorType UIMouseEventArgs
+     */
     event?: Event;
     /** Defines the cancel option for the action taking place. */
     cancel: boolean;
@@ -48,11 +51,16 @@ export interface CellClickEventArgs extends BaseEventArgs {
     endTime: Date;
     /** Returns true or false, based on whether the clicked cell is all-day or not. */
     isAllDay: boolean;
-    /** Returns the single or collection of HTML element(s). */
+    /** Returns the single or collection of HTML element(s).
+     * @blazorType DOM
+     */
     element?: HTMLElement | HTMLElement[];
     /** Defines the cancel option. */
     cancel?: boolean;
-    /** Defines the type of the event. */
+    /**
+     * Defines the type of the event.
+     * @blazorType UIMouseEventArgs
+     */
     event?: Event;
     /** Returns the group index of the cell. */
     groupIndex?: number;
@@ -61,7 +69,10 @@ export interface CellClickEventArgs extends BaseEventArgs {
 export interface SelectEventArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
-    /** Defines the type of the event. */
+    /** 
+     * Defines the type of the event.
+     * @blazorType UIMouseEventArgs
+     */
     event?: Event;
     /** Returns the single or collection of HTML element(s). */
     element: HTMLElement | HTMLElement[];
@@ -79,7 +90,10 @@ export interface SelectEventArgs extends BaseEventArgs {
 }
 
 export interface EventClickArgs extends BaseEventArgs {
-    /** Returns the date of the event. */
+    /**
+     * Returns the date of the event.
+     * @deprecated
+     */
     date?: Date;
     /**
      * Returns a single or collection of selected or clicked events.
@@ -113,7 +127,7 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
      * Returns the cell or event data.
      * @isGenericType true
      */
-    data: Object;
+    data?: Object;
     /** Returns the target element on which the popup is getting opened. */
     target?: Element;
     /** Returns the popup wrapper element. */
@@ -161,7 +175,10 @@ export interface ResizeEventArgs extends BaseEventArgs {
      * @isGenericType true
      */
     data: { [key: string]: Object };
-    /** Returns the mouse event. */
+    /**
+     * Returns the mouse event.
+     * @blazorType UIMouseEventArgs
+     */
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
@@ -185,7 +202,10 @@ export interface DragEventArgs extends BaseEventArgs {
      * @isGenericType true
      */
     data: { [key: string]: Object };
-    /** Returns the mouse event. */
+     /**
+      * Returns the mouse event.
+      * @blazorType UIMouseEventArgs
+      */
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
@@ -337,6 +357,7 @@ export interface NotifyEventArgs {
     cssProperties?: ScrollCss;
     processedData?: Object[];
     isPreventScrollUpdate?: boolean;
+    scrollPosition?: { [key: string]: Object };
 }
 
 /** @hidden */
@@ -489,4 +510,24 @@ export interface ViewsData extends ViewsModel {
     cellTemplateName?: string;
     resourceHeaderTemplateName?: string;
     eventTemplateName?: string;
+}
+
+export interface DataBoundEventArgs extends BaseEventArgs {
+    /**
+     * Returns the result data.
+     * @isGenericType true
+     */
+    result: Object[];
+    count?: number;
+    aggregates?: Object;
+}
+
+export interface DataBindingEventArgs extends BaseEventArgs {
+    /**
+     * Returns the result data.
+     * @isGenericType true
+     */
+    result: Object[];
+    count?: number;
+    aggregates?: Object;
 }

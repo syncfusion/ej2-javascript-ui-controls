@@ -253,6 +253,7 @@ public reactance: string;
 /**
  *  Specifies the dataSource
  * @default null
+ * @isdatamanager false
  */
 
 @Property(null)

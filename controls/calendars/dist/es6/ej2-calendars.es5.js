@@ -1950,18 +1950,22 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
             _super.prototype.minMaxUpdate.call(this, this.value);
         }
     };
+    Calendar.prototype.generateTodayVal = function (value) {
+        var tempValue = new Date();
+        if (value) {
+            tempValue.setHours(value.getHours());
+            tempValue.setMinutes(value.getMinutes());
+            tempValue.setSeconds(value.getSeconds());
+            tempValue.setMilliseconds(value.getMilliseconds());
+        }
+        else {
+            tempValue = new Date(tempValue.getFullYear(), tempValue.getMonth(), tempValue.getDate(), 0, 0, 0, 0);
+        }
+        return tempValue;
+    };
     Calendar.prototype.todayButtonClick = function () {
         if (this.showTodayButton) {
-            var tempValue = new Date();
-            if (this.value) {
-                tempValue.setHours(this.value.getHours());
-                tempValue.setMinutes(this.value.getMinutes());
-                tempValue.setSeconds(this.value.getSeconds());
-                tempValue.setMilliseconds(this.value.getMilliseconds());
-            }
-            else {
-                tempValue = new Date(tempValue.getFullYear(), tempValue.getMonth(), tempValue.getDate(), 0, 0, 0, 0);
-            }
+            var tempValue = this.generateTodayVal(this.value);
             this.setProperties({ value: tempValue }, true);
             if (this.isMultiSelection) {
                 var copyValues = this.copyValues(this.values);
@@ -3349,8 +3353,25 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.hide(e);
             this.focusOut();
         }
+        else if (closest(target, '.e-datepicker.e-popup-wrapper')) {
+            // Fix for close the popup when select the previously selected value.
+            if (target.classList.contains('e-day')
+                && !isNullOrUndefined(e.target.parentElement)
+                && e.target.parentElement.classList.contains('e-selected')
+                && closest(target, '.e-content')
+                && closest(target, '.e-content').classList.contains('e-' + this.depth.toLowerCase())) {
+                this.hide(e);
+            }
+            else if (closest(target, '.e-footer-container')
+                && target.classList.contains('e-today')
+                && target.classList.contains('e-btn')
+                && +new Date(+this.value) === +_super.prototype.generateTodayVal.call(this, this.value)) {
+                this.hide(e);
+            }
+        }
     };
     DatePicker.prototype.inputKeyActionHandle = function (e) {
+        var clickedView = this.currentView();
         switch (e.action) {
             case 'altUpArrow':
                 this.isAltKeyPressed = false;
@@ -3393,6 +3414,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 break;
             default:
                 this.defaultAction(e);
+                // Fix for close the popup when select the previously selected value.
+                if (e.action === 'select' && clickedView === this.depth) {
+                    this.hide(e);
+                }
         }
     };
     DatePicker.prototype.defaultAction = function (e) {

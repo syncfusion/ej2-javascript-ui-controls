@@ -2760,6 +2760,12 @@ var ChildProperty = /** @__PURE__ @class */ (function () {
      * @returns {void}
      */
     ChildProperty.prototype.saveChanges = function (key, newValue, oldValue) {
+        if (this.controlParent.isRendered && isBlazor()) {
+            var ejsInterop = 'ejsInterop';
+            if (window && window[ejsInterop]) {
+                window[ejsInterop].childSaveChanges.call(this, key, newValue, oldValue);
+            }
+        }
         if (this.controlParent.isProtectedOnChange) {
             return;
         }
@@ -5367,12 +5373,12 @@ var Component = /** @__PURE__ @class */ (function (_super) {
      * It is used to process the post rendering functionalities to a component.
      */
     Component.prototype.renderComplete = function (wrapperElement) {
-        //     if (isBlazor()) {
-        //         let ejsInterop: string = 'ejsInterop';
-        //         // tslint:disable-next-line:no-any
-        //         (window as any)[ejsInterop].renderComplete(this.element, wrapperElement);
-        //     }
-        //     this.isRendered = true;
+        if (isBlazor()) {
+            var ejsInterop = 'ejsInterop';
+            // tslint:disable-next-line:no-any
+            window[ejsInterop].renderComplete(this.element, wrapperElement);
+        }
+        this.isRendered = true;
     };
     /**
      * When invoked, applies the pending property changes immediately to the component.
@@ -5651,6 +5657,8 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         _this.tapHoldTimer = 0;
         _this.externalInitialize = false;
         _this.diffY = 0;
+        _this.parentScrollX = 0;
+        _this.parentScrollY = 0;
         _this.droppables = {};
         _this.bind();
         return _this;
@@ -5689,11 +5697,13 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             _this.initialize(evt, target);
         }, this.tapHoldThreshold);
         EventHandler.add(document, Browser.touchMoveEvent, this.removeTapholdTimer, this);
+        EventHandler.add(document, Browser.touchEndEvent, this.removeTapholdTimer, this);
     };
     /* istanbul ignore next */
     Draggable.prototype.removeTapholdTimer = function () {
         clearTimeout(this.tapHoldTimer);
         EventHandler.remove(document, Browser.touchMoveEvent, this.removeTapholdTimer);
+        EventHandler.remove(document, Browser.touchEndEvent, this.removeTapholdTimer);
     };
     /* istanbul ignore next */
     Draggable.prototype.getScrollableParent = function (element, axis) {
@@ -5703,11 +5713,36 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             return null;
         }
         if (element[scroll[axis]] > element[client[axis]]) {
-            return element;
+            if (axis === 'vertical' ? element.scrollTop > 0 : element.scrollLeft > 0) {
+                if (axis === 'vertical') {
+                    this.parentScrollY = this.parentScrollY +
+                        (this.parentScrollY === 0 ? element.scrollTop : element.scrollTop - this.parentScrollY);
+                }
+                else {
+                    this.parentScrollX = this.parentScrollX +
+                        (this.parentScrollX === 0 ? element.scrollLeft : element.scrollLeft - this.parentScrollX);
+                }
+                if (!isNullOrUndefined(element)) {
+                    return this.getScrollableParent(element.parentNode, axis);
+                }
+                else {
+                    return element;
+                }
+            }
+            else {
+                return this.getScrollableParent(element.parentNode, axis);
+            }
         }
         else {
             return this.getScrollableParent(element.parentNode, axis);
         }
+    };
+    Draggable.prototype.getScrollableValues = function () {
+        this.parentScrollX = 0;
+        this.parentScrollY = 0;
+        var isModalDialog = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
+        var verticalScrollParent = this.getScrollableParent(this.element.parentNode, 'vertical');
+        var horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
     };
     Draggable.prototype.initialize = function (evt, curTarget) {
         this.target = (evt.currentTarget || curTarget);
@@ -5725,17 +5760,15 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
             var pos = this.element.getBoundingClientRect();
-            var isModalDialog = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
-            var parentScrollX = 0;
-            var parentScrollY = 0;
-            if (!isModalDialog) {
-                var verticalScrollParent = this.getScrollableParent(this.element.parentNode, 'vertical');
-                var horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
-                parentScrollX = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
-                parentScrollY = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
+            this.getScrollableValues();
+            if (evt.clientX === evt.pageX) {
+                this.parentScrollX = 0;
             }
-            this.relativeXPosition = intCoord.pageX - (pos.left + parentScrollX);
-            this.relativeYPosition = intCoord.pageY - (pos.top + parentScrollY);
+            if (evt.clientY === evt.pageY) {
+                this.parentScrollY = 0;
+            }
+            this.relativeXPosition = intCoord.pageX - (pos.left + this.parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (pos.top + this.parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);
@@ -5788,7 +5821,14 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             this.parentClientRect = this.calculateParentPosition(dragTargetElement.offsetParent);
             if (this.dragStart) {
                 var curTarget = this.getProperTargetElement(evt);
-                this.trigger('dragStart', { event: evt, element: element, target: curTarget });
+                var args = {
+                    event: evt,
+                    element: element,
+                    target: curTarget,
+                    bindEvents: isBlazor() ? this.bindDragEvents.bind(this) : null,
+                    dragElement: dragTargetElement
+                };
+                this.trigger('dragStart', args);
             }
             if (this.dragArea) {
                 this.setDragArea();
@@ -5802,6 +5842,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
                 this.diffX = this.position.left - this.offset.left;
                 this.diffY = this.position.top - this.offset.top;
             }
+            this.getScrollableValues();
             var posValue = this.getProcessedPositionValue({
                 top: (pos.top - this.diffY) + 'px',
                 left: (pos.left - this.diffX) + 'px'
@@ -5809,15 +5850,20 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
             EventHandler.remove(document, Browser.touchMoveEvent, this.intDragStart);
             EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
-            if (isVisible(dragTargetElement)) {
-                EventHandler.add(document, Browser.touchMoveEvent, this.intDrag, this);
-                EventHandler.add(document, Browser.touchEndEvent, this.intDragStop, this);
-                this.setGlobalDroppables(false, this.element, dragTargetElement);
+            if (!isBlazor()) {
+                this.bindDragEvents(dragTargetElement);
             }
-            else {
-                this.toggleEvents();
-                document.body.classList.remove('e-prevent-select');
-            }
+        }
+    };
+    Draggable.prototype.bindDragEvents = function (dragTargetElement) {
+        if (isVisible(dragTargetElement)) {
+            EventHandler.add(document, Browser.touchMoveEvent, this.intDrag, this);
+            EventHandler.add(document, Browser.touchEndEvent, this.intDragStop, this);
+            this.setGlobalDroppables(false, this.element, dragTargetElement);
+        }
+        else {
+            this.toggleEvents();
+            document.body.classList.remove('e-prevent-select');
         }
     };
     Draggable.prototype.elementInViewport = function (el) {
@@ -5901,7 +5947,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
                     left = this.dragLimit.left;
                 }
                 else if (this.dragLimit.right + window.pageXOffset < dLeft + helperWidth) {
-                    left = this.dragLimit.right - helperWidth;
+                    left = dLeft - (dLeft - this.dragLimit.right) + window.pageXOffset - helperWidth;
                 }
                 else {
                     left = dLeft;
@@ -5914,7 +5960,7 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
                     top = this.dragLimit.top;
                 }
                 else if (this.dragLimit.bottom + window.pageYOffset < dTop + helperHeight) {
-                    top = this.dragLimit.bottom - helperHeight;
+                    top = dTop - (dTop - this.dragLimit.bottom) + window.pageYOffset - helperHeight;
                 }
                 else {
                     top = dTop;
@@ -6046,11 +6092,11 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
     Draggable.prototype.getProperTargetElement = function (evt) {
         var intCoord = this.getCoordinates(evt);
         var ele;
-        var prevStyle = this.helperElement.style.display || '';
+        var prevStyle = this.helperElement.style.pointerEvents || '';
         if (compareElementParent(evt.target, this.helperElement) || evt.type.indexOf('touch') !== -1) {
-            this.helperElement.style.display = 'none';
+            this.helperElement.style.pointerEvents = 'none';
             ele = document.elementFromPoint(intCoord.clientX, intCoord.clientY);
-            this.helperElement.style.display = prevStyle;
+            this.helperElement.style.pointerEvents = prevStyle;
         }
         else {
             ele = evt.target;
@@ -6059,8 +6105,8 @@ var Draggable = /** @__PURE__ @class */ (function (_super) {
     };
     Draggable.prototype.getMousePosition = function (evt) {
         var intCoord = this.getCoordinates(evt);
-        var pageX = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
-        var pageY = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
+        var pageX = this.clone ? intCoord.pageX : (intCoord.clientX + window.pageXOffset) - this.relativeXPosition;
+        var pageY = this.clone ? intCoord.pageY : (intCoord.clientY + window.pageYOffset) - this.relativeYPosition;
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),
             top: pageY - (this.margin.top + this.cursorAt.top)
@@ -7164,11 +7210,11 @@ function compile$$1(templateString, helper) {
         }
     };
 }
-function updateBlazorTemplate(templateId, templateName, comp, isEmpty) {
+function updateBlazorTemplate(templateId, templateName, comp, isEmpty, callBack) {
     var blazor = 'Blazor';
     if (window && window[blazor]) {
         var ejsIntrop = 'ejsInterop';
-        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp);
+        window[ejsIntrop].updateTemplate(templateName, blazorTemplates[templateId], templateId, comp, callBack);
         if (isEmpty !== false) {
             blazorTemplates[templateId] = [];
         }

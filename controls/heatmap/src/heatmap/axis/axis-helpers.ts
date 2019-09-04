@@ -136,7 +136,7 @@ export class AxisHelper {
         let heatmap: HeatMap = this.heatMap;
         let axis: Axis;
         let axisCollection: Axis[] = heatmap.axisCollections;
-        let data: DataModel = this.heatMap.dataSource;
+        let data: DataModel = this.heatMap.dataSourceSettings;
         let processLabels: boolean = !(data && data.isJsonData && data.adaptorType === 'Cell');
         for (let i: number = 0, len: number = axisCollection.length; i < len; i++) {
             axis = axisCollection[i];

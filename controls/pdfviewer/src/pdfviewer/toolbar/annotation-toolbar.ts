@@ -1495,17 +1495,21 @@ export class AnnotationToolbar {
         if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
             this.pdfViewer.annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
         }
-        this.primaryToolbar.deSelectItem(this.highlightItem);
-        this.primaryToolbar.deSelectItem(this.underlineItem);
-        this.primaryToolbar.deSelectItem(this.strikethroughItem);
+        if (!Browser.isDevice) {
+            this.primaryToolbar.deSelectItem(this.highlightItem);
+            this.primaryToolbar.deSelectItem(this.underlineItem);
+            this.primaryToolbar.deSelectItem(this.strikethroughItem);
+        }
         this.clearTextMarkupMode();
         this.clearShapeMode();
         this.clearMeasureMode();
         this.pdfViewer.tool = '';
-        this.enableTextMarkupAnnotationPropertiesTools(false);
-        this.updateColorInIcon(this.colorDropDownElement, '#000000');
-        this.updateColorInIcon(this.strokeDropDownElement, '#000000');
-        this.selectAnnotationDeleteItem(false);
+        if (!Browser.isDevice) {
+            this.enableTextMarkupAnnotationPropertiesTools(false);
+            this.updateColorInIcon(this.colorDropDownElement, '#000000');
+            this.updateColorInIcon(this.strokeDropDownElement, '#000000');
+            this.selectAnnotationDeleteItem(false);
+        }
     }
 
     private updateInteractionTools(): void {

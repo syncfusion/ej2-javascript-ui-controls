@@ -1,4 +1,4 @@
-import { EventHandler } from '@syncfusion/ej2-base';
+import { EventHandler, Browser } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
 import { SentinelInfo, SentinelType } from '../base/type';
 import { InterSection } from '../base/interface';
@@ -61,7 +61,8 @@ export class InterSectionObserver {
     }
 
     private virtualScrollHandler(callback: Function, onEnterCallback: Function): Function {
-        let prevTop: number = 0; let prevLeft: number = 0; let debounced100: Function = debounce(callback, 100);
+        let delay: number = Browser.info.name === 'chrome' ? 200 : 100;
+        let prevTop: number = 0; let prevLeft: number = 0; let debounced100: Function = debounce(callback, delay);
         let debounced50: Function = debounce(callback, 50);
         return (e: Event) => {
             let top: number = (<HTMLElement>e.target).scrollTop;

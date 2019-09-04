@@ -232,7 +232,7 @@ describe('Gantt Edit support', () => {
         it('Add record with selected cell', () => {
             ganttObj.selectionSettings.mode = 'Cell';
             ganttObj.dataBind();
-            ganttObj.selectCells({ cellIndex: 1, rowIndex: 3 });
+            ganttObj.selectCell({ cellIndex: 1, rowIndex: 3 });
             let data: object[] = [{ TaskID: 19, TaskName: 'New Task', Duration: 5, Notes: 'Notes 6',
             BaselineStartDate: new Date('04/02/2019'), BaselineEndDate: new Date('04/07/2019'), Resource: [2]  }];
             ganttObj.editModule.addRecord(data[0]);

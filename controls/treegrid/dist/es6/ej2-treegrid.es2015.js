@@ -1583,7 +1583,6 @@ class DataManipulation {
         args.count = count;
         this.parent.notify('updateResults', args);
     }
-    /* tslint:disable */
     paging(results, count, isExport, isPrinting, exportType, args) {
         if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
             && (!isPrinting || this.parent.printMode === 'CurrentPage')) {
@@ -5629,9 +5628,10 @@ class Filter$1 {
         for (let f = 0; f < this.flatFilteredData.length; f++) {
             let rec = this.flatFilteredData[f];
             this.addParentRecord(rec);
-            if (this.parent.filterSettings.hierarchyMode === 'Child' ||
-                this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'Child' ||
-                this.parent.searchSettings.hierarchyMode === 'None') {
+            let hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+                : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'None') &&
+                (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== ''))) {
                 this.isHierarchyFilter = true;
             }
             let ischild = getObject('childRecords', rec);
@@ -5654,7 +5654,10 @@ class Filter$1 {
     addParentRecord(record) {
         let parent = getParentData(this.parent, record.parentUniqueID);
         //let parent: Object = this.parent.flatData.filter((e: ITreeData) => {return e.uniqueID === record.parentUniqueID; })[0];
-        if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
+        let hierarchyMode = this.parent.grid.searchSettings.key === '' ? this.parent.filterSettings.hierarchyMode
+            : this.parent.searchSettings.hierarchyMode;
+        if (hierarchyMode === 'None' && (this.parent.grid.filterSettings.columns.length !== 0
+            || this.parent.grid.searchSettings.key !== '')) {
             if (isNullOrUndefined(parent)) {
                 if (this.flatFilteredData.indexOf(record) !== -1) {
                     if (this.filteredResult.indexOf(record) === -1) {
@@ -5683,8 +5686,10 @@ class Filter$1 {
         }
         else {
             if (!isNullOrUndefined(parent)) {
-                if (this.parent.filterSettings.hierarchyMode === 'Child'
-                    || this.parent.searchSettings.hierarchyMode === 'Child') {
+                let hierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                    this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+                if (hierarchyMode === 'Child' && (this.parent.grid.filterSettings.columns.length !== 0
+                    || this.parent.grid.searchSettings.key !== '')) {
                     if (this.flatFilteredData.indexOf(parent) !== -1) {
                         this.addParentRecord(parent);
                     }
@@ -5704,8 +5709,10 @@ class Filter$1 {
         let isExist = false;
         for (let count = 0; count < childRec.length; count++) {
             let ischild = childRec[count].childRecords;
-            if ((this.parent.filterSettings.hierarchyMode === 'Child' || this.parent.filterSettings.hierarchyMode === 'Both') ||
-                (this.parent.searchSettings.hierarchyMode === 'Child' || this.parent.searchSettings.hierarchyMode === 'Both')) {
+            let hierarchyMode = this.parent.grid.searchSettings.key === '' ?
+                this.parent.filterSettings.hierarchyMode : this.parent.searchSettings.hierarchyMode;
+            if (((hierarchyMode === 'Child' || hierarchyMode === 'Both') && (this.parent.grid.filterSettings.columns.length !== 0
+                || this.parent.grid.searchSettings.key !== ''))) {
                 let uniqueIDValue = getValue('uniqueIDFilterCollection', this.parent);
                 if (!uniqueIDValue.hasOwnProperty(childRec[count].uniqueID)) {
                     this.filteredResult.push(childRec[count]);
@@ -5713,8 +5720,9 @@ class Filter$1 {
                     isExist = true;
                 }
             }
-            if (this.parent.filterSettings.hierarchyMode === 'None' || this.parent.searchSettings.hierarchyMode === 'None') {
-                if (this.flatFilteredData.indexOf(childRec[count] !== -1)) {
+            if ((hierarchyMode === 'None')
+                && (this.parent.grid.filterSettings.columns.length !== 0 || this.parent.grid.searchSettings.key !== '')) {
+                if (this.flatFilteredData.indexOf(childRec[count]) !== -1) {
                     isExist = true;
                     break;
                 }
@@ -5827,8 +5835,18 @@ class ExcelExport$1 {
                 return null;
             }
             dm.executeQuery(query).then((e) => {
+                let customData = null;
+                if (!isNullOrUndefined(excelExportProperties) && !isNullOrUndefined(excelExportProperties.dataSource)) {
+                    customData = excelExportProperties.dataSource;
+                }
                 excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, e);
                 return this.parent.grid.excelExportModule.Map(this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob).then((book) => {
+                    if (customData != null) {
+                        excelExportProperties.dataSource = customData;
+                    }
+                    else {
+                        delete excelExportProperties.dataSource;
+                    }
                     resolve(book);
                 });
             });
@@ -5864,12 +5882,9 @@ class ExcelExport$1 {
         if (!this.isLocal()) {
             this.parent.flatData = [];
         }
-        if (property && property.dataSource && this.isLocal()) {
-            let flatsData = this.parent.flatData;
-            let dataSrc = property.dataSource instanceof DataManager ? property.dataSource.dataSource.json : property.dataSource;
-            this.parent.dataModule.convertToFlatData(dataSrc);
+        if (property && property.dataSource) {
+            this.parent.dataModule.convertToFlatData(property.dataSource);
             dtSrc = this.parent.flatData;
-            this.parent.flatData = flatsData;
         }
         property = isNullOrUndefined(property) ? Object() : property;
         property.dataSource = new DataManager({ json: dtSrc });
@@ -5964,8 +5979,18 @@ class PdfExport$1 {
                 return null;
             }
             dm.executeQuery(query).then((e) => {
+                let customsData = null;
+                if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+                    customsData = pdfExportProperties.dataSource;
+                }
                 pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, e);
                 return this.parent.grid.pdfExportModule.Map(this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob).then((document) => {
+                    if (customsData != null) {
+                        pdfExportProperties.dataSource = customsData;
+                    }
+                    else {
+                        delete pdfExportProperties.dataSource;
+                    }
                     resolve(document);
                 });
             });
@@ -6002,12 +6027,9 @@ class PdfExport$1 {
         if (!isLocal) {
             this.parent.flatData = [];
         }
-        if (prop && prop.dataSource && isLocal) {
-            let flatDatas = this.parent.flatData;
-            let dataSrc = prop.dataSource instanceof DataManager ? prop.dataSource.dataSource.json : prop.dataSource;
-            this.parent.dataModule.convertToFlatData(dataSrc);
+        if (prop && prop.dataSource) {
+            this.parent.dataModule.convertToFlatData(prop.dataSource);
             dtSrc = this.parent.flatData;
-            this.parent.flatData = flatDatas;
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
         prop.dataSource = new DataManager({ json: dtSrc });
@@ -6508,7 +6530,7 @@ class Aggregate$1 {
  */
 class ContextMenu$1 {
     constructor(parent) {
-        Grid.Inject(ContextMenu);
+        Grid.Inject(TreeGridMenu);
         this.parent = parent;
         this.addEventListener();
     }
@@ -6530,6 +6552,7 @@ class ContextMenu$1 {
         this.parent.off('contextMenuClick', this.contextMenuClick);
     }
     contextMenuOpen(args) {
+        this.parent.grid.notify('collectTreeGrid', { tree: this.parent });
         let addRow = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
         let editRecord = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit');
         if (addRow) {
@@ -6572,6 +6595,46 @@ class ContextMenu$1 {
      */
     getContextMenu() {
         return this.parent.grid.contextMenuModule.getContextMenu();
+    }
+}
+class TreeGridMenu extends ContextMenu {
+    addEventListener() {
+        getValue('parent', this).on('collectTreeGrid', this.collectTreeGrid, this);
+        super.addEventListener();
+    }
+    collectTreeGrid(args) {
+        this.treegrid = args.tree;
+    }
+    contextMenuItemClick(args) {
+        let item = getValue('getKeyFromId', this).apply(this, [args.item.id]);
+        let isPrevent = false;
+        switch (item) {
+            case 'PdfExport':
+                this.treegrid.pdfExport();
+                isPrevent = true;
+                break;
+            case 'ExcelExport':
+                this.treegrid.excelExport();
+                isPrevent = true;
+                break;
+            case 'CsvExport':
+                this.treegrid.csvExport();
+                isPrevent = true;
+                break;
+            case 'Save':
+                if (this.treegrid.editSettings.mode === 'Cell' && this.treegrid.grid.editSettings.mode === 'Batch') {
+                    isPrevent = true;
+                    this.treegrid.grid.editModule.saveCell();
+                }
+        }
+        if (!isPrevent) {
+            super.contextMenuItemClick(args);
+        }
+        else {
+            args.column = getValue('targetColumn', this);
+            args.rowInfo = getValue('targetRowdata', this);
+            getValue('parent', this).trigger('contextMenuClick', args);
+        }
     }
 }
 
@@ -7398,9 +7461,8 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
             this.endIndex = lastIndex;
             this.translateY = scrollArgs.offset.top;
         }
-        if (((downScroll && (scrollArgs.offset.top +
-            (outBuffer * this.parent.getRowHeight())) < (this.parent.getRowHeight() * this.totalRecords))
-            || (upScroll))) {
+        if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
+            || (upScroll)) {
             let viewInfo = getValue('getInfoFromView', this).apply(this, [scrollArgs.direction, info, scrollArgs.offset]);
             this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', focusElement: scrollArgs.focusElement });
         }
@@ -7612,7 +7674,9 @@ class TreeVirtual extends VirtualScroll {
         let vHeight = parentGrid.height.toString().indexOf('%') < 0 ? parentGrid.height :
             parentGrid.element.getBoundingClientRect().height;
         let blockSize = ~~(vHeight / rowHeight);
-        parentGrid.setProperties({ pageSettings: { pageSize: blockSize + 10 } }, true);
+        let height = blockSize * 2;
+        let size = parentGrid.pageSettings.pageSize;
+        parentGrid.setProperties({ pageSettings: { pageSize: size < height ? height : size } }, true);
     }
 }
 

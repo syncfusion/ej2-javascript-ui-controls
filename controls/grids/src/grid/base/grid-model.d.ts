@@ -114,6 +114,8 @@ export interface PredicateModel {
      * <br/>Number | Date<br/></td></tr> 
      * </table> 
      * @default null
+     * @blazorType Syncfusion.EJ2.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
      */
     operator?: string;
 
@@ -362,6 +364,8 @@ export interface SearchSettingsModel {
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
      * @default 'contains'
+     * @blazorType Syncfusion.EJ2.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.Contains
      */
     operator?: string;
 
@@ -823,6 +827,7 @@ export interface GridModel extends ComponentModel{
      * and child relationship. 
      * 
      * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
+     * @blazorType GridModel<object>
      */
     childGrid?: GridModel;
 

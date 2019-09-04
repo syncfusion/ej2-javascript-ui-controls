@@ -20,6 +20,67 @@ function eventObject(eventType: string, eventName: string): Object {
 }
 
 describe('FileManager control single selection Grid view', () => {
+    
+    describe('Grid viewtesting', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                toolbarSettings: {
+                    visible: true,
+                    items: ['NewFolder']
+                },
+                allowMultiSelection: false,
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                done();
+            }, 500);
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('script error for grid header sort with no sortby in toolbar', () => {
+            expect(feObj.sortOrder).toBe('Ascending');
+            (<HTMLElement>document.getElementsByClassName('e-sortfilterdiv')[1]).click();
+            expect(feObj.sortOrder).toBe( 'Descending');
+        });
+    });
     describe('mouse event testing', () => {
         let mouseEventArgs: any, tapEvent: any;
         let feObj: FileManager;

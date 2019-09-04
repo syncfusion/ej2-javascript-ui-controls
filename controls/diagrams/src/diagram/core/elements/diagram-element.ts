@@ -354,10 +354,10 @@ export class DiagramElement {
         }
 
         //Considering max values
-        if (this.maxWidth !== undefined) {
+        if (this.maxWidth !== undefined && this.maxWidth !== 0) {
             desiredSize.width = Math.min(desiredSize.width, this.maxWidth);
         }
-        if (this.maxHeight !== undefined) {
+        if (this.maxHeight !== undefined && this.maxHeight !== 0) {
             desiredSize.height = Math.min(desiredSize.height, this.maxHeight);
         }
         return desiredSize;

@@ -10,7 +10,6 @@ import { ErrorDialog } from '../popups/error-dialog';
 import { FilterDialog } from '../popups/filter-dialog';
 import { PivotView } from '../../pivotview';
 import { PivotFieldList } from '../../pivotfieldlist';
-import { OlapEngine } from '../../base/olap/engine';
 
 /**
  * PivotCommon is used to manipulate the relational or Multi-Dimensional public methods by using their dataSource
@@ -23,7 +22,7 @@ export class PivotCommon {
     /** @hidden */
     public localeObj: L10n;
     /** @hidden */
-    public engineModule: PivotEngine | OlapEngine;
+    public engineModule: PivotEngine;
     /** @hidden */
     public dataSourceSettings: IDataOptions;
     /** @hidden */
@@ -54,8 +53,6 @@ export class PivotCommon {
     public isDataOverflow: boolean = false;
     /** @hidden */
     public isDateField: boolean = false;
-    /** @hidden */
-    public dataType: string;
 
 
     //Module Declarations
@@ -73,8 +70,10 @@ export class PivotCommon {
     public keyboardModule: CommonKeyboardInteraction;
 
     /**
-     * Constructor for Pivot Common class
-     * @param  {CommonArgs} control?
+     * Constructor for PivotEngine class
+     * @param  {PivotEngine} pivotEngine?
+     * @param  {DataOptions} dataSource?
+     * @param  {string} element?
      * @hidden
      */
     constructor(control: CommonArgs) {
@@ -87,7 +86,6 @@ export class PivotCommon {
         this.renderMode = control.renderMode;
         this.parentID = control.id;
         this.localeObj = control.localeObj;
-        this.dataType = control.dataType;
         this.nodeStateModified = new NodeStateModified(this);
         this.dataSourceUpdate = new DataSourceUpdate(this);
         this.eventBase = new EventBase(this);

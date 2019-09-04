@@ -2,7 +2,7 @@ import { PdfViewer, PdfViewerBase, IRectangle, IPageAnnotations, IPoint, Annotat
 import { ColorPicker, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
-import { AnnotationType } from '../../diagram/enum';
+import { PdfAnnotationType } from '../../diagram/enum';
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -255,19 +255,18 @@ export class MeasureAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public renderMeasureShapeAnnotations(shapeAnnotations: any, pageNumber: number): void {
+    public renderMeasureShapeAnnotations(shapeAnnotations: any, pageNumber: number, isImportAction?: boolean): void {
         if (shapeAnnotations) {
             if (shapeAnnotations.length >= 1) {
                 // tslint:disable-next-line
                 let measureAnnots: any[] = this.pdfViewer.annotation.getStoredAnnotations(pageNumber, shapeAnnotations, '_annotations_shape_measure');
-                if (!measureAnnots) {
+                if (!measureAnnots || isImportAction) {
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = shapeAnnotations[i];
                     let annotationObject: IMeasureShapeAnnotation = null;
                     this.measureShapeCount = this.measureShapeCount + 1;
                     if (annotation.ShapeAnnotationType) {
-                        annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('measure', annotation.Subject);
                         let vertexPoints: IPoint[] = null;
                         if (annotation.VertexPoints) {
                             vertexPoints = [];
@@ -465,8 +464,8 @@ export class MeasureAnnotation {
         return annotationType;
     }
 
-    private getShapeType(shape: IMeasureShapeAnnotation): AnnotationType {
-        let shapeType: AnnotationType;
+    private getShapeType(shape: IMeasureShapeAnnotation): PdfAnnotationType {
+        let shapeType: PdfAnnotationType;
         if (shape.shapeAnnotationType === 'Line') {
             shapeType = 'Distance';
         } else if (shape.shapeAnnotationType === 'Polyline') {

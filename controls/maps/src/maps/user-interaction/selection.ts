@@ -120,6 +120,10 @@ export class Selection {
             shapeData: shapeData,
             data: data
         };
+        if (this.maps.isBlazor) {
+            const {shapeData, ...blazorEventArgs } :  ISelectionEventArgs = eventArgs;
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
             // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility
             // && this.maps.legendSettings.legendSelection) {

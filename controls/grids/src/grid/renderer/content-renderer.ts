@@ -292,7 +292,6 @@ export class ContentRender implements IRenderer {
             }
             this.ariaService.setOptions(this.getTable() as HTMLElement, { colcount: gObj.getColumns().length.toString() });
         }
-        this.parent.blazorTemplate();
         this.splitRows(idx);
         if (gObj.frozenRows) {
             hdrTbody = frzCols ? gObj.getHeaderContent().querySelector(idx === 0 ? '.e-frozenheader'

@@ -131,10 +131,10 @@ describe('Gantt Edit module', () => {
             let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(6)') as HTMLElement;
             triggerMouseEvent(dependency, 'dblclick');
             let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
-            input.value = '3+5';
+            input.value = '3';
             let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
             triggerMouseEvent(update, 'click');
-            expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe('3FS+5 days');
+            expect(ganttObj.currentViewData[1].ganttProperties.predecessorsName).toBe('3FS');
         });
         it('Editing progress column', () => {
             ganttObj.dataBind();
@@ -374,31 +374,13 @@ describe('Gantt Edit module', () => {
         });
         it('Editing dependency column', () => {
             ganttObj.dataBind();
-            let dependency1: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
-            triggerMouseEvent(dependency1, 'dblclick');
-            let input1: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
-            input1.value = '0';
+            let dependency: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(6)') as HTMLElement;
+            triggerMouseEvent(dependency, 'dblclick');
+            let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
+            input.value = '0';
             let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
             triggerMouseEvent(update, 'click');
-            let dependency2: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(4) > td:nth-child(6)') as HTMLElement;
-            triggerMouseEvent(dependency2, 'dblclick');
-            let input2: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
-            input2.value = '2FF+3';
-            triggerMouseEvent(update, 'click');
-            let dependency3: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(5) > td:nth-child(6)') as HTMLElement;
-            triggerMouseEvent(dependency3, 'dblclick');
-            let input3: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
-            input3.value = '3SF+5H';
-            triggerMouseEvent(update, 'click');
-            let dependency4: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(6)') as HTMLElement;
-            triggerMouseEvent(dependency4, 'dblclick');
-            let input4: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolPredecessor') as HTMLElement;
-            input4.value = '4SS+50M';
-            triggerMouseEvent(update, 'click');
             expect(ganttObj.currentViewData[2].ganttProperties.predecessorsName).toBe(null);
-            expect(ganttObj.currentViewData[3].ganttProperties.predecessorsName).toBe('2FF+3 days');
-            expect(ganttObj.currentViewData[4].ganttProperties.predecessorsName).toBe('3SF+5 hours');
-            expect(ganttObj.currentViewData[5].ganttProperties.predecessorsName).toBe('4SS+50 minutes');
         });
         // it('Editing notes column-Dialog', (done) => {
         //     ganttObj.dataBind();

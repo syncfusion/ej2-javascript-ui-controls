@@ -2,7 +2,19 @@
 
 ## [Unreleased]
 
-## 17.2.48-beta (2019-08-28)
+## 17.2.49 (2019-09-04)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- #246044 – The assigned author name is now preserved properly while loading or saving the document in PDF Viewer.
+- #245087 – The Polygon, Perimeter, and Volume annotations will be drawn properly in the low zoom values.
+- #245820 - Magnification on double tap will no longer happen when the pinch zoom is disabled in the PDF Viewer control.
+- #244787 – The Comment panel is now opened properly while double clicking the annotation created from the code behind.
+- #246041 - The warning message will no longer be thrown when the web action method is executed.
+
+## 17.2.47 (2019-08-27)
 
 ### PDF Viewer
 

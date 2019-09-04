@@ -28939,7 +28939,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         this.sliderY = bounds.y > this.thumpY ? this.thumpY : bounds.y;
         if (sliderGroup && !control.disableRangeSelector) {
             shadowElement = render.createDefs();
-            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="path-1" x="0" ' +
+            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="' + this.control.element.id + '_shadow' + '" x="0" ' +
                 'y="' + this.thumpY + '" width="' + control.themeStyle.thumbWidth + '" height="' + control.themeStyle.thumbHeight + '"' +
                 ' rx="' + (thump.type === 'Circle' ? '50%' : '0%') + '"/>' +
                 '<filter xmlns="http://www.w3.org/2000/svg" x="-25.0%" y="-20.0%" width="150.0%" height="150.0%"' +
@@ -29550,6 +29550,7 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
             return false;
         }
         this.animateSeries = false;
+        this.removeAllTooltip();
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -29571,6 +29572,22 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
             _this.chartSeries.renderChart(_this);
         }, 500);
         return false;
+    };
+    /**
+     * Bug task ID: EJ2-30797
+     * while resizing tooltip shows in wrong position
+     * Cause: Due to time lag in resize, tooltip did not remove until the component calculation
+     * Fix: Removed the tooltip element on resize
+     */
+    RangeNavigator.prototype.removeAllTooltip = function () {
+        if (this.tooltip.enable && this.tooltip.displayMode === 'Always') {
+            if (getElement(this.element.id + '_leftTooltip')) {
+                remove(getElement(this.element.id + '_leftTooltip'));
+            }
+            if (getElement(this.element.id + '_rightTooltip')) {
+                remove(getElement(this.element.id + '_rightTooltip'));
+            }
+        }
     };
     /**
      * Handles the mouse move.
@@ -32295,7 +32312,6 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
             var property = _a[_i];
             switch (property) {
                 case 'series':
-                    this.resizeTo = null;
                     this.render();
                     break;
             }
@@ -32381,7 +32397,13 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.series.forEach(function (series) {
             _this.tempSeriesType.push(series.type);
+            series.localData = undefined;
         });
+        this.initialRender = true;
+        this.rangeFound = false;
+        this.resizeTo = null;
+        this.startValue = null;
+        this.endValue = null;
     };
     /**
      * To Initialize the control rendering.

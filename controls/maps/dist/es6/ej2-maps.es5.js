@@ -16,6 +16,15 @@ var __extends$1 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __rest = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Helper functions for maps control
  */
@@ -651,6 +660,10 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                     width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
                     data: data, maps: maps, cluster: clusters, border: clusters.border
                 };
+                if (maps.isBlazor) {
+                    var data_1 = eventArg_1.data, maps_1 = eventArg_1.maps, cluster = eventArg_1.cluster, blazorEventArgs = __rest(eventArg_1, ["data", "maps", "cluster"]);
+                    eventArg_1 = blazorEventArgs;
+                }
                 shapeCustom_1['fill'] = eventArg_1.fill;
                 shapeCustom_1['size']['width'] = eventArg_1.width;
                 shapeCustom_1['size']['height'] = eventArg_1.height;
@@ -1307,6 +1320,10 @@ function triggerShapeEvent(targetId, selection, maps, eventName) {
         data: shape.data,
         target: targetId
     };
+    if (maps.isBlazor) {
+        var shapeData = eventArgs.shapeData, data = eventArgs.data, blazorEventArgs = __rest(eventArgs, ["shapeData", "data"]);
+        eventArgs = blazorEventArgs;
+    }
     maps.trigger(eventName, eventArgs);
     return eventArgs;
 }
@@ -3061,6 +3078,15 @@ var MapsAreaSettings = /** @__PURE__ @class */ (function (_super) {
     return MapsAreaSettings;
 }(ChildProperty));
 
+var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Marker class
  */
@@ -3097,9 +3123,13 @@ var Marker = /** @__PURE__ @class */ (function () {
                     template: markerSettings.template, data: data, maps: _this.maps, marker: markerSettings,
                     border: markerSettings.border
                 };
+                if (_this.maps.isBlazor) {
+                    var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
+                    eventArgs = blazorEventArgs;
+                }
                 _this.maps.trigger('markerRendering', eventArgs, function (MarkerArgs) {
-                    var lng = data['longitude'];
-                    var lat = data['latitude'];
+                    var lng = data['longitude'] | data['Longitude'];
+                    var lat = data['latitude'] | data['Latitude'];
                     var offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         var markerID = _this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -3152,9 +3182,13 @@ var Marker = /** @__PURE__ @class */ (function () {
             return;
         }
         var eventArgs = {
-            cancel: false, name: markerClick, data: options.data, maps: this.maps.isBlazor ? null : this.maps,
-            marker: this.maps.isBlazor ? null : options.marker, target: target, x: e.clientX, y: e.clientY
+            cancel: false, name: markerClick, data: options.data, maps: this.maps,
+            marker: options.marker, target: target, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            var maps = eventArgs.maps, marker_2 = eventArgs.marker, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClick, eventArgs);
     };
     /**
@@ -3173,6 +3207,10 @@ var Marker = /** @__PURE__ @class */ (function () {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            var maps = eventArgs.maps, blazorEventArgs = __rest$1(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClusterClick, eventArgs);
     };
     /**
@@ -3209,8 +3247,12 @@ var Marker = /** @__PURE__ @class */ (function () {
         }
         var eventArgs = {
             cancel: false, name: markerMouseMove, data: options.data,
-            maps: this.maps.isBlazor ? null : this.maps, target: targetId, x: e.clientX, y: e.clientY
+            maps: this.maps, target: targetId, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            var maps = eventArgs.maps, blazorEventArgs = __rest$1(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerMouseMove, eventArgs);
     };
     /**
@@ -3229,6 +3271,10 @@ var Marker = /** @__PURE__ @class */ (function () {
             cancel: false, name: markerClusterMouseMove, data: options.data, maps: this.maps,
             target: targetId, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            var maps = eventArgs.maps, blazorEventArgs = __rest$1(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClusterMouseMove, eventArgs);
     };
     /**
@@ -3651,6 +3697,15 @@ var ColorMapping = /** @__PURE__ @class */ (function () {
     return ColorMapping;
 }());
 
+var __rest$2 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * To calculate and render the shape layer
  */
@@ -3724,7 +3779,11 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject
         };
-        this.mapObject.trigger('layerRendering', eventArgs, function (observedArgs) {
+        if (this.mapObject.isBlazor) {
+            var cancel = eventArgs.cancel, name_1 = eventArgs.name, index = eventArgs.index;
+            eventArgs = { cancel: cancel, name: name_1, index: index };
+        }
+        this.mapObject.trigger('layerRendering', eventArgs, function () {
             if (!eventArgs.cancel) {
                 if (layer.layerType !== 'Geometry') {
                     if (layer.layerType !== 'Bing' || _this.bing) {
@@ -3757,6 +3816,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                         };
                         ajax.send();
                     }
+                    if (_this.tileSvgObject) {
+                        _this.tileSvgObject.appendChild(_this.layerGroup);
+                    }
                 }
                 else {
                     if (!isNullOrUndefined(layer.shapeData) && (!isNullOrUndefined(layer.shapeData['geometries']) ||
@@ -3783,17 +3845,16 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                             //     this.mapObject.baseSize = new Size(Math.abs(minSize.x - maxSize.x), Math.abs(minSize.y - maxSize.y));
                             // }
                         }
-                        _this.calculatePathCollection(layerIndex, featureData);
+                        _this.calculatePathCollection(layerIndex, featureData, function () {
+                            _this.mapObject.svgObject.appendChild(_this.layerGroup);
+                        });
+                    }
+                    else {
+                        _this.mapObject.svgObject.appendChild(_this.layerGroup);
                     }
                 }
             }
         });
-        if (!this.mapObject.isTileMap) {
-            this.mapObject.svgObject.appendChild(this.layerGroup);
-        }
-        else if (this.tileSvgObject) {
-            this.tileSvgObject.appendChild(this.layerGroup);
-        }
     };
     //tslint:disable:max-func-body-length
     LayerPanel.prototype.bubbleCalculation = function (bubbleSettings, range) {
@@ -3815,7 +3876,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         }
     };
     // tslint:disable-next-line:max-func-body-length
-    LayerPanel.prototype.calculatePathCollection = function (layerIndex, renderData) {
+    LayerPanel.prototype.calculatePathCollection = function (layerIndex, renderData, appendLayerGroup) {
         var _this = this;
         this.groupElements = [];
         if ((!isCustomPath(renderData))) {
@@ -3881,10 +3942,14 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                 data: this_1.currentLayer.dataSource ? this_1.currentLayer.dataSource[k] : null, maps: this_1.mapObject,
                 shape: shapeSettings, fill: fill, border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
             };
+            if (this_1.mapObject.isBlazor) {
+                var data = eventArgs.data, maps = eventArgs.maps, blazorEventArgs = __rest$2(eventArgs, ["data", "maps"]);
+                eventArgs = blazorEventArgs;
+            }
             // tslint:disable-next-line:max-func-body-length
-            this_1.mapObject.trigger('shapeRendering', eventArgs, function (shapeArgs) {
-                var drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
-                    ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+            this_1.mapObject.trigger('shapeRendering', eventArgs, function () {
+                var drawingType = !isNullOrUndefined(currentShapeData['_isMultiPolygon']) ?
+                    'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
                 drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
                 if (_this.groupElements.length < 1) {
                     groupElement = _this.mapObject.renderer.createGroup({
@@ -3960,12 +4025,19 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
                     pathEle.setAttribute('tabindex', (_this.mapObject.tabIndex + i + 2).toString());
                     groupElement.appendChild(pathEle);
                 }
+                if (i === _this.currentLayer.layerData.length - 1) {
+                    _this.addItemsInLayer(layerIndex, colors, renderData, labelTemplateEle);
+                }
+                appendLayerGroup();
             });
         };
         var this_1 = this;
         for (var i = 0; i < this.currentLayer.layerData.length; i++) {
             _loop_1(i);
         }
+    };
+    LayerPanel.prototype.addItemsInLayer = function (layerIndex, colors, renderData, labelTemplateEle) {
+        var _this = this;
         var bubbleG;
         if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
             var length_1 = this.currentLayer.bubbleSettings.length;
@@ -4424,6 +4496,9 @@ var Annotations = /** @__PURE__ @class */ (function () {
             annotation: annotation
         };
         this.map.trigger(annotationRendering, argsData, function (annotationArgs) {
+            if (argsData.cancel) {
+                return;
+            }
             var blazor = 'Blazor';
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && (!window[blazor] ? templateFn(_this.map, null, null, _this.map.element.id + '_ContentTemplate_' + annotationIndex).length : {})) {
@@ -4694,15 +4769,17 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * Initializing pre-required values.
      */
     Maps.prototype.preRender = function () {
+        var _this = this;
         this.isDevice = Browser.isDevice;
         var blazor = 'Blazor';
         this.isBlazor = window[blazor];
         this.initPrivateVariable();
-        this.trigger(load, { maps: this });
-        this.unWireEVents();
-        this.createSVG();
-        this.wireEVents();
-        this.setCulture();
+        this.trigger(load, this.isBlazor ? {} : { maps: this }, function () {
+            _this.unWireEVents();
+            _this.createSVG();
+            _this.wireEVents();
+            _this.setCulture();
+        });
     };
     /**
      * To Initialize the control rendering.
@@ -5113,6 +5190,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To handle the click event for the maps.
+     * @blazorProperty 'PerformClick'
      */
     /* tslint:disable:no-string-literal */
     Maps.prototype.mapsOnClick = function (e) {
@@ -5205,6 +5283,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * To handle the double click event for the maps.
+     * @blazorProperty 'PerformDoubleClick'
      */
     Maps.prototype.mapsOnDoubleClick = function (e) {
         this.notify('dblclick', e);
@@ -5425,6 +5504,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 case 'layers':
                 case 'projectionType':
                 case 'legendSettings':
+                case 'zoomSettings':
                     render = true;
                     break;
             }
@@ -5853,6 +5933,15 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     return Maps;
 }(Component));
 
+var __rest$3 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Bubble module class
  */
@@ -5940,9 +6029,13 @@ var Bubble = /** @__PURE__ @class */ (function () {
                 eventArgs = {
                     cancel: false, name: bubbleRendering, border: bubbleSettings.border,
                     cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
-                    data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
+                    data: shapeData, fill: bubbleColor, maps: this.maps,
                     radius: radius
                 };
+                if (this.maps.isBlazor) {
+                    var maps = eventArgs.maps, blazorEventArgs = __rest$3(eventArgs, ["maps"]);
+                    eventArgs = blazorEventArgs;
+                }
             }
             this.maps.trigger('bubbleRendering', eventArgs, function (bubbleArgs) {
                 if (eventArgs.cancel) {
@@ -6020,10 +6113,11 @@ var Bubble = /** @__PURE__ @class */ (function () {
             cancel: false, name: bubbleClick, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        var eventBlazorArgs = {
-            cancel: false, name: bubbleClick, data: data, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(bubbleClick, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        if (this.maps.isBlazor) {
+            var maps = eventArgs.maps, blazorEventArgs = __rest$3(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
+        this.maps.trigger(bubbleClick, eventArgs);
     };
     /**
      * To get bubble from target id
@@ -6058,10 +6152,11 @@ var Bubble = /** @__PURE__ @class */ (function () {
             cancel: false, name: bubbleMouseMove, data: data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
-        var eventBlazorArgs = {
-            cancel: false, name: bubbleMouseMove, data: data, target: target, x: e.clientX, y: e.clientY
-        };
-        this.maps.trigger(bubbleMouseMove, this.maps.isBlazor ? eventBlazorArgs : eventArgs);
+        if (this.maps.isBlazor) {
+            var maps = eventArgs.maps, blazorEventArgs = __rest$3(eventArgs, ["maps"]);
+            eventArgs = blazorEventArgs;
+        }
+        this.maps.trigger(bubbleMouseMove, eventArgs);
     };
     /**
      * Get module name.
@@ -6082,6 +6177,15 @@ var Bubble = /** @__PURE__ @class */ (function () {
     return Bubble;
 }());
 
+var __rest$4 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * DataLabel Module used to render the maps datalabel
  */
@@ -6217,6 +6321,10 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                 name: dataLabelRendering, maps: this.maps, cancel: false, border: dataLabel.border, datalabel: dataLabel,
                 fill: dataLabel.fill, template: dataLabel.template, text: text
             };
+            if (this.maps.isBlazor) {
+                var maps = eventargs_1.maps, blazorEventArgs = __rest$4(eventargs_1, ["maps"]);
+                eventargs_1 = blazorEventArgs;
+            }
             this.maps.trigger('dataLabelRendering', eventargs_1, function (labelArgs) {
                 var position = [];
                 var width = zoomLabelsPosition && scaleZoomValue > 1
@@ -6374,10 +6482,10 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                     labelIndex: sublayerIndexLabel ? oldIndex : index,
                     dataLabelText: dataLabelText
                 });
+                if (labelTemplateElement.childElementCount > 0 && !_this.maps.element.contains(labelTemplateElement)) {
+                    document.getElementById(_this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
+                }
             });
-            if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
-                document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
-            }
         }
     };
     DataLabel.prototype.getPoint = function (shapes, points) {
@@ -6449,7 +6557,7 @@ var NavigationLine = /** @__PURE__ @class */ (function () {
             latitude = navigation[i]['properties']['latitude'];
             longitude = navigation[i]['properties']['longitude'];
             visible = navigation[i]['properties']['visible'];
-            angle = navigation[i]['properties']['angle'];
+            angle = navigation[i]['angle'];
             width = navigation[i]['width'] || 1;
             color = navigation[i]['color'];
             dashArray = navigation[i]['properties']['dashArray'];
@@ -6851,6 +6959,7 @@ var Legend = /** @__PURE__ @class */ (function () {
      * To draw the legend shape and text.
      */
     Legend.prototype.drawLegend = function () {
+        var _this = this;
         var map = this.maps;
         var legend = map.legendSettings;
         var render = map.renderer;
@@ -6862,29 +6971,38 @@ var Legend = /** @__PURE__ @class */ (function () {
             shapeBorder: legend.shapeBorder
         };
         if (legend.mode === 'Interactive') {
-            for (var i = 0; i < this.legendRenderingCollections.length; i++) {
+            var _loop_1 = function (i) {
                 var itemId = map.element.id + '_Legend_Index_' + i;
                 var textId = map.element.id + '_Legend_Index_' + i + '_Text';
-                var item = this.legendRenderingCollections[i];
+                var item = this_1.legendRenderingCollections[i];
                 var bounds = new Rect(item['x'], item['y'], item['width'], item['height']);
                 var textLocation = new Point(item['textX'], item['textY']);
                 eventArgs.fill = item['fill'];
-                map.trigger(legendRendering, eventArgs);
-                textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
-                var rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
-                textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
-                textFont.size = map.themeStyle.legendFontSize || textFont.size;
-                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
-                this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                map.trigger(legendRendering, eventArgs, function () {
+                    textFont.color = (textFont.color !== null) ? textFont.color : _this.maps.themeStyle.legendTextColor;
+                    var rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
+                    textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
+                    textFont.size = map.themeStyle.legendFontSize || textFont.size;
+                    renderTextElement(textOptions, textFont, textFont.color, _this.legendGroup);
+                    _this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                    if (i === _this.legendRenderingCollections.length - 1) {
+                        _this.renderLegendBorder();
+                    }
+                });
+            };
+            var this_1 = this;
+            for (var i = 0; i < this.legendRenderingCollections.length; i++) {
+                _loop_1(i);
             }
-            this.renderLegendBorder();
         }
         else {
             this.drawLegendItem(this.currentPage);
         }
     };
+    // tslint:disable-next-line:max-func-body-length
     Legend.prototype.drawLegendItem = function (page) {
+        var _this = this;
         var map = this.maps;
         var legend = map.legendSettings;
         var spacing = 10;
@@ -6892,9 +7010,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var textOptions;
         var render = map.renderer;
         var shapeBorder = legend.shapeBorder;
-        var eventArgs = {
-            name: legendRendering, cancel: false, fill: '', shape: legend.shape
-        };
+        var eventArgs = { name: legendRendering, cancel: false, fill: '', shape: legend.shape };
         if (page >= 0 && page < this.totalPages.length) {
             if (querySelector(this.legendGroup.id, this.maps.element.id)) {
                 remove(querySelector(this.legendGroup.id, this.maps.element.id));
@@ -6905,77 +7021,85 @@ var Legend = /** @__PURE__ @class */ (function () {
                 || legend.shape === 'Cross') ? (shapeBorder.width === 0) ?
                 1 : shapeBorder.width : shapeBorder.width;
             eventArgs.shapeBorder = { width: strokeWidth, color: strokeColor };
-            for (var i = 0; i < this.totalPages[page]['Collection'].length; i++) {
-                var collection = this.totalPages[page]['Collection'][i];
+            var _loop_2 = function (i) {
+                var collection = this_2.totalPages[page]['Collection'][i];
                 var legendElement = render.createGroup({ id: map.element.id + '_Legend_Index_' + i });
                 var legendText = collection['DisplayText'];
                 eventArgs.fill = collection['Fill'];
                 eventArgs.shape = ((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
                     legend.shape : 'Image') : legend.shape);
-                map.trigger(legendRendering, eventArgs);
-                var shapeId = map.element.id + '_Legend_Shape_Index_' + i;
-                var textId = map.element.id + '_Legend_Text_Index_' + i;
-                var shapeLocation = collection['Shape'];
-                var textLocation = collection['Text'];
-                var imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
-                var renderOptions_1 = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
-                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color : this.maps.themeStyle.legendTextColor;
-                legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
-                legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
-                legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions_1));
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
-                this.legendGroup.appendChild(legendElement);
+                map.trigger(legendRendering, eventArgs, function () {
+                    var shapeId = map.element.id + '_Legend_Shape_Index_' + i;
+                    var textId = map.element.id + '_Legend_Text_Index_' + i;
+                    var shapeLocation = collection['Shape'];
+                    var textLocation = collection['Text'];
+                    var imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
+                    var renderOptions = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
+                    legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
+                        _this.maps.themeStyle.legendTextColor;
+                    legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
+                    legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                    legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
+                    renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                    _this.legendGroup.appendChild(legendElement);
+                    if (i === (_this.totalPages[page]['Collection'].length - 1)) {
+                        var pagingGroup = void 0;
+                        var width = spacing;
+                        var height = (spacing / 2);
+                        if (_this.page !== 0) {
+                            var pagingText = (page + 1) + '/' + _this.totalPages.length;
+                            var pagingFont = legend.textStyle;
+                            var pagingTextSize = measureText(pagingText, pagingFont);
+                            var leftPageX = (_this.legendItemRect.x + _this.legendItemRect.width) - pagingTextSize.width -
+                                (width * 2) - spacing;
+                            var rightPageX = (_this.legendItemRect.x + _this.legendItemRect.width);
+                            var locY = (_this.legendItemRect.y + _this.legendItemRect.height) + (height / 2) + spacing;
+                            var pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
+                            pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
+                            var leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
+                            var rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
+                            var rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
+                                ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
+                            var leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
+                                ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
+                            var leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
+                            leftPageElement.appendChild(render.drawPath(leftPageOptions));
+                            var leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
+                            leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
+                            _this.wireEvents(leftPageElement);
+                            var rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
+                            rightPageElement.appendChild(render.drawPath(rightPageOptions));
+                            var rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
+                            rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
+                            _this.wireEvents(rightPageElement);
+                            pagingGroup.appendChild(leftPageElement);
+                            pagingGroup.appendChild(rightPageElement);
+                            var pageTextOptions = {
+                                'id': map.element.id + '_Paging_Text',
+                                'x': pageTextX,
+                                'y': locY + (pagingTextSize.height / 4),
+                                'fill': '#a6a6a6',
+                                'font-size': '14px',
+                                'font-style': pagingFont.fontStyle,
+                                'font-family': pagingFont.fontFamily,
+                                'font-weight': pagingFont.fontWeight,
+                                'text-anchor': 'middle',
+                                'transform': '',
+                                'opacity': 1,
+                                'dominant-baseline': ''
+                            };
+                            pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
+                            _this.legendGroup.appendChild(pagingGroup);
+                        }
+                        _this.renderLegendBorder();
+                    }
+                });
+            };
+            var this_2 = this;
+            for (var i = 0; i < this.totalPages[page]['Collection'].length; i++) {
+                _loop_2(i);
             }
-            var pagingGroup = void 0;
-            var width = spacing;
-            var height = (spacing / 2);
-            if (this.page !== 0) {
-                var pagingText = (page + 1) + '/' + this.totalPages.length;
-                var pagingFont = legend.textStyle;
-                var pagingTextSize = measureText(pagingText, pagingFont);
-                var leftPageX = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
-                    (width * 2) - spacing;
-                var rightPageX = (this.legendItemRect.x + this.legendItemRect.width);
-                var locY = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
-                var pageTextX = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
-                pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
-                var leftPageElement = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
-                var rightPageElement = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
-                var rightPath = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
-                    ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
-                var leftPath = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
-                    ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
-                var leftPageOptions = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
-                leftPageElement.appendChild(render.drawPath(leftPageOptions));
-                var leftRectPageOptions = new RectOption(map.element.id + '_Left_Page_Rect', 'transparent', {}, 1, new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', '');
-                leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
-                this.wireEvents(leftPageElement);
-                var rightPageOptions = new PathOption(map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath);
-                rightPageElement.appendChild(render.drawPath(rightPageOptions));
-                var rightRectPageOptions = new RectOption(map.element.id + '_Right_Page_Rect', 'transparent', {}, 1, new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', '');
-                rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
-                this.wireEvents(rightPageElement);
-                pagingGroup.appendChild(leftPageElement);
-                pagingGroup.appendChild(rightPageElement);
-                var pageTextOptions = {
-                    'id': map.element.id + '_Paging_Text',
-                    'x': pageTextX,
-                    'y': locY + (pagingTextSize.height / 4),
-                    'fill': '#a6a6a6',
-                    'font-size': '14px',
-                    'font-style': pagingFont.fontStyle,
-                    'font-family': pagingFont.fontFamily,
-                    'font-weight': pagingFont.fontWeight,
-                    'text-anchor': 'middle',
-                    'transform': '',
-                    'opacity': 1,
-                    'dominant-baseline': ''
-                };
-                pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
-                this.legendGroup.appendChild(pagingGroup);
-            }
-            this.renderLegendBorder();
         }
     };
     // tslint:disable-next-line:max-func-body-length
@@ -7350,7 +7474,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 var imageSrc = null;
                 var showLegend = isNullOrUndefined(data[_this.maps.legendSettings.showLegendPath]) ? true :
                     data[_this.maps.legendSettings.showLegendPath];
-                if (marker$$1.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
+                if (marker$$1.visible && showLegend && (!isNullOrUndefined(data['latitude'] | data['Latitude'])) && (!isNullOrUndefined(data['longitude'] | data['Longitude']))) {
                     if (marker$$1.template) {
                         templateFn = getTemplateFunction(marker$$1.template);
                         var templateElement = templateFn(_this.maps);
@@ -7377,7 +7501,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var legendIndex = 0;
         var fill = this.maps.legendSettings.fill;
         var rangeData = [];
-        var _loop_1 = function (colorMap) {
+        var _loop_3 = function (colorMap) {
             if (!isNullOrUndefined(colorMap.from) && !isNullOrUndefined(colorMap.to)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.from + ' - ' + colorMap.to;
                 rangeData = [];
@@ -7396,16 +7520,16 @@ var Legend = /** @__PURE__ @class */ (function () {
                     });
                 }
                 var legendFill = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]' ?
-                    !isNullOrUndefined(colorMap.value) ? colorMap.color[0] : this_1.legendGradientColor(colorMap, legendIndex) :
+                    !isNullOrUndefined(colorMap.value) ? colorMap.color[0] : this_3.legendGradientColor(colorMap, legendIndex) :
                     colorMap.color : fill;
                 legendIndex++;
-                this_1.getOverallLegendItemsCollection(legendText, legendFill, rangeData, colorMap.showLegend);
+                this_3.getOverallLegendItemsCollection(legendText, legendFill, rangeData, colorMap.showLegend);
             }
         };
-        var this_1 = this;
+        var this_3 = this;
         for (var _i = 0, colorMapping_1 = colorMapping; _i < colorMapping_1.length; _i++) {
             var colorMap = colorMapping_1[_i];
-            _loop_1(colorMap);
+            _loop_3(colorMap);
         }
     };
     Legend.prototype.getOverallLegendItemsCollection = function (legendText, legendFill, legendData, showLegend) {
@@ -7455,7 +7579,7 @@ var Legend = /** @__PURE__ @class */ (function () {
         var equalData = [];
         var outOfRangeValues = [];
         var outOfRange = [];
-        var _loop_2 = function (colorMap) {
+        var _loop_4 = function (colorMap) {
             if (!isNullOrUndefined(colorMap.value)) {
                 legendText = !isNullOrUndefined(colorMap.label) ? colorMap.label : colorMap.value;
                 equalData = [];
@@ -7491,7 +7615,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                 }
                 var legendFill = (isNullOrUndefined(fill)) ? Object.prototype.toString.call(colorMap.color) === '[object Array]'
                     ? colorMap.color[0] : colorMap.color : fill;
-                this_2.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
+                this_4.getOverallLegendItemsCollection(legendText, legendFill, equalData, colorMap.showLegend);
             }
             else if (isNullOrUndefined(colorMap.minOpacity) && isNullOrUndefined(colorMap.maxOpacity) && isNullOrUndefined(colorMap.value)
                 && isNullOrUndefined(colorMap.from) && isNullOrUndefined(colorMap.to) && !isNullOrUndefined(colorMap.color)) {
@@ -7527,13 +7651,13 @@ var Legend = /** @__PURE__ @class */ (function () {
                 var outfill = ((Object.prototype.toString.call(colorMap.color) === '[object Array]'))
                     ? colorMap.color[0] : colorMap.color;
                 var legendOutFill = outfill;
-                this_2.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
+                this_4.getOverallLegendItemsCollection(legendText, legendOutFill, outOfRange, colorMap.showLegend);
             }
         };
-        var this_2 = this;
+        var this_4 = this;
         for (var _i = 0, colorMapping_2 = colorMapping; _i < colorMapping_2.length; _i++) {
             var colorMap = colorMapping_2[_i];
-            _loop_2(colorMap);
+            _loop_4(colorMap);
         }
     };
     Legend.prototype.getDataLegendCollection = function (layerIndex, layerData, colorMapping, dataSource, dataPath, colorValuePath, propertyPath) {
@@ -7815,6 +7939,15 @@ var Legend = /** @__PURE__ @class */ (function () {
     return Legend;
 }());
 
+var __rest$5 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Highlight module class
  */
@@ -7942,6 +8075,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
         }
     };
     Highlight.prototype.mapHighlight = function (targetEle, shapeData, data) {
+        var _this = this;
         var layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
         var isMarkerSelect = false;
         if (targetEle.id.indexOf('MarkerIndex') > -1) {
@@ -7949,7 +8083,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker$$1].highlightSettings.enable;
         }
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
-            var eventArgs = {
+            var eventArgs_1 = {
                 opacity: this.highlightSettings.opacity,
                 fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
                     ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
@@ -7963,8 +8097,13 @@ var Highlight = /** @__PURE__ @class */ (function () {
                 shapeData: shapeData,
                 data: data
             };
-            this.maps.trigger(itemHighlight, eventArgs);
-            this.highlightMap(targetEle, eventArgs);
+            if (this.maps.isBlazor) {
+                var shapeData_1 = eventArgs_1.shapeData, blazorEventArgs = __rest$5(eventArgs_1, ["shapeData"]);
+                eventArgs_1 = blazorEventArgs;
+            }
+            this.maps.trigger(itemHighlight, eventArgs_1, function () {
+                _this.highlightMap(targetEle, eventArgs_1);
+            });
         }
     };
     Highlight.prototype.highlightMap = function (targetEle, eventArgs) {
@@ -8011,6 +8150,15 @@ var Highlight = /** @__PURE__ @class */ (function () {
     return Highlight;
 }());
 
+var __rest$6 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Selection module class
  */
@@ -8129,6 +8277,10 @@ var Selection = /** @__PURE__ @class */ (function () {
             shapeData: shapeData,
             data: data
         };
+        if (this.maps.isBlazor) {
+            var shapeData_1 = eventArgs.shapeData, blazorEventArgs = __rest$6(eventArgs, ["shapeData"]);
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger('itemSelection', eventArgs, function (observedArgs) {
             // if (this.maps.legendSettings.visible && !this.maps.legendSettings.toggleVisibility
             // && this.maps.legendSettings.legendSelection) {
@@ -8200,6 +8352,15 @@ var Selection = /** @__PURE__ @class */ (function () {
     return Selection;
 }());
 
+var __rest$7 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Map Tooltip
  */
@@ -8329,6 +8490,9 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                 maps: this.maps,
                 element: target, eventArgs: e
             };
+            if (this.maps.isBlazor) {
+                var maps = tootipArgs.maps, blazorEventArgs = __rest$7(tootipArgs, ["maps"]);
+            }
             this.maps.trigger('tooltipRender', tootipArgs, function (observedArgs) {
                 if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
@@ -8445,6 +8609,15 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
     return MapsTooltip;
 }());
 
+var __rest$8 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Zoom module used to process the zoom for maps
  */
@@ -8820,9 +8993,13 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     width: markerSettings.width, imageUrl: markerSettings.imageUrl, shape: markerSettings.shape,
                     border: markerSettings.border
                 };
+                if (_this.maps.isBlazor) {
+                    var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$8(eventArgs, ["maps", "marker"]);
+                    eventArgs = blazorEventArgs;
+                }
                 _this.maps.trigger('markerRendering', eventArgs, function (MarkerArgs) {
-                    var long = data['longitude'];
-                    var lati = data['latitude'];
+                    var long = data['longitude'] | data['Longitude'];
+                    var lati = data['latitude'] | data['Latitude'];
                     var offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         var markerID = _this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'

@@ -16,13 +16,6 @@ import { Axis } from '../axis/axis';
  * Configures the Adaptor Property in the Heatmap.
  */
 export class Data extends ChildProperty<Data> {
-    /**
-     * Property to provide Datasource.
-     * @default null
-     */
-
-    @Property(null)
-    public data: Object;
 
     /**
      * Specifies the provided datasource is an JSON data. 
@@ -34,9 +27,9 @@ export class Data extends ChildProperty<Data> {
 
     /**
      * specifies Adaptor type
-     * @default cell
+     * @default None
      */
-    @Property('cell')
+    @Property('None')
     public adaptorType: AdaptorType;
 
     /**
@@ -98,8 +91,8 @@ export class Adaptor {
      * @return {void}
      * @private
      */
-    public constructDatasource(adaptData: DataModel): void {
-        if (adaptData.adaptorType === 'Cell') {
+    public constructDatasource(dataSource: object, dataSourceSettings: DataModel): void {
+        if (dataSourceSettings.adaptorType === 'Cell') {
             let xAxis: AxisModel = this.heatMap.xAxis;
             let yAxis: AxisModel = this.heatMap.yAxis;
             this.adaptiveXMinMax.min = xAxis.minimum;
@@ -110,21 +103,21 @@ export class Adaptor {
                 (isNullOrUndefined(xAxis.minimum) || isNullOrUndefined(xAxis.maximum))) ||
                 ((yAxis.valueType === 'Numeric' || yAxis.valueType === 'DateTime') &&
                     (isNullOrUndefined(yAxis.minimum) || isNullOrUndefined(yAxis.maximum)))) {
-                this.getMinMaxValue(adaptData, xAxis, yAxis);
+                this.getMinMaxValue(dataSource, dataSourceSettings, xAxis, yAxis);
             }
             this.heatMap.isCellData = true;
         }
-        if (adaptData && adaptData.data === undefined) {
-            this.heatMap.completeAdaptDataSource = adaptData;
-        } else if (!adaptData.isJsonData && adaptData.adaptorType === 'Table' || adaptData.data === null) {
-            this.heatMap.completeAdaptDataSource = adaptData.data;
-        } else if (adaptData.isJsonData && adaptData.adaptorType === 'Table') {
-            this.heatMap.completeAdaptDataSource = this.processJsonTableData(adaptData);
-        } else if (adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
-            this.heatMap.completeAdaptDataSource = this.processJsonCellData(adaptData);
-        } else if (!adaptData.isJsonData && adaptData.adaptorType === 'Cell') {
+        if (dataSourceSettings.adaptorType === 'None') {
+            this.heatMap.completeAdaptDataSource = dataSource;
+        } else if (!dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Table') {
+            this.heatMap.completeAdaptDataSource = dataSource;
+        } else if (dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Table') {
+            this.heatMap.completeAdaptDataSource = this.processJsonTableData(dataSource, dataSourceSettings);
+        } else if (dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Cell') {
+            this.heatMap.completeAdaptDataSource = this.processJsonCellData(dataSource, dataSourceSettings);
+        } else if (!dataSourceSettings.isJsonData && dataSourceSettings.adaptorType === 'Cell') {
             this.constructAdaptiveAxis();
-            this.heatMap.completeAdaptDataSource = this.processCellData(adaptData);
+            this.heatMap.completeAdaptDataSource = this.processCellData(dataSource);
             this.heatMap.isCellData = true;
         }
     }
@@ -200,8 +193,8 @@ export class Adaptor {
      * @return {void}
      * @private
      */
-    private getMinMaxValue(adapData: DataModel, xAxis: AxisModel, yAxis: AxisModel): void {
-        let data: Object[][] = <Object[][]>adapData.data;
+    private getMinMaxValue(dataSource: object, adapData: DataModel, xAxis: AxisModel, yAxis: AxisModel): void {
+        let data: Object[][] = <Object[][]>dataSource;
         let label: string[] = Object.keys(data[0]);
         if (data.length > 0) {
             this.adaptiveXMinMax.min = !isNullOrUndefined(xAxis.minimum) ? xAxis.minimum : adapData.isJsonData ?
@@ -242,15 +235,15 @@ export class Adaptor {
      * @return {Object}
      * @private
      */
-    private processCellData(adaptordata: DataModel): Object {
+    private processCellData(dataSource: object): Object {
         // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = adaptordata.data;
+        let tempDataCollection: any = dataSource;
         let xLabels: string[] = this.reconstructedXAxis;
         let yLabels: string[] = this.reconstructedYAxis;
         let currentDataXIndex: number = 0;
         let currentDataYIndex: number = 0;
-        if (tempDataCollection.length) {
-            this.reconstructData = [];
+        this.reconstructData = [];
+        if (tempDataCollection && tempDataCollection.length) {
             for (let xindex: number = 0; xindex < tempDataCollection.length; xindex++) {
                 if (this.heatMap.xAxis.valueType === 'Category') {
                     currentDataXIndex = tempDataCollection[xindex][0];
@@ -284,14 +277,14 @@ export class Adaptor {
      * @return {Object}
      * @private
      */
-    private processJsonCellData(adaptordata: DataModel): Object {
+    private processJsonCellData(dataSource: object, adaptordata: DataModel): Object {
         // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = adaptordata.data;
+        let tempDataCollection: any = dataSource;
         let xAxisLabels : string[] = this.heatMap.xAxis.labels ?  this.heatMap.xAxis.labels : [];
         let yAxisLabels : string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
         let axisCollections : Axis[] = this.heatMap.axisCollections;
         if ( xAxisLabels.length === 0 || yAxisLabels.length === 0) {
-            this.generateAxisLabels(adaptordata);
+            this.generateAxisLabels(dataSource, adaptordata);
         }
         let xLabels: (string | Number | Date)[] = (this.heatMap.xAxis.valueType === 'Category') ? (xAxisLabels.length > 0 ?
             this.heatMap.xAxis.labels : axisCollections[0].jsonCellLabel) : axisCollections[0].labelValue;
@@ -336,9 +329,9 @@ export class Adaptor {
      * @return {string}
      * @private
      */
-    private generateAxisLabels(adaptordata: DataModel) : void {
+    private generateAxisLabels(dataSource: object, adaptordata: DataModel) : void {
         // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = adaptordata.data;
+        let tempDataCollection: any = dataSource;
         let xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];
         let yLabels: string[] = this.heatMap.yAxis.labels ? this.heatMap.yAxis.labels : [];
         let hasXLabels: boolean = xLabels.length > 0 ? true : false;
@@ -413,9 +406,9 @@ export class Adaptor {
      * @return {Object}
      * @private
      */
-    private processJsonTableData(adaptordata: DataModel): Object {
+    private processJsonTableData(dataSource: object, adaptordata: DataModel): Object {
         // tslint:disable-next-line:no-any 
-        let tempDataCollection: any = adaptordata.data;
+        let tempDataCollection: any = dataSource;
         let currentDataXIndex: number | string = 0;
         let currentDataYIndex: number | string = 0;
         let xLabels: string[] = this.heatMap.xAxis.labels ? this.heatMap.xAxis.labels : [];

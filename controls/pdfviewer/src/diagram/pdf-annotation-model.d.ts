@@ -1,4 +1,4 @@
-import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { AnnotationType } from './enum';import { ICommentsCollection, IReviewCollection } from '../pdfviewer';
+import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';import { Point } from '@syncfusion/ej2-drawings';import { Size } from '@syncfusion/ej2-drawings';import { Container } from '@syncfusion/ej2-drawings';import { PdfAnnotationType } from './enum';import { ICommentsCollection, IReviewCollection } from '../pdfviewer';
 
 /**
  * Interface for a class PdfBounds
@@ -82,7 +82,7 @@ export interface PdfAnnotationBaseModel {
      * Represents the annotation type of the pdf
      * @default 'Rectangle'
      */
-    shapeAnnotationType?: AnnotationType;
+    shapeAnnotationType?: PdfAnnotationType;
 
     /**
      * Represents the measure type of the annotation

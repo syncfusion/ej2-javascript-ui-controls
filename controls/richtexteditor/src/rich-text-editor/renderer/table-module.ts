@@ -1,4 +1,4 @@
-import { detach, closest, Browser, L10n, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { detach, closest, Browser, L10n, isNullOrUndefined as isNOU, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, EventHandler, addClass, removeClass, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IRichTextEditor, IRenderer, IDropDownItemModel, OffsetPosition, ResizeArgs } from '../base/interface';
 import { IColorPickerEventArgs, ITableArgs, ITableNotifyArgs, IToolbarItemModel, NotifyArgs } from '../base/interface';
@@ -593,7 +593,7 @@ export class Table {
                 EventHandler.add(document, Browser.touchStartEvent, this.removeHelper, this);
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
-                let args: ResizeArgs = { event: e, requestType: 'Table' };
+                let args: ResizeArgs = isBlazor() ? { requestType: 'Table' } : { event: e, requestType: 'Table' };
                 this.parent.trigger(events.resizeStart, args, (resizeStartArgs: ResizeArgs) => {
                     if (resizeStartArgs.cancel) {
                         this.cancelResizeAction();
@@ -655,7 +655,7 @@ export class Table {
         let mouseY: number = (this.parent.enableRtl) ? -(pageY - this.pageY) : (pageY - this.pageY);
         this.pageX = pageX;
         this.pageY = pageY;
-        let args: ResizeArgs = { event: e, requestType: 'table' };
+        let args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(events.onResize, args, (resizingArgs: ResizeArgs) => {
             if (resizingArgs.cancel) {
                 this.cancelResizeAction();
@@ -732,7 +732,7 @@ export class Table {
             this.pageY = null;
             this.moveEle = null;
         }
-        let args: ResizeArgs = { event: e, requestType: 'table' };
+        let args: ResizeArgs = isBlazor() ? { requestType: 'table' } : { event: e, requestType: 'table' };
         this.parent.trigger(events.resizeStop, args);
         this.parent.formatter.saveData();
     }
@@ -983,7 +983,7 @@ export class Table {
                 this.parent.isBlur = false;
                 this.editdlgObj.destroy();
                 detach(this.editdlgObj.element);
-                this.dialogRenderObj.close(this.editdlgObj);
+                this.dialogRenderObj.close(event);
                 this.editdlgObj = null;
             }
         };

@@ -6,7 +6,7 @@ import { EventHandler } from './event-handler';
 import { ChildProperty } from './child-property';
 import { PositionModel, DraggableModel } from './draggable-model';
 import { select, closest, setStyleAttribute, addClass, createElement } from './dom';
-import { extend, isUndefined, isNullOrUndefined, compareElementParent } from './util';
+import { extend, isUndefined, isNullOrUndefined, compareElementParent, isBlazor } from './util';
 const defaultPosition: PositionCoordinates = { left: 0, top: 0, bottom: 0, right: 0 };
 const positionProp: string[] = ['offsetLeft', 'offsetTop'];
 const axisMapper: string[] = ['x', 'y'];
@@ -149,6 +149,22 @@ export interface DragEventArgs {
      */
     target?: HTMLElement;
 }
+
+/**
+ * Used for accessing the BlazorEventArgs.
+ * @private
+ */
+export interface BlazorDragEventArgs {
+    /**
+     * bind draggable element for Blazor Components
+     */
+    bindEvents: Function;
+    /**
+     * Draggable element to which draggable events are to be binded in Blazor.
+     */
+    dragElement: HTMLElement;
+}
+
 /**
  * Draggable Module provides support to enable draggable functionality in Dom Elements.
  * ```html
@@ -312,6 +328,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private helperElement: HTMLElement;
     private hoverObject: DropObject;
     private parentClientRect: PositionModel;
+    private parentScrollX: number = 0;
+    private parentScrollY: number = 0;
     public droppables: { [key: string]: DropInfo } = {};
     constructor(element: HTMLElement, options?: DraggableModel) {
         super(options, element);
@@ -350,11 +368,13 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             },
             this.tapHoldThreshold);
         EventHandler.add(document, Browser.touchMoveEvent, this.removeTapholdTimer, this);
+        EventHandler.add(document, Browser.touchEndEvent, this.removeTapholdTimer, this);
     }
     /* istanbul ignore next */
     private removeTapholdTimer(): void {
         clearTimeout(this.tapHoldTimer);
         EventHandler.remove(document, Browser.touchMoveEvent, this.removeTapholdTimer);
+        EventHandler.remove(document, Browser.touchEndEvent, this.removeTapholdTimer);
     }
     /* istanbul ignore next */
     private getScrollableParent(element: HTMLElement, axis: string): HTMLElement {
@@ -364,10 +384,32 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             return null;
         }
         if (element[scroll[axis]] > element[client[axis]]) {
-            return element;
+            if (axis === 'vertical' ? element.scrollTop > 0 : element.scrollLeft > 0) {
+                if (axis === 'vertical') {
+                    this.parentScrollY = this.parentScrollY +
+                        (this.parentScrollY === 0 ? element.scrollTop : element.scrollTop - this.parentScrollY);
+                } else {
+                    this.parentScrollX = this.parentScrollX +
+                        (this.parentScrollX === 0 ? element.scrollLeft : element.scrollLeft - this.parentScrollX);
+                }
+                if (!isNullOrUndefined(element)) {
+                    return this.getScrollableParent(element.parentNode as HTMLElement, axis);
+                } else {
+                    return element;
+                }
+            } else {
+                return this.getScrollableParent(element.parentNode as HTMLElement, axis);
+            }
         } else {
             return this.getScrollableParent(element.parentNode as HTMLElement, axis);
         }
+    }
+    private getScrollableValues(): void {
+        this.parentScrollX = 0;
+        this.parentScrollY = 0;
+        let isModalDialog: boolean = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
+        let verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
+        let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
     }
     private initialize(evt: MouseEvent & TouchEvent, curTarget?: EventTarget): void {
         this.target = <HTMLElement>(evt.currentTarget || curTarget);
@@ -385,17 +427,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
             let pos: PositionModel = this.element.getBoundingClientRect();
-            let isModalDialog: boolean = this.element.classList.contains('e-dialog') && this.element.classList.contains('e-dlg-modal');
-            let parentScrollX: number = 0;
-            let parentScrollY: number = 0;
-            if (!isModalDialog) {
-                let verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
-                let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
-                parentScrollX = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
-                parentScrollY = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
-            }
-            this.relativeXPosition = intCoord.pageX - (pos.left + parentScrollX);
-            this.relativeYPosition = intCoord.pageY - (pos.top + parentScrollY);
+            this.getScrollableValues();
+            if (evt.clientX === evt.pageX) { this.parentScrollX = 0; }
+            if (evt.clientY === evt.pageY) { this.parentScrollY = 0; }
+            this.relativeXPosition = intCoord.pageX - (pos.left + this.parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (pos.top + this.parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);
@@ -447,7 +483,14 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             this.parentClientRect = this.calculateParentPosition(dragTargetElement.offsetParent);
             if (this.dragStart) {
                 let curTarget: Element = this.getProperTargetElement(evt);
-                this.trigger('dragStart', { event: evt, element: element, target: curTarget });
+                let args: { [key: string]: object } = {
+                    event: evt,
+                    element: element,
+                    target: curTarget,
+                    bindEvents: isBlazor() ? this.bindDragEvents.bind(this) : null,
+                    dragElement: dragTargetElement
+                };
+                this.trigger('dragStart', args);
             }
             if (this.dragArea) {
                 this.setDragArea();
@@ -460,6 +503,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 this.diffX = this.position.left - this.offset.left;
                 this.diffY = this.position.top - this.offset.top;
             }
+            this.getScrollableValues();
             let posValue: DragPosition = this.getProcessedPositionValue({
                 top: (pos.top - this.diffY) + 'px',
                 left: (pos.left - this.diffX) + 'px'
@@ -467,14 +511,20 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
             setStyleAttribute(dragTargetElement, this.getDragPosition({ position: 'absolute', left: posValue.left, top: posValue.top }));
             EventHandler.remove(document, Browser.touchMoveEvent, this.intDragStart);
             EventHandler.remove(document, Browser.touchEndEvent, this.intDestroy);
-            if (isVisible(dragTargetElement)) {
-                EventHandler.add(document, Browser.touchMoveEvent, this.intDrag, this);
-                EventHandler.add(document, Browser.touchEndEvent, this.intDragStop, this);
-                this.setGlobalDroppables(false, this.element, dragTargetElement);
-            } else {
-                this.toggleEvents();
-                document.body.classList.remove('e-prevent-select');
+            if (!isBlazor()) {
+                this.bindDragEvents(dragTargetElement);
             }
+        }
+    }
+
+    private bindDragEvents(dragTargetElement: HTMLElement): void {
+        if (isVisible(dragTargetElement)) {
+            EventHandler.add(document, Browser.touchMoveEvent, this.intDrag, this);
+            EventHandler.add(document, Browser.touchEndEvent, this.intDragStop, this);
+            this.setGlobalDroppables(false, this.element, dragTargetElement);
+        } else {
+            this.toggleEvents();
+            document.body.classList.remove('e-prevent-select');
         }
     }
 
@@ -563,7 +613,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 if (this.dragLimit.left + window.pageXOffset > dLeft) {
                     left = this.dragLimit.left;
                 } else if (this.dragLimit.right + window.pageXOffset < dLeft + helperWidth) {
-                    left = this.dragLimit.right - helperWidth;
+                    left = dLeft - (dLeft - this.dragLimit.right) + window.pageXOffset - helperWidth;
                 } else {
                     left = dLeft;
                 }
@@ -574,7 +624,7 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
                 if (this.dragLimit.top + window.pageYOffset > dTop) {
                     top = this.dragLimit.top;
                 } else if (this.dragLimit.bottom + window.pageYOffset < dTop + helperHeight) {
-                    top = this.dragLimit.bottom - helperHeight;
+                    top = dTop - (dTop - this.dragLimit.bottom) + window.pageYOffset - helperHeight;
                 } else {
                     top = dTop;
                 }
@@ -710,11 +760,11 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     private getProperTargetElement(evt: MouseEvent & TouchEvent): HTMLElement {
         let intCoord: Coordinates = this.getCoordinates(evt);
         let ele: HTMLElement;
-        let prevStyle: string = this.helperElement.style.display || '';
+        let prevStyle: string = this.helperElement.style.pointerEvents || '';
         if (compareElementParent(evt.target as Element, this.helperElement) || evt.type.indexOf('touch') !== -1) {
-            this.helperElement.style.display = 'none';
+            this.helperElement.style.pointerEvents = 'none';
             ele = <HTMLElement>document.elementFromPoint(intCoord.clientX, intCoord.clientY);
-            this.helperElement.style.display = prevStyle;
+            this.helperElement.style.pointerEvents = prevStyle;
         } else {
             ele = <HTMLElement>evt.target;
         }
@@ -722,8 +772,8 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
     }
     private getMousePosition(evt: MouseEvent & TouchEvent): PositionModel {
         let intCoord: Coordinates = this.getCoordinates(evt);
-        let pageX: number = this.clone ? intCoord.pageX : (intCoord.pageX + window.pageXOffset) - this.relativeXPosition;
-        let pageY: number = this.clone ? intCoord.pageY : (intCoord.pageY + window.pageYOffset) - this.relativeYPosition;
+        let pageX: number = this.clone ? intCoord.pageX : (intCoord.clientX + window.pageXOffset) - this.relativeXPosition;
+        let pageY: number = this.clone ? intCoord.pageY : (intCoord.clientY + window.pageYOffset) - this.relativeYPosition;
         return {
             left: pageX - (this.margin.left + this.cursorAt.left),
             top: pageY - (this.margin.top + this.cursorAt.top)

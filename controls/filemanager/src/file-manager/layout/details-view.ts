@@ -15,9 +15,9 @@ import { removeBlur, openAction, getImageUrl, fileType, getSortedData, getLocale
 import { createEmptyElement } from '../common/utility';
 import { read, Download, GetDetails, Delete } from '../common/operations';
 import { cutFiles, addBlur, openSearchFolder, copyFiles, removeActive, pasteHandler, getPathObject, getName } from '../common/index';
-import { hasReadAccess, hasEditAccess, hasDownloadAccess, doRename, getAccessClass, createDeniedDialog } from '../common/index';
+import { hasReadAccess, hasEditAccess, hasDownloadAccess, doRename, getAccessClass, createDeniedDialog, rename } from '../common/index';
 import { createVirtualDragElement, dragStopHandler, dragStartHandler, draggingHandler, getModule, getFullPath } from '../common/index';
-import { getDirectoryPath } from '../common/index';
+import { getDirectoryPath, updateRenamingData, getItemName, doDeleteFiles, doDownloadFiles } from '../common/index';
 import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel, BeforeCopyEventArgs } from '@syncfusion/ej2-grids';
 
@@ -34,6 +34,7 @@ export class DetailsView {
     private keyConfigs: { [key: string]: string };
     private sortItem: boolean;
     private isInteracted: boolean = true;
+    private interaction: boolean = true;
     private isPasteOperation: boolean = false;
     private isColumnRefresh: boolean = false;
     private clickObj: Touch;
@@ -42,13 +43,14 @@ export class DetailsView {
     private dragObj: Draggable = null;
     private startIndex: number = null;
     private firstItemIndex: number = null;
+    private count: number = 0;
+    private isRendered: boolean = true;
+    private isLoaded: boolean = false;
 
     /* public variable */
     public gridObj: Grid;
     public pasteOperation: boolean = false;
     public uploadOperation: boolean = false;
-    private count: number = 0;
-    private isRendered: boolean = true;
 
     /**
      * Constructor for the GridView module
@@ -371,10 +373,12 @@ export class DetailsView {
         this.parent.isLayoutChange = false;
         hideSpinner(this.parent.element);
         this.checkEmptyDiv(this.emptyArgs);
+        this.isInteracted = this.isLoaded ? true : this.isInteracted;
+        this.isLoaded = false;
     }
 
     private selectRecords(nodes: string[]): void {
-        let gridRecords: { [key: string]: Object; }[] = <{ [key: string]: Object; }[]>this.gridObj.getCurrentViewRecords();
+        let gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
         let sRecords: number[] = [];
         for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
             let node: string = this.parent.hasId ? getValue('id', gridRecords[i]) : getName(this.parent, gridRecords[i]);
@@ -435,6 +439,7 @@ export class DetailsView {
                     }
                     break;
                 case 'selectedItems':
+                    this.interaction = false;
                     if (this.parent.selectedItems.length !== 0) {
                         this.selectRecords(this.parent.selectedItems);
                     } else if (!isNOU(this.gridObj)) {
@@ -572,6 +577,8 @@ export class DetailsView {
         if (this.parent.view === 'Details') {
             if (!this.gridObj) {
                 this.render(args);
+            } else {
+                this.isLoaded = true;
             }
             if (this.parent.isFiltered) {
                 this.updatePathColumn();
@@ -680,14 +687,20 @@ export class DetailsView {
     private onSelectAllInit(): void {
         if (this.parent.view === 'Details') {
             this.isInteracted = false;
-            this.gridObj.selectionModule.selectRowsByRange(0, this.gridObj.getRows().length);
+            if (this.parent.allowMultiSelection) {
+                this.gridObj.selectionModule.selectRowsByRange(0, this.gridObj.getRows().length);
+            } else {
+                this.gridObj.selectRow(this.gridObj.getRows().length - 1);
+            }
             this.isInteracted = true;
+            this.interaction = true;
         }
     }
 
     private onClearAllInit(): void {
         if (this.parent.view === 'Details') {
             this.removeSelection();
+            this.interaction = true;
         }
     }
 
@@ -727,6 +740,8 @@ export class DetailsView {
         this.parent.on(events.detailsInit, this.onDetailsInit, this);
         this.parent.on(events.refreshEnd, this.onRefreshEnd, this);
         this.parent.on(events.search, this.onSearchFiles, this);
+        this.parent.on(events.methodCall, this.onMethodCall, this);
+        this.parent.on(events.actionFailure, this.onActionFailure, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         this.parent.on(events.deleteInit, this.onDeleteInit, this);
         this.parent.on(events.deleteEnd, this.onDeleteEnd, this);
@@ -764,6 +779,8 @@ export class DetailsView {
         this.parent.off(events.createEnd, this.onCreateEnd);
         this.parent.off(events.refreshEnd, this.onRefreshEnd);
         this.parent.off(events.search, this.onSearchFiles);
+        this.parent.off(events.methodCall, this.onMethodCall);
+        this.parent.off(events.actionFailure, this.onActionFailure);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.renameInit, this.onRenameInit);
         this.parent.off(events.renameEnd, this.onPathChanged);
@@ -792,6 +809,8 @@ export class DetailsView {
         this.parent.off(events.dropPath, this.onDropPath);
         this.parent.off(events.updateSelectionData, this.onUpdateSelectionData);
     }
+
+    private onActionFailure(): void { this.interaction = true; }
 
     private onMenuItemData(args: { [key: string]: Object; }): void {
         if (this.parent.activeModule === this.getModuleName()) {
@@ -1026,12 +1045,7 @@ export class DetailsView {
         let selectSize: number = 0;
         while (selectSize < selectedRecords.length) {
             let record: FileDetails = <FileDetails>selectedRecords[selectSize];
-            let name: string;
-            if (this.parent.hasId) {
-                name = getValue('id', record);
-            } else {
-                name = getName(this.parent, record);
-            }
+            let name: string = getItemName(this.parent, record);
             this.parent.selectedItems.push(name);
             selectSize++;
         }
@@ -1063,8 +1077,9 @@ export class DetailsView {
     }
 
     private triggerSelect(action?: string, args?: RowSelectEventArgs): void {
-        let eventArgs: FileSelectEventArgs = { action: action, fileDetails: args.data };
+        let eventArgs: FileSelectEventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction };
         this.parent.trigger('fileSelect', eventArgs);
+        this.interaction = true;
     }
     private wireEvents(): void {
         this.wireClickEvent(true);
@@ -1136,6 +1151,7 @@ export class DetailsView {
         if (this.gridObj.selectedRowIndex === -1) {
             this.startIndex = null;
         }
+        this.isInteracted = true;
     }
 
     private removeFocus(): void {
@@ -1210,17 +1226,7 @@ export class DetailsView {
                 break;
             case 'del':
             case 'shiftdel':
-                if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
-                    this.parent.itemData = this.gridObj.getSelectedRecords();
-                    let items: Object[] = this.parent.itemData;
-                    for (let i: number = 0; i < items.length; i++) {
-                        if (!hasEditAccess(items[i])) {
-                            createDeniedDialog(this.parent, items[i]);
-                            return;
-                        }
-                    }
-                    createDialog(this.parent, 'Delete');
-                }
+                this.performDelete();
                 break;
             case 'enter':
                 if (this.gridObj.selectedRowIndex === -1) { break; }
@@ -1241,23 +1247,10 @@ export class DetailsView {
                 cutFiles(this.parent);
                 break;
             case 'ctrlD':
-                if (this.parent.selectedItems.length !== 0) {
-                    this.parent.itemData = this.gridObj.getSelectedRecords();
-                    let items: Object[] = this.parent.itemData;
-                    for (let i: number = 0; i < items.length; i++) {
-                        if (!hasDownloadAccess(items[i])) {
-                            createDeniedDialog(this.parent, items[i]);
-                            return;
-                        }
-                    }
-                    Download(this.parent, this.parent.path, this.parent.selectedItems);
-                }
+                this.doDownload();
                 break;
             case 'f2':
-                if (this.parent.selectedItems.length === 1) {
-                    this.updateRenameData();
-                    doRename(this.parent);
-                }
+                this.performRename();
                 break;
             case 'ctrlA':
                 if (!isNOU(gridItems[0]) && this.parent.allowMultiSelection) {
@@ -1337,11 +1330,44 @@ export class DetailsView {
         return this.gridObj.getSelectedRecords();
     }
 
+    private doDownload(): void {
+        if (this.parent.selectedItems.length !== 0) {
+            this.parent.itemData = this.gridObj.getSelectedRecords();
+            let items: Object[] = this.parent.itemData;
+            for (let i: number = 0; i < items.length; i++) {
+                if (!hasDownloadAccess(items[i])) {
+                    createDeniedDialog(this.parent, items[i]);
+                    return;
+                }
+            }
+            Download(this.parent, this.parent.path, this.parent.selectedItems);
+        }
+    }
+
+    private performDelete(): void {
+        if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
+            this.parent.itemData = this.gridObj.getSelectedRecords();
+            let items: Object[] = this.parent.itemData;
+            for (let i: number = 0; i < items.length; i++) {
+                if (!hasEditAccess(items[i])) {
+                    createDeniedDialog(this.parent, items[i]);
+                    return;
+                }
+            }
+            createDialog(this.parent, 'Delete');
+        }
+    }
+
+    private performRename(): void {
+        if (this.parent.selectedItems.length === 1) {
+            this.updateRenameData();
+            doRename(this.parent);
+        }
+    }
+
     private updateRenameData(): void {
         let data: Object = this.gridSelectNodes()[0];
-        this.parent.itemData = [data];
-        this.parent.isFile = getValue('isFile', data);
-        this.parent.filterPath = getValue('filterPath', data);
+        updateRenamingData(this.parent, data);
     }
 
     private shiftMoveMethod(gridItems: object[], selIndex: number, focIndex: number, selRowIndeces: number[], e: KeyboardEventArgs): void {
@@ -1532,6 +1558,121 @@ export class DetailsView {
                         this.addFocus(this.getFocusedItemIndex() - 1);
                     }
                 }
+            }
+        }
+    }
+
+    private onMethodCall(e: Object): void {
+        if (this.parent.view !== 'Details') { return; }
+        let action: string = getValue('action', e);
+        switch (action) {
+            case 'deleteFiles':
+                this.deleteFiles(getValue('ids', e));
+                break;
+            case 'downloadFiles':
+                this.downloadFiles(getValue('ids', e));
+                break;
+            case 'openFile':
+                this.openFile(getValue('id', e));
+                break;
+            case 'createFolder':
+                this.interaction = false;
+                break;
+            case 'renameFile':
+                this.interaction = false;
+                this.renameFile(getValue('id', e), getValue('newName', e));
+                break;
+            case 'selectAll':
+                this.interaction = false;
+                this.onSelectAllInit();
+                break;
+            case 'clearSelection':
+                this.interaction = false;
+                this.onClearAllInit();
+                break;
+        }
+    }
+
+    private getRecords(nodes: string[]): Object[] {
+        let gridRecords: Object[] = this.gridObj.getCurrentViewRecords();
+        let records: Object[] = [];
+        let hasFilter: boolean = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
+        let filter: string = this.parent.hasId ? 'id' : 'name';
+        if (this.parent.hasId || !hasFilter) {
+            for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
+                if (nodes.indexOf(getValue(filter, gridRecords[i])) !== -1) {
+                    records.push(gridRecords[i]);
+                }
+            }
+        } else {
+            for (let i: number = 0, len: number = gridRecords.length; i < len; i++) {
+                let name: string = getValue('filterPath', gridRecords[i]) + getValue('name', gridRecords[i]);
+                if (nodes.indexOf(name) !== -1) {
+                    records.push(gridRecords[i]);
+                }
+            }
+        }
+        return records;
+    }
+
+    private deleteFiles(ids: string[]): void {
+        this.parent.activeModule = 'detailsview';
+        if (isNOU(ids)) {
+            this.performDelete();
+            return;
+        }
+        let records: Object[] = this.getRecords(ids);
+        if (records.length === 0) { return; }
+        let data: Object[] = [];
+        let newIds: string[] = [];
+        for (let i: number = 0; i < records.length; i++) {
+            data[i] = records[i];
+            newIds[i] = getItemName(this.parent, data[i]);
+        }
+        doDeleteFiles(this.parent, data, newIds);
+    }
+
+    private downloadFiles(ids: string[]): void {
+        if (isNOU(ids)) {
+            this.doDownload();
+            return;
+        }
+        let dRecords: Object[] = this.getRecords(ids);
+        if (dRecords.length === 0) { return; }
+        let data: Object[] = [];
+        let newIds: string[] = [];
+        for (let i: number = 0; i < dRecords.length; i++) {
+            data[i] = dRecords[i];
+            newIds[i] = getItemName(this.parent, data[i]);
+        }
+        doDownloadFiles(this.parent, data, newIds);
+    }
+
+    private openFile(id: string): void {
+        if (isNOU(id)) { return; }
+        let records: Object[] = this.getRecords([id]);
+        if (records.length > 0) {
+            this.openContent(records[0]);
+        }
+    }
+
+    private renameFile(id: string, name: string): void {
+        this.parent.activeModule = 'detailsview';
+        if (isNOU(id)) {
+            this.performRename();
+            return;
+        }
+        let records: Object[] = this.getRecords([id]);
+        if (records.length > 0) {
+            updateRenamingData(this.parent, records[0]);
+            if (!isNOU(name)) {
+                if (hasEditAccess(this.parent.itemData[0])) {
+                    rename(this.parent, this.parent.path, name);
+                } else {
+                    createDeniedDialog(this.parent, this.parent.itemData[0]);
+                }
+            } else {
+                doRename(this.parent);
             }
         }
     }

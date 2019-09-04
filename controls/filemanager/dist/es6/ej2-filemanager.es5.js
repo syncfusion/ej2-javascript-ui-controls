@@ -581,6 +581,8 @@ var download = 'download';
 /** @hidden */
 var layoutRefresh = 'layout-refresh';
 /** @hidden */
+var actionFailure = 'actionFailure';
+/** @hidden */
 var search = 'search';
 /** @hidden */
 var openInit = 'open-init';
@@ -652,6 +654,8 @@ var dragHelper = 'drag-helper';
 var dragging = 'dragging';
 /** @hidden */
 var updateSelectionData = 'update-selection-data';
+/** @hidden */
+var methodCall = 'method-call';
 
 /**
  * Utility file for common actions
@@ -944,7 +948,7 @@ function getImageUrl(parent, item) {
         var imgId = getValue('id', item);
         imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
     }
-    else if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) && !isNullOrUndefined(fPath)) {
+    else if (!isNullOrUndefined(fPath)) {
         imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
     }
     else {
@@ -1436,12 +1440,60 @@ function objectToString(data) {
     }
     return str;
 }
+function getItemName(parent, data) {
+    if (parent.hasId) {
+        return getValue('id', data);
+    }
+    return getName(parent, data);
+}
+function updateRenamingData(parent, data) {
+    parent.itemData = [data];
+    parent.currentItemText = getValue('name', data);
+    parent.isFile = getValue('isFile', data);
+    parent.filterPath = getValue('filterPath', data);
+}
 function doRename(parent) {
     if (!hasEditAccess(parent.itemData[0])) {
         createDeniedDialog(parent, parent.itemData[0]);
     }
     else {
         createDialog(parent, 'Rename');
+    }
+}
+/* istanbul ignore next */
+function doDownload(parent) {
+    var items = parent.itemData;
+    for (var i = 0; i < items.length; i++) {
+        if (!hasDownloadAccess(items[i])) {
+            createDeniedDialog(parent, items[i]);
+            return;
+        }
+    }
+    if (parent.selectedItems.length > 0) {
+        Download(parent, parent.path, parent.selectedItems);
+    }
+}
+function doDeleteFiles(parent, data, newIds) {
+    for (var i = 0; i < data.length; i++) {
+        if (!hasEditAccess(data[i])) {
+            createDeniedDialog(parent, data[i]);
+            return;
+        }
+    }
+    parent.itemData = data;
+    Delete(parent, newIds, parent.path, 'delete');
+}
+/* istanbul ignore next */
+function doDownloadFiles(parent, data, newIds) {
+    for (var i = 0; i < data.length; i++) {
+        if (!hasDownloadAccess(data[i])) {
+            createDeniedDialog(parent, data[i]);
+            return;
+        }
+    }
+    parent.itemData = data;
+    if (newIds.length > 0) {
+        Download(parent, parent.path, newIds);
     }
 }
 function createDeniedDialog(parent, data) {
@@ -1477,6 +1529,26 @@ function hasDownloadAccess(data) {
     var permission = getValue('permission', data);
     return permission ? ((getValue('read', permission) && getValue('download', permission)) ? true : false) : true;
 }
+function createNewFolder(parent) {
+    var details = parent.itemData[0];
+    if (!hasContentAccess(details)) {
+        createDeniedDialog(parent, details);
+    }
+    else {
+        createDialog(parent, 'NewFolder');
+    }
+}
+function uploadItem(parent) {
+    var details = parent.itemData[0];
+    if (!hasUploadAccess(details)) {
+        createDeniedDialog(parent, details);
+    }
+    else {
+        var eleId = '#' + parent.element.id + UPLOAD_ID;
+        var uploadEle = select(eleId, parent.element);
+        uploadEle.click();
+    }
+}
 
 /**
  * Function to read the content from given path in File Manager.
@@ -1498,7 +1570,7 @@ function read(parent, event, path) {
  */
 function createFolder(parent, itemName) {
     var data = { action: 'create', path: parent.path, name: itemName, data: parent.itemData };
-    createAjax(parent, data, createSuccess);
+    createAjax(parent, data, createSuccess, itemName);
 }
 /**
  * Function to filter the files in File Manager.
@@ -1594,6 +1666,18 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                 data: getValue('data', beforeSendArgs.ajaxSettings),
                 beforeSend: getValue('beforeSend', beforeSendArgs.ajaxSettings),
                 onSuccess: function (result) {
+                    if (isNullOrUndefined(result)) {
+                        var result_1 = {
+                            error: {
+                                fileExists: null,
+                                message: 'ServerError: Invalid response from ' + parent.ajaxSettings.url,
+                                code: '406',
+                            },
+                            files: null,
+                        };
+                        triggerAjaxFailure(parent, beforeSendArgs, fn, result_1, event, operation, targetPath);
+                        return;
+                    }
                     if (typeof (result) === 'string') {
                         result = JSON.parse(result);
                     }
@@ -1642,16 +1726,19 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                             fileExists: null
                         },
                     };
-                    parent.notify(afterRequest, { action: 'failure' });
-                    fn(parent, result, event, operation, targetPath);
-                    if (typeof getValue('onFailure', beforeSendArgs.ajaxSettings) === 'function') {
-                        getValue('onFailure', beforeSendArgs.ajaxSettings)();
-                    }
+                    triggerAjaxFailure(parent, beforeSendArgs, fn, result, event, operation, targetPath);
                 }
             });
             ajax.send();
         }
     });
+}
+function triggerAjaxFailure(parent, beforeSendArgs, fn, result, event, operation, targetPath) {
+    parent.notify(afterRequest, { action: 'failure' });
+    fn(parent, result, event, operation, targetPath);
+    if (typeof getValue('onFailure', beforeSendArgs.ajaxSettings) === 'function') {
+        getValue('onFailure', beforeSendArgs.ajaxSettings)();
+    }
 }
 function readSuccess(parent, result, event) {
     if (!isNullOrUndefined(result.files)) {
@@ -1687,9 +1774,11 @@ function filterSuccess(parent, result, event, action) {
     }
 }
 /* istanbul ignore next */
-function createSuccess(parent, result) {
+function createSuccess(parent, result, itemName) {
     if (!isNullOrUndefined(result.files)) {
-        parent.dialogObj.hide();
+        if (parent.dialogObj && parent.dialogObj.visible) {
+            parent.dialogObj.hide();
+        }
         parent.createdItem = result.files[0];
         parent.breadcrumbbarModule.searchObj.value = '';
         var args = { action: 'create', result: result };
@@ -1699,12 +1788,29 @@ function createSuccess(parent, result) {
     }
     else {
         if (result.error.code === '400') {
-            var ele = select('#newname', parent.dialogObj.element);
-            var error = getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + ele.value + '"');
-            ele.parentElement.nextElementSibling.innerHTML = error;
+            if (parent.dialogObj && parent.dialogObj.visible) {
+                var ele = select('#newname', parent.dialogObj.element);
+                var error = getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + ele.value + '"');
+                ele.parentElement.nextElementSibling.innerHTML = error;
+            }
+            else {
+                var result_2 = {
+                    files: null,
+                    error: {
+                        code: '400',
+                        message: getLocaleText(parent, 'Validation-NewFolder-Exists').replace('{0}', '"' + itemName + '"'),
+                        fileExists: null
+                    }
+                };
+                createDialog(parent, 'Error', result_2);
+            }
+            var args = { action: 'create', error: result.error };
+            parent.trigger('failure', args);
         }
         else {
-            parent.dialogObj.hide();
+            if (parent.dialogObj && parent.dialogObj.visible) {
+                parent.dialogObj.hide();
+            }
             onFailure(parent, result, 'create');
         }
     }
@@ -1716,7 +1822,9 @@ function createSuccess(parent, result) {
 /* istanbul ignore next */
 function renameSuccess(parent, result, path) {
     if (!isNullOrUndefined(result.files)) {
-        parent.dialogObj.hide();
+        if (!isNullOrUndefined(parent.dialogObj)) {
+            parent.dialogObj.hide();
+        }
         var args = { action: 'rename', result: result };
         parent.trigger('success', args);
         parent.renamedItem = result.files[0];
@@ -1741,14 +1849,18 @@ function renameSuccess(parent, result, path) {
         }
     }
     else {
-        if (result.error.code === '400') {
+        if (result.error.code === '400' && parent.dialogObj && parent.dialogObj.visible) {
             var ele = select('#rename', parent.dialogObj.element);
             var error = getLocaleText(parent, 'Validation-Rename-Exists').replace('{0}', '"' + parent.currentItemText + '"');
             error = error.replace('{1}', '"' + ele.value + '"');
             ele.parentElement.nextElementSibling.innerHTML = error;
+            var args = { action: 'rename', error: result.error };
+            parent.trigger('failure', args);
         }
         else {
-            parent.dialogObj.hide();
+            if (!isNullOrUndefined(parent.dialogObj)) {
+                parent.dialogObj.hide();
+            }
             onFailure(parent, result, 'rename');
         }
     }
@@ -1865,7 +1977,10 @@ function createDialog(parent, text, e, details, replaceItems) {
     var options = getOptions(parent, text, e, details, replaceItems);
     if (isNullOrUndefined(parent.dialogObj)) {
         parent.dialogObj = new Dialog({
-            beforeOpen: keydownAction.bind(this, parent),
+            beforeOpen: keydownAction.bind(this, parent, options.dialogName),
+            beforeClose: function (args) {
+                triggerPopupBeforeClose(parent, parent.dialogObj, args, options.dialogName);
+            },
             header: options.header,
             content: options.content,
             buttons: options.buttons,
@@ -1873,6 +1988,7 @@ function createDialog(parent, text, e, details, replaceItems) {
             showCloseIcon: true,
             closeOnEscape: true,
             visible: true,
+            allowDragging: true,
             isModal: true,
             target: '#' + parent.element.id,
             width: '350px',
@@ -1893,10 +2009,14 @@ function createExtDialog(parent, text, replaceItems, newPath) {
     parent.isApplySame = false;
     if (isNullOrUndefined(parent.extDialogObj)) {
         parent.extDialogObj = new Dialog({
-            beforeOpen: beforeExtOpen.bind(this, parent),
+            beforeOpen: beforeExtOpen.bind(this, parent, extOptions.dialogName),
+            beforeClose: function (args) {
+                triggerPopupBeforeClose(parent, parent.extDialogObj, args, extOptions.dialogName);
+            },
             content: extOptions.content,
             header: extOptions.header,
             closeOnEscape: true,
+            allowDragging: true,
             animationSettings: { effect: 'None' },
             target: '#' + parent.element.id,
             enableRtl: parent.enableRtl,
@@ -1924,9 +2044,56 @@ function createExtDialog(parent, text, replaceItems, newPath) {
         parent.extDialogObj.show();
     }
 }
+function triggerPopupBeforeOpen(parent, dlgModule, args, dialogName) {
+    var eventArgs = {
+        cancel: args.cancel, popupName: dialogName, popupModule: dlgModule
+    };
+    /* istanbul ignore next */
+    if (isBlazor()) {
+        delete eventArgs.popupModule;
+    }
+    parent.trigger('beforePopupOpen', eventArgs, function (eventargs) {
+        args.cancel = eventargs.cancel;
+    });
+}
+function triggerPopupBeforeClose(parent, dlgModule, args, dialogName) {
+    var eventArgs = {
+        cancel: args.cancel, popupModule: dlgModule, popupName: dialogName
+    };
+    /* istanbul ignore next */
+    if (isBlazor()) {
+        delete eventArgs.popupModule;
+    }
+    parent.trigger('beforePopupClose', eventArgs, function (eventargs) {
+        args.cancel = eventargs.cancel;
+        if (!args.cancel && args.isInteracted && ((dialogName === 'Rename') || (dialogName === 'Create Folder'))) {
+            parent.trigger(actionFailure, {});
+        }
+    });
+}
+function triggerPopupOpen(parent, dlgModule, dialogName) {
+    var args = { popupModule: dlgModule, element: dlgModule.element, popupName: dialogName };
+    /* istanbul ignore next */
+    if (isBlazor()) {
+        delete args.popupModule;
+    }
+    parent.trigger('popupOpen', args);
+}
+function triggerPopupClose(parent, dlgModule, dialogName) {
+    var args = { popupModule: dlgModule, element: dlgModule.element, popupName: dialogName };
+    /* istanbul ignore next */
+    if (isBlazor()) {
+        delete args.popupModule;
+    }
+    parent.trigger('popupClose', args);
+}
 // tslint:disable-next-line:max-func-body-length
 function getExtOptions(parent, text, replaceItems, newPath) {
-    var options = { header: '', content: '', buttons: [], open: null, close: null };
+    var options = {
+        header: '', content: '', buttons: [], dialogName: ''
+    };
+    options.open = function () { triggerPopupOpen(parent, parent.extDialogObj, options.dialogName); };
+    options.close = function () { triggerPopupClose(parent, parent.extDialogObj, options.dialogName); };
     switch (text) {
         case 'Extension':
             options.header = getLocaleText(parent, 'Header-Rename-Confirmation');
@@ -1945,8 +2112,10 @@ function getExtOptions(parent, text, replaceItems, newPath) {
                         parent.dialogObj.hide();
                     }
                 }];
+            options.dialogName = 'Extension Change';
             break;
         case 'DuplicateItems':
+            options.dialogName = 'Duplicate Items';
             parent.replaceItems = replaceItems;
             var item = parent.replaceItems[parent.fileLength];
             var index = item.lastIndexOf('/');
@@ -1960,6 +2129,7 @@ function getExtOptions(parent, text, replaceItems, newPath) {
                     parent.trigger('fileDropped', args);
                     parent.isDropEnd = parent.isDragDrop = false;
                 }
+                triggerPopupClose(parent, parent.extDialogObj, options.dialogName);
             };
             options.buttons = [
                 {
@@ -2011,11 +2181,16 @@ function getExtOptions(parent, text, replaceItems, newPath) {
             ];
             break;
         case 'UploadRetry':
+            options.dialogName = 'Retry Upload';
             options.header = getLocaleText(parent, 'Header-Retry');
             options.content = parent.retryFiles[0].name + '<div class="e-fe-retrycontent">' +
                 (getLocaleText(parent, 'Content-Retry')) + '</div>';
             options.open = onRetryOpen.bind(this, parent);
-            options.close = function () { parent.isRetryOpened = false; retryDlgClose(parent); };
+            options.close = function () {
+                parent.isRetryOpened = false;
+                retryDlgClose(parent);
+                triggerPopupClose(parent, parent.extDialogObj, options.dialogName);
+            };
             options.buttons = [
                 {
                     buttonModel: { isPrimary: true, content: getLocaleText(parent, 'Button-Keep-Both') },
@@ -2100,6 +2275,7 @@ function onRetryOpen(parent, args) {
         }
     });
     checkBoxObj.appendTo('#' + parent.element.id + '_applyall');
+    triggerPopupOpen(parent, parent.extDialogObj, 'Retry Upload');
 }
 function onKeepBothAll(parent) {
     while (parent.retryFiles.length !== 0) {
@@ -2138,6 +2314,7 @@ function onFolderDialogOpen(parent) {
         }
     };
     focusInput(parent);
+    triggerPopupOpen(parent, parent.dialogObj, 'Create Folder');
 }
 function onRenameDialogOpen(parent) {
     var inputEle = select('#rename', parent.dialogObj.element);
@@ -2155,6 +2332,7 @@ function onRenameDialogOpen(parent) {
         }
     };
     onFocusRenameInput(parent, inputEle);
+    triggerPopupOpen(parent, parent.dialogObj, 'Rename');
 }
 function onFocusRenameInput(parent, inputEle) {
     inputEle.focus();
@@ -2177,10 +2355,15 @@ function createInput(ele, placeholder) {
 // tslint:disable-next-line
 /* istanbul ignore next */
 function getOptions(parent, text, e, details, replaceItems) {
-    var options = { header: '', content: '', buttons: [], open: null };
+    var options = {
+        header: '', content: '', buttons: [], dialogName: ''
+    };
+    options.open = function () { triggerPopupOpen(parent, parent.dialogObj, options.dialogName); };
+    options.close = function () { triggerPopupClose(parent, parent.dialogObj, options.dialogName); };
     text = (details && details.multipleFiles === true) ? 'MultipleFileDetails' : text;
     switch (text) {
         case 'NewFolder':
+            options.dialogName = 'Create Folder';
             options.header = getLocaleText(parent, 'Header-NewFolder');
             options.content = '<input type="text" value="New folder" id="newname"><div class="e-fe-error"></div>';
             options.buttons = [
@@ -2197,6 +2380,7 @@ function getOptions(parent, text, e, details, replaceItems) {
             options.open = onFolderDialogOpen.bind(this, parent);
             break;
         case 'Delete':
+            options.dialogName = 'Delete';
             if (parent.selectedItems.length > 1) {
                 options.content = ('<div>' + getLocaleText(parent, 'Content-Multiple-Delete') + '</div>')
                     .replace('{0}', parent.selectedItems.length.toString());
@@ -2222,6 +2406,7 @@ function getOptions(parent, text, e, details, replaceItems) {
             ];
             break;
         case 'Rename':
+            options.dialogName = 'Rename';
             options.header = getLocaleText(parent, 'Header-Rename');
             options.content = '<input type="text" class="e-input" id="rename"><div class="e-fe-error"></div>';
             options.buttons = [
@@ -2238,6 +2423,7 @@ function getOptions(parent, text, e, details, replaceItems) {
             options.open = onRenameDialogOpen.bind(this, parent);
             break;
         case 'details':
+            options.dialogName = 'File Details';
             var intl = new Internationalization();
             var formattedString = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
             var permission = '';
@@ -2266,6 +2452,7 @@ function getOptions(parent, text, e, details, replaceItems) {
             ];
             break;
         case 'MultipleFileDetails':
+            options.dialogName = 'File Details';
             var strArr = details.name.split(',').map(function (val) {
                 var index = val.indexOf('.') + 1;
                 return (index === 0) ? 'Folder' : val.substr(index).replace(' ', '');
@@ -2294,6 +2481,8 @@ function getOptions(parent, text, e, details, replaceItems) {
             ];
             break;
         case 'Error':
+            parent.notify(actionFailure, {});
+            options.dialogName = 'Error';
             var event_1 = e;
             if (event_1.error.code === '401') {
                 options.header = getLocaleText(parent, 'Access-Denied');
@@ -2314,13 +2503,15 @@ function getOptions(parent, text, e, details, replaceItems) {
     }
     return options;
 }
-function keydownAction(parent) {
+function keydownAction(parent, dialogName, args) {
     var btnElement = selectAll('.e-btn', parent.dialogObj.element);
     preventKeydown(btnElement);
+    triggerPopupBeforeOpen(parent, parent.dialogObj, args, dialogName);
 }
-function beforeExtOpen(parent) {
+function beforeExtOpen(parent, dlgName, args) {
     var btnElement = selectAll('.e-btn', parent.extDialogObj.element);
     preventKeydown(btnElement);
+    triggerPopupBeforeOpen(parent, parent.extDialogObj, args, dlgName);
 }
 function preventKeydown(btnElement) {
     var _loop_1 = function (btnCount) {
@@ -2447,6 +2638,13 @@ function createImageDialog(parent, header, imageUrl) {
             position: { X: 'center', Y: 'center' },
             enableRtl: parent.enableRtl,
             open: openImage.bind(this, parent),
+            close: function () { triggerPopupClose(parent, parent.viewerObj, 'Image Preview'); },
+            beforeOpen: function (args) {
+                triggerPopupBeforeOpen(parent, parent.viewerObj, args, 'Image Preview');
+            },
+            beforeClose: function (args) {
+                triggerPopupBeforeClose(parent, parent.viewerObj, args, 'Image Preview');
+            },
             resizing: updateImage.bind(this, parent),
             resizeStop: updateImage.bind(this, parent)
         });
@@ -2469,6 +2667,7 @@ function openImage(parent) {
         }
     });
     updateImage(parent);
+    triggerPopupOpen(parent, parent.viewerObj, 'Image Preview');
 }
 function updateImage(parent) {
     var content = select('.e-dlg-content', parent.viewerObj.element);
@@ -2498,6 +2697,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.isRendered = true;
         this.tapCount = 0;
         this.isPasteOperation = false;
+        this.isInteracted = true;
         this.parent = parent;
         this.element = select('#' + this.parent.element.id + LARGEICON_ID, this.parent.element);
         addClass([this.element], LARGE_ICONS);
@@ -2775,8 +2975,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         while (i < items.length) {
             var icon = fileType(items[i]);
             var name_1 = getValue('name', items[i]);
-            var id = getValue('id', items[i]);
-            var selected = this.parent.hasId ? id : getName(this.parent, items[i]);
+            var selected = getItemName(this.parent, items[i]);
             var className = ((this.parent.selectedItems &&
                 this.parent.selectedItems.indexOf(selected) !== -1)) ?
                 LARGE_ICON + ' e-active' : LARGE_ICON;
@@ -2872,11 +3071,13 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             var lastItem = this.getLastItem();
             var eveArgs = { ctrlKey: true, shiftKey: true };
             this.doSelection(lastItem, eveArgs);
+            this.isInteracted = true;
         }
     };
     LargeIconsView.prototype.onClearAllInit = function () {
         if (this.parent.view === 'LargeIcons') {
             this.clearSelection();
+            this.isInteracted = true;
         }
     };
     LargeIconsView.prototype.onBeforeRequest = function () {
@@ -2922,6 +3123,8 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.off(openInit, this.onOpenInit);
         this.parent.off(openEnd, this.onPathChanged);
         this.parent.off(modelChanged, this.onPropertyChanged);
+        this.parent.off(methodCall, this.onMethodCall);
+        this.parent.off(actionFailure, this.onActionFailure);
         this.parent.off(renameInit, this.onRenameInit);
         this.parent.off(renameEnd, this.onPathChanged);
         this.parent.off(hideLayout, this.onHideLayout);
@@ -2958,6 +3161,8 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.on(renameEnd, this.onPathChanged, this);
         this.parent.on(openEnd, this.onPathChanged, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
+        this.parent.on(methodCall, this.onMethodCall, this);
+        this.parent.on(actionFailure, this.onActionFailure, this);
         this.parent.on(hideLayout, this.onHideLayout, this);
         this.parent.on(selectAllInit, this.onSelectAllInit, this);
         this.parent.on(clearAllInit, this.onClearAllInit, this);
@@ -2975,6 +3180,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.on(updateSelectionData, this.onUpdateSelectionData, this);
         this.parent.on(filterEnd, this.onPathChanged, this);
     };
+    LargeIconsView.prototype.onActionFailure = function () { this.isInteracted = true; };
     LargeIconsView.prototype.onMenuItemData = function (args) {
         if (this.parent.activeModule === this.getModuleName()) {
             var ele = closest(args.target, 'li');
@@ -3036,12 +3242,14 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                     this.adjustHeight();
                     break;
                 case 'selectedItems':
+                    this.isInteracted = false;
                     var currentSelected = isNullOrUndefined(this.parent.selectedItems) ? [] : this.parent.selectedItems.slice(0);
                     this.parent.setProperties({ selectedItems: [] }, true);
                     this.onClearAllInit();
                     if (currentSelected.length) {
                         this.selectItems(currentSelected);
                     }
+                    this.isInteracted = true;
                     break;
                 case 'showThumbnail':
                     refresh(this.parent);
@@ -3432,17 +3640,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 break;
             case 'del':
             case 'shiftdel':
-                if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
-                    this.updateSelectedData();
-                    var data = this.parent.itemData;
-                    for (var i = 0; i < data.length; i++) {
-                        if (!hasEditAccess(data[i])) {
-                            createDeniedDialog(this.parent, data[i]);
-                            return;
-                        }
-                    }
-                    createDialog(this.parent, 'Delete');
-                }
+                this.performDelete();
                 break;
             case 'ctrlC':
                 copyFiles(this.parent);
@@ -3455,25 +3653,40 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 cutFiles(this.parent);
                 break;
             case 'f2':
-                if (this.parent.selectedItems.length === 1) {
-                    this.updateRenameData();
-                    doRename(this.parent);
-                }
+                this.performRename();
                 break;
             case 'ctrlD':
-                if (this.parent.selectedItems.length !== 0) {
-                    Download(this.parent, this.parent.path, this.parent.selectedItems);
-                }
+                this.doDownload();
                 break;
+        }
+    };
+    LargeIconsView.prototype.doDownload = function () {
+        this.updateSelectedData();
+        doDownload(this.parent);
+    };
+    LargeIconsView.prototype.performDelete = function () {
+        if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
+            this.updateSelectedData();
+            var data = this.parent.itemData;
+            for (var i = 0; i < data.length; i++) {
+                if (!hasEditAccess(data[i])) {
+                    createDeniedDialog(this.parent, data[i]);
+                    return;
+                }
+            }
+            createDialog(this.parent, 'Delete');
+        }
+    };
+    LargeIconsView.prototype.performRename = function () {
+        if (this.parent.selectedItems.length === 1) {
+            this.updateRenameData();
+            doRename(this.parent);
         }
     };
     LargeIconsView.prototype.updateRenameData = function () {
         var item = select('.' + LIST_ITEM + '.' + ACTIVE, this.element);
         var data = this.getItemObject(item);
-        this.parent.itemData = [data];
-        this.parent.currentItemText = getValue('name', data);
-        this.parent.isFile = getValue('isFile', data);
-        this.parent.filterPath = getValue('filterPath', data);
+        updateRenamingData(this.parent, data);
     };
     LargeIconsView.prototype.getVisitedItem = function () {
         var item = this.parent.selectedItems[this.parent.selectedItems.length - 1];
@@ -3637,10 +3850,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.getDataName = function (item) {
         var data = this.getItemObject(item);
-        if (this.parent.hasId) {
-            return getValue('id', data);
-        }
-        return getName(this.parent, data);
+        return getItemName(this.parent, data);
     };
     LargeIconsView.prototype.addFocus = function (item) {
         this.element.setAttribute('tabindex', '-1');
@@ -3679,6 +3889,9 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         for (var i = 0, len = eles.length; i < len; i++) {
             this.removeActive(eles[i]);
         }
+        if (eles.length !== 0) {
+            this.triggerSelect('unselect', eles[0]);
+        }
     };
     LargeIconsView.prototype.resizeHandler = function () {
         this.getItemCount();
@@ -3700,8 +3913,9 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     LargeIconsView.prototype.triggerSelect = function (action, item) {
         var data = this.getItemObject(item);
         this.parent.visitedData = data;
-        var eventArgs = { action: action, fileDetails: data };
+        var eventArgs = { action: action, fileDetails: data, isInteracted: this.isInteracted };
         this.parent.trigger('fileSelect', eventArgs);
+        this.isInteracted = true;
     };
     LargeIconsView.prototype.selectItems = function (items) {
         var indexes = this.getIndexes(items, this.parent.hasId);
@@ -3751,6 +3965,125 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             data[i] = this.getItemObject(items[i]);
         }
         this.parent.itemData = data;
+    };
+    LargeIconsView.prototype.onMethodCall = function (args) {
+        if (this.parent.view !== 'LargeIcons') {
+            return;
+        }
+        var action = getValue('action', args);
+        switch (action) {
+            case 'deleteFiles':
+                this.deleteFiles(getValue('ids', args));
+                break;
+            case 'downloadFiles':
+                this.downloadFiles(getValue('ids', args));
+                break;
+            case 'openFile':
+                this.openFile(getValue('id', args));
+                break;
+            case 'renameFile':
+                this.isInteracted = false;
+                this.renameFile(getValue('id', args), getValue('newName', args));
+                break;
+            case 'createFolder':
+                this.isInteracted = false;
+                break;
+            case 'clearSelection':
+                this.isInteracted = false;
+                this.onClearAllInit();
+                break;
+            case 'selectAll':
+                this.isInteracted = false;
+                this.onSelectAllInit();
+                break;
+        }
+    };
+    LargeIconsView.prototype.getItemsIndex = function (items) {
+        var indexes = [];
+        var isFilter = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
+        var filterName = this.parent.hasId ? 'id' : 'name';
+        if (this.parent.hasId || !isFilter) {
+            for (var i = 0, len = this.items.length; i < len; i++) {
+                if (items.indexOf(getValue(filterName, this.items[i])) !== -1) {
+                    indexes.push(i);
+                }
+            }
+        }
+        else {
+            for (var i = 0, len = this.items.length; i < len; i++) {
+                var name_2 = getValue('filterPath', this.items[i]) + getValue('name', this.items[i]);
+                if (items.indexOf(name_2) !== -1) {
+                    indexes.push(i);
+                }
+            }
+        }
+        return indexes;
+    };
+    LargeIconsView.prototype.deleteFiles = function (ids) {
+        this.parent.activeModule = 'largeiconsview';
+        if (isNullOrUndefined(ids)) {
+            this.performDelete();
+            return;
+        }
+        var indexes = this.getItemsIndex(ids);
+        if (indexes.length === 0) {
+            return;
+        }
+        var data = [];
+        var newIds = [];
+        for (var i = 0; i < indexes.length; i++) {
+            data[i] = this.items[indexes[i]];
+            newIds[i] = getItemName(this.parent, data[i]);
+        }
+        doDeleteFiles(this.parent, data, newIds);
+    };
+    LargeIconsView.prototype.downloadFiles = function (ids) {
+        if (isNullOrUndefined(ids)) {
+            this.doDownload();
+            return;
+        }
+        var index = this.getItemsIndex(ids);
+        if (index.length === 0) {
+            return;
+        }
+        var data = [];
+        var newIds = [];
+        for (var i = 0; i < index.length; i++) {
+            data[i] = this.items[index[i]];
+            newIds[i] = getItemName(this.parent, data[i]);
+        }
+        doDownloadFiles(this.parent, data, newIds);
+    };
+    LargeIconsView.prototype.openFile = function (id) {
+        if (isNullOrUndefined(id)) {
+            return;
+        }
+        var indexes = this.getItemsIndex([id]);
+        if (indexes.length > 0) {
+            this.doOpenAction(this.itemList[indexes[0]]);
+        }
+    };
+    LargeIconsView.prototype.renameFile = function (id, name) {
+        this.parent.activeModule = 'largeiconsview';
+        if (isNullOrUndefined(id)) {
+            this.performRename();
+            return;
+        }
+        var indexes = this.getItemsIndex([id]);
+        if (indexes.length > 0) {
+            updateRenamingData(this.parent, this.items[indexes[0]]);
+            if (isNullOrUndefined(name)) {
+                doRename(this.parent);
+            }
+            else {
+                if (!hasEditAccess(this.parent.itemData[0])) {
+                    createDeniedDialog(this.parent, this.parent.itemData[0]);
+                }
+                else {
+                    rename(this.parent, this.parent.path, name);
+                }
+            }
+        }
     };
     return LargeIconsView;
 }());
@@ -4153,6 +4486,9 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     function ContextMenu$$1(parent) {
+        this.currentItems = [];
+        this.currentElement = null;
+        this.disabledItems = [];
         this.parent = parent;
         this.render();
     }
@@ -4195,6 +4531,8 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
     };
     /* istanbul ignore next */
     ContextMenu$$1.prototype.onBeforeOpen = function (args) {
+        var _this = this;
+        this.disabledItems = [];
         var selected = false;
         var uid;
         // tslint:disable-next-line
@@ -4202,6 +4540,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         var treeFolder = false;
         var target = args.event.target;
         this.menuTarget = target;
+        this.currentElement = args.element;
         if (target.classList.contains('e-spinner-pane')) {
             target = this.parent.navigationpaneModule.activeNode.getElementsByClassName(FULLROW)[0];
             this.menuTarget = target;
@@ -4267,7 +4606,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             else if (treeFolder) {
                 this.setFolderItem(true);
                 if (uid === this.parent.pathId[0]) {
-                    this.enableItems(['Delete', 'Rename', 'Cut', 'Copy'], false, true);
+                    this.disabledItems.push('Delete', 'Rename', 'Cut', 'Copy');
                 }
                 /* istanbul ignore next */
                 // tslint:disable-next-line
@@ -4283,27 +4622,45 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         var pasteEle = select('#' + this.getMenuId('Paste'), this.contextMenu.element);
         if (!args.cancel && !this.parent.enablePaste &&
             pasteEle && !pasteEle.classList.contains('e-disabled')) {
-            this.enableItems(['Paste'], false, true);
+            this.disabledItems.push('Paste');
         }
         if (args.cancel) {
+            this.menuTarget = this.currentElement = null;
             return;
         }
         this.contextMenu.dataBind();
-        this.menuItemData = this.getMenuItemData();
+        var isSubMenu = false;
+        if (target.classList.contains(MENU_ITEM) ||
+            target.classList.contains(MENU_ICON) || target.classList.contains(SUBMENU_ICON)) {
+            isSubMenu = true;
+        }
+        this.menuItemData = isSubMenu ? this.menuItemData : this.getMenuItemData();
         var eventArgs = {
             fileDetails: [this.menuItemData],
             element: args.element,
             target: target,
-            items: this.contextMenu.items,
+            items: isSubMenu ? args.items : this.contextMenu.items,
             menuModule: this.contextMenu,
             cancel: false,
-            menuType: this.menuType
+            menuType: this.menuType,
+            isSubMenu: isSubMenu
         };
         if (isBlazor()) {
+            this.enableItems(this.disabledItems, false, true);
             delete eventArgs.menuModule;
         }
+        this.currentItems = eventArgs.items;
         this.parent.trigger('menuOpen', eventArgs, function (menuOpenArgs) {
+            if (!isSubMenu) {
+                _this.contextMenu.dataBind();
+                _this.contextMenu.items = menuOpenArgs.items;
+                _this.contextMenu.dataBind();
+            }
+            _this.enableItems(_this.disabledItems, false, true);
             args.cancel = menuOpenArgs.cancel;
+            if (menuOpenArgs.cancel) {
+                _this.menuTarget = _this.currentElement = null;
+            }
         });
     };
     ContextMenu$$1.prototype.updateActiveModule = function () {
@@ -4321,10 +4678,27 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             'LargeIcon' : target.classList.contains(LARGE_ICONS) ?
             'LargeIcon' : '';
     };
+    ContextMenu$$1.prototype.getItemIndex = function (item) {
+        var itemId = this.getMenuId(item);
+        for (var i = 0; i < this.currentItems.length; i++) {
+            if ((this.currentItems[i].id === itemId) || (this.currentItems[i].id === item)) {
+                return i;
+            }
+        }
+        return -1;
+    };
+    ContextMenu$$1.prototype.disableItem = function (items) {
+        if (items.length !== 0) {
+            this.disabledItems = this.disabledItems.concat(items);
+        }
+    };
     ContextMenu$$1.prototype.enableItems = function (items, enable, isUniqueId) {
         for (var i = 0; i < items.length; i++) {
-            if (this.checkValidItem(items[i])) {
+            if (this.checkValidItem(items[i]) === 1) {
                 this.contextMenu.enableItems([this.getMenuId(items[i])], enable, isUniqueId);
+            }
+            else if (this.checkValidItem(items[i]) === 2) {
+                this.contextMenu.enableItems([items[i]], enable, isUniqueId);
             }
         }
     };
@@ -4333,10 +4707,10 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.folder.map(function (item) { return item.trim(); }));
         this.contextMenu.dataBind();
         if (isTree) {
-            this.enableItems(['Open'], false, true);
+            this.disabledItems.push('Open');
         }
         else if (this.parent.selectedItems.length !== 1) {
-            this.enableItems(['Rename', 'Paste'], false, true);
+            this.disabledItems.push('Rename', 'Paste');
         }
     };
     ContextMenu$$1.prototype.setFileItem = function () {
@@ -4344,26 +4718,34 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.file.map(function (item) { return item.trim(); }));
         this.contextMenu.dataBind();
         if (this.parent.selectedItems.length !== 1) {
-            this.enableItems(['Rename'], false, true);
+            this.disabledItems.push('Rename');
         }
     };
     ContextMenu$$1.prototype.setLayoutItem = function (target) {
         this.menuType = 'layout';
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.layout.map(function (item) { return item.trim(); }));
         this.contextMenu.dataBind();
-        if ((this.parent.view === 'LargeIcons' &&
+        if (!this.parent.allowMultiSelection || ((this.parent.view === 'LargeIcons' &&
             (closest(target, '#' + this.parent.element.id + LARGEICON_ID).getElementsByClassName(EMPTY).length !== 0))
             || (this.parent.view === 'Details' &&
-                (closest(target, '#' + this.parent.element.id + GRID_ID).getElementsByClassName(EMPTY).length !== 0))) {
-            this.enableItems(['SelectAll'], false, true);
+                (closest(target, '#' + this.parent.element.id + GRID_ID).getElementsByClassName(EMPTY).length !== 0)))) {
+            this.disabledItems.push('SelectAll');
         }
         if (this.parent.selectedNodes.length === 0) {
-            this.enableItems(['Paste'], false, true);
+            this.disabledItems.push('Paste');
         }
         this.contextMenu.dataBind();
     };
     ContextMenu$$1.prototype.checkValidItem = function (nameEle) {
-        return !isNullOrUndefined(select('#' + this.getMenuId(nameEle), this.contextMenu.element));
+        if (!isNullOrUndefined(select('#' + this.getMenuId(nameEle), this.currentElement))) {
+            return 1;
+        }
+        else if (!isNullOrUndefined(select('#' + nameEle, this.currentElement))) {
+            return 2;
+        }
+        else {
+            return -1;
+        }
     };
     ContextMenu$$1.prototype.getMenuItemData = function () {
         if (this.menuType === 'layout') {
@@ -4475,20 +4857,10 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                         GetDetails(_this.parent, sItems, _this.parent.path, 'details');
                         break;
                     case 'newfolder':
-                        if (!hasContentAccess(details[0])) {
-                            createDeniedDialog(_this.parent, details[0]);
-                        }
-                        else {
-                            createDialog(_this.parent, 'NewFolder');
-                        }
+                        createNewFolder(_this.parent);
                         break;
                     case 'upload':
-                        if (!hasUploadAccess(details[0])) {
-                            createDeniedDialog(_this.parent, details[0]);
-                        }
-                        else {
-                            document.getElementById(_this.parent.element.id + '_upload').click();
-                        }
+                        uploadItem(_this.parent);
                         break;
                     /* istanbul ignore next */
                     case 'name':
@@ -5050,7 +5422,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     };
     FileManager.prototype.adjustHeight = function () {
         var toolbar = select('#' + this.element.id + TOOLBAR_ID, this.element);
-        var toolBarHeight = this.toolbarModule ? toolbar.offsetHeight : 0;
+        var toolBarHeight = toolbar ? toolbar.offsetHeight : 0;
         this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
         this.splitterObj.dataBind();
     };
@@ -5110,6 +5482,8 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
             enableRtl: this.enableRtl,
             open: this.onOpen.bind(this),
             close: this.onClose.bind(this),
+            beforeOpen: this.onBeforeOpen.bind(this),
+            beforeClose: this.onBeforeClose.bind(this),
         });
         this.uploadDialogObj.appendTo('#' + this.element.id + UPLOAD_DIALOG_ID);
         this.renderUploadBox();
@@ -5148,15 +5522,55 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         this.uploadObj.allowedExtensions = this.uploadSettings.allowedExtensions;
         this.uploadObj.dataBind();
     };
-    /* istanbul ignore next */
+    FileManager.prototype.onBeforeOpen = function (args) {
+        var eventArgs = {
+            cancel: args.cancel, popupName: 'Upload', popupModule: this.uploadDialogObj
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) {
+            delete eventArgs.popupModule;
+        }
+        this.trigger('beforePopupOpen', eventArgs, function (eventargs) {
+            args.cancel = eventargs.cancel;
+        });
+    };
+    FileManager.prototype.onBeforeClose = function (args) {
+        var eventArgs = {
+            cancel: args.cancel, popupName: 'Upload', popupModule: this.uploadDialogObj
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) {
+            delete eventArgs.popupModule;
+        }
+        this.trigger('beforePopupClose', eventArgs, function (eventargs) {
+            args.cancel = eventargs.cancel;
+        });
+    };
     FileManager.prototype.onOpen = function () {
         this.isOpened = true;
         this.uploadDialogObj.element.focus();
+        var args = {
+            popupModule: this.uploadDialogObj, popupName: 'Upload',
+            element: this.uploadDialogObj.element
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) {
+            delete args.popupModule;
+        }
+        this.trigger('popupOpen', args);
     };
-    /* istanbul ignore next */
     FileManager.prototype.onClose = function () {
         this.isOpened = false;
         this.uploadObj.clearAll();
+        var args = {
+            popupModule: this.uploadDialogObj, popupName: 'Upload',
+            element: this.uploadDialogObj.element
+        };
+        /* istanbul ignore next */
+        if (isBlazor()) {
+            delete args.popupModule;
+        }
+        this.trigger('popupClose', args);
     };
     /* istanbul ignore next */
     FileManager.prototype.onUploading = function (args) {
@@ -5509,6 +5923,52 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.destroy.call(this);
     };
     /**
+     * Creates a new folder in file manager.
+     * @param {name: string} name – Specifies the name of new folder in current path.
+     * If it is not specified, then the default new folder dialog will be opened.
+     * @returns void
+     */
+    FileManager.prototype.createFolder = function (name) {
+        this.notify(methodCall, { action: 'createFolder' });
+        var details = [getPathObject(this)];
+        this.itemData = details;
+        if (name) {
+            if (/[/\\|*?"<>:]/.test(name)) {
+                var result = {
+                    files: null,
+                    error: {
+                        code: '402',
+                        message: getLocaleText(this, 'Validation-Invalid').replace('{0}', '"' + name + '"'),
+                        fileExists: null
+                    }
+                };
+                createDialog(this, 'Error', result);
+            }
+            else {
+                if (!hasContentAccess(details[0])) {
+                    createDeniedDialog(this, details[0]);
+                }
+                else {
+                    createFolder(this, name);
+                }
+            }
+        }
+        else {
+            createNewFolder(this);
+        }
+    };
+    /**
+     * Deletes the folders or files from the given unique identifiers.
+     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to delete the nested level folders or
+     * files, then specify the filter path along with name of the folders or files when performing the search or custom filtering.
+     * For ID based file provider, specify the unique identifier of folders or files.
+     * If it is not specified, then delete confirmation dialog will be opened for selected item.
+     * @returns void
+     */
+    FileManager.prototype.deleteFiles = function (ids) {
+        this.notify(methodCall, { action: 'deleteFiles', ids: ids });
+    };
+    /**
      * Disables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be disabled.
      * @returns void
@@ -5519,6 +5979,17 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Downloads the folders or files from the given unique identifiers.
+     * @param {ids: string} ids - Specifies the name of folders or files in current path. If you want to download the nested level folders
+     * or files, then specify the filter path along with name of the folders or files when performing search or custom filtering.
+     * For ID based file provider, specify the unique identifier of folders or files.
+     * If it is not specified, then the selected items will be downloaded.
+     * @returns void
+     */
+    FileManager.prototype.downloadFiles = function (ids) {
+        this.notify(methodCall, { action: 'downloadFiles', ids: ids });
+    };
+    /**
      * Enables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be enabled.
      * @returns void
@@ -5526,6 +5997,42 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     FileManager.prototype.enableToolbarItems = function (items) {
         if (!isNullOrUndefined(items)) {
             this.toolbarModule.enableItems(items, true);
+        }
+    };
+    /**
+     * Disables the specified context menu items in file manager. This method is used only in the menuOpen event.
+     * @param {items: string[]} items - Specifies an array of items to be disabled.
+     * @returns void
+     */
+    FileManager.prototype.disableMenuItems = function (items) {
+        if (!isNullOrUndefined(items) && !isNullOrUndefined(this.contextmenuModule.contextMenu)) {
+            this.contextmenuModule.disableItem(items);
+        }
+    };
+    /**
+     * Returns the index position of given current context menu item in file manager.
+     * @param {item: string} item - Specifies an item to get the index position.
+     * @returns number
+     */
+    FileManager.prototype.getMenuItemIndex = function (item) {
+        if (this.contextmenuModule) {
+            return this.contextmenuModule.getItemIndex(item);
+        }
+        else {
+            return -1;
+        }
+    };
+    /**
+     * Returns the index position of given toolbar item in file manager.
+     * @param {item: string} item - Specifies an item to get the index position.
+     * @returns number
+     */
+    FileManager.prototype.getToolbarItemIndex = function (item) {
+        if (this.toolbarModule) {
+            return this.toolbarModule.getItemIndex(item);
+        }
+        else {
+            return -1;
         }
     };
     /**
@@ -5546,11 +6053,21 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Gets the details of the selected files in the file manager.
-     * @returns void
+     * @returns Object[]
      */
     FileManager.prototype.getSelectedFiles = function () {
         this.notify(updateSelectionData, {});
         return this.itemData;
+    };
+    /**
+     * Opens the corresponding file or folder from the given unique identifier.
+     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to open the nested level folder or
+     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
+     * file provider, specify the unique identifier of folder or file.
+     * @returns void
+     */
+    FileManager.prototype.openFile = function (id) {
+        this.notify(methodCall, { action: 'openFile', id: id });
     };
     /**
      * Refreshes the folder files of the file manager.
@@ -5566,6 +6083,42 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     FileManager.prototype.refreshLayout = function () {
         this.adjustHeight();
         this.notify(layoutRefresh, {});
+    };
+    /**
+     * Selects the entire folders and files in current path.
+     * @returns void
+     */
+    FileManager.prototype.selectAll = function () {
+        this.notify(methodCall, { action: 'selectAll' });
+    };
+    /**
+     * Deselects the currently selected folders and files in current path.
+     * @returns void
+     */
+    FileManager.prototype.clearSelection = function () {
+        this.notify(methodCall, { action: 'clearSelection' });
+    };
+    /**
+     * Renames the file or folder with given new name in file manager.
+     * @param {id: string} id - Specifies the name of folder or file in current path. If you want to rename the nested level folder or
+     * file, then specify the filter path along with name of the folder or file when performing search or custom filtering. For ID based
+     * file provider, specify the unique identifier of folder or file.
+     * If it is not specified, then rename dialog will be opened for selected item.
+     * @param {name: string} name – Specifies the new name of the file or folder in current path. If it is not specified, then rename dialog
+     * will be opened for given identifier.
+     * @returns void
+     */
+    FileManager.prototype.renameFile = function (id, name) {
+        this.notify(methodCall, { action: 'renameFile', id: id, newName: name });
+    };
+    /**
+     * Opens the upload dialog in file manager.
+     * @returns void
+     */
+    FileManager.prototype.uploadFiles = function () {
+        var details = [getPathObject(this)];
+        this.itemData = details;
+        uploadItem(this);
     };
     /**
      * Specifies the direction of FileManager
@@ -5648,6 +6201,12 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     ], FileManager.prototype, "fileOpen", void 0);
     __decorate$7([
         Event()
+    ], FileManager.prototype, "beforePopupClose", void 0);
+    __decorate$7([
+        Event()
+    ], FileManager.prototype, "beforePopupOpen", void 0);
+    __decorate$7([
+        Event()
     ], FileManager.prototype, "beforeSend", void 0);
     __decorate$7([
         Event()
@@ -5679,6 +6238,12 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     __decorate$7([
         Event()
     ], FileManager.prototype, "failure", void 0);
+    __decorate$7([
+        Event()
+    ], FileManager.prototype, "popupClose", void 0);
+    __decorate$7([
+        Event()
+    ], FileManager.prototype, "popupOpen", void 0);
     __decorate$7([
         Event()
     ], FileManager.prototype, "success", void 0);
@@ -5735,6 +6300,15 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             _this.toolbarObj.appendTo('#' + _this.parent.element.id + TOOLBAR_ID);
         });
     };
+    Toolbar$$1.prototype.getItemIndex = function (item) {
+        var itemId = this.getId(item);
+        for (var i = 0; i < this.items.length; i++) {
+            if (this.items[i].id === itemId) {
+                return i;
+            }
+        }
+        return -1;
+    };
     Toolbar$$1.prototype.getItems = function (items) {
         var currItems = items.slice();
         if (this.parent.isDevice && this.parent.allowMultiSelection) {
@@ -5769,12 +6343,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                         }
                         break;
                     case 'newfolder':
-                        if (!hasContentAccess(details[0])) {
-                            createDeniedDialog(_this.parent, details[0]);
-                        }
-                        else {
-                            createDialog(_this.parent, 'NewFolder');
-                        }
+                        createNewFolder(_this.parent);
                         break;
                     case 'cut':
                         cutFiles(_this.parent);
@@ -5807,7 +6376,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                         refresh(_this.parent);
                         break;
                     case 'download':
-                        _this.doDownload();
+                        doDownload(_this.parent);
                         break;
                     case 'rename':
                         if (!hasEditAccess(details[0])) {
@@ -5819,14 +6388,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                         }
                         break;
                     case 'upload':
-                        if (!hasUploadAccess(details[0])) {
-                            createDeniedDialog(_this.parent, details[0]);
-                        }
-                        else {
-                            var eleId = '#' + _this.parent.element.id + UPLOAD_ID;
-                            var uploadEle = select(eleId, _this.parent.element);
-                            uploadEle.click();
-                        }
+                        uploadItem(_this.parent);
                         break;
                     case 'selectall':
                         _this.parent.notify(selectAllInit, {});
@@ -5837,21 +6399,6 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 }
             }
         });
-    };
-    Toolbar$$1.prototype.doDownload = function () {
-        var items = this.parent.itemData;
-        for (var i = 0; i < items.length; i++) {
-            if (!hasDownloadAccess(items[i])) {
-                createDeniedDialog(this.parent, items[i]);
-                return;
-            }
-        }
-        if (this.parent.selectedItems.length > 0) {
-            Download(this.parent, this.parent.path, this.parent.selectedItems);
-        }
-        else {
-            return;
-        }
     };
     Toolbar$$1.prototype.toolbarCreateHandler = function () {
         if (!isNullOrUndefined(select('#' + this.getId('SortBy'), this.parent.element))) {
@@ -5912,24 +6459,27 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         for (var btnCount = 0; btnCount < btnElement.length; btnCount++) {
             _loop_1(btnCount);
         }
+        this.parent.refreshLayout();
     };
     Toolbar$$1.prototype.updateSortByButton = function () {
-        var items = this.buttonObj.items;
-        for (var itemCount = 0; itemCount < items.length; itemCount++) {
-            if (items[itemCount].id === this.getPupupId('name')) {
-                items[itemCount].iconCss = this.parent.sortBy === 'name' ? TB_OPTION_DOT : '';
-            }
-            else if (items[itemCount].id === this.getPupupId('size')) {
-                items[itemCount].iconCss = this.parent.sortBy === 'size' ? TB_OPTION_DOT : '';
-            }
-            else if (items[itemCount].id === this.getPupupId('date')) {
-                items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? TB_OPTION_DOT : '';
-            }
-            else if (items[itemCount].id === this.getPupupId('ascending')) {
-                items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? TB_OPTION_TICK : '';
-            }
-            else if (items[itemCount].id === this.getPupupId('descending')) {
-                items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : '';
+        if (this.buttonObj) {
+            var items = this.buttonObj.items;
+            for (var itemCount = 0; itemCount < items.length; itemCount++) {
+                if (items[itemCount].id === this.getPupupId('name')) {
+                    items[itemCount].iconCss = this.parent.sortBy === 'name' ? TB_OPTION_DOT : '';
+                }
+                else if (items[itemCount].id === this.getPupupId('size')) {
+                    items[itemCount].iconCss = this.parent.sortBy === 'size' ? TB_OPTION_DOT : '';
+                }
+                else if (items[itemCount].id === this.getPupupId('date')) {
+                    items[itemCount].iconCss = this.parent.sortBy === '_fm_modified' ? TB_OPTION_DOT : '';
+                }
+                else if (items[itemCount].id === this.getPupupId('ascending')) {
+                    items[itemCount].iconCss = this.parent.sortOrder === 'Ascending' ? TB_OPTION_TICK : '';
+                }
+                else if (items[itemCount].id === this.getPupupId('descending')) {
+                    items[itemCount].iconCss = this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : '';
+                }
             }
         }
     };
@@ -6162,6 +6712,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.layoutBtnObj.destroy();
         }
         this.toolbarObj.destroy();
+        this.parent.refreshLayout();
     };
     Toolbar$$1.prototype.enableItems = function (items, isEnable) {
         for (var i = 0; i < items.length; i++) {
@@ -6916,15 +7467,17 @@ var DetailsView = /** @__PURE__ @class */ (function () {
      */
     function DetailsView(parent) {
         this.isInteracted = true;
+        this.interaction = true;
         this.isPasteOperation = false;
         this.isColumnRefresh = false;
         this.dragObj = null;
         this.startIndex = null;
         this.firstItemIndex = null;
-        this.pasteOperation = false;
-        this.uploadOperation = false;
         this.count = 0;
         this.isRendered = true;
+        this.isLoaded = false;
+        this.pasteOperation = false;
+        this.uploadOperation = false;
         Grid.Inject(Resize, ContextMenu$1, Sort, VirtualScroll);
         this.parent = parent;
         this.element = select('#' + this.parent.element.id + GRID_ID, this.parent.element);
@@ -7243,6 +7796,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.isLayoutChange = false;
         hideSpinner(this.parent.element);
         this.checkEmptyDiv(this.emptyArgs);
+        this.isInteracted = this.isLoaded ? true : this.isInteracted;
+        this.isLoaded = false;
     };
     DetailsView.prototype.selectRecords = function (nodes) {
         var gridRecords = this.gridObj.getCurrentViewRecords();
@@ -7305,6 +7860,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                     }
                     break;
                 case 'selectedItems':
+                    this.interaction = false;
                     if (this.parent.selectedItems.length !== 0) {
                         this.selectRecords(this.parent.selectedItems);
                     }
@@ -7446,6 +8002,9 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             if (!this.gridObj) {
                 this.render(args);
             }
+            else {
+                this.isLoaded = true;
+            }
             if (this.parent.isFiltered) {
                 this.updatePathColumn();
                 this.parent.setProperties({ selectedItems: [] }, true);
@@ -7550,13 +8109,20 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     DetailsView.prototype.onSelectAllInit = function () {
         if (this.parent.view === 'Details') {
             this.isInteracted = false;
-            this.gridObj.selectionModule.selectRowsByRange(0, this.gridObj.getRows().length);
+            if (this.parent.allowMultiSelection) {
+                this.gridObj.selectionModule.selectRowsByRange(0, this.gridObj.getRows().length);
+            }
+            else {
+                this.gridObj.selectRow(this.gridObj.getRows().length - 1);
+            }
             this.isInteracted = true;
+            this.interaction = true;
         }
     };
     DetailsView.prototype.onClearAllInit = function () {
         if (this.parent.view === 'Details') {
             this.removeSelection();
+            this.interaction = true;
         }
     };
     /* istanbul ignore next */
@@ -7594,6 +8160,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.on(detailsInit, this.onDetailsInit, this);
         this.parent.on(refreshEnd, this.onRefreshEnd, this);
         this.parent.on(search, this.onSearchFiles, this);
+        this.parent.on(methodCall, this.onMethodCall, this);
+        this.parent.on(actionFailure, this.onActionFailure, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
         this.parent.on(deleteInit, this.onDeleteInit, this);
         this.parent.on(deleteEnd, this.onDeleteEnd, this);
@@ -7630,6 +8198,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.off(createEnd, this.onCreateEnd);
         this.parent.off(refreshEnd, this.onRefreshEnd);
         this.parent.off(search, this.onSearchFiles);
+        this.parent.off(methodCall, this.onMethodCall);
+        this.parent.off(actionFailure, this.onActionFailure);
         this.parent.off(modelChanged, this.onPropertyChanged);
         this.parent.off(renameInit, this.onRenameInit);
         this.parent.off(renameEnd, this.onPathChanged);
@@ -7658,6 +8228,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.off(dropPath, this.onDropPath);
         this.parent.off(updateSelectionData, this.onUpdateSelectionData);
     };
+    DetailsView.prototype.onActionFailure = function () { this.interaction = true; };
     DetailsView.prototype.onMenuItemData = function (args) {
         if (this.parent.activeModule === this.getModuleName()) {
             this.parent.itemData = [this.gridObj.getRowInfo(args.target).rowData];
@@ -7892,13 +8463,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         var selectSize = 0;
         while (selectSize < selectedRecords.length) {
             var record = selectedRecords[selectSize];
-            var name_3 = void 0;
-            if (this.parent.hasId) {
-                name_3 = getValue('id', record);
-            }
-            else {
-                name_3 = getName(this.parent, record);
-            }
+            var name_3 = getItemName(this.parent, record);
             this.parent.selectedItems.push(name_3);
             selectSize++;
         }
@@ -7929,8 +8494,9 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.visitedItem = null;
     };
     DetailsView.prototype.triggerSelect = function (action, args) {
-        var eventArgs = { action: action, fileDetails: args.data };
+        var eventArgs = { action: action, fileDetails: args.data, isInteracted: this.interaction };
         this.parent.trigger('fileSelect', eventArgs);
+        this.interaction = true;
     };
     DetailsView.prototype.wireEvents = function () {
         this.wireClickEvent(true);
@@ -7994,6 +8560,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         if (this.gridObj.selectedRowIndex === -1) {
             this.startIndex = null;
         }
+        this.isInteracted = true;
     };
     DetailsView.prototype.removeFocus = function () {
         this.addFocus(null);
@@ -8068,17 +8635,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 break;
             case 'del':
             case 'shiftdel':
-                if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
-                    this.parent.itemData = this.gridObj.getSelectedRecords();
-                    var items = this.parent.itemData;
-                    for (var i = 0; i < items.length; i++) {
-                        if (!hasEditAccess(items[i])) {
-                            createDeniedDialog(this.parent, items[i]);
-                            return;
-                        }
-                    }
-                    createDialog(this.parent, 'Delete');
-                }
+                this.performDelete();
                 break;
             case 'enter':
                 if (this.gridObj.selectedRowIndex === -1) {
@@ -8101,23 +8658,10 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 cutFiles(this.parent);
                 break;
             case 'ctrlD':
-                if (this.parent.selectedItems.length !== 0) {
-                    this.parent.itemData = this.gridObj.getSelectedRecords();
-                    var items = this.parent.itemData;
-                    for (var i = 0; i < items.length; i++) {
-                        if (!hasDownloadAccess(items[i])) {
-                            createDeniedDialog(this.parent, items[i]);
-                            return;
-                        }
-                    }
-                    Download(this.parent, this.parent.path, this.parent.selectedItems);
-                }
+                this.doDownload();
                 break;
             case 'f2':
-                if (this.parent.selectedItems.length === 1) {
-                    this.updateRenameData();
-                    doRename(this.parent);
-                }
+                this.performRename();
                 break;
             case 'ctrlA':
                 if (!isNullOrUndefined(gridItems[0]) && this.parent.allowMultiSelection) {
@@ -8199,11 +8743,41 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     DetailsView.prototype.gridSelectNodes = function () {
         return this.gridObj.getSelectedRecords();
     };
+    DetailsView.prototype.doDownload = function () {
+        if (this.parent.selectedItems.length !== 0) {
+            this.parent.itemData = this.gridObj.getSelectedRecords();
+            var items = this.parent.itemData;
+            for (var i = 0; i < items.length; i++) {
+                if (!hasDownloadAccess(items[i])) {
+                    createDeniedDialog(this.parent, items[i]);
+                    return;
+                }
+            }
+            Download(this.parent, this.parent.path, this.parent.selectedItems);
+        }
+    };
+    DetailsView.prototype.performDelete = function () {
+        if (this.parent.selectedItems && this.parent.selectedItems.length > 0) {
+            this.parent.itemData = this.gridObj.getSelectedRecords();
+            var items = this.parent.itemData;
+            for (var i = 0; i < items.length; i++) {
+                if (!hasEditAccess(items[i])) {
+                    createDeniedDialog(this.parent, items[i]);
+                    return;
+                }
+            }
+            createDialog(this.parent, 'Delete');
+        }
+    };
+    DetailsView.prototype.performRename = function () {
+        if (this.parent.selectedItems.length === 1) {
+            this.updateRenameData();
+            doRename(this.parent);
+        }
+    };
     DetailsView.prototype.updateRenameData = function () {
         var data = this.gridSelectNodes()[0];
-        this.parent.itemData = [data];
-        this.parent.isFile = getValue('isFile', data);
-        this.parent.filterPath = getValue('filterPath', data);
+        updateRenamingData(this.parent, data);
     };
     DetailsView.prototype.shiftMoveMethod = function (gridItems, selIndex, focIndex, selRowIndeces, e) {
         if (!this.parent.allowMultiSelection) {
@@ -8417,6 +8991,126 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    DetailsView.prototype.onMethodCall = function (e) {
+        if (this.parent.view !== 'Details') {
+            return;
+        }
+        var action = getValue('action', e);
+        switch (action) {
+            case 'deleteFiles':
+                this.deleteFiles(getValue('ids', e));
+                break;
+            case 'downloadFiles':
+                this.downloadFiles(getValue('ids', e));
+                break;
+            case 'openFile':
+                this.openFile(getValue('id', e));
+                break;
+            case 'createFolder':
+                this.interaction = false;
+                break;
+            case 'renameFile':
+                this.interaction = false;
+                this.renameFile(getValue('id', e), getValue('newName', e));
+                break;
+            case 'selectAll':
+                this.interaction = false;
+                this.onSelectAllInit();
+                break;
+            case 'clearSelection':
+                this.interaction = false;
+                this.onClearAllInit();
+                break;
+        }
+    };
+    DetailsView.prototype.getRecords = function (nodes) {
+        var gridRecords = this.gridObj.getCurrentViewRecords();
+        var records = [];
+        var hasFilter = (this.parent.breadcrumbbarModule.searchObj.element.value !== '' || this.parent.isFiltered) ? true : false;
+        var filter$$1 = this.parent.hasId ? 'id' : 'name';
+        if (this.parent.hasId || !hasFilter) {
+            for (var i = 0, len = gridRecords.length; i < len; i++) {
+                if (nodes.indexOf(getValue(filter$$1, gridRecords[i])) !== -1) {
+                    records.push(gridRecords[i]);
+                }
+            }
+        }
+        else {
+            for (var i = 0, len = gridRecords.length; i < len; i++) {
+                var name_4 = getValue('filterPath', gridRecords[i]) + getValue('name', gridRecords[i]);
+                if (nodes.indexOf(name_4) !== -1) {
+                    records.push(gridRecords[i]);
+                }
+            }
+        }
+        return records;
+    };
+    DetailsView.prototype.deleteFiles = function (ids) {
+        this.parent.activeModule = 'detailsview';
+        if (isNullOrUndefined(ids)) {
+            this.performDelete();
+            return;
+        }
+        var records = this.getRecords(ids);
+        if (records.length === 0) {
+            return;
+        }
+        var data = [];
+        var newIds = [];
+        for (var i = 0; i < records.length; i++) {
+            data[i] = records[i];
+            newIds[i] = getItemName(this.parent, data[i]);
+        }
+        doDeleteFiles(this.parent, data, newIds);
+    };
+    DetailsView.prototype.downloadFiles = function (ids) {
+        if (isNullOrUndefined(ids)) {
+            this.doDownload();
+            return;
+        }
+        var dRecords = this.getRecords(ids);
+        if (dRecords.length === 0) {
+            return;
+        }
+        var data = [];
+        var newIds = [];
+        for (var i = 0; i < dRecords.length; i++) {
+            data[i] = dRecords[i];
+            newIds[i] = getItemName(this.parent, data[i]);
+        }
+        doDownloadFiles(this.parent, data, newIds);
+    };
+    DetailsView.prototype.openFile = function (id) {
+        if (isNullOrUndefined(id)) {
+            return;
+        }
+        var records = this.getRecords([id]);
+        if (records.length > 0) {
+            this.openContent(records[0]);
+        }
+    };
+    DetailsView.prototype.renameFile = function (id, name) {
+        this.parent.activeModule = 'detailsview';
+        if (isNullOrUndefined(id)) {
+            this.performRename();
+            return;
+        }
+        var records = this.getRecords([id]);
+        if (records.length > 0) {
+            updateRenamingData(this.parent, records[0]);
+            if (!isNullOrUndefined(name)) {
+                if (hasEditAccess(this.parent.itemData[0])) {
+                    rename(this.parent, this.parent.path, name);
+                }
+                else {
+                    createDeniedDialog(this.parent, this.parent.itemData[0]);
+                }
+            }
+            else {
+                doRename(this.parent);
+            }
+        }
+    };
     return DetailsView;
 }());
 
@@ -8436,5 +9130,5 @@ var DetailsView = /** @__PURE__ @class */ (function () {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, actionFailure, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es5.js.map

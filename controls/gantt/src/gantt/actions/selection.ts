@@ -160,6 +160,15 @@ export class Selection {
     }
 
     /**
+     * Selects a collection of cells by row and column indexes. 
+     * @param  {ISelectedCell[]} rowCellIndexes - Specifies the row and column indexes.
+     * @return {void}
+     */
+    public selectCells(rowCellIndexes: ISelectedCell[]): void {
+        this.parent.treeGrid.grid.selectCells(rowCellIndexes);
+    }
+
+    /**
      * Selects a row by given index. 
      * @param  {number} index - Defines the row index. 
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.

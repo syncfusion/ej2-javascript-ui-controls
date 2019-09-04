@@ -1930,18 +1930,22 @@ let Calendar = class Calendar extends CalendarBase {
             super.minMaxUpdate(this.value);
         }
     }
+    generateTodayVal(value) {
+        let tempValue = new Date();
+        if (value) {
+            tempValue.setHours(value.getHours());
+            tempValue.setMinutes(value.getMinutes());
+            tempValue.setSeconds(value.getSeconds());
+            tempValue.setMilliseconds(value.getMilliseconds());
+        }
+        else {
+            tempValue = new Date(tempValue.getFullYear(), tempValue.getMonth(), tempValue.getDate(), 0, 0, 0, 0);
+        }
+        return tempValue;
+    }
     todayButtonClick() {
         if (this.showTodayButton) {
-            let tempValue = new Date();
-            if (this.value) {
-                tempValue.setHours(this.value.getHours());
-                tempValue.setMinutes(this.value.getMinutes());
-                tempValue.setSeconds(this.value.getSeconds());
-                tempValue.setMilliseconds(this.value.getMilliseconds());
-            }
-            else {
-                tempValue = new Date(tempValue.getFullYear(), tempValue.getMonth(), tempValue.getDate(), 0, 0, 0, 0);
-            }
+            let tempValue = this.generateTodayVal(this.value);
             this.setProperties({ value: tempValue }, true);
             if (this.isMultiSelection) {
                 let copyValues = this.copyValues(this.values);
@@ -3308,8 +3312,25 @@ let DatePicker = class DatePicker extends Calendar {
             this.hide(e);
             this.focusOut();
         }
+        else if (closest(target, '.e-datepicker.e-popup-wrapper')) {
+            // Fix for close the popup when select the previously selected value.
+            if (target.classList.contains('e-day')
+                && !isNullOrUndefined(e.target.parentElement)
+                && e.target.parentElement.classList.contains('e-selected')
+                && closest(target, '.e-content')
+                && closest(target, '.e-content').classList.contains('e-' + this.depth.toLowerCase())) {
+                this.hide(e);
+            }
+            else if (closest(target, '.e-footer-container')
+                && target.classList.contains('e-today')
+                && target.classList.contains('e-btn')
+                && +new Date(+this.value) === +super.generateTodayVal(this.value)) {
+                this.hide(e);
+            }
+        }
     }
     inputKeyActionHandle(e) {
+        let clickedView = this.currentView();
         switch (e.action) {
             case 'altUpArrow':
                 this.isAltKeyPressed = false;
@@ -3352,6 +3373,10 @@ let DatePicker = class DatePicker extends Calendar {
                 break;
             default:
                 this.defaultAction(e);
+                // Fix for close the popup when select the previously selected value.
+                if (e.action === 'select' && clickedView === this.depth) {
+                    this.hide(e);
+                }
         }
     }
     defaultAction(e) {

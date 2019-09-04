@@ -76,9 +76,18 @@ export class PdfExport {
               return null;
           }
           dm.executeQuery(query).then((e: Object) => {
+            let customsData: object = null;
+            if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+              customsData = pdfExportProperties.dataSource;
+            }
             pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, <Ajax>e);
             return this.parent.grid.pdfExportModule.Map(
               this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob).then((document: PdfDocument) => {
+                if (customsData != null) {
+                  pdfExportProperties.dataSource = customsData;
+                } else {
+                  delete pdfExportProperties.dataSource;
+                }
                 resolve(document);
               });
           });
@@ -115,12 +124,9 @@ export class PdfExport {
         if (!isLocal) {
           this.parent.flatData = [];
         }
-        if (prop && prop.dataSource && isLocal) {
-          let flatDatas: object[] = this.parent.flatData;
-          let dataSrc: object = prop.dataSource instanceof DataManager ? prop.dataSource.dataSource.json : prop.dataSource;
-          this.parent.dataModule.convertToFlatData(dataSrc);
+        if (prop && prop.dataSource) {
+          this.parent.dataModule.convertToFlatData(prop.dataSource);
           dtSrc = this.parent.flatData;
-          this.parent.flatData = flatDatas;
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
         prop.dataSource = new DataManager({json: <Object[]>dtSrc});

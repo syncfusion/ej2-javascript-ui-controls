@@ -4,6 +4,7 @@ import { Rect } from '../primitives/rect';
 import { getFunction } from '../utility/base-util';
 import { PointModel } from '../primitives/point-model';
 import { HierarchicalTree } from './hierarchical-tree';
+import { NodeModel } from '../objects/node-model';
 
 
 /**
@@ -67,7 +68,6 @@ export class MindMap {
                 }
             }
         }
-
         let rootNode: INode = nameTable[layoutProp.fixedNode];
         let fistLevelNodes: INode[] = this.findFirstLevelNodes(rootNode, layoutProp, nameTable);
         let leftNodes: INode[] = []; let rightNodes: INode[] = [];
@@ -75,6 +75,7 @@ export class MindMap {
         getMindmapBranch = getMindmapBranch || getFunction(this.getBranch);
         for (let node of fistLevelNodes) {
             let align: BranchTypes = getMindmapBranch(node, fistLevelNodes);
+            align = node && (node as NodeModel).branch ? (node as NodeModel).branch : align;
             (align === 'Left') ? leftNodes.push(node) : rightNodes.push(node);
         }
         let viewPortBounds: Rect = new Rect(0, 0, viewPort.x, viewPort.y);
@@ -111,7 +112,8 @@ export class MindMap {
             type: 'HierarchicalTree',
             horizontalSpacing: layoutProp.verticalSpacing, verticalSpacing: layoutProp.horizontalSpacing,
             verticalAlignment: layoutProp.verticalAlignment, horizontalAlignment: layoutProp.horizontalAlignment,
-            fixedNode: layoutProp.fixedNode, getLayoutInfo: getFunction(layoutProp.getLayoutInfo), margin: layoutProp.margin,
+            fixedNode: layoutProp.fixedNode, getLayoutInfo: getFunction(layoutProp.getLayoutInfo),
+            layoutInfo: layoutProp.layoutInfo, margin: layoutProp.margin,
             root: layoutProp.fixedNode
         };
         (layout as Layout).orientation = (side === 'Left') ? 'LeftToRight' : 'RightToLeft';

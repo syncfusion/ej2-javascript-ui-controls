@@ -8,6 +8,64 @@ import { LayerModel } from '../../../src/diagram/diagram/layer-model';
 import { MouseEvents } from './mouseevents.spec';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
+function getDSNodeHtmlContent(dsName: string, dsType: string): string {
+    return `<div class="diagramNode diagramDSNode">
+                 <div class="diagramNodeText diagramDSNodeTitle">${dsName}</div>
+                 <div class="diagramNodeText diagramNodeSubTitle diagramDSNodeSubTitle">${dsType}</div>
+                 <div class="diagramNodeFooter" ><button class="diagramNodeMenuIcon"/></div>
+              </div>`;
+}
+function created(args: any) {
+    debugger
+    let sfDiagram = (document.getElementById('diagram') as any).ej2_instances[0];
+    installGlassLayer();
+
+    let dsNode: NodeModel = {
+        id: "dsnode1",
+        width: 172,
+        height: 76,
+        offsetX: 100,
+        offsetY: 80,
+        shape: { type: 'HTML', content: getDSNodeHtmlContent("name", "type") },
+        annotations: [{
+            visibility: true,
+            offset: { x: 0.96, y: 0.7 },
+            width: 20,
+            height: 20,
+            template: '<button class="diagramConnectorDeleteIcon">button1</button>'
+        }, {
+            visibility: true,
+            //content: 'Hello there; this somehow hides behind the node even with zIndex adjustment'
+        }],
+    };
+    sfDiagram.setActiveLayer("default_layer");
+    sfDiagram.add(dsNode);
+    sfDiagram.bringLayerForward("glassLayerId")
+}
+
+function installGlassLayer() {
+    let addButtonNode: NodeModel = {
+        id: "addButtonId",
+        width: 66,
+        height: 66,
+        offsetX: 33,
+        offsetY: 33,
+        shape: {
+            type: 'HTML',
+            content: '<div id="addButtonDiv"><button>name</button></div>'
+        },
+        //constraints: NodeConstraints.PointerEvents
+    }
+    let sfDiagram = (document.getElementById('diagram') as any).ej2_instances[0];
+    const glassLayer: LayerModel = {
+        id: "glassLayerId",
+        objects: [],
+        visible: true,
+        lock: false,
+    }
+
+    sfDiagram.addLayer(glassLayer, [addButtonNode]);
+}
 /**
  * layer spec
  */
@@ -579,6 +637,35 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('multiplelayer canvas', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let selArray: any = [];
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: '100%', height: '700px', nodes: [],
+                created: created,
+            });
+            diagram.appendTo('#diagram');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('layer - checking the node zindex ', (done: Function) => {
+            let coll = document.getElementById("diagram_htmlLayer_div").childNodes;
+            expect((coll[0] as HTMLElement).id === "dsnode1_html_element" &&
+                (coll[1] as HTMLElement).id === "addButtonId_html_element").toBe(true);
+            done();
+        });
+    });
+
     describe('zIndex Issue with Layer', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -606,18 +693,18 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking zIndex of the objects', (done: Function) => {
-            let node: NodeModel = { id: 'Layer11', height: 100, width: 100, offsetX: 100, offsetY: 100};
+            let node: NodeModel = { id: 'Layer11', height: 100, width: 100, offsetX: 100, offsetY: 100 };
             diagram.setActiveLayer('default_layer');
             diagram.add(node);
-            let node4: NodeModel = { id: 'Layer12', height: 100, width: 100, offsetX: 150, offsetY: 150};
+            let node4: NodeModel = { id: 'Layer12', height: 100, width: 100, offsetX: 150, offsetY: 150 };
             diagram.setActiveLayer('default_layer');
-            let node2: NodeModel = { id: 'Layer21', height: 100, width: 100, offsetX: 200, offsetY: 200};
+            let node2: NodeModel = { id: 'Layer21', height: 100, width: 100, offsetX: 200, offsetY: 200 };
             diagram.setActiveLayer('Layer2');
             diagram.add(node2);
-            let node3: NodeModel = { id: 'Layer31', height: 100, width: 100, offsetX: 250, offsetY: 250};
+            let node3: NodeModel = { id: 'Layer31', height: 100, width: 100, offsetX: 250, offsetY: 250 };
             diagram.setActiveLayer('Layer3');
             diagram.add(node3);
-            let node5: NodeModel = { id: 'Layer22', height: 100, width: 100, offsetX: 300, offsetY: 300};
+            let node5: NodeModel = { id: 'Layer22', height: 100, width: 100, offsetX: 300, offsetY: 300 };
             diagram.setActiveLayer('default_layer');
             diagram.add(node4);
             diagram.select([diagram.nodes[3]]);
@@ -626,8 +713,104 @@ describe('Diagram Control', () => {
             expect(diagram.selectedItems.nodes[0].id === (diagram.layers[0] as Layer).zIndexTable[1]).toBe(true);
             done();
         });
-       
+
     });
 
+    describe('multiple layer - Hidden layer is visible', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let selArray: any = [];
 
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+
+            diagram = new Diagram({
+                width: '100%',
+                height: '600px',
+                layers: [
+                    {
+                        id: "L1",
+                        objects: ["N1", "N2"],
+                        visible: false
+                    },
+                    {
+                        id: "L2",
+                        objects: ["N3", "N4"],
+                        visible: true
+                    },
+                ],
+                nodes: [
+                {
+                    id: "N1",
+                    offsetX: 100,
+                    offsetY: 100,
+                    width: 200,
+                    height: 200,
+                    shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                },
+
+                {
+                    id: "N2",
+                    offsetX: 400,
+                    offsetY: 100,
+                    width: 200,
+                    height: 200,
+                    shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                },
+
+                {
+                    id: "N3",
+                    offsetX: 100,
+                    offsetY: 400,
+                    width: 200,
+                    height: 200,
+                    shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                },
+
+                {
+                    id: "N4",
+                    offsetX: 400,
+                    offsetY: 400,
+                    width: 200,
+                    height: 200,
+                    shape: {
+                        type: "Basic",
+                        shape: "Ellipse",
+                    },
+                }
+            ],
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Node fill color change in hidden layer - checking the node element is render or not ', (done: Function) => {
+            let node = diagram.nodes.find(i => i.id == "N1");
+            node.style.fill = node.style.fill == "red" ? "white" : "red";
+            let ele = document.getElementById("N1_groupElement");
+            console.log("ele"+ele);
+            expect(ele === null).toBe(true);
+            done();
+        });
+    });
 });    

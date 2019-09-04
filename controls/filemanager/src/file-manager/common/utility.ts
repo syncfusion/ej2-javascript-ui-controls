@@ -1,7 +1,7 @@
 import { IFileManager, ReadArgs, SortOrder, SearchArgs, FileDragEventArgs } from '../base/interface';
 import * as CLS from '../base/classes';
 import * as events from '../base/constant';
-import { read, paste, Search, filter } from '../common/operations';
+import { read, paste, Search, filter, Download, Delete } from '../common/operations';
 import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement } from '@syncfusion/ej2-base';
 import { closest, DragEventArgs, detach } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -295,7 +295,7 @@ export function getImageUrl(parent: IFileManager, item: Object): string {
     if (parent.hasId) {
         let imgId: string = getValue('id', item);
         imgUrl = baseUrl + '?path=' + parent.path + '&id=' + imgId;
-    } else if ((parent.breadcrumbbarModule.searchObj.element.value !== '' || parent.isFiltered) && !isNOU(fPath)) {
+    } else if (!isNOU(fPath)) {
         imgUrl = baseUrl + '?path=' + fPath.replace(/\\/g, '/') + fileName;
     } else {
         imgUrl = baseUrl + '?path=' + parent.path + fileName;
@@ -785,11 +785,62 @@ export function objectToString(data: Object): string {
     return str;
 }
 
+export function getItemName(parent: IFileManager, data: Object): string {
+    if (parent.hasId) {
+        return getValue('id', data);
+    }
+    return getName(parent, data);
+}
+
+export function updateRenamingData(parent: IFileManager, data: Object): void {
+    parent.itemData = [data];
+    parent.currentItemText = getValue('name', data);
+    parent.isFile = getValue('isFile', data);
+    parent.filterPath = getValue('filterPath', data);
+}
+
 export function doRename(parent: IFileManager): void {
     if (!hasEditAccess(parent.itemData[0])) {
         createDeniedDialog(parent, parent.itemData[0]);
     } else {
         createDialog(parent, 'Rename');
+    }
+}
+/* istanbul ignore next */
+export function doDownload(parent: IFileManager): void {
+    let items: Object[] = parent.itemData;
+    for (let i: number = 0; i < items.length; i++) {
+        if (!hasDownloadAccess(items[i])) {
+            createDeniedDialog(parent, items[i]);
+            return;
+        }
+    }
+    if (parent.selectedItems.length > 0) {
+        Download(parent, parent.path, parent.selectedItems);
+    }
+}
+
+export function doDeleteFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
+    for (let i: number = 0; i < data.length; i++) {
+        if (!hasEditAccess(data[i])) {
+            createDeniedDialog(parent, data[i]);
+            return;
+        }
+    }
+    parent.itemData = data;
+    Delete(parent, newIds, parent.path, 'delete');
+}
+/* istanbul ignore next */
+export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: string[]): void {
+    for (let i: number = 0; i < data.length; i++) {
+        if (!hasDownloadAccess(data[i])) {
+            createDeniedDialog(parent, data[i]);
+            return;
+        }
+    }
+    parent.itemData = data;
+    if (newIds.length > 0) {
+        Download(parent, parent.path, newIds);
     }
 }
 
@@ -831,4 +882,24 @@ export function hasUploadAccess(data: Object): boolean {
 export function hasDownloadAccess(data: Object): boolean {
     let permission: Object = getValue('permission', data);
     return permission ? ((getValue('read', permission) && getValue('download', permission)) ? true : false) : true;
+}
+
+export function createNewFolder(parent: IFileManager): void {
+    let details: Object = parent.itemData[0];
+    if (!hasContentAccess(details)) {
+        createDeniedDialog(parent, details);
+    } else {
+        createDialog(parent, 'NewFolder');
+    }
+}
+
+export function uploadItem(parent: IFileManager): void {
+    let details: Object = parent.itemData[0];
+    if (!hasUploadAccess(details)) {
+        createDeniedDialog(parent, details);
+    } else {
+        let eleId: string = '#' + parent.element.id + CLS.UPLOAD_ID;
+        let uploadEle: HTMLElement = <HTMLElement>select(eleId, parent.element);
+        uploadEle.click();
+    }
 }

@@ -1,11 +1,12 @@
-import { isNullOrUndefined, closest, extend, EventHandler, uniqueID } from '@syncfusion/ej2-base';
-import { createElement, prepend, append, addClass, removeClass } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest, extend, EventHandler, uniqueID, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, prepend, append, addClass, removeClass, getElement } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs } from '../base/interface';
 import { Timezone } from '../timezone/timezone';
 import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/resources-model';
 import { generate } from '../../recurrence-editor/date-generator';
+import { CalendarType } from '../../common/calendar-util';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 import * as event from '../base/constant';
@@ -57,7 +58,7 @@ export class EventBase {
                 event[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
-                processed = processed.concat(this.generateOccurrence(event));
+                processed = processed.concat(this.generateOccurrence(event, null, oldTimezone));
             } else {
                 event.Guid = this.generateGuid();
                 processed.push(event);
@@ -578,8 +579,12 @@ export class EventBase {
         if (target.classList.contains(cls.DRAG_CLONE_CLASS) || target.classList.contains(cls.RESIZE_CLONE_CLASS)) {
             return;
         }
-        let raiseClickEvent: Function = (isMultiple: boolean): boolean => {
-            this.activeEventData(eventData, isMultiple);
+        if (eventData.ctrlKey && eventData.which === 1 && this.parent.keyboardInteractionModule) {
+            this.parent.quickPopup.quickPopup.hide();
+            this.parent.selectedElements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_BORDER)) as Element[];
+            let target: Element = closest(<Element>eventData.target, '.' + cls.APPOINTMENT_CLASS) as Element;
+            this.getSelectedEventElements(target);
+            this.activeEventData(eventData, false);
             let selectArgs: SelectEventArgs = {
                 data: this.parent.activeEventData.event,
                 element: this.parent.activeEventData.element,
@@ -588,25 +593,36 @@ export class EventBase {
             this.parent.trigger(event.select, selectArgs);
             let args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
             this.parent.trigger(event.eventClick, args);
-            return args.cancel;
-        };
-        if (eventData.ctrlKey && eventData.which === 1 && this.parent.keyboardInteractionModule) {
-            this.parent.quickPopup.quickPopup.hide();
-            this.parent.selectedElements = [].slice.call(this.parent.element.querySelectorAll('.' + cls.APPOINTMENT_BORDER)) as Element[];
-            let target: Element = closest(<Element>eventData.target, '.' + cls.APPOINTMENT_CLASS) as Element;
-            this.getSelectedEventElements(target);
-            raiseClickEvent(false);
-            return;
-        }
-        this.removeSelectedAppointmentClass();
-        if (raiseClickEvent(true)) {
+        } else {
             this.removeSelectedAppointmentClass();
-            return;
+            this.activeEventData(eventData, true);
+            let selectEventArgs: SelectEventArgs = {
+                data: this.parent.activeEventData.event,
+                element: this.parent.activeEventData.element,
+                event: eventData, requestType: 'eventSelect'
+            };
+            this.parent.trigger(event.select, selectEventArgs);
+            let args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
+            this.parent.trigger(event.eventClick, args, (eventClickArgs: EventClickArgs) => {
+                if (isBlazor()) {
+                    let eventFields: EventFieldsMapping = this.parent.eventFields;
+                    let eventObj: { [key: string]: Object } = eventClickArgs.event as { [key: string]: Object };
+                    eventObj.startTime = this.parent.getDateTime(eventObj[eventFields.startTime] as Date);
+                    eventObj.endTime = this.parent.getDateTime(eventObj[eventFields.endTime] as Date);
+                    if (eventClickArgs.element) {
+                        eventClickArgs.element = getElement(eventClickArgs.element);
+                    }
+                }
+                if (eventClickArgs.cancel) {
+                    this.removeSelectedAppointmentClass();
+                } else {
+                    if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
+                        addClass([this.parent.activeEventData.element as Element], cls.AGENDA_SELECTED_CELL);
+                    }
+                    this.parent.notify(event.eventClick, eventClickArgs);
+                }
+            });
         }
-        if (this.parent.currentView === 'Agenda' || this.parent.currentView === 'MonthAgenda') {
-            addClass([this.parent.activeEventData.element as Element], cls.AGENDA_SELECTED_CELL);
-        }
-        this.parent.notify(event.eventClick, this.parent.activeEventData);
     }
 
     private eventDoubleClick(e: Event): void {
@@ -685,7 +701,7 @@ export class EventBase {
         this.parent.activeEventData = { event: eventObject, element: target } as EventClickArgs;
     }
 
-    public generateOccurrence(event: { [key: string]: Object }, viewDate?: Date): Object[] {
+    public generateOccurrence(event: { [key: string]: Object }, viewDate?: Date, oldTimezone?: string): Object[] {
         let startDate: Date = event[this.parent.eventFields.startTime] as Date;
         let endDate: Date = event[this.parent.eventFields.endTime] as Date;
         let eventRule: string = event[this.parent.eventFields.recurrenceRule] as string;
@@ -696,8 +712,11 @@ export class EventBase {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = util.getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
+        let newTimezone: string = this.parent.timezone || this.timezone.getLocalTimezoneName();
+        let firstDay: number = this.parent.firstDayOfWeek;
+        let calendarMode: CalendarType = this.parent.calendarMode;
         let dates: number[] =
-            generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
+            generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };

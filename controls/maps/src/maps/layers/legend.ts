@@ -321,30 +321,32 @@ export class Legend {
                 let bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
                 let textLocation: Point = new Point(item['textX'], item['textY']);
                 eventArgs.fill = item['fill'];
-                map.trigger(legendRendering, eventArgs);
-                textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
-                let rectOptions: RectOption = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
-                textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
-                textFont.size = map.themeStyle.legendFontSize || textFont.size;
-                renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
-                this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                map.trigger(legendRendering, eventArgs, () => {
+                    textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
+                    let rectOptions: RectOption = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
+                    textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
+                    textFont.size = map.themeStyle.legendFontSize || textFont.size;
+                    renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
+                    this.legendGroup.appendChild(render.drawRectangle(rectOptions));
+                    if (i === this.legendRenderingCollections.length - 1) {
+                        this.renderLegendBorder();
+                    }
+                });
             }
-            this.renderLegendBorder();
         } else {
             this.drawLegendItem(this.currentPage);
         }
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private drawLegendItem(page: number): void {
         let map: Maps = this.maps;
         let legend: LegendSettingsModel = <LegendSettingsModel>map.legendSettings; let spacing: number = 10;
         let shapeSize: Size = new Size(legend.shapeWidth, legend.shapeHeight);
         let textOptions: TextOption; let renderOptions: CircleOption | PathOption | RectOption;
         let render: SvgRenderer = map.renderer; let shapeBorder: BorderModel = legend.shapeBorder;
-        let eventArgs: ILegendRenderingEventArgs = {
-            name: legendRendering, cancel: false, fill: '', shape: legend.shape
-        };
+        let eventArgs: ILegendRenderingEventArgs = { name: legendRendering, cancel: false, fill: '', shape: legend.shape };
         if (page >= 0 && page < this.totalPages.length) {
             if (querySelector(this.legendGroup.id, this.maps.element.id)) {
                 remove(querySelector(this.legendGroup.id, this.maps.element.id));
@@ -362,79 +364,84 @@ export class Legend {
                 eventArgs.fill = collection['Fill'];
                 eventArgs.shape = <LegendShape>((legend.type === 'Markers') ? ((isNullOrUndefined(collection['ImageSrc'])) ?
                     legend.shape : 'Image') : legend.shape);
-                map.trigger(legendRendering, eventArgs);
-                let shapeId: string = map.element.id + '_Legend_Shape_Index_' + i;
-                let textId: string = map.element.id + '_Legend_Text_Index_' + i;
-                let shapeLocation: Point = collection['Shape'];
-                let textLocation: Point = collection['Text'];
-                let imageUrl: string = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
-                let renderOptions: PathOption = new PathOption(
-                    shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, ''
-                );
-                legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color : this.maps.themeStyle.legendTextColor;
-                legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
-                legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
-                legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
-                textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
-                renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
-                this.legendGroup.appendChild(legendElement);
+                map.trigger(legendRendering, eventArgs, () => {
+                    let shapeId: string = map.element.id + '_Legend_Shape_Index_' + i;
+                    let textId: string = map.element.id + '_Legend_Text_Index_' + i;
+                    let shapeLocation: Point = collection['Shape'];
+                    let textLocation: Point = collection['Text'];
+                    let imageUrl: string = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
+                    let renderOptions: PathOption = new PathOption(
+                        shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, ''
+                    );
+                    legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color :
+                    this.maps.themeStyle.legendTextColor;
+                    legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
+                    legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
+                    legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
+                    textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
+                    renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
+                    this.legendGroup.appendChild(legendElement);
+                    if (i === ((<Object[]>this.totalPages[page]['Collection']).length - 1)) {
+                        let pagingGroup: Element; let width: number = spacing; let height: number = (spacing / 2);
+                        if (this.page !== 0) {
+                            let pagingText: string = (page + 1) + '/' + this.totalPages.length;
+                            let pagingFont: FontModel = legend.textStyle;
+                            let pagingTextSize: Size = measureText(pagingText, pagingFont);
+                            let leftPageX: number = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
+                                (width * 2) - spacing;
+                            let rightPageX: number = (this.legendItemRect.x + this.legendItemRect.width);
+                            let locY: number = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
+                            let pageTextX: number = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
+                            pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
+                            let leftPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
+                            let rightPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
+                            let rightPath: string = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
+                                ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
+                            let leftPath: string = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
+                                ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
+                            let leftPageOptions: PathOption = new PathOption(
+                                map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath
+                                );
+                            leftPageElement.appendChild(render.drawPath(leftPageOptions));
+                            let leftRectPageOptions: RectOption = new RectOption(
+                                map.element.id + '_Left_Page_Rect', 'transparent', {}, 1,
+                                new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', ''
+                            );
+                            leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
+                            this.wireEvents(leftPageElement);
+                            let rightPageOptions: PathOption = new PathOption(
+                                map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath
+                            );
+                            rightPageElement.appendChild(render.drawPath(rightPageOptions));
+                            let rightRectPageOptions: RectOption = new RectOption(
+                                map.element.id + '_Right_Page_Rect', 'transparent', {}, 1,
+                                new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', ''
+                            );
+                            rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
+                            this.wireEvents(rightPageElement);
+                            pagingGroup.appendChild(leftPageElement);
+                            pagingGroup.appendChild(rightPageElement);
+                            let pageTextOptions: Object = {
+                                'id': map.element.id + '_Paging_Text',
+                                'x': pageTextX,
+                                'y': locY + (pagingTextSize.height / 4),
+                                'fill': '#a6a6a6',
+                                'font-size': '14px',
+                                'font-style': pagingFont.fontStyle,
+                                'font-family': pagingFont.fontFamily,
+                                'font-weight': pagingFont.fontWeight,
+                                'text-anchor': 'middle',
+                                'transform': '',
+                                'opacity': 1,
+                                'dominant-baseline': ''
+                            };
+                            pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
+                            this.legendGroup.appendChild(pagingGroup);
+                        }
+                        this.renderLegendBorder();
+                    }
+                });
             }
-            let pagingGroup: Element;
-            let width: number = spacing; let height: number = (spacing / 2);
-            if (this.page !== 0) {
-                let pagingText: string = (page + 1) + '/' + this.totalPages.length;
-                let pagingFont: FontModel = legend.textStyle;
-                let pagingTextSize: Size = measureText(pagingText, pagingFont);
-                let leftPageX: number = (this.legendItemRect.x + this.legendItemRect.width) - pagingTextSize.width -
-                    (width * 2) - spacing;
-                let rightPageX: number = (this.legendItemRect.x + this.legendItemRect.width);
-                let locY: number = (this.legendItemRect.y + this.legendItemRect.height) + (height / 2) + spacing;
-                let pageTextX: number = rightPageX - width - (pagingTextSize.width / 2) - (spacing / 2);
-                pagingGroup = render.createGroup({ id: map.element.id + '_Legend_Paging_Group' });
-                let leftPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Left_Paging_Group' });
-                let rightPageElement: Element = render.createGroup({ id: map.element.id + '_Legend_Right_Paging_Group' });
-                let rightPath: string = ' M ' + rightPageX + ' ' + locY + ' L ' + (rightPageX - width) + ' ' + (locY - height) +
-                    ' L ' + (rightPageX - width) + ' ' + (locY + height) + ' z ';
-                let leftPath: string = ' M ' + leftPageX + ' ' + locY + ' L ' + (leftPageX + width) + ' ' + (locY - height) +
-                    ' L ' + (leftPageX + width) + ' ' + (locY + height) + ' z ';
-                let leftPageOptions: PathOption = new PathOption(map.element.id + '_Left_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', leftPath);
-                leftPageElement.appendChild(render.drawPath(leftPageOptions));
-                let leftRectPageOptions: RectOption = new RectOption(
-                    map.element.id + '_Left_Page_Rect', 'transparent', {}, 1,
-                    new Rect(leftPageX - (width / 2), (locY - (height * 2)), width * 2, spacing * 2), null, null, '', ''
-                );
-                leftPageElement.appendChild(render.drawRectangle(leftRectPageOptions));
-                this.wireEvents(leftPageElement);
-                let rightPageOptions: PathOption = new PathOption(
-                    map.element.id + '_Right_Page', '#a6a6a6', 0, '#a6a6a6', 1, '', rightPath
-                );
-                rightPageElement.appendChild(render.drawPath(rightPageOptions));
-                let rightRectPageOptions: RectOption = new RectOption(
-                    map.element.id + '_Right_Page_Rect', 'transparent', {}, 1,
-                    new Rect((rightPageX - width), (locY - height), width, spacing), null, null, '', ''
-                );
-                rightPageElement.appendChild(render.drawRectangle(rightRectPageOptions));
-                this.wireEvents(rightPageElement);
-                pagingGroup.appendChild(leftPageElement);
-                pagingGroup.appendChild(rightPageElement);
-                let pageTextOptions: Object = {
-                    'id': map.element.id + '_Paging_Text',
-                    'x': pageTextX,
-                    'y': locY + (pagingTextSize.height / 4),
-                    'fill': '#a6a6a6',
-                    'font-size': '14px',
-                    'font-style': pagingFont.fontStyle,
-                    'font-family': pagingFont.fontFamily,
-                    'font-weight': pagingFont.fontWeight,
-                    'text-anchor': 'middle',
-                    'transform': '',
-                    'opacity': 1,
-                    'dominant-baseline': ''
-                };
-                pagingGroup.appendChild(render.createText(pageTextOptions, pagingText));
-                this.legendGroup.appendChild(pagingGroup);
-            }
-            this.renderLegendBorder();
         }
     }
 
@@ -854,7 +861,7 @@ export class Legend {
                 let imageSrc: string = null;
                 let showLegend: boolean = isNullOrUndefined(data[this.maps.legendSettings.showLegendPath]) ? true :
                     data[this.maps.legendSettings.showLegendPath];
-                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'])) && (!isNullOrUndefined(data['longitude']))) {
+                if (marker.visible && showLegend && (!isNullOrUndefined(data['latitude'] | data['Latitude'])) && (!isNullOrUndefined(data['longitude'] | data['Longitude']))) {
                     if (marker.template) {
                         templateFn = getTemplateFunction(marker.template);
                         let templateElement: Element = templateFn(this.maps);

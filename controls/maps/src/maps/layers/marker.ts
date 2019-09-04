@@ -53,9 +53,13 @@ export class Marker {
                     template: markerSettings.template, data: data, maps: this.maps, marker: markerSettings,
                     border: markerSettings.border
                 };
+                if (this.maps.isBlazor) {
+                    const {maps, marker, ...blazorEventArgs} :  IMarkerRenderingEventArgs = eventArgs;
+                    eventArgs = blazorEventArgs;
+                }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                    let lng: number = data['longitude'];
-                    let lat: number = data['latitude'];
+                    let lng: number = data['longitude'] | data['Longitude'];
+                    let lat: number = data['latitude'] | data['Latitude'];
                     let offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -79,7 +83,6 @@ export class Marker {
                         }
                     }
                 });
-
             });
         });
         if (this.markerSVGObject.childElementCount > 0) {
@@ -115,9 +118,13 @@ export class Marker {
             return;
         }
         let eventArgs: IMarkerClickEventArgs = {
-            cancel: false, name: markerClick, data: options.data, maps: this.maps.isBlazor ? null : this.maps,
-            marker: this.maps.isBlazor ? null : options.marker, target: target, x: e.clientX, y: e.clientY
+            cancel: false, name: markerClick, data: options.data, maps: this.maps,
+            marker: options.marker, target: target, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const {maps, marker, ...blazorEventArgs}: IMarkerClickEventArgs = eventArgs;
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClick, eventArgs);
     }
     /**
@@ -136,6 +143,10 @@ export class Marker {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const { maps, ...blazorEventArgs } : IMarkerClusterClickEventArgs =  eventArgs;
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClusterClick, eventArgs);
     }
     /**
@@ -172,8 +183,12 @@ export class Marker {
         }
         let eventArgs: IMarkerMoveEventArgs = {
             cancel: false, name: markerMouseMove, data: options.data,
-            maps: this.maps.isBlazor ? null : this.maps, target: targetId, x: e.clientX, y: e.clientY
+            maps: this.maps, target: targetId, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const { maps, ...blazorEventArgs } : IMarkerMoveEventArgs = eventArgs;
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerMouseMove, eventArgs);
     }
     /**
@@ -192,6 +207,10 @@ export class Marker {
             cancel: false, name: markerClusterMouseMove, data: options.data, maps: this.maps,
             target: targetId, x: e.clientX, y: e.clientY
         };
+        if (this.maps.isBlazor) {
+            const { maps, ...blazorEventArgs } : IMarkerClusterMoveEventArgs =  eventArgs;
+            eventArgs = blazorEventArgs;
+        }
         this.maps.trigger(markerClusterMouseMove, eventArgs);
     }
     /**

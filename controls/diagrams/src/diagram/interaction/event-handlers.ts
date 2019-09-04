@@ -2,6 +2,8 @@ import { Browser } from '@syncfusion/ej2-base';
 import { PointModel } from '../primitives/point-model';
 import { Point } from '../primitives/point';
 import { IElement, IClickEventArgs, IDoubleClickEventArgs, IMouseEventArgs, StackEntryObject } from '../objects/interface/IElement';
+import { ICommandExecuteEventArgs } from '../objects/interface/IElement';
+import { IBlazorDoubleClickEventArgs, IBlazorClickEventArgs, IBlazorMouseEventArgs } from '../objects/interface/IElement';
 import { DiagramElement } from '../core/elements/diagram-element';
 import { Container } from '../core/containers/container';
 import { MarginModel } from '../core/appearance-model';
@@ -15,12 +17,12 @@ import { NodeModel, BpmnShapeModel, BasicShapeModel, SwimLaneModel, LaneModel, P
 import { ToolBase, SelectTool, MoveTool, ResizeTool, RotateTool, ConnectTool, ExpandTool, LabelTool, ZoomPanTool } from './tool';
 import { LabelDragTool, LabelResizeTool, LabelRotateTool } from './tool';
 import { ConnectorEditing } from './connector-editing';
-import { Selector } from './selector';
+import { Selector } from '../objects/node';
 import { CommandHandler } from './command-manager';
 import { Actions, findToolToActivate, isSelected, getCursor, contains } from './actions';
 import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset } from '../utility/diagram-util';
-import { getObjectType, getInOutConnectPorts, removeChildNodes } from '../utility/diagram-util';
+import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
 import {
@@ -41,7 +43,7 @@ import { LayerModel } from '../diagram/layer-model';
 import { ITouches } from '../objects/interface/interfaces';
 import { removeRulerMarkers, drawRulerMarkers, getRulerSize, updateRuler } from '../ruler/ruler';
 import { canContinuousDraw, canDrawOnce } from '../utility/constraints-util';
-import { SelectorModel } from './selector-model';
+import { SelectorModel } from '../objects/node-model';
 import { getFunction, cornersPointsBeforeRotation } from '../utility/base-util';
 import { ShapeAnnotationModel, PathAnnotationModel } from '../objects/annotation-model';
 import { ShapeAnnotation, PathAnnotation } from '../objects/annotation';
@@ -55,6 +57,7 @@ import { Canvas } from '../core/containers/canvas';
 import { DiagramHtmlElement } from '../core/elements/html-element';
 import { randomId } from '../index';
 import { Tooltip } from '@syncfusion/ej2-popups';
+import { isBlazor } from '@syncfusion/ej2-base';
 
 
 /**
@@ -340,7 +343,8 @@ export class DiagramEventHandler {
             if (((this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)
                 && (evt.button === 2 || evt.buttons === 2))) {
                 let arg: IClickEventArgs = {
-                    element: this.diagram, position: this.currentPosition, count: evt.buttons, actualObject: this.eventArgs.actualObject
+                    element: cloneBlazorObject(this.diagram), position: cloneBlazorObject(this.currentPosition),
+                    count: evt.buttons, actualObject: cloneBlazorObject(this.eventArgs.actualObject)
                 };
                 this.inAction = false;
                 this.tool.mouseUp(this.eventArgs);
@@ -633,8 +637,7 @@ export class DiagramEventHandler {
                     }
                 }
                 let history: HistoryLog = this.updateContainerProperties();
-                let isGroupAction: boolean;
-                this.addUmlNode();
+                let isGroupAction: boolean; this.addUmlNode();
                 this.inAction = false; this.isMouseDown = false; this.currentPosition = this.getMousePosition(evt);
                 if (this.diagram.selectedObject.helperObject) { isGroupAction = this.updateContainerBounds(); }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
@@ -672,9 +675,7 @@ export class DiagramEventHandler {
                 this.blocked = false;
                 if (this.hoverElement) {
                     let portVisibility: PortVisibility = PortVisibility.Connect;
-                    if (isSelected(this.diagram, this.hoverElement)) {
-                        portVisibility |= PortVisibility.Hover;
-                    }
+                    if (isSelected(this.diagram, this.hoverElement)) { portVisibility |= PortVisibility.Hover; }
                     this.diagram.updatePortVisibility(this.hoverElement as Node, portVisibility, true);
                     this.hoverElement = null;
                 }
@@ -687,15 +688,28 @@ export class DiagramEventHandler {
                 this.diagram.renderSelector(true);
             }
             if (!this.inAction && !this.diagram.currentSymbol && this.eventArgs) {
-                let arg: IClickEventArgs = {
-                    element: this.eventArgs.source || this.diagram, position: this.eventArgs.position, count: evt.detail,
-                    actualObject: this.eventArgs.actualObject
+                let arg: IClickEventArgs | IBlazorClickEventArgs = {
+                    element: cloneBlazorObject(this.eventArgs.source) || cloneBlazorObject(this.diagram),
+                    position: cloneBlazorObject(this.eventArgs.position), count: evt.detail,
+                    actualObject: cloneBlazorObject(this.eventArgs.actualObject)
                 };
+                if (isBlazor()) { arg = this.getBlazorClickEventArgs(arg); }
                 this.diagram.triggerEvent(DiagramEvent.click, arg);
             }
             this.eventArgs = {};
         }
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
+    }
+
+    private getBlazorClickEventArgs(arg: IClickEventArgs | IBlazorClickEventArgs): IBlazorClickEventArgs {
+        arg = {
+            element: this.eventArgs.source ? { selector: cloneBlazorObject(this.eventArgs.source) } :
+                { diagram: cloneBlazorObject(this.diagram) },
+            position: cloneBlazorObject(this.eventArgs.position), count: arg.count,
+            actualObject: this.eventArgs.actualObject ? { selector: cloneBlazorObject(this.eventArgs.actualObject) } :
+                { diagram: cloneBlazorObject(this.diagram) },
+        } as IBlazorClickEventArgs;
+        return arg;
     }
 
     public addSwimLaneObject(selectedNode: NodeModel): void {
@@ -898,7 +912,8 @@ export class DiagramEventHandler {
                             if (canExecute && canExecute({
                                 'keyDownEventArgs': KeyboardEvent,
                                 parameter: command.parameter
-                            })) {
+                            } || isBlazor()
+                            )) {
                                 evt.preventDefault();
                                 if (evt.key === 'Escape') {
                                     if (this.checkEditBoxAsTarget(evt)) {
@@ -940,6 +955,10 @@ export class DiagramEventHandler {
                                     let execute: Function = getFunction(command.execute);
                                     execute({ 'keyDownEventArgs': KeyboardEvent, parameter: command.parameter });
                                     // }
+                                }
+                                if (isBlazor()) {
+                                    let arg: ICommandExecuteEventArgs = { gesture: command.gesture };
+                                    this.diagram.triggerEvent(DiagramEvent.commandExecute, arg);
                                 }
                                 break;
                             }
@@ -1021,13 +1040,30 @@ export class DiagramEventHandler {
                 target.splice(i, 1);
             }
         }
-        let arg: IMouseEventArgs = {
-            targets: target,
-            element: (this.eventArgs.source === this.eventArgs.actualObject) ? undefined : this.eventArgs.source,
-            actualObject: this.eventArgs.actualObject
+        let arg: IMouseEventArgs | IBlazorMouseEventArgs = {
+            targets: cloneBlazorObject(target) as NodeModel[],
+            element: cloneBlazorObject((this.eventArgs.source === this.eventArgs.actualObject) ? undefined : this.eventArgs.source),
+            actualObject: cloneBlazorObject(this.eventArgs.actualObject)
         };
+        if (isBlazor()) {
+            (arg as IBlazorMouseEventArgs).targets.connector = [];
+            (arg as IBlazorMouseEventArgs).targets.node = [];
+            this.getBlazorCollectionObject(target, arg as IBlazorMouseEventArgs);
+        }
         if (this.lastObjectUnderMouse && (!this.eventArgs.actualObject || (this.lastObjectUnderMouse !== this.eventArgs.actualObject))) {
-            let arg: IMouseEventArgs = { targets: undefined, element: this.lastObjectUnderMouse, actualObject: undefined };
+            let arg: IMouseEventArgs | IBlazorMouseEventArgs = {
+                targets: undefined, element: cloneBlazorObject(this.lastObjectUnderMouse), actualObject: undefined
+            };
+            if (isBlazor()) {
+                arg = {
+                    targets: undefined,
+                    element: getObjectType(this.lastObjectUnderMouse) === Connector ? { connector: cloneBlazorObject(target) }
+                        : {
+                            node: cloneBlazorObject(this.lastObjectUnderMouse)
+                        },
+                    actualObject: undefined
+                } as IBlazorMouseEventArgs;
+            }
             this.diagram.triggerEvent(DiagramEvent.mouseLeave, arg);
             this.lastObjectUnderMouse = null;
         }
@@ -1037,6 +1073,18 @@ export class DiagramEventHandler {
         }
         if (this.eventArgs.actualObject) {
             this.diagram.triggerEvent(DiagramEvent.mouseOver, arg);
+        }
+    }
+
+    private getBlazorCollectionObject(obj: (NodeModel | ConnectorModel)[], arg1: IBlazorMouseEventArgs): void {
+        if (obj) {
+            for (let i: number = 0; i < obj.length; i++) {
+                if (getObjectType(obj[i]) === Connector) {
+                    arg1.targets.connector.push(cloneBlazorObject(obj[i]));
+                } else {
+                    arg1.targets.node.push(cloneBlazorObject(obj[i]));
+                }
+            }
         }
     }
 
@@ -1103,7 +1151,8 @@ export class DiagramEventHandler {
                 annotation = this.diagram.findElementUnderMouse(obj, this.currentPosition);
                 if (this.tool && (this.tool instanceof PolygonDrawingTool || this.tool instanceof PolyLineDrawingTool)) {
                     let arg: IDoubleClickEventArgs = {
-                        source: obj || this.diagram, position: this.currentPosition, count: evt.detail
+                        source: cloneBlazorObject(obj) || cloneBlazorObject(this.diagram),
+                        position: this.currentPosition, count: evt.detail
                     };
                     this.tool.mouseUp(this.eventArgs);
                     this.isMouseDown = false;
@@ -1125,11 +1174,17 @@ export class DiagramEventHandler {
                     }
                 }
             }
-            let arg: IDoubleClickEventArgs = {
-                source: obj || this.diagram, position: this.currentPosition, count: evt.detail
+            let arg: IDoubleClickEventArgs | IBlazorDoubleClickEventArgs = {
+                source: cloneBlazorObject(obj) || cloneBlazorObject(this.diagram),
+                position: this.currentPosition, count: evt.detail
             };
+            if (isBlazor()) {
+                arg = {
+                    source: { selector: cloneBlazorObject(obj) } || { diagram: cloneBlazorObject(this.diagram) },
+                    position: this.currentPosition, count: evt.detail
+                } as IBlazorDoubleClickEventArgs;
+            }
             this.diagram.triggerEvent(DiagramEvent.doubleClick, arg);
-
         }
     }
 
@@ -1386,7 +1441,7 @@ export class DiagramEventHandler {
 
     private updateContainerBounds(isAfterMouseUp?: boolean): boolean {
         let isGroupAction: boolean = false;
-        if (this.diagram.selectedObject.helperObject) {
+        if (this.diagram.selectedObject.helperObject && this.diagram.selectedObject.actualObject instanceof Node) {
 
             let boundsUpdate: boolean = (this.tool instanceof ResizeTool) ? true : false;
             let obj: NodeModel = this.diagram.selectedObject.actualObject;
@@ -1418,89 +1473,91 @@ export class DiagramEventHandler {
             let objects: IElement[] = this.diagram.findObjectsUnderMouse(this.currentPosition);
             let target: IElement = this.diagram.findObjectUnderMouse(objects, this.action, this.inAction);
             helperObject = this.diagram.selectedObject.helperObject as Node; obj = this.diagram.selectedObject.actualObject;
-            if (obj.shape.type === 'SwimLane') {
-                connectors = getConnectors(this.diagram, (obj.wrapper.children[0] as GridPanel), 0, true);
-            }
-            if (obj.shape.type !== 'SwimLane' && (obj as Node).parentId &&
-                (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane') {
-                if (target instanceof Node && this.diagram.getObject((target as Node).parentId) &&
-                    (this.diagram.getObject((target as Node).parentId) as NodeModel).shape.type !== 'SwimLane') {
-                    target = this.diagram.getObject(target.parentId) as Node;
+            if (obj instanceof Node) {
+                if (obj.shape.type === 'SwimLane') {
+                    connectors = getConnectors(this.diagram, (obj.wrapper.children[0] as GridPanel), 0, true);
                 }
-            }
-            if (this.currentAction === 'Drag' && obj.container && obj.container.type === 'Canvas' && (obj as Node).parentId &&
-                (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane' && target && target !== obj &&
-                (target as Node).container && (target as Node).container.type === 'Canvas' && (target as Node).isLane &&
-                (obj as Node).isLane && (target as Node).parentId === (obj as Node).parentId) {
-                laneInterChanged(this.diagram, obj, (target as Node), this.currentPosition);
-                history.isPreventHistory = true;
-            } else {
-                let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
-                if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                    (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
-                    if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                        (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
-                    }
-                    (obj as Node).rotateAngle = helperObject.rotateAngle;
-                }
-                let undoElement: StackEntryObject;
-                if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
-                    this.diagram.startGroupAction(); hasGroup = true;
-                }
-                if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
-                    let index: number = parentNode.wrapper.children.indexOf(obj.wrapper);
-                    undoElement = { targetIndex: undefined, target: undefined, sourceIndex: index, source: clone(obj) };
-                    if (index > -1) {
-                        let children: string[] = parentNode.children; children.splice(children.indexOf(obj.id), 1);
-                        this.diagram.nameTable[obj.id].parentId = ''; hasStack = true; parentNode.wrapper.children.splice(index, 1);
+                if (obj.shape.type !== 'SwimLane' && (obj as Node).parentId &&
+                    (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane') {
+                    if (target instanceof Node && this.diagram.getObject((target as Node).parentId) &&
+                        (this.diagram.getObject((target as Node).parentId) as NodeModel).shape.type !== 'SwimLane') {
+                        target = this.diagram.getObject(target.parentId) as Node;
                     }
                 }
-                moveChildInStack(obj as Node, target as Node, this.diagram, this.action);
-                parentNode = checkParentAsContainer(this.diagram, obj) ? this.diagram.nameTable[(obj as Node).parentId] :
-                    (this.diagram.nameTable[(obj as Node).parentId] || obj);
-                if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
-                    parentNode.wrapper.maxWidth = parentNode.maxWidth = parentNode.wrapper.actualSize.width;
-                    parentNode.wrapper.maxHeight = parentNode.maxHeight = parentNode.wrapper.actualSize.height;
-                    isChangeProperties = true;
-                }
-                if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
-                    checkChildNodeInContainer(this.diagram, obj as NodeModel);
+                if (this.currentAction === 'Drag' && obj.container && obj.container.type === 'Canvas' && (obj as Node).parentId &&
+                    (this.diagram.getObject((obj as Node).parentId) as NodeModel).shape.type === 'SwimLane' && target && target !== obj &&
+                    (target as Node).container && (target as Node).container.type === 'Canvas' && (target as Node).isLane &&
+                    (obj as Node).isLane && (target as Node).parentId === (obj as Node).parentId) {
+                    laneInterChanged(this.diagram, obj, (target as Node), this.currentPosition);
+                    history.isPreventHistory = true;
                 } else {
-                    history = this.updateContainerPropertiesExtend(parentNode, obj, connectors, helperObject, history);
-                }
-                if ((obj.shape as SwimLaneModel).lanes) {
-                    this.updateLaneChildNode(obj);
-                }
-                if (isChangeProperties) {
-                    parentNode.maxWidth = parentNode.wrapper.maxWidth = undefined;
-                    parentNode.maxHeight = parentNode.wrapper.maxHeight = undefined;
-                }
-                if (hasStack) {
-                    this.diagram.nodePropertyChange(parentNode, {} as Node, {
-                        offsetX: parentNode.offsetX, offsetY: parentNode.offsetY, width: parentNode.width, height: parentNode.height,
-                        rotateAngle: parentNode.rotateAngle
-                    } as Node);
-                    let entry: HistoryEntry = {
-                        type: 'StackChildPositionChanged', redoObject: { sourceIndex: undefined, source: undoElement.source } as NodeModel,
-                        undoObject: undoElement as NodeModel, category: 'Internal'
-                    };
-                    if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) { this.diagram.addHistoryEntry(entry); }
-                }
-                if (obj && obj.container && (obj.container.type === 'Stack' ||
-                    (obj.container.type === 'Canvas' && (obj as Node).parentId === ''))) {
-                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
-                        obj.wrapper.measureChildren = true;
+                    let parentNode: Node = this.diagram.nameTable[(obj as Node).parentId];
+                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                        (obj as Node).offsetX = helperObject.offsetX; (obj as Node).offsetY = helperObject.offsetY;
+                        if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                            (obj as Node).width = helperObject.width; (obj as Node).height = helperObject.height;
+                        }
+                        (obj as Node).rotateAngle = helperObject.rotateAngle;
                     }
-                    this.diagram.nodePropertyChange(obj as Node, {} as Node, {
-                        offsetX: obj.offsetX, offsetY: obj.offsetY, width: obj.width, height: obj.height, rotateAngle: obj.rotateAngle
-                    } as Node);
-                    if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
-                        obj.wrapper.measureChildren = false;
+                    let undoElement: StackEntryObject;
+                    if (parentNode && parentNode.container && parentNode.container.type === 'Stack') {
+                        this.diagram.startGroupAction(); hasGroup = true;
+                    }
+                    if (!target && parentNode && parentNode.container && parentNode.container.type === 'Stack' && this.action === 'Drag') {
+                        let index: number = parentNode.wrapper.children.indexOf(obj.wrapper);
+                        undoElement = { targetIndex: undefined, target: undefined, sourceIndex: index, source: clone(obj) };
+                        if (index > -1) {
+                            let children: string[] = parentNode.children; children.splice(children.indexOf(obj.id), 1);
+                            this.diagram.nameTable[obj.id].parentId = ''; hasStack = true; parentNode.wrapper.children.splice(index, 1);
+                        }
+                    }
+                    moveChildInStack(obj as Node, target as Node, this.diagram, this.action);
+                    parentNode = checkParentAsContainer(this.diagram, obj) ? this.diagram.nameTable[(obj as Node).parentId] :
+                        (this.diagram.nameTable[(obj as Node).parentId] || obj);
+                    if (parentNode && parentNode.container && parentNode.container.type === 'Canvas') {
+                        parentNode.wrapper.maxWidth = parentNode.maxWidth = parentNode.wrapper.actualSize.width;
+                        parentNode.wrapper.maxHeight = parentNode.maxHeight = parentNode.wrapper.actualSize.height;
+                        isChangeProperties = true;
+                    }
+                    if (checkParentAsContainer(this.diagram, obj, true) && parentNode && parentNode.container.type === 'Canvas') {
+                        checkChildNodeInContainer(this.diagram, obj as NodeModel);
+                    } else {
+                        history = this.updateContainerPropertiesExtend(parentNode, obj, connectors, helperObject, history);
+                    }
+                    if ((obj.shape as SwimLaneModel).lanes) {
+                        this.updateLaneChildNode(obj);
+                    }
+                    if (isChangeProperties) {
+                        parentNode.maxWidth = parentNode.wrapper.maxWidth = undefined;
+                        parentNode.maxHeight = parentNode.wrapper.maxHeight = undefined;
+                    }
+                    if (hasStack) {
+                        this.diagram.nodePropertyChange(parentNode, {} as Node, {
+                            offsetX: parentNode.offsetX, offsetY: parentNode.offsetY, width: parentNode.width, height: parentNode.height,
+                            rotateAngle: parentNode.rotateAngle
+                        } as Node);
+                        let entry: HistoryEntry = {
+                            redoObject: { sourceIndex: undefined, source: undoElement.source } as NodeModel,
+                            type: 'StackChildPositionChanged', undoObject: undoElement as NodeModel, category: 'Internal'
+                        };
+                        if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) { this.diagram.addHistoryEntry(entry); }
+                    }
+                    if (obj && obj.container && (obj.container.type === 'Stack' ||
+                        (obj.container.type === 'Canvas' && (obj as Node).parentId === ''))) {
+                        if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                            obj.wrapper.measureChildren = true;
+                        }
+                        this.diagram.nodePropertyChange(obj as Node, {} as Node, {
+                            offsetX: obj.offsetX, offsetY: obj.offsetY, width: obj.width, height: obj.height, rotateAngle: obj.rotateAngle
+                        } as Node);
+                        if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
+                            obj.wrapper.measureChildren = false;
+                        }
                     }
                 }
+                updateConnectorsProperties(connectors, this.diagram);
+                history.hasStack = hasGroup;
             }
-            updateConnectorsProperties(connectors, this.diagram);
-            history.hasStack = hasGroup;
         }
         return history;
     }
@@ -1633,6 +1690,7 @@ export class DiagramEventHandler {
                 };
                 this.diagram.add(temp);
                 this.diagram.updateConnectorEdges(node as Node);
+                this.diagram.clearSelection();
                 this.diagram.select([this.diagram.nameTable[temp.id]]);
                 this.diagram.endGroupAction();
                 this.diagram.startTextEdit();

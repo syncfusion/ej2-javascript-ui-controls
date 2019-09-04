@@ -39,6 +39,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private virtualEle: VirtualElementHandler = new VirtualElementHandler();
     private offsetKeys: string[] = [];
     private isFocused: boolean = false;
+    private isSelection: boolean = false;
+    private selectedRowIndex: number;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -298,9 +300,18 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         };
     }
 
+    private dataBound(): void {
+        if (this.isSelection) {
+            this.isSelection = false;
+            this.parent.selectRow(this.selectedRowIndex);
+        }
+    }
+
     public eventListener(action: string): void {
         this.parent[action](dataReady, this.onDataReady, this);
+        this.parent.addEventListener(events.dataBound, this.dataBound.bind(this));
         this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
+        this.parent[action](events.selectVirtualRow, this.selectVirtualRow, this);
         this.actions.forEach((event: string) => this.parent[action](`${event}-begin`, this.onActionBegin, this));
         let fn: Function = () => {
             this.observer.observe((scrollArgs: ScrollArg) => this.scrollListener(scrollArgs), this.onEntered());
@@ -458,6 +469,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         } else {
             this.parent.notify(events.partialRefresh, { rows: rows, args: { isFrozen: false, rows: rows } });
         }
+    }
+
+    private selectVirtualRow(args: { selectedIndex: number }): void {
+        this.isSelection = true;
+        this.selectedRowIndex = args.selectedIndex;
+        let page: number = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
+        let blockIndexes: number[] = this.vgenerator.getBlockIndexes(page);
+        let scrollTop: number = this.offsets[blockIndexes[0] - 1];
+        (this.parent.getContent() as HTMLElement).firstElementChild.scrollTop = scrollTop;
     }
 }
 /**

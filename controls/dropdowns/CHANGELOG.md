@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.2.49 (2019-09-04)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#245849` - Issue with "Dropdown popup moves down while initial value selection on popup" has been resolved.
+
 ## 17.2.46 (2019-08-22)
 
 ### ListBox

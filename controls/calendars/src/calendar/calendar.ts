@@ -2144,17 +2144,22 @@ export class Calendar extends CalendarBase {
         }
     }
 
+    protected generateTodayVal(value: Date) : Date {
+        let tempValue: Date = new Date();
+        if (value) {
+            tempValue.setHours(value.getHours());
+            tempValue.setMinutes(value.getMinutes());
+            tempValue.setSeconds(value.getSeconds());
+            tempValue.setMilliseconds(value.getMilliseconds());
+        } else {
+            tempValue = new Date(tempValue.getFullYear(), tempValue.getMonth(), tempValue.getDate(), 0, 0, 0, 0);
+        }
+        return tempValue;
+    }
+
     protected todayButtonClick(): void {
         if (this.showTodayButton) {
-            let tempValue: Date = new Date();
-            if (this.value) {
-                tempValue.setHours(this.value.getHours());
-                tempValue.setMinutes(this.value.getMinutes());
-                tempValue.setSeconds(this.value.getSeconds());
-                tempValue.setMilliseconds(this.value.getMilliseconds());
-            } else {
-                tempValue = new Date(tempValue.getFullYear(), tempValue.getMonth(), tempValue.getDate(), 0, 0, 0, 0);
-            }
+            let tempValue: Date = this.generateTodayVal(this.value);
             this.setProperties({ value: tempValue }, true);
             if (this.isMultiSelection) {
                 let copyValues: Date[] = this.copyValues(this.values);

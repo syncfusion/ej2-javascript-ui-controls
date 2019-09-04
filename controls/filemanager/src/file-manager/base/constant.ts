@@ -46,6 +46,8 @@ export const download: string = 'download';
 /** @hidden */
 export const layoutRefresh: string = 'layout-refresh';
 /** @hidden */
+export const actionFailure: string = 'actionFailure';
+/** @hidden */
 export const search: string = 'search';
 /** @hidden */
 export const openInit: string = 'open-init';
@@ -117,3 +119,5 @@ export const dragHelper: string = 'drag-helper';
 export const dragging: string = 'dragging';
 /** @hidden */
 export const updateSelectionData: string = 'update-selection-data';
+/** @hidden */
+export const methodCall: string = 'method-call';
