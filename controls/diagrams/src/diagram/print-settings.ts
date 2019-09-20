@@ -583,7 +583,7 @@ export class PrintAndExport {
         pageHeight = pageSize.height + y;
         let drawnX: number = 0;
         let drawnY: number = 0;
-        if (options && options.multiplePage && !(options.region === 'Content')) {
+        if (options && options.multiplePage) {
             div.style.height = 'auto';
             div.style.width = 'auto';
             let imgHeight: number = img.height;

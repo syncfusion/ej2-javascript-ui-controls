@@ -1638,6 +1638,8 @@ describe('Column Series', () => {
                 expect(series1.getAttribute('opacity') == '0.1').toBe(true);
                 expect(series1.getAttribute('stroke') == 'red').toBe(true);
                 expect(series1.getAttribute('stroke-width') == '4').toBe(true);
+                expect(series1.getAttribute('cx') == '262.99695921774384').toBe(true);
+                expect(series1.getAttribute('cy') == '170.39583333333334').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -1648,6 +1650,7 @@ describe('Column Series', () => {
                 width: 4,
                 color: 'red'
             };
+            chartObj.series[0].marker.offset = { x : 10 , y : -5};
             chartObj.refresh();
         });
         it('with marker and datalabel', (done: Function) => {
@@ -1658,6 +1661,7 @@ describe('Column Series', () => {
                 done();
             };
             chartObj.loaded = loaded;
+            chartObj.series[0].marker.offset = { x : 0 , y : 0};
             chartObj.series[0].marker.dataLabel.visible = true;
             chartObj.series[0].marker.dataLabel.position = 'Outer';
             chartObj.refresh();

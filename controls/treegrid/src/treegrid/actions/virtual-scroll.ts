@@ -65,7 +65,8 @@ export class VirtualScroll {
             record: row.record,
             count: this.parent.flatData.length
         };
-        getValue('grid.renderModule', this.parent).dataManagerSuccess(ret, <NotifyArgs>{ requestType: 'refresh' });
+        let requestType: string = getValue('isCollapseAll', this.parent) ? 'collapseAll' : 'refresh';
+        getValue('grid.renderModule', this.parent).dataManagerSuccess(ret, <NotifyArgs>{ requestType: requestType });
     }
     private virtualPageAction(pageingDetails: {result: ITreeData[], count: number, actionArgs: ActionEventArgs}): void {
         let dm: DataManager = new DataManager(pageingDetails.result);
@@ -102,12 +103,16 @@ export class VirtualScroll {
             let resourceCount: HTMLTableRowElement[] = this.parent.getRows();
             let sIndex: number = visualData.indexOf(this.expandCollapseRec);
             let tempdata: ITreeData[] = visualData.slice(sIndex, sIndex + resourceCount.length);
-            if (tempdata.length < resourceCount.length) {
+            if (tempdata.length < resourceCount.length && sIndex >= 0) {
                 sIndex = visualData.length - resourceCount.length;
                 sIndex = sIndex > 0 ? sIndex : 0;
                 startIndex = sIndex;
                 endIndex = visualData.length;
-            }
+            } else if ( getValue('isCollapseAll', this.parent)) {
+              startIndex = 0;
+              endIndex = this.parent.grid.pageSettings.pageSize - 1;
+              this.parent.grid.notify(events.virtualActionArgs, { setTop: true });
+           }
             this.expandCollapseRec = null;
           }
           //}

@@ -19,6 +19,8 @@ export class ContextMenu {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
     private copyContextMenu: MenuItemModel[] = [];
+    // tslint:disable-next-line
+    private currentTarget: any;
     /**
      * @private
      */
@@ -79,6 +81,12 @@ export class ContextMenu {
     }
 
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
+        let target: HTMLElement = args.event.target as HTMLElement;
+        this.currentTarget = target;
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.annotationModule.freeTextAnnotationModule && this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && target.className === 'free-text-input' && target.tagName === 'TEXTAREA') {
+            this.pdfViewerBase.isFreeTextContextMenu = true;
+        }
         // tslint:disable-next-line:max-line-length
         this.contextMenuObj.showItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'),
         // tslint:disable-next-line:max-line-length
@@ -93,7 +101,27 @@ export class ContextMenu {
             if (args.event) {
                 let isClickWithinSelectionBounds: boolean = this.isClickWithinSelectionBounds(args.event);
                 // tslint:disable-next-line:max-line-length
-                if (isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule) {
+                if (this.pdfViewerBase.isFreeTextContextMenu) {
+                    this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Comment'),
+                    this.pdfViewer.localeObj.getConstant('Scale Ratio'), this.pdfViewer.localeObj.getConstant('Delete Context')]);
+                    this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                    this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+                    // tslint:disable-next-line:max-line-length
+                    if (this.pdfViewer.annotation.freeTextAnnotationModule && this.pdfViewer.annotation.freeTextAnnotationModule.isTextSelected) {
+                        this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Copy')], true);
+                        this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Cut')], true);
+                    } else {
+                        this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Copy')], false);
+                        this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Cut')], false);
+                        window.getSelection().removeAllRanges();
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    if (this.pdfViewer.annotation.freeTextAnnotationModule && this.pdfViewer.annotation.freeTextAnnotationModule.selectedText !== '') {
+                        this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Paste')], true);
+                    } else {
+                        this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Paste')], false);
+                    }
+                } else if (isClickWithinSelectionBounds && this.pdfViewer.textSelectionModule) {
                     // tslint:disable-next-line:max-line-length
                     if ((!(args.event.target as HTMLElement).classList.contains('e-pv-maintaincontent') && (args.event.target as HTMLElement).classList.contains('e-pv-text') || (args.event.target as HTMLElement).classList.contains('e-pv-text-layer'))) {
                         args.cancel = true;
@@ -106,7 +134,7 @@ export class ContextMenu {
                     this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
                     this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
                     // tslint:disable-next-line:max-line-length
-                } else if (this.pdfViewer.selectedItems.annotations.length !== 0) {
+                } else if (this.pdfViewer.selectedItems.annotations.length !== 0 && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType !== 'Path') {
                     this.onOpeningForShape(true);
                 } else {
                     // tslint:disable-next-line:max-line-length
@@ -121,7 +149,7 @@ export class ContextMenu {
                         this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.remove('e-menu-hide');
                         // tslint:disable-next-line:max-line-length
                         this.contextMenuObj.enableItems([this.pdfViewer.localeObj.getConstant('Cut'), this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Delete Context'), this.pdfViewer.localeObj.getConstant('Comment')], false);
-                    } else if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                    } else if (this.pdfViewer.annotationModule && this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
                         // tslint:disable-next-line:max-line-length
                         this.contextMenuObj.hideItems([this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'), this.pdfViewer.localeObj.getConstant('Strikethrough context'), this.pdfViewer.localeObj.getConstant('Properties'), this.pdfViewer.localeObj.getConstant('Cut'),
                         this.pdfViewer.localeObj.getConstant('Copy'), this.pdfViewer.localeObj.getConstant('Paste'), this.pdfViewer.localeObj.getConstant('Scale Ratio')]);
@@ -225,13 +253,21 @@ export class ContextMenu {
     }
 
     private onMenuItemSelect(args: MenuEventArgs): void {
+        // tslint:disable-next-line
+        let target: any = this.currentTarget;
         switch (args.item.text) {
             case this.pdfViewer.localeObj.getConstant('Copy'):
-                if (this.pdfViewer.textSelectionModule) {
+                let isSkip: boolean = false;
+                // tslint:disable-next-line:max-line-length
+                if (this.pdfViewerBase.isFreeTextContextMenu || this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus) {
+                    this.pdfViewer.annotation.freeTextAnnotationModule.copySelectedText();
+                    this.contextMenuObj.close();
+                    isSkip = true;
+                } else if (this.pdfViewer.textSelectionModule) {
                     this.pdfViewer.textSelectionModule.copyText();
                     this.contextMenuObj.close();
                 }
-                if (this.pdfViewer.selectedItems.annotations.length) {
+                if (this.pdfViewer.selectedItems.annotations.length && !isSkip) {
                     this.pdfViewer.copy();
                     this.previousAction = 'Copy';
                 }
@@ -262,7 +298,11 @@ export class ContextMenu {
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Cut'):
-                if (this.pdfViewer.selectedItems.annotations.length === 1) {
+                // tslint:disable-next-line:max-line-length
+                if (this.pdfViewerBase.isFreeTextContextMenu || this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && (target && target.className === 'free-text-input' && target.tagName === 'TEXTAREA')) {
+                    this.pdfViewer.annotation.freeTextAnnotationModule.cutSelectedText(target);
+                    this.contextMenuObj.close();
+                } else if (this.pdfViewer.selectedItems.annotations.length === 1) {
                     let pageIndex: number = this.pdfViewer.selectedItems.annotations[0].pageIndex;
                     this.pdfViewer.cut();
                     this.pdfViewer.clearSelection(pageIndex);
@@ -270,8 +310,14 @@ export class ContextMenu {
                 }
                 break;
             case this.pdfViewer.localeObj.getConstant('Paste'):
-                this.pdfViewer.paste();
-                this.previousAction = 'Paste';
+                // tslint:disable-next-line:max-line-length
+                if (this.pdfViewerBase.isFreeTextContextMenu || this.pdfViewer.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus && (target && target.className === 'free-text-input' && target.tagName === 'TEXTAREA')) {
+                    this.pdfViewer.annotation.freeTextAnnotationModule.pasteSelectedText(target);
+                    this.contextMenuObj.close();
+                } else {
+                    this.pdfViewer.paste();
+                    this.previousAction = 'Paste';
+                }
                 break;
             case this.pdfViewer.localeObj.getConstant('Delete Context'):
                 if (this.pdfViewer.annotation) {
@@ -319,7 +365,9 @@ export class ContextMenu {
      * @private
      */
     public destroy(): void {
-        this.previousAction = '';
-        this.contextMenuObj.destroy();
+        if (this.contextMenuObj) {
+            this.previousAction = '';
+            this.contextMenuObj.destroy();
+        }
     }
 }

@@ -202,14 +202,11 @@ export class ChartComponent {
             series.size = 'size' + count;
         }
         let seriesFormat: any = seriesData.dataPoints[0];
-        if (seriesData.hasOwnProperty('firstSliceAngle')) {
-            series.startAngle = seriesData.firstSliceAngle;
-            series.endAngle = seriesData.firstSliceAngle;
-        }
         if (this.isPieType) {
             series.pointColorMapping = 'color';
             if (type === 'Doughnut') {
-                series.innerRadius = seriesData.holeSize + '%';
+                series.innerRadius = '75%';
+                series.radius = '70%';
             }
         } else {
             fill = this.chartFormat(seriesFormat, chartType);
@@ -301,7 +298,6 @@ export class ChartComponent {
                 labelPosition = 'Top';
                 break;
             case 'OutsideBase':
-            case 'Below':
                 labelPosition = 'Bottom';
                 break;
         }
@@ -319,15 +315,11 @@ export class ChartComponent {
     private chartPrimaryXAxis(data: any, type: string): object {
         // json data
         let primaryXAxis: any = {};
-        let categoryType: string;
-        let isScatterType: boolean = (type === 'Scatter_Markers' || type === 'Bubble');
         if (data.chartTitle) {
             primaryXAxis.title = data.chartTitle;
         }
-        if (!isScatterType) {
-            categoryType = this.chartCategoryType(data.categoryType);
-            primaryXAxis.valueType = categoryType;
-        }
+        let categoryType: string = this.chartCategoryType(data.categoryType);
+        primaryXAxis.valueType = categoryType;
         if (categoryType === 'DateTime') {
             primaryXAxis.intervalType = 'Days';
             primaryXAxis.labelFormat = 'M/d/yyyy';

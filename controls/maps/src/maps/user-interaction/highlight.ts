@@ -2,6 +2,7 @@ import { Maps } from '../../index';
 import { HighlightSettingsModel, ISelectionEventArgs, itemHighlight } from '../index';
 import { Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getElementsByClassName, getElement, removeClass, createStyle, customizeStyle, getTargetElement } from '../utils/helper';
+import { BorderModel } from '../model/base-model';
 /**
  * Highlight module class
  */
@@ -132,22 +133,24 @@ export class Highlight {
             isMarkerSelect = this.maps.layers[layerIndex].markerSettings[marker].highlightSettings.enable;
         }
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
+        let border : BorderModel = {
+            color: this.highlightSettings.border.color,
+            width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
+        };
         let eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
             fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
             ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
-            border: {
-                color: this.highlightSettings.border.color,
-                width: this.highlightSettings.border.width / (isMarkerSelect ? 1 : this.maps.scale)
-            },
+            border: border,
             name: itemHighlight,
             target: targetEle.id,
             cancel: false,
             shapeData: shapeData,
-            data: data
+            data: data,
+            maps: this.maps
         };
         if (this.maps.isBlazor) {
-            const {shapeData, ...blazorEventArgs } : ISelectionEventArgs = eventArgs;
+            const {shapeData, maps, ...blazorEventArgs } : ISelectionEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(itemHighlight, eventArgs, () => {

@@ -251,6 +251,12 @@ export class AccumulationBase {
      */
     private deExplodeSlice(index: number, sliceId: string, animationDuration: number): void {
         let element: Element = getElement(sliceId + index);
+        if (element) {
+            let borderElement: boolean = (element.parentElement.lastElementChild).hasAttribute('transform');
+            if (borderElement) {
+                (element.parentElement.lastElementChild).removeAttribute('transform');
+            }
+        }
         let transform: string = element ? element.getAttribute('transform') : null;
         if (
             this.accumulation.enableAnimation && element && transform &&
@@ -270,12 +276,12 @@ export class AccumulationBase {
     /**
      * To translate the point elements by index and position
      */
-    private setTranslate(index: number, sliceId: string, position: string): void {
+    private setTranslate(index: number, sliceId: string, position: string, transform?: string): void {
         this.setElementTransform(sliceId + index, position);
         if (this.accumulation.visibleSeries[0].dataLabel.visible) {
             sliceId = this.accumulation.element.id + '_datalabel_Series_0_';
             this.setElementTransform(sliceId + 'shape_' + index, position);
-            this.setElementTransform(sliceId + 'text_' + index, position);
+            this.setElementTransform(sliceId + 'text_' + index, position + transform);
             this.setElementTransform(sliceId + 'connector_' + index, position);
         }
     }
@@ -312,10 +318,16 @@ export class AccumulationBase {
         index: number, sliceId: string, startX: number, startY: number, endX: number, endY: number,
         duration: number, isReverse?: boolean
     ): void {
+        let chart: AccumulationChart = this.accumulation;
+        let seriesIndex: number;
+        let point: AccPoints;
+        seriesIndex = parseInt(sliceId.split('_')[2], 10);
+        point = chart.visibleSeries[seriesIndex].points[index];
         if (duration <= 0) {
             this.setTranslate(
                 index, sliceId,
-                'translate(' + (endX) + ', ' + (endY) + ')'
+                'translate(' + (endX) + ', ' + (endY) + ')',
+                point.transform
             );
             return null;
         }
@@ -328,13 +340,15 @@ export class AccumulationBase {
                 yValue = linear(args.timeStamp, startY, endY, args.duration);
                 this.setTranslate(
                     index, sliceId,
-                    'translate(' + (isReverse ? endX - xValue : xValue) + ', ' + (isReverse ? endY - yValue : yValue) + ')'
+                    'translate(' + (isReverse ? endX - xValue : xValue) + ', ' + (isReverse ? endY - yValue : yValue) + ')',
+                    point.transform
                 );
             },
             end: (model: AnimationOptions) => {
                 this.setTranslate(
                     index, sliceId,
-                    'translate(' + (isReverse ? startX : endX) + ', ' + (isReverse ? startX : endY) + ')'
+                    'translate(' + (isReverse ? startX : endX) + ', ' + (isReverse ? startX : endY) + ')',
+                    point.transform
                 );
             }
         });

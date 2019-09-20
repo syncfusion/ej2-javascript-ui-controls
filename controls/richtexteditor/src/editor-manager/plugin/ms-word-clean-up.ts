@@ -1,19 +1,19 @@
 import { EditorManager } from '../base/editor-manager';
 import * as EVENTS from '../../common/constant';
 import { NotifyArgs } from '../../rich-text-editor/base/interface';
-import { createElement, isNullOrUndefined, detach } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined as isNOU, detach } from '@syncfusion/ej2-base';
 /**
  * PasteCleanup for MsWord content
  * @hidden
  */
 export class MsWordPaste {
-    public parent: EditorManager;
+    private parent: EditorManager;
     constructor(parent?: EditorManager) {
         this.parent = parent;
         this.addEventListener();
     }
 
-    public olData: string[] = [
+    private olData: string[] = [
         'decimal',
         'lower-alpha',
         'lower-roman',
@@ -21,7 +21,7 @@ export class MsWordPaste {
         'upper-roman',
         'lower-greek'
     ];
-    public ulData: string[] = [
+    private ulData: string[] = [
         'disc',
         'square',
         'circle',
@@ -29,33 +29,36 @@ export class MsWordPaste {
         'square',
         'circle'
     ];
-    public ignorableNodes: string[] = ['A', 'APPLET', 'B', 'BLOCKQUOTE', 'BR',
+    private ignorableNodes: string[] = ['A', 'APPLET', 'B', 'BLOCKQUOTE', 'BR',
         'BUTTON', 'CENTER', 'CODE', 'COL', 'COLGROUP', 'DD', 'DEL', 'DFN', 'DIR', 'DIV',
         'DL', 'DT', 'EM', 'FIELDSET', 'FONT', 'FORM', 'FRAME', 'FRAMESET', 'H1', 'H2',
         'H3', 'H4', 'H5', 'H6', 'HR', 'I', 'IMG', 'IFRAME', 'INPUT', 'INS', 'LABEL',
         'LI', 'OL', 'OPTION', 'P', 'PARAM', 'PRE', 'Q', 'S', 'SELECT', 'SPAN', 'STRIKE',
         'STRONG', 'SUB', 'SUP', 'TABLE', 'TBODY', 'TD', 'TEXTAREA', 'TFOOT', 'TH',
         'THEAD', 'TITLE', 'TR', 'TT', 'U', 'UL'];
-    public blockNode: string[] = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    private blockNode: string[] = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
         'address', 'blockquote', 'button', 'center', 'dd', 'dir', 'dl', 'dt', 'fieldset',
         'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
         'object', 'ol', 'pre', 'table', 'tbody', 'td', 'tfoot', 'th', 'thead', 'tr', 'ul',
         'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
-    public removableElements: string[] = ['o:p', 'style'];
-    public listContents: string[] = [];
-    public addEventListener(): void {
+    private removableElements: string[] = ['o:p', 'style'];
+    private listContents: string[] = [];
+    private addEventListener(): void {
         this.parent.observer.on(EVENTS.MS_WORD_CLEANUP_PLUGIN, this.wordCleanup, this);
     }
 
-    public wordCleanup(e: NotifyArgs): void {
+    private wordCleanup(e: NotifyArgs): void {
         let wordPasteStyleConfig: string[] = e.allowedStylePropertiesArray;
         let listNodes: Element[] = [];
         let tempHTMLContent: string = (e.args as ClipboardEvent).clipboardData.getData('text/HTML');
+        let rtfData: string = (e.args as ClipboardEvent).clipboardData.getData('text/rtf');
         let elm: HTMLElement = createElement('p') as HTMLElement;
+        elm.setAttribute('id', 'MSWord-Content');
         elm.innerHTML = tempHTMLContent;
         let patern: RegExp = /class='?Mso|style='[^ ]*\bmso-/i;
         let patern2: RegExp = /class="?Mso|style="[^ ]*\bmso-/i;
         if (patern.test(tempHTMLContent) || patern2.test(tempHTMLContent)) {
+            this.imageConversion(elm, rtfData);
             tempHTMLContent = tempHTMLContent.replace(/<img[^>]+>/i, '');
             listNodes = this.cleanUp(elm, listNodes);
             this.listConverter(listNodes);
@@ -71,27 +74,120 @@ export class MsWordPaste {
         }
     }
 
-    public removeClassName(elm: HTMLElement): void {
+    private imageConversion(elm: HTMLElement, rtfData: string): void {
+        let imgElem: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
+        let imgSrc: string[] = [];
+        let base64Src: string[] = [];
+        let imgName: string[] = [];
+        if (imgElem.length > 0) {
+            for (let i: number = 0; i < imgElem.length; i++) {
+                imgSrc.push(imgElem[i].getAttribute('src'));
+                imgName.push(imgElem[i].getAttribute('src').split('/')[imgElem[i].getAttribute('src').split('/').length - 1].split('.')[0]);
+            }
+            let hexValue: { [key: string]: string; }[] = this.hexConversion(rtfData);
+            for (let i: number = 0; i < hexValue.length; i++) {
+                base64Src.push(this.convertToBase64(hexValue[i]));
+            }
+            for (let i: number = 0; i < imgElem.length; i++) {
+                imgElem[i].setAttribute('src', base64Src[i]);
+                imgElem[i].setAttribute('id', 'msWordImg-' + imgName[i]);
+            }
+        }
+    }
+
+    private convertToBase64(hexValue: { [key: string]: string }): string {
+        let base64: string;
+        let byteArr: number[] = this.conHexStringToBytes(hexValue.hex);
+        let base64String: string = this.conBytesToBase64(byteArr);
+        base64 = hexValue.type ? 'data:' + hexValue.type + ';base64,' + base64String : null;
+        return base64;
+    }
+
+    private conBytesToBase64(byteArr: number[]): string {
+        let base64Str: string = '';
+        let base64Char: string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        let byteArrLen: number = byteArr.length;
+        for (let i: number = 0; i < byteArrLen; i += 3 ) {
+            let array3: number[] = byteArr.slice( i, i + 3 );
+            let array3length: number = array3.length;
+            let array4: number[] = [];
+            if ( array3length < 3 ) {
+                for (let j: number = array3length; j < 3; j++ ) {
+                    array3[ j ] = 0;
+                }
+            }
+            array4[0] = (array3[0] & 0xFC) >> 2;
+            array4[1] = ((array3[0] & 0x03) << 4) | (array3[1] >> 4 );
+            array4[2] = ((array3[1] & 0x0F) << 2) | ((array3[2] & 0xC0 ) >> 6 );
+            array4[3] = array3[2] & 0x3F;
+            for (let j: number = 0; j < 4; j++ ) {
+                if (j <= array3length) {
+                    base64Str += base64Char.charAt(array4[j]);
+                } else {
+                    base64Str += '=';
+                }
+            }
+        }
+        return base64Str;
+    }
+
+    private conHexStringToBytes(hex: string): number[] {
+        let byteArr: number[] = [];
+        let byteArrLen: number = hex.length / 2;
+        for (let i: number = 0; i < byteArrLen; i++) {
+            byteArr.push( parseInt( hex.substr( i * 2, 2 ), 16 ) );
+        }
+        return byteArr;
+    }
+
+    private hexConversion(rtfData: string): { [key: string]: string; }[] {
+        let picHead: RegExp = /\{\\pict[\s\S]+?\\bliptag\-?\d+(\\blipupi\-?\d+)?(\{\\\*\\blipuid\s?[\da-fA-F]+)?[\s\}]*?/;
+        let pic: RegExp = new RegExp( '(?:(' + picHead.source + '))([\\da-fA-F\\s]+)\\}', 'g' );
+        let fullImg: RegExpMatchArray = rtfData.match(pic);
+        let imgType: string;
+        let result: { [key: string]: string }[] = [];
+        for (let i: number = 0; i < fullImg.length; i++) {
+            if (picHead.test(fullImg[i])) {
+                if (fullImg[i].indexOf( '\\pngblip' ) !== -1 ) {
+                    imgType = 'image/png';
+                } else if (fullImg[i].indexOf( '\\jpegblip' ) !== -1 ) {
+                    imgType = 'image/jpeg';
+                } else {
+                    continue;
+                }
+                result.push({
+                    hex: imgType ? fullImg[i].replace(picHead, '').replace(/[^\da-fA-F]/g, '') : null,
+                    type: imgType
+                });
+            }
+        }
+        return result;
+    }
+
+    private removeClassName(elm: HTMLElement): void {
         let elmWithClass: NodeListOf<Element> = elm.querySelectorAll('*[class]');
         for (let i: number = 0; i < elmWithClass.length; i++) {
             elmWithClass[i].removeAttribute('class');
         }
     }
 
-    public breakLineAddition(elm: HTMLElement): void {
+    private breakLineAddition(elm: HTMLElement): void {
         let allElements: NodeListOf<Element> = elm.querySelectorAll('*');
         for (let i: number = 0; i < allElements.length; i++) {
             if (allElements[i].children.length === 0 && allElements[i].innerHTML === '&nbsp;') {
                 let detachableElement: HTMLElement = this.findDetachElem(allElements[i]);
                 let brElement: HTMLElement = createElement('br') as HTMLElement;
-                detachableElement.parentElement.insertBefore(brElement, detachableElement);
-                detach(detachableElement);
+                if (!isNOU(detachableElement.parentElement)) {
+                    detachableElement.parentElement.insertBefore(brElement, detachableElement);
+                    detach(detachableElement);
+                }
             }
         }
     }
-    public findDetachElem(element: Element): HTMLElement {
+    private findDetachElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
-        if (element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD') {
+        if (!isNOU(element.parentElement) &&
+        element.parentElement.textContent.trim() === '' && element.parentElement.tagName !== 'TD') {
             removableElement = this.findDetachElem(element.parentElement);
         } else {
             removableElement = element as HTMLElement;
@@ -99,7 +195,7 @@ export class MsWordPaste {
         return removableElement;
     }
 
-    public removeUnwantedElements(elm: HTMLElement): void {
+    private removeUnwantedElements(elm: HTMLElement): void {
         let innerElement: string = elm.innerHTML;
         for (let i: number = 0; i < this.removableElements.length; i++) {
             let regExpStartElem: RegExp = new RegExp('<' + this.removableElements[i] + '>', 'g');
@@ -112,10 +208,12 @@ export class MsWordPaste {
     }
 
 
-    public findDetachEmptyElem(element: Element): HTMLElement {
+    private findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;
-        if (!isNullOrUndefined(element.parentElement)) {
-            if (element.parentElement.textContent.trim() === '') {
+        if (!isNOU(element.parentElement)) {
+            if (element.parentElement.textContent.trim() === '' &&
+            element.parentElement.getAttribute('id') !== 'MSWord-Content' &&
+            isNOU(element.parentElement.querySelector('img'))) {
                 removableElement = this.findDetachEmptyElem(element.parentElement);
             } else {
                 removableElement = element as HTMLElement;
@@ -125,7 +223,7 @@ export class MsWordPaste {
         }
         return removableElement;
     }
-    public removeEmptyElements(element: HTMLElement): void {
+    private removeEmptyElements(element: HTMLElement): void {
         let emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
         for (let i: number = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
@@ -135,11 +233,11 @@ export class MsWordPaste {
         }
     }
 
-    public styleCorrection(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
+    private styleCorrection(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
         let styleElement: NodeListOf<HTMLStyleElement> = elm.querySelectorAll('style');
         if (styleElement.length > 0) {
             let styles: string[] = styleElement[0].innerHTML.match(/[\S ]+\s+{[\s\S]+?}/gi);
-            let styleClassObject: { [key: string]: string } = !isNullOrUndefined(styles) ? this.findStyleObject(styles) : null;
+            let styleClassObject: { [key: string]: string } = !isNOU(styles) ? this.findStyleObject(styles) : null;
             let keys: string[] = Object.keys(styleClassObject);
             let values: string[] = keys.map((key: string) => { return styleClassObject[key]; });
             values = this.removeUnwantedStyle(values, wordPasteStyleConfig);
@@ -157,7 +255,7 @@ export class MsWordPaste {
                 }
                 for (let j: number = 0; j < resultElem.length; j++) {
                     let styleProperty: string = resultElem[j].getAttribute('style');
-                    if (!isNullOrUndefined(styleProperty) && styleProperty.trim() !== '') {
+                    if (!isNOU(styleProperty) && styleProperty.trim() !== '') {
                         let valueSplit: string[] = values[i].split(';');
                         for (let k: number = 0; k < valueSplit.length; k++) {
                             if (styleProperty.indexOf(valueSplit[k].split(':')[0]) >= 0) {
@@ -176,7 +274,7 @@ export class MsWordPaste {
         }
     }
 
-    public filterStyles(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
+    private filterStyles(elm: HTMLElement, wordPasteStyleConfig: string[]): void {
         let elmWithStyles:  NodeListOf<Element> = elm.querySelectorAll('*[style]');
         for (let i: number = 0; i < elmWithStyles.length; i++) {
             let elemStyleProperty: string[] = elmWithStyles[i].getAttribute('style').split(';');
@@ -190,7 +288,7 @@ export class MsWordPaste {
         }
     }
 
-    public removeUnwantedStyle(values: string[], wordPasteStyleConfig: string[]): string[] {
+    private removeUnwantedStyle(values: string[], wordPasteStyleConfig: string[]): string[] {
         for (let i: number = 0; i < values.length; i++) {
             let styleValues: string[] = values[i].split(';');
             values[i] = '';
@@ -203,7 +301,7 @@ export class MsWordPaste {
         return values;
     }
 
-    public findStyleObject(styles: string[]): { [key: string]: string } {
+    private findStyleObject(styles: string[]): { [key: string]: string } {
         let styleClassObject: { [key: string]: string } = {};
         for (let i: number = 0; i < styles.length; i++) {
             let tempStyle: string = styles[i];
@@ -220,13 +318,13 @@ export class MsWordPaste {
         return styleClassObject;
     }
 
-    public removingComments(elm: HTMLElement): void {
+    private removingComments(elm: HTMLElement): void {
         let innerElement: string = elm.innerHTML;
         innerElement = innerElement.replace(/<!--[\s\S]*?-->/g, '');
         elm.innerHTML = innerElement;
     }
 
-    public cleanUp(node: HTMLElement, listNodes: Element[]): Element[] {
+    private cleanUp(node: HTMLElement, listNodes: Element[]): Element[] {
         let temp: string = '';
         let tempCleaner: Element[] = [];
         let prevflagState: boolean;
@@ -260,7 +358,7 @@ export class MsWordPaste {
         return listNodes;
     }
 
-    public listConverter(listNodes: Element[]): void {
+    private listConverter(listNodes: Element[]): void {
         let level: number;
         let data: { content: HTMLElement, node: Element }[] = [];
         let collection: { listType: string, content: string[], nestedLevel: number }[] = [];
@@ -281,7 +379,7 @@ export class MsWordPaste {
             this.listContents = [];
             this.getListContent(listNodes[i]);
             let type: string;
-            if (!isNullOrUndefined(this.listContents[0])) {
+            if (!isNOU(this.listContents[0])) {
                 type = this.listContents[0].trim().length > 1 ? 'ol' : 'ul';
                 let tempNode: string[] = [];
                 for (let j: number = 1; j < this.listContents.length; j++) {
@@ -312,7 +410,7 @@ export class MsWordPaste {
         }
     }
 
-    public makeConversion(collection: { listType: string, content: string[], nestedLevel: number }[]): HTMLElement {
+    private makeConversion(collection: { listType: string, content: string[], nestedLevel: number }[]): HTMLElement {
         let root: HTMLElement = createElement('div');
         let temp: HTMLElement;
         let pLevel: number = 1;
@@ -392,7 +490,7 @@ export class MsWordPaste {
         return root;
     }
 
-    public getListStyle(listType: string, nestedLevel: number): string {
+    private getListStyle(listType: string, nestedLevel: number): string {
         nestedLevel = (nestedLevel > 0) ? nestedLevel - 1 : nestedLevel;
         if (listType === 'ol') {
             return (nestedLevel < this.olData.length ? this.olData[nestedLevel] : this.olData[0]);
@@ -401,7 +499,7 @@ export class MsWordPaste {
         }
     }
 
-    public getListContent(elem: Element): void {
+    private getListContent(elem: Element): void {
         this.listContents.push(elem.firstElementChild.textContent.trim());
         detach(elem.firstElementChild);
         this.listContents.push(elem.innerHTML);

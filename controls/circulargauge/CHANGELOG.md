@@ -4,6 +4,17 @@
 
 ## [Unreleased]
 
+## 17.3.9-beta (2019-09-20)
+
+### CircularGauge
+
+#### New Features
+
+- `#I218689` - An option has been provided to hide a label when it intersects with other labels.
+- `#I229216` - Tooltip support has been provided for circular gauge annotation.
+- `#I238868` - Tooltip support has been provided for circular gauge ranges.
+- `#I210142` - Legend support has been provided for circular gauge ranges.
+
 ## 17.2.36 (2019-07-24)
 
 ### CircularGauge

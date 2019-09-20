@@ -1,5 +1,5 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
-import { ColumnModel } from '@syncfusion/ej2-grids';
+import { ColumnModel } from './index';
 /**
  * Specifies the columns in the details view of the file manager.
  */

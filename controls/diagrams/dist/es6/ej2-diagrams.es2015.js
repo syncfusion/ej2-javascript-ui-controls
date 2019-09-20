@@ -2334,6 +2334,10 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["segmentCollectionChange"] = 24] = "segmentCollectionChange";
     DiagramEvent[DiagramEvent["commandExecute"] = 25] = "commandExecute";
     DiagramEvent[DiagramEvent["historyStateChange"] = 26] = "historyStateChange";
+    DiagramEvent[DiagramEvent["onUserHandleMouseDown"] = 27] = "onUserHandleMouseDown";
+    DiagramEvent[DiagramEvent["onUserHandleMouseUp"] = 28] = "onUserHandleMouseUp";
+    DiagramEvent[DiagramEvent["onUserHandleMouseEnter"] = 29] = "onUserHandleMouseEnter";
+    DiagramEvent[DiagramEvent["onUserHandleMouseLeave"] = 30] = "onUserHandleMouseLeave";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -4435,15 +4439,17 @@ function findPointToPointOrtho(element, source, target, sourceNode, targetNode, 
                 else {
                     point = pointToPort(element, source, target);
                 }
-                checkPreviousSegment(point, element, source);
-                seg.points = [];
-                if (point.length >= 2) {
-                    for (j = 0; j < point.length; j++) {
-                        seg.points.push(point[j]);
+                if (point) {
+                    checkPreviousSegment(point, element, source);
+                    seg.points = [];
+                    if (point.length >= 2) {
+                        for (j = 0; j < point.length; j++) {
+                            seg.points.push(point[j]);
+                        }
                     }
-                }
-                else {
-                    removeSegment = i;
+                    else {
+                        removeSegment = i;
+                    }
                 }
             }
             if (sourcePort && i === 0) {
@@ -9788,8 +9794,8 @@ function renderContainerHelper(diagram, obj) {
             container = diagram.selectedItems.wrapper;
         }
         diagram.selectedObject.actualObject = object;
-        if (checkParentAsContainer(diagram, object) ||
-            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.connectors.length === 0)) {
+        if ((!diagram.currentSymbol) && (checkParentAsContainer(diagram, object) ||
+            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
             let node = {
                 id: 'helper',
                 rotateAngle: container.rotateAngle,
@@ -10627,11 +10633,19 @@ function checkPhaseOffset(obj, diagram) {
 function updateConnectorsProperties(connectors, diagram) {
     if (connectors && connectors.length > 0) {
         let edges;
+        if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+            diagram.lineRoutingModule.renderVirtualRegion(diagram, true);
+        }
         for (let i = 0; i < connectors.length; i++) {
             edges = diagram.getObject(connectors[i]);
-            diagram.connectorPropertyChange(edges, {}, {
-                sourceID: edges.sourceID, targetID: edges.targetID
-            });
+            if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+                diagram.lineRoutingModule.refreshConnectorSegments(diagram, edges, true);
+            }
+            else {
+                diagram.connectorPropertyChange(edges, {}, {
+                    sourceID: edges.sourceID, targetID: edges.targetID
+                });
+            }
         }
     }
 }
@@ -15826,7 +15840,7 @@ function wordWrapping(text, textValue, laneWidth) {
         words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
-            newText = txtValue + (words[i + 1] || '');
+            newText = txtValue + ' ' + (words[i + 1] || '');
             let width = bBoxText(newText, text);
             if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {
@@ -17947,7 +17961,7 @@ class SvgRenderer {
             }
             let dashArray = [];
             let fill;
-            if (style.dashArray !== undefined) {
+            if (style.dashArray) {
                 let canvasRenderer = new CanvasRenderer();
                 dashArray = canvasRenderer.parseDashArray(style.dashArray);
             }
@@ -17965,7 +17979,7 @@ class SvgRenderer {
                 svg.setAttribute('stroke-width', style.strokeWidth.toString());
             }
             if (dashArray) {
-                svg.setAttribute('stroke-dasharray', dashArray.toString());
+                svg.setAttribute('stroke-dasharray', dashArray.toString() || 'none');
             }
             if (fill) {
                 svg.setAttribute('fill', fill);
@@ -20391,7 +20405,6 @@ class ConnectTool extends ToolBase {
     }
     /**   @private  */
     mouseUp(args) {
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         this.checkPropertyValue();
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
@@ -20631,7 +20644,6 @@ class MoveTool extends ToolBase {
         let historyAdded = false;
         let object;
         let redoObject = { nodes: [], connectors: [] };
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         if (this.objectType !== 'Port') {
             if (args.source instanceof Node || args.source instanceof Connector) {
                 if (args.source instanceof Node) {
@@ -20904,7 +20916,6 @@ class RotateTool extends ToolBase {
     mouseUp(args) {
         this.checkPropertyValue();
         let object;
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         object = this.commandHandler.renderContainerHelper(args.source) || args.source;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
             let oldValue = { rotateAngle: object.wrapper.rotateAngle };
@@ -21010,7 +21021,6 @@ class ResizeTool extends ToolBase {
         this.checkPropertyValue();
         this.commandHandler.removeSnap();
         let object;
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         this.commandHandler.updateSelector();
         object = this.commandHandler.renderContainerHelper(args.source) || args.source;
         if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
@@ -22468,6 +22478,7 @@ class DiagramEventHandler {
     /** @private */
     constructor(diagram, commandHandler) {
         this.currentAction = 'None';
+        this.previousAction = 'None';
         /**   @private  */
         this.focus = false;
         this.isBlocked = false;
@@ -22675,6 +22686,31 @@ class DiagramEventHandler {
             this.diagram.deleteVirtualObject = true;
         }, delay);
     }
+    checkPreviousAction() {
+        if (this.action !== this.previousAction && this.diagram.selectedItems.userHandles.length) {
+            for (let i = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
+                if (this.previousAction && this.diagram.selectedItems.userHandles[i]) {
+                    this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseLeave);
+                    this.previousAction = 'None';
+                }
+            }
+        }
+    }
+    checkUserHandleEvent(eventName) {
+        if (this.diagram.selectedItems && this.diagram.selectedItems.userHandles.length > 0) {
+            let currentAction = (eventName === DiagramEvent.onUserHandleMouseLeave) ? this.previousAction : this.action;
+            let arg = { element: undefined };
+            for (let i = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
+                if (currentAction === this.diagram.selectedItems.userHandles[i].name) {
+                    arg.element = this.diagram.selectedItems.userHandles[i];
+                    if (eventName === DiagramEvent.onUserHandleMouseEnter) {
+                        this.previousAction = this.action;
+                    }
+                    this.diagram.triggerEvent(eventName, arg);
+                }
+            }
+        }
+    }
     mouseDown(evt) {
         this.focus = true;
         let touches;
@@ -22684,6 +22720,7 @@ class DiagramEventHandler {
             evt.preventDefault();
             return;
         }
+        this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
             (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
             if (this.action === 'Select' || this.action === 'Drag') {
@@ -22865,6 +22902,8 @@ class DiagramEventHandler {
                         }
                     }
                     this.action = this.diagram.findActionToBeDone(obj, sourceElement, this.currentPosition, target);
+                    this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseEnter);
+                    this.checkPreviousAction();
                     this.getMouseEventArgs(this.currentPosition, this.eventArgs);
                     this.tool = this.getTool(this.action);
                     this.mouseEvents();
@@ -22951,9 +22990,11 @@ class DiagramEventHandler {
             this.blocked = !(this.tool.mouseMove(this.eventArgs));
         }
     }
+    /* tslint:disable */
     /** @private */
     mouseUp(evt) {
         let touches;
+        this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseUp);
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
         }
@@ -23034,6 +23075,7 @@ class DiagramEventHandler {
                     this.diagram.endGroupAction();
                 }
                 this.updateContainerBounds(true);
+                this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
@@ -23077,6 +23119,7 @@ class DiagramEventHandler {
         this.eventArgs = {};
         this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     }
+    /* tslint:enable */
     getBlazorClickEventArgs(arg) {
         arg = {
             element: this.eventArgs.source ? { selector: cloneBlazorObject(this.eventArgs.source) } :
@@ -27752,6 +27795,7 @@ class CommandHandler {
      */
     updateSelectedNodeProperties(object) {
         if (this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+            this.diagram.protectPropertyChange(true);
             let objects = [];
             let connectors = [];
             let actualObject = this.diagram.selectedObject.actualObject;
@@ -27763,7 +27807,8 @@ class CommandHandler {
                 let height = (helperObject.height - actualObject.height);
                 let rotateAngle = (helperObject.rotateAngle - actualObject.rotateAngle);
                 this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
-                if (actualObject instanceof Node) {
+                if (actualObject instanceof Node &&
+                    actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader) {
                     actualObject.offsetX += offsetX;
                     actualObject.offsetY += offsetY;
                     actualObject.width += width;
@@ -27778,16 +27823,19 @@ class CommandHandler {
                 else if (actualObject instanceof Selector) {
                     for (let i = 0; i < actualObject.nodes.length; i++) {
                         let node = actualObject.nodes[i];
-                        node.offsetX += offsetX;
-                        node.offsetY += offsetY;
-                        node.width += width;
-                        node.height += height;
-                        node.rotateAngle += rotateAngle;
-                        this.diagram.nodePropertyChange(node, {}, {
-                            offsetX: node.offsetX, offsetY: node.offsetY,
-                            width: node.width, height: node.height, rotateAngle: node.rotateAngle
-                        });
-                        objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds));
+                        if (node instanceof Node && node.shape.type !== 'SwimLane' && !node.isLane
+                            && !node.isPhase && !node.isHeader) {
+                            node.offsetX += offsetX;
+                            node.offsetY += offsetY;
+                            node.width += width;
+                            node.height += height;
+                            node.rotateAngle += rotateAngle;
+                            this.diagram.nodePropertyChange(node, {}, {
+                                offsetX: node.offsetX, offsetY: node.offsetY,
+                                width: node.width, height: node.height, rotateAngle: node.rotateAngle
+                            });
+                            objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds));
+                        }
                     }
                 }
             }
@@ -27811,6 +27859,8 @@ class CommandHandler {
                     this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
                 }
             }
+            this.updateSelector();
+            this.diagram.protectPropertyChange(false);
         }
     }
     /** @private */
@@ -29639,6 +29689,9 @@ class Diagram extends Component {
             for (let temp of this.views) {
                 let view = this.views[temp];
                 if (!(view instanceof Diagram)) {
+                    if (newProp.scrollSettings && newProp.scrollSettings.currentZoom != oldProp.scrollSettings.currentZoom) {
+                        view.updateHtmlLayer(view);
+                    }
                     this.refreshCanvasDiagramLayer(view);
                 }
             }
@@ -29757,10 +29810,10 @@ class Diagram extends Component {
         this.initializeDiagramLayers();
         this.diagramRenderer.setLayers();
         this.initObjects(true);
+        this.doLayout();
         if (this.lineRoutingModule) {
             this.lineRoutingModule.lineRouting(this);
         }
-        this.doLayout();
         this.validatePageSize();
         this.renderPageBreaks();
         this.diagramRenderer.renderSvgGridlines(this.snapSettings, getGridLayerSvg(this.element.id), this.scroller.transform, this.rulerSettings, this.hRuler, this.vRuler);
@@ -32832,7 +32885,7 @@ class Diagram extends Component {
         }
         else {
             let setNodeTemplate = getFunction(this.setNodeTemplate);
-            if (setNodeTemplate) {
+            if (setNodeTemplate && obj.id !== 'helper') {
                 content = setNodeTemplate(obj, this);
             }
             if (!content) {
@@ -34696,6 +34749,7 @@ class Diagram extends Component {
         }
         return updateSelector;
     }
+    /* tslint:disable */
     /** @private */
     connectorPropertyChange(actualObject, oldProp, newProp, disableBridging, propertyChange) {
         let existingBounds = actualObject.wrapper.bounds;
@@ -34718,6 +34772,9 @@ class Diagram extends Component {
                 outPort = this.findInOutConnectPorts(sourceNode, false);
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourceWrapper = sourceNode ? this.getEndNodeWrapper(sourceNode, actualObject, true) : undefined;
+                    if (actualObject.sourcePortID && newProp.sourcePortID === undefined) {
+                        actualObject.sourcePortWrapper = sourceNode ? this.getWrapper(sourceNode.wrapper, actualObject.sourcePortID) : undefined;
+                    }
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
                     let oldSource = this.nameTable[oldProp.sourceID];
@@ -34732,6 +34789,9 @@ class Diagram extends Component {
                 inPort = this.findInOutConnectPorts(targetNode, true);
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetWrapper = targetNode ? this.getEndNodeWrapper(targetNode, actualObject, false) : undefined;
+                    if (actualObject.targetPortID && newProp.targetPortID === undefined) {
+                        actualObject.targetPortWrapper = targetNode ? this.getWrapper(targetNode.wrapper, actualObject.targetPortID) : undefined;
+                    }
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
                     let oldTarget = this.nameTable[oldProp.targetID];
@@ -34817,6 +34877,7 @@ class Diagram extends Component {
         }
         this.triggerPropertyChange(propertyChange, actualObject, oldProp, newProp);
     }
+    /* tslint:enable */
     getpropertyChangeArgs(element, oldProp, newProp, args) {
         args.element = { connector: cloneBlazorObject(element) };
         args.oldValue = { connector: cloneBlazorObject(oldProp) };
@@ -36114,6 +36175,18 @@ __decorate([
 ], Diagram.prototype, "collectionChange", void 0);
 __decorate([
     Event()
+], Diagram.prototype, "onUserHandleMouseDown", void 0);
+__decorate([
+    Event()
+], Diagram.prototype, "onUserHandleMouseUp", void 0);
+__decorate([
+    Event()
+], Diagram.prototype, "onUserHandleMouseEnter", void 0);
+__decorate([
+    Event()
+], Diagram.prototype, "onUserHandleMouseLeave", void 0);
+__decorate([
+    Event()
 ], Diagram.prototype, "segmentCollectionChange", void 0);
 __decorate([
     Event()
@@ -36683,7 +36756,7 @@ class PrintAndExport {
         pageHeight = pageSize.height + y;
         let drawnX = 0;
         let drawnY = 0;
-        if (options && options.multiplePage && !(options.region === 'Content')) {
+        if (options && options.multiplePage) {
             div.style.height = 'auto';
             div.style.width = 'auto';
             let imgHeight = img.height;
@@ -42981,8 +43054,8 @@ class LineRouting {
         /* tslint:disable */
         let right = diagram.spatialSearch['pageRight'] + this.size;
         let bottom = diagram.spatialSearch['pageBottom'] + this.size;
-        let left = diagram.spatialSearch['pageLeft'];
-        let top = diagram.spatialSearch['pageTop'];
+        let left = diagram.spatialSearch['pageLeft'] - this.size;
+        let top = diagram.spatialSearch['pageTop'] - this.size;
         left = left < 0 ? left - 20 : 0;
         top = top < 0 ? top - 20 : 0;
         /* tslint:enable */
@@ -43015,7 +43088,19 @@ class LineRouting {
                 y += size;
             }
         }
-        this.updateNodesInVirtualRegion(diagram.nodes);
+        let nodes = this.findNodes(diagram.nodes);
+        this.updateNodesInVirtualRegion(nodes);
+    }
+    findNodes(nodes) {
+        let objects = [];
+        let node;
+        for (let i = 0; i < nodes.length; i++) {
+            node = nodes[i];
+            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader) {
+                objects.push(node);
+            }
+        }
+        return objects;
     }
     updateNodesInVirtualRegion(diagramNodes) {
         let size = this.size;
@@ -43070,8 +43155,8 @@ class LineRouting {
         }
         else {
             if ((isSource && this.startNode) || (!isSource && this.targetNode)) {
-                endPoint = (isSource) ? { x: this.startNode.offsetX, y: this.startNode.offsetY } :
-                    { x: this.targetNode.offsetX, y: this.targetNode.offsetY };
+                endPoint = (isSource) ? { x: this.startNode.wrapper.offsetX, y: this.startNode.wrapper.offsetY } :
+                    { x: this.targetNode.wrapper.offsetX, y: this.targetNode.wrapper.offsetY };
             }
             else {
                 endPoint = (isSource) ? { x: connector.sourcePoint.x, y: connector.sourcePoint.y } :
@@ -43124,11 +43209,13 @@ class LineRouting {
                 for (let j = 0; j < this.noOfCols; j++) {
                     grid = this.gridCollection[i][j];
                     let rectangle = new Rect(grid.x, grid.y, grid.width, grid.height);
-                    if (rectangle.containsPoint(startPoint) && !this.startGrid) {
+                    if (rectangle.containsPoint(startPoint) && !this.startGrid &&
+                        (grid.nodeId.indexOf(sourceId) !== -1 || sourceId === '')) {
                         this.startGrid = (sourcePortID && this.startGrid &&
                             (sourcePortDirection === 'Left' || sourcePortDirection === 'Top')) ? this.startGrid : grid;
                     }
-                    if (rectangle.containsPoint(targetPoint) && !this.targetGrid) {
+                    if (rectangle.containsPoint(targetPoint) && !this.targetGrid &&
+                        (grid.nodeId.indexOf(targetId) !== -1 || targetId === '')) {
                         this.targetGrid = (targetPortID && this.targetGrid &&
                             (targetPortDirection === 'Left' || targetPortDirection === 'Top')) ? this.targetGrid : grid;
                     }
@@ -43164,49 +43251,13 @@ class LineRouting {
                     }
                 }
             }
-            if (!sourcePortID && this.startNode) {
-                for (let i = sourceLeft.gridX; i <= sourceRight.gridX; i++) {
-                    grid = this.gridCollection[i][sourceLeft.gridY];
-                    if (grid.nodeId.length === 1) {
-                        this.sourceGridCollection.push(grid);
-                    }
-                }
-                for (let i = sourceTop.gridY; i <= sourceBottom.gridY; i++) {
-                    grid = this.gridCollection[sourceTop.gridX][i];
-                    if (grid.nodeId.length === 1 && this.sourceGridCollection.indexOf(grid) === -1) {
-                        this.sourceGridCollection.push(grid);
-                    }
-                }
-            }
-            else {
-                this.sourceGridCollection.push(this.startGrid);
-            }
-            if (!targetPortID && this.targetNode) {
-                for (let i = targetLeft.gridX; i <= targetRight.gridX; i++) {
-                    grid = this.gridCollection[i][targetLeft.gridY];
-                    if (grid.nodeId.length === 1) {
-                        this.targetGridCollection.push(grid);
-                    }
-                }
-                for (let i = targetTop.gridY; i <= targetBottom.gridY; i++) {
-                    grid = this.gridCollection[targetTop.gridX][i];
-                    if (grid.nodeId.length === 1 && this.targetGridCollection.indexOf(grid) === -1) {
-                        this.targetGridCollection.push(grid);
-                    }
-                }
-                if (this.targetGridCollection.indexOf(this.targetGrid) === -1) {
-                    if (this.targetGrid.nodeId.length > 1 && this.targetGridCollection.length === 1) {
-                        this.targetGrid = this.targetGridCollection[0];
-                    }
-                }
-            }
-            else {
-                this.targetGridCollection.push(this.targetGrid);
-            }
+            this.findEdgeBoundary(sourcePortID, sourceLeft, sourceRight, sourceTop, sourceBottom, true);
+            this.findEdgeBoundary(targetPortID, targetLeft, targetRight, targetTop, targetBottom, false);
             this.startGrid.totalDistance = 0;
             this.startGrid.previousDistance = 0;
             this.intermediatePoints.push({ x: this.startGrid.gridX, y: this.startGrid.gridY });
             this.startArray.push(this.startGrid);
+            this.checkObstacles(connector);
             renderPathElement: while (this.startArray.length > 0) {
                 let startGridNode = this.startArray.pop();
                 for (let i = 0; i < this.targetGridCollection.length; i++) {
@@ -43227,6 +43278,81 @@ class LineRouting {
             }
         }
     }
+    findEdgeBoundary(portID, left, right, top, bottom, isSource) {
+        let grid;
+        let collection = (isSource) ? this.sourceGridCollection : this.targetGridCollection;
+        if (!portID && ((isSource) ? this.startNode : this.targetNode)) {
+            for (let i = left.gridX; i <= right.gridX; i++) {
+                grid = this.gridCollection[i][left.gridY];
+                if ((grid.nodeId.length === 1 && (i === left.gridX || i === right.gridX)) ||
+                    (i !== left.gridX && i !== right.gridX)) {
+                    collection.push(grid);
+                }
+            }
+            for (let i = top.gridY; i <= bottom.gridY; i++) {
+                grid = this.gridCollection[top.gridX][i];
+                if (((grid.nodeId.length === 1 && (i === top.gridY || i === bottom.gridY)) ||
+                    (i !== top.gridY && i !== bottom.gridY)) && collection.indexOf(grid) === -1) {
+                    collection.push(grid);
+                }
+            }
+        }
+        else {
+            collection.push((isSource) ? this.startGrid : this.targetGrid);
+        }
+    }
+    checkObstacles(connector) {
+        let neigbours = this.findNearestNeigbours(this.startGrid, this.gridCollection, true);
+        if (neigbours.length === 0) {
+            if (connector.sourcePortID !== '') {
+                let endPoint = { x: connector.sourcePortWrapper.offsetX, y: connector.sourcePortWrapper.offsetY };
+                let portDirection = getPortDirection(endPoint, undefined, connector.sourceWrapper.bounds, false);
+                if (portDirection === 'Top') {
+                    this.resetGridColl(this.startGrid, 'top', true);
+                }
+                else if (portDirection === 'Right') {
+                    this.resetGridColl(this.startGrid, 'right', true);
+                }
+                else if (portDirection === 'Bottom') {
+                    this.resetGridColl(this.startGrid, 'bottom', true);
+                }
+                else {
+                    this.resetGridColl(this.startGrid, 'left', true);
+                }
+            }
+            else {
+                this.resetGridColl(this.startGrid, 'top', true);
+                this.resetGridColl(this.startGrid, 'right', true);
+                this.resetGridColl(this.startGrid, 'bottom', true);
+                this.resetGridColl(this.startGrid, 'left', true);
+            }
+        }
+        neigbours = this.findNearestNeigbours(this.targetGrid, this.gridCollection, false);
+        if (neigbours.length === 0) {
+            if (connector.targetPortID !== '') {
+                let endPoint = { x: connector.targetPortWrapper.offsetX, y: connector.targetPortWrapper.offsetY };
+                let portDirection = getPortDirection(endPoint, undefined, connector.targetWrapper.bounds, false);
+                if (portDirection === 'Top') {
+                    this.resetGridColl(this.targetGrid, 'top', true);
+                }
+                else if (portDirection === 'Right') {
+                    this.resetGridColl(this.targetGrid, 'right', true);
+                }
+                else if (portDirection === 'Bottom') {
+                    this.resetGridColl(this.targetGrid, 'bottom', true);
+                }
+                else {
+                    this.resetGridColl(this.targetGrid, 'left', true);
+                }
+            }
+            else {
+                this.resetGridColl(this.targetGrid, 'top', false);
+                this.resetGridColl(this.targetGrid, 'right', false);
+                this.resetGridColl(this.targetGrid, 'bottom', false);
+                this.resetGridColl(this.targetGrid, 'left', false);
+            }
+        }
+    }
     // Get all the intermediated points from target grid
     getIntermediatePoints(target) {
         let distance;
@@ -43238,21 +43364,21 @@ class LineRouting {
         this.intermediatePoints.reverse();
         if (this.intermediatePoints[0].x === this.intermediatePoints[1].x) {
             if (this.intermediatePoints[0].y < this.intermediatePoints[1].y) {
-                distance = this.neigbour(this.startGrid, 'bottom', undefined);
+                distance = this.neigbour(this.startGrid, 'bottom', undefined, true);
                 this.intermediatePoints[0].y += distance - 1;
             }
             else {
-                distance = this.neigbour(this.startGrid, 'top', undefined);
+                distance = this.neigbour(this.startGrid, 'top', undefined, true);
                 this.intermediatePoints[0].y -= distance - 1;
             }
         }
         else {
             if (this.intermediatePoints[0].x < this.intermediatePoints[1].x) {
-                distance = this.neigbour(this.startGrid, 'right', undefined);
+                distance = this.neigbour(this.startGrid, 'right', undefined, true);
                 this.intermediatePoints[0].x += distance - 1;
             }
             else {
-                distance = this.neigbour(this.startGrid, 'left', undefined);
+                distance = this.neigbour(this.startGrid, 'left', undefined, true);
                 this.intermediatePoints[0].x -= distance - 1;
             }
         }
@@ -43375,7 +43501,7 @@ class LineRouting {
     findPath(startGrid) {
         let intermediatePoint;
         let collection = [];
-        let neigbours = this.findNearestNeigbours(startGrid, this.gridCollection);
+        let neigbours = this.findNearestNeigbours(startGrid, this.gridCollection, true);
         for (let i = 0; i < neigbours.length; i++) {
             intermediatePoint = this.findIntermediatePoints(neigbours[i].gridX, neigbours[i].gridY, startGrid.gridX, startGrid.gridY, this.targetGrid.gridX, this.targetGrid.gridY);
             if (intermediatePoint !== null) {
@@ -43426,7 +43552,7 @@ class LineRouting {
         return t + e;
     }
     // Find the nearest neigbour from the current boundaries, the neigbour is use to find next intermdiate point.
-    findNearestNeigbours(startGrid, gridCollection) {
+    findNearestNeigbours(startGrid, gridCollection, isSource) {
         let neigbours = [];
         let parent = startGrid.parent;
         if (parent) {
@@ -43462,14 +43588,14 @@ class LineRouting {
             }
         }
         else {
-            this.neigbour(startGrid, 'top', neigbours);
-            this.neigbour(startGrid, 'right', neigbours);
-            this.neigbour(startGrid, 'bottom', neigbours);
-            this.neigbour(startGrid, 'left', neigbours);
+            this.neigbour(startGrid, 'top', neigbours, isSource);
+            this.neigbour(startGrid, 'right', neigbours, isSource);
+            this.neigbour(startGrid, 'bottom', neigbours, isSource);
+            this.neigbour(startGrid, 'left', neigbours, isSource);
         }
         return neigbours;
     }
-    neigbour(startGrid, direction, neigbours) {
+    neigbour(startGrid, direction, neigbours, isSource) {
         let i = 1;
         let nearGrid;
         while (i > 0) {
@@ -43478,11 +43604,41 @@ class LineRouting {
             let y = (direction === 'right' || direction === 'left') ?
                 (startGrid.gridY) : ((direction === 'top') ? startGrid.gridY - i : startGrid.gridY + i);
             nearGrid = this.gridCollection[x][y];
-            if (nearGrid && this.sourceGridCollection.indexOf(nearGrid) === -1) {
+            if (nearGrid && ((isSource && this.sourceGridCollection.indexOf(nearGrid) === -1)
+                || (!isSource && this.targetGridCollection.indexOf(nearGrid) === -1))) {
                 if (neigbours && this.isWalkable(x, y)) {
                     neigbours.push(nearGrid);
                 }
                 return i;
+            }
+            if (x > 0 && y > 0) {
+                i++;
+            }
+            else {
+                break;
+            }
+        }
+        return null;
+    }
+    resetGridColl(grid, direction, isSource) {
+        let i = 1;
+        let nearGrid;
+        while (i > 0) {
+            let x = (direction === 'top' || direction === 'bottom') ?
+                (grid.gridX) : ((direction === 'left') ? grid.gridX - i : grid.gridX + i);
+            let y = (direction === 'right' || direction === 'left') ?
+                (grid.gridY) : ((direction === 'top') ? grid.gridY - i : grid.gridY + i);
+            nearGrid = this.gridCollection[x][y];
+            if (nearGrid && ((isSource && this.sourceGridCollection.indexOf(nearGrid) === -1) ||
+                (!isSource && this.targetGridCollection.indexOf(nearGrid) === -1))) {
+                if (this.isWalkable(x, y)) {
+                    break;
+                }
+                else {
+                    let grid = this.gridCollection[x][y];
+                    grid.nodeId = [];
+                    grid.walkable = true;
+                }
             }
             if (x > 0 && y > 0) {
                 i++;
@@ -48910,6 +49066,9 @@ class SymbolPalette extends Component {
         if (element) {
             element.setAttribute('paletteId', this.element.id);
         }
+        if (isBlazor()) {
+            e.bindEvents(e.dragElement);
+        }
     }
     dragStop(e) {
         if (!parentsUntil(e.target, 'e-diagram')) {
@@ -49528,6 +49687,7 @@ class Overview extends Component {
         }
         let attr = ({
             id: this.canvas.id + '_overviewsvg',
+            class: 'overviewsvg',
             version: '1.1',
             xlink: 'http://www.w3.org/1999/xlink',
             'style': 'position:absolute;left:0px;top:0px; aria-label:Specifies overview',
@@ -49741,7 +49901,7 @@ class Overview extends Component {
         let difx = this.currentPoint.x - this.prevPoint.x;
         let dify = this.currentPoint.y - this.prevPoint.y;
         let zoom = Math.min(this.parent.scroller.viewPortWidth / offwidth, this.parent.scroller.viewPortHeight / offheight);
-        let svg = this.element.getElementsByTagName('svg')[2];
+        let svg = this.element.getElementsByClassName('overviewsvg')[0];
         let panel = svg.getElementById(this.canvas.id
             + 'overviewrect');
         let bounds = panel.getBBox();
@@ -49815,11 +49975,30 @@ class Overview extends Component {
             this.parent.pan(delx, dely, focusPoint);
         }
     }
+    updateHtmlLayer(view) {
+        let htmlLayer = getHTMLLayer(view.element.id);
+        let bounds = this.parent.scroller.getPageBounds(true);
+        let width = bounds.width;
+        let height = bounds.height;
+        let w = Math.max(width, this.parent.scroller.viewPortWidth);
+        let h = Math.max(height, this.parent.scroller.viewPortHeight);
+        let scale = Math.min(Number(this.model.width) / w, Number(this.model.height) / h);
+        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + this.parent.scroller.transform.tx + 'px,'
+            + (this.parent.scroller.transform.ty) + 'px)';
+    }
     /** @private */
     updateView(view) {
         let width;
         let height;
         let bounds = this.parent.scroller.getPageBounds();
+        let diagramBoundsWidth = this.parent.scroller.viewPortWidth / this.parent.scroller.currentZoom;
+        let diagramBoundsHeight = this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom;
+        let transformWidth = 0;
+        let transformHeight = 0;
+        if (this.parent.scroller.currentZoom < 1 && diagramBoundsWidth > bounds.width && diagramBoundsHeight > bounds.height) {
+            transformWidth = (diagramBoundsWidth - bounds.width) / 2;
+            transformHeight = (diagramBoundsHeight - bounds.height) / 2;
+        }
         width = bounds.width;
         height = bounds.height;
         let offwidth = Number(this.model.width);
@@ -49832,7 +50011,8 @@ class Overview extends Component {
         scale = Math.min(offwidth / w, offheight / h);
         let htmlLayer = document.getElementById(this.element.id + '_htmlLayer');
         htmlLayer.style.webkitTransform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
-        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
+        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + ((-(bounds.x)) + transformWidth) + 'px,'
+            + (((-bounds.y) + transformHeight)) + 'px)';
         let ovw = document.getElementById(this.element.id + '_overviewlayer');
         ovw.setAttribute('transform', 'translate(' + (-bounds.x * scale) + ',' + (-bounds.y * scale) + ')');
         this.horizontalOffset = bounds.x * scale;

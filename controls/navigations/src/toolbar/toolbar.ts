@@ -87,7 +87,7 @@ export interface ClickEventArgs extends BaseEventArgs {
     item: ItemModel;
     /** 
      * Defines the current Event arguments. 
-     * @blazorType UIMouseEventArgs
+     * @blazorType MouseEventArgs
      */
     originalEvent: Event;
     /** Defines the prevent action. */

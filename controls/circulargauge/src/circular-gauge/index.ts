@@ -12,3 +12,4 @@ export * from './utils/helper';
 export * from './circular-gauge-model';
 export * from './axes/axis-model';
 export * from './model/base-model';
+export * from './legend/legend';

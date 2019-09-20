@@ -1,7 +1,7 @@
 /**
  * Content renderer spec 
  */
-import { Browser, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, closest, detach, createElement } from '@syncfusion/ej2-base';
 import { Dialog } from '@syncfusion/ej2-popups';
 import { RichTextEditor, Toolbar, Image, IRenderer, ResizeArgs } from './../../../src/index';
 import { NodeSelection } from './../../../src/selection/index';
@@ -2398,6 +2398,9 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+    
+
+
     describe(' Caption image with link insert testing', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;
@@ -2503,5 +2506,109 @@ client side. Customer easy to edit the contents and get the HTML content for
                 }, 400);
             }, 100);
         });
+    });
+    describe('RTE Drag and Drop Image', () => {
+        let rteObj: RichTextEditor;
+        let rteEle: HTMLElement;
+        let ele: HTMLElement;
+        let element: HTMLElement;
+        beforeAll((done: Function) => {
+            element = createElement('form', {
+                id: "form-element", innerHTML:
+                    ` <div class="form-group">
+                        <textarea id="defaultRTE" name="defaultRTE" required maxlength="100" minlength="20" data-msg-containerid="dateError">
+                        </textarea>
+                        <div id="dateError"></div>
+                    </div>
+                    ` });
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+                insertImageSettings: {
+                    saveUrl: 'http://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                },
+                value: `<div><p>First p node-0</p></div>`,
+                placeholder: 'Type something'
+            });
+            rteObj.appendTo('#defaultRTE');
+            rteEle = rteObj.element;
+            done();
+        });
+        it(" Check image after drop", function (done: Function) {
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, target: rteObj.contentModule.getEditPanel(), dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            (rteObj.imageModule as any).getDropRange(event.clientX, event.clientY);
+            (rteObj.imageModule as any).dragDrop(event);
+            ele = rteObj.element.getElementsByTagName('img')[0];
+            setTimeout(() => {
+                expect(rteObj.element.getElementsByTagName('img').length).toBe(1);
+                expect(ele.classList.contains('e-rte-image')).toBe(true);
+                expect(ele.classList.contains('e-imginline')).toBe(true);
+                expect(ele.classList.contains('e-resize')).toBe(true);
+                done();
+            }, 2000);
+           
+        });
+        it(" Check dragstart Event", function (done: Function) {
+            let image: HTMLElement = createElement("img");
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, target: image , dataTransfer: { files: [fileObj] , dropEffect : '', effectAllowed : '' }, preventDefault: function () { return; } };
+             (rteObj.imageModule as any).dragStart(event);
+             setTimeout(() => {
+                expect(image.classList.contains('e-rte-drag-image')).toBe(true);
+                (rteObj.imageModule as any).dragOver(event);
+                (rteObj.imageModule as any).dragEnter(event);
+                done();
+             }, 2000);
+          
+        });
+        it(" Check insertDragImage method -External image", function () {
+            let popupEle: HTMLElement = createElement("div");
+            popupEle.classList.add('e-popup-open');
+            rteObj.element.appendChild(popupEle);
+            rteObj.insertImageSettings.saveUrl = null;
+            rteObj.dataBind();
+            let fileObj: File = new File(["Nice One"], "sample.png", { lastModified: 0, type: "image/png" });
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [fileObj] }, preventDefault: function () { return; } };
+            detach(document.getElementsByTagName('IMG')[0]);
+            (rteObj.imageModule as any).insertDragImage(event);
+        });
+        it(" Check insertDragImage method -Internal image", function () {
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('e-rte-drag-image');
+            rteObj.inputElement.appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
+            (rteObj.imageModule as any).insertDragImage(event);
+        });
+        it(" Check uploadSuccess method", function (done: Function) {
+            let image: HTMLElement = createElement("IMG");
+            image.classList.add('upload-image');
+            var popupEle = createElement('div', { className: 'e-rte-pop e-popup-open' });
+            rteObj.inputElement.appendChild(popupEle);
+            rteObj.inputElement.appendChild(image);
+            let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
+            rteObj.notify('drop', { args: event });
+            var args = { args: event, type: 'Images', isNotify: (undefined as any), elements: image };
+            (rteObj.imageModule as any).uploadSuccess(image, event, args);
+            setTimeout(() => {
+                expect(document.querySelector('.e-rte-pop.e-popup-open')).not.toBe(null);
+                expect(image.classList.contains('e-img-focus')).toBe(true);
+                done(); 
+            }, 2000);
+       });
+       it(" Check uploadFailure method", function (done: Function) {
+        let image: HTMLElement = createElement("IMG");
+        image.classList.add('upload-image');
+        var popupEle = createElement('div', { className: 'e-rte-pop e-popup-open' });
+        rteObj.inputElement.appendChild(popupEle);      
+        rteObj.inputElement.appendChild(image);       
+        let event: any = { clientX: 40, clientY: 294, dataTransfer: { files: [] }, preventDefault: function () { return; } };
+        var args = { args: event, type: 'Images', isNotify: (undefined as any), elements: image };
+         (rteObj.imageModule as any).uploadFailure(image,args);
+         setTimeout(() => {
+            expect(document.querySelector('.e-upload-image')).toBe(null);
+            done();
+         }, 2000);
+       
+    });
     });
 });

@@ -136,17 +136,21 @@ describe('Chart Control', () => {
                 let series2: Series = <Series>args.chart.series[1];
                 expect(series1.marker.height === 10).toBe(true);
                 expect(series1.marker.width === 10).toBe(true);
+                expect(series1.marker.offset.x === 10).toBe(true);
                 expect(series2.marker.height === 10).toBe(true);
                 expect(series2.marker.width === 10).toBe(true);
+                expect(series2.marker.offset.y === 10).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].marker.visible = true;
             chartObj.series[0].marker.height = 10;
             chartObj.series[0].marker.width = 10;
+            chartObj.series[0].marker.offset.x = 10;
             chartObj.series[1].marker.visible = true;
             chartObj.series[1].marker.height = 10;
             chartObj.series[1].marker.width = 10;
+            chartObj.series[1].marker.offset.y = 10;
             chartObj.refresh();
         });
         it('Checking with marker with shape', (done: Function) => {
@@ -160,8 +164,10 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.series[0].marker.shape = 'Rectangle';
             chartObj.series[0].marker.fill = 'red';
+            chartObj.series[0].marker.offset.x = 0;
             chartObj.series[1].marker.shape = 'Diamond';
             chartObj.series[1].marker.fill = 'black';
+            chartObj.series[0].marker.offset.x = 0;
             chartObj.refresh();
         });
         it('Checking with marker with shape for stackingareaa100 series', (done: Function) => {

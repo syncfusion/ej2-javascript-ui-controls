@@ -1,8 +1,8 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel } from './pdfviewer-model';
-import { ToolbarSettingsModel, AnnotationToolbarSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel } from './pdfviewer-model';
+import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
@@ -16,6 +16,7 @@ import { ThumbnailView } from './index';
 import { BookmarkView } from './index';
 import { TextSelection } from './index';
 import { TextSearch } from './index';
+import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';
@@ -27,6 +28,7 @@ import { Selector } from '../diagram/selector';
 import { SelectorModel } from '../diagram/selector-model';
 import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';
 import { renderAdornerLayer } from '../diagram/dom-util';
+import { ThumbnailClickEventArgs } from './index';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -490,6 +492,39 @@ export class CircleSettings extends ChildProperty<CircleSettings> {
 }
 
 /**
+ * The `ShapeLabelSettings` module is used to provide the properties to rectangle annotation.
+ */
+export class ShapeLabelSettings extends ChildProperty<ShapeLabelSettings> {
+    /**
+     * specifies the opacity of the label.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the fill color of the label.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the border color of the label.
+     */
+    @Property('#000')
+    public fontColor: string;
+    /**
+     * specifies the font size of the label.
+     */
+    @Property(16)
+    public fontSize: number;
+    /**
+     * specifies the max-width of the label.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+}
+
+/**
  * The `PolygonSettings` module is used to provide the properties to polygon annotation.
  */
 export class PolygonSettings extends ChildProperty<PolygonSettings> {
@@ -943,6 +978,89 @@ export class MeasurementSettings extends ChildProperty<MeasurementSettings> {
 }
 
 /**
+ * The `FreeTextSettings` module is used to provide the properties to free text annotation.
+ */
+export class FreeTextSettings extends ChildProperty<FreeTextSettings> {
+    /**
+     * specifies the opacity of the annotation.
+     */
+    @Property(1)
+    public opacity: number;
+
+    /**
+     * specifies the border color of the annotation.
+     */
+    @Property('#ffffff00')
+    public borderColor: string;
+
+    /**
+     * specifies the border with of the annotation.
+     */
+    @Property(1)
+    public borderWidth: number;
+
+    /**
+     * specifies the border style of the annotation.
+     */
+    @Property('solid')
+    public borderStyle: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    @Property('Guest')
+    public author: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    @Property('Text Box')
+    public subject: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    @Property('')
+    public modifiedDate: string;
+
+    /**
+     * specifies the background fill color of the annotation.
+     */
+    @Property('#ffffff00')
+    public fillColor: string;
+
+    /**
+     * specifies the text box font size of the annotation.
+     */
+    @Property(16)
+    public fontSize: number;
+    /**
+     * specifies the width of the annotation.
+     */
+    @Property(151)
+    public width: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    @Property(24.6)
+    public height: number;
+
+    /**
+     * specifies the text box font color of the annotation.
+     */
+    @Property('#000')
+    public fontColor: string;
+
+    /**
+     * specifies the text box font family of the annotation.
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+}
+
+/**
  * Represents the PDF viewer component.
  * ```html
  * <div id="pdfViewer"></div>
@@ -1101,6 +1219,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableMagnification: boolean;
 
     /**
+     * Enable or disables the Label for shapeAnnotations of PdfViewer.
+     * @default false
+     */
+    @Property(false)
+    public enableShapeLabel: boolean;
+
+
+    /**
      * Enable or disables the Pinch zoom of PdfViewer.
      * @default true
      */
@@ -1127,6 +1253,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(true)
     public enableAnnotation: boolean;
+
+    /**
+     * Enable or disable the form fields in the Pdfviewer.
+     * @default true
+     */
+    @Property(true)
+    public enableFormFields: boolean;
+
+    /**
+     * Enable or disable the free text annotation in the Pdfviewer.
+     * @default true
+     */
+    @Property(true)
+    public enableFreeText: boolean;
 
     /**
      * Enable or disables the text markup annotation in the PdfViewer.
@@ -1203,7 +1343,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of the PdfViewer annotation toolbar.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool'] })
+    @Property({ showTooltip: true, annotationToolbarItem: ['HighlightTool', 'UnderlineTool', 'StrikethroughTool', 'ColorEditTool', 'OpacityEditTool', 'AnnotationDeleteTool', 'StampAnnotationTool', 'ShapeTool', 'CalibrateTool', 'StrokeColorEditTool', 'ThicknessEditTool', 'FreeTextAnnotationTool', 'FontFamilyAnnotationTool', 'FontSizeAnnotationTool', 'FontStylesAnnotationTool', 'FontAlignAnnotationTool', 'FontColorAnnotationTool'] })
     public annotationToolbarSettings: AnnotationToolbarSettingsModel;
 
     /**
@@ -1251,6 +1391,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line:max-line-length
     @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Rectangle', modifiedDate: '', thickness: 1 })
     public rectangleSettings: RectangleSettingsModel;
+
+    /**
+     * Defines the settings of shape label.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ff0000', fontColor: '#000', fontSize: 16, labelHeight: 24.6, labelMaxWidth: 151 })
+    public shapeLabelSettings: ShapeLabelSettingsModel;
 
     /**
      * Defines the settings of circle annotation.
@@ -1320,6 +1467,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property({ author: 'Guest', subject: 'Sticky Note', modifiedDate: '', opacity: 1 })
     public stickyNotesSettings: StickyNotesSettingsModel;
+    /**
+     * Defines the settings of free text annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ opacity: 1, fillColor: '#ffffff00', borderColor: '#ffffff00', author: 'Guest', subject: 'Text Box', modifiedDate: '', borderWidth: 1, width: 151, fontSize: 16, height: 24.6, fontColor: '#000', fontFamily: 'Helvetica' })
+    public freeTextSettings: FreeTextSettingsModel;
 
     /**
      * Defines the settings of measurement annotation.
@@ -1407,6 +1560,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public annotationModule: Annotation;
+    /**
+     * @private
+     */
+    public formFieldsModule: FormFields;
     /** 
      * Gets the bookmark view object of the pdf viewer.
      * @asptype BookmarkView
@@ -1599,6 +1756,14 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public annotationSelect: EmitType<AnnotationSelectEventArgs>;
 
     /**
+     * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
+     * @event
+     * @blazorProperty 'OnThumbnailClick'
+     */
+    @Event()
+    public thumbnailClick: EmitType<ThumbnailClickEventArgs>;
+
+    /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
      */
@@ -1769,6 +1934,11 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                 member: 'Annotation', args: [this, this.viewerBase]
             });
         }
+        if (this.enableFormFields) {
+            modules.push({
+                member: 'FormFields', args: [this, this.viewerBase]
+            });
+        }
         return modules;
     }
     /** @hidden */
@@ -1891,7 +2061,27 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Add a comment': 'Add a comment',
         'Add a reply': 'Add a reply',
         'Import Annotations': 'Import Annotations',
-        'Export Annotations': 'Export Annotations'
+        'Export Annotations': 'Export Annotations',
+        'Add': 'Add',
+        'Clear': 'Clear',
+        'Bold': 'Bold',
+        'Italic': 'Italic',
+        'Strikethroughs': 'Strikethrough',
+        'Underlines': 'Underline',
+        'Superscript': 'Superscript',
+        'Subscript': 'Subscript',
+        'Align left': 'Align Left',
+        'Align right': 'Align Right',
+        'Center': 'Center',
+        'Justify': 'Justify',
+        'Font color': 'Font Color',
+        'Text Align': 'Text Align',
+        'Text Properties': 'Font Style',
+        'Draw Signature': 'Draw Signature',
+        'Create': 'Create',
+        'Font family': 'Font Family',
+        'Font size': 'Font Size',
+        'Free Text': 'Free Text'
     };
 
     /**
@@ -2012,6 +2202,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public exportAnnotations(): void {
         if (this.annotationModule) {
             this.viewerBase.exportAnnotations();
+        }
+    }
+
+    /**
+     * Perform export annotations action in the PDF Viewer
+     * @returns Promise<object>
+     */
+    public exportAnnotationsAsObject(): Promise<object> {
+        if (this.annotationModule) {
+            return new Promise((resolve: Function, reject: Function) => {
+                this.viewerBase.exportAnnotationsAsObject().then((value: object) => {
+                    resolve(value);
+                });
+            });
+        } else {
+            return null;
         }
     }
 
@@ -2147,6 +2353,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireAnnotationResize(pageNumber: number, index: number, type: AnnotationType, bounds: any, settings: any): void {
         let eventArgs: AnnotationResizeEventArgs = { name: 'annotationResize', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         this.trigger('annotationResize', eventArgs);
+    }
+    /**
+     * @private
+     */
+    public fireThumbnailClick(pageNumber: number): void {
+        let eventArgs: ThumbnailClickEventArgs = { name: 'thumbnailClick', pageNumber: pageNumber };
+        this.trigger('thumbnailClick', eventArgs);
     }
     /**
      * @private

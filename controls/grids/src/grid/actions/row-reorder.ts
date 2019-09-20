@@ -1,6 +1,6 @@
 import { MouseEventArgs, Draggable, isBlazor } from '@syncfusion/ej2-base';
 import { removeClass } from '@syncfusion/ej2-base';
-import { remove, closest as closestElement, classList } from '@syncfusion/ej2-base';
+import { remove, closest as closestElement, classList, BlazorDragEventArgs  } from '@syncfusion/ej2-base';
 import { IGrid, NotifyArgs, EJ2Intance, IPosition, RowDragEventArgs } from '../base/interface';
 import { parentsUntil, removeElement, getPosition, addRemoveActiveClasses } from '../base/util';
 import * as events from '../base/constant';
@@ -92,7 +92,7 @@ export class RowDD {
         return visualElement;
     }
 
-    private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
+    private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         let gObj: IGrid = this.parent;
         if (document.getElementsByClassName('e-griddragarea').length) {
             return;
@@ -111,6 +111,9 @@ export class RowDD {
             target: e.target, draggableType: 'rows', fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
             data: this.rowData
         });
+        if (isBlazor()) {
+            e.bindEvents(e.dragElement);
+        }
         this.dragStartData = this.rowData;
         let dropElem: EJ2Intance = document.getElementById(gObj.rowDropSettings.targetID) as EJ2Intance;
         if (gObj.rowDropSettings.targetID && dropElem && dropElem.ej2_instances &&

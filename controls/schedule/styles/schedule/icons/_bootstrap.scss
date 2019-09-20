@@ -210,4 +210,10 @@
       content: '\e423';
     }
   }
+
+  .e-more-popup-wrapper.e-device {
+    .e-close-icon::before {
+      content: '\e96c';
+    }
+  }
 }

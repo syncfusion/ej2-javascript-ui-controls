@@ -66,9 +66,9 @@ describe('Diagram Control', () => {
                 let element1: DiagramElement = diagram.connectors[0].wrapper.children[3];
                 let element2: DiagramElement = diagram.connectors[1].wrapper.children[3];
                 let element3: DiagramElement = diagram.connectors[2].wrapper.children[3];
-                expect(Math.ceil(element1.offsetX) === 188 && Math.ceil(element1.offsetY) === 100 &&
-                    Math.ceil(element2.offsetX) === 388 && Math.ceil(element2.offsetY)===93 &&
-                    Math.ceil(element3.offsetX) === 588 && Math.ceil(element3.offsetY )=== 108).toBe(true);
+                expect((Math.ceil(element1.offsetX) === 188 || Math.ceil(element1.offsetX) >= 182 || Math.ceil(element1.offsetX) <= 190) && Math.ceil(element1.offsetY) === 100 &&
+                    (Math.ceil(element2.offsetX) === 388 || Math.ceil(element2.offsetX) >= 382 || Math.ceil(element2.offsetX) <= 390) && Math.ceil(element2.offsetY) === 93 &&
+                    (Math.ceil(element3.offsetX) === 588 || Math.ceil(element3.offsetX) >= 582 || Math.ceil(element3.offsetX) <= 590) && Math.ceil(element3.offsetY) === 108).toBe(true);
             }
             done();
         });

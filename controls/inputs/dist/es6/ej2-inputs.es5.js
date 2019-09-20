@@ -1,6 +1,6 @@
 import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
+import { Deferred, SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
 var CLASSNAMES = {
     RTL: 'e-rtl',
@@ -2914,7 +2914,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var ROOT$1 = 'e-widget e-control-wrapper e-mask';
+var ROOT$1 = 'e-control-wrapper e-mask';
 var INPUT = 'e-input';
 var COMPONENT$1 = 'e-maskedtextbox';
 var CONTROL$1 = 'e-control';
@@ -3179,7 +3179,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                     Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
                     break;
                 case 'enabled':
-                    Input.setEnabled(newProp.enabled, this.element);
+                    Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
                     break;
                 case 'readonly':
                     Input.setReadonly(newProp.readonly, this.element);
@@ -3401,6 +3401,25 @@ var TicksData = /** @__PURE__ @class */ (function (_super) {
     return TicksData;
 }(ChildProperty));
 /**
+ * It illustrates the color track data in slider.
+ */
+var ColorRangeData = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(ColorRangeData, _super);
+    function ColorRangeData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        Property(null)
+    ], ColorRangeData.prototype, "color", void 0);
+    __decorate$2([
+        Property(null)
+    ], ColorRangeData.prototype, "start", void 0);
+    __decorate$2([
+        Property(null)
+    ], ColorRangeData.prototype, "end", void 0);
+    return ColorRangeData;
+}(ChildProperty));
+/**
  * It illustrates the limit data in slider.
  */
 var LimitData = /** @__PURE__ @class */ (function (_super) {
@@ -3487,6 +3506,8 @@ var classNames = {
     materialTooltipActive: 'e-tooltip-active',
     materialSlider: 'e-material-slider',
     sliderTrack: 'e-slider-track',
+    sliderHorizantalColor: 'e-slider-horizantal-color',
+    sliderVerticalColor: 'e-slider-vertical-color',
     sliderHandleFocused: 'e-handle-focused',
     verticalSlider: 'e-vertical',
     horizontalSlider: 'e-horizontal',
@@ -3963,6 +3984,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        this.setBarColor();
     };
     Slider.prototype.tooltipValue = function () {
         var _this = this;
@@ -4490,7 +4512,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             if (spanElement) {
                 spanElement.innerHTML = observedArgs.text.toString();
             }
-            if (isBlazor()) {
+            if (!isNullOrUndefined(_this.renderingTicks) && isBlazor()) {
                 var orien = _this.orientation === 'Horizontal' ? 'h' : 'v';
                 _this.ticksAlignment(orien, tickWidth, false);
             }
@@ -4812,6 +4834,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
             this.min = 0;
             this.max = this.customValues.length - 1;
+            this.setBarColor();
         }
         this.setAriaAttributes(this.firstHandle);
         this.handleVal1 = isNullOrUndefined(this.value) ? this.checkHandleValue(parseFloat(this.min.toString())) :
@@ -5094,6 +5117,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             });
         }
         this.refreshTooltip(this.tooltipTarget);
+        this.setBarColor();
     };
     Slider.prototype.changeHandleValue = function (value) {
         var position = null;
@@ -5925,6 +5949,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                             this.sliderContainer.classList.remove(classNames.sliderButtonClass);
                             this.firstBtn = undefined;
                             this.secondBtn = undefined;
+                            this.reposition();
                         }
                     }
                     break;
@@ -5936,6 +5961,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'customValues':
                     this.setValue();
+                    this.reposition();
+                    break;
+                case 'colorRange':
                     this.reposition();
                     break;
             }
@@ -5987,6 +6015,56 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     Slider.prototype.setTooltip = function () {
         this.changeSliderType(this.type);
     };
+    Slider.prototype.setBarColor = function () {
+        var trackPosition;
+        var trackClassName;
+        var child = this.sliderTrack.lastElementChild;
+        while (child) {
+            this.sliderTrack.removeChild(child);
+            child = this.sliderTrack.lastElementChild;
+        }
+        for (var i = 0; i < this.colorRange.length; i++) {
+            if (!isNullOrUndefined(this.colorRange[i].start) && !isNullOrUndefined(this.colorRange[i].end)) {
+                if (this.colorRange[i].end > this.colorRange[i].start) {
+                    if (this.colorRange[i].start < this.min) {
+                        this.colorRange[i].start = this.min;
+                    }
+                    if (this.colorRange[i].end > this.max) {
+                        this.colorRange[i].end = this.max;
+                    }
+                    var startingPosition = this.checkHandlePosition(this.colorRange[i].start);
+                    var endPosition = this.checkHandlePosition(this.colorRange[i].end);
+                    var trackContainer = this.createElement('div');
+                    trackContainer.style.backgroundColor = this.colorRange[i].color;
+                    trackContainer.style.border = '1px solid ' + this.colorRange[i].color;
+                    if (this.orientation === 'Horizontal') {
+                        trackClassName = classNames.sliderHorizantalColor;
+                        if (this.enableRtl) {
+                            if (isNullOrUndefined(this.customValues)) {
+                                trackPosition = this.checkHandlePosition(this.max) - this.checkHandlePosition(this.colorRange[i].end);
+                            }
+                            else {
+                                trackPosition = this.checkHandlePosition(this.customValues.length - this.colorRange[i].end - 1);
+                            }
+                        }
+                        else {
+                            trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        }
+                        trackContainer.style.width = endPosition - startingPosition + 'px';
+                        trackContainer.style.left = trackPosition + 'px';
+                    }
+                    else {
+                        trackClassName = classNames.sliderVerticalColor;
+                        trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        trackContainer.style.height = endPosition - startingPosition + 'px';
+                        trackContainer.style.bottom = trackPosition + 'px';
+                    }
+                    trackContainer.classList.add(trackClassName);
+                    this.sliderTrack.appendChild(trackContainer);
+                }
+            }
+        }
+    };
     /**
      * Gets the component name
      * @private
@@ -6015,6 +6093,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property('Default')
     ], Slider.prototype, "type", void 0);
+    __decorate$2([
+        Collection([{}], ColorRangeData)
+    ], Slider.prototype, "colorRange", void 0);
     __decorate$2([
         Complex({}, TicksData)
     ], Slider.prototype, "ticks", void 0);
@@ -6926,7 +7007,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var CONTROL_WRAPPER = 'e-upload';
+var CONTROL_WRAPPER = 'e-upload e-control-wrapper';
 var INPUT_WRAPPER = 'e-file-select';
 var DROP_AREA = 'e-file-drop';
 var DROP_WRAPPER = 'e-file-select-wrap';
@@ -7763,6 +7844,14 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var formData = new FormData();
         ajax.beforeSend = function (e) {
             eventArgs.currentRequest = ajax.httpRequest;
+            if (isBlazor()) {
+                if (_this.currentRequestHeader) {
+                    _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
+                }
+                if (_this.customFormDatas) {
+                    _this.updateFormData(formData, _this.customFormDatas);
+                }
+            }
             if (!removeDirectly) {
                 _this.trigger('removing', eventArgs, function (eventArgs) {
                     if (eventArgs.cancel) {
@@ -9335,9 +9424,20 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Uploader.prototype.upload = function (files, custom) {
+        var _this = this;
         files = files ? files : this.filesData;
         var uploadFiles = this.validateFileType(files);
-        this.uploadFiles(uploadFiles, custom);
+        var eventArgs = {
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeUpload', eventArgs, function (eventArgs) {
+            if (isBlazor()) {
+                _this.currentRequestHeader = eventArgs.currentRequest;
+                _this.customFormDatas = eventArgs.customFormData;
+            }
+            _this.uploadFiles(uploadFiles, custom);
+        });
     };
     Uploader.prototype.validateFileType = function (files) {
         var uploadFiles = [];
@@ -9464,62 +9564,75 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             cancel: false,
             filesData: [],
             customFormData: [],
-            postRawFile: postRawFile
+            postRawFile: postRawFile,
+            currentRequest: null
         };
-        var index;
-        if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
-            eventArgs.filesData = this.getFilesData();
-            this.trigger('removing', eventArgs, function (eventArgs) {
-                if (!eventArgs.cancel) {
-                    _this.clearAll();
+        var beforeEventArgs = {
+            cancel: false,
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeRemove', beforeEventArgs, function (beforeEventArgs) {
+            if (!beforeEventArgs.cancel) {
+                if (isBlazor()) {
+                    _this.currentRequestHeader = beforeEventArgs.currentRequest;
+                    _this.customFormDatas = beforeEventArgs.customFormData;
                 }
-            });
-        }
-        else {
-            var removeFiles = [];
-            fileData = !isNullOrUndefined(fileData) ? fileData : this.filesData;
-            if (fileData instanceof Array) {
-                removeFiles = fileData;
-            }
-            else {
-                removeFiles.push(fileData);
-            }
-            eventArgs.filesData = removeFiles;
-            var removeUrl = this.asyncSettings.removeUrl;
-            var validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
-            var _loop_6 = function (files) {
-                index = this_4.filesData.indexOf(files);
-                if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
-                    this_4.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                var index = void 0;
+                if (_this.isForm && (isNullOrUndefined(_this.asyncSettings.removeUrl) || _this.asyncSettings.removeUrl === '')) {
+                    eventArgs.filesData = _this.getFilesData();
+                    _this.trigger('removing', eventArgs, function (eventArgs) {
+                        if (!eventArgs.cancel) {
+                            _this.clearAll();
+                        }
+                    });
                 }
                 else {
-                    if (!removeDirectly) {
-                        this_4.trigger('removing', eventArgs, function (eventArgs) {
-                            if (!eventArgs.cancel) {
-                                _this.removeFilesData(files, customTemplate);
-                            }
-                        });
+                    var removeFiles = [];
+                    fileData = !isNullOrUndefined(fileData) ? fileData : _this.filesData;
+                    if (fileData instanceof Array) {
+                        removeFiles = fileData;
                     }
                     else {
-                        this_4.removeFilesData(files, customTemplate);
+                        removeFiles.push(fileData);
+                    }
+                    eventArgs.filesData = removeFiles;
+                    var removeUrl = _this.asyncSettings.removeUrl;
+                    var validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
+                    var _loop_6 = function (files) {
+                        index = _this.filesData.indexOf(files);
+                        if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
+                            _this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                        }
+                        else {
+                            if (!removeDirectly) {
+                                _this.trigger('removing', eventArgs, function (eventArgs) {
+                                    if (!eventArgs.cancel) {
+                                        _this.removeFilesData(files, customTemplate);
+                                    }
+                                });
+                            }
+                            else {
+                                _this.removeFilesData(files, customTemplate);
+                            }
+                        }
+                        if (_this.sequentialUpload) {
+                            /* istanbul ignore next */
+                            if (index <= _this.actionCompleteCount) {
+                                _this.checkActionComplete(false);
+                            }
+                        }
+                        else {
+                            _this.checkActionComplete(false);
+                        }
+                    };
+                    for (var _i = 0, removeFiles_1 = removeFiles; _i < removeFiles_1.length; _i++) {
+                        var files = removeFiles_1[_i];
+                        _loop_6(files);
                     }
                 }
-                if (this_4.sequentialUpload) {
-                    /* istanbul ignore next */
-                    if (index <= this_4.actionCompleteCount) {
-                        this_4.checkActionComplete(false);
-                    }
-                }
-                else {
-                    this_4.checkActionComplete(false);
-                }
-            };
-            var this_4 = this;
-            for (var _i = 0, removeFiles_1 = removeFiles; _i < removeFiles_1.length; _i++) {
-                var files = removeFiles_1[_i];
-                _loop_6(files);
             }
-        }
+        });
     };
     /**
      * Clear all the file entries from list that can be uploaded files or added in upload queue.
@@ -9738,6 +9851,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     ], Uploader.prototype, "rendering", void 0);
     __decorate$4([
         Event()
+    ], Uploader.prototype, "beforeUpload", void 0);
+    __decorate$4([
+        Event()
     ], Uploader.prototype, "fileListRendering", void 0);
     __decorate$4([
         Event()
@@ -9754,6 +9870,9 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Event()
     ], Uploader.prototype, "removing", void 0);
+    __decorate$4([
+        Event()
+    ], Uploader.prototype, "beforeRemove", void 0);
     __decorate$4([
         Event()
     ], Uploader.prototype, "clearing", void 0);
@@ -9961,8 +10080,6 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             disabled: this.disabled,
             enableRtl: this.enableRtl,
             open: this.onOpen.bind(this),
-            beforeOpen: this.beforeOpenFn.bind(this),
-            beforeClose: this.beforePopupClose.bind(this),
             click: function (args) {
                 _this.trigger('change', {
                     currentValue: { hex: _this.value.slice(0, 7), rgba: _this.convertToRgbString(_this.hexToRgb(_this.value)) },
@@ -9989,6 +10106,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             popupInst.offsetY = 4;
             popupEle.style.zIndex = getZindexPartial(this.splitBtn.element).toString();
         }
+        this.bindCallBackEvent();
     };
     ColorPicker.prototype.onOpen = function (args) {
         this.trigger('open', { element: this.container });
@@ -9996,44 +10114,53 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
     ColorPicker.prototype.getPopupInst = function () {
         return getInstance(this.getPopupEle(), Popup);
     };
-    ColorPicker.prototype.beforeOpenFn = function (args) {
+    ColorPicker.prototype.bindCallBackEvent = function () {
         var _this = this;
-        var beforeOpenArgs = { element: this.container, event: args.event, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs, function (observeOpenArgs) {
-            args.cancel = observeOpenArgs.cancel;
-            if (!observeOpenArgs.cancel) {
-                var popupEle = _this.getPopupEle();
-                popupEle.style.top = formatUnit(0 + pageYOffset);
-                popupEle.style.left = formatUnit(0 + pageXOffset);
-                popupEle.style.display = 'block';
-                _this.createWidget();
-                popupEle.style.display = '';
-                if (Browser.isDevice) {
-                    _this.modal = _this.createElement('div');
-                    _this.modal.className = 'e-' + _this.getModuleName() + ' e-modal';
-                    _this.modal.style.display = 'none';
-                    document.body.insertBefore(_this.modal, popupEle);
-                    document.body.className += ' e-colorpicker-overflow';
-                    _this.modal.style.display = 'block';
-                    _this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+        this.splitBtn.beforeOpen = function (args) {
+            var callBackPromise = new Deferred();
+            _this.trigger('beforeOpen', args, function (observeOpenArgs) {
+                if (!observeOpenArgs.cancel) {
+                    var popupEle = _this.getPopupEle();
+                    popupEle.style.top = formatUnit(0 + pageYOffset);
+                    popupEle.style.left = formatUnit(0 + pageXOffset);
+                    popupEle.style.display = 'block';
+                    _this.createWidget();
+                    popupEle.style.display = '';
+                    if (Browser.isDevice) {
+                        _this.modal = _this.createElement('div');
+                        _this.modal.className = 'e-' + _this.getModuleName() + ' e-modal';
+                        _this.modal.style.display = 'none';
+                        document.body.insertBefore(_this.modal, popupEle);
+                        document.body.className += ' e-colorpicker-overflow';
+                        _this.modal.style.display = 'block';
+                        _this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+                    }
                 }
-            }
-        });
-    };
-    ColorPicker.prototype.beforePopupClose = function (args) {
-        var _this = this;
-        if (!isNullOrUndefined(args.event)) {
-            var beforeCloseArgs = { element: this.container, event: args.event, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
-                if (Browser.isDevice && args.event.target === _this.modal) {
-                    observedCloseArgs.cancel = true;
-                }
-                args.cancel = observedCloseArgs.cancel;
-                if (!observedCloseArgs.cancel) {
-                    _this.onPopupClose();
-                }
+                args.cancel = observeOpenArgs.cancel;
+                callBackPromise.resolve(observeOpenArgs);
             });
-        }
+            return callBackPromise;
+        };
+        this.splitBtn.beforeClose = function (args) {
+            var callBackPromise = new Deferred();
+            if (!isNullOrUndefined(args.event)) {
+                var beforeCloseArgs = { element: _this.container, event: args.event, cancel: false };
+                _this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
+                    if (Browser.isDevice && args.event.target === _this.modal) {
+                        observedCloseArgs.cancel = true;
+                    }
+                    if (!observedCloseArgs.cancel) {
+                        _this.onPopupClose();
+                    }
+                    args.cancel = observedCloseArgs.cancel;
+                    callBackPromise.resolve(observedCloseArgs);
+                });
+            }
+            else {
+                callBackPromise.resolve(args);
+            }
+            return callBackPromise;
+        };
     };
     ColorPicker.prototype.onPopupClose = function () {
         this.unWireEvents();
@@ -11718,6 +11845,14 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 case 'placeholder':
                     Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
+                case 'autocomplete':
+                    if (this.autocomplete !== 'on' && this.autocomplete !== '') {
+                        this.respectiveElement.autocomplete = this.autocomplete;
+                    }
+                    else {
+                        this.removeAttributes(['autocomplete']);
+                    }
+                    break;
                 case 'cssClass':
                     Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
                     break;
@@ -11806,7 +11941,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     };
     TextBox.prototype.checkAttributes = function (isDynamic) {
         var attrs = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
-            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+            ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
         for (var _i = 0, attrs_1 = attrs; _i < attrs_1.length; _i++) {
             var key = attrs_1[_i];
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
@@ -11831,6 +11966,13 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                         // tslint:disable-next-line
                         if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
                             this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'autocomplete':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['autocomplete'] === undefined)) || isDynamic) {
+                            var autoCompleteTxt = this.element.autocomplete === 'off' ? 'off' : 'on';
+                            this.setProperties({ autocomplete: autoCompleteTxt }, !isDynamic);
                         }
                         break;
                     case 'value':
@@ -11881,6 +12023,13 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.value)) {
             this.initialValue = this.value;
             this.setInitialValue();
+        }
+        if (this.autocomplete !== 'on' && this.autocomplete !== '') {
+            this.respectiveElement.autocomplete = this.autocomplete;
+            // tslint:disable-next-line
+        }
+        else if (!isNullOrUndefined(this.textboxOptions) && (this.textboxOptions['autocomplete'] !== undefined)) {
+            this.removeAttributes(['autocomplete']);
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
@@ -12175,6 +12324,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], TextBox.prototype, "placeholder", void 0);
     __decorate$6([
+        Property('on')
+    ], TextBox.prototype, "autocomplete", void 0);
+    __decorate$6([
         Property({})
     ], TextBox.prototype, "htmlAttributes", void 0);
     __decorate$6([
@@ -12221,5 +12373,5 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
  * NumericTextBox all modules
  */
 
-export { NumericTextBox, regularExpressions, createMask, applyMask, wireEvents, unwireEvents, bindClearEvent, unstrippedValue, strippedValue, maskInputFocusHandler, maskInputBlurHandler, maskInputDropHandler, mobileRemoveFunction, setMaskValue, setElementValue, maskInput, getVal, getMaskedVal, MaskUndo, MaskedTextBox, Input, TicksData, LimitData, TooltipData, Slider, regex, ErrorOption, FormValidator, FilesProp, ButtonsProps, AsyncSettings, Uploader, ColorPicker, TextBox };
+export { NumericTextBox, regularExpressions, createMask, applyMask, wireEvents, unwireEvents, bindClearEvent, unstrippedValue, strippedValue, maskInputFocusHandler, maskInputBlurHandler, maskInputDropHandler, mobileRemoveFunction, setMaskValue, setElementValue, maskInput, getVal, getMaskedVal, MaskUndo, MaskedTextBox, Input, TicksData, ColorRangeData, LimitData, TooltipData, Slider, regex, ErrorOption, FormValidator, FilesProp, ButtonsProps, AsyncSettings, Uploader, ColorPicker, TextBox };
 //# sourceMappingURL=ej2-inputs.es5.js.map

@@ -159,6 +159,10 @@
     }
     }
 
+    &.e-rte-resize {
+      background: $rte-content-bg;
+    }
+
     .e-input.e-rte-linkurl.e-error,
     .e-input.e-img-link.e-error {
       color: $rte-link-valid-color;
@@ -219,6 +223,13 @@
         border: 0;
         border-bottom: 1px solid $rte-border-color;
         border-top: 1px solid $rte-border-color;
+      }
+
+      &.e-rte-resize {
+        .e-rte-content,
+        .e-source-content {
+          border-bottom: 0;
+        }
       }
     }
   }
@@ -453,4 +464,9 @@
   .e-table-rhelper {
     background-color: $rte-table-span-active-border-color;
   }
+
+  .e-rte-dialog-upload.e-upload.e-lib.e-keyboard {
+    background: $rte-content-bg;
+  }
+
 }

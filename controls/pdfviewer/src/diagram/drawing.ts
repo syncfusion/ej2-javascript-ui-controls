@@ -157,6 +157,17 @@ export class Drawing {
                     'C0.5,5.872583 18.40861,0.5 40.5,0.5 C62.59139,0.5 80.5,5.872583 80.5,12.5 z';
                 content = pathContent;
                 canvas.children.push(content);
+                if (obj.enableShapeLabel) {
+                    let textLabel: TextElement = this.textElement(obj);
+                    textLabel.content = obj.labelContent;
+                    textLabel.style.color = obj.fontColor;
+                    textLabel.style.strokeColor = obj.labelBorderColor;
+                    textLabel.style.fill = obj.labelFillColor;
+                    textLabel.style.fontSize = obj.fontSize;
+                    textLabel.style.fontFamily = obj.fontFamily;
+                    textLabel.style.opacity = obj.labelOpacity;
+                    canvas.children.push(textLabel);
+                }
                 break;
             case 'Path':
                 pathContent = new PathElement();
@@ -259,6 +270,17 @@ export class Drawing {
                 basicElement = new DrawingElement();
                 content = basicElement;
                 canvas.children.push(content);
+                if (obj.enableShapeLabel) {
+                    let textLabel: TextElement = this.textElement(obj);
+                    textLabel.content = obj.labelContent;
+                    textLabel.style.color = obj.fontColor;
+                    textLabel.style.strokeColor = obj.labelBorderColor;
+                    textLabel.style.fill = obj.labelFillColor;
+                    textLabel.style.fontSize = obj.fontSize;
+                    textLabel.style.fontFamily = obj.fontFamily;
+                    textLabel.style.opacity = obj.labelOpacity;
+                    canvas.children.push(textLabel);
+                }
                 break;
             case 'Perimeter':
                 pathContent = new PathElement();
@@ -302,6 +324,14 @@ export class Drawing {
                 setElementStype(obj, basicElement);
                 canvas.children.push(basicElement);
                 textele = this.textElement(obj);
+                if (obj.enableShapeLabel) {
+                    textele.style.color = obj.fontColor;
+                    textele.style.strokeColor = obj.labelBorderColor;
+                    textele.style.fill = obj.labelFillColor;
+                    textele.style.fontSize = obj.fontSize;
+                    textele.style.fontFamily = obj.fontFamily;
+                    textele.style.opacity = obj.labelOpacity;
+                }
                 let length: number = findPointsLength([
                     { x: obj.bounds.x, y: obj.bounds.y },
                     { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]);
@@ -318,6 +348,40 @@ export class Drawing {
                 pathContent2.style.strokeWidth = 0;
                 content = pathContent2;
                 canvas.children.push(content);
+                break;
+            case 'FreeText':
+                let rectElement = new DrawingElement();
+                content = rectElement;
+                canvas.children.push(content);
+                let freeTextEle: TextElement = this.textElement(obj);
+                freeTextEle = new TextElement();
+                freeTextEle.style.fontFamily = obj.fontFamily;
+                freeTextEle.style.fontSize = obj.fontSize;
+                freeTextEle.style.textAlign = 'Left';
+                if (obj.textAlign === 'center') {
+                    freeTextEle.style.textAlign = 'Center';
+                } else if (obj.textAlign === 'right') {
+                    freeTextEle.style.textAlign = 'Right';
+                } else if (obj.textAlign === 'justify') {
+                    freeTextEle.style.textAlign = 'Justify';
+                }
+                freeTextEle.style.color = obj.fontColor;
+                freeTextEle.style.bold = obj.font.isBold;
+                freeTextEle.style.italic = obj.font.isItalic;
+                if (obj.font.isUnderline === true) {
+                    freeTextEle.style.textDecoration = "Underline";
+                } else if (obj.font.isStrikeout === true) {
+                    freeTextEle.style.textDecoration = "LineThrough";
+                }
+                freeTextEle.rotateValue = undefined;
+                freeTextEle.content = obj.dynamicText;
+                freeTextEle.margin.left = 2;
+                freeTextEle.margin.top = 5;
+                freeTextEle.style.textWrapping = 'Wrap';
+                freeTextEle.relativeMode = 'Point';
+                freeTextEle.setOffsetWithRespectToBounds(0, 0, null);
+                freeTextEle.relativeMode = 'Point';
+                canvas.children.push(freeTextEle);
                 break;
         }
         content.id = obj.id + '_content'; content.relativeMode = 'Object';
@@ -423,6 +487,21 @@ export class Drawing {
 
         if ((obj.shapeAnnotationType === 'Line' || obj.shapeAnnotationType === 'LineWidthArrowHead') && obj.measureType === 'Perimeter') {
             labels = initPerimeterLabel(obj, points);
+        }
+        if (obj.enableShapeLabel === true && !(obj.shapeAnnotationType === 'Distance') && !(obj.measureType === 'Perimeter')) {
+            let textele: TextElement;
+            let angle: number = Point.findAngle(points[0], points[1]);
+            textele = this.textElement(obj);
+            textele.id = randomId();
+            textele.content = obj.labelContent;
+            textele.style.strokeColor = obj.labelBorderColor;
+            textele.style.fill = obj.labelFillColor;
+            textele.style.fontSize = obj.fontSize;
+            textele.style.color = obj.fontColor;
+            textele.style.fontFamily = obj.fontFamily;
+            textele.style.opacity = obj.labelOpacity;
+            textele.rotateValue = { y: -10, angle: angle };
+            labels.push(textele);
         }
 
         points = clipDecorators(obj, points);
@@ -640,7 +719,8 @@ export class Drawing {
                                     if (this.pdfViewer.tool !== 'Stamp') {
                                         this.renderResizeHandle(
                                             node.wrapper.children[0], selectorElement, selectorModel.thumbsConstraints, zoom,
-                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp');
+                                            // tslint:disable-next-line:max-line-length
+                                            undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, node.shapeAnnotationType === 'Path', node.shapeAnnotationType === 'FreeText');
                                     }
                                 }
                             }
@@ -853,7 +933,7 @@ export class Drawing {
     public renderResizeHandle(
         element: DrawingElement, canvas: HTMLCanvasElement | SVGElement, constraints: ThumbsConstraints, currentZoom: number,
         canMask?: boolean, enableNode?: number,
-        nodeConstraints?: boolean, isStamp?: boolean, isSticky?: boolean)
+        nodeConstraints?: boolean, isStamp?: boolean, isSticky?: boolean, isPath?: boolean, isFreeText?: boolean)
         :
         void {
         let left: number = element.offsetX - element.actualSize.width * element.pivot.x;
@@ -865,12 +945,15 @@ export class Drawing {
             this.renderPivotLine(element, canvas, transform);
             this.renderRotateThumb(element, canvas, transform);
         }
+        if (isFreeText) {
+            isStamp = true;
+        }
         this.renderBorder(
             element, canvas, transform, enableNode, nodeConstraints, true, isSticky);
         let nodeWidth: number = element.actualSize.width * currentZoom;
         let nodeHeight: number = element.actualSize.height * currentZoom;
 
-        if (!nodeConstraints && !isSticky) {
+        if (!nodeConstraints && !isSticky && !isPath) {
             if ((nodeWidth >= 40 && nodeHeight >= 40) || isStamp) {
                 //Hide corners when the size is less than 40
                 this.renderCircularHandle(
@@ -1190,10 +1273,30 @@ export class Drawing {
         }
         if (node.fillColor !== undefined) {
             actualObject.fillColor = node.fillColor;
-            actualObject.wrapper.children[0].style.fill = node.fillColor; update = true;
+            actualObject.wrapper.children[0].style.fill = node.fillColor;
+            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        actualObject.labelFillColor = node.fillColor;
+                        children[i].style.fill = node.labelFillColor;
+                    }
+                }
+            }
+            update = true;
+        }
+        if (actualObject.enableShapeLabel && node.labelFillColor!== undefined) {
+            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        children[i].style.fill = node.labelFillColor;
+                    }
+                }
+            }
         }
         if (node.opacity !== undefined) {
-            if (actualObject.shapeAnnotationType == "Stamp") {
+            if (actualObject.shapeAnnotationType == "Stamp" || actualObject.shapeAnnotationType === "FreeText") {
                 actualObject.wrapper.children[1].style.opacity = node.opacity;
                 if (actualObject.wrapper.children[2]) {
                     actualObject.wrapper.children[2].style.opacity = node.opacity;
@@ -1201,8 +1304,27 @@ export class Drawing {
             } else {
                 actualObject.opacity = node.opacity;
             }
-            actualObject.wrapper.children[0].style.opacity = node.opacity; update = true;
+            actualObject.wrapper.children[0].style.opacity = node.opacity; 
+            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        children[i].style.opacity = node.labelOpacity;
+                    }
+                }
+            }
+            update = true;
             updateConnector = true;
+        }
+        if (actualObject.enableShapeLabel && node.labelOpacity !== undefined) {
+            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        children[i].style.opacity = node.labelOpacity;
+                    }
+                }
+            }
         }
         if (node.rotateAngle !== undefined) {
             actualObject.rotateAngle = node.rotateAngle;
@@ -1212,6 +1334,130 @@ export class Drawing {
         if (node.strokeColor !== undefined) {
             actualObject.strokeColor = node.strokeColor;
             actualObject.wrapper.children[0].style.strokeColor = node.strokeColor; update = true;
+            updateConnector = true;
+        }
+        if (node.fontColor !== undefined) {
+            actualObject.fontColor = node.fontColor;
+            if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children
+                && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                children[1].style.color = node.fontColor;
+                if (actualObject.textAlign === 'Justify') {
+                    children[1].horizontalAlignment = 'Center';
+                } else {
+                    children[1].horizontalAlignment = 'Auto';
+                }
+            }
+            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        children[i].style.color = node.fontColor;
+                    }
+                }
+            }
+            update = true;
+            updateConnector = true;
+        }
+        if (node.fontFamily !== undefined) {
+            actualObject.fontFamily = node.fontFamily;
+            if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children
+                && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                children[1].style.fontFamily = node.fontFamily;
+            }
+            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        children[i].style.fontFamily = node.fontFamily;
+                    }
+                }
+            }
+            update = true;
+            updateConnector = true;
+        }
+        if (node.fontSize !== undefined) {
+            actualObject.fontSize = node.fontSize;
+            if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children
+                && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                children[1].style.fontSize = node.fontSize;
+            }
+            if (actualObject.enableShapeLabel && actualObject.wrapper && actualObject.wrapper.children) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        children[i].style.fontSize = node.fontSize;
+                    }
+                }
+            }
+            update = true;
+            updateConnector = true;
+        }
+        if (node.font !== undefined) {
+            if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children
+                && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                if (node.font.isBold !== undefined) {
+                    children[1].style.bold = node.font.isBold;
+                    actualObject.font.isBold = node.font.isBold;
+                }
+                if (node.font.isItalic !== undefined) {
+                    children[1].style.italic = node.font.isItalic;
+                    actualObject.font.isItalic = node.font.isItalic;
+                }
+                if (node.font.isUnderline !== undefined) {
+                    actualObject.font.isStrikeout = false;
+                    if (node.font.isUnderline === true) {
+                        children[1].style.textDecoration = 'Underline';
+                    } else {
+                        children[1].style.textDecoration = 'None';
+                    }
+                    actualObject.font.isUnderline = node.font.isUnderline;
+                }
+                if (node.font.isStrikeout !== undefined) {
+                    actualObject.font.isUnderline = false;
+                    if (node.font.isStrikeout === true) {
+                        children[1].style.textDecoration = 'LineThrough';
+                    } else {
+                        children[1].style.textDecoration = 'None';
+
+                    }
+                    actualObject.font.isStrikeout = node.font.isStrikeout;
+                }
+            }
+            update = true;
+            updateConnector = true;
+        }
+        if (node.textAlign !== undefined) {
+            actualObject.textAlign = node.textAlign;
+            if (actualObject.shapeAnnotationType === 'FreeText' && actualObject.wrapper && actualObject.wrapper.children
+                && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                children[1].style.textAlign = node.textAlign;
+                if (children[1].childNodes.length === 1) {
+                    if (actualObject.textAlign === 'Justify') {
+                        children[1].horizontalAlignment = 'Left';
+                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                    } else if (actualObject.textAlign === 'Right') {
+                        children[1].horizontalAlignment = 'Right';
+                        children[1].setOffsetWithRespectToBounds(0.97, 0, null);
+                    } else if (actualObject.textAlign === 'Left') {
+                        children[1].horizontalAlignment = 'Left';
+                        children[1].setOffsetWithRespectToBounds(0, 0, null);
+                    } else if (actualObject.textAlign === 'Center') {
+                        children[1].horizontalAlignment = 'Center';
+                        children[1].setOffsetWithRespectToBounds(0.46, 0, null);
+                    }
+                } else if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
+                    children[1].horizontalAlignment = 'Center';
+                }
+                else {
+                    children[1].horizontalAlignment = 'Auto';
+                }
+            }
+            update = true;
             updateConnector = true;
         }
         if (node.thickness !== undefined) {
@@ -1264,14 +1510,85 @@ export class Drawing {
         }
         if (isLineShapes(actualObject)) {
             for (let i: number = 0; i < actualObject.wrapper.children.length; i++) {
-                setElementStype(actualObject, actualObject.wrapper.children[i]);
+                let childElement: any = actualObject.wrapper.children[i];
+                if (!childElement.textNodes) {
+                    setElementStype(actualObject, actualObject.wrapper.children[i]);
+                }
                 if ((actualObject.wrapper.children[i] instanceof PathElement && actualObject.measureType === 'Perimeter') || actualObject.wrapper.children[i] instanceof TextElement) {
                     actualObject.wrapper.children[i].style.fill = 'transparent';
                 }
             }
         }
+        if (actualObject && (actualObject.shapeAnnotationType === "FreeText" || actualObject.enableShapeLabel === true)) {
+            if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes) {
+                        if (actualObject.shapeAnnotationType === "FreeText") {
+                            children[i].content = actualObject.dynamicText;
+                            children[i].width = actualObject.bounds.width - 8;
+                        } else if (actualObject.enableShapeLabel === true && actualObject.measureType) {
+                            if (node.labelContent) {
+                                children[i].content = node.labelContent;
+                                actualObject.labelContent = node.labelContent;
+                            } else {
+                                children[i].content = actualObject.labelContent;
+                            }
+                            actualObject.notes = children[i].content;
+                        } else if (actualObject.enableShapeLabel === true) {
+                            if (node.labelContent) {
+                                children[i].content = node.labelContent;
+                                actualObject.labelContent = node.labelContent;
+                            } else {
+                                children[i].content = actualObject.labelContent;
+
+                            }
+                            actualObject.notes = children[i].content;
+                        }
+                        children[i].isDirt = true;
+                    }
+                    /** set text node width less than the parent */
+
+                }
+            }
+        }
+
         actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
         actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
+        if (actualObject && actualObject.shapeAnnotationType === "FreeText" && actualObject.subject === "Text Box") {
+            if (actualObject.wrapper && actualObject.wrapper.children && actualObject.wrapper.children.length) {
+                let children: any[] = actualObject.wrapper.children;
+                if (children[1].childNodes.length > 1 && actualObject.textAlign === 'Justify') {
+                    children[1].horizontalAlignment = 'Center';
+                }
+                for (let i: number = 0; i < children.length; i++) {
+                    if (children[i].textNodes && children[i].textNodes.length > 0) {
+                        children[i].isDirt = true;
+                        let childNodeHeight: number = children[i].textNodes.length * children[i].textNodes[0].dy;
+                        let heightDiff: number = actualObject.bounds.height - childNodeHeight;
+                        if (heightDiff > 0 && heightDiff < children[i].textNodes[0].dy) {
+                            childNodeHeight = childNodeHeight + children[i].textNodes[0].dy;
+                        }
+                        if (childNodeHeight > actualObject.bounds.height) {
+                            let contString: string = '';
+                            for (let index: number = 0; index < children[i].textNodes.length; index++) {
+                                var childHeight = children[i].textNodes[0].dy * (index + 1);
+                                childHeight = childHeight;
+                                if (childHeight > actualObject.bounds.height) {
+                                    break;
+                                }
+                                contString = contString + children[i].textNodes[index].text;
+                            }
+                            children[i].content = contString;
+                        }
+                    }
+                    /** set text node width less than the parent */
+                    children[i].width = actualObject.bounds.width - 8;
+                }
+            }
+            actualObject.wrapper.measure(new Size(actualObject.wrapper.bounds.width, actualObject.wrapper.bounds.height));
+            actualObject.wrapper.arrange(actualObject.wrapper.desiredSize);
+        }
         this.pdfViewer.renderDrawing(undefined, actualObject.pageIndex);
     }
     /* tslint:disable */
@@ -1699,14 +2016,25 @@ export class Drawing {
                 }
                 for (let j: number = 0; j < copiedItems.length; j++) {
                     let copy: PdfAnnotationBaseModel = copiedItems[j];
+                    let pageDiv: HTMLElement = this.pdfViewer.viewerBase.getElement('_pageDiv_' + copy.pageIndex);
+                    let events: MouseEvent = event as MouseEvent;
                     if (isLineShapes(copy)) {
                         for (let i: number = 0; i < copy.vertexPoints.length; i++) {
-                            copy.vertexPoints[i].x += 10;
-                            copy.vertexPoints[i].y += 10;
+                            if (pageDiv) {
+                                let pageCurrentRect: ClientRect =
+                                    pageDiv.getBoundingClientRect();
+                                copy.vertexPoints[i].x += events.clientX - pageCurrentRect.left;
+                                copy.vertexPoints[i].y += events.clientY - pageCurrentRect.top;
+                            }
                         }
                     } else {
-                        copy.bounds.x += 10;
-                        copy.bounds.y += 10;
+                        if (pageDiv) {
+                            let pageCurrentRect: ClientRect =
+                                pageDiv.getBoundingClientRect();
+
+                            copy.bounds.x = events.clientX - pageCurrentRect.left;
+                            copy.bounds.y = events.clientY - pageCurrentRect.top;
+                        }
                     }
                     let newNode: PdfAnnotationBaseModel = cloneObject(copy);
                     if (this.pdfViewer.viewerBase.contextMenuModule.previousAction !== 'Cut') {
@@ -1718,9 +2046,11 @@ export class Drawing {
                         // tslint:disable-next-line:max-line-length
                         this.pdfViewer.annotation.addAction(newNode.pageIndex, null, newNode as PdfAnnotationBase, 'Addition', '', newNode as PdfAnnotationBase, newNode);
                     }
-                    this.add(newNode);
+                    let addedAnnot: PdfAnnotationBaseModel = this.add(newNode);
+                    if ((newNode.shapeAnnotationType === 'FreeText' || newNode.enableShapeLabel) && addedAnnot) {
+                        this.nodePropertyChange(addedAnnot, {});
+                    }
                     this.pdfViewer.select([newNode.id]);
-
                 }
             }
             this.pdfViewer.renderDrawing(undefined, index);

@@ -1,5 +1,5 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';
-import { EmitType, Event, EventHandler, KeyboardEvents, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
@@ -36,7 +36,8 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     private keyboardModule: KeyboardEvents;
     private formElement: HTMLElement;
     private initialCheckedValue: boolean;
-
+    private start: number = 0;
+    private end: number = 0;
     /**
      * Triggers when the CheckBox state has been changed by user interaction.
      * @event
@@ -163,6 +164,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private clickHandler(event: Event): void {
+        if ((this.end - this.start) > 750) {
+            this.end = 0; this.end = 0;
+            event.stopPropagation();
+            return;
+        }
         if (this.isMouseClick) {
             this.focusOutHandler();
             this.isMouseClick = false;
@@ -433,13 +439,26 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
         e.stopPropagation();
     }
 
+    private touchStartHandler(e: TouchEvent): void {
+        this.start = new Date().getTime();
+    }
+
+    private touchEndHandler(e: TouchEvent): void {
+        this.end = new Date().getTime();
+    }
+
     private formResetHandler(): void {
         this.checked = this.initialCheckedValue;
-        attributes(this.element, { 'checked': this.initialCheckedValue.toString() });
+        this.element.checked = this.initialCheckedValue;
     }
 
     protected unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
+        let iOS: boolean = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (iOS) {
+            EventHandler.remove(wrapper, 'touchstart', this.touchStartHandler);
+            EventHandler.remove(wrapper, 'touchend', this.touchEndHandler);
+        }
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
@@ -458,6 +477,11 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
 
     protected wireEvents(): void {
         let wrapper: Element = this.getWrapper();
+        let iOS: boolean = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (iOS) {
+            EventHandler.add(wrapper, 'touchstart', this.touchStartHandler, this);
+            EventHandler.add(wrapper, 'touchend', this.touchEndHandler, this);
+        }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);

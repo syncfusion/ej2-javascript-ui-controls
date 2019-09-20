@@ -323,8 +323,10 @@ function getElement(id) {
 function getTemplateFunction(template) {
     let templateFn = null;
     try {
-        if (document.querySelectorAll(template).length !== document.getElementsByTagName(template).length) {
-            templateFn = compile(document.querySelector(template).innerHTML.trim());
+        if (document.querySelectorAll(template).length) {
+            if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
+                templateFn = compile(document.querySelector(template).innerHTML.trim());
+            }
         }
     }
     catch (e) {
@@ -392,7 +394,7 @@ function getMousePosition(pageX, pageY, element) {
     return new GaugeLocation((pageX - positionX), (pageY - positionY));
 }
 /**
- * Function to convert the label using formar for cirular gauge.
+ * Function to convert the label using format for cirular gauge.
  * @returns string
  * @private
  */
@@ -414,6 +416,7 @@ function calculateShapes(location, shape, size, url, options) {
     let locY = location.y;
     let x = location.x + (-width / 2);
     let y = location.y + (-height / 2);
+    let isLegend = options.id.indexOf('Shape') > -1;
     switch (shape) {
         case 'Circle':
             merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
@@ -435,19 +438,37 @@ function calculateShapes(location, shape, size, url, options) {
             merge(options, { 'd': path });
             break;
         case 'Triangle':
-            path = 'M' + ' ' + locX + ' ' + locY + ' ' +
-                'L' + ' ' + (locX - height) + ' ' + (locY - (width / 2)) +
-                'L' + ' ' + (locX - height) + ' ' + (locY + (width / 2)) + ' Z';
+            path = 'M' + ' ' + (x + (isLegend ? width / 2 : 0)) + ' ' + y + ' ' + 'L' + ' ' + (x + width) + ' ' +
+                (y + (isLegend ? height : height / 2)) + 'L' + ' ' + x + ' ' + (y + height) + ' Z';
             merge(options, { 'd': path });
             break;
         case 'InvertedTriangle':
-            path = 'M' + ' ' + locX + ' ' + locY + ' ' +
-                'L' + ' ' + (locX + height) + ' ' + (locY - (width / 2)) +
-                'L' + ' ' + (locX + height) + ' ' + (locY + (width / 2)) + ' Z';
+            path = 'M' + ' ' + (x + width) + ' ' + y + ' ' + 'L' + ' ' + (x + (isLegend ? width / 2 : width)) + ' ' + (y + height) +
+                'L' + ' ' + x + ' ' + (y + (isLegend ? 0 : height / 2)) + ' Z';
             merge(options, { 'd': path });
             break;
         case 'Image':
             merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
+            break;
+        case 'RightArrow':
+            let space = 2;
+            path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
+                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
+                (locX + (-width / 2)) + ' ' + (locY + (height / 2)) + ' L' + ' ' + (locX + (-width / 2)) + ' ' +
+                (locY + (height / 2) - space) + ' ' + 'L' + ' ' + (locX + (width / 2) - (2 * space)) + ' ' + (locY) +
+                ' L' + (locX + (-width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
+            merge(options, { 'd': path });
+            break;
+        case 'LeftArrow':
+            options.fill = options.stroke;
+            options.stroke = 'transparent';
+            space = 2;
+            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
+                'L' + ' ' + (locX + (-width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
+                (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' +
+                (locX + (width / 2)) + ' ' + (locY + (height / 2) - space) + ' L' + ' ' + (locX + (-width / 2) + (2 * space))
+                + ' ' + (locY) + ' L' + (locX + (width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
+            merge(options, { 'd': path });
             break;
     }
     return options;
@@ -529,6 +550,48 @@ class Rect {
     }
 }
 /** @private */
+function textTrim(maxWidth, text, font) {
+    let label = text;
+    let size = measureText(text, font).width;
+    if (size > maxWidth) {
+        let textLength = text.length;
+        for (let i = textLength - 1; i >= 0; --i) {
+            label = text.substring(0, i) + '...';
+            size = measureText(label, font).width;
+            if (size <= maxWidth) {
+                return label;
+            }
+        }
+    }
+    return label;
+}
+/** @private */
+function showTooltip(text, x, y, areaWidth, id, element) {
+    //let id1: string = 'EJ2_legend_tooltip';
+    let tooltip = document.getElementById(id);
+    let width = measureText(text, {
+        fontFamily: 'Segoe UI', size: '12px',
+        fontStyle: 'Normal', fontWeight: 'Regular'
+    }).width + 5;
+    x = (x + width > areaWidth) ? x - width : x;
+    if (!tooltip) {
+        tooltip = createElement('div', {
+            innerHTML: text,
+            id: id,
+            styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
+                'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
+                'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
+                'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
+        });
+        element.appendChild(tooltip);
+    }
+    else {
+        tooltip.innerHTML = text;
+        tooltip.style.top = (y + 15).toString() + 'px';
+        tooltip.style.left = (x + 15).toString() + 'px';
+    }
+}
+/** @private */
 class TextOption extends CustomizeOption {
     constructor(id, x, y, anchor, text, transform = '', baseLine) {
         super(id);
@@ -592,6 +655,55 @@ __decorate$1([
     Property(1)
 ], Font.prototype, "opacity", void 0);
 /**
+ * To set tooltip properties for range tooltip.
+ */
+class RangeTooltip extends ChildProperty {
+}
+__decorate$1([
+    Property(null)
+], RangeTooltip.prototype, "fill", void 0);
+__decorate$1([
+    Complex({ size: '13px' }, Font)
+], RangeTooltip.prototype, "textStyle", void 0);
+__decorate$1([
+    Property(null)
+], RangeTooltip.prototype, "format", void 0);
+__decorate$1([
+    Property(null)
+], RangeTooltip.prototype, "template", void 0);
+__decorate$1([
+    Property(true)
+], RangeTooltip.prototype, "enableAnimation", void 0);
+__decorate$1([
+    Complex({}, Border)
+], RangeTooltip.prototype, "border", void 0);
+__decorate$1([
+    Property(false)
+], RangeTooltip.prototype, "showAtMousePosition", void 0);
+/**
+ * To set tooltip properties for annotation tooltip.
+ */
+class AnnotationTooltip extends ChildProperty {
+}
+__decorate$1([
+    Property(null)
+], AnnotationTooltip.prototype, "fill", void 0);
+__decorate$1([
+    Complex({ size: '13px' }, Font)
+], AnnotationTooltip.prototype, "textStyle", void 0);
+__decorate$1([
+    Property(null)
+], AnnotationTooltip.prototype, "format", void 0);
+__decorate$1([
+    Property(null)
+], AnnotationTooltip.prototype, "template", void 0);
+__decorate$1([
+    Property(true)
+], AnnotationTooltip.prototype, "enableAnimation", void 0);
+__decorate$1([
+    Complex({}, Border)
+], AnnotationTooltip.prototype, "border", void 0);
+/**
  * Configures the margin of circular gauge.
  */
 class Margin extends ChildProperty {
@@ -623,6 +735,12 @@ __decorate$1([
     Complex({ size: '13px' }, Font)
 ], TooltipSettings.prototype, "textStyle", void 0);
 __decorate$1([
+    Complex({}, RangeTooltip)
+], TooltipSettings.prototype, "rangeSettings", void 0);
+__decorate$1([
+    Complex({}, AnnotationTooltip)
+], TooltipSettings.prototype, "annotationSettings", void 0);
+__decorate$1([
     Property(null)
 ], TooltipSettings.prototype, "format", void 0);
 __decorate$1([
@@ -637,6 +755,9 @@ __decorate$1([
 __decorate$1([
     Property(false)
 ], TooltipSettings.prototype, "showAtMousePosition", void 0);
+__decorate$1([
+    Property('Pointer')
+], TooltipSettings.prototype, "type", void 0);
 
 /**
  * Specifies gauge Themes
@@ -645,6 +766,13 @@ var Theme;
 (function (Theme) {
     /** @private */
     Theme.axisLabelFont = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
+    Theme.legendLabelFont = {
         size: '12px',
         fontWeight: 'Normal',
         color: null,
@@ -819,6 +947,9 @@ __decorate$2([
 __decorate$2([
     Property(1)
 ], Range.prototype, "opacity", void 0);
+__decorate$2([
+    Property('')
+], Range.prototype, "legendText", void 0);
 /**
  * Configures the major and minor tick lines of an axis.
  */
@@ -985,6 +1116,9 @@ __decorate$2([
     Property(false)
 ], Axis.prototype, "showLastLabel", void 0);
 __decorate$2([
+    Property(false)
+], Axis.prototype, "hideIntersectingLabel", void 0);
+__decorate$2([
     Property(null)
 ], Axis.prototype, "roundingPlaces", void 0);
 __decorate$2([
@@ -1114,6 +1248,10 @@ class Annotations {
             cancel: false, name: annotationRender, content: annotation.content,
             axis: axis, annotation: annotation, textStyle: annotation.textStyle
         };
+        if (this.gauge.isBlazor) {
+            let { cancel, name, content, textStyle } = argsData;
+            argsData = { cancel, name, content, annotation, textStyle };
+        }
         this.gauge.trigger('annotationRender', argsData, (observedArgs) => {
             let templateFn;
             let templateElement;
@@ -1124,6 +1262,9 @@ class Annotations {
                     templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     let length = templateElement.length;
                     for (let i = 0; i < length; i++) {
+                        if (window[blazor] && templateElement[i].innerHTML && argsData.content.indexOf('ContentTemplate') === -1) {
+                            templateElement[i].innerHTML = argsData.content;
+                        }
                         childElement.appendChild(templateElement[i]);
                     }
                 }
@@ -1165,6 +1306,15 @@ class Annotations {
     }
 }
 
+var __rest = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Tooltip Module handles the tooltip of the circular gauge
  */
@@ -1187,6 +1337,7 @@ class GaugeTooltip {
     /* tslint:disable:no-string-literal */
     /* tslint:disable:max-func-body-length */
     renderTooltip(e) {
+        this.gaugeId = this.gauge.element.getAttribute('id');
         let pageX;
         let pageY;
         let target;
@@ -1204,7 +1355,8 @@ class GaugeTooltip {
             pageX = e.pageX;
             pageY = e.pageY;
         }
-        if (target.id.indexOf('_Pointer_') >= 0) {
+        if ((this.tooltip.type.indexOf('Pointer') > -1) && (target.id.indexOf('_Pointer_') >= 0) &&
+            (target.id.indexOf(this.gaugeId) >= 0)) {
             if (this.pointerEle !== null) {
                 samePointerEle = (this.pointerEle === target);
             }
@@ -1221,104 +1373,252 @@ class GaugeTooltip {
             let format = this.gauge.intl.getNumberFormat({
                 format: getLabelFormat(tooltipFormat), useGrouping: this.gauge.useGroupingSeparator
             });
-            if (document.getElementById(this.tooltipId)) {
-                this.tooltipEle = document.getElementById(this.tooltipId);
+            this.tooltipElement();
+            if (this.tooltipEle.childElementCount !== 0 && !this.gauge.enablePointerDrag && !this.gauge.tooltip.showAtMousePosition) {
+                return null;
             }
-            else {
-                this.tooltipEle = createElement('div', {
-                    id: this.tooltipId,
-                    className: 'EJ2-CircularGauge-Tooltip',
-                    styles: 'position: absolute;pointer-events:none;'
-                });
-                document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
-            }
-            let roundValue;
-            roundValue = this.currentAxis.roundingPlaces ?
-                parseFloat(this.currentPointer.currentValue.toFixed(this.currentAxis.roundingPlaces)) :
-                this.currentPointer.currentValue;
-            let content = customLabelFormat ?
+            let roundValue = this.roundedValue(this.currentPointer.currentValue);
+            let pointerContent = customLabelFormat ?
                 tooltipFormat.replace(new RegExp('{value}', 'g'), format(roundValue)) :
                 format(roundValue);
             location = getLocationFromAngle(angle, this.currentAxis.currentRadius, this.gauge.midPoint);
             location.x = (this.tooltip.template && ((angle >= 150 && angle <= 250) || (angle >= 330 && angle <= 360) ||
                 (angle >= 0 && angle <= 45))) ? (location.x + 10) : location.x;
             let tooltipArgs = {
-                name: tooltipRender, cancel: false, content: content, location: location, axis: this.currentAxis,
-                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge,
-                appendInBodyTag: false
+                name: tooltipRender, cancel: false, content: pointerContent, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge, appendInBodyTag: false
             };
-            this.gauge.trigger(tooltipRender, tooltipArgs, (observedArgs) => {
-                let template = tooltipArgs.tooltip.template;
-                if (template !== null && template.length === 1) {
-                    template = template[template[0]];
-                }
-                if (!this.tooltip.showAtMousePosition) {
-                    if (template) {
-                        let elementSize = getElementSize(template, this.gauge, this.tooltipEle);
-                        this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
-                            this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
-                    }
-                    else {
-                        this.findPosition(rect, angle, content, tooltipArgs.location);
-                    }
+            if (this.gauge.isBlazor) {
+                const { name, cancel, content, location, tooltip, event, appendInBodyTag } = tooltipArgs;
+                tooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag };
+            }
+            this.gauge.trigger(tooltipRender, tooltipArgs);
+            let template = tooltipArgs.tooltip.template;
+            if (template !== null && template.length === 1) {
+                template = template[template[0]];
+            }
+            if (!this.tooltip.showAtMousePosition) {
+                if (template) {
+                    let elementSize = getElementSize(template, this.gauge, this.tooltipEle);
+                    this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
+                        this.findPosition(rect, angle, pointerContent, tooltipArgs.location) : rect;
                 }
                 else {
-                    tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
-                    this.tooltipRect = rect;
+                    this.findPosition(rect, angle, pointerContent, tooltipArgs.location);
                 }
-                if (!tooltipArgs.cancel && !samePointerEle) {
-                    tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
-                    tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
-                    tooltipArgs.tooltip.textStyle.opacity =
-                        this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
-                    this.svgTooltip = new Tooltip({
-                        enable: true,
-                        data: { value: tooltipArgs.content },
-                        template: template,
-                        enableAnimation: tooltipArgs.tooltip.enableAnimation,
-                        content: [tooltipArgs.content],
-                        location: tooltipArgs.location,
-                        inverted: this.arrowInverted,
-                        areaBounds: this.tooltipRect,
-                        fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
-                        textStyle: tooltipArgs.tooltip.textStyle,
-                        availableSize: this.gauge.availableSize,
-                        border: tooltipArgs.tooltip.border
-                    });
-                    this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                    this.svgTooltip.appendTo(this.tooltipEle);
-                    if (this.gauge.tooltip.template) {
-                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-                    }
-                    if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
-                        this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
-                    }
-                    if (tooltipArgs.appendInBodyTag) {
-                        let bodyToolElement = document.getElementsByClassName('EJ2-CircularGauge-Tooltip e-control e-tooltip');
-                        if (!isNullOrUndefined(bodyToolElement)) {
-                            this.removeTooltip();
-                        }
-                        document.body.appendChild(this.tooltipEle);
-                        this.tooltipEle.style.zIndex = '100000000001';
-                        let bounds = this.tooltipEle.getBoundingClientRect();
-                        if (pageX + bounds['width'] <= window.innerWidth && bounds['x'] <= 0) {
-                            this.tooltipEle.style.left = pageX + 20 + 'px';
-                            this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
-                        }
-                        else {
-                            this.tooltipEle.style.left = pageX - bounds['width'] + 20 + 'px';
-                            this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
-                        }
-                    }
+            }
+            else {
+                tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                this.tooltipRect = rect;
+            }
+            if (!tooltipArgs.cancel && !samePointerEle) {
+                tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
+                this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, tooltipArgs, template, this.arrowInverted, this.tooltipRect, this.gauge, tooltipArgs.tooltip.fill, tooltipArgs.tooltip.textStyle, tooltipArgs.tooltip.border);
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.appendTo(this.tooltipEle);
+                if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
                 }
+            }
+        }
+        else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
+            (target.id.indexOf(this.gaugeId) >= 0)) {
+            let rangeSvgRect = this.gauge.svgObject.getBoundingClientRect();
+            let rangeElementRect = this.gauge.element.getBoundingClientRect();
+            let rangeAxisRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            let rect = new Rect(Math.abs(rangeElementRect.left - rangeSvgRect.left), Math.abs(rangeElementRect.top - rangeSvgRect.top), rangeSvgRect.width, rangeSvgRect.height);
+            let currentRange = getPointer(target.id, this.gauge);
+            this.currentAxis = this.gauge.axes[currentRange.axisIndex];
+            this.currentRange = (this.currentAxis.ranges)[currentRange.pointerIndex];
+            let rangeAngle = getAngleFromValue((this.currentRange.end - Math.abs((this.currentRange.end - this.currentRange.start) / 2)), this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min, this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise') % 360;
+            let rangeTooltipFormat = this.gauge.tooltip.rangeSettings.format || this.currentAxis.labelStyle.format;
+            let customLabelFormat = rangeTooltipFormat && (rangeTooltipFormat.match('{end}') !== null ||
+                rangeTooltipFormat.match('{start}') !== null);
+            let rangeFormat = this.gauge.intl.getNumberFormat({
+                format: getLabelFormat(rangeTooltipFormat), useGrouping: this.gauge.useGroupingSeparator
             });
+            this.tooltipElement();
+            let roundStartValue = this.roundedValue(this.currentRange.start);
+            let roundEndValue = this.roundedValue(this.currentRange.end);
+            let startData = (this.currentRange.start).toString();
+            let endData = (this.currentRange.end).toString();
+            let rangeContent = customLabelFormat ?
+                rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
+                'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
+            location = getLocationFromAngle(rangeAngle, this.currentAxis.currentRadius, this.gauge.midPoint);
+            location.x = (this.tooltip.rangeSettings.template && ((rangeAngle >= 150 && rangeAngle <= 250) ||
+                (rangeAngle >= 330 && rangeAngle <= 360) ||
+                (rangeAngle >= 0 && rangeAngle <= 45))) ? (location.x + 10) : location.x;
+            let rangeTooltipArgs = {
+                name: tooltipRender, cancel: false, content: rangeContent, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, range: this.currentRange, event: e, gauge: this.gauge, appendInBodyTag: false
+            };
+            if (this.gauge.isBlazor) {
+                const { gauge } = rangeTooltipArgs, blazorEventArgs = __rest(rangeTooltipArgs, ["gauge"]);
+                rangeTooltipArgs = blazorEventArgs;
+            }
+            this.gauge.trigger(tooltipRender, rangeTooltipArgs);
+            let rangeTemplate = rangeTooltipArgs.tooltip.rangeSettings.template;
+            if (rangeTemplate !== null && rangeTemplate.length === 1) {
+                rangeTemplate = rangeTemplate[rangeTemplate[0]];
+            }
+            if (rangeTemplate) {
+                rangeTemplate = rangeTemplate.replace(/[$]{start}/g, startData);
+                rangeTemplate = rangeTemplate.replace(/[$]{end}/g, endData);
+            }
+            if (!this.tooltip.rangeSettings.showAtMousePosition) {
+                if (rangeTemplate) {
+                    let elementSize = getElementSize(rangeTemplate, this.gauge, this.tooltipEle);
+                    this.tooltipRect = Math.abs(rangeAxisRect.left - rangeSvgRect.left) > elementSize.width ?
+                        this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location) : rect;
+                }
+                else {
+                    this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location);
+                }
+            }
+            else {
+                rangeTooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                this.tooltipRect = rect;
+            }
+            if (!rangeTooltipArgs.cancel) {
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.color = rangeTooltipArgs.tooltip.rangeSettings.textStyle.color ||
+                    this.gauge.themeStyle.tooltipFontColor;
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
+                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily;
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
+                    rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity;
+                this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted, this.tooltipRect, this.gauge, rangeTooltipArgs.tooltip.rangeSettings.fill, rangeTooltipArgs.tooltip.rangeSettings.textStyle, rangeTooltipArgs.tooltip.rangeSettings.border);
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.appendTo(this.tooltipEle);
+                if (rangeTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                }
+            }
+        }
+        else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
+            (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
+            let annotationSvgRect = this.gauge.svgObject.getBoundingClientRect();
+            let annotationElementRect = this.gauge.element.getBoundingClientRect();
+            let annotationAxisRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            let rect = new Rect(Math.abs(annotationElementRect.left - annotationSvgRect.left), Math.abs(annotationElementRect.top - annotationSvgRect.top), annotationSvgRect.width, annotationSvgRect.height);
+            let currentAnnotation = getPointer(this.annotationTargetElement.id, this.gauge);
+            this.currentAxis = this.gauge.axes[currentAnnotation.axisIndex];
+            this.currentAnnotation = (this.currentAxis.annotations)[currentAnnotation.pointerIndex];
+            let annotationAngle = (this.currentAnnotation.angle - 90);
+            this.tooltipEle = createElement('div', {
+                id: this.tooltipId,
+                className: 'EJ2-CircularGauge-Tooltip',
+                styles: 'position: absolute;pointer-events:none;'
+            });
+            document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
+            let annotationContent = (this.gauge.tooltip.annotationSettings.format !== null) ?
+                this.gauge.tooltip.annotationSettings.format : '';
+            location = getLocationFromAngle(annotationAngle, stringToNumber(this.currentAnnotation.radius, this.currentAxis.currentRadius), this.gauge.midPoint);
+            location.x = (this.tooltip.annotationSettings.template && ((annotationAngle >= 150 && annotationAngle <= 250) ||
+                (annotationAngle >= 330 && annotationAngle <= 360) || (annotationAngle >= 0 && annotationAngle <= 45))) ?
+                (location.x + 10) : location.x;
+            let annotationTooltipArgs = {
+                name: tooltipRender, cancel: false, content: annotationContent, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, annotation: this.currentAnnotation, event: e, gauge: this.gauge, appendInBodyTag: false
+            };
+            if (this.gauge.isBlazor) {
+                const { gauge } = annotationTooltipArgs, blazorEventArgs = __rest(annotationTooltipArgs, ["gauge"]);
+                annotationTooltipArgs = blazorEventArgs;
+            }
+            this.gauge.trigger(tooltipRender, annotationTooltipArgs);
+            let annotationTemplate = annotationTooltipArgs.tooltip.annotationSettings.template;
+            if (annotationTemplate !== null && annotationTemplate.length === 1) {
+                annotationTemplate = annotationTemplate[annotationTemplate[0]];
+            }
+            let elementSizeAn = this.annotationTargetElement.getBoundingClientRect();
+            this.tooltipPosition = 'RightTop';
+            this.arrowInverted = true;
+            annotationTooltipArgs.location.x = annotationTooltipArgs.location.x + (elementSizeAn.width / 2);
+            this.tooltipRect = new Rect(rect.x, rect.y, rect.width, rect.height);
+            if (!annotationTooltipArgs.cancel && (this.gauge.tooltip.annotationSettings.format !== null ||
+                this.gauge.tooltip.annotationSettings.template !== null)) {
+                annotationTooltipArgs.tooltip.annotationSettings.textStyle.color = annotationTooltipArgs.tooltip.textStyle.color ||
+                    this.gauge.themeStyle.tooltipFontColor;
+                annotationTooltipArgs.tooltip.annotationSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
+                    annotationTooltipArgs.tooltip.textStyle.fontFamily;
+                annotationTooltipArgs.tooltip.annotationSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
+                    annotationTooltipArgs.tooltip.textStyle.opacity;
+                this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, annotationTooltipArgs, annotationTemplate, this.arrowInverted, this.tooltipRect, this.gauge, annotationTooltipArgs.tooltip.annotationSettings.fill, annotationTooltipArgs.tooltip.annotationSettings.textStyle, annotationTooltipArgs.tooltip.annotationSettings.border);
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.appendTo(this.tooltipEle);
+                if (annotationTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                }
+            }
         }
         else {
             this.removeTooltip();
-            if (this.gauge.tooltip.template) {
-                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-            }
         }
+    }
+    ;
+    /**
+     * Method to create tooltip svg element.
+     */
+    svgTooltipCreate(svgTooltip, tooltipArg, template, arrowInverted, tooltipRect, gauge, fill, textStyle, border) {
+        svgTooltip = new Tooltip({
+            enable: true,
+            data: { value: tooltipArg.content },
+            template: template,
+            enableAnimation: tooltipArg.tooltip.enableAnimation,
+            content: [tooltipArg.content],
+            location: tooltipArg.location,
+            inverted: arrowInverted,
+            areaBounds: tooltipRect,
+            fill: fill || gauge.themeStyle.tooltipFillColor,
+            textStyle: textStyle,
+            availableSize: gauge.availableSize,
+            border: border,
+            blazorTemplate: { name: 'TooltipTemplate', parent: gauge.tooltip }
+        });
+        return svgTooltip;
+    }
+    /**
+     * Method to create or modify tolltip element.
+     */
+    tooltipElement() {
+        if (document.getElementById(this.tooltipId)) {
+            this.tooltipEle = document.getElementById(this.tooltipId);
+        }
+        else {
+            this.tooltipEle = createElement('div', {
+                id: this.tooltipId,
+                className: 'EJ2-CircularGauge-Tooltip',
+                styles: 'position: absolute;pointer-events:none;'
+            });
+            document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
+        }
+    }
+    ;
+    /**
+     * Method to get parent annotation element.
+     */
+    checkParentAnnotationId(child) {
+        this.annotationTargetElement = child.parentElement;
+        while (this.annotationTargetElement != null) {
+            if ((this.annotationTargetElement.id.indexOf('_Annotation_') >= 0)) {
+                child = this.annotationTargetElement;
+                return true;
+            }
+            this.annotationTargetElement = this.annotationTargetElement.parentElement;
+        }
+        return false;
+    }
+    /**
+     * Method to apply label rounding places.
+     */
+    roundedValue(currentValue) {
+        let roundNumber;
+        roundNumber = this.currentAxis.roundingPlaces ?
+            parseFloat(currentValue.toFixed(this.currentAxis.roundingPlaces)) :
+            currentValue;
+        return roundNumber;
     }
     /**
      * Method to find the position of the tooltip anchor for circular gauge.
@@ -1480,6 +1780,18 @@ class AxisRenderer {
         let max = axis.visibleRange.max;
         let labelCollection = axis.visibleLabels;
         let location;
+        let textWidth;
+        let textHeight;
+        let labelsVisible = true;
+        let currentTextWidth;
+        let currentTextHeight;
+        let previousLocation;
+        let currentLocation;
+        let lastLabelLocation;
+        let lastLabelAngle;
+        let lastLabelAnchor;
+        let lastTextWidth;
+        let lastTextHeight;
         let style = axis.labelStyle;
         let anchor;
         let angle;
@@ -1488,24 +1800,75 @@ class AxisRenderer {
         let labelPadding = 10;
         let color = style.font.color || this.gauge.themeStyle.labelColor;
         if (style.position === 'Outside') {
-            radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) +
-                (labelPadding / 2);
+            radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) + (labelPadding / 2);
         }
         else {
-            radius -= (axis.farSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2) +
-                (style.autoAngle ? labelPadding : 0));
+            radius -= (axis.farSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2) + (style.autoAngle ? labelPadding : 0));
+        }
+        //To get and store lastlabelposition
+        if (axis.hideIntersectingLabel) {
+            lastLabelAngle = Math.round(getAngleFromValue(labelCollection[labelCollection.length - 1].value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
+            lastLabelLocation = getLocationFromAngle(lastLabelAngle, radius, gauge.midPoint);
+            lastLabelAnchor = this.findAnchor(lastLabelLocation, style, lastLabelAngle, labelCollection[labelCollection.length - 1]);
+            lastTextWidth = (!axis.showLastLabel && (isCompleteAngle(axis.startAngle, axis.endAngle)) && (style.hiddenLabel !== 'First')) ?
+                labelCollection[0].size.width : labelCollection[labelCollection.length - 1].size.width;
+            lastTextHeight = (!axis.showLastLabel && (isCompleteAngle(axis.startAngle, axis.endAngle)) && (style.hiddenLabel !== 'First')) ?
+                (!style.autoAngle ? labelCollection[0].size.height : labelCollection[0].size.width) :
+                (!style.autoAngle ? labelCollection[labelCollection.length - 1].size.height :
+                    labelCollection[labelCollection.length - 1].size.width);
+            lastTextHeight = lastTextHeight - this.offsetAxisLabelsize(lastLabelAngle, lastTextHeight);
+            lastLabelLocation = this.getAxisLabelStartPosition(lastLabelLocation, lastTextWidth, style, lastTextHeight, lastLabelAnchor, lastLabelAngle);
         }
         for (let i = 0, length = labelCollection.length; i < length; i++) {
-            if ((i === 0 && style.hiddenLabel === 'First') ||
-                (i === (length - 1) && style.hiddenLabel === 'Last')) {
-                continue;
-            }
             label = labelCollection[i];
             angle = Math.round(getAngleFromValue(label.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
             location = getLocationFromAngle(angle, radius, gauge.midPoint);
             anchor = this.findAnchor(location, style, angle, label);
+            //To get the current label and previous label position for initial stage
+            if (axis.hideIntersectingLabel) {
+                currentLocation = getLocationFromAngle(angle, radius, gauge.midPoint);
+                currentTextWidth = label.size.width;
+                currentTextHeight = !style.autoAngle ? label.size.height : currentTextWidth;
+                currentTextHeight = currentTextHeight - this.offsetAxisLabelsize(angle, currentTextHeight);
+                currentLocation = this.getAxisLabelStartPosition(currentLocation, currentTextWidth, style, currentTextHeight, anchor, angle);
+                if (i === 0) {
+                    previousLocation = getLocationFromAngle(angle, radius, gauge.midPoint);
+                    textWidth = label.size.width;
+                    textHeight = !style.autoAngle ? label.size.height : textWidth;
+                    textHeight = textHeight - this.offsetAxisLabelsize(angle, textHeight);
+                    previousLocation = this.getAxisLabelStartPosition(previousLocation, textWidth, style, textHeight, anchor, angle);
+                }
+            }
+            if ((i === 0 && style.hiddenLabel === 'First') || (i === (length - 1) && style.hiddenLabel === 'Last')) {
+                continue;
+            }
             style.font.fontFamily = this.gauge.themeStyle.labelFontFamily || style.font.fontFamily;
-            textElement(new TextOption(gauge.element.id + '_Axis_' + index + '_Label_' + i, location.x, location.y, anchor, label.text, style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'), style.font, style.useRangeColor ? getRangeColor(label.value, axis.ranges, color) : color, labelElement, 'pointer-events:none;');
+            if (axis.hideIntersectingLabel && (i !== 0)) {
+                //To remove the labels which is intersecting with last label.
+                let lastlabel = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||
+                    axis.showLastLabel))) ? this.FindAxisLabelCollision(lastLabelLocation, lastTextWidth, lastTextHeight, currentLocation, currentTextWidth, currentTextHeight) : true;
+                //Checking wether the axis label is intersecting with previous label or not.
+                labelsVisible = (this.FindAxisLabelCollision(previousLocation, textWidth, textHeight, currentLocation, currentTextWidth, currentTextHeight) && lastlabel);
+            }
+            else {
+                labelsVisible = true;
+            }
+            if (labelsVisible || (i === labelCollection.length - 1)) {
+                //To hide first and last label based on requirement
+                label.text = (!axis.showLastLabel && ((isCompleteAngle(axis.startAngle, axis.endAngle) && style.hiddenLabel !== 'First') ||
+                    !labelsVisible)
+                    && axis.hideIntersectingLabel && (i === (length - 1))) ? '' : label.text;
+                label.text = (axis.showLastLabel && axis.hideIntersectingLabel && isCompleteAngle(axis.startAngle, axis.endAngle)
+                    && (i === 0)) ? '' : label.text;
+                textElement(new TextOption(gauge.element.id + '_Axis_' + index + '_Label_' + i, location.x, location.y, anchor, label.text, style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'), style.font, style.useRangeColor ? getRangeColor(label.value, axis.ranges, color) : color, labelElement, 'pointer-events:none;');
+                if (axis.hideIntersectingLabel) {
+                    textWidth = label.size.width;
+                    textHeight = !style.autoAngle ? label.size.height : textWidth;
+                    textHeight = textHeight - this.offsetAxisLabelsize(angle, textHeight);
+                    previousLocation.x = currentLocation.x;
+                    previousLocation.y = currentLocation.y;
+                }
+            }
         }
         element.appendChild(labelElement);
     }
@@ -1526,6 +1889,41 @@ class AxisRenderer {
             ((angle >= 240 && angle <= 300) ? 0 :
                 (angle >= 60 && angle <= 120) ? label.size.height / 2 : label.size.height / 4);
         return anchor;
+    }
+    /**
+     * Methode to check whether the labels are intersecting or not.
+     * @private
+     */
+    FindAxisLabelCollision(previousLocation, previousWidth, previousHeight, currentLocation, currentWidth, currentHeight) {
+        let labelVisisble = ((previousLocation.x > (currentLocation.x + (currentWidth))) ||
+            ((previousLocation.x + (previousWidth)) < (currentLocation.x)) ||
+            ((previousLocation.y + (previousHeight)) < (currentLocation.y)) || ((previousLocation.y) > (currentLocation.y + (currentHeight))));
+        return labelVisisble;
+    }
+    /**
+     * Methode to get anchor position of label as start.
+     * @private
+     */
+    getAxisLabelStartPosition(actualLocation, textWidth, style, textHeight, anchorPosition, angle) {
+        if (anchorPosition === 'end') {
+            actualLocation.x = actualLocation.x - textWidth;
+        }
+        else if (anchorPosition === 'middle') {
+            actualLocation.x = actualLocation.x - (textWidth / 2);
+        }
+        else {
+            actualLocation.x = actualLocation.x;
+        }
+        return actualLocation;
+    }
+    /**
+     * Methode to offset label height and width based on angle.
+     * @private
+     */
+    offsetAxisLabelsize(angle, size) {
+        let finalSize = ((angle >= 20 && angle <= 60) || (angle >= 120 && angle <= 160) || (angle >= 200 && angle <= 240) ||
+            (angle >= 300 && angle <= 340)) ? size / 5 : 0;
+        return finalSize;
     }
     /**
      * Method to render the axis minor tick lines of the circular gauge.
@@ -1648,10 +2046,10 @@ class AxisRenderer {
                 roundedEndAngle = ((((range.currentRadius) * ((endAngle * Math.PI) / 180) -
                     radius) / (range.currentRadius)) * 180) / Math.PI;
                 if (range.roundedCornerRadius) {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getRoundedPathArc(location, Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd, range.currentRadius, startWidth, endWidth), '', ''), rangeElement, gauge);
                 }
                 else {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth), '', 'pointer-events:none;'), rangeElement, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_' + index + '_Range_' + rangeIndex, range.rangeColor, 0, range.rangeColor, range.opacity, '0', getPathArc(gauge.midPoint, Math.floor(startAngle), Math.ceil(endAngle), range.currentRadius, startWidth, endWidth), '', ''), rangeElement, gauge);
                 }
             }
         });
@@ -2063,11 +2461,15 @@ class AxisLayoutPanel {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
-            this.gauge.trigger('radiusCalculate', args, (observedArgs) => {
+            if (this.gauge.isBlazor) {
+                const { cancel, name, currentRadius, midPoint } = args;
+                args = { cancel, name, currentRadius, midPoint };
+            }
+            this.gauge.trigger('radiusCalculate', args, () => {
                 axis.currentRadius = args.currentRadius;
                 this.gauge.midPoint = args.midPoint;
+                this.calculateVisibleLabels(axis);
             });
-            this.calculateVisibleLabels(axis);
         }
     }
     /**
@@ -2170,11 +2572,16 @@ class AxisLayoutPanel {
                     format(roundValue),
                 value: roundValue
             };
-            this.gauge.trigger('axisLabelRender', argsData, (observedArgs) => {
-                if (!argsData.cancel) {
+            if (this.gauge.isBlazor) {
+                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+            }
+            this.gauge.trigger('axisLabelRender', argsData);
+            if (!argsData.cancel) {
+                const labelAvailable = axis.visibleLabels.filter((label) => label.text === argsData.text);
+                if (!labelAvailable.length) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
                 }
-            });
+            }
         }
         let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal = axis.visibleRange.max;
@@ -2185,13 +2592,28 @@ class AxisLayoutPanel {
                     format(maxVal),
                 value: maxVal
             };
-            this.gauge.trigger('axisLabelRender', argsData, (observedArgs) => {
-                if (!argsData.cancel) {
+            if (this.gauge.isBlazor) {
+                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+            }
+            this.gauge.trigger('axisLabelRender', argsData);
+            if (!argsData.cancel) {
+                const labelExist = axis.visibleLabels.filter((label) => label.text === argsData.text);
+                if (!labelExist.length) {
                     axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal));
                 }
-            });
+            }
         }
         this.getMaxLabelWidth(this.gauge, axis);
+    }
+    /**
+     * To get axis label event arguments for Blazor
+     * @return {IAxisLabelRenderEventArgs}
+     * @private
+     */
+    getBlazorAxisLabelEventArgs(args) {
+        const { cancel, name, text, value } = args;
+        args = { cancel, name, text, value };
+        return args;
     }
     /**
      * Measure the axes available size.
@@ -2303,6 +2725,730 @@ class AxisLayoutPanel {
     }
 }
 
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the location for the legend.
+ */
+class Location extends ChildProperty {
+}
+__decorate$3([
+    Property(0)
+], Location.prototype, "x", void 0);
+__decorate$3([
+    Property(0)
+], Location.prototype, "y", void 0);
+/**
+ * Configures the legends in charts.
+ */
+class LegendSettings extends ChildProperty {
+}
+__decorate$3([
+    Property(false)
+], LegendSettings.prototype, "visible", void 0);
+__decorate$3([
+    Property(true)
+], LegendSettings.prototype, "toggleVisibility", void 0);
+__decorate$3([
+    Property('Center')
+], LegendSettings.prototype, "alignment", void 0);
+__decorate$3([
+    Complex({}, Border)
+], LegendSettings.prototype, "border", void 0);
+__decorate$3([
+    Complex({}, Border)
+], LegendSettings.prototype, "shapeBorder", void 0);
+__decorate$3([
+    Property(8)
+], LegendSettings.prototype, "padding", void 0);
+__decorate$3([
+    Property(1)
+], LegendSettings.prototype, "opacity", void 0);
+__decorate$3([
+    Property('Auto')
+], LegendSettings.prototype, "position", void 0);
+__decorate$3([
+    Property('Circle')
+], LegendSettings.prototype, "shape", void 0);
+__decorate$3([
+    Property(null)
+], LegendSettings.prototype, "height", void 0);
+__decorate$3([
+    Property(null)
+], LegendSettings.prototype, "width", void 0);
+__decorate$3([
+    Complex(Theme.legendLabelFont, Font)
+], LegendSettings.prototype, "textStyle", void 0);
+__decorate$3([
+    Property(10)
+], LegendSettings.prototype, "shapeHeight", void 0);
+__decorate$3([
+    Property(10)
+], LegendSettings.prototype, "shapeWidth", void 0);
+__decorate$3([
+    Property(5)
+], LegendSettings.prototype, "shapePadding", void 0);
+__decorate$3([
+    Complex({ x: 0, y: 0 }, Location)
+], LegendSettings.prototype, "location", void 0);
+__decorate$3([
+    Property('transparent')
+], LegendSettings.prototype, "background", void 0);
+__decorate$3([
+    Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
+], LegendSettings.prototype, "margin", void 0);
+/*
+ * Legend module is used to render legend for the Circular Gauge
+ */
+class Legend {
+    constructor(gauge) {
+        this.legendRegions = [];
+        this.rowCount = 0; // legend row counts per page
+        this.pageButtonSize = 8;
+        this.pageXCollections = []; // pages of x locations
+        this.maxColumns = 0;
+        this.maxWidth = 0;
+        this.currentPage = 1;
+        this.pagingRegions = [];
+        /**  @private */
+        this.position = 'Auto';
+        this.gauge = gauge;
+        this.toggledIndexes = [];
+        this.legend = this.gauge.legendSettings;
+        this.legendID = this.gauge.element.id + '_gauge_legend';
+        this.addEventListener();
+    }
+    /**
+     * Binding events for legend module.
+     */
+    addEventListener() {
+        if (this.gauge.isDestroyed) {
+            return;
+        }
+        //   this.gauge.on(Browser.touchMoveEvent, this.mouseMove, this);
+        this.gauge.on('click', this.click, this);
+        // this.gauge.on(Browser.touchEndEvent, this.mouseEnd, this);
+    }
+    /**
+     * UnBinding events for legend module.
+     */
+    removeEventListener() {
+        if (this.gauge.isDestroyed) {
+            return;
+        }
+        //  this.gauge.off(Browser.touchMoveEvent, this.mouseMove);
+        this.gauge.off('click', this.click);
+        //  this.gauge.off(Browser.touchEndEvent, this.mouseEnd);
+    }
+    /**
+     * Get the legend options.
+     * @return {void}
+     * @private
+     */
+    getLegendOptions(axes) {
+        this.legendCollection = [];
+        let range;
+        let text = '';
+        for (let i = 0; i < axes.length; i++) {
+            for (let j = 0; j < axes[i].ranges.length; j++) {
+                range = axes[i].ranges[j];
+                if (!isNullOrUndefined(range.start) && !isNullOrUndefined(range.end) && (range.start !== range.end)) {
+                    text = range.legendText ? range.legendText : range.start + ' - ' + range.end;
+                    this.legendCollection.push(new LegendOptions(text, text, range.color, this.legend.shape, this.legend.visible, this.legend.border, this.legend.shapeBorder, this.legend.shapeWidth, this.legend.shapeHeight, j, i));
+                }
+            }
+        }
+    }
+    /* tslint:disable-next-line:max-func-body-length */
+    calculateLegendBounds(rect, availableSize) {
+        let legend = this.legend;
+        this.position = (legend.position !== 'Auto') ? legend.position :
+            (availableSize.width > availableSize.height ? 'Right' : 'Bottom');
+        this.legendBounds = new Rect(rect.x, rect.y, 0, 0);
+        this.isVertical = (this.position === 'Left' || this.position === 'Right');
+        if (this.isVertical) {
+            this.legendBounds.height = stringToNumber(legend.height, availableSize.height - (rect.y - this.gauge.margin.top)) || rect.height;
+            this.legendBounds.width = stringToNumber(legend.width || '20%', availableSize.width);
+        }
+        else {
+            this.legendBounds.width = stringToNumber(legend.width, availableSize.width) || rect.width;
+            this.legendBounds.height = stringToNumber(legend.height || '20%', availableSize.height);
+        }
+        this.getLegendBounds(availableSize, this.legendBounds, legend);
+        this.getLocation(this.position, legend.alignment, this.legendBounds, rect, availableSize);
+    }
+    /**
+     * To find legend alignment for chart and accumulation chart
+     */
+    alignLegend(start, size, legendSize, alignment) {
+        switch (alignment) {
+            case 'Far':
+                start = (size - legendSize) - start;
+                break;
+            case 'Center':
+                start = ((size - legendSize) / 2);
+                break;
+        }
+        return start;
+    }
+    /**
+     * To find legend location based on position, alignment for chart and accumulation chart
+     */
+    getLocation(position, alignment, legendBounds, rect, availableSize) {
+        let padding = this.legend.border.width;
+        let legendHeight = legendBounds.height + padding + this.legend.margin.top + this.legend.margin.bottom;
+        let legendWidth = legendBounds.width + padding + this.legend.margin.left + this.legend.margin.right;
+        let marginBottom = this.gauge.margin.bottom;
+        if (position === 'Bottom') {
+            legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
+            legendBounds.y = rect.y + (rect.height - legendHeight) + padding + this.legend.margin.top;
+            this.subtractThickness(rect, 0, 0, 0, legendHeight);
+        }
+        else if (position === 'Top') {
+            legendBounds.x = this.alignLegend(legendBounds.x, availableSize.width, legendBounds.width, alignment);
+            legendBounds.y = rect.y + padding + this.legend.margin.top;
+            this.subtractThickness(rect, 0, 0, legendHeight, 0);
+        }
+        else if (position === 'Right') {
+            legendBounds.x = rect.x + (rect.width - legendBounds.width) + this.legend.margin.right;
+            legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
+            this.subtractThickness(rect, 0, legendWidth, 0, 0);
+        }
+        else {
+            legendBounds.x = legendBounds.x + this.legend.margin.left;
+            legendBounds.y = rect.y + this.alignLegend(0, availableSize.height - (rect.y + marginBottom), legendBounds.height, alignment);
+            this.subtractThickness(rect, legendWidth, 0, 0, 0);
+        }
+    }
+    /**
+     * Renders the legend.
+     * @return {void}
+     * @private
+     */
+    renderLegend(legend, legendBounds, redraw) {
+        let firstLegend = this.findFirstLegendPosition(this.legendCollection);
+        let padding = legend.padding;
+        this.legendRegions = [];
+        this.maxItemHeight = Math.max(this.legendCollection[0].textSize.height, legend.shapeHeight);
+        let legendGroup = this.gauge.renderer.createGroup({ id: this.legendID + '_g' });
+        let legendTranslateGroup = this.createLegendElements(legendBounds, legendGroup, legend, this.legendID, redraw);
+        if (firstLegend !== this.legendCollection.length) {
+            this.totalPages = 0;
+            let legendAxisGroup; // legendItem group for each series group element
+            let start; // starting shape center x,y position && to resolve lint error used new line for declaration
+            start = new GaugeLocation(legendBounds.x + padding + (legend.shapeWidth / 2), legendBounds.y + padding + this.maxItemHeight / 2);
+            let textOptions = new TextOption('', start.x, start.y, 'start');
+            let textPadding = (2 * legend.shapePadding) + (2 * padding) + legend.shapeWidth;
+            let count = 0;
+            this.pageXCollections = [];
+            this.legendCollection[firstLegend].location = start;
+            let previousLegend = this.legendCollection[firstLegend];
+            for (let legendOption of this.legendCollection) {
+                if (legendOption.render && legendOption.text !== '') {
+                    legendAxisGroup = this.gauge.renderer.createGroup({
+                        id: this.legendID + '_g_' + count
+                    });
+                    this.getRenderPoint(legendOption, start, textPadding, previousLegend, legendBounds, count, firstLegend);
+                    this.renderSymbol(legendOption, legendAxisGroup, legendOption.axisIndex, legendOption.rangeIndex);
+                    this.renderText(legendOption, legendAxisGroup, textOptions, legendOption.axisIndex, legendOption.rangeIndex);
+                    if (legendAxisGroup) {
+                        legendAxisGroup.setAttribute('style', 'cursor: ' + ((!legend.toggleVisibility) ? 'auto' : 'pointer'));
+                    }
+                    if (legendTranslateGroup) {
+                        legendTranslateGroup.appendChild(legendAxisGroup);
+                    }
+                    previousLegend = legendOption;
+                }
+                count++;
+            }
+            if (this.isPaging) {
+                this.renderPagingElements(legendBounds, textOptions, legendGroup);
+            }
+            else {
+                this.totalPages = 1;
+            }
+        }
+        this.appendChildElement(this.gauge.svgObject, legendGroup, redraw);
+        this.setStyles(this.toggledIndexes);
+    }
+    /**
+     * To render legend paging elements for chart and accumulation chart
+     */
+    renderPagingElements(bounds, textOption, legendGroup) {
+        let paginggroup = this.gauge.renderer.createGroup({ id: this.legendID + '_navigation' });
+        this.pagingRegions = [];
+        legendGroup.appendChild(paginggroup);
+        let grayColor = '#545454';
+        let legend = this.gauge.legendSettings; // to solve parameter lint error, legend declaration is here
+        let padding = 8; // const padding for paging elements
+        if (!this.isVertical) {
+            this.totalPages = Math.ceil(this.totalPages / Math.max(1, this.rowCount - 1));
+        }
+        else {
+            this.totalPages = Math.ceil(this.totalPages / this.maxColumns);
+        }
+        let symbolOption = new PathOption(this.legendID + '_pageup', 'transparent', 5, grayColor, 1, '', '');
+        let iconSize = this.pageButtonSize;
+        if (paginggroup) {
+            paginggroup.setAttribute('style', 'cursor: pointer');
+        }
+        // Page left arrow drawing calculation started here
+        this.clipPathHeight = (this.rowCount - 1) * (this.maxItemHeight + legend.padding);
+        this.clipRect.setAttribute('height', this.clipPathHeight.toString());
+        let x = bounds.x + iconSize / 2;
+        let y = bounds.y + this.clipPathHeight + ((bounds.height - this.clipPathHeight) / 2);
+        let size = measureText(this.totalPages + '/' + this.totalPages, legend.textStyle);
+        appendPath(calculateShapes({ x: x, y: y }, 'LeftArrow', new Size(iconSize, iconSize), '', symbolOption), paginggroup, this.gauge, 'Path');
+        this.pagingRegions.push(new Rect(x + bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5, y - iconSize * 0.5, iconSize, iconSize));
+        // Page numbering rendering calculation started here
+        textOption.x = x + (iconSize / 2) + padding;
+        textOption.y = y + (size.height / 4);
+        textOption.id = this.legendID + '_pagenumber';
+        textOption.text = '1/' + this.totalPages;
+        let pageTextElement = textElement(textOption, legend.textStyle, legend.textStyle.color || this.gauge.themeStyle.labelColor, paginggroup);
+        x = (textOption.x + padding + (iconSize / 2) + size.width);
+        symbolOption.id = this.legendID + '_pagedown';
+        appendPath(calculateShapes({ x: x, y: y }, 'RightArrow', new Size(iconSize, iconSize), '', symbolOption), paginggroup, this.gauge, 'Path');
+        this.pagingRegions.push(new Rect(x + (bounds.width - (2 * (iconSize + padding) + padding + size.width) - iconSize * 0.5), y - iconSize * 0.5, iconSize, iconSize));
+        //placing the navigation buttons and page numbering in legend right corner
+        paginggroup.setAttribute('transform', 'translate(' + (bounds.width - (2 * (iconSize + padding) +
+            padding + size.width)) + ', ' + 0 + ')');
+        this.translatePage(pageTextElement, this.currentPage - 1, this.currentPage);
+    }
+    /**
+     * To translate legend pages for chart and accumulation chart
+     */
+    translatePage(pagingText, page, pageNumber) {
+        let size = (this.clipPathHeight) * page;
+        let translate = 'translate(0,-' + size + ')';
+        if (this.isVertical) {
+            let pageLength = page * this.maxColumns;
+            size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
+            size = size < 0 ? 0 : size; // to avoid small pixel variation
+            translate = 'translate(-' + size + ',0)';
+        }
+        this.legendTranslateGroup.setAttribute('transform', translate);
+        pagingText.textContent = (pageNumber) + '/' + this.totalPages;
+        this.currentPage = pageNumber;
+        return size;
+    }
+    /**
+     * To render legend text for chart and accumulation chart
+     */
+    renderText(legendOption, group, textOptions, axisIndex, rangeIndex) {
+        let legend = this.gauge.legendSettings;
+        let hiddenColor = '#D3D3D3';
+        textOptions.id = this.legendID + '_Axis_' + axisIndex + '_text_' + rangeIndex;
+        let fontcolor = legendOption.visible ? legend.textStyle.color || this.gauge.themeStyle.labelColor : hiddenColor;
+        textOptions.text = legendOption.text;
+        textOptions.x = legendOption.location.x + (legend.shapeWidth / 2) + legend.shapePadding;
+        textOptions.y = legendOption.location.y + this.maxItemHeight / 4;
+        let element = textElement(textOptions, legend.textStyle, fontcolor, group, '');
+    }
+    /**
+     * To render legend symbols for chart and accumulation chart
+     */
+    renderSymbol(legendOption, group, axisIndex, rangeIndex) {
+        legendOption.fill = legendOption.fill ? legendOption.fill : this.gauge.axes[axisIndex].ranges[rangeIndex].rangeColor;
+        appendPath(calculateShapes(legendOption.location, legendOption.shape, new Size(legendOption.shapeWidth, legendOption.shapeHeight), '', new PathOption(this.legendID + '_Axis_' + axisIndex + '_Shape_' + rangeIndex, legendOption.fill, legendOption.shapeBorder.width, legendOption.shapeBorder.color, null, '0', '', '')), group, this.gauge, legendOption.shape === 'Circle' ? 'Ellipse' : 'Path');
+    }
+    /**
+     * To find legend rendering locations from legend options.
+     * @private
+     */
+    getRenderPoint(legendOption, start, textPadding, prevLegend, rect, count, firstLegend) {
+        let padding = this.legend.padding;
+        if (this.isVertical) {
+            if (count === firstLegend || (prevLegend.location.y + (this.maxItemHeight * 1.5) + (padding * 2) > rect.y + rect.height)) {
+                legendOption.location.x = prevLegend.location.x + ((count === firstLegend) ? 0 : this.maxColumnWidth);
+                legendOption.location.y = start.y;
+                this.pageXCollections.push(legendOption.location.x - (this.legend.shapeWidth / 2) - padding);
+                this.totalPages++;
+            }
+            else {
+                legendOption.location.x = prevLegend.location.x;
+                legendOption.location.y = prevLegend.location.y + this.maxItemHeight + padding;
+            }
+        }
+        else {
+            let previousBound = (prevLegend.location.x + textPadding + prevLegend.textSize.width);
+            if ((previousBound + (legendOption.textSize.width + textPadding)) > (rect.x + rect.width + this.legend.shapeWidth / 2)) {
+                legendOption.location.y = (count === firstLegend) ? prevLegend.location.y :
+                    prevLegend.location.y + this.maxItemHeight + padding;
+                legendOption.location.x = start.x;
+            }
+            else {
+                legendOption.location.y = prevLegend.location.y;
+                legendOption.location.x = (count === firstLegend) ? prevLegend.location.x : previousBound;
+            }
+            this.totalPages = this.totalRowCount;
+        }
+        let availablewidth = this.getAvailWidth(legendOption.location.x, this.legendBounds.width, this.legendBounds.x);
+        legendOption.text = textTrim(+availablewidth.toFixed(4), legendOption.text, this.legend.textStyle);
+    }
+    /**
+     * To show or hide the legend on clicking the legend.
+     * @return {void}
+     */
+    click(event) {
+        let targetId = event.target.id;
+        let legendItemsId = ['_text_', '_Shape_'];
+        let index;
+        let toggledIndex = -1;
+        if (targetId.indexOf(this.legendID) > -1) {
+            for (let id of legendItemsId) {
+                if (targetId.indexOf(id) > -1) {
+                    let axisIndex = parseInt(targetId.split(this.legendID + '_Axis_')[1].split(id)[0], 10);
+                    let rangeIndex = parseInt(targetId.split(this.legendID + '_Axis_')[1].split(id)[1], 10);
+                    if (this.gauge.legendSettings.toggleVisibility && !isNaN(rangeIndex)) {
+                        let legendOption = this.legendByIndex(axisIndex, rangeIndex, this.legendCollection);
+                        index = new Index(axisIndex, rangeIndex, !legendOption.render);
+                        if (this.toggledIndexes.length === 0) {
+                            this.toggledIndexes.push(index);
+                        }
+                        else {
+                            for (let i = 0; i < this.toggledIndexes.length; i++) {
+                                if (this.toggledIndexes[i].axisIndex === index.axisIndex &&
+                                    this.toggledIndexes[i].rangeIndex === index.rangeIndex) {
+                                    toggledIndex = i;
+                                    break;
+                                }
+                                else {
+                                    toggledIndex = -1;
+                                }
+                            }
+                            if (toggledIndex === -1) {
+                                this.toggledIndexes.push(index);
+                            }
+                            else {
+                                this.toggledIndexes[toggledIndex].isToggled = !this.toggledIndexes[toggledIndex].isToggled;
+                            }
+                        }
+                        this.setStyles(this.toggledIndexes);
+                    }
+                }
+            }
+        }
+        if (targetId.indexOf(this.legendID + '_pageup') > -1) {
+            this.changePage(event, true);
+        }
+        else if (targetId.indexOf(this.legendID + '_pagedown') > -1) {
+            this.changePage(event, false);
+        }
+    }
+    /**
+     * Set toggled legend styles.
+     */
+    setStyles(toggledIndexes) {
+        for (let i = 0; i < toggledIndexes.length; i++) {
+            let rangeID = this.gauge.element.id + '_Axis_' + toggledIndexes[i].axisIndex + '_Range_' + toggledIndexes[i].rangeIndex;
+            let shapeID = this.legendID + '_Axis_' + toggledIndexes[i].axisIndex + '_Shape_' + toggledIndexes[i].rangeIndex;
+            let textID = this.legendID + '_Axis_' + toggledIndexes[i].axisIndex + '_text_' + toggledIndexes[i].rangeIndex;
+            let rangeElement = this.gauge.svgObject.querySelector('#' + rangeID);
+            let shapeElement = this.gauge.svgObject.querySelector('#' + shapeID);
+            let textElement$$1 = this.gauge.svgObject.querySelector('#' + textID);
+            if (toggledIndexes[i].isToggled) {
+                rangeElement.style.visibility = 'visible';
+                shapeElement.setAttribute('fill', this.legendCollection[toggledIndexes[i].rangeIndex].fill);
+                textElement$$1.setAttribute('fill', this.legend.textStyle.color || this.gauge.themeStyle.labelColor);
+            }
+            else {
+                let hiddenColor = '#D3D3D3';
+                rangeElement.style.visibility = 'hidden';
+                shapeElement.setAttribute('fill', hiddenColor);
+                textElement$$1.setAttribute('fill', hiddenColor);
+            }
+        }
+    }
+    /**
+     * To get legend by index
+     */
+    legendByIndex(axisIndex, rangeIndex, legendCollections) {
+        for (let legend of legendCollections) {
+            if (legend.axisIndex === axisIndex && legend.rangeIndex === rangeIndex) {
+                return legend;
+            }
+        }
+        return null;
+    }
+    /**
+     * To change legend pages for chart and accumulation chart
+     */
+    changePage(event, pageUp) {
+        let pageText = document.getElementById(this.legendID + '_pagenumber');
+        let page = parseInt(pageText.textContent.split('/')[0], 10);
+        if (pageUp && page > 1) {
+            this.translatePage(pageText, (page - 2), (page - 1));
+        }
+        else if (!pageUp && page < this.totalPages) {
+            this.translatePage(pageText, page, (page + 1));
+        }
+    }
+    /**
+     * To find available width from legend x position.
+     */
+    getAvailWidth(tx, width, legendX) {
+        if (this.isVertical) {
+            width = this.maxWidth;
+        }
+        return width - ((this.legend.padding * 2) + this.legend.shapeWidth + this.legend.shapePadding);
+    }
+    /**
+     * To create legend rendering elements for chart and accumulation chart
+     */
+    createLegendElements(legendBounds, legendGroup, legend, id, redraw) {
+        let padding = legend.padding;
+        let options = new RectOption(id + '_element', legend.background, legend.border, legend.opacity, legendBounds);
+        options.width = this.isVertical ? this.maxWidth : legendBounds.width;
+        legendGroup ? legendGroup.appendChild(this.gauge.renderer.drawRectangle(options)) : this.gauge.renderer.drawRectangle(options);
+        let legendItemsGroup = this.gauge.renderer.createGroup({ id: id + '_collections' });
+        legendGroup.appendChild(legendItemsGroup);
+        this.legendTranslateGroup = this.gauge.renderer.createGroup({ id: id + '_translate_g' });
+        legendItemsGroup.appendChild(this.legendTranslateGroup);
+        let clippath = this.gauge.renderer.createClipPath({ id: id + '_clipPath' });
+        options.id += '_clipPath_rect';
+        options.width = this.isVertical ? options.width - padding : options.width;
+        this.clipRect = this.gauge.renderer.drawRectangle(options);
+        clippath.appendChild(this.clipRect);
+        this.appendChildElement(this.gauge.svgObject, clippath, redraw);
+        legendItemsGroup.setAttribute('style', 'clip-path:url(#' + clippath.id + ')');
+        return this.legendTranslateGroup;
+    }
+    /**
+     * Method to append child element
+     */
+    appendChildElement(parent, childElement, redraw, isAnimate = false, x = 'x', y = 'y', start, direction, forceAnimate = false, isRect = false, previousRect = null, animateDuration) {
+        let existChild = parent.querySelector('#' + childElement.id);
+        let element = (existChild || getElement(childElement.id));
+        let child = childElement;
+        if (existChild) {
+            parent.replaceChild(child, element);
+        }
+        else {
+            parent.appendChild(child);
+        }
+    }
+    /**
+     * To find first valid legend text index for chart and accumulation chart
+     */
+    findFirstLegendPosition(legendCollection) {
+        let count = 0;
+        for (let legend of legendCollection) {
+            if (legend.render && legend.text !== '') {
+                break;
+            }
+            count++;
+        }
+        return count;
+    }
+    /**
+     * To find legend bounds for accumulation chart.
+     * @private
+     */
+    getLegendBounds(availableSize, legendBounds, legend) {
+        let extraWidth = 0;
+        let extraHeight = 0;
+        let padding = legend.padding;
+        if (!this.isVertical) {
+            extraHeight = !legend.height ? ((availableSize.height / 100) * 5) : 0;
+        }
+        else {
+            extraWidth = !legend.width ? ((availableSize.width / 100) * 5) : 0;
+        }
+        legendBounds.width += extraWidth;
+        legendBounds.height += extraHeight;
+        let maximumWidth = 0;
+        let rowWidth = 0;
+        let rowCount = 0;
+        let columnWidth = [];
+        let columnHeight = 0;
+        let legendWidth = 0;
+        this.maxItemHeight = Math.max(measureText('MeasureText', legend.textStyle).height, legend.shapeHeight);
+        let legendEventArgs;
+        let render = false;
+        for (let legendOption of this.legendCollection) {
+            legendEventArgs = {
+                fill: legendOption.fill, text: legendOption.text, shape: legendOption.shape,
+                name: 'legendRender', cancel: false
+            };
+            this.gauge.trigger('legendRender', legendEventArgs);
+            legendOption.render = !legendEventArgs.cancel;
+            legendOption.text = legendEventArgs.text;
+            legendOption.fill = legendEventArgs.fill;
+            legendOption.shape = legendEventArgs.shape;
+            legendOption.textSize = measureText(legendOption.text, legend.textStyle);
+            if (legendOption.render && legendOption.text !== '') {
+                render = true;
+                legendWidth = legend.shapeWidth + (2 * legend.shapePadding) + legendOption.textSize.width + (2 * padding);
+                if (this.isVertical) {
+                    ++rowCount;
+                    columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding;
+                    if ((rowCount * (this.maxItemHeight + padding)) + padding > legendBounds.height) {
+                        columnHeight = Math.max(columnHeight, (rowCount * (this.maxItemHeight + padding)) + padding);
+                        rowWidth = rowWidth + maximumWidth;
+                        columnWidth.push(maximumWidth);
+                        this.totalPages = Math.max(rowCount, this.totalPages || 1);
+                        maximumWidth = 0;
+                        rowCount = 1;
+                    }
+                    maximumWidth = Math.max(legendWidth, maximumWidth);
+                }
+                else {
+                    rowWidth = rowWidth + legendWidth;
+                    if (legendBounds.width < (padding + rowWidth)) {
+                        maximumWidth = Math.max(maximumWidth, (rowWidth + padding - legendWidth));
+                        if (rowCount === 0 && (legendWidth !== rowWidth)) {
+                            rowCount = 1;
+                        }
+                        rowWidth = legendWidth;
+                        rowCount++;
+                        columnHeight = (rowCount * (this.maxItemHeight + padding)) + padding;
+                    }
+                }
+            }
+        }
+        if (this.isVertical) {
+            rowWidth = rowWidth + maximumWidth;
+            this.isPaging = legendBounds.width < (rowWidth + padding);
+            columnHeight = Math.max(columnHeight, ((this.totalPages || 1) * (this.maxItemHeight + padding)) + padding);
+            this.isPaging = this.isPaging && (this.totalPages > 1);
+            if (columnWidth[columnWidth.length - 1] !== maximumWidth) {
+                columnWidth.push(maximumWidth);
+            }
+        }
+        else {
+            this.isPaging = legendBounds.height < columnHeight;
+            this.totalPages = this.totalRowCount = rowCount;
+            columnHeight = Math.max(columnHeight, (this.maxItemHeight + padding) + padding);
+        }
+        this.maxColumns = 0; // initialization for max columns
+        let width = this.isVertical ? this.getMaxColumn(columnWidth, legendBounds.width, padding, rowWidth + padding) :
+            Math.max(rowWidth + padding, maximumWidth);
+        if (render) { // if any legends not skipped in event check
+            this.setBounds(width, columnHeight, legend, legendBounds);
+        }
+        else {
+            this.setBounds(0, 0, legend, legendBounds);
+        }
+    }
+    /** @private */
+    subtractThickness(rect, left, right, top, bottom) {
+        rect.x += left;
+        rect.y += top;
+        rect.width -= left + right;
+        rect.height -= top + bottom;
+        return rect;
+    }
+    /**
+     * To set bounds for chart and accumulation chart
+     */
+    setBounds(computedWidth, computedHeight, legend, legendBounds) {
+        computedWidth = computedWidth < legendBounds.width ? computedWidth : legendBounds.width;
+        computedHeight = computedHeight < legendBounds.height ? computedHeight : legendBounds.height;
+        legendBounds.width = !legend.width ? computedWidth : legendBounds.width;
+        legendBounds.height = !legend.height ? computedHeight : legendBounds.height;
+        this.rowCount = Math.max(1, Math.ceil((legendBounds.height - legend.padding) / (this.maxItemHeight + legend.padding)));
+    }
+    /**
+     * To find maximum column size for legend
+     */
+    getMaxColumn(columns, width, padding, rowWidth) {
+        let maxPageColumn = padding;
+        this.maxColumnWidth = Math.max.apply(null, columns);
+        for (let column of columns) {
+            maxPageColumn += this.maxColumnWidth;
+            this.maxColumns++;
+            if (maxPageColumn + padding > width) {
+                maxPageColumn -= this.maxColumnWidth;
+                this.maxColumns--;
+                break;
+            }
+        }
+        this.isPaging = (maxPageColumn < rowWidth) && (this.totalPages > 1);
+        if (maxPageColumn === padding) {
+            maxPageColumn = width;
+        }
+        this.maxColumns = Math.max(1, this.maxColumns);
+        this.maxWidth = maxPageColumn;
+        return maxPageColumn;
+    }
+    /**
+     * To show or hide trimmed text tooltip for legend.
+     * @return {void}
+     * @private
+     */
+    move(event) {
+        let x = this.gauge.mouseX;
+        let y = this.gauge.mouseY;
+        let targetId = event.target.id;
+        if (event.target.textContent.indexOf('...') > -1 && targetId.indexOf('_gauge_legend_') > -1) {
+            let axisIndex = parseInt(targetId.split(this.gauge.element.id + '_gauge_legend_Axis_')[1].split('_text_')[0], 10);
+            let rangeIndex = parseInt(targetId.split(this.gauge.element.id + '_gauge_legend_Axis_')[1].split('_text_')[1], 10);
+            let text = '';
+            for (let legends of this.legendCollection) {
+                if (legends.rangeIndex === rangeIndex && legends.axisIndex === axisIndex) {
+                    text = legends.originalText;
+                }
+            }
+            showTooltip(text, x, y, this.gauge.element.offsetWidth, this.gauge.element.id + '_EJ2_Legend_Tooltip', getElement(this.gauge.element.id + '_Secondary_Element'));
+        }
+        else {
+            removeElement(this.gauge.element.id + '_EJ2_Legend_Tooltip');
+        }
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'Legend';
+    }
+    /**
+     * To destroy the legend.
+     * @return {void}
+     * @private
+     */
+    destroy(circulargauge) {
+        /**
+         * Destroy method performed here
+         */
+        this.removeEventListener();
+    }
+}
+/**
+ * @private
+ */
+class Index {
+    constructor(axisIndex, rangeIndex, isToggled) {
+        this.axisIndex = axisIndex;
+        this.rangeIndex = rangeIndex;
+        this.isToggled = isToggled;
+    }
+}
+/**
+ * Class for legend options
+ * @private
+ */
+class LegendOptions {
+    constructor(text, originalText, fill, shape, visible, border, shapeBorder, shapeWidth, shapeHeight, rangeIndex, axisIndex) {
+        this.location = { x: 0, y: 0 };
+        this.text = text;
+        this.originalText = originalText;
+        this.fill = fill;
+        this.shape = shape;
+        this.visible = visible;
+        this.border = border;
+        this.shapeBorder = shapeBorder;
+        this.shapeWidth = shapeWidth;
+        this.shapeHeight = shapeHeight;
+        this.rangeIndex = rangeIndex;
+        this.axisIndex = axisIndex;
+    }
+}
+
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -2329,15 +3475,18 @@ let CircularGauge = class CircularGauge extends Component {
      */
     constructor(options, element) {
         super(options, element);
+        /** @private */
+        this.isDrag = false;
     }
     /**
      *  To create svg object, renderer and binding events for the container.
      */
+    //tslint:disable
     preRender() {
         let blazor = 'Blazor';
         this.isBlazor = window[blazor];
         this.unWireEvents();
-        this.trigger(load, { gauge: this });
+        this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
@@ -2362,6 +3511,7 @@ let CircularGauge = class CircularGauge extends Component {
         EventHandler.remove(this.element, Browser.touchStartEvent, this.gaugeOnMouseDown);
         EventHandler.remove(this.element, Browser.touchMoveEvent, this.mouseMove);
         EventHandler.remove(this.element, Browser.touchEndEvent, this.mouseEnd);
+        EventHandler.remove(this.element, 'click', this.gaugeOnMouseClick);
         EventHandler.remove(this.element, 'contextmenu', this.gaugeRightClick);
         EventHandler.remove(this.element, (Browser.isPointer ? 'pointerleave' : 'mouseleave'), this.mouseLeave);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.gaugeResize);
@@ -2374,6 +3524,7 @@ let CircularGauge = class CircularGauge extends Component {
         EventHandler.add(this.element, Browser.touchStartEvent, this.gaugeOnMouseDown, this);
         EventHandler.add(this.element, Browser.touchMoveEvent, this.mouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.mouseEnd, this);
+        EventHandler.add(this.element, 'click', this.gaugeOnMouseClick, this);
         EventHandler.add(this.element, 'contextmenu', this.gaugeRightClick, this);
         EventHandler.add(this.element, (Browser.isPointer ? 'pointerleave' : 'mouseleave'), this.mouseLeave, this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.gaugeResize.bind(this));
@@ -2381,11 +3532,24 @@ let CircularGauge = class CircularGauge extends Component {
         this.setGaugeStyle(this.element);
     }
     /**
+     * Handles the mouse click on accumulation chart.
+     * @return {boolean}
+     * @private
+     */
+    gaugeOnMouseClick(e) {
+        this.setMouseXY(e);
+        if (this.legendModule && this.legendSettings.visible) {
+            this.legendModule.click(e);
+        }
+        return false;
+    }
+    /**
      * Handles the mouse move.
      * @return {boolean}
      * @private
      */
     mouseMove(e) {
+        this.setMouseXY(e);
         let args = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
         this.trigger('gaugeMouseMove', args, (observedArgs) => {
             let dragArgs;
@@ -2393,6 +3557,7 @@ let CircularGauge = class CircularGauge extends Component {
             let tooltip = this.tooltipModule;
             if (!args.cancel) {
                 if (this.enablePointerDrag && this.activePointer) {
+                    this.isDrag = true;
                     let dragPointInd = parseInt(this.activePointer.pathElement[0].id.slice(-1), 10);
                     let dragAxisInd = parseInt(this.activePointer.pathElement[0].id.match(/\d/g)[0], 10);
                     dragArgs = {
@@ -2417,6 +3582,11 @@ let CircularGauge = class CircularGauge extends Component {
                 }
             }
         });
+        if (!this.isTouch) {
+            if (this.legendModule && this.legendSettings.visible) {
+                this.legendModule.move(e);
+            }
+        }
         this.notify(Browser.touchMoveEvent, e);
         return false;
     }
@@ -2426,6 +3596,7 @@ let CircularGauge = class CircularGauge extends Component {
      * @private
      */
     mouseLeave(e) {
+        this.setMouseXY(e);
         this.activeAxis = null;
         this.activePointer = null;
         this.svgObject.setAttribute('cursor', 'auto');
@@ -2465,6 +3636,7 @@ let CircularGauge = class CircularGauge extends Component {
      * @private
      */
     gaugeOnMouseDown(e) {
+        this.setMouseXY(e);
         let currentPointer;
         let args = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
         this.trigger('gaugeMouseDown', args, (observedArgs) => {
@@ -2502,11 +3674,12 @@ let CircularGauge = class CircularGauge extends Component {
      * @private
      */
     mouseEnd(e) {
+        this.setMouseXY(e);
         let args = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
         let blazorArgs = {
             cancel: args.cancel, target: args.target, name: args.name, x: args.x, y: args.y
         };
-        let isTouch = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
+        this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         let tooltip = this.tooltipModule;
         this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
         if (this.activeAxis && this.activePointer) {
@@ -2527,6 +3700,7 @@ let CircularGauge = class CircularGauge extends Component {
             });
             this.activeAxis = null;
             this.activePointer = null;
+            this.isDrag = false;
         }
         this.svgObject.setAttribute('cursor', 'auto');
         this.notify(Browser.touchEndEvent, e);
@@ -2571,6 +3745,10 @@ let CircularGauge = class CircularGauge extends Component {
                 this.calculateBounds();
                 this.renderElements();
                 args.currentSize = this.availableSize;
+                if (this.isBlazor) {
+                    const { previousSize, name, currentSize } = args;
+                    args = { previousSize, name, currentSize };
+                }
                 this.trigger(resized, args);
             }, 500);
         }
@@ -2676,12 +3854,16 @@ let CircularGauge = class CircularGauge extends Component {
             rect = new Rect((left + (width / 2) - radius), (top + (height / 2) - radius), radius * 2, radius * 2);
         }
         this.gaugeRect = rect;
+        if (this.legendModule && this.legendSettings.visible) {
+            this.legendModule.getLegendOptions(this.axes);
+            this.legendModule.calculateLegendBounds(this.gaugeRect, this.availableSize);
+        }
         let centerX = this.centerX !== null ?
-            stringToNumber(this.centerX, this.availableSize.width) : rect.x + (rect.width / 2);
+            stringToNumber(this.centerX, this.availableSize.width) : this.gaugeRect.x + (this.gaugeRect.width / 2);
         let centerY = this.centerY !== null ?
-            stringToNumber(this.centerY, this.availableSize.height) : rect.y + (rect.height / 2);
+            stringToNumber(this.centerY, this.availableSize.height) : this.gaugeRect.y + (this.gaugeRect.height / 2);
         this.midPoint = new GaugeLocation(centerX, centerY);
-        this.gaugeAxisLayoutPanel.measureAxis(rect);
+        this.gaugeAxisLayoutPanel.measureAxis(this.gaugeRect);
     }
     /**
      * To render elements for circular gauge
@@ -2690,8 +3872,20 @@ let CircularGauge = class CircularGauge extends Component {
         this.renderBorder();
         this.renderTitle();
         this.gaugeAxisLayoutPanel.renderAxes(animate);
+        this.renderLegend();
         this.element.appendChild(this.svgObject);
         this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
+    }
+    /**
+     * Method to render legend for accumulation chart
+     */
+    renderLegend() {
+        if (!this.legendModule || !this.legendSettings.visible) {
+            return null;
+        }
+        if (this.legendModule.legendCollection.length) {
+            this.legendModule.renderLegend(this.legendSettings, this.legendModule.legendBounds, true);
+        }
     }
     /**
      * Method to render the title for circular gauge.
@@ -2782,6 +3976,28 @@ let CircularGauge = class CircularGauge extends Component {
         }
     }
     /**
+     * Method to set mouse x, y from events
+     */
+    setMouseXY(e) {
+        let pageX;
+        let pageY;
+        let svgRect = getElement(this.element.id + '_svg').getBoundingClientRect();
+        let rect = this.element.getBoundingClientRect();
+        if (e.type.indexOf('touch') > -1) {
+            this.isTouch = true;
+            let touchArg = e;
+            pageY = touchArg.changedTouches[0].clientY;
+            pageX = touchArg.changedTouches[0].clientX;
+        }
+        else {
+            this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
+            pageX = e.clientX;
+            pageY = e.clientY;
+        }
+        this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
+        this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
+    }
+    /**
      * Method to set the range values dynamically for circular gauge.
      */
     setRangeValue(axisIndex, rangeIndex, start, end) {
@@ -2853,6 +4069,12 @@ let CircularGauge = class CircularGauge extends Component {
                 args: [this, GaugeTooltip]
             });
         }
+        if (this.legendSettings.visible) {
+            modules.push({
+                member: 'Legend',
+                args: [this, Legend]
+            });
+        }
         return modules;
     }
     /**
@@ -2900,6 +4122,9 @@ let CircularGauge = class CircularGauge extends Component {
                     break;
                 case 'background':
                     renderer = true;
+                    break;
+                case 'legendSettings':
+                    refreshWithoutAnimation = true;
                     break;
                 case 'axes':
                     refreshWithoutAnimation = true;
@@ -2983,6 +4208,9 @@ __decorate([
     Property(1)
 ], CircularGauge.prototype, "tabIndex", void 0);
 __decorate([
+    Complex({}, LegendSettings)
+], CircularGauge.prototype, "legendSettings", void 0);
+__decorate([
     Event()
 ], CircularGauge.prototype, "loaded", void 0);
 __decorate([
@@ -3000,6 +4228,9 @@ __decorate([
 __decorate([
     Event()
 ], CircularGauge.prototype, "annotationRender", void 0);
+__decorate([
+    Event()
+], CircularGauge.prototype, "legendRender", void 0);
 __decorate([
     Event()
 ], CircularGauge.prototype, "tooltipRender", void 0);
@@ -3039,5 +4270,5 @@ CircularGauge = __decorate([
  * Circular Gauge component exported.
  */
 
-export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getElementSize, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, TextOption, VisibleLabels };
+export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, RangeTooltip, AnnotationTooltip, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getElementSize, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, textTrim, showTooltip, TextOption, VisibleLabels, Location, LegendSettings, Legend, Index, LegendOptions };
 //# sourceMappingURL=ej2-circulargauge.es2015.js.map

@@ -402,8 +402,10 @@ export function getTemplateFunction(template: string): Function {
     let templateFn: Function = null;
     let e: Object;
     try {
-        if (document.querySelectorAll(template).length !== document.getElementsByTagName(template).length) {
-            templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+        if (document.querySelectorAll(template).length) {
+            if ((template.charAt(0) !== 'a' || template.charAt(0) !== 'A') && template.length !== 1) {
+                templateFn = templateComplier(document.querySelector(template).innerHTML.trim());
+            }
         }
     } catch (e) {
         templateFn = templateComplier(template);
@@ -476,7 +478,7 @@ export function getMousePosition(pageX: number, pageY: number, element: Element)
 
 
 /**
- * Function to convert the label using formar for cirular gauge.
+ * Function to convert the label using format for cirular gauge.
  * @returns string
  * @private
  */
@@ -499,6 +501,7 @@ export function calculateShapes(location: GaugeLocation, shape: string, size: Si
     let locY: number = location.y;
     let x: number = location.x + (-width / 2);
     let y: number = location.y + (-height / 2);
+    let isLegend: boolean = options.id.indexOf('Shape') > -1;
     switch (shape) {
         case 'Circle':
             merge(options, { 'rx': width / 2, 'ry': height / 2, 'cx': locX, 'cy': locY });
@@ -520,19 +523,37 @@ export function calculateShapes(location: GaugeLocation, shape: string, size: Si
             merge(options, { 'd': path });
             break;
         case 'Triangle':
-            path = 'M' + ' ' + locX + ' ' + locY + ' ' +
-                'L' + ' ' + (locX - height) + ' ' + (locY - (width / 2)) +
-                'L' + ' ' + (locX - height) + ' ' + (locY + (width / 2)) + ' Z';
+            path = 'M' + ' ' + (x + (isLegend ? width / 2 : 0)) + ' ' + y + ' ' + 'L' + ' ' + (x + width) + ' ' +
+                (y + (isLegend ? height : height / 2)) + 'L' + ' ' + x + ' ' + (y + height) + ' Z';
             merge(options, { 'd': path });
             break;
         case 'InvertedTriangle':
-            path = 'M' + ' ' + locX + ' ' + locY + ' ' +
-                'L' + ' ' + (locX + height) + ' ' + (locY - (width / 2)) +
-                'L' + ' ' + (locX + height) + ' ' + (locY + (width / 2)) + ' Z';
+            path = 'M' + ' ' + (x + width) + ' ' + y + ' ' + 'L' + ' ' + (x + (isLegend ? width / 2 : width)) + ' ' + (y + height) +
+                'L' + ' ' + x + ' ' + (y + (isLegend ? 0 : height / 2)) + ' Z';
             merge(options, { 'd': path });
             break;
         case 'Image':
             merge(options, { 'href': url, 'height': height, 'width': width, x: x, y: y });
+            break;
+        case 'RightArrow':
+            let space: number = 2;
+            path = 'M' + ' ' + (locX + (-width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
+                'L' + ' ' + (locX + (width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
+                (locX + (-width / 2)) + ' ' + (locY + (height / 2)) + ' L' + ' ' + (locX + (-width / 2)) + ' ' +
+                (locY + (height / 2) - space) + ' ' + 'L' + ' ' + (locX + (width / 2) - (2 * space)) + ' ' + (locY) +
+                ' L' + (locX + (-width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
+            merge(options, { 'd': path });
+            break;
+        case 'LeftArrow':
+            options.fill = options.stroke;
+            options.stroke = 'transparent';
+            space = 2;
+            path = 'M' + ' ' + (locX + (width / 2)) + ' ' + (locY - (height / 2)) + ' ' +
+                'L' + ' ' + (locX + (-width / 2)) + ' ' + (locY) + ' ' + 'L' + ' ' +
+                (locX + (width / 2)) + ' ' + (locY + (height / 2)) + ' ' + 'L' + ' ' +
+                (locX + (width / 2)) + ' ' + (locY + (height / 2) - space) + ' L' + ' ' + (locX + (-width / 2) + (2 * space))
+                + ' ' + (locY) + ' L' + (locX + (width / 2)) + ' ' + (locY - (height / 2) + space) + ' Z';
+            merge(options, { 'd': path });
             break;
     }
     return options;
@@ -667,6 +688,47 @@ export class Rect {
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+}
+/** @private */
+export function textTrim(maxWidth: number, text: string, font: FontModel): string {
+    let label: string = text;
+    let size: number = measureText(text, font).width;
+    if (size > maxWidth) {
+        let textLength: number = text.length;
+        for (let i: number = textLength - 1; i >= 0; --i) {
+            label = text.substring(0, i) + '...';
+            size = measureText(label, font).width;
+            if (size <= maxWidth) {
+                return label;
+            }
+        }
+    }
+    return label;
+}
+/** @private */
+export function showTooltip(text: string, x: number, y: number, areaWidth: number, id: string, element: Element ): void {
+    //let id1: string = 'EJ2_legend_tooltip';
+    let tooltip: HTMLElement = document.getElementById(id);
+    let width: number = measureText(text, {
+        fontFamily: 'Segoe UI', size: '12px',
+        fontStyle: 'Normal', fontWeight: 'Regular'
+    }).width + 5;
+    x = (x + width > areaWidth) ? x - width : x;
+    if (!tooltip) {
+        tooltip = createElement('div', {
+            innerHTML: text,
+            id: id,
+            styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
+                'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
+                'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
+                'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
+        });
+        element.appendChild(tooltip);
+    } else {
+        tooltip.innerHTML = text;
+        tooltip.style.top = (y + 15).toString() + 'px';
+        tooltip.style.left = (x + 15).toString() + 'px';
     }
 }
 

@@ -661,9 +661,18 @@ export class TextSearch {
 
     private createRequestForSearch(pageIndex: number): void {
         let proxy: TextSearch = this;
+        let viewportWidth: number = this.pdfViewer.element.clientWidth;
+        let viewportHeight: number = this.pdfViewer.element.clientHeight;
+        let pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
+        let pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
+        let tileCount: number = this.pdfViewerBase.getTileCount(pageWidth);
+        let noTileX: number = viewportWidth > pageWidth ? 1 : tileCount;
+        let noTileY: number = viewportWidth > pageWidth ? 1 : tileCount;
+        for (let x: number = 0; x < noTileX; x++) {
+            for (let y: number = 0; y < noTileY; y++) {
         let jsonObject: object;
         // tslint:disable-next-line:max-line-length
-        jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), action: 'RenderPdfPages', elementId: proxy.pdfViewer.element.id };
+        jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viwePortWidth: viewportWidth,  viewportHeight: viewportHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount : tileCount, action: 'RenderPdfPages', elementId: proxy.pdfViewer.element.id };
         if (this.pdfViewerBase.jsonDocumentId) {
             // tslint:disable-next-line
             (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
@@ -687,7 +696,12 @@ export class TextSearch {
                 }
                 if (data) {
                     if (data.pageText) {
-                        proxy.pdfViewerBase.storeWinData(data, pageIndex);
+                        let pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
+                        if (viewportWidth > pageWidth) {
+                            proxy.pdfViewerBase.storeWinData(data, pageNumber);
+                        } else {
+                            proxy.pdfViewerBase.storeWinData(data, pageNumber, data.tileX, data.tileY);
+                        }
                         proxy.initSearch(pageIndex, false);
                     }
                 }
@@ -702,6 +716,8 @@ export class TextSearch {
             proxy.pdfViewerBase.openNotificationPopup();
             proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, this.pdfViewer.serverActionSettings.renderPages);
         };
+    }
+}
     }
 
     private createSearchBoxButtons(id: string, className: string): HTMLElement {

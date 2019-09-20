@@ -7,7 +7,7 @@ import { IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { attributes, setValue } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, extend } from '@syncfusion/ej2-base';
 import { EventHandler, Property, Event, compile, L10n, EmitType, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { Animation, AnimationModel, Browser, prepend } from '@syncfusion/ej2-base';
+import { Animation, AnimationModel, Browser, prepend, isBlazor } from '@syncfusion/ej2-base';
 import { MultiSelectModel } from '../multi-select';
 import { Search } from '../common/incremental-search';
 import { append, addClass, removeClass, setStyleAttribute, closest, detach, remove, select } from '@syncfusion/ej2-base';
@@ -1016,6 +1016,20 @@ export class MultiSelect extends DropDownBase implements IInput {
                     }
             }
         }
+    }
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    public filter(
+        dataSource: { [key: string]: Object }[] | DataManager | string[] | number[] | boolean[],
+        query?: Query, fields?: FieldSettingsModel): void {
+        this.isFiltered = true;
+        this.remoteFilterAction = true;
+        this.dataUpdater(dataSource, query, fields);
     }
     protected getQuery(query: Query): Query {
         let filterQuery: Query = query ? query.clone() : this.query ? this.query.clone() : new Query();
@@ -2107,6 +2121,9 @@ export class MultiSelect extends DropDownBase implements IInput {
         };
         this.trigger('tagging', eventArgs, (eventArgs: TaggingEventArgs) => {
             if (!eventArgs.cancel) {
+                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && isBlazor()) {
+                    addClass([chip], eventArgs.setClass);
+                }
                 if (Browser.isDevice) {
                     chip.classList.add(MOBILE_CHIP);
                     append([chipClose], chip);
@@ -2221,8 +2238,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             if (!this.isFirstClick) {
                                 let ulElement: HTMLElement = this.list.querySelector('ul');
                                 if (ulElement) {
-                                    let isBlazor: boolean = (Object.keys(window) as string[]).indexOf('Blazor') >= 0;
-                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor) {
+                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor()) {
                                         setTimeout(
                                             (): void => {
                                                 this.mainList = this.ulElement;
@@ -3658,6 +3674,7 @@ export interface TaggingEventArgs {
      * To set the classes to chip element
      * @param  { string } classes - Specify the classes to chip element.
      * @return {void}.
+     * @blazorType string
      */
     setClass: Function;
     /**

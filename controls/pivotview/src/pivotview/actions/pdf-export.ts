@@ -6,9 +6,11 @@ import {
 import { PivotView } from '../base/pivotview';
 import * as events from '../../common/base/constant';
 import { BeforeExportEventArgs, PdfThemeStyle, PdfBorder, PdfTheme, PdfCellRenderArgs } from '../../common/base/interface';
-import { IAxisSet, IPivotValues, IPageSettings } from '../../base/engine';
+import { IAxisSet, IPivotValues, IPageSettings, IDataOptions, PivotEngine } from '../../base/engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PdfBorderStyle } from '../../common/base/enum';
+import { OlapEngine } from '../../base/olap/engine';
+import { PivotUtil } from '../../base/util';
 
 /**
  * @hidden
@@ -17,6 +19,7 @@ import { PdfBorderStyle } from '../../common/base/enum';
 export class PDFExport {
     private parent: PivotView;
     private gridStyle: PdfTheme;
+    private engine: PivotEngine | OlapEngine;
 
     /**
      * Constructor for the PivotGrid PDF Export module.
@@ -179,12 +182,16 @@ export class PDFExport {
      */
     /* tslint:disable:max-func-body-length */
     public exportToPDF(): void {
+        this.engine = this.parent.dataType === 'olap' ? this.parent.olapEngineModule : this.parent.engineModule;
         let eventParams: { document: PdfDocument, args: BeforeExportEventArgs } = this.applyEvent();
         let headerStyle: ITheme = this.getStyle();
+        let indent: number = this.parent.renderModule.maxIndent ? this.parent.renderModule.maxIndent : 5;
+        let firstColumnWidth: number = 100 + (indent * 20);
+        let size: number = Math.floor((540 - firstColumnWidth) / 90) + 1;
         /** Fill data and export */
         let dataCollIndex: number = 0; let pivotValues: IPivotValues = eventParams.args.dataCollections[dataCollIndex];
-        for (let vLen: number = 0; eventParams.args.allowRepeatHeader && vLen < pivotValues.length; vLen++) {
-            for (let vCnt: number = 6; pivotValues[vLen] && vCnt < pivotValues[vLen].length; vCnt += 6) {
+        for (let vLen: number = 0; eventParams.args.allowRepeatHeader && size > 1 && vLen < pivotValues.length; vLen++) {
+            for (let vCnt: number = size; pivotValues[vLen] && vCnt < pivotValues[vLen].length; vCnt += size) {
                 (pivotValues[vLen] as IAxisSet[]).splice(vCnt, 0, pivotValues[vLen][0] as IAxisSet);
             }
         }
@@ -192,14 +199,15 @@ export class PDFExport {
         let integratedCnt: number = 0;
         do {
             let page: PdfPage = this.addPage(eventParams); let pdfGrid: PdfGrid = new PdfGrid();
+            let pageSize: number = size > 1 ? size : 5;
             if (pivotValues && pivotValues.length > 0) {
-                pdfGrid.columns.add(pivotValues[0].length - integratedCnt >= 6 ? 6 : pivotValues[0].length - integratedCnt);
+                pdfGrid.columns.add(pivotValues[0].length - integratedCnt >= pageSize ? pageSize : pivotValues[0].length - integratedCnt);
                 let rowLen: number = pivotValues.length;
                 let actualrCnt: number = 0; let maxLevel: number = 0;
                 for (let rCnt: number = 0; rCnt < rowLen; rCnt++) {
                     if (pivotValues[rCnt]) {
                         let isColHeader: boolean = !(pivotValues[rCnt][0] && (pivotValues[rCnt][0] as IAxisSet).axis === 'row');
-                        let colLen: number = pivotValues[rCnt].length > (integratedCnt + 6) ? (integratedCnt + 6) :
+                        let colLen: number = pivotValues[rCnt].length > (integratedCnt + pageSize) ? (integratedCnt + pageSize) :
                             pivotValues[rCnt].length;
                         if (isColHeader) {
                             pdfGrid.headers.add(1);
@@ -226,7 +234,7 @@ export class PDFExport {
                                             cellValue.toString().replace('Total', this.parent.localeObj.getConstant('total')) : cellValue);
                                     if (!(pivotCell.level === -1 && !pivotCell.rowSpan)) {
                                         pdfGridRow.cells.getCell(localCnt).columnSpan = pivotCell.colSpan ?
-                                            (6 - localCnt < pivotCell.colSpan ? 6 - localCnt : pivotCell.colSpan) : 1;
+                                            (pageSize - localCnt < pivotCell.colSpan ? pageSize - localCnt : pivotCell.colSpan) : 1;
                                         if (isColHeader && pivotCell.rowSpan && pivotCell.rowSpan > 1) {
                                             pdfGridRow.cells.getCell(localCnt).rowSpan = pivotCell.rowSpan ? pivotCell.rowSpan : 1;
                                         }
@@ -271,13 +279,21 @@ export class PDFExport {
                                 } else if (cCnt !== 0 && isColHeader && this.parent.dataSourceSettings.columns &&
                                     this.parent.dataSourceSettings.columns.length > 0 &&
                                     pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan <
-                                    Object.keys(this.parent.engineModule.headerContent).length) {
+                                    Object.keys(this.engine.headerContent).length) {
                                     pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan++;
                                 }
                             }
                             let stringFormat: PdfStringFormat = new PdfStringFormat();
-                            stringFormat.paragraphIndent = (!isColHeader && localCnt === 0 && (pivotValues[rCnt][cCnt] as IAxisSet)) ?
-                                (pivotValues[rCnt][cCnt] as IAxisSet).level * 15 : 0;
+                            if (this.parent.dataType === 'olap') {
+                                let indent: number = (!isColHeader && localCnt === 0 && (pivotValues[rCnt][cCnt] as IAxisSet)) ?
+                                    (this.parent.renderModule.indentCollection[(pivotValues[rCnt][cCnt] as IAxisSet).rowIndex]) : 0;
+                                stringFormat.paragraphIndent = indent * 15;
+                                maxLevel = maxLevel > indent ? maxLevel : indent;
+                            } else {
+                                stringFormat.paragraphIndent = (!isColHeader && localCnt === 0 && (pivotValues[rCnt][cCnt] as IAxisSet) &&
+                                    (pivotValues[rCnt][cCnt] as IAxisSet).level !== -1) ?
+                                    (pivotValues[rCnt][cCnt] as IAxisSet).level * 15 : 0;
+                            }
                             stringFormat.alignment = isValueCell ? PdfTextAlignment.Right : PdfTextAlignment.Left;
                             stringFormat.lineAlignment = PdfVerticalAlignment.Middle;
                             pdfGridRow.cells.getCell(localCnt).style.stringFormat = stringFormat;
@@ -295,7 +311,7 @@ export class PDFExport {
                 pdfGrid.headers.getHeader(0).cells.getCell(0).rowSpan--;
             }
             pdfGrid.draw(page, new PointF(10, 20));
-            integratedCnt = integratedCnt + 6;
+            integratedCnt = integratedCnt + pageSize;
             if (integratedCnt >= colLength && eventParams.args.dataCollections.length > (dataCollIndex + 1)) {
                 dataCollIndex++;
                 pivotValues = eventParams.args.dataCollections[dataCollIndex];
@@ -341,7 +357,8 @@ export class PDFExport {
         if (theme.style.font) {
             return theme.style.font;
         }
-        let fontSize: number = (!isNullOrUndefined(theme.style.fontSize)) ? (theme.style.fontSize * 0.75) : 9.75;
+        let fontSize: number = (theme.cell.cellStyle.font && theme.cell.cellStyle.font.fontSize) ? theme.cell.cellStyle.font.fontSize :
+            (!isNullOrUndefined(theme.style.fontSize)) ? (theme.style.fontSize * 0.75) : 9.75;
 
         let fontFamily: number = (!isNullOrUndefined(theme.style.fontFamily)) ?
             (this.getFontFamily(theme.style.fontFamily)) : PdfFontFamily.TimesRoman;
@@ -401,13 +418,19 @@ export class PDFExport {
 
     private applyEvent(): { document: PdfDocument, args: BeforeExportEventArgs } {
         /** Event trigerring */
-        if (this.parent.enableVirtualization) {
-            let pageSettings: IPageSettings = this.parent.engineModule.pageSettings;
-            this.parent.engineModule.pageSettings = null;
-            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings);
-            this.parent.engineModule.pageSettings = pageSettings;
+        let clonedValues: IPivotValues;
+        let currentPivotValues: IPivotValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
+        if (this.parent.enableVirtualization && this.parent.dataType !== 'olap') {
+            let pageSettings: IPageSettings = this.engine.pageSettings;
+            this.engine.pageSettings = null;
+            (this.engine as PivotEngine).generateGridData(this.parent.dataSourceSettings as IDataOptions);
+            this.parent.applyFormatting(this.engine.pivotValues);
+            clonedValues = PivotUtil.getClonedPivotValues(this.engine.pivotValues);
+            this.engine.pivotValues = currentPivotValues;
+            this.engine.pageSettings = pageSettings;
+        } else {
+            clonedValues = currentPivotValues;
         }
-        let clonedValues: IPivotValues = JSON.parse(JSON.stringify(this.parent.engineModule.pivotValues));
         let style: PdfTheme;
         let args: BeforeExportEventArgs = {
             fileName: 'default', header: '', footer: '', dataCollections: [clonedValues], allowRepeatHeader: true, style: style

@@ -853,7 +853,7 @@ export class DateProcessor {
             return new Date(date.getTime());
         } else {
             let dateObject: Date = this.parent.globalize.parseDate(date, { format: this.parent.dateFormat, type: 'dateTime' });
-            return isNullOrUndefined(dateObject) ? new Date(date) : dateObject;
+            return isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
         }
     }
     /**

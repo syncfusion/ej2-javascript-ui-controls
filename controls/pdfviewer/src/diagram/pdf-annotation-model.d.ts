@@ -68,6 +68,37 @@ export interface PdfBoundsModel {
 }
 
 /**
+ * Interface for a class PdfFont
+ */
+export interface PdfFontModel {
+
+    /**
+     * Represents the the font Bold style of annotation text content.
+     * @default 'false'
+     */
+    isBold?: boolean;
+
+    /**
+     * Represents the the font Italic style of annotation text content.
+     * @default 'false'
+     */
+    isItalic?: boolean;
+
+    /**
+     * Represents the the font Underline style of annotation text content.
+     * @default 'false'
+     */
+    isUnderline?: boolean;
+
+    /**
+     * Represents the the font Strikeout style of annotation text content.
+     * @default 'false'
+     */
+    isStrikeout?: boolean;
+
+}
+
+/**
  * Interface for a class PdfAnnotationBase
  */
 export interface PdfAnnotationBaseModel {
@@ -294,6 +325,78 @@ export interface PdfAnnotationBaseModel {
      * @default []
      */
     comments?: ICommentsCollection[];
+
+    /**
+     * Represents the comments collection of the annotation 
+     * @default '#000'
+     */
+    fontColor?: string;
+
+    /**
+     * Represents the font size of the annotation content
+     * @default '16'
+     */
+    fontSize?: number;
+
+    /**
+     * Represents the font family of the annotation content
+     * @default 'Helvetica'
+     */
+    fontFamily?: string;
+
+    /**
+     * Represents the shape annotation label add flag
+     * @default 'false'
+     */
+    enableShapeLabel?: boolean;
+
+    /**
+     * Represents the shape annotation label content
+     * @default 'label'
+     */
+    labelContent?: string;
+
+    /**
+     * Represents the shape annotation label content fill color
+     * @default '#ffffff00'
+     */
+    labelFillColor?: string;
+
+    /**
+     * Represents the shape annotation label content max-length
+     * @default '15'
+     */
+    labelMaxLength?: number;
+
+    /**
+     * Represents the opecity value of the annotation 
+     * @default 1
+     */
+    labelOpacity?: number;
+
+    /**
+     * Represents the shape annotation label content border color
+     * @default '#ffffff00'
+     */
+    labelBorderColor?: string;
+
+    /**
+     * Represents the text anlignment style of annotation
+     * @default 'left'
+     */
+    textAlign?: string;
+
+    /**
+     * Represents the text style of annotation
+     * @default ''
+     */
+    font?: PdfFontModel;
+
+    /**
+     * Represents the shape annotation label content bounds
+     * @default ''
+     */
+    labelBounds?: PdfBoundsModel;
 
 }
 

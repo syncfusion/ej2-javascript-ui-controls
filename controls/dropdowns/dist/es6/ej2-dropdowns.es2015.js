@@ -2334,6 +2334,17 @@ let DropDownList = class DropDownList extends DropDownBase {
             });
         }
     }
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    filter(dataSource, query, fields) {
+        this.isCustomFilter = true;
+        this.filteringAction(dataSource, query, fields);
+    }
     filteringAction(dataSource, query, fields) {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
@@ -5224,6 +5235,18 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             }
         }
     }
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    filter(dataSource, query, fields) {
+        this.isFiltered = true;
+        this.remoteFilterAction = true;
+        this.dataUpdater(dataSource, query, fields);
+    }
     getQuery(query) {
         let filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
         if (this.filterAction) {
@@ -6334,6 +6357,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         };
         this.trigger('tagging', eventArgs, (eventArgs) => {
             if (!eventArgs.cancel) {
+                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && isBlazor()) {
+                    addClass([chip], eventArgs.setClass);
+                }
                 if (Browser.isDevice) {
                     chip.classList.add(MOBILE_CHIP);
                     append([chipClose], chip);
@@ -6458,8 +6484,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             if (!this.isFirstClick) {
                                 let ulElement = this.list.querySelector('ul');
                                 if (ulElement) {
-                                    let isBlazor$$1 = Object.keys(window).indexOf('Blazor') >= 0;
-                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor$$1) {
+                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor()) {
                                         setTimeout(() => {
                                             this.mainList = this.ulElement;
                                         }, 0);

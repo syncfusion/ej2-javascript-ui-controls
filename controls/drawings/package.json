@@ -1,10 +1,10 @@
 {
 	"name": "@syncfusion/ej2-drawings",
-	"version": "17.2.47",
+	"version": "17.2.48",
 	"description": "ej2-drawings",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
-	"main": "./dist/ej2-drawing.umd.min.js",
+	"main": "./dist/ej2-drawings.umd.min.js",
 	"module": "./index.js",
 	"es2015": "./dist/es6/ej2-drawings.es2015.js",
 	"dependencies": {

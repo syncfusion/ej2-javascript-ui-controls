@@ -595,7 +595,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     protected render(): void {
         this.initialize();
-        this.setProperties({ selectedItems: (isNOU(this.selectedItems)) ? [] : this.selectedItems }, true);
+        let slItems: string[] = isNOU(this.selectedItems) ? [] :
+            this.allowMultiSelection ? this.selectedItems : this.selectedItems.slice(this.selectedItems.length - 1);
+        this.setProperties({ selectedItems: slItems }, true);
         this.fileView = this.view;
         this.setRtl(this.enableRtl);
         this.addEventListeners();
@@ -1072,6 +1074,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     if (this.allowMultiSelection) {
                         addClass([this.element], CLS.CHECK_SELECT);
                     } else {
+                        if (this.selectedItems.length > 1) {
+                            this.setProperties({ selectedItems: this.selectedItems.slice(this.selectedItems.length - 1) }, true);
+                        }
                         removeClass([this.element], CLS.CHECK_SELECT);
                     }
                     this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });

@@ -176,6 +176,12 @@ export class TableCommand {
             }
         }
         if (e.callBack) {
+            let sContainer: Node = this.parent.nodeSelection.getRange(this.parent.currentDocument).startContainer;
+            if (sContainer.nodeName !== 'TD') {
+                let startChildLength: number = this.parent.nodeSelection.getRange(this.parent.currentDocument).startOffset;
+                let focusNode: Element = (sContainer as HTMLElement).children[startChildLength];
+                this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, focusNode, 0);
+            }
             e.callBack({
                 requestType: e.item.subCommand,
                 editorMode: 'HTML',

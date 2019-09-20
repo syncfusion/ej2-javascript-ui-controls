@@ -66,4 +66,22 @@ export interface EventSettingsModel {
      */
     editFollowingEvents?: boolean;
 
+    /**
+     * When set to `false` the add action will be restricted.
+     * @default true
+     */
+    allowAdding?: boolean;
+
+    /**
+     * When set to `false` the edit action will be restricted.
+     * @default true
+     */
+    allowEditing?: boolean;
+
+    /**
+     * When set to `false` the delete action will be restricted.
+     * @default true
+     */
+    allowDeleting?: boolean;
+
 }

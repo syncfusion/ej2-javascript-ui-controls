@@ -1,8 +1,8 @@
 import { Component, Property, ChildProperty, INotifyPropertyChanged, NotifyPropertyChanges, Animation } from '@syncfusion/ej2-base';
-import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler, isBlazor } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined as isNOU,  getUniqueID, formatUnit, EventHandler } from '@syncfusion/ej2-base';
 import { EmitType, Collection, Complex, setStyleAttribute, Event, Effect, detach, AnimationModel } from '@syncfusion/ej2-base';
 import { attributes, extend, closest, compile as templateCompiler, classList, BaseEventArgs, isUndefined} from '@syncfusion/ej2-base';
-import { SwipeEventArgs, Touch } from '@syncfusion/ej2-base';
+import { SwipeEventArgs, Touch, updateBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { ButtonModel, Button  } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 import { ToastModel, ButtonModelPropsModel, ToastPositionModel } from './toast-model';
@@ -483,7 +483,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         extend(this, this, toastObj); }
       if (isNOU(this.toastContainer)) {
         this.toastContainer = this.getContainer();
-        let target: HTEle = typeof (this.target) === 'string' ? <HTEle>document.querySelector(this.target) : <HTEle>this.target;
+        let target: HTEle = typeof (this.target) === 'string' ? <HTEle>document.querySelector(this.target) : <HTEle>document.body;
         if (isNOU(target)) {
           return; }
         if (target.tagName === 'BODY') {
@@ -570,6 +570,16 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       let templateFn: Function;
       let tempVar: HTEle;
       let tmpArray: HTEle[];
+      let templateProps: string;
+      let templateValue: string;
+      let blazorContain: string[] = Object.keys(window) as string[];
+      if (ele.classList.contains(TITLE)) {
+        templateProps = this.element.id + 'title';
+      } else if (ele.classList.contains(CONTENT)) {
+        templateProps = this.element.id + 'content';
+      } else {
+        templateProps = this.element.id + 'template';
+      }
       prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
       if (!isNOU(tempVar)) {
         ele.appendChild(tempVar.cloneNode(true));
@@ -587,9 +597,17 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         }
       } catch (e) {
         templateFn = templateCompiler(value);
+        templateValue = value;
       }
       if (!isNOU(templateFn)) {
-        tmpArray = templateFn({}, this, prob, null, true);
+        if (!isBlazor()) {
+          tmpArray = templateFn({}, this, prob, null, true);
+        } else {
+          let isString: boolean = (blazorContain.indexOf('ejsInterop') !== -1 &&
+                !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0 ) ?
+                this.isStringTemplate : true;
+          tmpArray = templateFn({}, this, prob, templateProps, isString);
+        }
       }
       if (!isNOU(tmpArray) && tmpArray.length > 0 && !(isNOU(tmpArray[0].tagName) && tmpArray.length === 1) ) {
         [].slice.call(tmpArray).forEach((el: HTEle): void => {
@@ -598,10 +616,23 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
           }
           ele.appendChild(el);
         });
+        if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
+          this.blazorTemplate(templateProps);
+        }
       } else if (ele.childElementCount === 0) {
           ele.innerHTML = value;
       }
       return ele;
+    }
+
+    private blazorTemplate(templateProps: string): void {
+        if (templateProps === this.element.id + 'title') {
+          updateBlazorTemplate(templateProps, 'Title', this, false);
+        } else if (templateProps === this.element.id + 'content') {
+          updateBlazorTemplate(templateProps, 'Content', this, false);
+        } else {
+          updateBlazorTemplate(templateProps, 'Template', this, false);
+        }
     }
 
     private clearProgress(intervalId: number) : void {
@@ -664,7 +695,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
         this.progressObj[intervalId].progressEle.style.width = '0%'; }
       animate.end = () => {
         this.clearProgress(intervalId);
-        detach(toastEle);
+        if (!toastEle.querySelector('.blazor-inner-template')) { detach(toastEle); }
         this.trigger('close', toastClose);
         if (this.toastContainer.childElementCount === 0) { this.clearContainerPos(); }
       };

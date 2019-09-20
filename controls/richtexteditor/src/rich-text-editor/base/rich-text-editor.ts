@@ -9,9 +9,9 @@ import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
-import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';
+import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs} from './interface';
 import { BeforeQuickToolbarOpenArgs } from './interface';
-import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
+import { IExecutionGroup, executeGroup, CommandName, ResizeArgs, QuickToolbarArgs } from './interface';
 import { ILinkCommandsArgs, IImageCommandsArgs, BeforeSanitizeHtmlArgs } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -44,7 +44,9 @@ import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
 import { dispatchEvent, getEditValue, isIDevice, decode, isEditableValueEmpty } from '../base/util';
 import { DialogRenderer } from '../renderer/dialog-renderer';
-import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
+import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs, FileInfo } from '@syncfusion/ej2-inputs';
+import { Resize } from '../actions/resize';
+import { ItemModel } from '@syncfusion/ej2-navigations';
 
 export interface ChangeEventArgs {
     /**
@@ -52,6 +54,201 @@ export interface ChangeEventArgs {
      */
     value: string;
     /** Defines the event name. */
+    name?: string;
+}
+
+export interface RichTextEditorDialogOpenEvent {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    target: HTMLElement | String;
+    /**
+     * Returns the root container element of the dialog.
+     */
+    container: HTMLElement;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface RichTextEditorDialogCloseEvent {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Returns the root container element of the dialog.
+     */
+    container: HTMLElement;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
+    /**
+     * DEPRECATED-Determines whether the event is triggered by interaction.
+     */
+    isInteraction: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    target: HTMLElement | String;
+}
+
+export interface ToolbarStatusUpdateEvent {
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+    /**
+     * Specify the name of the event.
+     */
+    redo: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    undo: boolean;
+}
+
+export interface ImageUploadSuccessEvent {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object;
+    /**
+     * Returns the details about upload file.
+     */
+    file: FileInfo;
+    /**
+     * Returns the upload status.
+     */
+    statusText?: string;
+    /**
+     * Returns the upload event operation.
+     */
+    operation: string;
+    /**
+     * Returns the upload event operation.
+     */
+    response?: ResponseEventArgs;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface ImageUploadFailedEvent {
+    /**
+     * Returns the original event arguments.
+     */
+    e?: object;
+    /**
+     * Returns the details about upload file.
+     */
+    file: FileInfo;
+    /**
+     * Returns the upload status.
+     */
+    statusText?: string;
+    /**
+     * Returns the upload event operation.
+     */
+    operation: string;
+    /**
+     * Returns the upload event operation.
+     */
+    response?: ResponseEventArgs;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+interface ResponseEventArgs {
+    headers?: string;
+    readyState?: object;
+    statusCode?: object;
+    statusText?: string;
+    withCredentials?: boolean;
+}
+
+export interface DestroyedEvent {
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+}
+
+export interface BlurEvent {
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface RichTextEditorToolbarClickEvent {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Defines the current Toolbar Item Object.
+     */
+    item: ItemModel;
+    /**
+     * Defines the current Event arguments
+     */
+    originalEvent: MouseEvent;
+    /**
+     * Specify the request type of the event.
+     */
+    requestType: string;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
+}
+
+export interface RichTextEditorFocusEvent {
+    /**
+     * Returns the original event arguments.
+     */
+    event: FocusEvent;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
+    /**
+     * Specify the name of the event.
+     */
     name?: string;
 }
 
@@ -127,6 +324,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * @hidden
      */
+    public resizeModule: Resize;
+
+    /**
+     * @hidden
+     */
+
     public pasteCleanupModule: PasteCleanup;
 
     /**
@@ -312,7 +515,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specifies the width of the RichTextEditor.
      * @default '100%'
-     * @blazorType string
      */
     @Property('100%')
     public width: string | number;
@@ -323,6 +525,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Property(false)
     public enablePersistence: boolean;
+    /**
+     * Enables or disables the resizing option in the editor. 
+     * If enabled, the RichTextEditor can be resized by dragging the resize icon in the bottom right corner.
+     * @default false.
+     */
+    @Property(false)
+    public enableResize: boolean;
     /**
      * Allows additional HTML attributes such as title, name, etc., and 
      * It will be accepts n number of attributes in a key-value pair format.
@@ -358,7 +567,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**    
      * Specifies the height of the RichTextEditor component.    
      * @default "auto"    
-     * @blazorType string
      */
     @Property('auto')
     public height: string | number;
@@ -574,6 +782,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when a dialog is opened.
      * @event
      * @blazorProperty 'DialogOpened'
+     * @blazorType RichTextEditorDialogOpenEvent
      */
     @Event()
     public dialogOpen: EmitType<Object>;
@@ -581,6 +790,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers after the dialog has been closed.
      * @event
      * @blazorProperty 'DialogClosed'
+     * @blazorType RichTextEditorDialogCloseEvent
      */
     @Event()
     public dialogClose: EmitType<Object>;
@@ -596,6 +806,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when a quick toolbar is opened.
      * @event
      * @blazorProperty 'QuickToolbarOpened'
+     * @blazorType QuickToolbarArgs
      */
     @Event()
     public quickToolbarOpen: EmitType<Object>;
@@ -603,12 +814,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers after the quick toolbar has been closed.
      * @event
      * @blazorProperty 'QuickToolbarClosed'
+     * @blazorType QuickToolbarArgs
      */
     @Event()
     public quickToolbarClose: EmitType<Object>;
     /** 
      * Triggers when the undo and redo status is updated.
-     * @event 
+     * @event
+     * @blazorType ToolbarStatusUpdateEvent
      */
     @Event()
     private toolbarStatusUpdate: EmitType<Object>;
@@ -630,6 +843,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when the image is successfully uploaded to the server side.
      * @event
      * @blazorProperty 'OnImageUploadSuccess'
+     * @blazorType ImageUploadSuccessEvent
      */
     @Event()
     public imageUploadSuccess: EmitType<Object>;
@@ -637,6 +851,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Event triggers when there is an error in the image upload.
      * @event
      * @blazorProperty 'OnImageUploadFailed'
+     * @blazorType ImageUploadFailedEvent
      */
     @Event()
     public imageUploadFailed: EmitType<Object>;
@@ -658,6 +873,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when the RichTextEditor is destroyed.
      * @event 
      * @blazorProperty 'Destroyed'
+     * @blazorType DestroyedEvent
      */
     @Event()
     public destroyed: EmitType<Object>;
@@ -671,6 +887,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Triggers when RichTextEditor is focused out.
      * @event
+     * @blazorType BlurEvent
      */
     @Event()
     public blur: EmitType<Object>;
@@ -678,12 +895,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * Triggers when RichTextEditor Toolbar items is clicked.
      * @event
      * @blazorProperty 'OnToolbarClick'
+     * @blazorType RichTextEditorToolbarClickEvent
      */
     @Event()
     public toolbarClick: EmitType<Object>;
     /** 
      * Triggers when RichTextEditor is focused in
      * @event
+     * @blazorType RichTextEditorFocusEvent
      */
     @Event()
     public focus: EmitType<Object>;
@@ -718,6 +937,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**     
      * Customize keyCode to change the key value. 
      * @default null 
+     * @blazorType object
      */
     @Property(null)
     public formatter: IFormatter;
@@ -777,6 +997,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             );
             modules.push(
                 { member: 'pasteCleanup', args: [this, this.serviceLocator] }
+            );
+        }
+        if (this.enableResize) {
+            modules.push(
+                { member: 'resize', args: [this] }
             );
         }
         return modules;
@@ -862,8 +1087,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }) as HTMLElement;
             if (!this.isBlazor()) { this.element.innerHTML = ''; }
             this.element.parentElement.insertBefore(rteOuterWrapper, this.element);
-            this.valueContainer = this.element as HTMLTextAreaElement;
+            if (isBlazor()) {
+                rteOuterWrapper.appendChild(this.element);
+                this.valueContainer = this.createElement('textarea', {
+                    id: this.element.id + '-value'
+                }) as HTMLTextAreaElement;
+            } else {
+                this.valueContainer = this.element as HTMLTextAreaElement;
+            }
             removeClass([this.valueContainer], this.element.getAttribute('class').split(' '));
+            if (this.isBlazor()) { addClass([this.element], classes.CLS_RTE_HIDDEN); }
             this.element = rteOuterWrapper;
         } else {
             this.valueContainer = this.createElement('textarea', {
@@ -1260,6 +1493,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
         this.unWireEvents();
         if (this.originalElement.tagName === 'TEXTAREA') {
+            if (isBlazor()) {
+                detach(this.valueContainer);
+                this.valueContainer = this.element.querySelector('.e-blazor-hidden.e-control.e-richtexteditor');
+            }
             this.element.parentElement.insertBefore(this.valueContainer, this.element);
             this.valueContainer.id = this.getID();
             this.valueContainer.removeAttribute('name');
@@ -1769,15 +2006,17 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             <HTMLElement>this.contentModule.getPanel();
         let rteHeight: number = this.element.offsetHeight;
         let tbHeight: number = this.getToolbar() ? this.toolbarModule.getToolbarHeight() : 0;
+        let rzHeight: number = this.enableResize ?
+            (this.element.querySelector('.' + classes.CLS_RTE_RES_HANDLE) as HTMLElement).offsetHeight + 8 : 0;
         let expandPopHeight: number = this.getToolbar() ? this.toolbarModule.getExpandTBarPopHeight() : 0;
         if (this.toolbarSettings.type === ToolbarType.Expand && isExpand && target !== 'preview') {
-            heightValue = (this.height === 'auto') ? 'auto' : rteHeight - (tbHeight + expandPopHeight) + 'px';
+            heightValue = (this.height === 'auto' && rzHeight === 0) ? 'auto' : rteHeight - (tbHeight + expandPopHeight + rzHeight) + 'px';
             topValue = (!this.toolbarSettings.enableFloating) ? expandPopHeight : 0;
         } else {
             if (this.height === 'auto' && !(this.element.classList.contains('e-rte-full-screen'))) {
                 heightValue = 'auto';
             } else {
-                heightValue = rteHeight - tbHeight + 'px';
+                heightValue = rteHeight - (tbHeight + rzHeight)  + 'px';
             }
         }
         setStyleAttribute(cntEle, { height: heightValue, marginTop: topValue + 'px' });
@@ -1792,7 +2031,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 setStyleAttribute(this.getToolbar().parentElement, { height: tbHeight + 'px' });
             }
         }
-        this.autoResize();
+        if (rzHeight === 0) {
+            this.autoResize();
+        }
     }
     /**
      * Retrieves the HTML from RichTextEditor.
@@ -1810,10 +2051,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.notify(events.sourceCode, {});
     }
 
-     /**
-      * Returns the maximum number of characters in the Rich Text Editor.
-      * @public
-      */
+    /**
+     * Returns the maximum number of characters in the Rich Text Editor.
+     * @public
+     */
     public getCharCount(): number {
         let htmlText : string = this.editorMode === 'Markdown' ? (this.inputElement as HTMLTextAreaElement).value.trim() :
             (this.inputElement as HTMLTextAreaElement).textContent.trim();
@@ -1894,6 +2135,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private scrollHandler(e: Event): void {
         this.notify(events.scroll, { args: e });
+    }
+
+    private contentScrollHandler(e: Event): void {
+        this.notify(events.contentscroll, { args: e });
     }
 
     private focusHandler(e: FocusEvent): void {
@@ -2020,7 +2265,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.add(element, 'scroll', this.scrollHandler, this);
         }
         if (!this.iframeSettings.enable) {
-            EventHandler.add(this.contentModule.getPanel(), 'scroll', this.scrollHandler, this);
+            EventHandler.add(this.contentModule.getPanel(), 'scroll', this.contentScrollHandler, this);
         }
     }
 
@@ -2047,7 +2292,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
         if (!this.iframeSettings.enable) {
-            EventHandler.remove(this.contentModule.getPanel(), 'scroll', this.scrollHandler);
+            EventHandler.remove(this.contentModule.getPanel(), 'scroll', this.contentScrollHandler);
         }
     }
 
@@ -2095,7 +2340,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.readonly && this.enabled) { return; }
         this.bindEvents();
     }
-
     private restrict(e: MouseEvent | KeyboardEvent): void {
         if (this.maxLength >= 0 ) {
             let element: string = ((e as MouseEvent).currentTarget as HTMLElement).textContent.trim();
@@ -2136,7 +2380,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.iframeSettings.enable) {
             EventHandler.add(this.inputElement, 'focusin', this.focusHandler, this);
             EventHandler.add(this.inputElement, 'focusout', this.blurHandler, this);
-            EventHandler.add(this.inputElement.ownerDocument, 'scroll', this.scrollHandler, this);
+            EventHandler.add(this.inputElement.ownerDocument, 'scroll', this.contentScrollHandler, this);
             EventHandler.add(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown, this);
         }
         this.wireScrollElementsEvents();
@@ -2192,7 +2436,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.iframeSettings.enable) {
             EventHandler.remove(this.inputElement, 'focusin', this.focusHandler);
             EventHandler.remove(this.inputElement, 'focusout', this.blurHandler);
-            EventHandler.remove(this.inputElement.ownerDocument, 'scroll', this.scrollHandler);
+            EventHandler.remove(this.inputElement.ownerDocument, 'scroll', this.contentScrollHandler);
             EventHandler.remove(this.inputElement.ownerDocument, Browser.touchStartEvent, this.onIframeMouseDown);
         }
         this.unWireScrollElementsEvents();

@@ -332,11 +332,11 @@ describe('Uploader Control', () => {
         });
         it('cssClass testing initial null', () => {
         uploadObj = new Uploader({cssClass: null}, '#upload');
-        expect(uploadObj.uploadWrapper.classList.length).toEqual(3);
+        expect(uploadObj.uploadWrapper.classList.length).toEqual(4);
         });
         it('cssClass testing initial undefined', () => {
             uploadObj = new Uploader({cssClass: undefined}, '#upload');
-            expect(uploadObj.uploadWrapper.classList.length).toEqual(3);
+            expect(uploadObj.uploadWrapper.classList.length).toEqual(4);
         });
     });
     describe('cssClass Api', () => {

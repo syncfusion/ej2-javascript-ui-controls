@@ -64,7 +64,8 @@ export class ChartData {
     }
 
     public isSelected(chart : Chart) : boolean {
-        return (chart.selectionMode.indexOf('Drag') > -1 && chart.selectionModule && chart.selectionModule.rectPoints !== null);
+        return ((chart.selectionMode.indexOf('Drag') > -1 || chart.selectionMode.indexOf('Lasso') > -1 ) && chart.selectionModule &&
+                chart.selectionModule.rectPoints !== null);
     }
 
     private getRectPoint(series: Series, rect: Rect, x: number, y: number): Points {

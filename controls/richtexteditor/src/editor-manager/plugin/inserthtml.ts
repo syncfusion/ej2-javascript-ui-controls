@@ -98,6 +98,14 @@ export class InsertHtml {
                 nodeSelection.setSelectionText(docElement, node, node, node.textContent.length, node.textContent.length);
             }
         }
+        if (!isNOU(node) && !isNOU((node as HTMLElement).classList) && (node as HTMLElement).classList.contains('pasteContent')) {
+            let lastNode: Node = node.lastChild;
+            while (!isNOU(lastNode) && lastNode.nodeName !== '#text' && lastNode.nodeName !== 'IMG') {
+                lastNode = lastNode.lastChild;
+            }
+            lastNode = isNOU(lastNode) ? node : lastNode;
+            nodeSelection.setSelectionText(docElement, lastNode, lastNode, lastNode.textContent.length, lastNode.textContent.length);
+        }
     }
     private static findDetachEmptyElem(element: Element): HTMLElement {
         let removableElement: HTMLElement;

@@ -779,7 +779,6 @@ export class Splitter extends Component<HTMLElement> {
                 }
             } else {
                 this.updateResizablePanes(i);
-                addClass([separator], LAST_BAR );
             }
         }
     }
@@ -870,8 +869,8 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private wireResizeEvents(): void {
-        EventHandler.add(document, 'mousemove', this.onMouseMove, this);
         window.addEventListener('resize', this.reportWindowSize.bind(this));
+        EventHandler.add(document, 'mousemove', this.onMouseMove, this);
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         let touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
         let touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -1279,9 +1278,13 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private getPaneDetails(): void {
+        let prevPane: HTMLElement = null;
+        let nextPane: HTMLElement = null;
         this.order = parseInt(this.currentSeparator.style.order, 10);
-        let prevPane: HTMLElement = this.getPrevPane(this.currentSeparator, this.order);
-        let nextPane: HTMLElement = this.getNextPane(this.currentSeparator, this.order);
+        if (this.allPanes.length > 1) {
+            prevPane = this.getPrevPane(this.currentSeparator, this.order);
+            nextPane = this.getNextPane(this.currentSeparator, this.order);
+        }
         if (prevPane && nextPane) {
             this.previousPane = prevPane;
             this.nextPane = nextPane;
@@ -1795,7 +1798,9 @@ export class Splitter extends Component<HTMLElement> {
         this.allPanes.splice(index, 1);
         this.removePaneOrders(elementClass);
         this.updatePanes();
-        this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
+        if (this.allPanes.length > 0) {
+            this.allPanes[this.allPanes.length - 1].classList.remove(STATIC_PANE);
+        }
     }
 }
 

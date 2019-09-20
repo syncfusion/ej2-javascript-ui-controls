@@ -2,6 +2,7 @@ import { Browser } from '@syncfusion/ej2-base';
 import { PointModel } from '../primitives/point-model';
 import { Point } from '../primitives/point';
 import { IElement, IClickEventArgs, IDoubleClickEventArgs, IMouseEventArgs, StackEntryObject } from '../objects/interface/IElement';
+import { UserHandleEventsArgs } from '../objects/interface/IElement';
 import { ICommandExecuteEventArgs } from '../objects/interface/IElement';
 import { IBlazorDoubleClickEventArgs, IBlazorClickEventArgs, IBlazorMouseEventArgs } from '../objects/interface/IElement';
 import { DiagramElement } from '../core/elements/diagram-element';
@@ -65,6 +66,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
  */
 export class DiagramEventHandler {
     private currentAction: Actions = 'None';
+    private previousAction: Actions = 'None';
 
     /**   @private  */
     public focus: boolean = false;
@@ -325,6 +327,32 @@ export class DiagramEventHandler {
             },
             delay);
     }
+    private checkPreviousAction(): void {
+        if (this.action !== this.previousAction && this.diagram.selectedItems.userHandles.length) {
+            for (let i: number = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
+                if (this.previousAction && this.diagram.selectedItems.userHandles[i]) {
+                    this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseLeave);
+                    this.previousAction = 'None';
+                }
+            }
+        }
+    }
+    private checkUserHandleEvent(eventName: DiagramEvent): void {
+        if (this.diagram.selectedItems && this.diagram.selectedItems.userHandles.length > 0) {
+            let currentAction: Actions = (eventName === DiagramEvent.onUserHandleMouseLeave) ? this.previousAction : this.action;
+            let arg: UserHandleEventsArgs = { element: undefined };
+            for (let i: number = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
+                if (currentAction === this.diagram.selectedItems.userHandles[i].name) {
+                    arg.element = this.diagram.selectedItems.userHandles[i];
+                    if (eventName === DiagramEvent.onUserHandleMouseEnter) {
+                        this.previousAction = this.action;
+                    }
+                    this.diagram.triggerEvent(eventName, arg);
+                }
+            }
+        }
+
+    }
 
     public mouseDown(evt: PointerEvent): void {
         this.focus = true;
@@ -335,6 +363,7 @@ export class DiagramEventHandler {
             evt.preventDefault();
             return;
         }
+        this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
             (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
             if (this.action === 'Select' || this.action === 'Drag') {
@@ -513,6 +542,8 @@ export class DiagramEventHandler {
                         if (sourceElement) { target = this.commandHandler.findTarget(sourceElement, obj); }
                     }
                     this.action = this.diagram.findActionToBeDone(obj, sourceElement, this.currentPosition, target);
+                    this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseEnter);
+                    this.checkPreviousAction();
                     this.getMouseEventArgs(this.currentPosition, this.eventArgs);
                     this.tool = this.getTool(this.action);
                     this.mouseEvents();
@@ -599,9 +630,11 @@ export class DiagramEventHandler {
             this.blocked = !(this.tool.mouseMove(this.eventArgs));
         }
     }
+    /* tslint:disable */
     /** @private */
     public mouseUp(evt: PointerEvent): void {
         let touches: TouchList;
+        this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseUp);
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
         }
@@ -668,6 +701,7 @@ export class DiagramEventHandler {
                 }
                 if (isGroupAction) { this.diagram.endGroupAction(); }
                 this.updateContainerBounds(true);
+                this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
@@ -700,6 +734,7 @@ export class DiagramEventHandler {
         }
         this.eventArgs = {}; this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     }
+    /* tslint:enable */
 
     private getBlazorClickEventArgs(arg: IClickEventArgs | IBlazorClickEventArgs): IBlazorClickEventArgs {
         arg = {

@@ -1,4 +1,4 @@
-import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged} from '@syncfusion/ej2-base';import {  extend,  compile as templateComplier, Component} from '@syncfusion/ej2-base';import { SvgRenderer } from '../svg-render/index';import {  ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation} from '@syncfusion/ej2-base';import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs} from './interface';import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';import { removeElement, TextOption, TooltipLocation, PathOption } from './helper';import { TooltipShape, TooltipTheme } from './enum';
+import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';import {  extend,  compile as templateComplier, Component, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';import { SvgRenderer } from '../svg-render/index';import {  ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation} from '@syncfusion/ej2-base';import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate} from './interface';import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';import { removeElement, TextOption, TooltipLocation, PathOption } from './helper';import { TooltipShape, TooltipTheme } from './enum';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -303,6 +303,11 @@ export interface TooltipModel extends ComponentModel{
      * @private.
      */
     availableSize?: Size;
+
+    /**
+     * Blazor templates
+     */
+    blazorTemplate?: IBlazorTemplate;
 
     /**
      * To check chart is canvas.

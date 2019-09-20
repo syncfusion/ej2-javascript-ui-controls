@@ -6884,7 +6884,7 @@ function getRandomId() {
 function compile$$1(templateString, helper) {
     let compiler = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data, component, propName, templateId, isStringTemplate, index) => {
+    return (data, component, propName, templateId, isStringTemplate, index, isSvg) => {
         let result = compiler(data, component, propName);
         let blazor = 'Blazor';
         let blazorTemplateId = 'BlazorTemplateId';
@@ -6910,9 +6910,11 @@ function compile$$1(templateString, helper) {
                 blazorTemplates[templateId].push(data);
             }
             // tslint:disable-next-line:no-any
-            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] :
+            return isSvg ? [createElement('g', { id: blazorId, className: 'e-blazor-template' })] :
                 // tslint:disable-next-line:no-any
-                [createElement('div', { id: blazorId, className: 'e-blazor-template' })];
+                propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] :
+                    // tslint:disable-next-line:no-any
+                    [createElement('div', { id: blazorId, className: 'e-blazor-template' })];
         }
         if (typeof result === 'string') {
             if (HAS_SVG.test(result)) {

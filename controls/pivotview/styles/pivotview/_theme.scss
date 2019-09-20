@@ -70,6 +70,10 @@
       border: $pivotgrid-border-size $pivotgrid-border-type $pivotgrid-default-border-color;
     }
 
+    .e-pivotchart.e-ltr {
+      direction: ltr;
+    }
+
     .e-grid .e-columnheader.e-wrap .e-sortfilterdiv,
     .e-grid.e-wrap .e-columnheader .e-sortfilterdiv {
       margin: $pivotgrid-vsort-mouse-wrap-margin !important;

@@ -210,4 +210,85 @@ describe('TreeGrid Virtual Scroll', () => {
       destroy(treegrid);
     });
   });
+  describe('Scroll Down with CollapseAll', () => {
+    let treegrid: TreeGrid;
+    let rows: Element[];
+    let expanded: () => void;
+    let collapsed: () => void;
+    let rowSelected: () => void;
+    beforeAll((done: Function) => {
+        treegrid = createGrid(
+            {
+              dataSource: virtualData.slice(0,1000),
+              parentIdMapping: 'ParentID',
+              idMapping: 'TaskID',
+              height: 200,
+              enableVirtualization: true,
+            columns: [{ field: 'FIELD1', headerText: 'Player Name', width: 140 },
+            { field: 'FIELD2', headerText: 'Year', width: 120, textAlign: 'Right' },
+            { field: 'FIELD3', headerText: 'Stint', width: 120, textAlign: 'Right' },
+            { field: 'FIELD4', headerText: 'TMID', width: 120, textAlign: 'Right' },
+            { field: 'FIELD5', headerText: 'LGID', width: 120, textAlign: 'Right' },
+            { field: 'FIELD6', headerText: 'GP', width: 120, textAlign: 'Right' },
+            { field: 'FIELD7', headerText: 'GS', width: 120, textAlign: 'Right' },
+            { field: 'FIELD8', headerText: 'Minutes', width: 120, textAlign: 'Right' },
+            { field: 'FIELD9', headerText: 'Points', width: 120, textAlign: 'Right' },
+            { field: 'FIELD10', headerText: 'oRebounds', width: 130, textAlign: 'Right' },
+            { field: 'FIELD11', headerText: 'dRebounds', width: 130, textAlign: 'Right' },
+            { field: 'FIELD12', headerText: 'Rebounds', width: 120, textAlign: 'Right' },
+            { field: 'FIELD13', headerText: 'Assists', width: 120, textAlign: 'Right' },
+            { field: 'FIELD14', headerText: 'Steals', width: 120, textAlign: 'Right' },
+            { field: 'FIELD15', headerText: 'Blocks', width: 120, textAlign: 'Right' },
+            { field: 'FIELD16', headerText: 'Turnovers', width: 130, textAlign: 'Right' },
+            { field: 'FIELD17', headerText: 'PF', width: 130, textAlign: 'Right' },
+            { field: 'FIELD18', headerText: 'fgAttempted', width: 150, textAlign: 'Right' },
+            { field: 'FIELD19', headerText: 'fgMade', width: 120, textAlign: 'Right' },
+            { field: 'FIELD20', headerText: 'ftAttempted', width: 150, textAlign: 'Right' },
+            { field: 'FIELD21', headerText: 'ftMade', width: 120, textAlign: 'Right' },
+            { field: 'FIELD22', headerText: 'ThreeAttempted', width: 150, textAlign: 'Right' },
+            { field: 'FIELD23', headerText: 'ThreeMade', width: 130, textAlign: 'Right' },
+            { field: 'FIELD24', headerText: 'PostGP', width: 120, textAlign: 'Right' },
+            { field: 'FIELD25', headerText: 'PostGS', width: 120, textAlign: 'Right' },
+            { field: 'FIELD26', headerText: 'PostMinutes', width: 120, textAlign: 'Right' },
+            { field: 'FIELD27', headerText: 'PostPoints', width: 130, textAlign: 'Right' },
+            { field: 'FIELD28', headerText: 'PostoRebounds', width: 130, textAlign: 'Right' },
+            { field: 'FIELD29', headerText: 'PostdRebounds', width: 130, textAlign: 'Right' },
+            { field: 'FIELD30', headerText: 'PostRebounds', width: 130, textAlign: 'Right' }],
+            treeColumnIndex: 1
+        },
+        done
+      );
+    });
+    it('rendering test', (done: Function) => {
+        expect(treegrid.getRows().length).toBe(20);
+        done();
+    });
+    it('collapseAll after scroll', (done: Function) => {
+        let rows: HTMLTableRowElement[] = treegrid.getRows();
+        let content: HTMLElement = (<HTMLElement>treegrid.getContent().firstChild);
+        EventHandler.trigger(content, 'wheel');
+        content.scrollTop = 20000;
+        EventHandler.trigger(content, 'scroll', { target: content });
+        setTimeout(done, 1000);
+        let len: number = 0;
+        collapsed = (args?: any) => {
+            let rows: HTMLTableRowElement[] = treegrid.getRows();
+            for (let n: number = 0; n < rows.length; n++) {
+                if (!isNullOrUndefined(rows[n].querySelector('.e-treegridcollapse'))) {
+                    len = len + 1;
+                }
+            }
+            expect(len).toBe(20);
+            treegrid.collapsed = null;
+            done();
+        }
+        treegrid.collapseAll();
+        expect(treegrid.getCurrentViewRecords().length > 0).toBe(true);
+        done();
+    }) 
+    afterAll(() => {
+      destroy(treegrid);
+    });
+  });
+
 });

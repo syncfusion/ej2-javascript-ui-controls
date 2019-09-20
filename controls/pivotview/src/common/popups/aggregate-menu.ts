@@ -123,7 +123,7 @@ export class AggregateMenu {
         });
         this.valueDialog.isStringTemplate = true;
         this.valueDialog.appendTo(valueDialog);
-        this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
+        // this.valueDialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('valueFieldSettings');
     }
     /* tslint:disable:all */
     private createFieldOptions(buttonElement: HTMLElement): HTMLElement {
@@ -170,7 +170,7 @@ export class AggregateMenu {
             let text: string = (field.caption ? field.caption : field.name);
             fieldDataSource.push({ value: value, text: text });
         }
-        baseField = (baseField.toString() !== 'undefined' ? baseField : fieldDataSource[0].value as string);
+        baseField = (baseField && baseField.toString() !== 'undefined' && 'null' ? baseField : fieldDataSource[0].value as string);
         fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
             baseField : fieldDataSource[0].value as string)].formattedMembers);
         baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
@@ -224,7 +224,7 @@ export class AggregateMenu {
         mainDiv.appendChild(filterWrapperDiv1);
         let popupInstance: AggregateMenu = this;
         let optionWrapper1: DropDownList = new DropDownList({
-            dataSource: summaryDataSource,
+            dataSource: summaryDataSource, enableRtl: this.parent.enableRtl,
             fields: { value: 'value', text: 'text' },
             value: summaryType,
             // popupWidth: 'auto',
@@ -234,7 +234,7 @@ export class AggregateMenu {
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
                 if (optionWrapper3.enabled && (optionWrapper3.dataSource as string[]).length === 1) {
                     optionWrapper3.dataSource = fieldItemDataSource;
-                    optionWrapper3.dataBind();
+                    optionWrapper3.refresh();
                 }
             }
         });
@@ -252,7 +252,7 @@ export class AggregateMenu {
                 optionWrapper3.dataSource = fieldItemDataSource;
                 optionWrapper3.value = fieldItemDataSource[0];
                 optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
-                optionWrapper3.dataBind();
+                optionWrapper3.refresh();
             }
         });
         optionWrapper2.isStringTemplate = true;
@@ -296,12 +296,14 @@ export class AggregateMenu {
                 buttonElement.setAttribute('data-type', type as string);
                 for (let vCnt: number = 0; vCnt < this.parent.dataSourceSettings.values.length; vCnt++) {
                     if (this.parent.dataSourceSettings.values[vCnt].name === field) {
-                        let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
-                            (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt];
+                        /* tslint:disable:align */
+                        let dataSourceItem: IFieldOptions = extend({}, (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties ?
+                            (<{ [key: string]: IFieldOptions }>valuefields[vCnt]).properties : valuefields[vCnt], null, true);
+                        /* tslint:enable:align */
                         dataSourceItem.type = type as SummaryTypes;
+                        this.parent.engineModule.fieldList[field].aggregateType = type;
+                        valuefields.splice(vCnt, 1, dataSourceItem);
                         this.parent.lastAggregationInfo = dataSourceItem;
-                        /* tslint:disable-next-line:no-any */
-
                     }
                 }
                 this.updateDataSource();

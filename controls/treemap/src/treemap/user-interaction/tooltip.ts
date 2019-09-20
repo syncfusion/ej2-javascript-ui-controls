@@ -1,6 +1,6 @@
 import { TreeMap } from '../treemap';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
-import { Browser, createElement, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Location, getMousePosition, textFormatter, formatValue } from '../utils/helper';
 import { TooltipSettingsModel } from '../model/base-model';
 import { ITreeMapTooltipRenderEventArgs, ITreeMapTooltipArgs } from '../model/interface';
@@ -69,12 +69,11 @@ export class TreeMapTooltip {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-                this.tooltipSettings.textStyle.fontFamily = this.treemap.themeStyle.fontFamily;
-                this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
-                    || this.tooltipSettings.textStyle.color;
-                this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
-                    || this.tooltipSettings.textStyle.opacity;
-
+                this.tooltipSettings.textStyle.fontFamily = this.tooltipSettings.textStyle.fontFamily
+                    || this.treemap.themeStyle.fontFamily;
+                this.tooltipSettings.textStyle.color = this.tooltipSettings.textStyle.color
+                    || this.treemap.themeStyle.tooltipFontColor;
+                this.tooltipSettings.textStyle.opacity = this.tooltipSettings.textStyle.opacity;
                 tootipArgs = {
                     cancel: false, name: tooltipRendering, item: item,
                     options: {
@@ -105,7 +104,6 @@ export class TreeMapTooltip {
             }
         } else {
             this.removeTooltip();
-            resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
     }
 
@@ -114,6 +112,8 @@ export class TreeMapTooltip {
         ) : void {
             let cancel : boolean;
             let args : object;
+            let width: number = this.treemap.tooltipSettings.border.width;
+            let color: string = this.treemap.tooltipSettings.border.color;
             if (!isNullOrUndefined(tootipArgs)) {
                 let {cancel : c, ...otherArgs} : ITreeMapTooltipRenderEventArgs = tootipArgs;
                 cancel = c;
@@ -133,14 +133,16 @@ export class TreeMapTooltip {
                     location: args['location'],
                     palette: [markerFill],
                     areaBounds: this.treemap.areaRect,
-                    textStyle: args['textStyle']
+                    textStyle: args['textStyle'],
+                    blazorTemplate: { name: 'TooltipTemplate', parent: this.treemap.tooltipSettings }
                 });
-                this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.opacity = this.treemap.tooltipSettings.opacity || this.treemap.themeStyle.tooltipFillOpacity;
+                this.svgTooltip.fill = this.treemap.tooltipSettings.fill || this.treemap.themeStyle.tooltipFillColor;
+                this.svgTooltip.border.width = (width === 0) ? this.treemap.themeStyle.borderWidth : width;
+                this.svgTooltip.border.color = (color === '#808080') ? this.treemap.themeStyle.borderColor : color;
                 this.svgTooltip.appendTo(tooltipEle);
-                updateBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
             } else {
                 this.removeTooltip();
-                resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
             }
     }
 

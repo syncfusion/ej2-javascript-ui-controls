@@ -1,10 +1,12 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, selfEditData } from '../base/datasource.spec';
+import { sampleData, selfEditData, projectDatas as data } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { EmitType, createElement, remove } from '@syncfusion/ej2-base';
 
 
 /**
@@ -1971,6 +1973,84 @@ describe('Edit module', () => {
       destroy(gridObj);
     });
   });
+
+
+
+  describe('Remote Data Editing with Child Mode', () => {
+    
+    let gridObj: TreeGrid;
+    let elem: HTMLElement = createElement('div', { id: 'Grid' });
+    let request: JasmineAjaxRequest;
+    let dataManager: DataManager;
+    let originalTimeout: number;
+    let actionBegin: (args: any) => void;
+    let actionComplete: (args: any) => void;
+    beforeAll((done: Function) => {
+        let dataBound: EmitType<Object> = () => { done(); };
+        jasmine.Ajax.install();
+        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 4000;
+        dataManager = new DataManager({
+            url: 'http://localhost:50499/Home/UrlData',
+            crossDomain: true
+        });
+        document.body.appendChild(elem);
+        gridObj = new TreeGrid(
+            {
+                dataSource: dataManager, dataBound: dataBound,
+                hasChildMapping: 'isParent',
+                idMapping: 'TaskID',
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+                editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+                parentIdMapping: 'parentID',
+                treeColumnIndex: 1,
+                columns: [
+                    { field: "TaskID", headerText: "Task Id" },
+                    { field: "TaskName", headerText: "Task Name" },
+                    { field: "StartDate", headerText: "Start Date" },
+                    { field: "EndDate", headerText: "End Date" },                    
+                    { field: "Progress", headerText: "Progress" }
+              ]
+            });
+        gridObj.appendTo('#Grid');
+        this.request = jasmine.Ajax.requests.mostRecent();
+        this.request.respondWith({
+            status: 200,
+            responseText: JSON.stringify({d:  data.slice(0,3), __count: 3})
+        });
+    });
+
+    it('Add Row - No Selection', function (done) {
+        actionComplete = function (args) {
+            if (args.requestType === 'add') {
+                expect(args.row.rowIndex).toBe(0);
+                done();
+            }
+        };
+        debugger;
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    });
+    it('Add Row - ActionBegin Event', function (done) {
+        debugger;
+        var formEle = gridObj.grid.editModule.formObj.element;
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskID') as any).value = '121';
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'TaskName')as any).value = 'first';
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'Progress') as any).value = '23';
+        actionBegin = function (args) {
+            expect(args.data.TaskName === 'first').toBe(true);
+            done();
+        };
+        gridObj.actionBegin = actionBegin;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+    afterAll(() => {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        gridObj.destroy();
+        remove(elem);
+        jasmine.Ajax.uninstall();
+    });
+});
 
   it('memory leak', () => {
     profile.sample();

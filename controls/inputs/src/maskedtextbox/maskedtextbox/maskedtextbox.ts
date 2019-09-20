@@ -7,7 +7,7 @@ import { setMaskValue, MaskUndo, setElementValue, bindClearEvent } from '../base
 import { MaskedTextBoxModel } from './maskedtextbox-model';
 import { maskInputBlurHandler } from '../base/mask-base';
 
-const ROOT: string = 'e-widget e-control-wrapper e-mask';
+const ROOT: string = 'e-control-wrapper e-mask';
 const INPUT: string = 'e-input';
 const COMPONENT: string = 'e-maskedtextbox';
 const CONTROL: string = 'e-control';
@@ -474,7 +474,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
                         Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
                     break;
                 case 'enabled':
-                    Input.setEnabled(newProp.enabled, this.element);
+                    Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
                     break;
                 case 'readonly':
                     Input.setReadonly(newProp.readonly, this.element);

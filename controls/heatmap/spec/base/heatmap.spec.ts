@@ -290,6 +290,14 @@ describe('Heatmap Control', () => {
             expect(heatmap.tempMultiCellCollection[0].length).toBe(6);
             setTimeout(done, 1600);
         });
+        it('check selected cell color change after changing palette colors',()=>{
+              heatmap.paletteSettings.palette=[ {color: '#9892BB' },
+              {  color: '#2B8C9B' },
+              {  color: '#257A87' },
+              {  color: '#206974'}]; 
+              heatmap.dataBind();
+              expect(heatmap.tempMultiCellCollection[0].length).toBe(6);
+          });
         it('check heatmap resize action without selection', (done: Function) => {
             heatmap.refresh();
             heatmap.clearSelection();

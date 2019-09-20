@@ -3,7 +3,6 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { EventFieldsMapping } from '../base/interface';
 import { getDateFromRecurrenceDateString, getRecurrenceStringFromDate } from '../../recurrence-editor/date-generator';
 import { Schedule } from '../base/schedule';
-import { Timezone } from '../timezone/timezone';
 
 /**
  * ICalendar Export Module
@@ -11,10 +10,8 @@ import { Timezone } from '../timezone/timezone';
 
 export class ICalendarExport {
     private parent: Schedule;
-    private timezone: Timezone;
     constructor(parent: Schedule) {
         this.parent = parent;
-        this.timezone = new Timezone();
     }
 
     public initializeCalendarExport(fileName?: string): void {
@@ -23,7 +20,7 @@ export class ICalendarExport {
         const SEPARATOR: string = (navigator.appVersion.indexOf('Win') !== -1) ? '\r\n' : '\n';
         let iCalendarEvents: string[] = [];
         let filterCollection: { [key: string]: Object }[] = [];
-        let timeZone: string = this.parent.timezone || this.timezone.getLocalTimezoneName();
+        let timeZone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
         let fields: EventFieldsMapping = this.parent.eventFields;
         eventsData.forEach((eventObj: { [key: string]: Object }) => {
             let uId: string = this.parent.eventBase.generateGuid();
@@ -140,8 +137,8 @@ export class ICalendarExport {
     }
 
     private filterEvents(data: object[], field: string, value: number): { [key: string]: Object }[] {
-        return new DataManager({ json: data }).executeLocal
-            (new Query().where(field, 'equal', value)) as { [key: string]: Object }[];
+        let queryManager: Query = new Query().where(field, 'equal', value);
+        return new DataManager({ json: data }).executeLocal(queryManager) as { [key: string]: Object }[];
     }
 
     /**
@@ -158,8 +155,6 @@ export class ICalendarExport {
      */
     public destroy(): void {
         if (this.parent.isDestroyed) { return; }
-        if (this.timezone) {
-            this.timezone = null;
-        }
+        this.parent = null;
     }
 }

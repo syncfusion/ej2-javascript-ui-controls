@@ -129,7 +129,6 @@
       .e-timeline-single-header-cell {
         border-color: $gantt-header-border-color;
         color: $gantt-header-color;
-        font-family: $font-family;
       }
 
       .e-timeline-single-header-cell {
@@ -311,20 +310,17 @@
       .e-left-label-inner-div,
       .e-right-label-inner-div {
         color: $gantt-label-color;
-        font-family: $font-family;
         font-size: $gantt-label-size;
       }
 
       .e-left-label-temp-container {
         padding-right: $gantt-right-label-container-margin-left;
-        font-family: $font-family;
         font-size: $gantt-label-font-size;
         color: $gantt-label-font-color;
       }
 
       .e-right-label-temp-container {
         margin-left: $gantt-right-label-container-margin-left;
-        font-family: $font-family;
         font-size: $gantt-label-font-size;
         color: $gantt-label-font-color;
       }

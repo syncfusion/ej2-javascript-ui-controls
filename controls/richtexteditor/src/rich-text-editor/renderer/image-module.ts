@@ -1,14 +1,14 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
 import { Browser, closest, removeClass } from '@syncfusion/ej2-base';
-import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition } from '../base/interface';
+import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition, ImageDragEvent } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { ServiceLocator } from '../services/service-locator';
 import { NodeSelection } from '../../selection/selection';
-import { Uploader, SelectedEventArgs, MetaData, NumericTextBox } from '@syncfusion/ej2-inputs';
+import { Uploader, SelectedEventArgs, MetaData, NumericTextBox, FileInfo } from '@syncfusion/ej2-inputs';
 import { RemovingEventArgs, UploadingEventArgs } from '@syncfusion/ej2-inputs';
-import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
+import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
@@ -24,6 +24,7 @@ export class Image {
     private rteID: string;
     private parent: IRichTextEditor;
     public dialogObj: Dialog;
+    private popupObj: Popup;
     public uploadObj: Uploader;
     private i10n: L10n;
     private inputUrl: HTMLElement;
@@ -85,6 +86,10 @@ export class Image {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.paste, this.imagePaste);
         this.parent.off(events.destroy, this.removeEventListener);
+        this.parent.element.removeEventListener('drop', this.dragDrop.bind(this), true);
+        this.parent.element.removeEventListener('dragstart', this.dragStart, true);
+        this.parent.element.removeEventListener('dragenter', this.dragEnter.bind(this), true);
+        this.parent.element.removeEventListener('dragover', this.dragOver.bind(this), true);
         if (!isNullOrUndefined(this.contentModule)) {
             EventHandler.remove(this.contentModule.getEditPanel(), Browser.touchEndEvent, this.imageClick);
             this.parent.formatter.editorManager.observer.off(events.checkUndo, this.undoStack);
@@ -106,6 +111,10 @@ export class Image {
             EventHandler.add(this.parent.contentModule.getEditPanel(), Browser.touchStartEvent, this.resizeStart, this);
             EventHandler.add(this.contentModule.getDocument(), 'mousedown', this.onDocumentClick, this);
         }
+        this.parent.inputElement.ownerDocument.addEventListener('drop', this.dragDrop.bind(this), true);
+        this.parent.inputElement.ownerDocument.addEventListener('dragstart', this.dragStart, true);
+        this.parent.inputElement.ownerDocument.addEventListener('dragenter', this.dragOver.bind(this), true);
+        this.parent.inputElement.ownerDocument.addEventListener('dragover', this.dragOver.bind(this), true);
     }
 
     private undoStack(args?: { [key: string]: string }): void {
@@ -137,14 +146,15 @@ export class Image {
         this.parent.formatter.saveData();
     }
 
-    private resizeStart(e: PointerEvent | TouchEvent): void {
-        if ((e.target as HTMLElement).tagName === 'IMG') {
+    private resizeStart(e: PointerEvent | TouchEvent, ele?: Element): void {
+        let target: HTMLElement = ele ? ele as HTMLElement : e.target as HTMLElement;
+        if ((target as HTMLElement).tagName === 'IMG') {
             this.parent.preventDefaultResize(e as MouseEvent);
-            let img: HTMLImageElement = e.target as HTMLImageElement;
+            let img: HTMLImageElement = target as HTMLImageElement;
             if (this.imgResizeDiv && this.contentModule.getEditPanel().contains(this.imgResizeDiv)) { detach(this.imgResizeDiv); }
             this.imageResize(img);
         }
-        if ((e.target as HTMLElement).classList.contains('e-rte-imageboxmark')) {
+        if ((target as HTMLElement).classList.contains('e-rte-imageboxmark')) {
             if (this.parent.formatter.getUndoRedoStack().length === 0) {
                 this.parent.formatter.saveData();
             }
@@ -154,10 +164,10 @@ export class Image {
             e.stopImmediatePropagation();
             this.resizeBtnInit();
             if (this.quickToolObj) { this.quickToolObj.imageQTBar.hidePopup(); }
-            if ((e.target as HTMLElement).classList.contains('e-rte-topLeft')) { this.resizeBtnStat.topLeft = true; }
-            if ((e.target as HTMLElement).classList.contains('e-rte-topRight')) { this.resizeBtnStat.topRight = true; }
-            if ((e.target as HTMLElement).classList.contains('e-rte-botLeft')) { this.resizeBtnStat.botLeft = true; }
-            if ((e.target as HTMLElement).classList.contains('e-rte-botRight')) { this.resizeBtnStat.botRight = true; }
+            if ((target as HTMLElement).classList.contains('e-rte-topLeft')) { this.resizeBtnStat.topLeft = true; }
+            if ((target as HTMLElement).classList.contains('e-rte-topRight')) { this.resizeBtnStat.topRight = true; }
+            if ((target as HTMLElement).classList.contains('e-rte-botLeft')) { this.resizeBtnStat.botLeft = true; }
+            if ((target as HTMLElement).classList.contains('e-rte-botRight')) { this.resizeBtnStat.botRight = true; }
             if (Browser.isDevice && this.contentModule.getEditPanel().contains(this.imgResizeDiv) &&
                 !this.imgResizeDiv.classList.contains('e-mob-span')) {
                 addClass([this.imgResizeDiv], 'e-mob-span');
@@ -593,7 +603,7 @@ export class Image {
             || isNullOrUndefined(this.parent.quickToolbarModule.imageQTBar)) { return; }
         this.quickToolObj = this.parent.quickToolbarModule;
         let args: MouseEvent = e.args as MouseEvent;
-        let target: HTMLElement;
+        let target: HTMLElement = e.elements as HTMLElement;
         [].forEach.call(e.elements, (element: Element, index: number) => {
             if (index === 0) {
                 target = <HTMLElement>element;
@@ -1011,8 +1021,7 @@ export class Image {
                 }
                 this.dialogObj.destroy();
                 detach(this.dialogObj.element);
-                let args: Dialog = isBlazor() ? null : this.dialogObj;
-                this.dialogRenderObj.close(args);
+                this.dialogRenderObj.close(event);
                 this.dialogObj = null;
             },
         };
@@ -1297,8 +1306,7 @@ export class Image {
                             width: {
                                 width: proxy.parent.insertImageSettings.width, minWidth: proxy.parent.insertImageSettings.minWidth,
                                 maxWidth: proxy.parent.insertImageSettings.maxWidth
-                            },
-                            height: {
+                            }, height: {
                                 height: proxy.parent.insertImageSettings.height, minHeight: proxy.parent.insertImageSettings.minHeight,
                                 maxHeight: proxy.parent.insertImageSettings.maxHeight
                             }
@@ -1323,6 +1331,276 @@ export class Image {
         this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
         return false;
     }
+    private dragStart(e: DragEvent): void {
+        if ((e.target as HTMLElement).nodeName === 'IMG') {
+            e.dataTransfer.effectAllowed = 'copyMove';
+            (e.target as HTMLElement).classList.add(classes.CLS_RTE_DRAG_IMAGE);
+        }
+    };
+
+    private dragEnter(e?: DragEvent): void {
+        e.dataTransfer.dropEffect = 'copy';
+        e.preventDefault();
+    };
+    private dragOver(e?: DragEvent): void {
+        e.dataTransfer.dropEffect = 'copy';
+        if (Browser.info.name === 'edge' || Browser.isIE) {
+            e.preventDefault();
+        }
+    };
+
+    /**
+     * USed to set range When drop an image
+     */
+    private dragDrop(e: ImageDragEvent): void {
+        if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar')) {
+            e.preventDefault();
+            return;
+        }
+        if (this.parent.element.querySelector('.' + classes.CLS_IMG_RESIZE)) {
+            detach(this.imgResizeDiv);
+        }
+        e.preventDefault();
+        let range: Range;
+        if (this.contentModule.getDocument().caretRangeFromPoint) { //For chrome
+            range = this.contentModule.getDocument().caretRangeFromPoint(e.clientX, e.clientY);
+        } else if ((e.rangeParent)) { //For mozilla firefox
+            range = this.contentModule.getDocument().createRange();
+            range.setStart(e.rangeParent, e.rangeOffset);
+        } else {
+            range = this.getDropRange(e.clientX, e.clientY); //For internet explorer
+        }
+        this.parent.notify(events.selectRange, { range: range });
+        let uploadArea: HTMLElement = this.parent.element.querySelector('.' + classes.CLS_DROPAREA) as HTMLElement;
+        if (uploadArea) {
+            return;
+        }
+        this.insertDragImage(e as DragEvent);
+    }
+
+    /**
+     * Used to calculate range on internet explorer
+     */
+    private getDropRange(x: number, y: number): Range {
+        let startRange: Range = this.contentModule.getDocument().createRange();
+        this.parent.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), startRange);
+        let elem: Element = this.contentModule.getDocument().elementFromPoint(x, y);
+        let startNode: Node = (elem.childNodes.length > 0 ? elem.childNodes[0] : elem);
+        let startCharIndexCharacter: number = 0;
+        if ((this.parent.inputElement.firstChild as HTMLElement).innerHTML === '<br>') {
+            startRange.setStart(startNode, startCharIndexCharacter);
+            startRange.setEnd(startNode, startCharIndexCharacter);
+        } else {
+            let rangeRect: ClientRect;
+            do {
+                startCharIndexCharacter++;
+                startRange.setStart(startNode, startCharIndexCharacter);
+                startRange.setEnd(startNode, startCharIndexCharacter + 1);
+                rangeRect = startRange.getBoundingClientRect();
+            } while (rangeRect.left < x && startCharIndexCharacter < (startNode as Text).length - 1);
+        }
+        return startRange;
+    }
+
+    private insertDragImage(e: DragEvent): void {
+        e.preventDefault();
+        let activePopupElement: HTMLElement = this.parent.element.querySelector('' + classes.CLS_POPUP_OPEN);
+        this.parent.notify(events.drop, { args: e });
+        if (activePopupElement) {
+            activePopupElement.classList.add(classes.CLS_HIDE);
+        }
+        if (e.dataTransfer.files.length > 0) { //For external image drag and drop
+            if (e.dataTransfer.files.length > 1) {
+                return;
+            }
+            let imgFiles: FileList = e.dataTransfer.files;
+            let fileName: string = imgFiles[0].name;
+            let imgType: string = fileName.substring(fileName.lastIndexOf('.'));
+            let allowedTypes: string[] = this.parent.insertImageSettings.allowedTypes;
+            for (let i: number = 0; i < allowedTypes.length; i++) {
+                if (imgType.toLocaleLowerCase() === allowedTypes[i].toLowerCase()) {
+                    if (this.parent.insertImageSettings.saveUrl) {
+                        this.onSelect(e);
+                    } else {
+                        let args: NotifyArgs = { args: e, text: '', file: imgFiles[0] };
+                        e.preventDefault();
+                        this.imagePaste(args);
+                    }
+                }
+            }
+        } else { //For internal image drag and drop
+            let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+            let imgElement: HTMLElement = this.parent.inputElement.ownerDocument.querySelector('.' + classes.CLS_RTE_DRAG_IMAGE);
+            if (imgElement && imgElement.tagName === 'IMG') {
+                if (imgElement.nextElementSibling) {
+                    if (imgElement.nextElementSibling.classList.contains(classes.CLS_IMG_INNER)) {
+                        range.insertNode(imgElement.parentElement.parentElement);
+                    } else {
+                        range.insertNode(imgElement);
+                    }
+                } else {
+                    range.insertNode(imgElement);
+                }
+                imgElement.classList.remove(classes.CLS_RTE_DRAG_IMAGE);
+                this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
+                let args: MouseEvent = e as MouseEvent;
+                this.resizeStart(args as PointerEvent, imgElement);
+                this.hideImageQuickToolbar();
+            }
+        }
+    }
+
+    private onSelect(args: DragEvent): void {
+        let proxy: Image = this;
+        let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        let parentElement: HTMLElement = this.parent.createElement('ul', { className: classes.CLS_UPLOAD_FILES });
+        this.parent.element.appendChild(parentElement);
+        let validFiles: FileInfo = {
+            name: '',
+            size: 0,
+            status: '',
+            statusCode: '',
+            type: '',
+            rawFile: args.dataTransfer.files[0],
+            validationMessages: {}
+        };
+        let imageTag: HTMLImageElement = <HTMLImageElement>this.parent.createElement('IMG');
+        imageTag.style.opacity = '0.5';
+        imageTag.classList.add(classes.CLS_RTE_IMAGE);
+        imageTag.classList.add(classes.CLS_IMGINLINE);
+        imageTag.classList.add(classes.CLS_RESIZE);
+        let file: File = validFiles.rawFile as File;
+        let reader: FileReader = new FileReader();
+        reader.addEventListener('load', () => {
+            imageTag.src = reader.result as string;
+            let url: string = URL.createObjectURL(proxy.url(reader.result as string));
+            imageTag.src = url;
+        });
+        if (file) {
+            reader.readAsDataURL(file);
+        }
+        range.insertNode(imageTag);
+        this.uploadMethod(args, imageTag);
+    }
+
+    /**
+     * Rendering uploader and popup for drag and drop
+     */
+    private uploadMethod(dragEvent: DragEvent, imageElement: HTMLImageElement): void {
+        let proxy: Image = this;
+        let popupEle: HTMLElement = this.parent.createElement('div');
+        this.parent.element.appendChild(popupEle);
+        let contentEle: HTMLElement = this.parent.createElement('div');
+        let offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
+        this.popupObj = new Popup(popupEle, {
+            relateTo: imageElement,
+            height: '85px',
+            width: '300px',
+            offsetY: offsetY,
+            content: contentEle,
+            viewPortElement: this.parent.element,
+            position: { X: 'center', Y: 'top' },
+            enableRtl: this.parent.enableRtl,
+            zIndex: 10001,
+            close: (event: { [key: string]: object }) => {
+                this.parent.isBlur = false;
+                this.popupObj.destroy();
+                detach(this.popupObj.element);
+                this.popupObj = null;
+            }
+        });
+        this.popupObj.element.style.display = 'none';
+        addClass([this.popupObj.element], classes.CLS_POPUP_OPEN);
+        addClass([this.popupObj.element], classes.CLS_RTE_UPLOAD_POPUP);
+
+        let timeOut: number = dragEvent.dataTransfer.files[0].size > 1000000 ? 300 : 100;
+        setTimeout(() => { proxy.refreshPopup(imageElement); }, timeOut);
+        let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
+        this.uploadObj = new Uploader({
+            asyncSettings: {
+                saveUrl: this.parent.insertImageSettings.saveUrl,
+            },
+            cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
+            dropArea: this.parent.inputElement,
+            allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
+            removing: () => {
+                detach(imageElement);
+                this.popupObj.close();
+            },
+            canceling: () => {
+                detach(imageElement);
+                this.popupObj.close();
+            },
+            uploading: (e: UploadingEventArgs) => {
+                this.parent.trigger(events.imageUploading, e);
+            },
+            failure: (e: Object) => {
+                let args: IShowPopupArgs = {
+                    args: dragEvent as MouseEvent,
+                    type: 'Images',
+                    isNotify: undefined,
+                    elements: imageElement
+                };
+                setTimeout(() => { this.uploadFailure(imageElement, args, e); }, 900);
+            },
+            success: (e: Object) => {
+                let args: IShowPopupArgs = {
+                    args: dragEvent as MouseEvent,
+                    type: 'Images',
+                    isNotify: undefined,
+                    elements: imageElement
+                };
+                setTimeout(() => { this.uploadSuccess(imageElement, dragEvent, args, e); }, 900);
+            }
+        });
+        this.uploadObj.appendTo(this.popupObj.element.childNodes[0] as HTMLElement);
+        detach(this.popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
+        range.selectNodeContents(imageElement);
+        this.parent.formatter.editorManager.nodeSelection.setRange(this.contentModule.getDocument(), range);
+    }
+    private refreshPopup(imageElement: HTMLElement): void {
+        let imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
+        imageElement.offsetTop : imageElement.offsetTop;
+        let rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
+        if (imgPosition > rtePosition) {
+            this.popupObj.relateTo = this.parent.inputElement;
+            this.popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
+            this.popupObj.element.style.display = 'block';
+        } else {
+            if (this.popupObj) {
+            this.popupObj.refreshPosition(imageElement);
+            this.popupObj.element.style.display = 'block';
+            }
+        }
+    }
+
+    /**
+     * Called when drop image upload was failed
+     */
+    private uploadFailure(imgEle: HTMLElement, args: IShowPopupArgs , e : Object): void {
+        detach(imgEle);
+        if (this.popupObj) {
+            this.popupObj.close();
+        }
+        this.parent.trigger(events.imageUploadFailed, e);
+    }
+    /**
+     * Called when drop image upload was successful
+     */
+    private uploadSuccess(imageElement: HTMLElement, dragEvent: DragEvent, args: IShowPopupArgs, e: Object): void {
+        if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+            let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;
+            (imageElement as HTMLImageElement).src = url;
+        }
+        this.popupObj.close();
+        imageElement.style.opacity = '1';
+        imageElement.classList.add(classes.CLS_IMG_FOCUS);
+        this.parent.trigger(events.imageUploadSuccess, e);
+        this.showImageQuickToolbar(args);
+        this.resizeStart((dragEvent as MouseEvent) as PointerEvent, imageElement);
+        this.uploadObj.destroy();
+    }
+
     private imagePaste(args: NotifyArgs): void {
         if (args.text.length === 0) {
             let proxy: Image = this;
@@ -1347,11 +1625,27 @@ export class Image {
                     return;
                 } else {
                     proxy.parent.formatter.process(proxy.parent, { item: { command: 'Images', subCommand: 'Image' } }, args.args, url);
+                    this.showPopupToolBar(args, url);
                 }
             });
             reader.readAsDataURL((args as NotifyArgs).file);
         }
     }
+
+    private showPopupToolBar(e: NotifyArgs, url: IImageCommandsArgs): void {
+        let imageSrc: string = 'img[src="' + url.url + '"]';
+        let imageElement: Element = this.parent.inputElement.querySelector(imageSrc);
+        this.parent.quickToolbarModule.createQTBar('Image', 'MultiRow', this.parent.quickToolbarSettings.image, RenderType.ImageToolbar);
+        let args: IShowPopupArgs = {
+            args: e.args as MouseEvent,
+            type: 'Images',
+            isNotify: undefined,
+            elements: imageElement
+        };
+        if (imageElement) {
+            setTimeout(() => { this.showImageQuickToolbar(args); this.resizeStart(e.args as PointerEvent, imageElement); }, 0);
+        }
+     }
     private url(dataurl: string): Blob {
         let arr: string[] = dataurl.split(',');
         let mime: string = arr[0].match(/:(.*?);/)[1];

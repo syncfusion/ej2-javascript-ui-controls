@@ -8,6 +8,19 @@
 
 ## [Unreleased]
 
+## 17.3.9-beta (2019-09-20)
+
+### HeatMap
+
+#### New Features
+
+- Provided a minimum and maximum color display based on row and column wise
+
+#### Breaking Changes
+
+The `dataSource` property has been split into `dataSource` and `dataSourceSettings` properties.
+The `dataSource` property is used to bind data to HeatMap and the `dataSourceSettings` property is used to configure the data source using adaptor settings.
+
 ## 17.2.28-beta (2019-06-27)
 
 ### HeatMap

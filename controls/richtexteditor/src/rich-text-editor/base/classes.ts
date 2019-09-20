@@ -166,5 +166,32 @@ export const CLS_RTE_PASTE_OK: string = 'e-rte-pasteok';
 export const CLS_RTE_PASTE_CANCEL: string = 'e-rte-pastecancel';
 /** @hidden */
 export const CLS_RTE_DIALOG_MIN_HEIGHT: string = 'e-rte-dialog-minheight';
-
+/** @hidden */
+export const CLS_RTE_RES_HANDLE: string = 'e-resize-handle';
+/** @hidden */
+export const CLS_RTE_RES_EAST: string = 'e-south-east';
+/** @hidden */
+export const CLS_RTE_IMAGE: string = 'e-rte-image';
+/** @hidden */
+export const CLS_RESIZE: string = 'e-resize';
+/** @hidden */
+export const CLS_IMG_FOCUS: string = 'e-img-focus';
+/** @hidden */
+export const CLS_RTE_DRAG_IMAGE: string = 'e-rte-drag-image';
+/** @hidden */
+export const CLS_RTE_UPLOAD_POPUP: string = 'e-rte-upload-popup';
+/** @hidden */
+export const CLS_POPUP_OPEN: string = 'e-popup-open';
+/** @hidden */
+export const CLS_IMG_RESIZE: string = 'e-img-resize';
+/** @hidden */
+export const CLS_DROPAREA: string = 'e-droparea';
+/** @hidden */
+export const CLS_IMG_INNER: string = 'e-img-inner';
+/** @hidden */
+export const CLS_UPLOAD_FILES: string = 'e-upload-files';
+/** @hidden */
+export const CLS_RTE_DIALOG_UPLOAD: string = 'e-rte-dialog-upload';
+/** @hidden */
+export const CLS_RTE_RES_CNT: string = 'e-rte-resize';
 

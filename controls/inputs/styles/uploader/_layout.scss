@@ -206,6 +206,10 @@
   .e-upload {
     width: 100%;
 
+    &.e-control-wrapper {
+      font-family: $upload-root-font-family;
+    }
+
     .e-file-select-wrap {
       padding: $header-padding;
 

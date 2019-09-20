@@ -132,6 +132,26 @@ export class Border extends ChildProperty<Border> {
 
 }
 /**
+ * Configures the marker position in the chart.
+ */
+export class Offset extends ChildProperty<Offset> {
+
+    /**
+     * x value of the marker position
+     * @default 0
+     */
+    @Property(0)
+    public x: number;
+
+    /**
+     * y value of the marker position
+     * @default 0
+     */
+    @Property(0)
+    public y: number;
+
+}
+/**
  * Configures the chart area.
  */
 export class ChartArea extends ChildProperty<ChartArea> {

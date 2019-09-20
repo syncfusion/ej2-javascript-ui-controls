@@ -2,7 +2,17 @@
 
 ## [Unreleased]
 
-## 17.2.40 (2019-08-06)
+## 17.3.9-beta (2019-09-20)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#F146947` - Resolved the argument issue that returns text field instead of value field in the action begin event when rendering the Combo Box within the In-place Editor.
+
+- `#248388` - Resolved the issue with configuring `cssClass` property to customize the appearance of sub-components of the In-place Editor.
+
+## 17.2.48-beta (2019-08-28)
 
 ### In-place Editor
 
@@ -16,7 +26,7 @@
 
 #### New Features
 
-- #240715 - Provided new event `beginEdit` that triggers when change to editing mode and it helps to skip the focus from `In-place Editor` component.
+- `#240715` - Provided new event `beginEdit` that triggers when change to editing mode and it helps to skip the focus from `In-place Editor` component.
 
 ## 17.2.28-beta (2019-06-27)
 

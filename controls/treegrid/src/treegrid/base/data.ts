@@ -4,9 +4,8 @@ import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { getObject, BeforeDataBoundArgs, getUid, NotifyArgs } from '@syncfusion/ej2-grids';
-import { isRemoteData, isOffline } from '../utils';
+import { isRemoteData, isOffline, isCountRequired } from '../utils';
 import * as events from './constant';
-import { Sort } from '../actions/sort';
 import { Column } from '../models';
 
 /**
@@ -60,6 +59,7 @@ export class DataManipulation {
       this.parent.off('dataProcessor', this.dataProcessor);
       this.parent.grid.off('sorting-begin', this.beginSorting);
     }
+
     /**
      * To destroy the dataModule
      * @return {void}
@@ -202,6 +202,9 @@ public isRemote(): boolean {
         for (let rec: number = 0; rec < records.length; rec++) {
           if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
             && (isNullOrUndefined(records[rec].index))) {
+            records[rec].taskData = extend({}, records[rec]);
+            records[rec].uniqueID = getUid(this.parent.element.id + '_data_');
+            setValue('uniqueIDCollection.' + records[rec].uniqueID, records[rec], this.parent);
             records[rec].level = 0;
             records[rec].index = Math.ceil(Math.random() * 1000);
             records[rec].hasChildRecords = true;
@@ -264,16 +267,20 @@ public isRemote(): boolean {
         let result: ITreeData[] = <ITreeData[]>e.result;
         rowDetails.record.childRecords = result;
         for (let r: number = 0; r < result.length; r++) {
+          result[r].taskData = extend({}, result[r]);
           result[r].level = rowDetails.record.level + 1;
           result[r].index = Math.ceil(Math.random() * 1000);
-          result[r].parentItem = rowDetails.record;
-          delete result[r].parentItem.childRecords;
+          let parentData: ITreeData = extend({}, rowDetails.record);
+          delete parentData.childRecords;
+          result[r].parentItem = parentData;
+          result[r].parentUniqueID = rowDetails.record.uniqueID;
+          result[r].uniqueID = getUid(this.parent.element.id + '_data_');
+          setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], this.parent);
+          // delete result[r].parentItem.childRecords;
           if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
              && !(haveChild && !haveChild[r])) {
             result[r].hasChildRecords = true;
             result[r].expanded = false;
-            result[r].uniqueID = getUid(this.parent.element.id + '_data_');
-            setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], this.parent);
           }
           datas.splice(inx + r + 1, 0, result[r]);
         }
@@ -299,9 +306,11 @@ public isRemote(): boolean {
       let level: number = 0;
       this.storedIndex++;
       currentData.index = this.storedIndex;
-      if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
+      if (!isNullOrUndefined(currentData[this.parent.childMapping]) ||
+          (currentData[this.parent.hasChildMapping] && isCountRequired(this.parent))) {
         currentData.hasChildRecords = true;
-        if (this.parent.enableCollapseAll) {
+        if (this.parent.enableCollapseAll || !isNullOrUndefined(this.parent.dataStateChange)
+            && isNullOrUndefined(currentData[this.parent.childMapping])) {
           currentData.expanded = false;
         } else {
           currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
@@ -370,14 +379,15 @@ public isRemote(): boolean {
     if (isExport && !isNullOrUndefined(expresults)) {
       dataObj = expresults;
     } else {
-      dataObj = this.parent.grid.dataSource;
+      dataObj = isCountRequired(this.parent) ? getValue('result', this.parent.grid.dataSource)
+                : this.parent.grid.dataSource;
     }
     let results: ITreeData[] = dataObj instanceof DataManager ? (<DataManager>dataObj).dataSource.json : <ITreeData[]>dataObj;
-    let count: number = results.length;
+    let count: number = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
+                        : results.length;
     if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
          (this.parent.grid.searchSettings.key.length > 0)) {
-      let qry: Query = new Query();
-      let gridQuery: Query = getObject('query', args);
+      let qry: Query = new Query(); let gridQuery: Query = getObject('query', args);
       if (isNullOrUndefined(gridQuery)) {
         gridQuery = new Query();
         gridQuery = getValue('grid.renderModule.data', this.parent).filterQuery(gridQuery);
@@ -416,7 +426,7 @@ public isRemote(): boolean {
       let action: string = 'action'; let collpasedIndexes: number[] = [];
       parentData = this.parent.parentData; let sortedData: Object[];
       let query: Query = getObject('query', args);
-      this.parent.sortModule = new Sort(this.parent); let srtQry: Query = new Query();
+      let srtQry: Query = new Query();
       for (let srt: number = this.parent.grid.sortSettings.columns.length - 1; srt >= 0; srt--) {
         let col: Column = this.parent.getColumnByField(this.parent.grid.sortSettings.columns[srt].field);
         let compFun: Function | string = col.sortComparer && !this.isRemote() ?
@@ -439,10 +449,10 @@ public isRemote(): boolean {
         results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.sortedData, isSort);
       }
     }
-    count = results.length;
+    count = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
+            : results.length;
     let temp: BeforeDataBoundArgs = this.paging(results, count, isExport, isPrinting, exportType, args);
-    results = temp.result;
-    count = temp.count;
+    results = temp.result; count = temp.count;
     args.result = results; args.count = count;
     this.parent.notify('updateResults', args);
   }
@@ -451,7 +461,9 @@ public isRemote(): boolean {
     if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')
      && (!isPrinting || this.parent.printMode === 'CurrentPage'))  {
       this.parent.notify(events.pagingActions, {result: results, count: count});
-      results = <ITreeData[]>this.dataResults.result; count = this.dataResults.count;
+      results = <ITreeData[]>this.dataResults.result;
+      count = isCountRequired(this.parent) ? getValue('count', this.parent.dataSource)
+              : this.dataResults.count;
     } else if (this.parent.enableVirtualization && (!isExport || exportType === 'CurrentPage')) {
       this.parent.notify(events.pagingActions, {result: results, count: count, actionArgs: getValue('actionArgs', args)});
       results = <ITreeData[]>this.dataResults.result;

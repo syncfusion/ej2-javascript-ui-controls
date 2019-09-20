@@ -377,6 +377,28 @@ describe('Chart Control Selection ', () => {
         chartObj.selectionModule.selectedDataIndexes = [];
         chartObj.refresh();
     });
+    it('Selection mode multi select dragging', (done: Function) => {
+        loaded = () => {
+            trigger.draganddropEvent(chartContainer, 100, 100, 300, 300);
+            trigger.draganddropEvent(chartContainer, 400, 100, 600, 300);
+            element = document.getElementById(draggedRectGroup + '0');
+            expect(element.getAttribute('x') == '92').toBe(true);
+            expect(element.getAttribute('y')).toEqual('10');
+            expect(element.getAttribute('height') === '419.75' || element.getAttribute('height') === '421.75').toBe(true);
+            expect(element.getAttribute('width')).toEqual('200');
+            element = document.getElementById(draggedRectGroup + '1');
+            expect(element.getAttribute('x') == '392').toBe(true);
+            expect(element.getAttribute('y')).toEqual('10');
+            expect(element.getAttribute('height') === '419.75' || element.getAttribute('height') === '421.75').toBe(true);
+            expect(element.getAttribute('width')).toEqual('200');
+            done();
+        };
+        chartObj.selectionMode = 'DragX';
+        chartObj.allowMultiSelection = true;
+        chartObj.loaded = loaded;
+        chartObj.selectionModule.selectedDataIndexes = [];
+        chartObj.refresh();
+    });
     it('Selection mode DragY', (done: Function) => {
         loaded = () => {
 
@@ -390,6 +412,29 @@ describe('Chart Control Selection ', () => {
             done();
         };
         chartObj.selectionMode = 'DragY';
+        chartObj.allowMultiSelection = false;
+        chartObj.loaded = loaded;
+        chartObj.selectionModule.selectedDataIndexes = [];
+        chartObj.refresh();
+    });
+    it('Selection mode multi select dragging', (done: Function) => {
+        loaded = () => {
+            trigger.draganddropEvent(chartContainer, 100, 100, 200, 200);
+            trigger.draganddropEvent(chartContainer, 100, 300, 300, 400);
+            element = document.getElementById(draggedRectGroup + '0');
+            expect(element.getAttribute('x') === '33.25' || element.getAttribute('x') === '32.25').toBe(true);
+            expect(element.getAttribute('y')).toEqual('92');
+            expect(element.getAttribute('height')).toEqual('100');
+            expect(element.getAttribute('width') === '757' || element.getAttribute('width') === '758').toBe(true);
+            element = document.getElementById(draggedRectGroup + '1');
+            expect(element.getAttribute('x') === '33.25' || element.getAttribute('x') === '32.25').toBe(true);
+            expect(element.getAttribute('y')).toEqual('292');
+            expect(element.getAttribute('height')).toEqual('100');
+            expect(element.getAttribute('width') === '757' || element.getAttribute('width') === '758').toBe(true);
+            done();
+        };
+        chartObj.selectionMode = 'DragY';
+        chartObj.allowMultiSelection = true;
         chartObj.loaded = loaded;
         chartObj.selectionModule.selectedDataIndexes = [];
         chartObj.refresh();
@@ -406,6 +451,7 @@ describe('Chart Control Selection ', () => {
             done();
         };
         chartObj.selectionMode = 'DragXY';
+        chartObj.allowMultiSelection = false;
         chartObj.loaded = loaded;
         chartObj.selectionModule.selectedDataIndexes = [];
         chartObj.refresh();
@@ -413,7 +459,7 @@ describe('Chart Control Selection ', () => {
     it('Selection mode Drag Resizing', (done: Function) => {
         loaded = () => {
             trigger.draganddropEvent(chartContainer, 100, 100, 300, 300);
-            trigger.draganddropEvent(chartContainer, 305, 305, 330, 330);
+            trigger.draganddropEvent(chartContainer, 298, 298, 330, 330);
             element = document.getElementById(draggedRectGroup);
             expect(element.getAttribute('x')).toEqual('92');
             expect(element.getAttribute('y')).toEqual('92');
@@ -642,13 +688,13 @@ describe('Chart Control Selection ', () => {
             expect(element.getAttribute('y')).toEqual('92');
             expect(element.getAttribute('height')).toEqual('200');
             expect(element.getAttribute('width')).toEqual('200');
-            trigger.draganddropEvent(chartContainer, 90, 110, 70, 120);
+            trigger.draganddropEvent(chartContainer, 105, 110, 70, 120);
             element = document.getElementById(draggedRectGroup);
             expect(element.getAttribute('x')).toEqual('62');
             expect(element.getAttribute('y')).toEqual('92');
             expect(element.getAttribute('height')).toEqual('200');
             expect(element.getAttribute('width')).toEqual('230');
-            trigger.draganddropEvent(chartContainer, 65, 110, 130, 120);
+            trigger.draganddropEvent(chartContainer, 75, 110, 130, 120);
             element = document.getElementById(draggedRectGroup);
             expect(element.getAttribute('x')).toEqual('122');
             expect(element.getAttribute('y')).toEqual('92');
@@ -671,13 +717,13 @@ describe('Chart Control Selection ', () => {
         expect(element.getAttribute('y')).toEqual('92');
         expect(element.getAttribute('height')).toEqual('200');
         expect(element.getAttribute('width')).toEqual('200');
-        trigger.draganddropEvent(chartContainer, 290, 120, 430, 180);
+        trigger.draganddropEvent(chartContainer, 295, 120, 430, 180);
         element = document.getElementById(draggedRectGroup);
         expect(element.getAttribute('x')).toEqual('92');
         expect(element.getAttribute('y')).toEqual('92');
         expect(element.getAttribute('height')).toEqual('200');
         expect(element.getAttribute('width')).toEqual('330');
-        trigger.draganddropEvent(chartContainer, 435, 115, 200, 120);
+        trigger.draganddropEvent(chartContainer, 425, 115, 200, 120);
         element = document.getElementById(draggedRectGroup);
         expect(element.getAttribute('x')).toEqual('92');
         expect(element.getAttribute('y')).toEqual('92');
@@ -695,13 +741,13 @@ describe('Chart Control Selection ', () => {
         expect(element.getAttribute('y')).toEqual('292');
         expect(element.getAttribute('height')).toEqual('100');
         expect(element.getAttribute('width')).toEqual('200');
-        trigger.draganddropEvent(chartContainer, 290, 295, 430, 200);
+        trigger.draganddropEvent(chartContainer, 290, 305, 430, 200);
         element = document.getElementById(draggedRectGroup);
         expect(element.getAttribute('x')).toEqual('242');
         expect(element.getAttribute('y')).toEqual('192');
         expect(element.getAttribute('height')).toEqual('200');
         expect(element.getAttribute('width')).toEqual('200');
-        trigger.draganddropEvent(chartContainer, 260, 200, 260, 320);
+        trigger.draganddropEvent(chartContainer, 260, 205, 260, 320);
         element = document.getElementById(draggedRectGroup);
         expect(element.getAttribute('x')).toEqual('242');
         expect(element.getAttribute('y')).toEqual('312');
@@ -719,7 +765,7 @@ describe('Chart Control Selection ', () => {
         expect(element.getAttribute('y')).toEqual('92');
         expect(element.getAttribute('height')).toEqual('100');
         expect(element.getAttribute('width')).toEqual('200');
-        trigger.draganddropEvent(chartContainer, 290, 205, 250, 400);
+        trigger.draganddropEvent(chartContainer, 290, 195, 250, 400);
         element = document.getElementById(draggedRectGroup);
         expect(element.getAttribute('x')).toEqual('242');
         expect(element.getAttribute('y')).toEqual('92');

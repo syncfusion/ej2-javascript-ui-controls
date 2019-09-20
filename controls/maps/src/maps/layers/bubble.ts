@@ -26,7 +26,7 @@ export class Bubble {
     /* tslint:disable-next-line:max-func-body-length */
     public renderBubble(
         bubbleSettings: BubbleSettingsModel, shapeData: object, color: string, range: { min: number, max: number },
-        bubbleIndex: number, dataIndex: number, layerIndex: number, layer: LayerSettings, group: Element
+        bubbleIndex: number, dataIndex: number, layerIndex: number, layer: LayerSettings, group: Element, bubbleID? : string
     ): void {
         let layerData: object[] = layer.layerData; let colorValuePath: string = bubbleSettings.colorValuePath;
         let equalValue: string = shapeData[colorValuePath];
@@ -86,14 +86,18 @@ export class Bubble {
                 };
             } else {
                 let shapePointsLength: number = shapePoints.length - 1;
-                eventArgs = {
-                    cancel: false, name: bubbleRendering, border: bubbleSettings.border,
-                    cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
-                    data: shapeData, fill: bubbleColor, maps: this.maps,
-                    radius: radius
-                };
+                if (shapePoints[shapePointsLength]['x'] && shapePoints[shapePointsLength]['y']) {
+                    eventArgs = {
+                        cancel: false, name: bubbleRendering, border: bubbleSettings.border,
+                        cx: shapePoints[shapePointsLength]['x'], cy: shapePoints[shapePointsLength]['y'],
+                        data: shapeData, fill: bubbleColor, maps: this.maps.isBlazor ? null : this.maps,
+                        radius: radius
+                    };
+                } else {
+                    return;
+                }
                 if (this.maps.isBlazor) {
-                    const { maps, ...blazorEventArgs } : IBubbleRenderingEventArgs = eventArgs;
+                    const { maps, ...blazorEventArgs }: IBubbleRenderingEventArgs = eventArgs;
                     eventArgs = blazorEventArgs;
                 }
             }
@@ -104,14 +108,14 @@ export class Bubble {
                 let bubbleElement: Element;
                 if (bubbleSettings.bubbleType === 'Circle') {
                     let circle: CircleOption = new CircleOption(
-                        this.id, eventArgs.fill, eventArgs.border, opacity,
+                        bubbleID, eventArgs.fill, eventArgs.border, opacity,
                         0, 0, eventArgs.radius, null
                     );
                     bubbleElement = drawCircle(this.maps, circle, group);
                 } else {
                     let y: number = this.maps.projectionType === 'Mercator' ? (eventArgs.cy - radius) : (eventArgs.cy + radius);
                     let rectangle: RectOption = new RectOption(
-                        this.id, eventArgs.fill, eventArgs.border, opacity,
+                        bubbleID, eventArgs.fill, eventArgs.border, opacity,
                         new Rect(0, 0, radius * 2, radius * 2), 2, 2
                     );
                     eventArgs.cx -= radius; eventArgs.cy = y;
@@ -195,8 +199,9 @@ export class Bubble {
         let data: object;
         if (target.indexOf('_BubbleIndex_') > -1) {
             let bubbleIndex: number = parseInt(id[1].split('_BubbleIndex_')[1], 10);
+            let dataIndex: number = parseInt(id[1].split('_BubbleIndex_')[1].split('_dataIndex_')[1], 10);
             if (!isNaN(bubbleIndex)) {
-                data = layer.dataSource[bubbleIndex];
+                data = layer.bubbleSettings[bubbleIndex].dataSource[dataIndex];
                 return data;
             }
         }
@@ -232,7 +237,7 @@ export class Bubble {
     }
 
     /**
-     * To destroy the bubble. 
+     * To destroy the bubble.
      * @return {void}
      * @private
      */

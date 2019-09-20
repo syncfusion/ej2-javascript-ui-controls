@@ -1,4 +1,4 @@
-/** 
+/**
  * Defines position of the axis ticks / labels. They are
  * * inside
  * * outside
@@ -10,7 +10,7 @@ export type Position =
     /**  Outside position of the tick line / axis label. */
     'Outside';
 
-/** 
+/**
  * Defines Pointer type of the axis. They are
  * * needle
  * * marker
@@ -25,7 +25,7 @@ export type PointerType =
     /**  Specifies the pointer type as range bar. */
     'RangeBar';
 
-/** 
+/**
  * Defines Direction of the gauge. They are
  * * ClockWise
  * * AntiClockWise
@@ -37,7 +37,7 @@ export type GaugeDirection =
     /** Renders the axis in anti-clock wise direction. */
     'AntiClockWise';
 
-/** 
+/**
  * Defines Theme of the gauge. They are
  * * Material
  * * Fabric
@@ -64,7 +64,7 @@ export type GaugeTheme =
     'Bootstrap4';
 
 
-/** 
+/**
  * Defines Hidden label of the axis. They are
  * * First
  * * Last
@@ -78,7 +78,7 @@ export type HiddenLabel =
     /**  Places both the labels. */
     'None';
 
-/** 
+/**
  * Defines the shape of marker. They are
  * * circle - Renders a circle.
  * * rectangle - Renders a rectangle.
@@ -104,3 +104,25 @@ export type GaugeShape =
     'InvertedTriangle' |
     /** Render a Image. */
     'Image';
+
+export type LegendPosition =
+    /** Places the legend on the top of circular gauge. */
+    'Top' |
+    /** Places the legend on the left of circular gauge. */
+    'Left' |
+    /** Places the legend on the bottom of circular gauge. */
+    'Bottom' |
+    /** Places the legend on the right of circular gauge. */
+    'Right' |
+    /** Places the legend on the custom x and y location */
+    'Custom' |
+    /** Places the legend based on the available space */
+    'Auto';
+
+export type Alignment =
+     /** Places the legend on the near of the circular gauge */
+     'Near' |
+     /** Places the legend on the center of the circular gauge */
+     'Center' |
+     /** Places the legend on the far on the circular gauge */
+     'Far';

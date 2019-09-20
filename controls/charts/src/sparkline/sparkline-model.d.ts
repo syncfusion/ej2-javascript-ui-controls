@@ -181,7 +181,6 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before sparkline render.
      * @event
-     * @deprecated
      * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ISparklineLoadEventArgs>;
@@ -197,7 +196,6 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before sparkline series render.
      * @event
-     * @deprecated
      * @blazorProperty 'SeriesRendering'
      */
     seriesRendering?: EmitType<ISeriesRenderingEventArgs>;
@@ -213,6 +211,7 @@ export interface SparklineModel extends ComponentModel{
     /**
      * Triggers before sparkline points render.
      * @event
+     * @deprecated
      * @blazorProperty 'PointRendering'
      */
     pointRendering?: EmitType<ISparklinePointEventArgs>;

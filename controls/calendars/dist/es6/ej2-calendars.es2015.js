@@ -8945,7 +8945,7 @@ let TimePicker = class TimePicker extends Component {
             }
         }
         if (this.inputWrapper.container) {
-            remove(this.inputWrapper.container);
+            detach(this.inputWrapper.container);
         }
         this.inputWrapper = this.popupWrapper = this.cloneElement = undefined;
         this.liCollections = this.timeCollections = this.disableItemCollection = [];

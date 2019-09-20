@@ -1,6 +1,6 @@
 import { Ajax, Animation, Base, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getInstance, getNumericObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, merge, onIntlChange, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Popup, Tooltip, createSpinner, getZindexPartial, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
-import { SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
+import { Deferred, SplitButton, getModel } from '@syncfusion/ej2-splitbuttons';
 
 const CLASSNAMES = {
     RTL: 'e-rtl',
@@ -2863,7 +2863,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-const ROOT$1 = 'e-widget e-control-wrapper e-mask';
+const ROOT$1 = 'e-control-wrapper e-mask';
 const INPUT = 'e-input';
 const COMPONENT$1 = 'e-maskedtextbox';
 const CONTROL$1 = 'e-control';
@@ -3122,7 +3122,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                     Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
                     break;
                 case 'enabled':
-                    Input.setEnabled(newProp.enabled, this.element);
+                    Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
                     break;
                 case 'readonly':
                     Input.setReadonly(newProp.readonly, this.element);
@@ -3324,6 +3324,20 @@ __decorate$2([
     Property(null)
 ], TicksData.prototype, "format", void 0);
 /**
+ * It illustrates the color track data in slider.
+ */
+class ColorRangeData extends ChildProperty {
+}
+__decorate$2([
+    Property(null)
+], ColorRangeData.prototype, "color", void 0);
+__decorate$2([
+    Property(null)
+], ColorRangeData.prototype, "start", void 0);
+__decorate$2([
+    Property(null)
+], ColorRangeData.prototype, "end", void 0);
+/**
  * It illustrates the limit data in slider.
  */
 class LimitData extends ChildProperty {
@@ -3400,6 +3414,8 @@ const classNames = {
     materialTooltipActive: 'e-tooltip-active',
     materialSlider: 'e-material-slider',
     sliderTrack: 'e-slider-track',
+    sliderHorizantalColor: 'e-slider-horizantal-color',
+    sliderVerticalColor: 'e-slider-vertical-color',
     sliderHandleFocused: 'e-handle-focused',
     verticalSlider: 'e-vertical',
     horizontalSlider: 'e-horizontal',
@@ -3873,6 +3889,7 @@ let Slider = class Slider extends Component {
                 }
             }
         }
+        this.setBarColor();
     }
     tooltipValue() {
         let text;
@@ -4395,7 +4412,7 @@ let Slider = class Slider extends Component {
             if (spanElement) {
                 spanElement.innerHTML = observedArgs.text.toString();
             }
-            if (isBlazor()) {
+            if (!isNullOrUndefined(this.renderingTicks) && isBlazor()) {
                 const orien = this.orientation === 'Horizontal' ? 'h' : 'v';
                 this.ticksAlignment(orien, tickWidth, false);
             }
@@ -4717,6 +4734,7 @@ let Slider = class Slider extends Component {
         if (!isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
             this.min = 0;
             this.max = this.customValues.length - 1;
+            this.setBarColor();
         }
         this.setAriaAttributes(this.firstHandle);
         this.handleVal1 = isNullOrUndefined(this.value) ? this.checkHandleValue(parseFloat(this.min.toString())) :
@@ -4997,6 +5015,7 @@ let Slider = class Slider extends Component {
             });
         }
         this.refreshTooltip(this.tooltipTarget);
+        this.setBarColor();
     }
     changeHandleValue(value) {
         let position = null;
@@ -5824,6 +5843,7 @@ let Slider = class Slider extends Component {
                             this.sliderContainer.classList.remove(classNames.sliderButtonClass);
                             this.firstBtn = undefined;
                             this.secondBtn = undefined;
+                            this.reposition();
                         }
                     }
                     break;
@@ -5835,6 +5855,9 @@ let Slider = class Slider extends Component {
                     break;
                 case 'customValues':
                     this.setValue();
+                    this.reposition();
+                    break;
+                case 'colorRange':
                     this.reposition();
                     break;
             }
@@ -5885,6 +5908,56 @@ let Slider = class Slider extends Component {
     setTooltip() {
         this.changeSliderType(this.type);
     }
+    setBarColor() {
+        let trackPosition;
+        let trackClassName;
+        let child = this.sliderTrack.lastElementChild;
+        while (child) {
+            this.sliderTrack.removeChild(child);
+            child = this.sliderTrack.lastElementChild;
+        }
+        for (let i = 0; i < this.colorRange.length; i++) {
+            if (!isNullOrUndefined(this.colorRange[i].start) && !isNullOrUndefined(this.colorRange[i].end)) {
+                if (this.colorRange[i].end > this.colorRange[i].start) {
+                    if (this.colorRange[i].start < this.min) {
+                        this.colorRange[i].start = this.min;
+                    }
+                    if (this.colorRange[i].end > this.max) {
+                        this.colorRange[i].end = this.max;
+                    }
+                    let startingPosition = this.checkHandlePosition(this.colorRange[i].start);
+                    let endPosition = this.checkHandlePosition(this.colorRange[i].end);
+                    let trackContainer = this.createElement('div');
+                    trackContainer.style.backgroundColor = this.colorRange[i].color;
+                    trackContainer.style.border = '1px solid ' + this.colorRange[i].color;
+                    if (this.orientation === 'Horizontal') {
+                        trackClassName = classNames.sliderHorizantalColor;
+                        if (this.enableRtl) {
+                            if (isNullOrUndefined(this.customValues)) {
+                                trackPosition = this.checkHandlePosition(this.max) - this.checkHandlePosition(this.colorRange[i].end);
+                            }
+                            else {
+                                trackPosition = this.checkHandlePosition(this.customValues.length - this.colorRange[i].end - 1);
+                            }
+                        }
+                        else {
+                            trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        }
+                        trackContainer.style.width = endPosition - startingPosition + 'px';
+                        trackContainer.style.left = trackPosition + 'px';
+                    }
+                    else {
+                        trackClassName = classNames.sliderVerticalColor;
+                        trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        trackContainer.style.height = endPosition - startingPosition + 'px';
+                        trackContainer.style.bottom = trackPosition + 'px';
+                    }
+                    trackContainer.classList.add(trackClassName);
+                    this.sliderTrack.appendChild(trackContainer);
+                }
+            }
+        }
+    }
     /**
      * Gets the component name
      * @private
@@ -5914,6 +5987,9 @@ __decorate$2([
 __decorate$2([
     Property('Default')
 ], Slider.prototype, "type", void 0);
+__decorate$2([
+    Collection([{}], ColorRangeData)
+], Slider.prototype, "colorRange", void 0);
 __decorate$2([
     Complex({}, TicksData)
 ], Slider.prototype, "ticks", void 0);
@@ -6756,7 +6832,7 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-const CONTROL_WRAPPER = 'e-upload';
+const CONTROL_WRAPPER = 'e-upload e-control-wrapper';
 const INPUT_WRAPPER = 'e-file-select';
 const DROP_AREA = 'e-file-drop';
 const DROP_WRAPPER = 'e-file-select-wrap';
@@ -7570,6 +7646,14 @@ let Uploader = class Uploader extends Component {
         let formData = new FormData();
         ajax.beforeSend = (e) => {
             eventArgs.currentRequest = ajax.httpRequest;
+            if (isBlazor()) {
+                if (this.currentRequestHeader) {
+                    this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                }
+                if (this.customFormDatas) {
+                    this.updateFormData(formData, this.customFormDatas);
+                }
+            }
             if (!removeDirectly) {
                 this.trigger('removing', eventArgs, (eventArgs) => {
                     if (eventArgs.cancel) {
@@ -9094,7 +9178,17 @@ let Uploader = class Uploader extends Component {
     upload(files, custom) {
         files = files ? files : this.filesData;
         let uploadFiles = this.validateFileType(files);
-        this.uploadFiles(uploadFiles, custom);
+        let eventArgs = {
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeUpload', eventArgs, (eventArgs) => {
+            if (isBlazor()) {
+                this.currentRequestHeader = eventArgs.currentRequest;
+                this.customFormDatas = eventArgs.customFormData;
+            }
+            this.uploadFiles(uploadFiles, custom);
+        });
     }
     validateFileType(files) {
         let uploadFiles = [];
@@ -9215,57 +9309,71 @@ let Uploader = class Uploader extends Component {
             cancel: false,
             filesData: [],
             customFormData: [],
-            postRawFile: postRawFile
+            postRawFile: postRawFile,
+            currentRequest: null
         };
-        let index;
-        if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
-            eventArgs.filesData = this.getFilesData();
-            this.trigger('removing', eventArgs, (eventArgs) => {
-                if (!eventArgs.cancel) {
-                    this.clearAll();
+        let beforeEventArgs = {
+            cancel: false,
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeRemove', beforeEventArgs, (beforeEventArgs) => {
+            if (!beforeEventArgs.cancel) {
+                if (isBlazor()) {
+                    this.currentRequestHeader = beforeEventArgs.currentRequest;
+                    this.customFormDatas = beforeEventArgs.customFormData;
                 }
-            });
-        }
-        else {
-            let removeFiles = [];
-            fileData = !isNullOrUndefined(fileData) ? fileData : this.filesData;
-            if (fileData instanceof Array) {
-                removeFiles = fileData;
-            }
-            else {
-                removeFiles.push(fileData);
-            }
-            eventArgs.filesData = removeFiles;
-            let removeUrl = this.asyncSettings.removeUrl;
-            let validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
-            for (let files of removeFiles) {
-                index = this.filesData.indexOf(files);
-                if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
-                    this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                let index;
+                if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
+                    eventArgs.filesData = this.getFilesData();
+                    this.trigger('removing', eventArgs, (eventArgs) => {
+                        if (!eventArgs.cancel) {
+                            this.clearAll();
+                        }
+                    });
                 }
                 else {
-                    if (!removeDirectly) {
-                        this.trigger('removing', eventArgs, (eventArgs) => {
-                            if (!eventArgs.cancel) {
-                                this.removeFilesData(files, customTemplate);
-                            }
-                        });
+                    let removeFiles = [];
+                    fileData = !isNullOrUndefined(fileData) ? fileData : this.filesData;
+                    if (fileData instanceof Array) {
+                        removeFiles = fileData;
                     }
                     else {
-                        this.removeFilesData(files, customTemplate);
+                        removeFiles.push(fileData);
                     }
-                }
-                if (this.sequentialUpload) {
-                    /* istanbul ignore next */
-                    if (index <= this.actionCompleteCount) {
-                        this.checkActionComplete(false);
+                    eventArgs.filesData = removeFiles;
+                    let removeUrl = this.asyncSettings.removeUrl;
+                    let validUrl = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
+                    for (let files of removeFiles) {
+                        index = this.filesData.indexOf(files);
+                        if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
+                            this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                        }
+                        else {
+                            if (!removeDirectly) {
+                                this.trigger('removing', eventArgs, (eventArgs) => {
+                                    if (!eventArgs.cancel) {
+                                        this.removeFilesData(files, customTemplate);
+                                    }
+                                });
+                            }
+                            else {
+                                this.removeFilesData(files, customTemplate);
+                            }
+                        }
+                        if (this.sequentialUpload) {
+                            /* istanbul ignore next */
+                            if (index <= this.actionCompleteCount) {
+                                this.checkActionComplete(false);
+                            }
+                        }
+                        else {
+                            this.checkActionComplete(false);
+                        }
                     }
-                }
-                else {
-                    this.checkActionComplete(false);
                 }
             }
-        }
+        });
     }
     /**
      * Clear all the file entries from list that can be uploaded files or added in upload queue.
@@ -9484,6 +9592,9 @@ __decorate$4([
 ], Uploader.prototype, "rendering", void 0);
 __decorate$4([
     Event()
+], Uploader.prototype, "beforeUpload", void 0);
+__decorate$4([
+    Event()
 ], Uploader.prototype, "fileListRendering", void 0);
 __decorate$4([
     Event()
@@ -9500,6 +9611,9 @@ __decorate$4([
 __decorate$4([
     Event()
 ], Uploader.prototype, "removing", void 0);
+__decorate$4([
+    Event()
+], Uploader.prototype, "beforeRemove", void 0);
 __decorate$4([
     Event()
 ], Uploader.prototype, "clearing", void 0);
@@ -9690,8 +9804,6 @@ let ColorPicker = class ColorPicker extends Component {
             disabled: this.disabled,
             enableRtl: this.enableRtl,
             open: this.onOpen.bind(this),
-            beforeOpen: this.beforeOpenFn.bind(this),
-            beforeClose: this.beforePopupClose.bind(this),
             click: (args) => {
                 this.trigger('change', {
                     currentValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
@@ -9718,6 +9830,7 @@ let ColorPicker = class ColorPicker extends Component {
             popupInst.offsetY = 4;
             popupEle.style.zIndex = getZindexPartial(this.splitBtn.element).toString();
         }
+        this.bindCallBackEvent();
     }
     onOpen(args) {
         this.trigger('open', { element: this.container });
@@ -9725,42 +9838,52 @@ let ColorPicker = class ColorPicker extends Component {
     getPopupInst() {
         return getInstance(this.getPopupEle(), Popup);
     }
-    beforeOpenFn(args) {
-        let beforeOpenArgs = { element: this.container, event: args.event, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs, (observeOpenArgs) => {
-            args.cancel = observeOpenArgs.cancel;
-            if (!observeOpenArgs.cancel) {
-                let popupEle = this.getPopupEle();
-                popupEle.style.top = formatUnit(0 + pageYOffset);
-                popupEle.style.left = formatUnit(0 + pageXOffset);
-                popupEle.style.display = 'block';
-                this.createWidget();
-                popupEle.style.display = '';
-                if (Browser.isDevice) {
-                    this.modal = this.createElement('div');
-                    this.modal.className = 'e-' + this.getModuleName() + ' e-modal';
-                    this.modal.style.display = 'none';
-                    document.body.insertBefore(this.modal, popupEle);
-                    document.body.className += ' e-colorpicker-overflow';
-                    this.modal.style.display = 'block';
-                    this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+    bindCallBackEvent() {
+        this.splitBtn.beforeOpen = (args) => {
+            let callBackPromise = new Deferred();
+            this.trigger('beforeOpen', args, (observeOpenArgs) => {
+                if (!observeOpenArgs.cancel) {
+                    let popupEle = this.getPopupEle();
+                    popupEle.style.top = formatUnit(0 + pageYOffset);
+                    popupEle.style.left = formatUnit(0 + pageXOffset);
+                    popupEle.style.display = 'block';
+                    this.createWidget();
+                    popupEle.style.display = '';
+                    if (Browser.isDevice) {
+                        this.modal = this.createElement('div');
+                        this.modal.className = 'e-' + this.getModuleName() + ' e-modal';
+                        this.modal.style.display = 'none';
+                        document.body.insertBefore(this.modal, popupEle);
+                        document.body.className += ' e-colorpicker-overflow';
+                        this.modal.style.display = 'block';
+                        this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+                    }
                 }
-            }
-        });
-    }
-    beforePopupClose(args) {
-        if (!isNullOrUndefined(args.event)) {
-            let beforeCloseArgs = { element: this.container, event: args.event, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
-                if (Browser.isDevice && args.event.target === this.modal) {
-                    observedCloseArgs.cancel = true;
-                }
-                args.cancel = observedCloseArgs.cancel;
-                if (!observedCloseArgs.cancel) {
-                    this.onPopupClose();
-                }
+                args.cancel = observeOpenArgs.cancel;
+                callBackPromise.resolve(observeOpenArgs);
             });
-        }
+            return callBackPromise;
+        };
+        this.splitBtn.beforeClose = (args) => {
+            let callBackPromise = new Deferred();
+            if (!isNullOrUndefined(args.event)) {
+                let beforeCloseArgs = { element: this.container, event: args.event, cancel: false };
+                this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs) => {
+                    if (Browser.isDevice && args.event.target === this.modal) {
+                        observedCloseArgs.cancel = true;
+                    }
+                    if (!observedCloseArgs.cancel) {
+                        this.onPopupClose();
+                    }
+                    args.cancel = observedCloseArgs.cancel;
+                    callBackPromise.resolve(observedCloseArgs);
+                });
+            }
+            else {
+                callBackPromise.resolve(args);
+            }
+            return callBackPromise;
+        };
     }
     onPopupClose() {
         this.unWireEvents();
@@ -11413,6 +11536,14 @@ let TextBox = class TextBox extends Component {
                 case 'placeholder':
                     Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
+                case 'autocomplete':
+                    if (this.autocomplete !== 'on' && this.autocomplete !== '') {
+                        this.respectiveElement.autocomplete = this.autocomplete;
+                    }
+                    else {
+                        this.removeAttributes(['autocomplete']);
+                    }
+                    break;
                 case 'cssClass':
                     Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
                     break;
@@ -11501,7 +11632,7 @@ let TextBox = class TextBox extends Component {
     }
     checkAttributes(isDynamic) {
         let attrs = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
-            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+            ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
         for (let key of attrs) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
                 switch (key) {
@@ -11525,6 +11656,13 @@ let TextBox = class TextBox extends Component {
                         // tslint:disable-next-line
                         if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
                             this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'autocomplete':
+                        // tslint:disable-next-line
+                        if ((isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['autocomplete'] === undefined)) || isDynamic) {
+                            let autoCompleteTxt = this.element.autocomplete === 'off' ? 'off' : 'on';
+                            this.setProperties({ autocomplete: autoCompleteTxt }, !isDynamic);
                         }
                         break;
                     case 'value':
@@ -11575,6 +11713,13 @@ let TextBox = class TextBox extends Component {
         if (!isNullOrUndefined(this.value)) {
             this.initialValue = this.value;
             this.setInitialValue();
+        }
+        if (this.autocomplete !== 'on' && this.autocomplete !== '') {
+            this.respectiveElement.autocomplete = this.autocomplete;
+            // tslint:disable-next-line
+        }
+        else if (!isNullOrUndefined(this.textboxOptions) && (this.textboxOptions['autocomplete'] !== undefined)) {
+            this.removeAttributes(['autocomplete']);
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
@@ -11866,6 +12011,9 @@ __decorate$6([
     Property(null)
 ], TextBox.prototype, "placeholder", void 0);
 __decorate$6([
+    Property('on')
+], TextBox.prototype, "autocomplete", void 0);
+__decorate$6([
     Property({})
 ], TextBox.prototype, "htmlAttributes", void 0);
 __decorate$6([
@@ -11910,5 +12058,5 @@ TextBox = __decorate$6([
  * NumericTextBox all modules
  */
 
-export { NumericTextBox, regularExpressions, createMask, applyMask, wireEvents, unwireEvents, bindClearEvent, unstrippedValue, strippedValue, maskInputFocusHandler, maskInputBlurHandler, maskInputDropHandler, mobileRemoveFunction, setMaskValue, setElementValue, maskInput, getVal, getMaskedVal, MaskUndo, MaskedTextBox, Input, TicksData, LimitData, TooltipData, Slider, regex, ErrorOption, FormValidator, FilesProp, ButtonsProps, AsyncSettings, Uploader, ColorPicker, TextBox };
+export { NumericTextBox, regularExpressions, createMask, applyMask, wireEvents, unwireEvents, bindClearEvent, unstrippedValue, strippedValue, maskInputFocusHandler, maskInputBlurHandler, maskInputDropHandler, mobileRemoveFunction, setMaskValue, setElementValue, maskInput, getVal, getMaskedVal, MaskUndo, MaskedTextBox, Input, TicksData, ColorRangeData, LimitData, TooltipData, Slider, regex, ErrorOption, FormValidator, FilesProp, ButtonsProps, AsyncSettings, Uploader, ColorPicker, TextBox };
 //# sourceMappingURL=ej2-inputs.es2015.js.map

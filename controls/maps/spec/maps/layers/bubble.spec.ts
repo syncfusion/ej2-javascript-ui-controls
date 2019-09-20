@@ -3,7 +3,7 @@
  */
 import { Maps, ILoadedEventArgs } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { World_Map, usState, } from '../data/data.spec';
+import { World_Map, usState, bubbleData } from '../data/data.spec';
 import { cont_countriesdata, mapSalesData2, randomcountriesData } from '../data/us-data.spec';
 import { MouseEvents } from '../base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
@@ -225,6 +225,17 @@ describe('Map layer testing', () => {
                 expect(parseInt(transform[2], 10)).toBeLessThanOrEqual(95);
                 done();
             };
+            bubble.refresh();
+        });
+        it('Bubble with some mismatched data', (done: Function) => {
+            bubble.projectionType = 'Winkel3';
+            bubble.loaded = (args: ILoadedEventArgs) => {
+                spec = getElementByID(id + "_LayerIndex_0_bubble_Group_0");
+                expect(spec !== null).toBe(true);
+                done();
+            };
+            bubble.layers[0].bubbleSettings[0].dataSource = bubbleData;
+            bubble.layers[0].bubbleSettings[0].valuePath = "Measure_Example";
             bubble.refresh();
         });
     });

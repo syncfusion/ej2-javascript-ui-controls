@@ -16,7 +16,8 @@ let city: string[] = ['New York', 'Los Angeles', 'Chicago', 'Houston', 'Philadel
 let hours: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 let rating: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 let designation: string[] = ['Manager', 'Engineer 1', 'Engineer 2', 'Developer', 'Tester'];
-let status: string[] = ['Completed', 'Open', 'In Progress', 'Review', 'Testing']
+let status: string[] = ['Completed', 'Open', 'In Progress', 'Review', 'Testing'];
+let time: number = 0;
 let data: Function = (count: number) => {
     let result: Object[] = [];
     for (let i = 0; i < count; i++) {
@@ -30,6 +31,7 @@ let data: Function = (count: number) => {
             Status: status[Math.round(Math.random() * status.length)] || status[0]
         });
     }
+    time = new Date().getTime();
     return result;
 };
 
@@ -41,7 +43,7 @@ let pivotGridObj: PivotView = new PivotView({
         formatSettings: [{ name: 'Estimation', format: 'C' }],
         rows: [{ name: 'TaskID' }, { name: 'Status' }],
         columns: [{ name: 'Designation' }],
-        values: [{ name: 'Estimation' }, { name: 'Rating' }],
+        values: [{ name: 'Estimation' }, { name: 'Rating' }],        
     },
     width: 800,
     height: 300,
@@ -49,7 +51,13 @@ let pivotGridObj: PivotView = new PivotView({
     showFieldList: true,
     showGroupingBar: true,
     enableValueSorting: true,
-    allowCalculatedField: true
+    allowCalculatedField: true,    
+    dataBound: function () {
+        if (!(pivotGridObj as any).isEmptyGrid) {
+            console.log((new Date().getTime() - time) / 1000);
+            time = new Date().getTime();  
+        }
+    }
 });
 pivotGridObj.appendTo('#PivotView');
 document.getElementById('load').onclick = function () {

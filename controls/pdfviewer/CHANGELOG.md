@@ -2,17 +2,30 @@
 
 ## [Unreleased]
 
+## 17.3.9-beta (2019-09-20)
+
+### PDF Viewer
+
+#### New Features
+
+- `#227046`, `#230887`, `#142366`, `#231973`, `#I237847`, `#244849`, `#238686`, `#239233`, `#241638`, `#241638`, `#242232`, `#239221`, `#240051`, `#245255` – The support has been provided for filling the form fields.
+- `#233655`, `#236240`, `#236825`, `#238694`, `#241974`, `#243864`, `#245087` – The support has been provided for free text annotation.
+- `#246059` - Exposed the thumbnailClick event to identify the thumbnail clicks action.
+- `#246767` – The support has been provided to export the annotation details as JSON object in client-side.
+- `#245008` – The support has been provided to update the existing calibrate annotation if we modify the scale value.
+- Improved the scrolling performance in mobile devices.
+
 ## 17.2.49 (2019-09-04)
 
 ### PDF Viewer
 
 #### Bug Fixes
 
-- #246044 – The assigned author name is now preserved properly while loading or saving the document in PDF Viewer.
-- #245087 – The Polygon, Perimeter, and Volume annotations will be drawn properly in the low zoom values.
-- #245820 - Magnification on double tap will no longer happen when the pinch zoom is disabled in the PDF Viewer control.
-- #244787 – The Comment panel is now opened properly while double clicking the annotation created from the code behind.
-- #246041 - The warning message will no longer be thrown when the web action method is executed.
+- `#246044` – The assigned author name is now preserved properly while loading or saving the document in PDF Viewer.
+- `#245087` – The Polygon, Perimeter, and Volume annotations will be drawn properly in the low zoom values.
+- `#245820` - Magnification on double tap will no longer happen when the pinch zoom is disabled in the PDF Viewer control.
+- `#244787` – The Comment panel is now opened properly while double clicking the annotation created from the code behind.
+- `#246041` - The warning message will no longer be thrown when the web action method is executed.
 
 ## 17.2.47 (2019-08-27)
 
@@ -20,14 +33,14 @@
 
 #### New Features
 
-- #243205, #245009 - Provided the support to include Custom stamps in stamp dropdown.
-- #243133 - Provided the support to customize tooltip of the hyperlink on mouse hover.
-- #245007 - Provided the Feet unit support in measurement annotation.
+- `#243205`, `#245009` - Provided the support to include Custom stamps in stamp dropdown.
+- `#243133` - Provided the support to customize tooltip of the hyperlink on mouse hover.
+- `#245007` - Provided the Feet unit support in measurement annotation.
 
 #### Bug Fixes
 
-- #244499 - The shape and measurement annotations will now be rendered properly in the rotated documents.
-- #244481 - The script errors will no longer be thrown in PDF Viewer in IE browser.
+- `#244499` - The shape and measurement annotations will now be rendered properly in the rotated documents.
+- `#244481` - The script errors will no longer be thrown in PDF Viewer in IE browser.
 
 ## 17.2.46 (2019-08-22)
 
@@ -43,11 +56,11 @@
 
 #### New Features
 
-- ‘#223065’, ‘#234860’, ‘#241770’, ‘#241487’, ‘#229426’, ‘#244801’ – Provided the support for importing and exporting the annotation details as a JSON object.
+- `#223065`, `#234860`, `#241770`, `#241487`, `#229426`, `#244801` – Provided the support for importing and exporting the annotation details as a JSON object.
 
 #### Bug Fixes
 
-- ‘#243837’ – Exception will no longer be thrown while loading the PDF document as FileStream.
+- `#243837` – Exception will no longer be thrown while loading the PDF document as FileStream.
 
 ## 17.2.41 (2019-08-14)
 
@@ -55,12 +68,12 @@
 
 #### Bug Fixes
 
-- #241487, #243077 - Annotation author name is now updated properly in the comment panel.
-- #242804 - The Bookmark's destination value is now maintained properly during navigation.
-- #241487 - The provided PDF document will now be loaded properly in the PDF Viewer control.
-- #244437 - Resolved the typo errors in the PDF Viewer toolbar content.
-- #244654 - The editAnnotation API is now working properly.
-- #243134 - The PDF documents load properly when render the PDF Viewer control under multiple tab with fitToPage view mode during initial loading.
+- `#241487`, `#243077` - Annotation author name is now updated properly in the comment panel.
+- `#242804` - The Bookmark's destination value is now maintained properly during navigation.
+- `#241487` - The provided PDF document will now be loaded properly in the PDF Viewer control.
+- `#244437` - Resolved the typo errors in the PDF Viewer toolbar content.
+- `#244654` - The editAnnotation API is now working properly.
+- `#243134` - The PDF documents load properly when render the PDF Viewer control under multiple tab with fitToPage view mode during initial loading.
 
 ## 17.2.40 (2019-08-06)
 
@@ -68,15 +81,15 @@
 
 #### New Features
 
-- #242329 - Provided the support to customize scale ratio value of measurement annotation.
-- #241886 - Provided the support to display context menu in mouse up action.
+- `#242329` - Provided the support to customize scale ratio value of measurement annotation.
+- `#241886` - Provided the support to display context menu in mouse up action.
 
 #### Bug Fixes
 
-- #242495, 243160 – Hyperlink element is now rendered properly for the rotated page document.
-- #238064 – Searched target text is now highlighted properly for the provided document.
-- #241904, 241294 – Converted PDF document is now rendered properly in IE browser.
-- #242282 – Text search is now working properly while using PDF Viewer control inside the Tab control.
+- `#242495`, `#243160` – Hyperlink element is now rendered properly for the rotated page document.
+- `#238064` – Searched target text is now highlighted properly for the provided document.
+- `#241904`, `#241294` – Converted PDF document is now rendered properly in IE browser.
+- `#242282` – Text search is now working properly while using PDF Viewer control inside the Tab control.
 
 ## 17.2.39 (2019-07-30)
 
@@ -84,13 +97,13 @@
 
 #### New Features
 
-- #240440 - More details have been provided in the ajaxRequestfailure event.
-- #242375 – Now, the annotation edit toolbar is enabled by default using the enableAnnotationToolbar property.
-- #241715 - Support has been provided to render the annotation modified date and time in the comment panel.
+- `#240440` - More details have been provided in the ajaxRequestfailure event.
+- `#242375` – Now, the annotation edit toolbar is enabled by default using the enableAnnotationToolbar property.
+- `#241715` - Support has been provided to render the annotation modified date and time in the comment panel.
 
 #### Bug Fixes
 
-- #242803 - The request handling has been optimized for retrieving the comments details from the PDF document.
+- `#242803` - The request handling has been optimized for retrieving the comments details from the PDF document.
 
 ## 17.2.36 (2019-07-24)
 
@@ -106,7 +119,7 @@
 
 #### Bug Fixes
 
-- #229426 - Provided the API to select, edit, and delete the annotations.
+- `#229426` - Provided the API to select, edit, and delete the annotations.
 
 ## 17.2.34 (2019-07-11)
 
@@ -132,21 +145,21 @@
 
 #### New Features
 
-- #208298, #223253, #224643, #233655, #238694 - Provided the supports for shape annotations.
-- #219446, #224643, #230115, #233032, #F144297, #236825, #238694 - Provided the supports for stamp annotations.
-- #229426 - Provided the supports for calibrate annotations.
-- #223253, #238694 - Provided the supports for sticky notes annotations.
-- #238812 – Provided support to restrict the hyperlink navigation.
-- #236995 – Provided support to restrict the pinch zooming using the ‘enablePinchZoom’ property.
+- `#208298`, `#223253`, `#224643`, `#233655`, `#238694` - Provided the supports for shape annotations.
+- `#219446`, `#224643`, `#230115`, `#233032`, `#F144297`, `#236825`, `#238694` - Provided the supports for stamp annotations.
+- `#229426` - Provided the supports for calibrate annotations.
+- `#223253`, `#238694` - Provided the supports for sticky notes annotations.
+- `#238812` – Provided support to restrict the hyperlink navigation.
+- `#236995` – Provided support to restrict the pinch zooming using the ‘enablePinchZoom’ property.
 
 #### Bug Fixes
 
-- #233161 – Now, loading Indicator will be shown properly while loading a large page size document.
-- #233035 - HyperlinkClick event is now triggered properly.
-- #234364 - Pan interaction mode is now working properly when the toolbar is disabled.
-- #231436 - PDF document is now rendered properly while using the PDF Viewer control inside Tab control.
-- #232104 - Cleared the warnings in css files.
-- #238761 - Height of the PDF Viewer control is now maintained properly when using inside the tab control.
+- `#233161` – Now, loading Indicator will be shown properly while loading a large page size document.
+- `#233035` - HyperlinkClick event is now triggered properly.
+- `#234364` - Pan interaction mode is now working properly when the toolbar is disabled.
+- `#231436` - PDF document is now rendered properly while using the PDF Viewer control inside Tab control.
+- `#232104` - Cleared the warnings in css files.
+- `#238761` - Height of the PDF Viewer control is now maintained properly when using inside the tab control.
 
 ## 17.2.28-beta (2019-06-27)
 
@@ -172,18 +185,18 @@
 
 #### New Features
 
-- #208298, #223253, #224643, #233655, #238694 - Provided the supports for shape annotations.
-- #219446, #224643, #230115, #233032, #F144297, #236825, #238694 - Provided the supports for stamp annotations.
-- #229426 - Provided the supports for calibrate annotations.
-- #223253, #238694 - Provided the supports for sticky notes annotations.
+- `#208298`, `#223253`, `#224643`, `#233655`, `#238694` - Provided the supports for shape annotations.
+- `#219446`, `#224643`, `#230115`, `#233032`, `#F144297`, `#236825`, `#238694` - Provided the supports for stamp annotations.
+- `#229426` - Provided the supports for calibrate annotations.
+- `#223253`, `#238694` - Provided the supports for sticky notes annotations.
 
 #### Bug Fixes
 
-- #233161 – Now, loading Indicator will be shown properly while loading a large page size document.
-- #233035 - HyperlinkClick event is now triggered properly.
-- #234364 - Pan interaction mode is now working properly when the toolbar is disabled.
-- #231436 - PDF document is now rendered properly while using the PDF Viewer control inside Tab control.
-- #232104 - Cleared the warnings in css files.
+- `#233161` – Now, loading Indicator will be shown properly while loading a large page size document.
+- `#233035` - HyperlinkClick event is now triggered properly.
+- `#234364` - Pan interaction mode is now working properly when the toolbar is disabled.
+- `#231436` - PDF document is now rendered properly while using the PDF Viewer control inside Tab control.
+- `#232104` - Cleared the warnings in css files.
 
 ## 17.1.47 (2019-05-14)
 

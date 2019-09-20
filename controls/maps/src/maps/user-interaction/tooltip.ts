@@ -1,4 +1,4 @@
-import { Maps, ITooltipRenderEventArgs, tooltipRender } from '../index';
+import { Maps, ITooltipRenderEventArgs, tooltipRender, MapsTooltipOption } from '../index';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { createElement, Browser, isNullOrUndefined, extend, remove } from '@syncfusion/ej2-base';
 import { TooltipSettingsModel, LayerSettings, MarkerSettingsModel, BubbleSettingsModel } from '../index';
@@ -25,7 +25,7 @@ export class MapsTooltip {
     public renderTooltip(e: PointerEvent): void {
         let pageX: number; let pageY: number;
         let target: Element; let touchArg: TouchEvent;
-        let tootipArgs: ITooltipRenderEventArgs;
+        let tooltipArgs: ITooltipRenderEventArgs;
         if (e.type.indexOf('touch') !== - 1) {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -116,44 +116,46 @@ export class MapsTooltip {
                 });
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
-            let content: string;
             if (option.template !== null && Object.keys(typeof option.template === 'object' ? option.template : {}).length === 1) {
                 option.template = option.template[Object.keys(option.template)[0]];
             }
             templateData = this.setTooltipContent(option, templateData);
-            tootipArgs = {
+            let tooltipOption : MapsTooltipOption = {
+                location: location, text: tooltipContent, data: templateData,
+                textStyle: option.textStyle,
+                template: option.template
+            };
+            tooltipArgs = {
                 cancel: false, name: tooltipRender,
-                options: {
-                    location: location, text: tooltipContent, data: templateData,
-                    textStyle: option.textStyle,
-                    template: option.template
-                },
+                options: tooltipOption,
                 fill: option.fill,
                 maps: this.maps,
                 element: target, eventArgs: e
             };
             if (this.maps.isBlazor) {
-                const {maps, ...blazorEventArgs} : ITooltipRenderEventArgs = tootipArgs;
+                const {maps, eventArgs, ...blazorEventArgs} : ITooltipRenderEventArgs = tooltipArgs;
+                tooltipArgs = blazorEventArgs;
             }
-            this.maps.trigger('tooltipRender', tootipArgs, (observedArgs: ITooltipRenderEventArgs) => {
-                if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
+            this.maps.trigger('tooltipRender', tooltipArgs, (observedArgs: ITooltipRenderEventArgs) => {
+                if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
                     (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
                     this.maps['isProtectedOnChange'] = true;
-                    tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
-                        || tootipArgs.options['textStyle']['color'];
+                    tooltipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
+                        || tooltipArgs.options['textStyle']['color'];
                     this.svgTooltip = new Tooltip({
                         enable: true,
                         header: '',
-                        data: tootipArgs.options['data'],
-                        template: tootipArgs.options['template'],
+                        data: tooltipArgs.options['data'],
+                        template: tooltipArgs.options['template'],
                         content: [currentData.toString()],
                         shapes: [],
-                        location: tootipArgs.options['location'],
+                        location: tooltipArgs.options['location'],
                         palette: [markerFill],
                         areaBounds: this.maps.mapAreaRect,
-                        textStyle: tootipArgs.options['textStyle'],
+                        textStyle: tooltipArgs.options['textStyle'],
                         availableSize: this.maps.availableSize,
-                        fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
+                        fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
+                        //blazorTemplate: { name: 'TooltipTemplate', parent: tooltipArgs.options }
                     });
                     this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);

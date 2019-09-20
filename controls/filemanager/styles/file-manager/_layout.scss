@@ -416,6 +416,10 @@
         .e-fe-grid-icon {
           padding: 0 0 0 12px;
 
+          .e-headercelldiv {
+            text-overflow: unset;
+          }
+
           &+.e-rowcell,
           &+.e-headercell {
             padding-left: 0;
@@ -779,6 +783,7 @@
 
     .e-fe-overlay {
       border: $fe-upload-overlay-border dashed $fe-drop-border-color;
+      bottom: 0;
       display: block;
       height: calc(100% - 34px);
       pointer-events: none;

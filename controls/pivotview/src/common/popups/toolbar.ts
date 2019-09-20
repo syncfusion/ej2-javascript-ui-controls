@@ -17,10 +17,12 @@ PivotView.Inject(Common);
 export class Toolbar {
     /** @hidden */
     public action: string;
+    /** @hidden */
+    public toolbar: tool;
 
     private parent: PivotView;
-    private toolbar: tool;
     private dialog: Dialog;
+    private mdxDialog: Dialog;
     private reportList: DropDownList;
     private currentReport: string = '';
     private confirmPopUp: Dialog;
@@ -54,9 +56,9 @@ export class Toolbar {
         }
         let element: HTMLElement = createElement(
             'div', {
-                id: this.parent.element.id + 'pivot-toolbar',
-                className: cls.GRID_TOOLBAR
-            });
+            id: this.parent.element.id + 'pivot-toolbar',
+            className: cls.GRID_TOOLBAR
+        });
         if (this.parent.showFieldList && this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList')) {
             this.parent.element.insertBefore(
                 element, this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList'));
@@ -68,15 +70,18 @@ export class Toolbar {
             this.parent.element.insertBefore(
                 element, this.parent.element.querySelector('#' + this.parent.element.id + '_grid'));
         }
-
         this.toolbar = new tool({
             created: this.create.bind(this),
             enableRtl: this.parent.enableRtl,
-            width: this.parent.width ? (Number(this.parent.width) - 2) : (Number(this.parent.element.offsetWidth) - 2),
             items: this.getItems()
         });
         this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
+        this.toolbar.width = this.parent.grid ? (this.parent.getGridWidthAsNumber() - 2) : (this.parent.getWidthAsNumber() - 2);
+        if (this.parent.chart) {
+            this.parent.chart.width = this.parent.grid ? this.parent.getGridWidthAsNumber().toString() :
+                this.parent.getWidthAsNumber().toString();
+        }
     }
 
     private fetchReports(): FetchReportArgs {
@@ -142,6 +147,14 @@ export class Toolbar {
                         id: this.parent.element.id + 'chartmenu'
                     });
                     break;
+                case 'MDX':
+                    if (this.parent.dataType == "olap") {
+                        items.push({
+                            prefixIcon: cls.GRID_MDX + ' ' + cls.ICON, id: this.parent.element.id + 'mdxQuery',
+                            click: this.actionClick.bind(this), tooltipText: this.parent.localeObj.getConstant('mdxQuery')
+                        });
+                    }
+                    break;
                 case 'Export':
                     items.push({
                         template: '<ul id="' + this.parent.element.id + 'export_menu"></ul>',
@@ -189,6 +202,9 @@ export class Toolbar {
                     break;
             }
         }
+        if (this.parent.showFieldList && toolbar.indexOf("FieldList") === -1 && (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display === 'none') {
+            (this.parent.element.querySelector('#' + this.parent.element.id + '_PivotFieldList') as HTMLElement).style.display = 'block';
+        }
         let toolbarArgs: ToolbarArgs = { customToolbar: items };
         this.parent.trigger(events.toolbarRender, toolbarArgs);
         return items;
@@ -229,6 +245,23 @@ export class Toolbar {
         } else {
             this.dialogShow(args, 'saveAs');
         }
+    }
+
+    private mdxQueryDialog(args: ClickEventArgs): void {
+        if (!(this.mdxDialog && !this.mdxDialog.isDestroyed)) {
+            this.renderMDXDialog();
+        }
+        let outerDiv: HTMLElement = createElement('div', {
+            className: cls.MDX_QUERY
+        });
+        let textarea: HTMLElement = createElement('textarea', {
+            className: cls.MDX_QUERY_CONTENT,
+            innerHTML: this.parent.olapEngineModule.getMDXQuery(this.parent.dataSourceSettings).trim(),
+            attrs: { 'readonly': 'readonly' }
+        });
+        outerDiv.appendChild(textarea);
+        this.mdxDialog.content = outerDiv;
+        this.mdxDialog.show();
     }
 
     private dialogShow(args: ClickEventArgs, action?: string): void {
@@ -310,6 +343,9 @@ export class Toolbar {
                     this.parent.conditionalFormattingModule.showConditionalFormattingDialog();
                 }
                 break;
+            case (this.parent.element.id + 'mdxQuery'):
+                this.mdxQueryDialog(args);
+                break;
             case (this.parent.element.id + 'numberFormatting'):
                 if (this.parent.numberFormattingModule) {
                     this.parent.numberFormattingModule.showNumberFormattingDialog();
@@ -328,7 +364,7 @@ export class Toolbar {
         }));
         this.dialog = new Dialog({
             animationSettings: { effect: 'Fade' },
-            allowDragging: false,
+            allowDragging: true,
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
@@ -357,6 +393,53 @@ export class Toolbar {
         });
         this.dialog.isStringTemplate = true;
         this.dialog.appendTo('#' + this.parent.element.id + 'report-dialog');
+    }
+
+    private renderMDXDialog(): void {
+        if (document.querySelector('#' + this.parent.element.id + 'mdx-dialog') !== null) {
+            remove(document.querySelector('#' + this.parent.element.id + 'mdx-dialog'));
+        }
+        this.parent.element.appendChild(createElement('div', {
+            id: this.parent.element.id + 'mdx-dialog',
+            className: cls.GRID_MDX_DIALOG
+        }));
+        this.mdxDialog = new Dialog({
+            animationSettings: { effect: 'Fade' },
+            allowDragging: true,
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    click: this.copyMDXQuery.bind(this),
+                    buttonModel: {
+                        content: this.parent.localeObj.getConstant('copy'),
+                        isPrimary: true
+                    }
+                }
+            ],
+            header: this.parent.localeObj.getConstant('mdxQuery'),
+            isModal: true,
+            visible: false,
+            showCloseIcon: true,
+            enableRtl: this.parent.enableRtl,
+            width: 'auto',
+            height: 'auto',
+            zIndex: 1000001,
+            closeOnEscape: true,
+            target: document.body
+        });
+        this.mdxDialog.isStringTemplate = true;
+        this.mdxDialog.appendTo('#' + this.parent.element.id + 'mdx-dialog');
+    }
+
+    private copyMDXQuery(): void {
+        let textArea: HTMLInputElement = this.mdxDialog.element.querySelector('.' + cls.MDX_QUERY_CONTENT);
+        try {
+            textArea.select();
+            document.execCommand('copy');
+        } catch (err) {
+            window.alert('Oops, unable to copy');
+        }
+        return;
     }
 
     private okBtnClick(): void {
@@ -421,7 +504,7 @@ export class Toolbar {
         this.parent.element.appendChild(errorDialog);
         this.confirmPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
-            allowDragging: false,
+            allowDragging: true,
             showCloseIcon: true,
             enableRtl: this.parent.enableRtl,
             header: title,
@@ -488,7 +571,7 @@ export class Toolbar {
     private cancelButtonClick(): void {
         if (this.action === 'New') {
             this.createNewReport();
-        } else if (this.dropArgs) {
+        } else if (this.dropArgs && this.action !== 'Remove') {
             this.reportLoad(this.dropArgs);
         }
         this.confirmPopUp.hide();
@@ -552,13 +635,28 @@ export class Toolbar {
                         text: this.parent.localeObj.getConstant('csv'),
                         iconCss: cls.GRID_CSV_EXPORT + ' ' + cls.ICON,
                         id: this.parent.element.id + 'csv'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('png'),
+                        iconCss: cls.GRID_PNG_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'png'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('jpeg'),
+                        iconCss: cls.GRID_JPEG_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'jpeg'
+                    },
+                    {
+                        text: this.parent.localeObj.getConstant('svg'),
+                        iconCss: cls.GRID_SVG_EXPORT + ' ' + cls.ICON,
+                        id: this.parent.element.id + 'svg'
                     }
                 ]
             }];
             this.exportMenu = new Menu(
                 {
                     items: menu, enableRtl: this.parent.enableRtl,
-                    select: this.menuItemClick.bind(this)
+                    select: this.menuItemClick.bind(this), beforeOpen: this.updateExportMenu.bind(this)
                 });
             this.exportMenu.isStringTemplate = true;
             this.exportMenu.appendTo('#' + this.parent.element.id + 'export_menu');
@@ -656,6 +754,12 @@ export class Toolbar {
             this.formattingMenu.appendTo('#' + this.parent.element.id + 'formatting_menu');
         }
         if (this.parent.element.querySelector('#' + this.parent.element.id + '_reportlist')) {
+            let saveArgs: SaveReportArgs = {
+                report: this.parent.getPersistData(),
+                reportName: this.parent.localeObj.getConstant('defaultReport')
+            };
+            this.currentReport = this.parent.localeObj.getConstant('defaultReport');
+            this.parent.trigger(events.saveReport, saveArgs);
             let reports: FetchReportArgs = this.fetchReports();
             this.reportList = new DropDownList({
                 dataSource: reports.reportName,
@@ -669,6 +773,18 @@ export class Toolbar {
             });
             this.reportList.isStringTemplate = true;
             this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+        }
+    }
+
+    private updateExportMenu(args: BeforeOpenCloseMenuEventArgs): void {
+        if (this.parent.currentView == "Table") {
+            args.element.querySelector('#' + this.parent.element.id + 'png').remove();
+            args.element.querySelector('#' + this.parent.element.id + 'jpeg').remove();
+            args.element.querySelector('#' + this.parent.element.id + 'svg').remove();
+        }
+        else {
+            args.element.querySelector('#' + this.parent.element.id + 'excel').remove();
+            args.element.querySelector('#' + this.parent.element.id + 'csv').remove();
         }
     }
 
@@ -768,10 +884,15 @@ export class Toolbar {
                 }
                 break;
             case (this.parent.element.id + 'pdf'):
-                if (this.parent.pdfExportModule) {
-                    this.parent.pdfExportModule.exportToPDF();
-                } else {
-                    this.parent.pdfExport();
+                if (this.parent.currentView == "Table") {
+                    if (this.parent.pdfExportModule) {
+                        this.parent.pdfExportModule.exportToPDF();
+                    } else {
+                        this.parent.pdfExport();
+                    }
+                }
+                else {
+                    this.parent.chartExport('PDF', 'result');
                 }
                 break;
             case (this.parent.element.id + 'excel'):
@@ -787,6 +908,15 @@ export class Toolbar {
                 } else {
                     this.parent.csvExport();
                 }
+                break;
+            case (this.parent.element.id + 'png'):
+                this.parent.chartExport('PNG', 'result');
+                break;
+            case (this.parent.element.id + 'jpeg'):
+                this.parent.chartExport('JPEG', 'result');
+                break;
+            case (this.parent.element.id + 'svg'):
+                this.parent.chartExport('SVG', 'result');
                 break;
             case (this.parent.element.id + 'notsubtotal'):
                 this.parent.dataSourceSettings.showSubTotals = false;
@@ -878,6 +1008,9 @@ export class Toolbar {
         }
         if (this.dialog && !this.dialog.isDestroyed) {
             this.dialog.destroy();
+        }
+        if (this.mdxDialog && !this.mdxDialog.isDestroyed) {
+            this.mdxDialog.destroy();
         }
         if (this.chartMenu && !this.chartMenu.isDestroyed) {
             this.chartMenu.destroy();

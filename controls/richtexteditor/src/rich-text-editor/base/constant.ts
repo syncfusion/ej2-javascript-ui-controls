@@ -142,6 +142,8 @@ export const editAreaClick: string = 'editAreaClick';
 /** @hidden */
 export const scroll: string = 'scroll';
 /** @hidden */
+export const contentscroll: string = 'contentscroll';
+/** @hidden */
 export const colorPickerChanged: string = 'colorPickerChanged';
 /** @hidden */
 export const tableColorPickerChanged: string = 'tableColorPickerChanged';
@@ -197,3 +199,5 @@ export const imageUploadSuccess: string = 'imageUploadSuccess';
 export const imageUploadFailed: string = 'imageUploadFailed';
 /** @hidden */
 export const imageRemoving: string = 'imageRemoving';
+/** @hidden */
+export const drop: string = 'drop';

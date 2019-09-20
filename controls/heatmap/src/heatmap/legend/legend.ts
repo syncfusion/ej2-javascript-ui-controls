@@ -352,7 +352,7 @@ export class Legend {
         this.legendTextRange = [];
         if (heatMap.legendSettings.showLabel && (heatMap.paletteSettings.type === 'Gradient' ||
             (heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.labelDisplayType !== 'None'))) {
-            let anchor: string; let dominantBaseline: string;
+            let anchor: string = 'start'; let dominantBaseline: string;
             let legendLabel: Element; let textWrapWidth: number = 0;
             let text: string[]; this.legendLabelTooltip = [];
             let elementSize: Size; let colorCollection: ColorCollection[] = heatMap.legendColorCollection;
@@ -387,7 +387,7 @@ export class Legend {
                             (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
                             heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
                                 heatMap.legendSettings.labelDisplayType === 'Edge' &&
-                                heatMap.paletteSettings.type === 'Fixed') ? 'baseline' : 'middle';
+                                heatMap.paletteSettings.type === 'Fixed') ? 'auto' : 'middle';
                 }
                 textWrapWidth = heatMap.horizontalGradient ? this.textWrapCollections[i] : this.width - (this.legendRectScale.width +
                     this.labelPadding + this.legendRectPadding);
@@ -412,8 +412,7 @@ export class Legend {
                             new Rect(labelX, labelY, elementSize.width, elementSize.height)));
                     }
                     let textBasic: TextBasic = new TextBasic(
-                        labelX, labelY, anchor, text, 0,
-                        'translate(0,0)', dominantBaseline);
+                        labelX, labelY, anchor, text, 0, 'translate(0,0)', dominantBaseline);
                     let options: TextOption = new TextOption(
                         heatMap.element.id + '_Legend_Label' + i, textBasic, heatMap.legendSettings.textStyle,
                         heatMap.legendSettings.textStyle.color || heatMap.themeStyle.legendLabel);

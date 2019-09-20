@@ -125,12 +125,12 @@ export class KeyboardInteraction {
         if (e.event.shiftKey) { return; }
         this.initialTarget = this.getClosestCell(e.event);
         if (this.parent.activeViewOptions.readonly || this.parent.currentView === 'MonthAgenda' || !this.initialTarget) { return; }
-        if ((e.event.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS)) {
+        if ((e.event.target as HTMLElement).classList.contains(cls.WORK_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             EventHandler.add(this.parent.getContentTable(), 'mousemove', this.onMouseSelection, this);
             EventHandler.add(this.parent.getContentTable(), 'mouseup', this.onMoveup, this);
         }
-        if ((e.event.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+        if ((e.event.target as HTMLElement).classList.contains(cls.ALLDAY_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             let allDayRow: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getAllDayRow();
             EventHandler.add(allDayRow, 'mousemove', this.onMouseSelection, this);

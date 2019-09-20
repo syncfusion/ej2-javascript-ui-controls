@@ -80,7 +80,6 @@ export interface IAxisRenderingEventArgs extends ISparklineEventArgs {
 }
 /**
  * Specifies the sparkline series rendering Event arguments.
- * @deprecated
  */
 export interface ISeriesRenderingEventArgs extends ISparklineEventArgs {
     /** Defines the current sparkline instance */

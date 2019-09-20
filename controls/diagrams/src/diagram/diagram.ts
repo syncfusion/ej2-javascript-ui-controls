@@ -11,6 +11,7 @@ import { PageSettingsModel, ScrollSettingsModel } from './diagram/page-settings-
 import { DiagramElement } from './core/elements/diagram-element';
 import { ServiceLocator } from './objects/service';
 import { IElement, IDataLoadedEventArgs, ISelectionChangeEventArgs, IClickEventArgs, ScrollValues } from './objects/interface/IElement';
+import { UserHandleEventsArgs } from './objects/interface/IElement';
 import { IBlazorDropEventArgs, IBlazorScrollChangeEventArgs, } from './objects/interface/IElement';
 import { DiagramEventObjectCollection, IBlazorCollectionChangeEventArgs } from './objects/interface/IElement';
 import { ICommandExecuteEventArgs, IBlazorDragEnterEventArgs } from './objects/interface/IElement';
@@ -1121,6 +1122,38 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     public collectionChange: EmitType<ICollectionChangeEventArgs>;
 
     /**
+     * Triggers when a mouseDown on the user handle.
+     * @event
+     * @blazorProperty 'OnUserHandleMouseDown'
+     */
+    @Event()
+    public onUserHandleMouseDown: EmitType<UserHandleEventsArgs>;
+
+    /**
+     * Triggers when a mouseUp on the user handle.
+     * @event
+     * @blazorProperty 'OnUserHandleMouseUp'
+     */
+    @Event()
+    public onUserHandleMouseUp: EmitType<UserHandleEventsArgs>;
+
+    /**
+     * Triggers when a mouseEnter on the user handle.
+     * @event
+     * @blazorProperty 'OnUserHandleMouseEnter'
+     */
+    @Event()
+    public onUserHandleMouseEnter: EmitType<UserHandleEventsArgs>;
+
+    /**
+     * Triggers when a mouseLeave on the user handle.
+     * @event
+     * @blazorProperty 'OnUserHandleMouseLeave'
+     */
+    @Event()
+    public onUserHandleMouseLeave: EmitType<UserHandleEventsArgs>;
+
+    /**
      * Triggers when a segment is added/removed to/from the connector.
      * @event
      * @blazorProperty 'OnSegmentCollectionChange'
@@ -1177,7 +1210,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers before opening the context menu
      * @event
      * @blazorProperty 'OnContextMenuOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.BeforeOpenCloseMenuEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramBeforeMenuOpenEventArgs
      */
     @Event()
     public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
@@ -1186,7 +1219,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers before rendering the context menu item
      * @event
      * @blazorProperty 'OnContextMenuItemRender'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
      */
     @Event()
     public contextMenuBeforeItemRender: EmitType<MenuEventArgs>;
@@ -1195,7 +1228,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when a context menu item is clicked
      * @event
      * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuEventArgs
+     * @blazorType Syncfusion.EJ2.Blazor.Diagrams.DiagramMenuEventArgs
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -1557,6 +1590,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             for (let temp of this.views) {
                 let view: View = this.views[temp];
                 if (!(view instanceof Diagram)) {
+                    if (newProp.scrollSettings && newProp.scrollSettings.currentZoom != oldProp.scrollSettings.currentZoom) {
+                        view.updateHtmlLayer(view);
+                    }
                     this.refreshCanvasDiagramLayer(view);
                 }
             }
@@ -1694,10 +1730,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.initializeDiagramLayers();
         this.diagramRenderer.setLayers();
         this.initObjects(true);
+        this.doLayout();
         if (this.lineRoutingModule) {
             this.lineRoutingModule.lineRouting(this);
         }
-        this.doLayout();
         this.validatePageSize();
         this.renderPageBreaks();
         this.diagramRenderer.renderSvgGridlines(
@@ -3208,7 +3244,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             type: 'CollectionChanged', changeType: 'Remove', undoObject: cloneObject(obj),
                             redoObject: cloneObject(obj), category: 'Internal'
                         };
-                        this.updateBlazorCollectionChange(obj ,false)
+                        this.updateBlazorCollectionChange(obj, false)
                         if (!(this.diagramActions & DiagramAction.Clear)) {
                             if (selectedItems.length > 0 && this.undoRedoModule && !this.layout.type) {
                                 this.historyManager.startGroupAction();
@@ -4881,7 +4917,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else {
             let setNodeTemplate: Function = getFunction(this.setNodeTemplate);
-            if (setNodeTemplate) { content = setNodeTemplate(obj, this); }
+            if (setNodeTemplate && obj.id !== 'helper') { content = setNodeTemplate(obj, this); }
             if (!content) { content = obj.init(this); }
             canvas.children.push(content);
         }
@@ -6767,6 +6803,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         return updateSelector;
     }
 
+    /* tslint:disable */
     /** @private */
     public connectorPropertyChange(
         actualObject: Connector, oldProp: Connector, newProp: Connector, disableBridging?: boolean, propertyChange?: boolean): void {
@@ -6782,6 +6819,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let sourceNode: Node = this.nameTable[actualObject.sourceID]; outPort = this.findInOutConnectPorts(sourceNode, false);
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourceWrapper = sourceNode ? this.getEndNodeWrapper(sourceNode, actualObject, true) : undefined;
+                    if (actualObject.sourcePortID && newProp.sourcePortID === undefined) {
+                        actualObject.sourcePortWrapper = sourceNode ? this.getWrapper(
+                            sourceNode.wrapper, actualObject.sourcePortID) : undefined;
+                    }
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
                     let oldSource: Node = this.nameTable[oldProp.sourceID];
@@ -6795,6 +6836,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let targetNode: Node = this.nameTable[newProp.targetID]; inPort = this.findInOutConnectPorts(targetNode, true);
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetWrapper = targetNode ? this.getEndNodeWrapper(targetNode, actualObject, false) : undefined;
+                    if (actualObject.targetPortID && newProp.targetPortID === undefined) {
+                        actualObject.targetPortWrapper = targetNode ? this.getWrapper(
+                            targetNode.wrapper, actualObject.targetPortID) : undefined;
+                    }
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
                     let oldTarget: Node = this.nameTable[oldProp.targetID];
@@ -6862,6 +6907,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.diagramActions && actualObject.status !== 'New') { actualObject.status = 'Update'; }
         this.triggerPropertyChange(propertyChange, actualObject, oldProp, newProp);
     }
+    /* tslint:enable */
 
     private getpropertyChangeArgs(
         element: ConnectorModel, oldProp: Connector, newProp: Connector, args: IBlazorPropertyChangeEventArgs):
@@ -7709,7 +7755,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let selectedSymbols: string = 'selectedSymbols'; remove(this.droppable[selectedSymbols]);
             }
             else {
-                let arg: IDropEventArgs|IBlazorDropEventArgs = {
+                let arg: IDropEventArgs | IBlazorDropEventArgs = {
                     source: cloneBlazorObject(args.droppedElement),
                     element: undefined,
                     target: cloneBlazorObject(this.eventHandler['hoverNode'] || (this.eventHandler['lastObjectUnderMouse']) || this), cancel: false,

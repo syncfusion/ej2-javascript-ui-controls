@@ -505,5 +505,51 @@ describe('FileManager control Grid view', () => {
                 done();
             }, 400);
         });
+        it('for detailsViewSettings', (done: Function) => {
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                detailsViewSettings: {
+                    columns: [
+                        {
+                            field: 'name', headerText: 'Name', minWidth: 120, width: 'auto',
+                            template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
+                        },
+                        {
+                            field: '_fm_modified', headerText: 'DateModified',
+                            format: { type: 'date', format: 'MMMM dd, yyyy HH:mm' },
+                            minWidth: 120, width: '190'
+                        },
+                        {
+                            field: 'isFile', headerText: 'Is File', minWidth: 90, width: '110', headerTextAlign: "Center", allowResizing: false, allowSorting: false
+                        },
+                        {
+                            field: 'size', headerText: 'Size', minWidth: 90, width: '110', template: '<span class="e-fe-size">${size}</span>'
+                        }
+                    ]
+                }
+            });
+            feObj.appendTo("#file");
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(gridLi.length).toEqual(5);
+                expect(document.getElementById('file_grid').querySelectorAll('.e-headercell').length).toEqual(6);
+                done();
+            }, 400);
+        });
     });
 });

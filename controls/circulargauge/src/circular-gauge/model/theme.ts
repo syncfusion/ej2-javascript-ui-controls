@@ -12,6 +12,13 @@ export namespace Theme {
         fontStyle: 'Normal',
         fontFamily: 'Segoe UI'
     };
+    export let legendLabelFont: IFontMapping = {
+        size: '12px',
+        fontWeight: 'Normal',
+        color: null,
+        fontStyle: 'Normal',
+        fontFamily: 'Segoe UI'
+    };
 }
 /** @private */
 export function getRangePalette(theme: string): string[] {

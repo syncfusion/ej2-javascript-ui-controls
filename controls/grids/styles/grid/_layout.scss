@@ -881,6 +881,10 @@
       cursor: col-resize;
     }
 
+    &.e-editing .e-gridheader .e-rcursor {
+        cursor: default;
+    }
+
     .e-table {
       border-collapse: separate;
       table-layout: fixed;

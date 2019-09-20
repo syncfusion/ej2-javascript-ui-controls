@@ -352,3 +352,5 @@ export const partialRefresh: string = 'partial-refresh';
 export const beforeCustomFilterOpen: string = 'beforeCustomFilterOpen';
 /** @hidden */
 export const selectVirtualRow: string = 'select-virtual-Row';
+/** @hidden */
+export const columnsPrepared: string = 'columns-prepared';

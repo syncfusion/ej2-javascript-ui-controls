@@ -27,7 +27,10 @@ describe('TextBox Control', () => {
                 mode: 'Inline',
                 type: 'Text',
                 value: 'enter',
-                name: 'TextBoxComponent'
+                name: 'TextBoxComponent',
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -51,6 +54,9 @@ describe('TextBox Control', () => {
         it('Clear icon availability testing', () => {
             expect(editorObj.componentObj.showClearButton).toBe(true);
             expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('Clear icon availability testing for false', () => {
             editorObj.componentObj.showClearButton = false;

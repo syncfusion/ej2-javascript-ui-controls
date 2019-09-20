@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.3.9-beta (2019-09-20)
+
+### Grid
+
+#### Bug Fixes
+
+- `#146977` - Script error thrown when enable frozen column with auto generated columns in Grid.
+- `#246309` - `AllowResize` must be disabled when we are in edit state.
+- `#246947`,`#246460`- Script error is thrown while routing with persistence.
+- `#245859` - Can't access selected records properly in `rowSelected` event while selecting the header checkbox.
+- `#244916` - Virtual scroll displays empty block while directly scroll to the bottom.
+
 ## 17.2.49 (2019-09-04)
 
 ### Grid
@@ -12,8 +24,24 @@
 - `#245739` - Filter dialog does not close properly when render grid inside the dialog has been fixed.
 - `#244047` - Focus module destroyed completely from the content ready.
 - `#223749`, `#241000` Provided the support to use `selectRow` method in `virtualized` Grid.
+- `#241241` - Filtering not working with `ColumnVirtualization`.
 - `#244927` - `CurrrentPage` was not refreshed after changing the dropdown with its highest value.
 - Select multi rows with checkbox wrong while set frozen column in grid component has been fixed.
+
+## 17.2.48-beta (2019-08-28)
+
+### Grid
+
+#### Bug Fixes
+
+- `#244231` - On key pressing of column chooser Search bar, empty Grid renders if all columns are unchecked, issue has been fixed.
+- `#146166` - CheckBox column disappears after hiding other columns through `columnChooser` issue has been fixed.
+- `#146777` - While locking the column dynamically, the Locked column is not moving to the first column position issue has been fixed.
+- `#245747` - Validation message position is wrong for rows added in the bottom issue has been fixed.
+- `#242519`,`#244186` - Misalignment issue in Frozen Column while editing Grid with edit template.
+- `#243593` - Script error thrown when perform row drag and drop with expand child.
+- `#242503` - On Saving the cell Footer Content `scrollLeft` is set to zero issue has been fixed.
+- `#146553` - Command column was not working when dynamically added in `columnModel` is resolved.
 
 ## 17.2.47 (2019-08-27)
 
@@ -52,6 +80,8 @@
 - `#242201` - Script error thrown while navigating to other page and come back to grid with filter settings.
 - `#237984` - Need to show warning message if provided dataSource in incorrect format.
 - `#242484` - Default value is not set for the stacked columns.
+- `#146156` - Drag area created while selecting the input area (row drag and drop and multiple selection enabled).
+- `#242673` - Change return type for `getCurrentEditCellData`.
 
 ## 17.2.39 (2019-07-30)
 

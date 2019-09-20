@@ -1,5 +1,5 @@
 /**
- * Tree Map Component
+ * Tree Map Components
  */
 
 import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, extend, Ajax } from '@syncfusion/ej2-base';
@@ -394,8 +394,6 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public totalRect: Rect;
     /** @private */
-    public levelsOfData: Object[];
-    /** @private */
     public layout: LayoutPanel;
     /** @private */
     public orientation: string = 'Horizontal';
@@ -406,13 +404,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public currentLevel: number;
     /** @private */
-    public defaultLevelData: Object[] = [];
-    /** @private */
     public isHierarchicalData: boolean = false;
     /** @private */
     private resizeTo: number;
-    /** @private */
-    private hierarchyData: Object[];
     /** @private */
     private mouseDown: boolean;
     /** @private */
@@ -445,13 +439,16 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     protected render(): void {
+        LevelsData.levelsData = null;
+        LevelsData.defaultLevelsData = null;
+        LevelsData.hierarchyData = null;
         this.createSecondaryElement();
         this.addTabIndex();
         this.themeStyle = getThemeStyle(this.theme);
         this.renderBorder();
         this.renderTitle(this.titleSettings, 'title', null, null);
-        if (!isNullOrUndefined(this.levelsOfData)) {
-            this.defaultLevelData = this.levelsOfData;
+        if (!isNullOrUndefined(LevelsData.levelsData)) {
+            LevelsData.defaultLevelsData = LevelsData.levelsData;
         }
         this.processDataManager();
     }
@@ -631,7 +628,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let path: string;
         this.dataSource = this.dataSource as Object[];
         if (!isNullOrUndefined(this.dataSource) && this.dataSource.length > 0 && this.weightValuePath) {
-            this.levelsOfData = [];
+            LevelsData.levelsData = [];
             this.dataSource.map((data: Object) => {
                 data[this.weightValuePath] = (data[this.weightValuePath]) ? (data[this.weightValuePath] as string).toString() :
                     data[this.weightValuePath];
@@ -664,25 +661,25 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         }
                     }
                 }
-                this.levelsOfData.push(data);
+                LevelsData.levelsData.push(data);
             } else {
                 if (this.isHierarchicalData) {
-                    this.hierarchyData = [];
-                    this.hierarchyData = extend([], this.dataSource, this.hierarchyData, true) as Object[];
-                    for (let i: number = 0; i < this.hierarchyData.length; i++) {
-                        this.processHierarchicalData(this.hierarchyData[i], i);
+                    LevelsData.hierarchyData = [];
+                    LevelsData.hierarchyData = extend([], this.dataSource, LevelsData.hierarchyData, true) as Object[];
+                    for (let i: number = 0; i < LevelsData.hierarchyData.length; i++) {
+                        this.processHierarchicalData(LevelsData.hierarchyData[i], i);
                     }
-                    this.levelsOfData = this.hierarchyData;
+                    LevelsData.levelsData = LevelsData.hierarchyData;
                 } else {
                     this.processFlatJsonData();
-                    if (this.levelsOfData.length > 1) {
-                        this.reOrderLevelData(this.levelsOfData.length - 1);
+                    if (LevelsData.levelsData.length > 1) {
+                        this.reOrderLevelData(LevelsData.levelsData.length - 1);
                     }
                 }
                 path = this.levels[0].groupPath;
             }
             if (!this.isHierarchicalData) {
-                this.findTotalWeight(this.levelsOfData[0][path], 'Parent');
+                this.findTotalWeight(LevelsData.levelsData[0][path], 'Parent');
             }
         }
     }
@@ -739,17 +736,17 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 this.processHierarchicalData(currentData, dataCount);
             });
         }
-        if (dataCount === this.hierarchyData.length - 1) {
-            let mainData: Object[] = this.hierarchyData[0][this.levels[0].groupPath];
-            for (let k: number = 0; k < this.hierarchyData.length; k++) {
-                childData = findChildren(this.hierarchyData[k])['values'];
+        if (dataCount === LevelsData.hierarchyData.length - 1) {
+            let mainData: Object[] = LevelsData.hierarchyData[0][this.levels[0].groupPath];
+            for (let k: number = 0; k < LevelsData.hierarchyData.length; k++) {
+                childData = findChildren(LevelsData.hierarchyData[k])['values'];
                 if (k !== 0 && childData) {
                     childData.forEach((currentData: Object) => { mainData.push(currentData); });
-                    this.hierarchyData.splice(k, 1);
+                    LevelsData.hierarchyData.splice(k, 1);
                     k -= 1;
                 }
             }
-            mainData = this.hierarchyData[0][this.levels[0].groupPath];
+            mainData = LevelsData.hierarchyData[0][this.levels[0].groupPath];
             for (let l: number = 0; l < mainData.length; l++) {
                 newData[this.levels[0].groupPath] = mainData;
                 mainData[l]['parent'] = newData;
@@ -782,7 +779,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             let level: Object = new Object();
             level['level'] = i;
             level[groupPath] = [];
-            this.levelsOfData.push(level);
+            LevelsData.levelsData.push(level);
             for (let j: number = 0; j < this.dataSource.length; j++) {
                 let currentData: Object = {}; let childName: string = '';
                 if (this.dataSource[j][groupPath]) {
@@ -801,7 +798,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                         currentData['isDrilled'] = false;
                         currentData['groupName'] = groupPath;
                         currentData['data'] = this.dataSource[j];
-                        (<Object[]>this.levelsOfData[this.levelsOfData.length - 1][groupPath]).push(currentData);
+                        (<Object[]>LevelsData.levelsData[LevelsData.levelsData.length - 1][groupPath]).push(currentData);
                         orderNames.push((childName) ? childName : name);
                     }
                 }
@@ -813,8 +810,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let currentName: string;
         let currentPath: string = this.levels[start] ? this.levels[start].groupPath : this.leafItemSettings.labelPath;
         let prevPath: string = this.levels[start - 1].groupPath;
-        let currentData: Object[] = this.levelsOfData[start][currentPath] as Object[];
-        let previousData: Object[] = this.levelsOfData[start - 1][prevPath] as Object[];
+        let currentData: Object[] = LevelsData.levelsData[start][currentPath] as Object[];
+        let previousData: Object[] = LevelsData.levelsData[start - 1][prevPath] as Object[];
         for (let i: number = 0; i < currentData.length; i++) {
             currentName = currentData[i]['levelOrderName'] as string;
             for (let j: number = 0; j < previousData.length; j++) {
@@ -828,8 +825,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
-        this.findTotalWeight(this.levelsOfData[this.levelsOfData.length - 1][currentPath], 'Child');
-        this.levelsOfData.splice(start, 1);
+        this.findTotalWeight(LevelsData.levelsData[LevelsData.levelsData.length - 1][currentPath], 'Child');
+        LevelsData.levelsData.splice(start, 1);
         if ((start - 1) > 0) {
             this.reOrderLevelData(start - 1);
         }
@@ -995,7 +992,6 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let moveBlazorArgs: IMouseMoveEventArgs = { cancel: false, name: mouseMove, mouseEvent: e };
         this.trigger(mouseMove, this.isBlazor ? moveBlazorArgs : moveArgs);
         let childItems: object[];
-        this.drillMouseMove = this.mouseDown;
         if (targetId.indexOf('_Item_Index') > -1) {
             item = this.layout.renderItems[parseFloat(targetId.split('_')[6])];
             childItems = findChildren(item)['values'] as Object[];
@@ -1244,6 +1240,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 case 'height':
                 case 'width':
                 case 'layoutType':
+                case 'levels':
+                case 'drillDownView':
+                case 'renderDirection':
                 case 'leafItemSettings':
                 case 'legendSettings':
                     render = true;
@@ -1278,4 +1277,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public getPersistData(): string {
         return '';
     }
+}
+
+ /**
+  * @private
+  */
+export class LevelsData {
+    public static levelsData : object[];
+    public static defaultLevelsData : object[];
+    public static hierarchyData : object[];
 }

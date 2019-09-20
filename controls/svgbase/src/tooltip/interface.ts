@@ -11,6 +11,11 @@ export interface ITooltipThemeStyle {
     tooltipHeaderLine: string;
 }
 
+export interface IBlazorTemplate {
+    name: string;
+    parent: object;
+}
+
 export interface ITooltipEventArgs {
     /** Defines the name of the event */
     name: string;

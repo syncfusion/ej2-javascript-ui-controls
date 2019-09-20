@@ -301,6 +301,9 @@ export class SfdtExport {
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
         if (element instanceof FieldElementBox) {
             inline.fieldType = element.fieldType;
+            if (element.fieldType === 0) {
+                inline.hasFieldEnd = true;
+            }
             if (element.fieldCodeType && element.fieldCodeType !== '') {
                 inline.fieldCodeType = element.fieldCodeType;
             }

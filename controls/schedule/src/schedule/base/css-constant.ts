@@ -88,6 +88,8 @@ export const TIME_CELLS_WRAP_CLASS: string = 'e-time-cells-wrap';
 /** @hidden */
 export const TIME_CELLS_CLASS: string = 'e-time-cells';
 /** @hidden */
+export const TIME_SLOT_CLASS: string = 'e-time-slots';
+/** @hidden */
 export const ALTERNATE_CELLS_CLASS: string = 'e-alternate-cells';
 /** @hidden */
 export const CURRENT_TIME_CLASS: string = 'e-current-time';
@@ -158,7 +160,7 @@ export const AGENDA_CURRENT_DAY_CLASS: string = 'e-current-day';
 /** @hidden */
 export const AGENDA_SELECTED_CELL: string = 'e-active-appointment-agenda';
 /** @hidden */
-export const AGENDA_MONTH_HEADER_CLASS: string = 'e-month-header';
+export const MONTH_HEADER_CLASS: string = 'e-month-header';
 /** @hidden */
 export const AGENDA_HEADER_CLASS: string = 'e-day-date-header';
 /** @hidden */
@@ -364,8 +366,6 @@ export const EVENT_WINDOW_BACK_ICON_CLASS: string = 'e-back-icon';
 /** @hidden */
 export const EVENT_WINDOW_SAVE_ICON_CLASS: string = 'e-save-icon';
 /** @hidden */
-export const EVENT_WINDOW_DELETE_BUTTON_CLASS: string = 'e-event-delete';
-/** @hidden */
 export const EVENT_WINDOW_CANCEL_BUTTON_CLASS: string = 'e-event-cancel';
 /** @hidden */
 export const EVENT_WINDOW_SAVE_BUTTON_CLASS: string = 'e-event-save';
@@ -433,3 +433,5 @@ export const AUTO_HEIGHT: string = 'e-auto-height';
 export const EVENT_TEMPLATE: string = 'e-template';
 /** @hidden */
 export const READ_ONLY: string = 'e-read-only';
+/** @hidden */
+export const MONTH_HEADER_WRAPPER: string = 'e-month-header-wrapper';

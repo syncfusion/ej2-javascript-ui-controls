@@ -283,6 +283,7 @@
       .e-content {
         background: unset;
         box-sizing: border-box;
+        height: 100%;
         min-height: 100px;
         outline: 0 solid transparent;
         padding: 16px;
@@ -436,6 +437,19 @@
     img::selection {
       background: transparent;
       color: transparent;
+    }
+
+    .e-resize-handle {
+      height: $rte-resize-handler-height;
+      position: absolute;
+      width: $rte-resize-handler-width;
+
+      &.e-south-east {
+        bottom: $rte-resize-handler-position;
+        cursor: nwse-resize;
+        right: $rte-resize-handler-position;
+        z-index: 100;
+      }
     }
   }
 
@@ -1249,4 +1263,21 @@
     background-size: 700px 190px;
     min-height: 190px;
   }
+
+  .e-upload .e-upload-files .e-upload-file-list .e-file-container {
+    margin-right: 50px;
+  }
+
+  .e-rte-upload-popup {
+    width: 250px;
+  }
+
+  .e-rte-dialog-upload .e-upload-files {
+    border-top: 0;
+  }
+
+  .e-rte-dialog-upload .e-upload-files .e-upload-file-list {
+    border-bottom: 0;
+  }
+
 }

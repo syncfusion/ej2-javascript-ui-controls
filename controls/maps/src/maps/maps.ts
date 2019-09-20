@@ -29,7 +29,7 @@ import { ILoadEventArgs, ILoadedEventArgs, IMouseEventArgs, IResizeEventArgs, IT
 import { GeoPosition } from './model/interface';
 import { ILayerRenderingEventArgs, IShapeRenderingEventArgs, IMarkerRenderingEventArgs, IMarkerClickEventArgs } from './model/interface';
 import { IMarkerMoveEventArgs, ILabelRenderingEventArgs, IBubbleMoveEventArgs, IBubbleClickEventArgs } from './model/interface';
-import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs } from './model/interface';
+import { IMarkerClusterClickEventArgs, IMarkerClusterMoveEventArgs, IMarkerClusterRenderingEventArgs} from './model/interface';
 import { ISelectionEventArgs, IShapeSelectedEventArgs, IMapPanEventArgs, IMapZoomEventArgs } from './model/interface';
 import { IBubbleRenderingEventArgs, IAnimationCompleteEventArgs, IPrintEventArgs, IThemeStyle } from './model/interface';
 import { LayerPanel } from './layers/layer-panel';
@@ -262,6 +262,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public resize: EmitType<IResizeEventArgs>;
     /**
      * Triggers before the maps tooltip rendered.
+     * @deprecated
      * @event
      * @blazorProperty 'TooltipRendering'
      */
@@ -298,6 +299,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps layer rendered.
      * @event
+     * @deprecated
      * @blazorProperty 'LayerRendering'
      */
     @Event()
@@ -306,6 +308,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Triggers before the maps shape rendered.
      * @event
+     * @deprecated
      * @blazorProperty 'ShapeRendering'
      */
     @Event()
@@ -313,6 +316,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * Triggers before the maps marker rendered.
+     * @deprecated
      * @event
      * @blazorProperty 'MarkerRendering'
      */
@@ -320,6 +324,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
      * Triggers before the maps marker cluster rendered.
+     * @deprecated
      * @event
      */
     @Event()
@@ -498,6 +503,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public themeStyle: IThemeStyle;
+    /**
+     * @private
+     * Stores the legend bounds
+     */
+    public totalRect: Rect;
     public dataLabel: DataLabel;
     /** @private */
     public isTouch: boolean;
@@ -533,12 +543,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public previousScale: number;
     /** @private */
     public previousPoint: Point;
-    /** @public */
-    public dataLabelShape: number[] = [];
-    public zoomShapeCollection: object[] = [];
-    public zoomLabelPositions: object[] = [];
-    public mouseDownEvent: Object = { x: null, y: null };
-    public mouseClickEvent: Object = { x: null, y: null };
+     /** @public */
+     public dataLabelShape: number[] = [];
+     public zoomShapeCollection: object[] = [];
+     public zoomLabelPositions: object[] = [];
+     public mouseDownEvent: Object = { x: null, y: null };
+     public mouseClickEvent: Object = { x: null, y: null };
     /** @private */
     public isBlazor: boolean;
 
@@ -1038,36 +1048,38 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let latLongValue: Object;
         let latitude: number = null; let longitude: number = null;
         this.mouseClickEvent = { x: e.x, y: e.y };
-        if (targetEle.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
-            && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
-            layerIndex = parseFloat(targetEle.id.split('_LayerIndex_')[1].split('_')[0]);
-            latLongValue = this.getGeoLocation(layerIndex, e);
-            latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
-        } else if (this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
-            && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
-            latLongValue = this.getTileGeoLocation(e);
-            latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+        if (targetEle.id.indexOf('_ToolBar') === -1) {
+            if (targetEle.id.indexOf('_LayerIndex_') !== -1 && !this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
+                && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
+                layerIndex = parseFloat(targetEle.id.split('_LayerIndex_')[1].split('_')[0]);
+                latLongValue = this.getGeoLocation(layerIndex, e);
+                latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+            } else if (this.isTileMap && (this.mouseDownEvent['x'] === this.mouseClickEvent['x'])
+                && (this.mouseDownEvent['y'] === this.mouseClickEvent['y'])) {
+                    latLongValue = this.getTileGeoLocation(e);
+                    latitude = latLongValue['latitude']; longitude = latLongValue['longitude'];
+                }
+            let eventArgs: IMouseEventArgs = {
+                cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
+                latitude: latitude, longitude: longitude
+            };
+            this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
+                if (targetEle.id.indexOf('shapeIndex') !== -1) {
+                    let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                    triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
+                }
+                if (this.markerModule) {
+                    this.markerModule.markerClick(e);
+                    this.markerModule.markerClusterClick(e);
+                }
+                if (this.bubbleModule) {
+                    this.bubbleModule.bubbleClick(e);
+                }
+                if (!eventArgs.cancel) {
+                    this.notify(click, targetEle);
+                }
+            });
         }
-        let eventArgs: IMouseEventArgs = {
-            cancel: false, name: click, target: targetId, x: e.clientX, y: e.clientY,
-            latitude: latitude, longitude: longitude
-        };
-        this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
-            if (targetEle.id.indexOf('shapeIndex') !== -1) {
-                let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
-            }
-            if (this.markerModule) {
-                this.markerModule.markerClick(e);
-                this.markerModule.markerClusterClick(e);
-            }
-            if (this.bubbleModule) {
-                this.bubbleModule.bubbleClick(e);
-            }
-            if (!eventArgs.cancel) {
-                this.notify(click, targetEle);
-            }
-        });
     }
 
     /**
@@ -1093,10 +1105,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             pageX = e.pageX;
             pageY = e.pageY;
             target = <Element>e.target;
-        }
-        if (targetEle.id.indexOf('shapeIndex') !== -1) {
-            let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-            triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
         }
         if (this.isTouch) {
             this.titleTooltip(e, pageX, pageY, true);
@@ -1184,7 +1192,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             name: resize,
             previousSize: this.availableSize,
             currentSize: new Size(0, 0),
-            maps: this
+            maps: !this.isBlazor ? this : null
         };
 
         if (this.resizeTo) {
@@ -1198,7 +1206,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     this.refreshing = true;
                     this.wireEVents();
                     args.currentSize = this.availableSize;
-                    this.trigger(resize, this.isBlazor ? {} : args);
+                    this.trigger(resize, args);
                     this.render();
                 },
                 500);

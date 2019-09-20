@@ -122,6 +122,17 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     public placeholder: string;
 
     /**
+     * Specifies whether the browser is allow to automatically enter or select a value for the textbox.
+     * By default, autocomplete is enabled for textbox.
+     * Possible values are:
+     * `on` - Specifies that autocomplete is enabled.
+     * `off` - Specifies that autocomplete is disabled.
+     * @default 'on'
+     */
+    @Property('on')
+    public autocomplete: string;
+
+    /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * @default {}
@@ -270,6 +281,13 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 case 'placeholder':
                     Input.setPlaceholder(this.placeholder, this.respectiveElement);
                     break;
+                case 'autocomplete':
+                    if ( this.autocomplete !== 'on' && this.autocomplete !== '') {
+                        this.respectiveElement.autocomplete = this.autocomplete;
+                    } else {
+                        this.removeAttributes(['autocomplete']);
+                    }
+                    break;
                 case 'cssClass':
                         Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
                     break;
@@ -362,7 +380,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private checkAttributes(isDynamic: boolean): void {
         let attrs: string[]  = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
-            ['placeholder', 'disabled', 'value', 'readonly', 'type'];
+            ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
         for (let key of attrs) {
             if (!isNullOrUndefined(this.element.getAttribute(key))) {
             switch (key) {
@@ -386,6 +404,13 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     // tslint:disable-next-line
                     if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
                         this.setProperties({placeholder: this.element.placeholder}, !isDynamic);
+                    }
+                    break;
+                case 'autocomplete':
+                    // tslint:disable-next-line
+                    if (( isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['autocomplete'] === undefined)) || isDynamic) {
+                        let autoCompleteTxt: string = this.element.autocomplete === 'off' ? 'off' : 'on';
+                        this.setProperties({ autocomplete: autoCompleteTxt }, !isDynamic);
                     }
                     break;
                 case 'value':
@@ -437,6 +462,12 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         if (!isNullOrUndefined(this.value)) {
             this.initialValue = this.value;
             this.setInitialValue();
+        }
+        if ( this.autocomplete !== 'on' && this.autocomplete !== '') {
+            this.respectiveElement.autocomplete = this.autocomplete;
+        // tslint:disable-next-line
+        } else if (!isNullOrUndefined(this.textboxOptions) && (this.textboxOptions['autocomplete'] !== undefined)) {
+            this.removeAttributes(['autocomplete']);
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;

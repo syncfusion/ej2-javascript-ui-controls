@@ -694,6 +694,7 @@ describe('Hierarchy Filter Mode Testing - Parent and child', () => {
     });
     describe('Excel Filter Custom Filter Testing - MatchCase', () => {
       let gridObj: TreeGrid;
+      let rows: Element[];
       let originalTimeout: number;
       let actionComplete: (args: CellSaveEventArgs) => void;
       beforeAll((done: Function) => {

@@ -38,6 +38,11 @@
       }
     }
 
+    .e-treegridexpand:hover::before,
+    .e-treegridcollapse:hover::before {
+      color: $treegrid-right-arrow-hover-color;
+    }
+
     .e-rowcell.e-treerowcell {
       padding-left: $treegrid-treecell-padding;
     }
@@ -56,6 +61,15 @@
       span {
         display: inline-block;
         vertical-align: middle;
+      }
+    }
+
+    .e-checkselection {
+      .e-frozenheader .e-rowcell,
+      .e-movableheader .e-rowcell,
+      .e-frozencontent .e-rowcell,
+      .e-movablecontent .e-rowcell {
+        line-height: 21px;
       }
     }
 

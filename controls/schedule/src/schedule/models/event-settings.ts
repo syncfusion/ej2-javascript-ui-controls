@@ -75,4 +75,26 @@ export class EventSettings extends ChildProperty<EventSettings> {
      */
     @Property(false)
     public editFollowingEvents: boolean;
+
+    /**
+     * When set to `false` the add action will be restricted.
+     * @default true
+     */
+    @Property(true)
+    public allowAdding: boolean;
+
+    /**
+     * When set to `false` the edit action will be restricted.
+     * @default true
+     */
+    @Property(true)
+    public allowEditing: boolean;
+
+    /**
+     * When set to `false` the delete action will be restricted.
+     * @default true
+     */
+    @Property(true)
+    public allowDeleting: boolean;
+
 }

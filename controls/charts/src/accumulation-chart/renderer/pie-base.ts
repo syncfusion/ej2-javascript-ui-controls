@@ -17,7 +17,7 @@ import { AccumulationSeriesModel } from '../model/acc-base-model';
 export class PieBase extends AccumulationBase {
     protected startAngle: number;
     protected totalAngle: number;
-    protected innerRadius: number;
+    public innerRadius: number;
 
     public center: ChartLocation;
     public radius: number;

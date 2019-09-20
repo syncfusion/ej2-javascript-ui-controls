@@ -172,7 +172,7 @@ export interface PointerModel {
 
     /**
      * Specifies value of the pointer.
-     * @aspDefaultValueIgnore
+     * @blazorDefaultValue 0
      * @default null
      */
 

@@ -1,4 +1,5 @@
 $zero-value: 0 !default;
+$upload-root-font-family: $font-family !default;
 $upload-element-opacity: $zero-value !default;
 $upload-element-width: $zero-value !default;
 $select-file-margin: $zero-value !default;
@@ -75,7 +76,7 @@ $ie-icons-position-value: 10px !default;
 $ie-abort-icon-position-value: 12px !default;
 
 //default  
-$upload-font-family: $font-family !default;
+$upload-font-family: inherit !default;
 $drop-area-font-size-smaller: 14px !default;
 $drop-area-font-size: 15px !default;
 $drop-text-color: $grey-dark-font !default;
@@ -140,7 +141,7 @@ $margin-rtl-smaller: 11px !default;
 $left: $zero-value !default;
 $rtl-progress-top: -32px !default;
 $remove-icon-rtl-top-smaller: 50% !default;
-$file-name-font-family: $upload-font-family !default;
+$file-name-font-family: inherit !default;
 $progress-text-color: $grey-f5 !default;
 $remove-icon-top: 50% !default;
 $clear-icon-focus-color: $grey !default;

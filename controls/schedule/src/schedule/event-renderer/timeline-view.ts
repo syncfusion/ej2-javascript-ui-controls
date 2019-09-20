@@ -78,7 +78,7 @@ export class TimelineEvent extends MonthEvent {
         }
     }
 
-    public renderEvents(event: { [key: string]: Object }, resIndex: number): void {
+    public renderEvents(event: { [key: string]: Object }, resIndex: number, eventsList?: { [key: string]: Object }[]): void {
         let eventData: { [key: string]: Object } = event.data as { [key: string]: Object };
         let startTime: Date = this.getStartTime(event, eventData);
         let endTime: Date = this.getEndTime(event, eventData);
@@ -134,7 +134,8 @@ export class TimelineEvent extends MonthEvent {
                         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(resIndex)) {
                             groupIndex = resIndex.toString();
                         }
-                        let filterEvents: Object[] = this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex);
+                        let filterEvents: Object[] =
+                            this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex, eventsList);
                         let appArea: number = this.cellHeight - this.moreIndicatorHeight;
                         let renderedAppCount: number = Math.floor(appArea / (appHeight + EVENT_GAP));
                         let count: number = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
@@ -309,11 +310,12 @@ export class TimelineEvent extends MonthEvent {
         return cellIndex * this.cellWidth;
     }
 
-    private getFilterEvents(startDate: Date, endDate: Date, startTime: Date, endTime: Date, gIndex: string): Object[] {
+    //tslint:disable-next-line:max-line-length
+    private getFilterEvents(startDate: Date, endDate: Date, startTime: Date, endTime: Date, gIndex: string, eventsList?: { [key: string]: Object }[]): Object[] {
         if (this.renderType === 'day') {
-            return this.getFilteredEvents(startDate, endDate, gIndex);
+            return this.getFilteredEvents(startDate, endDate, gIndex, eventsList);
         } else {
-            return this.getFilteredEvents(startTime, endTime, gIndex);
+            return this.getFilteredEvents(startTime, endTime, gIndex, eventsList);
         }
     }
 

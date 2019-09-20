@@ -1,9 +1,9 @@
 import { extend, closest, isNullOrUndefined, getElement, isBlazor } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { CellClickEventArgs } from '../base/interface';
+import { CellClickEventArgs, HoverEventArgs } from '../base/interface';
+import { View } from '../base/type';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
-import { View } from '../base/type';
 
 /**
  * Work cell interactions
@@ -95,6 +95,16 @@ export class WorkCellInteraction {
                 this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
             }
         });
+    }
+
+    public onHover(e: MouseEvent): void {
+        let targetSelector: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.TIME_SLOT_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' +
+            cls.HEADER_CELLS_CLASS + ',.' + cls.RESOURCE_CELLS_CLASS + ',.' + cls.APPOINTMENT_CLASS + ',.' + cls.WEEK_NUMBER_CLASS;
+        let hoverTarget: HTMLElement = closest((e.target as Element), targetSelector) as HTMLElement;
+        if (hoverTarget) {
+            let hoverArgs: HoverEventArgs = { element: hoverTarget, event: e };
+            this.parent.trigger(event.hover, hoverArgs);
+        }
     }
 
     private isPreventAction(e: Event): boolean {

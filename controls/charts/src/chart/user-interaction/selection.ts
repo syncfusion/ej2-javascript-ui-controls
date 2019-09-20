@@ -8,15 +8,17 @@ import {
     ChartLocation, RectOption, CircleOption, withInBounds, getDraggedRectLocation,
     removeElement, getElement
 } from '../../common/utils/helper';
-import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
+import { Rect, SvgRenderer, CanvasRenderer, PathOption } from '@syncfusion/ej2-svg-base';
 import { SelectionMode } from '../utils/enum';
 import { Chart } from '../chart';
 import { Series, Points } from '../series/chart-series';
 import { SeriesModel } from '../series/chart-series-model';
 import { Indexes, Index } from '../../common/model/base';
-import { IDragCompleteEventArgs } from '../../chart/model/chart-interface';
-import { dragComplete } from '../../common/model/constants';
+import { IDragCompleteEventArgs, ISelectionCompleteEventArgs } from '../../chart/model/chart-interface';
+import { dragComplete, selectionComplete } from '../../common/model/constants';
 import { BaseSelection } from '../../common/user-interaction/selection';
+
+// tslint:disable:no-string-literal
 /**
  * `Selection` module handles the selection for chart.
  * @private
@@ -32,13 +34,25 @@ export class Selection extends BaseSelection {
     private closeIconId: string;
     private closeIcon: Element;
     private draggedRectGroup: string;
+    private multiRectGroup: string;
     private draggedRect: string;
+    private lassoPath: string;
     /** @private */
     public selectedDataIndexes: Indexes[];
+    public multiDataIndexes: Points[][] = [];
+    public pathIndex: number = 0;
+    public seriesIndex: number = 0;
     private series: Series[];
     private dragging: boolean;
+    private count: number = -1;
+    private isMultiDrag: boolean;
+    private targetIndex: number;
     private dragRect: Rect;
+    private dragRectArray: Rect [] = [];
+    public filterArray: Rect [] = [];
+    private totalSelectedPoints: { x: string, y: number }[][] = [];
     private rectGrabbing: boolean;
+    private path: string;
     private resizeMode: number;
     private chart: Chart;
     /**
@@ -50,6 +64,8 @@ export class Selection extends BaseSelection {
         super(chart);
         this.chart = chart;
         this.renderer = chart.renderer;
+        let mode: SelectionMode = chart.selectionMode;
+        this.isMultiDrag = chart.isMultiSelect && (mode.indexOf('Drag') > -1);
         this.addEventListener();
     }
     /**
@@ -95,7 +111,9 @@ export class Selection extends BaseSelection {
         this.unselected = chart.element.id + '_ej2_deselected';
         this.closeIconId = chart.element.id + '_ej2_drag_close';
         this.draggedRectGroup = chart.element.id + '_ej2_drag_group';
+        this.multiRectGroup = chart.element.id + '_ej2_drag_multi_group';
         this.draggedRect = chart.element.id + '_ej2_drag_rect';
+        this.lassoPath = chart.element.id + '_ej2_drag_path';
         this.selectedDataIndexes = [];
         this.rectPoints = null;
         this.isSeriesMode = chart.selectionMode === 'Series';
@@ -170,25 +188,108 @@ export class Selection extends BaseSelection {
         switch (chart.selectionMode) {
             case 'Series':
                 this.selection(chart, index, this.getSeriesElements(chart.series[index.series]));
+                this.selectionComplete(chart, index, chart.selectionMode);
                 this.blurEffect(chart.element.id, chart.visibleSeries);
                 break;
             case 'Point':
                 if (!isNaN(index.point)) {
                     this.selection(chart, index, [element]);
+                    this.selectionComplete(chart, index, chart.selectionMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
             case 'Cluster':
                 if (!isNaN(index.point)) {
                     this.clusterSelection(chart, <Series[]>chart.series, index);
+                    this.selectionComplete(chart, index, chart.selectionMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
         }
     }
+
+    private selectionComplete(chart: Chart, index: Index, selectionMode: SelectionMode): void {
+        let points: Points[];
+        let pointIndex: number;
+        let seriesIndex: number;
+        let selectedPointValues: { x?: string | number | Date, y?: number, seriesIndex?: number, pointIndex?: number }[] = [];
+        let selectedSeriesValues: { x?: string | number | Date, y?: number, seriesIndex?: number, pointIndex?: number }[][] = [];
+        if (selectionMode === 'Cluster') {
+            for (let series of chart.visibleSeries) {
+                if (series.visible) {
+                    for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
+                        pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i].point : index.point;
+                        seriesIndex = series.index;
+                        points = (<Series>series).points;
+                        let yValue: number = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                            points[pointIndex].regions[0].y;
+                        let selectedPointX: string | number | Date = points[pointIndex].xValue;
+                        if (chart.primaryXAxis.valueType === 'Category') {
+                            selectedPointX = points[pointIndex].x.toLocaleString();
+                        } else if (chart.primaryXAxis.valueType === 'DateTime') {
+                            selectedPointX = new Date(points[pointIndex].xValue);
+                        }
+                        if (series.category !== 'Indicator') {
+                            selectedPointValues.push({
+                                x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                                pointIndex: pointIndex
+                            });
+                        }
+                        if (series.type === 'RangeArea') {
+                            selectedPointValues.push({
+                                x: selectedPointX, y: points[pointIndex].regions[0].y,
+                                seriesIndex: seriesIndex, pointIndex: pointIndex
+                            });
+                        }
+                    }
+                }
+            }
+        } else if (selectionMode === 'Series') {
+            if (chart.isMultiSelect) {
+                for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
+                    seriesIndex = this.selectedDataIndexes[i].series;
+                    selectedPointValues.push({
+                        seriesIndex: seriesIndex,
+                    });
+                }
+            } else {
+                seriesIndex = (this.selectedDataIndexes.length > 0) ? this.selectedDataIndexes[0].series : 0;
+                selectedPointValues.push({
+                    seriesIndex: seriesIndex,
+                });
+            }
+        } else if (selectionMode === 'Point') {
+            for (let i: number = 0; i < this.selectedDataIndexes.length; i++) {
+                pointIndex = this.selectedDataIndexes[i].point;
+                seriesIndex = this.selectedDataIndexes[i].series;
+                let series: SeriesModel = chart.series[seriesIndex];
+                points = (<Series>series).points;
+                let selectedPointX: string | number | Date = points[pointIndex].xValue;
+                let yValue: number = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                    points[pointIndex].regions[0].y;
+                if (chart.primaryXAxis.valueType === 'Category') {
+                    selectedPointX = points[pointIndex].x.toLocaleString();
+                } else if (chart.primaryXAxis.valueType === 'DateTime') {
+                    selectedPointX = new Date(points[pointIndex].xValue);
+                }
+                selectedPointValues.push({
+                    x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                    pointIndex: pointIndex
+                });
+            }
+        }
+        let args: ISelectionCompleteEventArgs = {
+            name: selectionComplete,
+            selectedDataValues: selectedPointValues,
+            cancel: false
+        };
+        chart.trigger(selectionComplete, args);
+    }
     private selection(chart: Chart, index: Index, selectedElements: Element[]): void {
-        if (!chart.isMultiSelect && (chart.selectionMode.indexOf('Drag') === -1)) {
-            this.removeMultiSelectEelments(chart, this.selectedDataIndexes, index, chart.series);
+        if (!(chart.selectionMode === 'Lasso')) {
+            if (!chart.isMultiSelect && (chart.selectionMode.indexOf('Drag') === -1)) {
+                this.removeMultiSelectEelments(chart, this.selectedDataIndexes, index, chart.series);
+            }
         }
         let className: string = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
         if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
@@ -374,8 +475,9 @@ export class Selection extends BaseSelection {
      * @return {void}
      * @private
      */
-    public calculateDragSelectedElements(chart: Chart, dragRect: Rect): void {
+    public calculateDragSelectedElements(chart: Chart, dragRect: Rect, isClose?: boolean): void {
         this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+        let isLasso: boolean = chart.selectionMode === 'Lasso';
         let rect: Rect = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
         let axisOffset: ChartLocation = new ChartLocation(
             chart.chartAxisLayoutPanel.seriesClipRect.x,
@@ -384,10 +486,19 @@ export class Selection extends BaseSelection {
         this.removeOffset(rect, axisOffset);
         let points: Points[];
         let index: Index;
+        let selectedPointArray: { x: string, y: number }[] = [];
         let selectedPointValues: { x: string | number | Date, y: number }[] = [];
         let selectedSeriesValues: { x: string | number | Date, y: number }[][] = [];
         this.isSeriesMode = false;
         let symbolLocation: ChartLocation;
+        let isDragResize: boolean = (chart.allowMultiSelection) && (this.rectGrabbing || this.resizing);
+        this.rectPoints = this.dragRectArray[isDragResize ? this.targetIndex : this.count] =
+        new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
+        if (dragRect.width && dragRect.height && !isClose) {
+            let rt: Rect = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
+            this.removeOffset(rt, axisOffset);
+            this.filterArray[isDragResize ? this.targetIndex : this.count] = rt;
+        }
         for (let series of chart.visibleSeries) {
             if (series.visible) {
                 points = (<Series>series).points;
@@ -420,9 +531,15 @@ export class Selection extends BaseSelection {
                             );
                         });
                     } else {
-                        isCurrentPoint = points[j].symbolLocations.some((location: ChartLocation) => {
-                            return location && withInBounds(location.x + xAxisOffset, location.y + yAxisOffset, rect);
-                        });
+                        if (chart.selectionMode === 'Lasso') {
+                            isCurrentPoint = points[j].isSelect;
+                        } else {
+                            isCurrentPoint = (chart.allowMultiSelection) ?
+                                            this.isPointSelect(points[j], xAxisOffset, yAxisOffset, this.filterArray, axisOffset) :
+                            points[j].symbolLocations.some((location: ChartLocation) => {
+                                return location && withInBounds(location.x + xAxisOffset, location.y + yAxisOffset, rect);
+                            });
+                        }
                     }
                     if (isCurrentPoint && series.category !== 'Indicator') {
                         index = new Index((<Series>series).index, points[j].index);
@@ -437,8 +554,11 @@ export class Selection extends BaseSelection {
             }
         }
         this.blurEffect(chart.element.id, chart.visibleSeries);
-        this.rectPoints = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
-        this.createCloseButton((dragRect.x + dragRect.width), dragRect.y);
+        let x: number = isLasso ? chart.mouseDownX : (dragRect.x + dragRect.width);
+        let y: number = isLasso ? chart.mouseDownY : dragRect.y;
+        if (!isClose) {
+            this.createCloseButton(x, y);
+        }
         let args: IDragCompleteEventArgs = {
             name: dragComplete,
             selectedDataValues: selectedSeriesValues,
@@ -446,18 +566,32 @@ export class Selection extends BaseSelection {
         };
         chart.trigger(dragComplete, args);
     }
+
     private removeOffset(rect: Rect, clip: ChartLocation): void {
         rect.x -= clip.x;
         rect.y -= clip.y;
+    }
+    private isPointSelect(points: Points, xAxisOffset: number, yAxisOffset: number,
+                          rectCollection: Rect[], axisOffset: ChartLocation): boolean {
+        let location: ChartLocation = points.symbolLocations[0];
+        for (let rect of rectCollection) {
+            if (rect && location && withInBounds(location.x + xAxisOffset, location.y + yAxisOffset, rect)) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * Method to draw dragging rect.
      * @return {void}
      * @private
      */
-    public drawDraggingRect(chart: Chart, dragRect: Rect): void {
+    public drawDraggingRect(chart: Chart, dragRect: Rect, target ?: Element): void {
         let cartesianLayout: Rect = chart.chartAxisLayoutPanel.seriesClipRect;
         let border: number = chart.chartArea.border.width;
+        let rectFill: string = chart.themeStyle.selectionRectFill;
+        let rectStroke: string = chart.themeStyle.selectionRectStroke;
+        let isLasso: boolean = chart.selectionMode === 'Lasso';
         if (this.isdrawRect) {
             cartesianLayout.x = cartesianLayout.x - border / 2;
             cartesianLayout.y = cartesianLayout.y - border / 2;
@@ -475,44 +609,115 @@ export class Selection extends BaseSelection {
                 dragRect.width = cartesianLayout.width;
                 break;
         }
-        if (dragRect.width < 5 || dragRect.height < 5) {
+        if ((dragRect.width < 5 || dragRect.height < 5) && !isLasso) {
             return null;
         }
-        let element: Element = getElement(this.draggedRect);
-        if (this.closeIcon) { removeElement(this.closeIconId); }
-        if (element) {
-            this.setAttributes(element, dragRect);
-        } else {
-            let dragGroup: Element = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
-            let svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
-            chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
+        let isDragMode: boolean = chart.selectionMode.indexOf('Drag') > -1 || chart.selectionMode === 'Lasso';
+        if ((chart.allowMultiSelection) && isDragMode) {
+            let element: Element;
+            let dragGroup: Element;
+            let multiGroup: Element = getElement(this.multiRectGroup);
+            if (!multiGroup) {
+                multiGroup = chart.svgRenderer.createGroup({ id: this.multiRectGroup });
+                chart.svgObject.appendChild(multiGroup);
+            }
+            if (this.rectGrabbing || this.resizing) {
+                let rectElement: Element;
+                if (this.resizing) {
+                    rectElement = getElement(this.draggedRect + this.targetIndex);
+                } else {
+                    rectElement = getElement(target.id);
+                }
+                if (rectElement.nextSibling) {
+                    remove(rectElement.nextSibling);
+                }
+                this.setAttributes(rectElement, dragRect);
+            } else if (!getElement(this.draggedRectGroup + this.count)) {
+                dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup + this.count });
+                let svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
+                chart.enableCanvas ? svgElement.appendChild(dragGroup) : multiGroup.appendChild(dragGroup);
+            }
+            if (!(chart.selectionMode === 'Lasso')) {
             element = chart.svgRenderer.drawRectangle(new RectOption(
-                this.draggedRect, chart.themeStyle.selectionRectFill,
-                { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, dragRect));
+                this.draggedRect + this.count, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
             element.setAttribute('style', 'cursor:move;');
-            dragGroup.appendChild(element);
+            } else {
+                element = chart.svgRenderer.drawPath(new PathOption(this.lassoPath + this.count, rectFill, 3,
+                                                                    rectStroke, 1, '', this.path));
+            }
+            if (!dragGroup && !this.rectGrabbing && !this.resizing) {
+                getElement(this.draggedRectGroup + this.count).appendChild(element);
+            } else if (!this.rectGrabbing && !this.resizing) {
+                dragGroup.appendChild(element);
+            }
+        } else {
+            let element: Element = isLasso ?
+                getElement(this.lassoPath) : getElement(this.draggedRect);
+            if (this.closeIcon) { removeElement(this.closeIconId); }
+            if (element) {
+                if (isLasso) {
+                    element.setAttribute('d', this.path);
+                } else {
+                    this.setAttributes(element, dragRect);
+                }
+            } else {
+                let dragGroup: Element = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
+                let svgElement: HTMLElement = document.getElementById(chart.element.id + '_series_svg');
+                chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
+                if (!(chart.selectionMode === 'Lasso')) {
+                    element = chart.svgRenderer.drawRectangle(new RectOption(
+                        this.draggedRect, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
+                } else {
+                    element = chart.svgRenderer.drawPath(new PathOption(this.lassoPath, rectFill, 3, rectStroke, 1, '', this.path));
+                }
+                //element.setAttribute('style', 'cursor:move;');
+                dragGroup.appendChild(element);
+            }
         }
     }
+
+    /**
+     * To get drag selected group element index from its id
+     * @param id
+     */
+    private getIndex(id: string): number {
+        let i: number;
+        for (i = id.length - 1; i > 0; i--) {
+            let x: number = Number(id[i]);
+            if (!isNaN(x)) {
+                continue;
+            } else {
+                break;
+            }
+        }
+        let index: number = +id.substr(i + 1, id.length - 1);
+        return index;
+    }
     private createCloseButton(x: number, y: number): void {
+        let isMultiDrag: boolean = this.chart.allowMultiSelection;
+        let circleStroke: string = this.chart.themeStyle.selectionCircleStroke;
+        let isDrag: boolean = this.rectGrabbing || this.resizing;
         let closeIcon: Element = this.chart.svgRenderer.createGroup({
-            id: this.closeIconId,
+            id: this.closeIconId + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''),
             style: 'cursor:pointer; visibility: visible;'
         });
         closeIcon.appendChild(this.chart.svgRenderer.drawCircle(
             new CircleOption(
-                this.closeIconId + '_circle', '#FFFFFF',
-                { color: this.chart.themeStyle.selectionCircleStroke, width: 1 }, 1, x, y, 10, )
+                this.closeIconId + '_circle' + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), '#FFFFFF',
+                { color: circleStroke, width: 1 }, 1, x, y, 10, )
         ));
         let direction: string = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
             ' L ' + (x + 4) + ' ' + (y - 4);
         closeIcon.appendChild(this.chart.svgRenderer.drawPath(
             {
-            id: this.closeIconId + '_cross', d: direction,
-            stroke: this.chart.themeStyle.selectionCircleStroke,
-            'stroke-width': 2, fill: this.chart.themeStyle.selectionCircleStroke
+            id: this.closeIconId + '_cross' + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), d: direction,
+            stroke: circleStroke, 'stroke-width': 2, fill: circleStroke
         },  null));
         this.closeIcon = closeIcon;
-        getElement(this.draggedRectGroup).appendChild(closeIcon);
+        let pathElement: Element = getElement(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
+        if (pathElement) {
+            pathElement.appendChild(closeIcon);
+        }
     }
     /**
      * Method to remove dragged element.
@@ -522,11 +727,55 @@ export class Selection extends BaseSelection {
 
     public removeDraggedElements(chart: Chart, event: Event): void {
         if (((<HTMLElement>event.target).id.indexOf(this.closeIconId) > -1) && (event.type.indexOf('move') === -1)) {
-            this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+            let isSelectedvalues: boolean = true;
+            if ((chart.allowMultiSelection)) {
+                let index: number = this.getIndex((<HTMLElement>event.target).id);
+                let multiRectGroupElement: Element = getElement(this.multiRectGroup);
+                remove(getElement(this.draggedRectGroup + index));
+                this.dragRectArray[index] = null;
+                this.filterArray[index] = null;
+                this.totalSelectedPoints[index] = null;
+                if (multiRectGroupElement && multiRectGroupElement.childElementCount === 0) {
+                    removeElement(multiRectGroupElement);
+                    this.dragRectArray = [];
+                    this.filterArray = [];
+                    this.totalSelectedPoints = [];
+                }
+                if (this.chart.selectionMode === 'Lasso') {
+                    if (this.multiDataIndexes[index] != null) {
+                        for (let i: number = 0; i < this.multiDataIndexes[index].length; i++) {
+                            this.multiDataIndexes[index][i].isSelect = false;
+                        }
+                    }
+                    this.multiDataIndexes[index] = null;
+                    for (let j: number = 0; j < this.multiDataIndexes.length; j++) {
+                        if (this.multiDataIndexes[j] != null) {
+                            isSelectedvalues = false;
+                            for (let k: number = 0; k < this.multiDataIndexes[j].length; k++) {
+                                this.multiDataIndexes[j][k].isSelect = true;
+                            }
+                        }
+                    }
+                    this.calculateDragSelectedElements(chart, this.dragRect, true);
+                } else if (this.filterArray.length) {
+                    for (let i: number = 0; i < this.filterArray.length; i++) {
+                        if (this.filterArray[i]) {
+                            isSelectedvalues = false;
+                            this.calculateDragSelectedElements(chart, this.filterArray[i], true);
+                        }
+                    }
+                } else {
+                    this.calculateDragSelectedElements(chart, new Rect(0, 0, 0, 0), true);
+                }
+            } else {
+                remove(getElement(this.draggedRectGroup));
+                this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+            }
             this.blurEffect(chart.element.id, chart.visibleSeries);
-            remove(getElement(this.draggedRectGroup));
             this.changeCursorStyle(false, chart.svgObject, 'auto');
-            this.rectPoints = null;
+            if (!(chart.allowMultiSelection) || isSelectedvalues ) {
+                this.rectPoints = null;
+            }
         }
     }
     /**
@@ -534,31 +783,45 @@ export class Selection extends BaseSelection {
      * @return {void}
      * @private
      */
-    public resizingSelectionRect(chart: Chart, location: ChartLocation, tapped?: boolean): void {
-        let rect: Rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
-        let resize: boolean = this.findResizeMode(chart.svgObject, rect, location);
-        if (this.resizing) {
-            rect = getDraggedRectLocation(
-                rect.x, rect.y, (rect.x + rect.width), (rect.y + rect.height),
-                chart.chartAxisLayoutPanel.seriesClipRect
-            );
-            this.drawDraggingRect(chart, rect);
-            this.dragRect = rect;
+    public resizingSelectionRect(chart: Chart, location: ChartLocation, tapped?: boolean, target?: Element): void {
+        let rect: Rect;
+        if (((chart.allowMultiSelection) && (target.id.indexOf('_ej2_drag_rect') > -1)) ||
+             this.dragRectArray[this.targetIndex]) {
+            if (target.id.indexOf('_ej2_drag_rect') > -1) {
+                this.targetIndex = this.getIndex(target.id);
+            }
+            let r: Rect = this.dragRectArray[this.targetIndex];
+            rect = new Rect(r.x, r.y, r.width, r.height);
         }
-        if (tapped) {
-            this.resizing = resize;
+        if (!(chart.allowMultiSelection)) {
+            rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
         }
-
+        if (rect) {
+            let resize: boolean = this.findResizeMode(chart.svgObject, rect, location);
+            if (this.resizing) {
+                rect = getDraggedRectLocation(
+                    rect.x, rect.y, (rect.x + rect.width), (rect.y + rect.height),
+                    chart.chartAxisLayoutPanel.seriesClipRect
+                );
+                this.drawDraggingRect(chart, rect);
+                this.dragRect = rect;
+            }
+            if (tapped) {
+                this.resizing = resize;
+            }
+        } else {
+            return;
+        }
     }
     private findResizeMode(chartSvgObject: Element, rect: Rect, location: ChartLocation): boolean {
         let cursorStyle: string = 'se-resize';
         let resize: boolean = false;
         if (!this.resizing) {
-            let resizeEdges: Rect[] = [new Rect(rect.x, (rect.y - 10), rect.width - 5, 20), // top
-            new Rect((rect.x - 10), rect.y, 20, rect.height), //left
-            new Rect(rect.x, (rect.y + rect.height - 10), rect.width - 10, 20), //bottom
-            new Rect((rect.x + rect.width - 10), rect.y + 5, 20, rect.height - 15), //right
-            new Rect((rect.x + rect.width - 10), (rect.y + rect.height - 10), 20, 20)]; //corner
+            let resizeEdges: Rect[] = [new Rect(rect.x, (rect.y), rect.width - 5, 5), // top
+            new Rect((rect.x), rect.y, 5, rect.height), //left
+            new Rect(rect.x, (rect.y + rect.height - 5), rect.width - 5, 5), //bottom
+            new Rect((rect.x + rect.width - 5), rect.y + 5, 5, rect.height - 15), //right
+            new Rect((rect.x + rect.width - 10), (rect.y + rect.height - 10), 10, 10)]; //corner
             for (let i: number = 0; i < resizeEdges.length; i++) {
                 if (withInBounds(location.x, location.y, resizeEdges[i])) {
                     cursorStyle = (i === 4) ? cursorStyle : (i % 2 === 0) ? 'ns-resize' : 'ew-resize';
@@ -599,13 +862,19 @@ export class Selection extends BaseSelection {
                     break;
             }
         }
-        this.changeCursorStyle(resize, getElement(this.draggedRect), cursorStyle);
+        if (this.chart.selectionMode !== 'Lasso') {
+            this.changeCursorStyle(resize, getElement((this.chart.allowMultiSelection) ? this.draggedRect +
+                                   this.targetIndex : this.draggedRect),
+                                   cursorStyle);
+        }
         this.changeCursorStyle(resize, chartSvgObject, cursorStyle);
         return resize;
     }
     private changeCursorStyle(isResize: boolean, rectelement: Element, cursorStyle: string): void {
         cursorStyle = isResize ? cursorStyle : (this.control.svgObject === rectelement) ? 'auto' : 'move';
-        rectelement.setAttribute('style', 'cursor:' + cursorStyle + ';');
+        if (rectelement) {
+            rectelement.setAttribute('style', 'cursor:' + cursorStyle + ';');
+        }
     }
     private removeSelectedElements(chart: Chart, index: Index[], seriesCollection: SeriesModel[]): void {
         index.splice(0, index.length);
@@ -629,13 +898,19 @@ export class Selection extends BaseSelection {
      * @return {void}
      * @private
      */
-    public draggedRectMoved(chart: Chart, grabbedPoint: Rect, doDrawing?: boolean): void {
-        let rect: Rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
+    public draggedRectMoved(chart: Chart, grabbedPoint: Rect, doDrawing?: boolean, target ?: Element): void {
+        let rect: Rect;
+        if ((this.resizing || this.rectGrabbing) && (chart.allowMultiSelection)) {
+            let r: Rect = this.dragRectArray[this.targetIndex];
+            rect = new Rect(r.x, r.y, r.width, r.height);
+        } else {
+            rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
+        }
         rect.x -= (grabbedPoint.x - chart.mouseX);
         rect.y -= (grabbedPoint.y - chart.mouseY);
         rect = getDraggedRectLocation(rect.x, rect.y, rect.x + rect.width, rect.height + rect.y, chart.chartAxisLayoutPanel.seriesClipRect);
         if (doDrawing) {
-            this.drawDraggingRect(chart, rect);
+            this.drawDraggingRect(chart, rect, target);
         } else {
             this.calculateDragSelectedElements(chart, rect);
         }
@@ -652,8 +927,25 @@ export class Selection extends BaseSelection {
         }
         if ((this.dragging || this.resizing) && this.dragRect.width > 5 && this.dragRect.height > 5) {
             this.calculateDragSelectedElements(chart, this.dragRect);
-        } else if (this.rectGrabbing && this.rectPoints.width && this.rectPoints.height) {
+        } else if (!(chart.allowMultiSelection) && this.rectGrabbing &&
+                     this.rectPoints.width && this.rectPoints.height) {
             this.draggedRectMoved(chart, this.dragRect);
+        } else if (this.rectGrabbing && this.dragRectArray[this.targetIndex].width && this.dragRectArray[this.targetIndex].height) {
+            this.draggedRectMoved(chart, this.dragRect);
+        }
+        if (chart.selectionMode === 'Lasso' && this.dragging && this.path)  {
+            if ((this.path as String).indexOf('L') !== -1) {
+                if (!(chart.allowMultiSelection)) {
+                    getElement(this.lassoPath).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement(this.lassoPath) as SVGPathElement);
+                } else if (getElement(this.lassoPath + this.count)) {
+                    getElement(this.lassoPath + this.count).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement(this.lassoPath + this.count) as SVGPathElement);
+                }
+                if (this.dragging || this.resizing) {
+                    this.calculateDragSelectedElements(chart, this.dragRect);
+                }
+            }
         }
         this.dragging = false;
         this.rectGrabbing = false;
@@ -666,24 +958,54 @@ export class Selection extends BaseSelection {
 
     /** @private */
     public dragStart(chart: Chart, seriesClipRect: Rect, mouseDownX: number, mouseDownY: number, event: Event): void {
-        this.dragging = (chart.selectionMode.indexOf('Drag') > - 1) && (chart.isDoubleTap || !chart.isTouch) &&
+        let mode: SelectionMode = chart.selectionMode;
+        this.dragging = (mode.indexOf('Drag') > - 1 || mode === 'Lasso') && (chart.isDoubleTap || !chart.isTouch) &&
             chart.chartAreaType !== 'PolarRadar';
+        let target: HTMLElement = <HTMLElement>event.target;
+        this.path = undefined;
         if (this.dragging) {
+            this.count = getElement(this.multiRectGroup) ? (this.count + 1) : 0;
             this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
             if (chart.mouseDownX < seriesClipRect.x || chart.mouseDownX > (seriesClipRect.x + seriesClipRect.width) ||
                 chart.mouseDownY < seriesClipRect.y || chart.mouseDownY > (seriesClipRect.y + seriesClipRect.height)) {
                 this.dragging = false;
             }
         }
-        if (this.rectPoints) {
-            this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
-            this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true);
-            this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.rectPoints);
+        if (mode === 'Lasso') {
+            for (let series of chart.visibleSeries) {
+                if (series.visible) {
+                    for (let point of series.points) {
+                        if (!(chart.allowMultiSelection)) {
+                            point.isSelect = false;
+                        }
+                    }
+                }
+            }
         }
+        if (!(mode === 'Lasso')) {
+            if (this.rectPoints && !(chart.allowMultiSelection)) {
+                this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
+                this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true);
+                this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.rectPoints);
+            }
+            if ((chart.allowMultiSelection)) {
+                let index: number = this.getIndex(target.id);
+                this.targetIndex = this.isDragRect(target.id) ? index : undefined;
+                if (this.dragRectArray.length && this.isDragRect(target.id)) {
+                    this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true, target);
+                    this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.dragRectArray[index]);
+                }
+            }
+        }
+    }
+
+    private isDragRect(id: string): boolean {
+        return id.indexOf('_ej2_drag_rect') > -1;
     }
     /** @private */
     public mouseMove(event: PointerEvent | TouchEvent): void {
         let chart: Chart = this.chart;
+        let target: HTMLElement = <HTMLElement>event.target;
         if (chart.selectionMode === 'None') {
             return;
         }
@@ -693,18 +1015,61 @@ export class Selection extends BaseSelection {
         let insideMoving: boolean = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
         if (insideMoving) {
             if (this.rectGrabbing && !this.resizing) {
-                this.draggedRectMoved(chart, this.dragRect, true);
+                this.draggedRectMoved(chart, this.dragRect, true, target);
             } else if (this.dragging && !this.resizing) {
-                this.dragRect = this.getDragRect(chart, chart.chartAxisLayoutPanel.seriesClipRect);
-                this.drawDraggingRect(chart, this.dragRect);
+                if (chart.selectionMode === 'Lasso') {
+                    this.getPath(chart.mouseDownX, chart.mouseDownY, chart.mouseX, chart.mouseY);
+                    this.drawDraggingRect(chart, this.dragRect, target);
+                } else {
+                    this.dragRect = this.getDragRect(chart, chart.chartAxisLayoutPanel.seriesClipRect);
+                    this.drawDraggingRect(chart, this.dragRect, target);
+                }
             }
-            if (this.rectPoints) {
-                this.resizingSelectionRect(chart, new ChartLocation(chart.mouseX, chart.mouseY));
+            if (this.rectPoints && !(chart.allowMultiSelection)) {
+                this.resizingSelectionRect(chart, new ChartLocation(chart.mouseX, chart.mouseY), null, target);
+            } else if (((chart.allowMultiSelection) && !this.dragging) || this.resizing) {
+                this.resizingSelectionRect(chart, new ChartLocation(chart.mouseX, chart.mouseY), null, target);
             }
         } else {
             this.completeSelection(event);
         }
     }
+
+    private getPath(startX: number, startY: number, endX: number, endY: number): void {
+        if (this.dragging) {
+            if (this.path) {
+                this.path = this.path + ' L' + endX + ' ' + endY;
+            } else {
+                this.path = 'M ' + startX + ' ' + startY;
+            }
+        }
+    }
+
+    private pointChecking(path: SVGPathElement): void {
+        let chart: Chart = this.chart;
+        let element: SVGPathElement;
+        let svgRect: ClientRect = getElement(chart.svgId).getBoundingClientRect();
+        let offsetX: number = chart.chartAxisLayoutPanel.seriesClipRect.x + Math.max(svgRect.left, 0);
+        let offsetY: number = chart.chartAxisLayoutPanel.seriesClipRect.y + Math.max(svgRect.top, 0);
+        this.multiDataIndexes[this.count] = [];
+        for (let series of chart.visibleSeries) {
+            series.points.filter((point: Points) => {
+                element = document.elementFromPoint(point.symbolLocations[0].x + offsetX,
+                                                    point.symbolLocations[0].y + offsetY) as SVGPathElement;
+                if (element === path) {
+                    point.isSelect = true;
+                    if ((this.chart.allowMultiSelection) && this.chart.selectionMode === 'Lasso') {
+                        this.multiDataIndexes[this.count][this.seriesIndex] = point;
+                        this.seriesIndex++;
+                    }
+                } else if (!(chart.allowMultiSelection)) {
+                    point.isSelect = false;
+                }
+            });
+        }
+        this.seriesIndex = 0;
+    }
+
     /**
      * Get module name.
      * @private

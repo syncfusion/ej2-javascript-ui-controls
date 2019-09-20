@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, NotifyPropertyChanges, Property, Touch, attributes, classList, closest, compile, detach, extend, formatUnit, getUniqueID, isBlazor, isNullOrUndefined, isUndefined, setStyleAttribute, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { getZindexPartial } from '@syncfusion/ej2-popups';
 
@@ -184,7 +184,7 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         }
         if (isNullOrUndefined(this.toastContainer)) {
             this.toastContainer = this.getContainer();
-            var target = typeof (this.target) === 'string' ? document.querySelector(this.target) : this.target;
+            var target = typeof (this.target) === 'string' ? document.querySelector(this.target) : document.body;
             if (isNullOrUndefined(target)) {
                 return;
             }
@@ -277,6 +277,18 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         var templateFn;
         var tempVar;
         var tmpArray;
+        var templateProps;
+        var templateValue;
+        var blazorContain = Object.keys(window);
+        if (ele.classList.contains(TITLE)) {
+            templateProps = this.element.id + 'title';
+        }
+        else if (ele.classList.contains(CONTENT)) {
+            templateProps = this.element.id + 'content';
+        }
+        else {
+            templateProps = this.element.id + 'template';
+        }
         prob === 'content' ? tempVar = this.contentTemplate : tempVar = this.toastTemplate;
         if (!isNullOrUndefined(tempVar)) {
             ele.appendChild(tempVar.cloneNode(true));
@@ -296,9 +308,18 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         }
         catch (e) {
             templateFn = compile(value);
+            templateValue = value;
         }
         if (!isNullOrUndefined(templateFn)) {
-            tmpArray = templateFn({}, this, prob, null, true);
+            if (!isBlazor()) {
+                tmpArray = templateFn({}, this, prob, null, true);
+            }
+            else {
+                var isString = (blazorContain.indexOf('ejsInterop') !== -1 &&
+                    !this.isStringTemplate && (templateValue).indexOf('<div>Blazor') === 0) ?
+                    this.isStringTemplate : true;
+                tmpArray = templateFn({}, this, prob, templateProps, isString);
+            }
         }
         if (!isNullOrUndefined(tmpArray) && tmpArray.length > 0 && !(isNullOrUndefined(tmpArray[0].tagName) && tmpArray.length === 1)) {
             [].slice.call(tmpArray).forEach(function (el) {
@@ -307,11 +328,25 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
                 }
                 ele.appendChild(el);
             });
+            if (blazorContain.indexOf('ejsInterop') !== -1 && !this.isStringTemplate && templateValue.indexOf('<div>Blazor') === 0) {
+                this.blazorTemplate(templateProps);
+            }
         }
         else if (ele.childElementCount === 0) {
             ele.innerHTML = value;
         }
         return ele;
+    };
+    Toast.prototype.blazorTemplate = function (templateProps) {
+        if (templateProps === this.element.id + 'title') {
+            updateBlazorTemplate(templateProps, 'Title', this, false);
+        }
+        else if (templateProps === this.element.id + 'content') {
+            updateBlazorTemplate(templateProps, 'Content', this, false);
+        }
+        else {
+            updateBlazorTemplate(templateProps, 'Template', this, false);
+        }
     };
     Toast.prototype.clearProgress = function (intervalId) {
         if (!isNullOrUndefined(this.intervalId[intervalId])) {
@@ -379,7 +414,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         }
         animate.end = function () {
             _this.clearProgress(intervalId);
-            detach(toastEle);
+            if (!toastEle.querySelector('.blazor-inner-template')) {
+                detach(toastEle);
+            }
             _this.trigger('close', toastClose);
             if (_this.toastContainer.childElementCount === 0) {
                 _this.clearContainerPos();

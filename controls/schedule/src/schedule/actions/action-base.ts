@@ -1,5 +1,5 @@
-import { addClass, createElement, extend, isNullOrUndefined, closest, setStyleAttribute, isBlazor } from '@syncfusion/ej2-base';
-import { formatUnit, remove, removeClass } from '@syncfusion/ej2-base';
+import { addClass, createElement, extend, isNullOrUndefined, closest, setStyleAttribute } from '@syncfusion/ej2-base';
+import { formatUnit, remove, removeClass, isBlazor } from '@syncfusion/ej2-base';
 import { ActionBaseArgs, ResizeEdges, DragEventArgs, ResizeEventArgs, TdData } from '../base/interface';
 import { Schedule } from '../base/schedule';
 import { CurrentAction } from '../base/type';
@@ -75,7 +75,8 @@ export class ActionBase {
                 eventObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
                 currentAction = 'EditOccurrence';
             }
-            if (this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
+            if (this.parent.enableRecurrenceValidation
+                && this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return;
             }

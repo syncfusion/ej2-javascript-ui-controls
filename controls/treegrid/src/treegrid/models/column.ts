@@ -85,7 +85,9 @@ export class Column {
     public width: string | number;
     /**    
      * Defines the type of component for editable.
-     * @default 'stringedit'         
+     * @default 'stringedit'
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.EditType
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Grids.EditType.DefaultEdit
      */
     public editType: string;
 
@@ -97,7 +99,8 @@ export class Column {
 
     /**    
      * Defines default values for the component when adding a new record to the TreeGrid.
-     * @default null         
+     * @default null
+     * @blazorType object
      */
     public defaultValue: string;
 
@@ -170,7 +173,9 @@ export class Column {
 
     /**    
      * Defines the data type of the column.    
-     * @default null    
+     * @default null
+     * @blazorDefaultValueIgnore
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnType
      */
 
     public type: string;
@@ -207,6 +212,13 @@ export class Column {
      */
 
     public headerTemplate: string;
+
+    /**   
+     * You can use this property to freeze selected columns in treegrid
+     * @default false
+     */
+
+    public isFrozen: boolean;
 
     /**    
      * The CSS styles and attributes of the content cells of a particular column can be customized. 
@@ -421,7 +433,9 @@ export interface ColumnModel {
 
   /**    
    * Defines the data type of the column.    
-   * @default null    
+   * @default null
+   * @blazorType Syncfusion.EJ2.Blazor.Grids.ColumnType
+   * @blazorDefaultValueIgnore
    */
 
   type?: string;
@@ -527,6 +541,13 @@ export interface ColumnModel {
 
   headerTemplate?: string;
 
+  /**        
+   * You can use this property to freeze selected columns in grid.
+   * @default false
+   */
+
+  isFrozen?: boolean;
+
   /**    
    * The CSS styles and attributes of the content cells of a particular column can be customized.
    * @default null   
@@ -617,12 +638,15 @@ export interface ColumnModel {
     showCheckbox?: boolean;
     /**    
      * Defines the type of component for editing.
-     * @default 'stringedit'         
+     * @default 'stringedit'
+     * @blazorType Syncfusion.EJ2.Blazor.Grids.EditType
+     * @blazorDefaultValue Syncfusion.EJ2.Blazor.Grids.EditType.DefaultEdit
      */
     editType?: string;
     /**    
      * Defines default values for the component when adding a new record to the TreeGrid.
-     * @default null         
+     * @default null
+     * @blazorType object
      */
     defaultValue?: string;
 

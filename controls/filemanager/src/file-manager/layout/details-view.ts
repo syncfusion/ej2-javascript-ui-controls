@@ -43,6 +43,8 @@ export class DetailsView {
     private dragObj: Draggable = null;
     private startIndex: number = null;
     private firstItemIndex: number = null;
+    private isSelectionUpdate: boolean = false;
+    private currentSelectedItem: string[] = [];
     private count: number = 0;
     private isRendered: boolean = true;
     private isLoaded: boolean = false;
@@ -213,6 +215,7 @@ export class DetailsView {
 
     private renderCheckBox(): void {
         this.gridObj.columns = this.getColumns();
+        this.isColumnRefresh = true;
         this.gridObj.refreshColumns();
     }
 
@@ -342,6 +345,14 @@ export class DetailsView {
             this.selectRecords(this.sortSelectedNodes);
             this.sortItem = false;
         }
+        if (this.isSelectionUpdate) {
+            if (!this.isColumnRefresh) {
+                this.selectRecords(this.currentSelectedItem);
+                this.isSelectionUpdate = false;
+            } else {
+                this.isColumnRefresh = false;
+            }
+        }
         if (this.uploadOperation === true) {
             this.count++;
             this.selectRecords(this.parent.uploadItem);
@@ -441,6 +452,10 @@ export class DetailsView {
                 case 'selectedItems':
                     this.interaction = false;
                     if (this.parent.selectedItems.length !== 0) {
+                        if (!this.parent.allowMultiSelection) {
+                            let slItems: string[] = this.parent.selectedItems.slice(this.parent.selectedItems.length - 1);
+                            this.parent.setProperties({ selectedItems: slItems }, true);
+                        }
                         this.selectRecords(this.parent.selectedItems);
                     } else if (!isNOU(this.gridObj)) {
                         this.gridObj.clearSelection();
@@ -454,7 +469,9 @@ export class DetailsView {
                     break;
                 case 'allowMultiSelection':
                     if (!isNullOrUndefined(this.gridObj)) {
+                        this.currentSelectedItem = this.parent.selectedItems;
                         this.gridObj.selectionSettings.type = e.newProp.allowMultiSelection ? 'Multiple' : 'Single';
+                        this.isSelectionUpdate = true;
                         this.renderCheckBox();
                     }
                     break;

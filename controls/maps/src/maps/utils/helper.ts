@@ -10,7 +10,6 @@ import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettin
     MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
 IMarkerClusterRenderingEventArgs} from '../index';
 import { CenterPositionModel } from '../model/base-model';
-import { map } from '../../../spec/maps/data/mappoint.spec';
 
 /**
  * Maps internal use of `Size` type
@@ -260,7 +259,7 @@ export class Point {
 
 /**
  * Map internal class for min and max
- * 
+ *
  */
 
 export class MinMax {
@@ -601,8 +600,10 @@ export function convertElement(element: HTMLCollection, markerId: string, data: 
         id: markerId,
         styles: 'position: absolute;pointer-events: auto;'
     });
-    while (element.length > 0) {
+    let elementLength: number = element.length;
+    while (elementLength > 0) {
         childElement.appendChild(element[0]);
+        elementLength--;
     }
     let templateHtml: string = childElement.innerHTML;
     let properties: Object[] = Object.keys(data);
@@ -653,7 +654,7 @@ export function drawSymbols(shape: MarkerType, imageUrl: string, location: Point
         markerEle = maps.renderer.drawRectangle(rectOptions) as SVGRectElement;
     } else if (shape === 'Image') {
         x = location.x - (size.width / 2);
-        y = location.y - (size.height / 2); 
+        y = location.y - (size.height / 2);
         merge(pathOptions, { 'href': imageUrl, 'height': size.height, 'width': size.width, x: x, y: y });
         markerEle = maps.renderer.drawImage(pathOptions) as SVGImageElement;
     } else {
@@ -689,16 +690,16 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                     }
             }
         }
-            tempX = bounds[o].x
-            tempY = bounds[o].y
+            tempX = bounds[o].left
+            tempY = bounds[o].top
             for (let q: number = 0; q < colloideBounds.length; q++) {
                 for (let k: number =0; k< bounds.length; k++) {
                     if (!isNullOrUndefined(bounds[k])) {
-                        if(colloideBounds[q]['x'] === bounds[k]['x']) {
+                        if(colloideBounds[q]['left'] === bounds[k]['left']) {
                             delete bounds[k]
                             for(let r: number = 0;r < markerTemplate.childElementCount; r++) {
                                 let tempElement: Element = markerTemplate.childNodes[r] as Element;
-                                if (colloideBounds[q]['x'] === tempElement.getBoundingClientRect()['x']) {
+                                if (colloideBounds[q]['left'] === tempElement.getBoundingClientRect()['left']) {
                                     markerTemplate.childNodes[r]['style']['visibility'] ="hidden"
                                     markerTemplate.childNodes[o]['style']['visibility'] ="hidden"
                                 }
@@ -707,12 +708,12 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                     }
                 }
             }
-        
+
         if (colloideBounds.length > 0) {
             let padding: number = 10;
             let container: ClientRect = maps.element.getBoundingClientRect();
-            tempX = Math.abs(container['x'] - tempX) + padding;
-            tempY = Math.abs(container['y'] - tempY) + padding;
+            tempX = Math.abs(container['left'] - tempX) + padding;
+            tempY = Math.abs(container['top'] - tempY) + padding;
             let translate: Object = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
             let transPoint: Point = (maps.isTileMap) ? {x:0, y:0} :(maps.translatePoint.x !== 0) ?
             maps.translatePoint : translate['location'];
@@ -724,7 +725,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                 fill: clusters.fill, borderColor: clusters.border.color,
                 borderWidth: clusters.border.width, opacity: clusters.opacity,
                 dashArray: clusters.dashArray
-            };            
+            };
             let eventArg: IMarkerClusterRenderingEventArgs = {
                 cancel: false, name: markerClusterRendering, fill: clusters.fill, height: clusters.height,
                 width: clusters.width, imageUrl: clusters.imageUrl, shape: clusters.shape,
@@ -773,7 +774,7 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
     let x: number = (maps.isTileMap ? location.x : (location.x + transPoint.x) * scale) + offset.x;
     let y: number = (maps.isTileMap ? location.y : (location.y + transPoint.y) * scale) + offset.y;
     ele.setAttribute('transform', 'translate( ' + x + ' ' + y + ' )');
-    markerCollection.appendChild(ele); 
+    markerCollection.appendChild(ele);
     let element: string = (markerData.length - 1) === dataIndex ? 'marker' : null;
     let markerPoint: Point = new Point(x, y);
     if (markerSettings.animationDuration > 0) {
@@ -786,8 +787,9 @@ export function marker(eventArgs: IMarkerRenderingEventArgs, markerSettings: Mar
 export function markerTemplate(eventArgs: IMarkerRenderingEventArgs, templateFn: Function, markerID: string, data:object,
     markerIndex: number, markerTemplate: HTMLElement, location: Point, scale: number, offset: Point, maps: Maps): HTMLElement{
     templateFn = getTemplateFunction(eventArgs.template);
-    if (templateFn && templateFn(maps).length) {
-        let templateElement: HTMLCollection = templateFn(maps);
+    let blazor: string = 'Blazor';
+    if (templateFn && (!window[blazor] ? templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false).length : {})) {
+        let templateElement: HTMLCollection = templateFn(data, null, null, maps.element.id + '_MarkerTemplate', false);
         let markerElement: HTMLElement = <HTMLElement>convertElement(
             templateElement, markerID, data, markerIndex, maps
         );
@@ -1204,7 +1206,7 @@ export function removeElement(id: string): void {
 }
 
 /**
- * @private 
+ * @private
  */
 export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: boolean): Object {
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
@@ -1213,7 +1215,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
-    let size: Rect = mapObject.mapAreaRect;
+    let size: Rect = (mapObject.totalRect) ? mapObject.totalRect : mapObject.mapAreaRect;
     let availSize: Size = mapObject.availableSize;
     let x: number; let y: number;
     let mapWidth: number = Math.abs(max['x'] - min['x']);
@@ -1325,7 +1327,7 @@ export function getElementByID(id: string): Element {
     return document.getElementById(id);
 }
 /**
- * To apply internalization 
+ * To apply internalization
  */
 export function Internalize(maps: Maps, value: number): string {
     maps.formatFunction =
@@ -1360,7 +1362,7 @@ export function getElement(id: string): Element {
 }
 
 /**
- * Function to get shape data using target id 
+ * Function to get shape data using target id
  */
 export function getShapeData(targetId: string, map: Maps): { shapeData: object, data: object } {
     let layerIndex: number = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
@@ -1389,10 +1391,11 @@ export function triggerShapeEvent(
         border: selection.border,
         shapeData: shape.shapeData,
         data: shape.data,
-        target: targetId
+        target: targetId,
+        maps: maps
     };
     if (maps.isBlazor) {
-        const {shapeData, data, ...blazorEventArgs} : IShapeSelectedEventArgs = eventArgs;
+        const { data, maps, shapeData, ...blazorEventArgs} : IShapeSelectedEventArgs = eventArgs;
         eventArgs = blazorEventArgs;
     }
     maps.trigger(eventName, eventArgs);
@@ -1494,7 +1497,7 @@ export function elementAnimate(
                 return;
             }
             let event: IAnimationCompleteEventArgs = {
-                cancel: false, name: animationComplete, element: ele, maps: maps.isBlazor ? null : maps
+                cancel: false, name: animationComplete, element: ele, maps: !maps.isBlazor ? maps : null
             };
             maps.trigger(animationComplete, event);
         }
@@ -1565,10 +1568,10 @@ export function wordWrap(
     element.appendChild(tooltip);
 }
 // /**
-//  * 
-//  * @param touchList 
-//  * @param e 
-//  * @param touches 
+//  *
+//  * @param touchList
+//  * @param e
+//  * @param touches
 //  */
 // export function addTouchPointer(touchList: ITouches[], e: PointerEvent, touches: TouchList): ITouches[] {
 //     if (touches) {

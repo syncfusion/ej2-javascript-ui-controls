@@ -2,7 +2,7 @@ import { extend, Internationalization, NumberFormatOptions, DateFormatOptions, i
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { PivotUtil } from './util';
 import { Sorting, SummaryTypes, FilterType, LabelOperators, ValueOperators, Operators, DateOperators, Condition } from './types';
-import { DateGroup, GroupType } from './types';
+import { DateGroup, GroupType, ProviderType } from './types';
 import { HeaderCollection, AggregateEventArgs } from '../common';
 /**
  * PivotEngine is used to manipulate the relational or Multi-Dimensional data as pivoting values.
@@ -57,6 +57,8 @@ export class PivotEngine {
     public showGrandTotals: boolean;
     /** @hidden */
     public showRowGrandTotals: boolean;
+    /** @hidden */
+    public showHeaderWhenEmpty: boolean;
     /** @hidden */
     public showColumnGrandTotals: boolean;
     /** @hidden */
@@ -144,6 +146,9 @@ export class PivotEngine {
     private groupingFields: { [key: string]: string } = {};
     private columnKeys: { [key: string]: IFieldOptions } = {};
     private fieldDrillCollection: { [key: string]: string } = {};
+    /* tslint:disable-next-line:max-line-length */
+    private customRegex: RegExp = /^(('[^']+'|''|[^*#@0,.])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@0,.E])*)$/;
+    private formatRegex: RegExp = /(^[ncpae]{1})([0-1]?[0-9]|20)?$/i;
     /* tslint:disable */
     public renderEngine(
         dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function): void {
@@ -188,6 +193,7 @@ export class PivotEngine {
         this.fieldsType = customProperties ? customProperties.fieldsType : {};
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
+        this.showHeaderWhenEmpty = isNullOrUndefined(dataSource.showHeaderWhenEmpty) ? true : dataSource.showHeaderWhenEmpty;
         this.showSubTotals = isNullOrUndefined(dataSource.showSubTotals) ? true : dataSource.showSubTotals;
         this.showRowSubTotals = isNullOrUndefined(dataSource.showRowSubTotals) ? true : dataSource.showRowSubTotals;
         this.showColumnSubTotals = isNullOrUndefined(dataSource.showColumnSubTotals) ? true : dataSource.showColumnSubTotals;
@@ -305,6 +311,17 @@ export class PivotEngine {
                                             item[newFieldName] = (isInRangeAvail ? undefined : ((this.localeObj ? this.localeObj.getConstant('qtr') : 'Qtr') + month.toString()));
                                         }
                                         break;
+                                    case 'QuarterYear':
+                                        {
+                                            let newFieldName: string = fieldName + '_quarterYear';
+                                            groupFields[newFieldName] = interval;
+                                            let month: number = Math.ceil((date.getMonth() + 1) / 3);
+                                            item[newFieldName] = (isInRangeAvail ? undefined :
+                                                ((this.localeObj ? this.localeObj.getConstant('qtr') : 'Qtr') + month.toString() + ' '
+                                                    + (this.localeObj ? this.localeObj.getConstant('of') : 'of') + ' '
+                                                    + date.getFullYear().toString()));
+                                        }
+                                        break;
                                     case 'Months':
                                         {
                                             let newFieldName: string = fieldName + '_months';
@@ -395,7 +412,7 @@ export class PivotEngine {
                     while (gCnt--) {
                         groupField = groupFields[groupKeys[gCnt]];
                         let formatfield: IFormatSettings = new DataManager({ json: this.formats }).executeLocal(new Query().where('name', 'equal', groupKeys[gCnt]))[0] as IFormatSettings;
-                        if (groupField !== 'Quarters' && !formatfield) {
+                        if (groupField !== 'Quarters' && groupField !== 'QuarterYear' && !formatfield) {
                             let formatSettings: IFormatSettings = {
                                 name: groupKeys[gCnt],
                                 type: ['Years', 'Months', 'Days'].indexOf(groupField) > -1 ? 'date' : 'time',
@@ -1373,6 +1390,7 @@ export class PivotEngine {
     }
     /** @hidden */
     public updateGridData(dataSource: IDataOptions): void {
+        this.data = dataSource.dataSource as IDataSet[];
         this.indexMatrix = [];
         for (let field of this.fields) {
             this.fieldList[field].members = {};
@@ -1394,7 +1412,7 @@ export class PivotEngine {
     public generateGridData(dataSource: IDataOptions, headerCollection?: HeaderCollection): void {
         let keys: string[] = this.fields;
         let columns: IFieldOptions[] = dataSource.columns ? dataSource.columns : [];
-        let data: IDataSet[] = this.data;
+        let data: IDataSet[] = this.data as IDataSet[];
         let rows: IFieldOptions[] = dataSource.rows ? dataSource.rows : [];
         let filterSettings: IFilter[] = dataSource.filterSettings;
         let values: IFieldOptions[] = dataSource.values ? dataSource.values : [];
@@ -2146,7 +2164,9 @@ export class PivotEngine {
             if (showNoDataItems) {
                 let members: string[] = Object.keys(childrens.members);
                 for (let pos: number = 0, lt: number = members.length; pos < lt; pos++) {
-                    savedMembers[members[pos]] = members[pos];
+                    if (this.showHeaderWhenEmpty || (this.localeObj && members[pos] !== this.localeObj.getConstant('undefined'))) {
+                        savedMembers[members[pos]] = members[pos];
+                    }
                 }
                 if (position.length < 1) {
                     isNoData = true;
@@ -2166,9 +2186,16 @@ export class PivotEngine {
                     this.indexMatrix[position[pos]][childrens.index];
                 let headerValue: string = isNoData ? Object.keys(savedMembers)[0] :
                     data[position[pos]][fieldName] as string;
-                // if (isNullOrUndefined(headerValue)) {
-                //     continue;
-                // }
+                if ((isNullOrUndefined(headerValue) || (this.localeObj && headerValue === this.localeObj.getConstant('undefined')))
+                    && !this.showHeaderWhenEmpty) {
+                    if (showNoDataItems && !isNoData && keyInd > 0 && pos + 1 === position.length &&
+                        Object.keys(savedMembers).length > 0) {
+                        lt = Object.keys(savedMembers).length;
+                        isNoData = true;
+                        pos = -1;
+                    }
+                    continue;
+                }
                 delete savedMembers[headerValue];
                 if (showNoDataItems && this.fieldFilterMem[fieldName] &&
                     this.fieldFilterMem[fieldName].memberObj[headerValue] === headerValue) {
@@ -2251,6 +2278,17 @@ export class PivotEngine {
                     level = hierarchy[iln].valueSort.levelName as string;
                 }
                 parentMember = (level || hierarchy[iln].formattedText) as string;
+                if (!this.showHeaderWhenEmpty && rlen - 1 > keyInd && hierarchy[iln].index &&
+                    hierarchy[iln].index.length > 0 && !showNoDataItems) {
+                    let headerValue: string = data[hierarchy[iln].index[0]][keys[keyInd + 1].name] as string;
+                    let hasChild: boolean = (isNullOrUndefined(headerValue) || (this.localeObj &&
+                        headerValue === this.localeObj.getConstant('undefined'))) && hierarchy[iln].index.length === 1 ? false : true;
+                    hierarchy[iln].hasChild = hasChild;
+                } else if (
+                    !this.showHeaderWhenEmpty && showNoDataItems && keys[keyInd + 1] && keys[keyInd + 1].name &&
+                    Object.keys(this.fieldList[keys[keyInd + 1].name].members).length) {
+                    hierarchy[iln].hasChild = true;
+                }
                 if (rlen - 1 > keyInd && hierarchy[iln].isDrilled) {
                     this.columnCount -= (!(this.showSubTotals && this.showColumnSubTotals && field.showSubTotals) && axis === 'column') ?
                         this.colValuesLength : 0;
@@ -2525,7 +2563,7 @@ export class PivotEngine {
                 // data[tnum][0] = rows[rln].name;
                 data[tnum][0] = this.valueContent[actCnt][0] = this.frameHeaderWithKeys(rows[rln]);
             }
-            if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && !(rows[rln].isDrilled &&
+            if (this.valueAxis && (this.isMutiMeasures || this.alwaysShowValueHeader) && !(rows[rln].hasChild &&
                 ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                     !this.showSubTotals || !this.showRowSubTotals))) {
                 let hpos: number = tnum;
@@ -3490,9 +3528,10 @@ export class PivotEngine {
     /* tslint:enable */
     /** hidden */
     public getFormattedValue(value: number | string, fieldName: string): IAxisSet {
-        let commonValue: number | string = value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) :
-            value === undefined ? (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
-                this.localeObj.getConstant('undefined') : String(value)) : value;
+        let commonValue: number | string = value === null ? (this.localeObj ? this.localeObj.getConstant('null') :
+            String(value)) : value === undefined ?
+                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                    this.localeObj.getConstant('undefined') : String(value)) : value;
         let formattedValue: IAxisSet = {
             formattedText: commonValue.toString(),
             actualText: commonValue,
@@ -3513,6 +3552,12 @@ export class PivotEngine {
             if (formatSetting.type) {
                 formattedValue.formattedText = this.dateFormatFunction[fieldName].exactFormat(new Date(value as string));
             } else {
+                delete formatSetting.type;
+                if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
+                    let pattern: string[] = formatSetting.format.match(this.customRegex);
+                    let integerPart: string = pattern[6];
+                    formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                }
                 formattedValue.formattedText = this.globalize.formatNumber(value as number, formatSetting);
             }
             formattedValue.actualText = value;
@@ -3550,8 +3595,13 @@ export class PivotEngine {
      } */
 }
 
-/** @hidden */
+
 export interface IDataOptions {
+    catalog?: string;
+    cube?: string;
+    providerType?: ProviderType;
+    url?: string;
+    localeIdentifier?: number;
     dataSource?: IDataSet[] | DataManager;
     rows?: IFieldOptions[];
     columns?: IFieldOptions[];
@@ -3575,14 +3625,13 @@ export interface IDataOptions {
     showGrandTotals?: boolean;
     showRowGrandTotals?: boolean;
     showColumnGrandTotals?: boolean;
+    showHeaderWhenEmpty?: boolean;
     alwaysShowValueHeader?: boolean;
     conditionalFormatSettings?: IConditionalFormatSettings[];
     emptyCellsTextContent?: string;
     groupSettings?: IGroupSettings[];
 }
-/**
- * @hidden
- */
+
 export interface IConditionalFormatSettings {
     measure?: string;
     conditions?: Condition;
@@ -3590,28 +3639,25 @@ export interface IConditionalFormatSettings {
     value2?: number;
     style?: IStyle;
     label?: string;
+    applyGrandTotals?: boolean;
 }
-/**
- * @hidden
- */
+
 export interface IStyle {
     backgroundColor?: string;
     color?: string;
     fontFamily?: string;
     fontSize?: string;
 }
-/**
- * @hidden
- */
+
 export interface IValueSortSettings {
     headerText?: string;
     headerDelimiter?: string;
     sortOrder?: Sorting;
     columnIndex?: number;
+    measure?: string;
+    // preserveHierarchy?: boolean;
 }
-/**
- * @hidden
- */
+
 export interface IPageSettings {
     columnSize?: number;
     rowSize?: number;
@@ -3701,9 +3747,7 @@ export interface ISelectedValues {
 export interface IDataSet {
     [key: string]: string | number | Date;
 }
-/**
- * @hidden
- */
+
 export interface IFieldOptions {
     name?: string;
     caption?: string;
@@ -3713,19 +3757,17 @@ export interface IFieldOptions {
     baseField?: string;
     baseItem?: string;
     showSubTotals?: boolean;
+    isNamedSet?: boolean;
+    isCalculatedField?: boolean;
     //filter?: FilterOptions;
 }
-/**
- * @hidden
- */
+
 export interface ISort {
     name?: string;
     //type?: string;
     order?: Sorting;
 }
-/**
- * @hidden
- */
+
 export interface IFilter {
     name?: string;
     type?: FilterType;
@@ -3737,31 +3779,27 @@ export interface IFilter {
     showDateFilter?: boolean;
     showNumberFilter?: boolean;
     measure?: string;
+    levelCount?: number;
+    selectedField?: string;
 }
-/**
- * @hidden
- */
+
 export interface IDrillOptions {
     name?: string;
     items?: string[];
     delimiter?: string;
 }
-/**
- * @hidden
- */
+
 export interface ICalculatedFieldSettings {
     name?: string;
     formula?: string;
+    hierarchyUniqueName?: string;
+    formatString?: string;
 }
-/**
- * @hidden
- */
+
 export interface ICalculatedFields extends ICalculatedFieldSettings {
     actualFormula?: string;
 }
-/**
- * @hidden
- */
+
 export interface IFormatSettings extends NumberFormatOptions, DateFormatOptions {
     name?: string;
 }
@@ -3774,6 +3812,10 @@ export interface IMembers {
         index?: number[];
         name?: string;
         isDrilled?: boolean;
+        isNodeExpand?: boolean;
+        parent?: string;
+        caption?: string;
+        isSelected?: boolean;
     };
 }
 /**
@@ -3782,9 +3824,7 @@ export interface IMembers {
 export interface IFieldListOptions {
     [index: string]: IField;
 }
-/**
- * @hidden
- */
+
 export interface IField {
     id?: string;
     caption?: string;
@@ -3794,8 +3834,8 @@ export interface IField {
     members?: IMembers;
     formattedMembers?: IMembers;
     dateMember?: IAxisSet[];
-    filter: string[];
-    sort: string;
+    filter?: string[];
+    sort?: string;
     aggregateType?: string;
     baseField?: string;
     baseItem?: string;
@@ -3806,9 +3846,7 @@ export interface IField {
     isExcelFilter?: boolean;
     showNoDataItems?: boolean;
 }
-/**
- * @hidden
- */
+
 export interface IAxisSet {
     formattedText?: string;
     actualText?: number | string;
@@ -3836,8 +3874,15 @@ export interface IAxisSet {
     enableHyperlink?: boolean;
     showSubTotals?: boolean;
     dateText?: number | string;
+    memberType?: number;
+    parentUniqueName?: string;
+    levelUniqueName?: string;
+    hierarchy?: string;
+    colOrdinal?: number;
+    rowOrdinal?: number;
+    isNamedSet?: boolean;
 }
-/** @hidden */
+
 export interface IDrilledItem {
     fieldName: string;
     memberName: string;
@@ -3846,7 +3891,7 @@ export interface IDrilledItem {
     delimiter: string;
     currentCell?: IAxisSet;
 }
-/** @hidden */
+
 export interface ICustomProperties {
     mode?: string;
     savedFieldList?: IFieldListOptions;
@@ -3909,20 +3954,16 @@ interface IValueFilterSettings {
 interface IValueFields {
     [index: string]: IFieldOptions;
 }
-/**
- * @hidden
- */
+
 export interface IGroupSettings {
     name?: string;
     groupInterval?: DateGroup[];
-    startingAt?: string | Date | number;
-    endingAt?: string | Date | number;
+    startingAt?: Date | number | string;
+    endingAt?: Date | number | string;
     rangeInterval?: number;
     type?: GroupType;
 }
-/**
- * @hidden
- */
+
 export interface IGroupRange {
     range?: string;
     isNotInRange?: boolean;

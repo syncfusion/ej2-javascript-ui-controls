@@ -891,3 +891,8 @@ export function refreshFilteredColsUid(gObj: IGrid, filteredCols: PredicateModel
             : gObj.getColumnByField(filteredCols[i].field).uid;
     }
 }
+
+/** @hidden */
+export namespace Global {
+    export let timer: Object = null;
+}

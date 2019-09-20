@@ -505,14 +505,16 @@ function findPointToPointOrtho(
                 } else {
                     point = pointToPort(element, source, target);
                 }
-                checkPreviousSegment(point, element, source);
-                seg.points = [];
-                if (point.length >= 2) {
-                    for (j = 0; j < point.length; j++) {
-                        seg.points.push(point[j]);
+                if (point) {
+                    checkPreviousSegment(point, element, source);
+                    seg.points = [];
+                    if (point.length >= 2) {
+                        for (j = 0; j < point.length; j++) {
+                            seg.points.push(point[j]);
+                        }
+                    } else {
+                        removeSegment = i;
                     }
-                } else {
-                    removeSegment = i;
                 }
             }
             if (sourcePort && i === 0) {

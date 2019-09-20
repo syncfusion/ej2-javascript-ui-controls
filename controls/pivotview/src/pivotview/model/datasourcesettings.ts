@@ -1,7 +1,7 @@
 import { Property, Complex, Collection, ChildProperty, NumberFormatOptions, DateFormatOptions } from '@syncfusion/ej2-base';
 import { IDataSet, IDataOptions, IFieldOptions, IFilter, ISort, ICalculatedFieldSettings } from '../../base/engine';
-import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings} from '../../base/engine';
-import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType } from '../../base/types';
+import { IDrillOptions, IValueSortSettings, IFormatSettings, IConditionalFormatSettings, IGroupSettings } from '../../base/engine';
+import { SummaryTypes, Sorting, FilterType, Operators, Condition, DateGroup, GroupType, ProviderType } from '../../base/types';
 import { IStyle } from '../../base/engine';
 import { FieldOptionsModel, FilterModel, SortModel, FormatSettingsModel, GroupSettingsModel } from './datasourcesettings-model';
 import { DrillOptionsModel, ValueSortSettingsModel, CalculatedFieldSettingsModel } from './datasourcesettings-model';
@@ -70,6 +70,22 @@ export class FieldOptions extends ChildProperty<FieldOptions> implements IFieldO
      */
     @Property(true)
     public showSubTotals: boolean;
+
+    /**
+     * It allows to show a field has named set type.
+     * Note: This option is applicable only for OLAP data source.
+     * @default false
+     */
+    @Property(false)
+    public isNamedSet: boolean;
+
+    /**
+     * It allows to show a field has calculated member type.
+     * Note: This option is applicable only for OLAP data source.
+     * @default false
+     */
+    @Property(false)
+    public isCalculatedField: boolean;
 }
 
 export class FieldListFieldOptions extends FieldOptions { }
@@ -151,6 +167,21 @@ export class Filter extends ChildProperty<Filter> implements IFilter {
      */
     @Property()
     public measure: string;
+
+    /**
+     * It allows to set level count of the field to fetch data from the cube.
+     * Note: This option is applicable only for user-defined hierarchies.
+     * @default 1
+     */
+    @Property(1)
+    public levelCount: number;
+
+    /**
+     * It allows to set level name of a dimension, where the filtering settings to be applied.
+     * Note: This option is applicable only for user-defined hierarchies.
+     */
+    @Property()
+    public selectedField: string;
 }
 
 /** 
@@ -193,6 +224,12 @@ export class ConditionalFormatSettings extends ChildProperty<ConditionalFormatSe
      */
     @Property()
     public style: IStyle;
+
+    /**
+     * It allows to apply conditional formatting to grand total
+     */
+    @Property(true)
+    public applyGrandTotals: boolean;
 }
 
 /**
@@ -348,6 +385,20 @@ export class CalculatedFieldSettings extends ChildProperty<CalculatedFieldSettin
      */
     @Property()
     public formula: string;
+
+    /**
+     * It allows to set hierarchy unique name, that used to create calculated member.
+     * Note: This option is applicable only for OLAP data source.
+     */
+    @Property()
+    public hierarchyUniqueName: string;
+
+    /**
+     * It allows to set format string that used to create calculated member.
+     * Note: This option is applicable only for OLAP data source.
+     */
+    @Property()
+    public formatString: string;
 }
 
 /** 
@@ -404,12 +455,50 @@ export class ValueSortSettings extends ChildProperty<ValueSortSettings> implemen
 
     /** @hidden */
     public columnIndex: number;
+
+    /**
+     * It allows to set the measure name to achieve value sorting based on this.
+     */
+    @Property()
+    public measure: string;
 }
 
 /** 
  * Configures the settings of dataSource. 
  */
 export class DataSourceSettings extends ChildProperty<DataSourceSettings> implements IDataOptions {
+
+    /**
+     * It allows to set the cube catalog name.
+     */
+    @Property()
+    public catalog: string;
+
+    /**
+     * It allows to set the cube name.
+     */
+    @Property()
+    public cube: string;
+
+    /**
+     * It allows to set the provider type.
+     * @default Relational
+     */
+    @Property('Relational')
+    public providerType: ProviderType;
+
+    /**
+     * It allows to set the url string.
+     */
+    @Property()
+    public url: string;
+
+    /**
+     * It allows to set the locale code.
+     * @default 1033
+     */
+    @Property(1033)
+    public localeIdentifier: number;
 
     /**
      * It allows to set the data source.
@@ -550,6 +639,13 @@ export class DataSourceSettings extends ChildProperty<DataSourceSettings> implem
      */
     @Property(false)
     public alwaysShowValueHeader: boolean;
+
+    /**
+     * If `showHeaderWhenEmpty` is set to false, then it will hide blank headers in pivot table.
+     * @default true
+     */
+    @Property(true)
+    public showHeaderWhenEmpty: boolean;
 
     /**
      * It allows enable/disable show aggregation on PivotButton.

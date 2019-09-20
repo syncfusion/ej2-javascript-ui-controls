@@ -1,4 +1,5 @@
 import { Component, Property, Complex, CollectionFactory, ChildProperty, Event } from '@syncfusion/ej2-base';
+import { isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Browser, EventHandler, Draggable, INotifyPropertyChanged, Collection, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { remove, EmitType } from '@syncfusion/ej2-base';
 import { Accordion, AccordionItemModel, ExpandMode, ExpandEventArgs } from '@syncfusion/ej2-navigations';
@@ -856,11 +857,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             stackPanel.id = content.id + '_symbol';
             stackPanel.style.fill = stackPanel.style.strokeColor = 'transparent';
             if (symbol instanceof Node) {
-              stackPanel.offsetX = symbol.style.strokeWidth / 2;
-              stackPanel.offsetY = symbol.style.strokeWidth / 2;
+                stackPanel.offsetX = symbol.style.strokeWidth / 2;
+                stackPanel.offsetY = symbol.style.strokeWidth / 2;
             } else {
-              stackPanel.offsetX = 0.5;
-              stackPanel.offsetY = 0.5;
+                stackPanel.offsetX = 0.5;
+                stackPanel.offsetY = 0.5;
             }
             //symbol description-textElement
             this.getSymbolDescription(symbolInfo, width, stackPanel);
@@ -1356,10 +1357,13 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         return clonedElement;
     }
 
-    private dragStart(e: MouseEvent): void {
+    private dragStart(e: (MouseEvent & BlazorDragEventArgs)): void {
         let element: HTMLElement = this.helper[0];
         if (element) {
             element.setAttribute('paletteId', this.element.id);
+        }
+        if (isBlazor()) {
+            e.bindEvents(e.dragElement);
         }
     }
 

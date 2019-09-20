@@ -216,7 +216,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline render.
      * @event
-     * @deprecated
      * @blazorProperty 'OnLoad'
      */
     @Event()
@@ -234,7 +233,6 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline series render.
      * @event
-     * @deprecated
      * @blazorProperty 'SeriesRendering'
      */
     @Event()
@@ -252,6 +250,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     /**
      * Triggers before sparkline points render.
      * @event
+     * @deprecated
      * @blazorProperty 'PointRendering'
      */
     @Event()
@@ -397,7 +396,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
 
         this.unWireEvents();
 
-        this.trigger('load', { sparkline: this });
+        this.trigger('load', { sparkline: !this.isBlazor ? this : null });
 
         this.sparkTheme = getThemeColor(this.theme);
 
@@ -427,7 +426,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
-        this.trigger('loaded', { sparkline: this.isBlazor ? null : this });
+        this.trigger('loaded', { sparkline: !this.isBlazor ? this : null });
     }
     /**
      * To render sparkline elements
@@ -582,7 +581,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         let args: ISparklineResizeEventArgs = {
             name: 'resize',
             previousSize: this.availableSize,
-            sparkline: this.isBlazor ? null : this,
+            sparkline: !this.isBlazor ? this : null,
             currentSize: new Size(0, 0)
         };
         if (this.resizeTo) {
@@ -615,14 +614,14 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.notify(Browser.touchMoveEvent, e);
         let args: ISparklineMouseEventArgs = {
             name: 'sparklineMouseMove', cancel: false,
-            sparkline: this.isBlazor ? null : this, event: e
+            sparkline: !this.isBlazor ? this : null, event: e
         };
         this.trigger(args.name, args);
         let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs: IPointRegionEventArgs = {
                 name: 'pointRegionMouseMove', cancel: false,
-                event: e, sparkline: this.isBlazor ? null : this,
+                event: e, sparkline: !this.isBlazor ? this : null,
                 pointIndex: pointClick.pointIndex
             };
             this.trigger(pointArgs.name, pointArgs);
@@ -638,14 +637,14 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         this.setSparklineMouseXY(e);
         let args: ISparklineMouseEventArgs = {
             name: 'sparklineMouseClick', cancel: false,
-            sparkline: this.isBlazor ? null : this, event: e
+            sparkline: !this.isBlazor ? this : null, event: e
         };
         this.trigger(args.name, args);
         let pointClick: { isPointRegion: boolean, pointIndex: number } = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             let pointArgs: IPointRegionEventArgs = {
                 name: 'pointRegionMouseClick', cancel: false,
-                event: e, sparkline: this.isBlazor ? null : this,
+                event: e, sparkline: !this.isBlazor ? this : null,
                 pointIndex: pointClick.pointIndex
             };
             this.trigger(pointArgs.name, pointArgs);
@@ -726,6 +725,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
                 case 'yName':
                 case 'dataSource':
                 case 'axisSettings':
+                case 'rangeBandSettings':
                 case 'type':
                 case 'valueType':
                 case 'enableRtl':

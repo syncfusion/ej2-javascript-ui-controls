@@ -1,10 +1,10 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex, isBlazor } from '@syncfusion/ej2-base';
+import { Component, EventHandler, Property, Event, EmitType, Complex, Collection, isBlazor } from '@syncfusion/ej2-base';
 import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';
 import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
-import { SliderModel, TicksDataModel, TooltipDataModel, LimitDataModel } from './slider-model';
+import { SliderModel, TicksDataModel, TooltipDataModel, LimitDataModel, ColorRangeDataModel } from './slider-model';
 
 /**
  * Configures the ticks data of the Slider.
@@ -117,6 +117,32 @@ export interface SliderTickRenderedEventArgs {
      * It returns the collection of tick elements.
      */
     tickElements: HTMLElement[];
+}
+
+/**
+ * It illustrates the color track data in slider.
+ */
+export class ColorRangeData extends ChildProperty<ColorRangeData> {
+    /**
+     * It is used to set the color in the slider bar.
+     * @default ''
+     */
+    @Property(null)
+    public color: string;
+
+    /**
+     * It is used to get the starting value for applying color.
+     * @default null
+     */
+    @Property(null)
+    public start: number;
+
+    /**
+     * It is used to get the end value for applying color.
+     * @default null
+     */
+    @Property(null)
+    public end: number;
 }
 
 /**
@@ -276,6 +302,8 @@ const classNames: { [key: string]: string } = {
     materialTooltipActive: 'e-tooltip-active',
     materialSlider: 'e-material-slider',
     sliderTrack: 'e-slider-track',
+    sliderHorizantalColor: 'e-slider-horizantal-color',
+    sliderVerticalColor: 'e-slider-vertical-color',
     sliderHandleFocused: 'e-handle-focused',
     verticalSlider: 'e-vertical',
     horizontalSlider: 'e-horizontal',
@@ -455,6 +483,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      */
     @Property('Default')
     public type: SliderType;
+
+    /**
+     * It is used to render the color to the slider based on the given  value
+     */
+    @Collection<ColorRangeDataModel>([{}], ColorRangeData)
+    public colorRange: ColorRangeDataModel[];
 
     /**
      * It is used to render the slider ticks options such as placement and step values.
@@ -1008,6 +1042,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                 }
             }
         }
+        this.setBarColor();
     }
 
     private tooltipValue(): void {
@@ -1539,7 +1574,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             if (spanElement) {
                 spanElement.innerHTML = observedArgs.text.toString();
             }
-            if (isBlazor()) {
+            if (!isNullOrUndefined(this.renderingTicks) && isBlazor()) {
                 const orien: string = this.orientation === 'Horizontal' ? 'h' : 'v';
                 this.ticksAlignment(orien, tickWidth, false);
             }
@@ -1861,6 +1896,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         if (!isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
             this.min = 0;
             this.max = this.customValues.length - 1;
+            this.setBarColor();
         }
         this.setAriaAttributes(this.firstHandle);
         this.handleVal1 = isNullOrUndefined(this.value) ? this.checkHandleValue(parseFloat(this.min.toString())) :
@@ -2142,6 +2178,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             });
         }
         this.refreshTooltip(this.tooltipTarget);
+        this.setBarColor();
     }
 
     private changeHandleValue(value: number): void {
@@ -2979,6 +3016,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                             this.sliderContainer.classList.remove(classNames.sliderButtonClass);
                             this.firstBtn = undefined;
                             this.secondBtn = undefined;
+                            this.reposition();
                         }
                     }
                     break;
@@ -2990,6 +3028,9 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     break;
                 case 'customValues':
                     this.setValue();
+                    this.reposition();
+                    break;
+                case 'colorRange':
                     this.reposition();
                     break;
             }
@@ -3043,7 +3084,55 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     public setTooltip(): void {
         this.changeSliderType(this.type);
     }
+    private setBarColor(): void {
+        let trackPosition: number;
+        let trackClassName: string;
+        let child: Element = this.sliderTrack.lastElementChild;
+        while (child) {
+            this.sliderTrack.removeChild(child);
+            child = this.sliderTrack.lastElementChild;
+        }
+        for (let i: number = 0; i < this.colorRange.length; i++) {
 
+            if (!isNullOrUndefined(this.colorRange[i].start) && !isNullOrUndefined(this.colorRange[i].end)) {
+                if (this.colorRange[i].end > this.colorRange[i].start) {
+                    if (this.colorRange[i].start < this.min) {
+                        this.colorRange[i].start = this.min;
+                    }
+                    if (this.colorRange[i].end > this.max) {
+                        this.colorRange[i].end = this.max;
+                    }
+                    let startingPosition: number = this.checkHandlePosition(this.colorRange[i].start);
+                    let endPosition: number = this.checkHandlePosition(this.colorRange[i].end);
+                    let trackContainer: HTMLElement = this.createElement('div');
+                    trackContainer.style.backgroundColor = this.colorRange[i].color;
+                    trackContainer.style.border = '1px solid ' + this.colorRange[i].color;
+                    if (this.orientation === 'Horizontal') {
+                        trackClassName = classNames.sliderHorizantalColor;
+                        if (this.enableRtl) {
+                            if (isNullOrUndefined(this.customValues)) {
+                                trackPosition = this.checkHandlePosition(this.max) - this.checkHandlePosition(this.colorRange[i].end);
+                            } else {
+                                trackPosition = this.checkHandlePosition(this.customValues.length - this.colorRange[i].end - 1);
+                            }
+                        } else {
+                            trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        }
+                        trackContainer.style.width = endPosition - startingPosition + 'px';
+                        trackContainer.style.left = trackPosition + 'px';
+
+                    } else {
+                        trackClassName = classNames.sliderVerticalColor;
+                        trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        trackContainer.style.height = endPosition - startingPosition + 'px';
+                        trackContainer.style.bottom = trackPosition + 'px';
+                    }
+                    trackContainer.classList.add(trackClassName);
+                    this.sliderTrack.appendChild(trackContainer);
+                }
+            }
+        }
+    }
     /**
      * Gets the component name
      * @private

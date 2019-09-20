@@ -1,5 +1,5 @@
 import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';
-import { View } from '../base/type';
+import { View, Orientation } from '../base/type';
 import { TimeScale } from '../models/time-scale';
 import { TimeScaleModel, GroupModel, HeaderRowsModel } from '../models/models';
 import { Group } from '../models/group';
@@ -22,6 +22,7 @@ export class Views extends ChildProperty<Views> {
      * * TimelineWeek
      * * TimelineWorkWeek
      * * TimelineMonth
+     * * TimelineYear
      * @default null
      */
     @Property()
@@ -74,6 +75,15 @@ export class Views extends ChildProperty<Views> {
      */
     @Property(false)
     public allowVirtualScrolling: boolean;
+
+    /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
+     *  month date cells.
+     *  This template is only applicable for month view day cells.
+     * @default null
+     */
+    @Property()
+    public cellHeaderTemplate: string;
 
     /**
      * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto the
@@ -137,6 +147,15 @@ export class Views extends ChildProperty<Views> {
     public interval: number;
 
     /**
+     * This option allows the user to set the first day of a week on Schedule. It should be based on the locale set to it and each culture
+     *  defines its own first day of week values. If needed, the user can set it manually on his own by defining the value through
+     *  this property. It usually accepts the integer values, whereby 0 is always denoted as Sunday, 1 as Monday and so on.
+     * @default 0
+     */
+    @Property(0)
+    public firstDayOfWeek: number;
+
+    /**
      * It is used to set the working days on schedule. The only days that are defined in this collection will be rendered on the
      *  `workWeek` view whereas on other views, it will display all the usual days and simply highlights the working days with different
      *  shade.
@@ -156,6 +175,13 @@ export class Views extends ChildProperty<Views> {
      */
     @Property()
     public resourceHeaderTemplate: string;
+
+    /** 
+     * It is used to specify the year view rendering orientation on the schedule.
+     * @default 'Horizontal'
+     */
+    @Property('Horizontal')
+    public orientation: Orientation;
 
     /**
      * Allows to set different timescale configuration on each applicable view modes such as day, week and work week.

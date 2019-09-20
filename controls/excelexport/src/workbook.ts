@@ -3,6 +3,7 @@ import { Worksheet, FreezePane, MergeCell, MergeCells, HyperLink, Grouping } fro
 import { CellStyle, Font, Border, Borders, CellXfs, Alignment, NumFmt, CellStyleXfs, CellStyles } from './cell-style';
 import { Column } from './column';
 import { Row, Rows } from './row';
+import { Image } from './image';
 import { Cell, Cells } from './cell';
 import { ZipArchive, ZipArchiveItem } from '@syncfusion/ej2-compression';
 import { SaveType, BlobSaveType } from './enum';
@@ -49,6 +50,8 @@ export class Workbook {
     private intl: Internationalization;
     private globalStyles: Map<string, any>;
     private rgbColors: Map<string, string>;
+    private drawingCount: number;
+    private imageCount: number;
     /* tslint:disable:no-any */
     public constructor(json: any, saveType: SaveType, culture?: string, currencyString?: string) {
         if (culture !== undefined) {
@@ -80,6 +83,8 @@ export class Workbook {
             /* tslint:enable */
             this.mCellXfs = [];
             this.mCellStyleXfs = [];
+            this.drawingCount = 0;
+            this.imageCount = 0;
 
             if (json.styles !== null && json.styles !== undefined) {
                 /* tslint:disable-next-line:no-any */
@@ -220,6 +225,10 @@ export class Workbook {
                 if (jsonSheet.pageSetup.isSummaryRowBelow !== undefined) {
                     sheet.isSummaryRowBelow = jsonSheet.pageSetup.isSummaryRowBelow;
                 }
+            }
+
+            if (jsonSheet.images !== undefined) {
+                this.parserImages(jsonSheet.images, sheet);
             }
             sheet.index = (i + 1);
             sheet.mergeCells = this.mergeCells;
@@ -1013,7 +1022,51 @@ export class Workbook {
         cell.saveType = saveType;
         cell.value = value;
     }
+    private parserImages(json: any, sheet: Worksheet): void {
+        let imagesLength: number = json.length;
 
+        sheet.images = [];
+        let imageId: number = 0;
+        for (let p: number = 0; p < imagesLength; p++) {
+            let image: Image = this.parserImage(json[p]);
+            sheet.images.push(image);
+        }
+    }
+    private parserImage(json: any): Image {
+        let image: Image = new Image();
+
+        if (json.image !== null && json.image !== undefined) {
+            image.image = json.image;
+        }
+        if (json.row !== null && json.row !== undefined) {
+            image.row = json.row;
+        }
+        if (json.column !== null && json.column !== undefined) {
+            image.column = json.column;
+        }
+        if (json.lastRow !== null && json.lastRow !== undefined) {
+            image.lastRow = json.lastRow;
+        }
+        if (json.lastColumn !== null && json.lastColumn !== undefined) {
+            image.lastColumn = json.lastColumn;
+        }
+        if (json.width !== null && json.width !== undefined) {
+            image.width = json.width;
+        }
+        if (json.height !== null && json.height !== undefined) {
+            image.height = json.height;
+        }
+        if (json.horizontalFlip !== null && json.horizontalFlip !== undefined) {
+            image.horizontalFlip = json.horizontalFlip;
+        }
+        if (json.verticalFlip !== null && json.verticalFlip !== undefined) {
+            image.verticalFlip = json.verticalFlip;
+        }
+        if (json.rotation !== null && json.rotation !== undefined) {
+            image.rotation = json.rotation;
+        }
+        return image;
+    }
     public saveAsBlob(blobSaveType: BlobSaveType): Promise<{ blobData: Blob }> {
         switch (blobSaveType) {
             case 'text/csv':
@@ -1180,12 +1233,200 @@ export class Workbook {
                 sheetString += ('<hyperlink ref="' + hLink.ref + '" r:id="rId' + hLink.rId + '" />');
             }
             sheetString += ('</hyperlinks>');
-            this.addToArchive(this.saveSheetRelations(sheet), ('xl/worksheets/_rels/sheet' + sheet.index + '.xml.rels'));
         }
         /* tslint:disable-next-line:max-line-length */
-        sheetString += ('<pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5" /><headerFooter scaleWithDoc="1" alignWithMargins="0" differentFirst="0" differentOddEven="0" /></worksheet>');
-        sheetBlob.append(sheetString);
+        sheetString += ('<pageMargins left="0.75" right="0.75" top="1" bottom="1" header="0.5" footer="0.5" /><headerFooter scaleWithDoc="1" alignWithMargins="0" differentFirst="0" differentOddEven="0" />');
+        if(sheet.images != undefined && sheet.images.length > 0){
+            this.drawingCount++;
+            this.saveDrawings(sheet, sheet.index);
+            sheetString += '<drawing r:id="rId'+ (sheet.hyperLinks.length + 1) + '"/>';
+        }
+        this.addToArchive(this.saveSheetRelations(sheet), ('xl/worksheets/_rels/sheet' + sheet.index + '.xml.rels'));
+        sheetBlob.append(sheetString+'</worksheet>');
         this.addToArchive(sheetBlob.getBlob(), 'xl/worksheets' + '/sheet' + (index + 1) + '.xml');
+    }
+    private saveDrawings(sheet: Worksheet, index: number): void {
+        let drawings: BlobHelper = new BlobHelper();
+        /* tslint:disable-next-line:max-line-length */
+        let sheetDrawingString: string = '<xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">';
+        if (sheet.images !== undefined) {
+            let imgId: number = 0;
+            for (let pic of sheet.images) {
+            if(pic.height !== undefined && pic.width !== undefined){
+            this.updatelastRowOffset(sheet, pic);
+            this.updatelastColumnOffSet(sheet, pic);
+            }else if(pic.lastRow !== undefined && pic.lastColumn !== undefined)
+            {
+                pic.lastRowOffset = 0;
+                pic.lastColOffset = 0;
+            }
+            imgId++;
+            sheetDrawingString += '<xdr:twoCellAnchor editAs="oneCell">';
+            sheetDrawingString += '<xdr:from><xdr:col>';
+            //col
+            sheetDrawingString += pic.column - 1;
+            sheetDrawingString += '</xdr:col><xdr:colOff>';
+            //colOff
+            sheetDrawingString += 0;
+            sheetDrawingString += '</xdr:colOff><xdr:row>';
+            //row
+            sheetDrawingString += pic.row - 1;
+            sheetDrawingString += '</xdr:row><xdr:rowOff>';
+            //rowOff
+            sheetDrawingString += 0;
+            sheetDrawingString += '</xdr:rowOff></xdr:from>';
+
+            sheetDrawingString += '<xdr:to><xdr:col>';
+            //col
+            sheetDrawingString += pic.lastColumn;
+            sheetDrawingString += '</xdr:col><xdr:colOff>';
+            
+            //colOff
+            sheetDrawingString += pic.lastColOffset;
+            sheetDrawingString += '</xdr:colOff><xdr:row>';
+            //row
+            sheetDrawingString += pic.lastRow;
+            sheetDrawingString += '</xdr:row><xdr:rowOff>';
+            //rowOff
+            sheetDrawingString += pic.lastRowOffset;
+            sheetDrawingString += '</xdr:rowOff></xdr:to>';
+
+            sheetDrawingString += '<xdr:pic>';
+            sheetDrawingString += '<xdr:nvPicPr>';
+            sheetDrawingString += '<xdr:cNvPr id="' + imgId + '" name="Picture ' + imgId + '"> </xdr:cNvPr>';
+            sheetDrawingString += '<xdr:cNvPicPr><a:picLocks noChangeAspect="1"/></xdr:cNvPicPr> </xdr:nvPicPr>';
+            sheetDrawingString += '<xdr:blipFill>';
+            /* tslint:disable-next-line:max-line-length */
+            sheetDrawingString += '<a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId'+ imgId + '" cstate="print">';
+            sheetDrawingString += '</a:blip><a:stretch><a:fillRect /></a:stretch></xdr:blipFill>';
+            sheetDrawingString +=  '<xdr:spPr>';
+            sheetDrawingString += '<a:xfrm';
+            if (pic.rotation != undefined && pic.rotation <= 3600 && pic.rotation >= -3600) {
+              sheetDrawingString +=' rot="' + (pic.rotation * 60000) + '"';
+            }
+            if (pic.verticalFlip != undefined && pic.verticalFlip != false)
+            {
+                sheetDrawingString += ' flipV="1"';
+            }
+            if (pic.horizontalFlip != undefined && pic.horizontalFlip != false)
+            {
+                sheetDrawingString += ' flipH="1"';
+            }  
+            sheetDrawingString +=  '/>';
+            sheetDrawingString += '<a:prstGeom prst="rect"><a:avLst /></a:prstGeom></xdr:spPr>';
+            sheetDrawingString += '</xdr:pic><xdr:clientData /></xdr:twoCellAnchor>';            
+            let imageFile: BlobHelper = new BlobHelper();
+            let imageData:Blob = this.convertBase64toImage(pic.image);
+            this.imageCount += 1;
+            this.addToArchive(imageData, 'xl/media/image' + this.imageCount  + '.png');
+            }
+            drawings.append(sheetDrawingString);
+            drawings.append('</xdr:wsDr>');
+            this.saveDrawingRelations(sheet);
+            this.addToArchive(drawings.getBlob(), 'xl/drawings/drawing'+ this.drawingCount +'.xml');
+        }
+    }
+    private updatelastRowOffset(sheet : Worksheet, picture: Image) : void{
+        let iCurHeight = picture.height;
+        let iCurRow = picture.row;
+        let iCurOffset = 0;
+  
+        while( iCurHeight >= 0 )
+        {
+            let iRowHeight = 0;
+            if(sheet.rows !== undefined && sheet.rows[iCurRow - 1] !== undefined)
+            iRowHeight = this.convertToPixels(sheet.rows[iCurRow - 1].height === undefined? 15: sheet.rows[iCurRow - 1].height);
+            else
+            iRowHeight = this.convertToPixels(15);
+          let iSpaceInCell = iRowHeight - (iCurOffset * iRowHeight / 256);
+  
+          if( iSpaceInCell > iCurHeight )
+          {
+            picture.lastRow = iCurRow;
+            picture.lastRowOffset = iCurOffset + (iCurHeight * 256 / iRowHeight);
+            let rowHiddenHeight = 0;
+            if(sheet.rows !== undefined && sheet.rows[iCurRow - 1] !== undefined)
+            rowHiddenHeight = this.convertToPixels(sheet.rows[iCurRow - 1].height === undefined ? 15 :sheet.rows[iCurRow - 1].height );
+            else
+            rowHiddenHeight = this.convertToPixels(15);
+
+            picture.lastRowOffset = (rowHiddenHeight *  picture.lastRowOffset)/256;
+            picture.lastRowOffset = Math.round(picture.lastRowOffset / this.unitsProportions[7]);
+            break;
+          }
+          else
+          {
+            iCurHeight -= iSpaceInCell;
+            iCurRow++;
+            iCurOffset = 0;
+          }
+        }
+    }
+    private updatelastColumnOffSet(sheet : Worksheet, picture: Image) : void{
+        let iCurWidth = picture.width;
+        let iCurCol = picture.column;
+        let iCurOffset = 0;
+  
+        while( iCurWidth >= 0 )
+        {
+            let iColWidth = 0;
+            if(sheet.columns !== undefined && sheet.columns[iCurCol - 1] !== undefined)
+            iColWidth = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 :sheet.columns[iCurCol - 1].width );
+            else
+            iColWidth = this.ColumnWidthToPixels(8.43);
+          let iSpaceInCell = iColWidth - (iCurOffset * iColWidth / 1024);
+  
+          if( iSpaceInCell > iCurWidth )
+          {
+            picture.lastColumn = iCurCol;
+            picture.lastColOffset = iCurOffset + (iCurWidth * 1024 / iColWidth);
+            let colHiddenWidth = 0;
+            if(sheet.columns !== undefined && sheet.columns[iCurCol - 1] !== undefined)
+            colHiddenWidth = this.ColumnWidthToPixels(sheet.columns[iCurCol - 1].width === undefined ? 8.43 :sheet.columns[iCurCol].width );
+            else
+            colHiddenWidth = this.ColumnWidthToPixels(8.43);
+
+            picture.lastColOffset = (colHiddenWidth *  picture.lastColOffset)/1024;
+            picture.lastColOffset = Math.round(picture.lastColOffset / this.unitsProportions[7]);
+
+            break;
+          }
+          else
+          {
+            iCurWidth -= iSpaceInCell;
+            iCurCol++;
+            iCurOffset = 0;
+          }
+        }
+    }
+
+    private convertToPixels(value: number): number{
+        return value * this.unitsProportions[6];
+    }  
+    private convertBase64toImage(img: string) : Blob
+    {
+        const byteStr = window.atob(img);
+        const buffer = new ArrayBuffer(byteStr.length);
+        const data = new Uint8Array(buffer);
+        for (let i = 0; i < byteStr.length; i++) {
+            data[i] = byteStr.charCodeAt(i);
+        }
+        const blob = new Blob([data], { type: 'image/png' });    
+         return blob;
+    }
+    private saveDrawingRelations(sheet: Worksheet)
+    {
+        /* tslint:disable-next-line:max-line-length */
+        let drawingRelation: string = '<?xml version="1.0" encoding="utf-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">';
+        let length: number = sheet.images.length;
+        let id: number = this.imageCount - sheet.images.length;
+        for (let i: number = 1; i <= length; i++ ) {
+            id++;
+            /* tslint:disable-next-line:max-line-length */
+            drawingRelation += '<Relationship Id="rId' + i + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image' + id + '.png" />';
+        }
+
+        this.addToArchive((drawingRelation + '</Relationships>'), 'xl/drawings/_rels/drawing'+ this.drawingCount +'.xml.rels');
     }
     private pixelsToColumnWidth(pixels: number): number {
         let dDigitWidth: number = 7;
@@ -1195,6 +1436,13 @@ export class Workbook {
         return (val > 1) ?
             ((val * dDigitWidth + 5) / dDigitWidth * 256.0) / 256.0 :
             (val * (dDigitWidth + 5) / dDigitWidth * 256.0) / 256.0;
+    }
+    private ColumnWidthToPixels(val: number): number {
+        let dDigitWidth: number = 7;
+        let fileWidth = (val > 1) ?
+        ((val * dDigitWidth + 5) / dDigitWidth * 256.0) / 256.0 :
+        (val * (dDigitWidth + 5) / dDigitWidth * 256.0) / 256.0;
+        return  this.trunc( ( ( 256 * fileWidth + this.trunc( 128 / dDigitWidth ) ) / 256 ) * dDigitWidth );
     }
 
     private trunc(x: number): number {
@@ -1211,6 +1459,11 @@ export class Workbook {
         for (let hLink of sheet.hyperLinks) {
             /* tslint:disable-next-line:max-line-length */
             relStr += '<Relationship Id="rId' + hLink.rId + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="' + hLink.target + '" TargetMode="External" />';
+        }
+        if(sheet.images != undefined && sheet.images.length > 0)
+        {
+            /* tslint:disable-next-line:max-line-length */
+            relStr +=  '<Relationship Id="rId'+ (sheet.hyperLinks.length + 1) +'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing'+ this.drawingCount +'.xml" />'
         }
         relStr += '</Relationships>';
         return relStr;
@@ -1589,7 +1842,13 @@ export class Workbook {
         for (let i: number = 0; i < length; i++) {
             /* tslint:disable-next-line:max-line-length */
             sheetsOverride += '<Override PartName="/xl/worksheets/sheet' + (i + 1).toString() + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml" />';
+            if(this.worksheets[i].images != undefined && this.worksheets[i].images.length > 0){
+                /* tslint:disable-next-line:max-line-length */
+                sheetsOverride += '<Override PartName="/xl/drawings/drawing' + (i + 1).toString() + '.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml" />';                
+            }            
         }
+        if(this.imageCount > 0)
+          sheetsOverride += '<Default Extension="png" ContentType="image/png" />';
         if (this.sharedStringCount > 0) {
             /* tslint:disable-next-line:max-line-length */
             contentTypeString += '<Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml" />';

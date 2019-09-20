@@ -2,6 +2,8 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel, TextModel, PathModel } from '../../../src/diagram/objects/node-model';
 import { ConnectorModel, BpmnFlowModel, ConnectorShapeModel } from '../../../src/diagram/objects/connector-model';
+import { Connector } from '../../../src/diagram/objects/connector';
+import { PortVisibility } from '../../../src/diagram/enum/enum';
 import { Point } from '../../../src/diagram/primitives/point';
 import { Segments, AnnotationConstraints, ConnectorConstraints } from '../../../src/diagram/enum/enum';
 import { TextStyle } from '../../../src/diagram/core/appearance';
@@ -238,4 +240,69 @@ describe('Diagram Control', () => {
         })
     });
 
+    describe('Connetor property change ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagram8' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1', width: 100, height: 60, offsetX: 100, offsetY: 100,
+                    ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                    { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                },
+                {
+                    id: 'node2', width: 100, offsetX: 300, offsetY: 100, ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                    { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                },
+                {
+                    id: 'node3', width: 100, offsetX: 500, offsetY: 250, ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                    { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                },
+                {
+                    id: 'node8', width: 100, offsetX: 700, offsetY: 300, ports: [{ id: 'port1', offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port2', offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Visible },
+                    { id: 'port3', offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Visible },
+                    { id: 'port4', offset: { x: 0.5, y: 1 }, visibility: PortVisibility.Visible },
+                    ]
+                }]
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'Connector1',
+                    sourceID: 'node2', type: 'Orthogonal',
+                    targetID: 'node8', sourcePortID: 'port1', targetPortID: 'port1'
+                }
+            ];
+
+            diagram = new Diagram({
+                width: 800, height: 400, nodes: nodes, connectors: connectors
+            });
+            diagram.appendTo('#diagram8');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking connector source node and target node id change and same port does not be changed', (done: Function) => {
+            console.log('Checking connector source node and target node id change and same port does not be changed');
+            diagram.connectors[0].sourceID = 'node3';
+            diagram.connectors[0].targetID = 'node1';
+            diagram.dataBind();
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==450&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==250&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==30&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==250&&(diagram.connectors[0] as Connector).intermediatePoints[2].x ==30&&(diagram.connectors[0] as Connector).intermediatePoints[2].y ==100&&(diagram.connectors[0] as Connector).intermediatePoints[3].x ==50&&(diagram.connectors[0] as Connector).intermediatePoints[3].y ==100).toBe(true);
+            done();
+        });
+    });
 });

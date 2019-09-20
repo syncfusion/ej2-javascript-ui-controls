@@ -1,6 +1,6 @@
 ﻿import { Base, Event, getUniqueID, NotifyPropertyChanges, INotifyPropertyChanged, Property  } from '@syncfusion/ej2-base';
 import { closest, Draggable, DragPosition, MouseEventArgs, remove, compareElementParent } from '@syncfusion/ej2-base';
-import { addClass, isNullOrUndefined, getComponent } from '@syncfusion/ej2-base';
+import { addClass, isNullOrUndefined, getComponent, isBlazor, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { SortableModel } from './sortable-model';
 
 /**
@@ -212,11 +212,16 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     private getSortableElement(element: HTMLElement, instance: Sortable = this): HTMLElement {
         return closest(element, `.${instance.itemClass}`) as HTMLElement;
     }
-    private onDragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
+    private onDragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         this.target = this.getSortableElement(e.target);
         this.target.classList.add('e-grabbed');
         this.curTarget =  this.target;
-        this.trigger('dragStart', { event: e.event, element: this.element, target: this.target });
+        if (isBlazor) {
+            this.trigger('dragStart', { event: e.event, element: this.element, target: this.target,
+                bindEvents: e.bindEvents, dragElement: e.dragElement });
+        } else {
+            this.trigger('dragStart', { event: e.event, element: this.element, target: this.target });
+        }
     }
     private queryPositionInfo(value: DragPosition): DragPosition {
         value.left = pageXOffset ? `${parseFloat(value.left) - pageXOffset}px` : value.left;

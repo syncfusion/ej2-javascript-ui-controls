@@ -3,6 +3,7 @@ import { ConnectorModel, OrthogonalSegmentModel } from '../objects/connector-mod
 import { Connector } from '../objects/connector';
 import { PointModel } from '../primitives/point-model';
 import { NodeModel } from '../objects/node-model';
+import { Node } from '../objects/node';
 import { Rect } from '../primitives/rect';
 import { getPortDirection } from '../utility/connector';
 import { Direction } from '../enum/enum';
@@ -51,8 +52,8 @@ export class LineRouting {
         /* tslint:disable */
         let right: number = diagram.spatialSearch['pageRight'] + this.size;
         let bottom: number = diagram.spatialSearch['pageBottom'] + this.size;
-        let left: number = diagram.spatialSearch['pageLeft'];
-        let top: number = diagram.spatialSearch['pageTop'];
+        let left: number = diagram.spatialSearch['pageLeft'] - this.size;
+        let top: number = diagram.spatialSearch['pageTop'] - this.size;
         left = left < 0 ? left - 20 : 0;
         top = top < 0 ? top - 20 : 0;
         /* tslint:enable */
@@ -83,7 +84,19 @@ export class LineRouting {
                 y += size;
             }
         }
-        this.updateNodesInVirtualRegion(diagram.nodes);
+        let nodes: NodeModel[] = this.findNodes(diagram.nodes);
+        this.updateNodesInVirtualRegion(nodes);
+    }
+
+    private findNodes(nodes: NodeModel[]): NodeModel[] {
+        let objects: NodeModel[] = []; let node: Node;
+        for (let i: number = 0; i < nodes.length; i++) {
+            node = nodes[i] as Node;
+            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader) {
+                objects.push(node);
+            }
+        }
+        return objects;
     }
 
     private updateNodesInVirtualRegion(diagramNodes: NodeModel[]): void {
@@ -136,8 +149,8 @@ export class LineRouting {
             }
         } else {
             if ((isSource && this.startNode) || (!isSource && this.targetNode)) {
-                endPoint = (isSource) ? { x: this.startNode.offsetX, y: this.startNode.offsetY } :
-                    { x: this.targetNode.offsetX, y: this.targetNode.offsetY };
+                endPoint = (isSource) ? { x: this.startNode.wrapper.offsetX, y: this.startNode.wrapper.offsetY } :
+                    { x: this.targetNode.wrapper.offsetX, y: this.targetNode.wrapper.offsetY };
             } else {
                 endPoint = (isSource) ? { x: connector.sourcePoint.x, y: connector.sourcePoint.y } :
                     { x: connector.targetPoint.x, y: connector.targetPoint.y };
@@ -173,11 +186,13 @@ export class LineRouting {
                 for (let j: number = 0; j < this.noOfCols; j++) {
                     grid = this.gridCollection[i][j];
                     let rectangle: Rect = new Rect(grid.x, grid.y, grid.width, grid.height);
-                    if (rectangle.containsPoint(startPoint) && !this.startGrid) {
+                    if (rectangle.containsPoint(startPoint) && !this.startGrid &&
+                        (grid.nodeId.indexOf(sourceId) !== -1 || sourceId === '')) {
                         this.startGrid = (sourcePortID && this.startGrid &&
                             (sourcePortDirection === 'Left' || sourcePortDirection === 'Top')) ? this.startGrid : grid;
                     }
-                    if (rectangle.containsPoint(targetPoint) && !this.targetGrid) {
+                    if (rectangle.containsPoint(targetPoint) && !this.targetGrid &&
+                        (grid.nodeId.indexOf(targetId) !== -1 || targetId === '')) {
                         this.targetGrid = (targetPortID && this.targetGrid &&
                             (targetPortDirection === 'Left' || targetPortDirection === 'Top')) ? this.targetGrid : grid;
                     }
@@ -201,37 +216,11 @@ export class LineRouting {
                     }
                 }
             }
-            if (!sourcePortID && this.startNode) {
-                for (let i: number = sourceLeft.gridX; i <= sourceRight.gridX; i++) {
-                    grid = this.gridCollection[i][sourceLeft.gridY];
-                    if (grid.nodeId.length === 1) { this.sourceGridCollection.push(grid); }
-                }
-                for (let i: number = sourceTop.gridY; i <= sourceBottom.gridY; i++) {
-                    grid = this.gridCollection[sourceTop.gridX][i];
-                    if (grid.nodeId.length === 1 && this.sourceGridCollection.indexOf(grid) === -1) {
-                        this.sourceGridCollection.push(grid);
-                    }
-                }
-            } else { this.sourceGridCollection.push(this.startGrid); }
-            if (!targetPortID && this.targetNode) {
-                for (let i: number = targetLeft.gridX; i <= targetRight.gridX; i++) {
-                    grid = this.gridCollection[i][targetLeft.gridY];
-                    if (grid.nodeId.length === 1) { this.targetGridCollection.push(grid); }
-                }
-                for (let i: number = targetTop.gridY; i <= targetBottom.gridY; i++) {
-                    grid = this.gridCollection[targetTop.gridX][i];
-                    if (grid.nodeId.length === 1 && this.targetGridCollection.indexOf(grid) === -1) {
-                        this.targetGridCollection.push(grid);
-                    }
-                }
-                if (this.targetGridCollection.indexOf(this.targetGrid) === -1) {
-                    if (this.targetGrid.nodeId.length > 1 && this.targetGridCollection.length === 1) {
-                        this.targetGrid = this.targetGridCollection[0];
-                    }
-                }
-            } else { this.targetGridCollection.push(this.targetGrid); }
+            this.findEdgeBoundary(sourcePortID, sourceLeft, sourceRight, sourceTop, sourceBottom, true);
+            this.findEdgeBoundary(targetPortID, targetLeft, targetRight, targetTop, targetBottom, false);
             this.startGrid.totalDistance = 0; this.startGrid.previousDistance = 0;
             this.intermediatePoints.push({ x: this.startGrid.gridX, y: this.startGrid.gridY }); this.startArray.push(this.startGrid);
+            this.checkObstacles(connector);
             renderPathElement: while (this.startArray.length > 0) {
                 let startGridNode: VirtualBoundaries = this.startArray.pop();
                 for (let i: number = 0; i < this.targetGridCollection.length; i++) {
@@ -250,6 +239,78 @@ export class LineRouting {
         }
     }
 
+    private findEdgeBoundary(
+        portID: string, left: VirtualBoundaries, right: VirtualBoundaries,
+        top: VirtualBoundaries, bottom: VirtualBoundaries, isSource?: boolean): void {
+
+        let grid: VirtualBoundaries;
+        let collection: VirtualBoundaries[] = (isSource) ? this.sourceGridCollection : this.targetGridCollection;
+
+        if (!portID && ((isSource) ? this.startNode : this.targetNode)) {
+            for (let i: number = left.gridX; i <= right.gridX; i++) {
+                grid = this.gridCollection[i][left.gridY];
+                if ((grid.nodeId.length === 1 && (i === left.gridX || i === right.gridX)) ||
+                    (i !== left.gridX && i !== right.gridX)) {
+                    collection.push(grid);
+                }
+            }
+            for (let i: number = top.gridY; i <= bottom.gridY; i++) {
+                grid = this.gridCollection[top.gridX][i];
+                if (((grid.nodeId.length === 1 && (i === top.gridY || i === bottom.gridY)) ||
+                    (i !== top.gridY && i !== bottom.gridY)) && collection.indexOf(grid) === -1) {
+                    collection.push(grid);
+                }
+            }
+        } else {
+            collection.push((isSource) ? this.startGrid : this.targetGrid);
+        }
+    }
+
+    private checkObstacles(connector: Connector): void {
+        let neigbours: VirtualBoundaries[] = this.findNearestNeigbours(this.startGrid, this.gridCollection, true);
+        if (neigbours.length === 0) {
+            if (connector.sourcePortID !== '') {
+                let endPoint: PointModel = { x: connector.sourcePortWrapper.offsetX, y: connector.sourcePortWrapper.offsetY };
+                let portDirection: Direction = getPortDirection(endPoint, undefined, connector.sourceWrapper.bounds, false);
+                if (portDirection === 'Top') {
+                    this.resetGridColl(this.startGrid, 'top', true);
+                } else if (portDirection === 'Right') {
+                    this.resetGridColl(this.startGrid, 'right', true);
+                } else if (portDirection === 'Bottom') {
+                    this.resetGridColl(this.startGrid, 'bottom', true);
+                } else {
+                    this.resetGridColl(this.startGrid, 'left', true);
+                }
+            } else {
+                this.resetGridColl(this.startGrid, 'top', true);
+                this.resetGridColl(this.startGrid, 'right', true);
+                this.resetGridColl(this.startGrid, 'bottom', true);
+                this.resetGridColl(this.startGrid, 'left', true);
+            }
+        }
+        neigbours = this.findNearestNeigbours(this.targetGrid, this.gridCollection, false);
+        if (neigbours.length === 0) {
+            if (connector.targetPortID !== '') {
+                let endPoint: PointModel = { x: connector.targetPortWrapper.offsetX, y: connector.targetPortWrapper.offsetY };
+                let portDirection: Direction = getPortDirection(endPoint, undefined, connector.targetWrapper.bounds, false);
+                if (portDirection === 'Top') {
+                    this.resetGridColl(this.targetGrid, 'top', true);
+                } else if (portDirection === 'Right') {
+                    this.resetGridColl(this.targetGrid, 'right', true);
+                } else if (portDirection === 'Bottom') {
+                    this.resetGridColl(this.targetGrid, 'bottom', true);
+                } else {
+                    this.resetGridColl(this.targetGrid, 'left', true);
+                }
+            } else {
+                this.resetGridColl(this.targetGrid, 'top', false);
+                this.resetGridColl(this.targetGrid, 'right', false);
+                this.resetGridColl(this.targetGrid, 'bottom', false);
+                this.resetGridColl(this.targetGrid, 'left', false);
+            }
+        }
+    }
+
     // Get all the intermediated points from target grid
     private getIntermediatePoints(target: VirtualBoundaries): void {
         let distance: number; this.intermediatePoints = [];
@@ -260,18 +321,18 @@ export class LineRouting {
         this.intermediatePoints.reverse();
         if (this.intermediatePoints[0].x === this.intermediatePoints[1].x) {
             if (this.intermediatePoints[0].y < this.intermediatePoints[1].y) {
-                distance = this.neigbour(this.startGrid, 'bottom', undefined);
+                distance = this.neigbour(this.startGrid, 'bottom', undefined, true);
                 this.intermediatePoints[0].y += distance - 1;
             } else {
-                distance = this.neigbour(this.startGrid, 'top', undefined);
+                distance = this.neigbour(this.startGrid, 'top', undefined, true);
                 this.intermediatePoints[0].y -= distance - 1;
             }
         } else {
             if (this.intermediatePoints[0].x < this.intermediatePoints[1].x) {
-                distance = this.neigbour(this.startGrid, 'right', undefined);
+                distance = this.neigbour(this.startGrid, 'right', undefined, true);
                 this.intermediatePoints[0].x += distance - 1;
             } else {
-                distance = this.neigbour(this.startGrid, 'left', undefined);
+                distance = this.neigbour(this.startGrid, 'left', undefined, true);
                 this.intermediatePoints[0].x -= distance - 1;
             }
         }
@@ -376,7 +437,7 @@ export class LineRouting {
     // Shortest path
     private findPath(startGrid: VirtualBoundaries): void {
         let intermediatePoint: PointModel; let collection: PointModel[] = [];
-        let neigbours: VirtualBoundaries[] = this.findNearestNeigbours(startGrid, this.gridCollection);
+        let neigbours: VirtualBoundaries[] = this.findNearestNeigbours(startGrid, this.gridCollection, true);
         for (let i: number = 0; i < neigbours.length; i++) {
             intermediatePoint = this.findIntermediatePoints(
                 neigbours[i].gridX, neigbours[i].gridY, startGrid.gridX, startGrid.gridY, this.targetGrid.gridX, this.targetGrid.gridY);
@@ -434,7 +495,8 @@ export class LineRouting {
     }
 
     // Find the nearest neigbour from the current boundaries, the neigbour is use to find next intermdiate point.
-    private findNearestNeigbours(startGrid: VirtualBoundaries, gridCollection: VirtualBoundaries[][]): VirtualBoundaries[] {
+    private findNearestNeigbours(
+        startGrid: VirtualBoundaries, gridCollection: VirtualBoundaries[][], isSource: boolean): VirtualBoundaries[] {
         let neigbours: VirtualBoundaries[] = []; let parent: VirtualBoundaries = startGrid.parent;
         if (parent) {
             let dx: number = (startGrid.gridX - parent.gridX) / Math.max(Math.abs(startGrid.gridX - parent.gridX), 1);
@@ -467,14 +529,14 @@ export class LineRouting {
                 }
             }
         } else {
-            this.neigbour(startGrid, 'top', neigbours);
-            this.neigbour(startGrid, 'right', neigbours);
-            this.neigbour(startGrid, 'bottom', neigbours);
-            this.neigbour(startGrid, 'left', neigbours);
+            this.neigbour(startGrid, 'top', neigbours, isSource);
+            this.neigbour(startGrid, 'right', neigbours, isSource);
+            this.neigbour(startGrid, 'bottom', neigbours, isSource);
+            this.neigbour(startGrid, 'left', neigbours, isSource);
         }
         return neigbours;
     }
-    private neigbour(startGrid: VirtualBoundaries, direction: string, neigbours: VirtualBoundaries[]): number {
+    private neigbour(startGrid: VirtualBoundaries, direction: string, neigbours: VirtualBoundaries[], isSource: boolean): number {
         let i: number = 1; let nearGrid: VirtualBoundaries;
         while (i > 0) {
             let x: number = (direction === 'top' || direction === 'bottom') ?
@@ -482,7 +544,8 @@ export class LineRouting {
             let y: number = (direction === 'right' || direction === 'left') ?
                 (startGrid.gridY) : ((direction === 'top') ? startGrid.gridY - i : startGrid.gridY + i);
             nearGrid = this.gridCollection[x][y];
-            if (nearGrid && this.sourceGridCollection.indexOf(nearGrid) === -1) {
+            if (nearGrid && ((isSource && this.sourceGridCollection.indexOf(nearGrid) === -1)
+                || (!isSource && this.targetGridCollection.indexOf(nearGrid) === -1))) {
                 if (neigbours && this.isWalkable(x, y)) {
                     neigbours.push(nearGrid);
                 }
@@ -496,6 +559,34 @@ export class LineRouting {
         }
         return null;
     }
+
+    private resetGridColl(grid: VirtualBoundaries, direction: string, isSource: boolean): number {
+        let i: number = 1; let nearGrid: VirtualBoundaries;
+        while (i > 0) {
+            let x: number = (direction === 'top' || direction === 'bottom') ?
+                (grid.gridX) : ((direction === 'left') ? grid.gridX - i : grid.gridX + i);
+            let y: number = (direction === 'right' || direction === 'left') ?
+                (grid.gridY) : ((direction === 'top') ? grid.gridY - i : grid.gridY + i);
+            nearGrid = this.gridCollection[x][y];
+            if (nearGrid && ((isSource && this.sourceGridCollection.indexOf(nearGrid) === -1) ||
+                (!isSource && this.targetGridCollection.indexOf(nearGrid) === -1))) {
+                if (this.isWalkable(x, y)) {
+                    break;
+                } else {
+                    let grid: VirtualBoundaries = this.gridCollection[x][y];
+                    grid.nodeId = [];
+                    grid.walkable = true;
+                }
+            }
+            if (x > 0 && y > 0) {
+                i++;
+            } else {
+                break;
+            }
+        }
+        return null;
+    }
+
     private isWalkable(x: number, y: number, isparent?: boolean): boolean {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
             let grid: VirtualBoundaries = this.gridCollection[x][y];

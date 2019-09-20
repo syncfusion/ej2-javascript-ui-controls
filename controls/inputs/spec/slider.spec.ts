@@ -113,6 +113,35 @@ describe('Slider Control', () => {
             expect(document.getElementById('slider').querySelectorAll('.e-range').length).toBe(1);
             expect(document.getElementById('slider').querySelectorAll(".e-handle").length).toBe(2);
         });
+        it('SliderTrack Color With Horizantal Orientation And Enable RTL', () => {
+            slider = new Slider({ colorRange:[{color:"red",start:20,end:30}],orientation:"Horizontal",enableRtl:true});
+            slider.appendTo('#slider');
+            expect(document.getElementById('slider').querySelectorAll('.e-slider-horizantal-color').length).toBe(1);
+        });
+
+        it('SliderTrack Color With Horizantal Orientation', () => {
+            slider = new Slider({ colorRange:[{color:"red",start:20,end:30}],orientation:"Horizontal"});
+            slider.appendTo('#slider');
+            expect(document.getElementById('slider').querySelectorAll('.e-slider-horizantal-color').length).toBe(1);
+        });
+
+        it('SliderTrack Color With Vertical Orientation', () => {
+            slider = new Slider({ colorRange:[{color:"red",start:20,end:30}],orientation:"Vertical",enableRtl:true});
+            slider.appendTo('#slider');
+            expect(document.getElementById('slider').querySelectorAll('.e-slider-vertical-color').length).toBe(1);
+        });
+
+        it('SliderTrack Color With Custom Value', () => {
+            slider = new Slider({ colorRange:[{color:"red",start:2,end:3}], customValues:[20,30,40,70,80],enableRtl:true});
+            slider.appendTo('#slider');
+            expect(document.getElementById('slider').querySelectorAll('.e-slider-horizantal-color').length).toBe(1);
+        });
+
+        it('SliderTrack Color With Minimum Start Value and Maximum End Value', () => {
+            slider = new Slider({ colorRange:[{color:"red",start:-10,end:101}]});
+            slider.appendTo('#slider');
+            expect(document.getElementById('slider').querySelectorAll('.e-slider-horizantal-color').length).toBe(1);
+        });
 
         it('Slider with customvalue value testing', () => {
             let eventArgs: any;

@@ -10,6 +10,11 @@ export class MouseEvents {
     public rightClick(element: Element, x: number, y: number, type: string, no: number, gauge: CircularGauge): void {
         gauge.gaugeRightClick(<PointerEvent>this.onPointerLeave(element, x, y, 20, type, no));
     }
+    public clickEvent(element: Element): void {
+        let click: Event = document.createEvent('MouseEvent');
+        click.initEvent('click', true, false);
+        element.dispatchEvent(click);
+    }
     public mousemoveEvent(element: Element, sx: number, sy: number, cx: number, cy: number): void {
         let mousemove: MouseEvent = document.createEvent('MouseEvent');
         mousemove.initMouseEvent('mousemove', true, false, window, 1, sx, sy, cx, cy, false, false, false, false, 0, null);

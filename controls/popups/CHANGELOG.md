@@ -16,7 +16,7 @@
 
 #### Bug Fixes
 
-- `#144624` - Resolved the issue with resizing when rendering a grid inside a dialog.
+- #144624 - Resolved the issue with resizing when rendering a grid inside a dialog.
 
 ## 17.1.47 (2019-05-14)
 

@@ -7,7 +7,7 @@ import { UploaderModel, AsyncSettingsModel, ButtonsPropsModel, FilesPropModel } 
 import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 
 const ROOT: string =  'e-uploader';
-const CONTROL_WRAPPER: string = 'e-upload';
+const CONTROL_WRAPPER: string = 'e-upload e-control-wrapper';
 const INPUT_WRAPPER: string = 'e-file-select';
 const DROP_AREA: string = 'e-file-drop';
 const DROP_WRAPPER: string = 'e-file-select-wrap';
@@ -225,6 +225,23 @@ export interface SelectedEventArgs {
     customFormData: { [key: string]: Object }[];
 }
 
+export interface BeforeRemoveEventArgs {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Defines the additional data with key and value pair format that will be submitted to the remove action.
+     * @blazorType object
+     */
+    customFormData: { [key: string]: Object }[];
+    /**
+     * Returns the XMLHttpRequest instance that is associated with remove action.
+     * @blazorType object
+     */
+    currentRequest?: { [key: string]: string }[];
+}
+
 export interface RemovingEventArgs {
     /**
      * Defines whether the current action can be prevented.
@@ -232,6 +249,7 @@ export interface RemovingEventArgs {
     cancel: boolean;
     /**
      * Defines the additional data with key and value pair format that will be submitted to the remove action.
+     * @blazorType object
      */
     customFormData: { [key: string]: Object }[];
     /**
@@ -244,6 +262,7 @@ export interface RemovingEventArgs {
     filesData: FileInfo[];
     /**
      * Returns the XMLHttpRequest instance that is associated with remove action.
+     * @blazorType object
      */
     currentRequest?: XMLHttpRequest;
     /**
@@ -263,6 +282,19 @@ export interface ClearingEventArgs {
      * Returns the list of files that will be cleared from the FileList.
      */
     filesData: FileInfo[];
+}
+
+export interface BeforeUploadEventArgs {
+    /**
+     * Defines the additional data in key and value pair format that will be submitted to the upload action.
+     * @blazorType object
+     */
+    customFormData: { [key: string]: Object }[];
+    /**
+     * Returns the XMLHttpRequest instance that is associated with upload action.
+     * @blazorType object
+     */
+    currentRequest?: { [key: string]: string }[];
 }
 
 export interface UploadingEventArgs {
@@ -357,7 +389,7 @@ export interface SuccessEventArgs {
     event?: object;
 }
 
-interface ResponseEventArgs {
+export interface ResponseEventArgs {
     headers?: string;
     readyState?: object;
     statusCode?: object;
@@ -682,6 +714,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public rendering: EmitType<RenderingEventArgs>;
 
     /**
+     * Triggers when the upload process before. This event is used to add additional parameter with upload request.
+     * @event
+     * @blazorProperty 'BeforeUpload'
+     */
+    @Event()
+    public beforeUpload: EmitType<UploadingEventArgs>;
+
+    /**
      * Triggers before rendering each file item from the file list in a page.
      * It helps to customize specific file item structure.
      * @event
@@ -779,6 +819,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     @Event()
     public removing: EmitType<RemovingEventArgs>;
+
+    /**
+     * Triggers on remove the uploaded file. The event used to get confirm before remove the file from server.
+     * @event
+     * @blazorProperty 'BeforeRemove'
+     */
+    @Event()
+    public beforeRemove: EmitType<RemovingEventArgs>;
 
     /**
      * Triggers before clearing the items in file list when clicking “clear”.
@@ -1665,6 +1713,14 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let formData: FormData = new FormData();
         ajax.beforeSend = (e: BeforeSendEventArgs) => {
             eventArgs.currentRequest = ajax.httpRequest;
+            if (isBlazor()) {
+                if (this.currentRequestHeader) {
+                    this.updateCustomheader(ajax.httpRequest, this.currentRequestHeader);
+                }
+                if (this.customFormDatas) {
+                    this.updateFormData(formData, this.customFormDatas);
+                }
+            }
             if (!removeDirectly) {
                 this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
                     if (eventArgs.cancel) {
@@ -3170,7 +3226,17 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public upload(files?: FileInfo | FileInfo[], custom?: boolean): void {
         files = files ? files : this.filesData;
         let uploadFiles: FileInfo[] = this.validateFileType(files);
-        this.uploadFiles(uploadFiles, custom);
+        let eventArgs: BeforeUploadEventArgs = {
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeUpload', eventArgs, (eventArgs: BeforeUploadEventArgs) => {
+            if (isBlazor()) {
+                this.currentRequestHeader = eventArgs.currentRequest;
+                this.customFormDatas = eventArgs.customFormData;
+            }
+            this.uploadFiles(uploadFiles, custom);
+        });
     }
     private validateFileType(files: FileInfo | FileInfo[]):  FileInfo[] {
         let  uploadFiles:  FileInfo[]  =  [];
@@ -3285,52 +3351,66 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             cancel: false,
             filesData: [],
             customFormData: [],
-            postRawFile: postRawFile
+            postRawFile: postRawFile,
+            currentRequest: null
         };
-        let index: number;
-        if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
-            eventArgs.filesData = this.getFilesData();
-            this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
-                if (!eventArgs.cancel) {
-                    this.clearAll();
+        let beforeEventArgs: BeforeRemoveEventArgs = {
+            cancel: false,
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeRemove', beforeEventArgs, (beforeEventArgs: BeforeRemoveEventArgs) => {
+            if (!beforeEventArgs.cancel) {
+                if (isBlazor()) {
+                    this.currentRequestHeader = beforeEventArgs.currentRequest;
+                    this.customFormDatas = beforeEventArgs.customFormData;
                 }
-            });
-        } else {
-            let removeFiles: FileInfo[] = [];
-            fileData = !isNullOrUndefined(fileData) ? fileData : this.filesData;
-            if (fileData instanceof Array) {
-                removeFiles = fileData;
-            } else {
-                removeFiles.push(fileData);
-            }
-            eventArgs.filesData = removeFiles;
-            let removeUrl: string = this.asyncSettings.removeUrl;
-            let validUrl: boolean = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
-            for (let files of removeFiles) {
-                index = this.filesData.indexOf(files);
-                if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
-                    this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                let index: number;
+                if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
+                    eventArgs.filesData = this.getFilesData();
+                    this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
+                        if (!eventArgs.cancel) {
+                            this.clearAll();
+                        }
+                    });
                 } else {
-                    if (!removeDirectly) {
-                        this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
-                            if (!eventArgs.cancel) {
+                    let removeFiles: FileInfo[] = [];
+                    fileData = !isNullOrUndefined(fileData) ? fileData : this.filesData;
+                    if (fileData instanceof Array) {
+                        removeFiles = fileData;
+                    } else {
+                        removeFiles.push(fileData);
+                    }
+                    eventArgs.filesData = removeFiles;
+                    let removeUrl: string = this.asyncSettings.removeUrl;
+                    let validUrl: boolean = (removeUrl === '' || isNullOrUndefined(removeUrl)) ? false : true;
+                    for (let files of removeFiles) {
+                        index = this.filesData.indexOf(files);
+                        if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
+                            this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                        } else {
+                            if (!removeDirectly) {
+                                this.trigger('removing', eventArgs, (eventArgs: RemovingEventArgs) => {
+                                    if (!eventArgs.cancel) {
+                                        this.removeFilesData(files, customTemplate);
+                                    }
+                                });
+                            } else {
                                 this.removeFilesData(files, customTemplate);
                             }
-                        });
-                    } else {
-                        this.removeFilesData(files, customTemplate);
+                        }
+                        if (this.sequentialUpload) {
+                            /* istanbul ignore next */
+                            if (index <= this.actionCompleteCount) {
+                                this.checkActionComplete(false);
+                            }
+                        } else {
+                            this.checkActionComplete(false);
+                        }
                     }
-                }
-                if (this.sequentialUpload) {
-                    /* istanbul ignore next */
-                    if (index <= this.actionCompleteCount) {
-                        this.checkActionComplete(false);
-                    }
-                } else {
-                    this.checkActionComplete(false);
                 }
             }
-        }
+        });
     }
 
     /**

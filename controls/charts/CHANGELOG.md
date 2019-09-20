@@ -2,15 +2,25 @@
 
 ## [Unreleased]
 
-## 17.2.49 (2019-09-04)
+## 17.3.9-beta (2019-09-20)
 
-### RangeNavigator
+### Accumulation Chart
 
-#### Bug Fixes
+#### New Features
 
-`#246533` - Misposition of range navigator tooltip while resizing fixed
+- Border support have been provided for doughnut and pie while hovering.
+- Options have been provided to rotate data labels.
 
-## 17.2.47 (2019-08-27)
+### Chart
+
+#### New Features
+
+- Options provided to customize the series tooltip format separately.
+- Multi-select options have been provided to allow users to select multiple regions in a chart.
+- Lasso select options have been provided to allow users to select a region by drawing freehand shapes.
+- Options have been provided to rotate data labels.
+
+## 17.2.48-beta (2019-08-28)
 
 ### Chart
 

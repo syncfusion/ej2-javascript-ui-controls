@@ -1,6 +1,6 @@
 import { Sparkline, ITooltipRenderingEventArgs } from '../index';
 import { SparkValues, PathOption, drawPath, getIdElement, Rect, withInBounds } from '../utils/helper';
-import { Browser, extend, isNullOrUndefined, remove, createElement, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, extend, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
 import { TrackLineSettingsModel, SparklineTooltipSettingsModel } from '../model/base-model';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 /**
@@ -186,11 +186,11 @@ export class SparklineTooltip {
             shared: false,
             availableSize: this.sparkline.availableSize,
             areaBounds: new Rect(0, 0, spark.availableSize.width, spark.availableSize.height),
-            theme: spark.theme
+            theme: spark.theme,
+            blazorTemplate: { name: 'TooltipTemplate', parent: spark.tooltipSettings }
         });
         element.opacity = spark.sparkTheme.tooltipFillOpacity || element.opacity;
         element.appendTo(div as HTMLElement);
-        updateBlazorTemplate(div.id + 'Template', 'Template');
     }
     /**
      * To get tooltip format.

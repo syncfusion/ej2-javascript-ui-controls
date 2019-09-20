@@ -1,6 +1,6 @@
 @include export-module('maskedit-theme') {
   /*! maskedtextbox theme */
-  .e-widget.e-control-wrapper.e-mask.e-error #{&}.e-maskedtextbox {
+  .e-control-wrapper.e-mask.e-error #{&}.e-maskedtextbox {
     @if $skin-name != 'bootstrap' {
       color: $mask-error-color;
       }

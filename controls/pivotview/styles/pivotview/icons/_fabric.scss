@@ -104,6 +104,22 @@
     content: '\e70c';
   }
 
+  .e-pivotview-png-export::before {
+    content: '\e715';
+  }
+
+  .e-pivotview-jpeg-export::before {
+    content: '\e713';
+  }
+
+  .e-pivotview-svg-export::before {
+    content: '\e720';
+  }
+
+  .e-mdx::before {
+    content: '\e724';
+  }
+
   .e-pivotview-select-icon::before {
     content: '\e614';
   }
@@ -138,5 +154,11 @@
 
   .e-pivot-format-toolbar::before {
     content: '\e70b';
+  }
+
+  #{&}.e-level-options {
+    .e-selected-level-icon::before {
+      content: '\e614';
+    }
   }
 }

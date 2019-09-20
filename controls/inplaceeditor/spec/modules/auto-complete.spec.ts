@@ -29,7 +29,10 @@ describe('AutoComplete module', () => {
             editorObj = renderEditor({
                 mode: 'Inline',
                 type: 'AutoComplete',
-                value: 'test'
+                value: 'test',
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -50,6 +53,9 @@ describe('AutoComplete module', () => {
         it('Clear icon availability testing', () => {
             expect(editorObj.atcModule.compObj.showClearButton).toBe(true);
             expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('remove icon availability testing false', () => {
             editorObj.atcModule.compObj.showClearButton = false;
@@ -605,7 +611,7 @@ describe('AutoComplete module', () => {
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -661,7 +667,7 @@ describe('AutoComplete module', () => {
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -717,7 +723,7 @@ describe('AutoComplete module', () => {
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -773,7 +779,7 @@ describe('AutoComplete module', () => {
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -816,7 +822,7 @@ describe('AutoComplete module', () => {
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -842,7 +848,7 @@ describe('AutoComplete module', () => {
             expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('Basketball');
             editorObj.save();
             expect(editorObj.value).toEqual('game2');
-            expect(serverValue).toEqual('Basketball');
+            expect(serverValue).toEqual('game2');
             expect(valueEle.innerHTML).toEqual('Basketball');
         });
     });

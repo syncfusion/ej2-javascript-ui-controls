@@ -28,6 +28,11 @@ export function getWeekFirstDate(date1: Date, firstDayOfWeek: number): Date {
     firstDayOfWeek = (firstDayOfWeek - date.getDay() + 7 * (-1)) % 7;
     return new Date(date.setDate(date.getDate() + firstDayOfWeek));
 }
+export function getWeekLastDate(date: Date, firstDayOfWeek: number): Date {
+    let weekFirst: Date = getWeekFirstDate(date, firstDayOfWeek);
+    let weekLast: Date = new Date(weekFirst.getFullYear(), weekFirst.getMonth(), weekFirst.getDate() + 6);
+    return new Date(weekLast.getTime());
+}
 export function firstDateOfMonth(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth());
 }
@@ -138,7 +143,7 @@ export function getOuterHeight(element: HTMLElement): number {
 }
 
 export function removeChildren(element: HTMLElement | Element): void {
-    while (element.firstElementChild) {
+    while (element.firstElementChild && !(element.firstElementChild.classList.contains('blazor-template'))) {
         element.removeChild(element.firstElementChild);
     }
 }

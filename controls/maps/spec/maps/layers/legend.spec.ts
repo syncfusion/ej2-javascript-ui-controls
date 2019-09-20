@@ -1,6 +1,6 @@
 import { Maps, ILoadedEventArgs } from '../../../src/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { World_Map, randomcountriesData, topPopulation, flightRoutes, intermediatestops1, internetUser } from '../data/data.spec';
+import { World_Map, randomcountriesData, topPopulation, populationDetails, internetUsers, internetUser } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Legend, Marker } from '../../../src/maps/index';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
@@ -1320,10 +1320,494 @@ describe('Map marker properties tesing', () => {
             };
             map.layers[0].shapeSettings.colorMapping[0].value = 'Asia'
             map.layers[0].shapeSettings.colorMapping[0].label = 'Asia continents'
-            debugger;
             map.refresh();
         });
     });
+    describe('Toggle legend settings', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let trigger: MouseEvents = new MouseEvents();
+        let spec: Element;
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                titleSettings: {
+                    text: 'Population density (per square kilometers) - 2015',
+                    textStyle: {
+                        size: '16px'
+                    }
+                },
+                legendSettings: {
+                    visible: true,
+                    position: 'Top',
+                    toggleLegendSettings: {
+                        enable: true,
+                        applyShapeSettings: false,
+                        fill: "yellow",
+                        opacity: 0.1         
+                    }
+                },
+                layers: [
+                    {
+                        shapeData: World_Map,
+                        shapeDataPath: 'name',
+                        shapePropertyPath: 'name',
+                        dataSource: populationDetails,
+                        tooltipSettings: {
+                            visible: true,
+                            valuePath: 'name',
+                            format: '${name} : ${density} per square kms'
+                        },
+                        shapeSettings: {
+                            colorValuePath: 'density',
+                            fill: '#E5E5E5',
+                            colorMapping: [
+                                {
+                                    from: 0.00001, to: 100, color: 'rgb(153,174,214)', label: '<100'
+                                },
+                                {
+                                    from: 100, to: 200, color: 'rgb(115,143,199)', label: '100 - 200'
+                                },
+                                {
+                                    from: 200, to: 300, color: 'rgb(77,112,184)', label: '200 - 300'
+                                },
+                                {
+                                    from: 300, to: 500, color: 'rgb(38,82,168)', label: '300 - 500'
+                                },
+                            ]
+                        }
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+
+        it('Toggle legend property for shape color', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    spec = document.getElementById('container_Legend_Group');
+                    expect(spec.childElementCount).toBe(5);
+                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                    trigger.clickEvent(spec);
+                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                    spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                    expect(spec.getAttribute('fill')).toBe("yellow");
+                }
+                map.refresh();
+            })
+            it('Toggle legend property for shapeSettings', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    spec = document.getElementById('container_Legend_Group');
+                    expect(spec.childElementCount).toBe(5);
+                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                    trigger.clickEvent(spec);
+                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                    spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                }
+                map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+                map.refresh();
+            })
+            it('Checking without toggleshapeSettings', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    spec = document.getElementById('container_Legend_Group');
+                    expect(spec.childElementCount).toBe(5);
+                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                    trigger.clickEvent(spec);
+                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                    spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                }
+                map.legendSettings.toggleLegendSettings.enable = false;
+                map.refresh();
+            })
+            it('Checking without toggleshapeSettings', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    spec = document.getElementById('container_Legend_Group');
+                    expect(spec.childElementCount).toBe(5);
+                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                    trigger.clickEvent(spec);
+                    trigger.clickEvent(spec);
+                    expect(spec.getAttribute("fill")).toBe("rgb(153,174,214)")
+                    spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                    expect(spec.getAttribute('stroke')).toBe("#000000");
+                    expect(spec.getAttribute('stroke-width')).toBe("0");
+                    expect(spec.getAttribute("opacity")).toBe("1");
+                }
+                map.legendSettings.toggleLegendSettings.enable = true;
+                map.refresh();
+            })
+            it('Checking the shape with null', () => {
+                map.loaded = (args: ILoadedEventArgs) => {
+                    spec = document.getElementById('container_Legend_Group');
+                    expect(spec.childElementCount).toBe(5);
+                    spec = document.getElementById('container_Legend_Shape_Index_0')
+                    trigger.clickEvent(spec);
+                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                    spec = document.getElementById("container_LayerIndex_0_shapeIndex_134_dataIndex_125");
+                    expect(spec !== null).toBe(false);
+                }
+                map.refresh();
+            })
+        });
+        describe('Toggle legend settings for Layers', () => {
+            let id: string = 'container';
+            let map: Maps;
+            let ele: HTMLDivElement;
+            let trigger: MouseEvents = new MouseEvents();
+            let spec: Element;
+            beforeAll(() => {
+                ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+                document.body.appendChild(ele);
+                map = new Maps({
+                    titleSettings: {
+                        text: 'Population density (per square kilometers) - 2015',
+                        textStyle: {
+                            size: '16px'
+                        }
+                    },
+                    legendSettings: {
+                        visible: true,
+                        position: 'Top',
+                        mode: "Interactive",
+                        toggleLegendSettings: {
+                            enable: true,
+                            applyShapeSettings: false,
+                            fill: "yellow",
+                            opacity: 0.1         
+                        }
+                    },
+                    layers: [
+                        {
+                            shapeData: World_Map,
+                            shapeDataPath: 'name',
+                            shapePropertyPath: 'name',
+                            dataSource: populationDetails,
+                            tooltipSettings: {
+                                visible: true,
+                                valuePath: 'name',
+                                format: '${name} : ${density} per square kms'
+                            },
+                            shapeSettings: {
+                                colorValuePath: 'density',
+                                fill: '#E5E5E5',
+                                colorMapping: [
+                                    {
+                                        from: 0.00001, to: 100, color: 'rgb(153,174,214)', label: '<100'
+                                    },
+                                    {
+                                        from: 100, to: 200, color: 'rgb(115,143,199)', label: '100 - 200'
+                                    },
+                                    {
+                                        from: 200, to: 300, color: 'rgb(77,112,184)', label: '200 - 300'
+                                    },
+                                    {
+                                        from: 300, to: 500, color: 'rgb(38,82,168)', label: '300 - 500'
+                                    },
+                                ]
+                            }
+                        }
+                    ]
+                }, '#' + id);
+            });
+            afterAll(() => {
+                remove(ele);
+                map.destroy();
+            });
+    
+            it('Toggle legend property for Interactive shape color', () => {
+                    map.loaded = (args: ILoadedEventArgs) => {
+                        spec = document.getElementById('container_Legend_Group');
+                        expect(spec.childElementCount).toBe(9);
+                        spec = document.getElementById('container_Legend_Index_0')
+                        trigger.clickEvent(spec);
+                        expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                        spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                        expect(spec.getAttribute('fill')).toBe("yellow");
+                    }
+                    map.refresh();
+                })
+                it('Toggle legend property for shapeSettings for Interactive', () => {
+                    map.loaded = (args: ILoadedEventArgs) => {
+                        spec = document.getElementById('container_Legend_Group');
+                        expect(spec.childElementCount).toBe(9);
+                        spec = document.getElementById('container_Legend_Index_0')
+                        trigger.clickEvent(spec);
+                        expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                        spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                        expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                    }
+                    map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+                    map.refresh();
+                })
+                it('Checking without toggleshapeSettings for Interactive', () => {
+                    map.loaded = (args: ILoadedEventArgs) => {
+                        spec = document.getElementById('container_Legend_Group');
+                        expect(spec.childElementCount).toBe(9);
+                        spec = document.getElementById('container_Legend_Index_0')
+                        trigger.clickEvent(spec);
+                        expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                        spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                        expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                    }
+                    map.legendSettings.toggleLegendSettings.enable = false;
+                    map.refresh();
+                })
+                it('Checking with toggleshapeSettings for Interactive', () => {
+                    map.loaded = (args: ILoadedEventArgs) => {
+                        spec = document.getElementById('container_Legend_Group');
+                        expect(spec.childElementCount).toBe(9);
+                        spec = document.getElementById('container_Legend_Index_0')
+                        trigger.clickEvent(spec);
+                        trigger.clickEvent(spec);
+                        expect(spec.getAttribute("fill")).toBe("rgb(153,174,214)")
+                        spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
+                        expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
+                        expect(spec.getAttribute('stroke')).toBe("#000000");
+                        expect(spec.getAttribute('stroke-width')).toBe("0");
+                        expect(spec.getAttribute("opacity")).toBe("1");
+                    }
+                    map.legendSettings.toggleLegendSettings.enable = true;
+                    map.refresh();
+                })
+            });
+            describe('Toggle legend settings for bubble', () => {
+                let id: string = 'container';
+                let map: Maps;
+                let ele: HTMLDivElement;
+                let trigger: MouseEvents = new MouseEvents();
+                let spec: Element;
+                beforeAll(() => {
+                    ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+                    document.body.appendChild(ele);
+                    map = new Maps({
+                        format: 'n',
+                        useGroupingSeparator: true,
+                        zoomSettings: {
+                            enable: true,
+                            horizontalAlignment: 'Near',
+                            toolBarOrientation: 'Vertical',
+                            pinchZooming: true
+                        },
+                        titleSettings: {
+                            text: 'Top 30 countries with highest Internet users',
+                            textStyle: {
+                                size: '16px'
+                            }
+                        },
+                        legendSettings: {
+                            visible: true,
+                            type: "Bubbles",
+                            position: 'Bottom',
+                            height: '10',
+                            width: '80%',
+                            toggleLegendSettings: {
+                                enable: true,
+                                applyShapeSettings: false,
+                                fill : "lightgreen",
+                                opacity: 0.5,
+                                border: {
+                                    color: "green",
+                                    width: 2
+                                }
+                            },
+                            textStyle: {
+                                color: "grey"
+                            }
+                            
+                        },
+                        layers: [
+                            {
+                                shapeDataPath: 'name',
+                                shapePropertyPath: 'name',
+                                shapeData: World_Map,
+                                shapeSettings: {
+                                    fill: '#E5E5E5'
+                                },
+                                bubbleSettings: [
+                                    {
+                                        visible: true,
+                                        valuePath: 'value',
+                                        colorValuePath: 'rank',
+                                        animationDuration:0,
+                                        minRadius: 3,
+                                        maxRadius: 70,
+                                        opacity: 0.8,
+                                        dataSource: internetUsers,
+                                        tooltipSettings: {
+                                            visible: true,
+                                            valuePath: 'population',
+                                            template: '#template'
+                                        },
+                                        colorMapping: [
+                                            {
+                                                from: 1, to: 15, color: "green", label: "10-20"
+                                            },
+                                            {
+                                                from: 15, to: 30, color: "yellow", label: "20-30"
+                                            }]
+                                    }
+                                ]
+                            }
+                        ]
+                    }, '#' + id);
+                });
+                afterAll(() => {
+                    remove(ele);
+                    map.destroy();
+                });        
+                it('Toggle legend property shape color for Default', () => {
+                        map.loaded = (args: ILoadedEventArgs) => {
+                            spec = document.getElementById('container_Legend_Shape_Index_0')
+                            trigger.clickEvent(spec);
+                            expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                            spec = document.getElementById("container_LayerIndex_0_BubbleIndex_0_dataIndex_3");
+                            expect(spec.getAttribute('fill')).toBe("lightgreen");
+                        }
+                        map.refresh();
+                    })
+                    it('Toggle legend property for shapeSettings for Default', () => {
+                        map.loaded = (args: ILoadedEventArgs) => {
+                            spec = document.getElementById('container_Legend_Shape_Index_0')
+                            trigger.clickEvent(spec);
+                            expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                            trigger.clickEvent(spec);
+                            spec = document.getElementById("container_LayerIndex_0_BubbleIndex_0_dataIndex_3");
+                            expect(spec.getAttribute('fill')).toBe("green");
+                        }
+                        map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+                        map.refresh();
+                    })
+                    it('Toggle legend text property for shapeSettings for Default', () => {
+                        map.loaded = (args: ILoadedEventArgs) => {
+                            spec = document.getElementById('container_Legend_Text_Index_0')
+                            trigger.clickEvent(spec);
+                            expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                            trigger.clickEvent(spec);
+                            spec = document.getElementById("container_LayerIndex_0_BubbleIndex_0_dataIndex_3");
+                            expect(spec.getAttribute('fill')).toBe("green");
+                        }
+                        map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+                        map.refresh();
+                    })                   
+                });
+                describe('Toggle legend settings for bubble for Interactive', () => {
+                    let id: string = 'container';
+                    let map: Maps;
+                    let ele: HTMLDivElement;
+                    let trigger: MouseEvents = new MouseEvents();
+                    let spec: Element;
+                    beforeAll(() => {
+                        ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+                        document.body.appendChild(ele);
+                        map = new Maps({
+                            format: 'n',
+                            useGroupingSeparator: true,
+                            zoomSettings: {
+                                enable: true,
+                                horizontalAlignment: 'Near',
+                                toolBarOrientation: 'Vertical',
+                                pinchZooming: true
+                            },
+                            titleSettings: {
+                                text: 'Top 30 countries with highest Internet users',
+                                textStyle: {
+                                    size: '16px'
+                                }
+                            },
+                            legendSettings: {
+                                visible: true,
+                                type: "Bubbles",
+                                position: 'Bottom',
+                                height: '10',
+                                width: '80%',
+                                mode: "Interactive",
+                                toggleLegendSettings: {
+                                    enable: true,
+                                    applyShapeSettings: false,
+                                    fill : "lightgreen",
+                                    opacity: 0.5,
+                                    border: {
+                                        color: "green",
+                                        width: 2
+                                    }
+                                },
+                                titleStyle: {
+                                    size: '18px'
+                                },
+                                title: {
+                                    text: 'Inches'
+                                },
+                                
+                            },
+                            layers: [
+                                {
+                                    shapeDataPath: 'name',
+                                    shapePropertyPath: 'name',
+                                    shapeData: World_Map,
+                                    shapeSettings: {
+                                        fill: '#E5E5E5'
+                                    },
+                                    bubbleSettings: [
+                                        {
+                                            visible: true,
+                                            valuePath: 'value',
+                                            colorValuePath: 'rank',
+                                            animationDuration:0,
+                                            minRadius: 3,
+                                            maxRadius: 70,
+                                            opacity: 0.8,
+                                            dataSource: internetUsers,
+                                            tooltipSettings: {
+                                                visible: true,
+                                                valuePath: 'population',
+                                                template: '#template'
+                                            },
+                                            colorMapping: [
+                                                {
+                                                    from: 1, to: 15, color: "green", label: "10-20"
+                                                },
+                                                {
+                                                    from: 15, to: 30, color: "yellow", label: "20-30"
+                                                }]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }, '#' + id);
+                    });
+                    afterAll(() => {
+                        remove(ele);
+                        map.destroy();
+                    });        
+                    it('Toggle legend property shape color for Interactive', () => {
+                            map.loaded = (args: ILoadedEventArgs) => {
+                                spec = document.getElementById('container_Legend_Index_0')
+                                trigger.clickEvent(spec);
+                                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                                spec = document.getElementById("container_LayerIndex_0_BubbleIndex_0_dataIndex_3");
+                                expect(spec.getAttribute('fill')).toBe("lightgreen");
+                            }
+                            map.refresh();
+                        })
+                        it('Toggle legend property for shapeSettings for Interactve', () => {
+                            map.loaded = (args: ILoadedEventArgs) => {
+                                spec = document.getElementById('container_Legend_Index_0')
+                                trigger.clickEvent(spec);
+                                expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                                trigger.clickEvent(spec);
+                                spec = document.getElementById("container_LayerIndex_0_BubbleIndex_0_dataIndex_3");
+                                expect(spec.getAttribute('fill')).toBe("green");
+                            }
+                            map.legendSettings.toggleLegendSettings.applyShapeSettings = true;
+                            map.refresh();
+                        })                   
+                    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

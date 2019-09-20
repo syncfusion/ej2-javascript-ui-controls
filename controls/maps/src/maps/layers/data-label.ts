@@ -156,6 +156,9 @@ export class DataLabel {
                 eventargs = blazorEventArgs;
             }
             this.maps.trigger('dataLabelRendering', eventargs, (labelArgs: ILabelRenderingEventArgs) => {
+                if (eventargs.cancel) {
+                    return;
+                }
                 let border: Object = { color: 'yellow' };
                 let position: MapLocation[] = [];
                 let width: number = zoomLabelsPosition && scaleZoomValue > 1

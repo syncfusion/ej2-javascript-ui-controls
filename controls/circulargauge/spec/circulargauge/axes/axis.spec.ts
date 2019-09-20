@@ -1084,4 +1084,122 @@ describe('Circular-Gauge Control', () => {
         });
 
     });
+    describe('Axis Label behaviour with hideIntersectingLabel', () => {
+        let gauge: CircularGauge;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'gauge' });
+            document.body.appendChild(ele);
+            gauge = new CircularGauge({
+                axes: [{
+                    startAngle: 0,
+                    endAngle: 90,
+                    minimum: 1,
+                    maximum: 360,
+                    hideIntersectingLabel:true,
+                    majorTicks: {
+                        interval: 1
+                    },
+                    labelStyle: {
+                        position:'Inside',
+                        hiddenLabel:'None'
+                    },
+                }]
+            },
+                '#gauge'
+        );
+    });
+        afterAll((): void => {
+            gauge.destroy();
+            ele.remove();
+        });
+        it('Checking wether the intersecting labels are hiding or not', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg.textContent == '1').toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_1')
+                expect(svg).toBe(null);
+                done();
+            };
+            gauge.refresh();
+        });
+        it('Checking labels intersection with showlastlabel is enabled', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg.textContent == '1').toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_359')
+                expect(svg.textContent == '360').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 90;
+            gauge.axes[0].endAngle = 360;
+            gauge.axes[0].showLastLabel = true;
+            gauge.refresh();
+        });
+        it('Checking labels intersection with full circle', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg.textContent == '1').toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_359')
+                expect(svg.textContent == '').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 360;
+            gauge.axes[0].showLastLabel = false;
+            gauge.refresh();
+        });
+        it('Checking labels intersection with full circle and hidden label value is first', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg).toBe(null);
+                svg = document.getElementById('gauge_Axis_0_Label_359')
+                expect(svg.textContent == '360').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 360;
+            gauge.axes[0].labelStyle.hiddenLabel = 'First';
+            gauge.refresh();
+        });
+        it('Checking labels intersection with full circle and showlastlabel is enabled', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg.textContent == '').toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_359')
+                expect(svg.textContent == '360').toBe(true);
+                done();
+            };
+            gauge.axes[0].startAngle = 0;
+            gauge.axes[0].endAngle = 360;
+            gauge.axes[0].labelStyle.hiddenLabel = 'None';
+            gauge.axes[0].showLastLabel = true;
+            gauge.refresh();
+        });
+        it('Checking labels intersection with autoangle true', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg.textContent == '1').toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_1')
+                expect(svg).toBe(null);
+                done();
+            };
+            gauge.axes[0].labelStyle.autoAngle = true;
+            gauge.axes[0].showLastLabel = false;
+            gauge.refresh();
+        });
+        it('Checking labels intersection with autoangle true and showlast label', (done: Function) => {
+            gauge.loaded = (args:ILoadedEventArgs): void => {
+                svg = document.getElementById('gauge_Axis_0_Label_0')
+                expect(svg.textContent == '').toBe(true);
+                svg = document.getElementById('gauge_Axis_0_Label_359')
+                expect(svg.textContent == '360').toBe(true);
+                done();
+            };
+            gauge.axes[0].labelStyle.autoAngle = true;
+            gauge.axes[0].showLastLabel = true;
+            gauge.refresh();
+        });
+    });
 });

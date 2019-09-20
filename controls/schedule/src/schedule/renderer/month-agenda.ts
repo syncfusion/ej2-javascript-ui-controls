@@ -4,6 +4,7 @@ import { AgendaBase } from '../event-renderer/agenda-base';
 import { Schedule } from '../base/schedule';
 import { Month } from './month';
 import * as util from '../base/util';
+import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 
 /**
@@ -76,7 +77,7 @@ export class MonthAgenda extends Month {
             }
             count++;
         }
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(events.eventsLoaded, {});
     }
 
     public onCellClick(event: CellClickEventArgs): void {
@@ -84,7 +85,7 @@ export class MonthAgenda extends Month {
         let filterData: Object[] = this.appointmentFiltering(event.startTime);
         this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(events.eventsLoaded, {});
         this.parent.setProperties({ selectedDate: new Date('' + event.startTime) }, true);
     }
 

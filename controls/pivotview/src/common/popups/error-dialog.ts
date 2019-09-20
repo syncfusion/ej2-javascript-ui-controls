@@ -2,6 +2,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { Dialog } from '@syncfusion/ej2-popups';
+import { PivotFieldList } from '../../pivotfieldlist';
 
 /**
  * `ErrorDialog` module to create error dialog.
@@ -25,12 +26,15 @@ export class ErrorDialog {
      * @return {void}
      * @hidden
      */
-    public createErrorDialog(title: string, description: string): void {
+    public createErrorDialog(title: string, description: string, target?: HTMLElement): void {
         let errorDialog: HTMLElement = createElement('div', {
             id: this.parent.parentID + '_ErrorDialog',
             className: cls.ERROR_DIALOG_CLASS
         });
         this.parent.element.appendChild(errorDialog);
+        let zIndex: number = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
+            this.parent.renderMode === 'Popup' && this.parent.control ?
+            (this.parent.control as PivotFieldList).dialogRenderer.fieldListDialog.zIndex + 1 : 1000001);
         this.errorPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: false,
@@ -42,7 +46,7 @@ export class ErrorDialog {
             enableRtl: this.parent.enableRtl,
             width: 'auto',
             height: 'auto',
-            zIndex: 1000001,
+            zIndex: zIndex,
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
@@ -56,7 +60,6 @@ export class ErrorDialog {
         });
         this.errorPopUp.isStringTemplate = true;
         this.errorPopUp.appendTo(errorDialog);
-        this.errorPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
     private closeErrorDialog(): void {
         this.errorPopUp.close();

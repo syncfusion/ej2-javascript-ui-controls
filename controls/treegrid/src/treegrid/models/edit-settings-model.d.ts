@@ -1,4 +1,4 @@
-import { ChildProperty, Property } from '@syncfusion/ej2-base';import { EditMode, RowPosition } from '../enum';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';import { EditMode, RowPosition } from '../enum';import { IDialogUI } from '@syncfusion/ej2-grids';
 
 /**
  * Interface for a class EditSettings
@@ -68,5 +68,11 @@ export interface EditSettingsModel {
      * @default ''
      */
     template?: string;
+
+    /**
+     * Defines the dialog params to edit.
+     * @default {}
+     */
+    dialog?: IDialogUI;
 
 }

@@ -15633,51 +15633,25 @@ class PdfResources extends PdfDictionary {
         }
     }
 }
+/* tslint:disable */
 /**
  * Used to create new guid for resources.
  * @private
  */
 class Guid {
     /**
-     * Initialize an `instance of GUID` class.
-     * @private
-     */
-    constructor(stringValue) {
-        this.stringValue = stringValue || Guid.getNewGuidString();
-    }
-    /**
-     * Generate `Random number` for GUID.
-     * @private
-     */
-    static get randomNumber() {
-        Guid.guid = Guid.guid + 1;
-        Guid.guid = Guid.guid > 999999999999 ? 0 : Guid.guid;
-        return Guid.guid;
-    }
-    /**
-     * Return the value of `GUID as string`.
-     * @private
-     */
-    toString() {
-        return this.stringValue;
-    }
-    /**
      * Generate `new GUID`.
      * @private
      */
     static getNewGuidString() {
-        let guid = 'abc7def4-ghi9-jkl2-m6n3-';
-        let temproaryString = 'opqrstuvwxyz';
-        let randomString = Guid.randomNumber.toString();
-        randomString = guid + temproaryString.substr(0, (12 - randomString.length)) + randomString;
-        return randomString;
+        return 'aaaaaaaa-aaaa-4aaa-baaa-aaaaaaaaaaaa'.replace(/[ab]/g, (c) => {
+            let random = Math.random() * 16 | 0;
+            let result = c === 'a' ? random : (random & 0x3 | 0x8);
+            return result.toString(16);
+        });
     }
 }
-/**
- * static field to store `endding value of current GUID`.
- * @private
- */
-Guid.guid = 0;
+/* tslint:enable */
 
 /**
  * The abstract base class for all pages,

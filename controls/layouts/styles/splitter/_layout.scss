@@ -378,6 +378,12 @@
     }
   }
 
+  .e-rtl #{&}.e-splitter {
+    &.e-splitter-horizontal {
+      flex-direction: row-reverse;
+    }
+  }
+
   .e-bigger  #{&}.e-splitter {
     .e-pane {
       font-size: $bigger-splitpane-font-size;

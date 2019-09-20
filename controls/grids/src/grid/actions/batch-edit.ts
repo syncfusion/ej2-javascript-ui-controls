@@ -563,6 +563,7 @@ export class BatchEdit {
         if (gObj.isEdit) {
             return;
         }
+        this.parent.element.classList.add('e-editing');
         let defaultData: Object = data ? data : this.getDefaultData();
         let args: BeforeBatchAddArgs = {
             defaultData: defaultData,
@@ -700,6 +701,7 @@ export class BatchEdit {
         let gObj: IGrid = this.parent;
         let col: Column = gObj.getColumnByField(field);
         let keys: string[] = gObj.getPrimaryKeyFieldNames();
+        this.parent.element.classList.add('e-editing');
         if (isBlazor() && col.template && !isAdd) {
             resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
         }
@@ -886,6 +888,7 @@ export class BatchEdit {
         if (!isForceSave && (!gObj.isEdit || this.validateFormObj())) {
             return;
         }
+        this.parent.element.classList.remove('e-editing');
         let tr: Element = parentsUntil(this.form, 'e-row');
         let column: Column = this.cellDetails.column;
         let obj: Object = {};

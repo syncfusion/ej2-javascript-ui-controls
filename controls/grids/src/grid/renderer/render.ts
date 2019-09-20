@@ -451,7 +451,7 @@ export class Render {
     }
 
     private buildColumns(record: Object): void {
-        let columns: string[] = Object.keys(record);
+        let columns: string[] = Object.keys(record).filter((e: string) => e !== 'BlazId');
         let cols: Column[] = [];
         for (let i: number = 0, len: number = columns.length; i < len; i++) {
             cols[i] = { 'field': columns[i] } as Column;

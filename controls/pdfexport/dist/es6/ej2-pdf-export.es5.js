@@ -16912,56 +16912,29 @@ var PdfResources = /** @__PURE__ @class */ (function (_super) {
     };
     return PdfResources;
 }(PdfDictionary));
+/* tslint:disable */
 /**
  * Used to create new guid for resources.
  * @private
  */
 var Guid = /** @__PURE__ @class */ (function () {
-    /**
-     * Initialize an `instance of GUID` class.
-     * @private
-     */
-    function Guid(stringValue) {
-        this.stringValue = stringValue || Guid.getNewGuidString();
+    function Guid() {
     }
-    Object.defineProperty(Guid, "randomNumber", {
-        /**
-         * Generate `Random number` for GUID.
-         * @private
-         */
-        get: function () {
-            Guid.guid = Guid.guid + 1;
-            Guid.guid = Guid.guid > 999999999999 ? 0 : Guid.guid;
-            return Guid.guid;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    /**
-     * Return the value of `GUID as string`.
-     * @private
-     */
-    Guid.prototype.toString = function () {
-        return this.stringValue;
-    };
     /**
      * Generate `new GUID`.
      * @private
      */
     Guid.getNewGuidString = function () {
-        var guid = 'abc7def4-ghi9-jkl2-m6n3-';
-        var temproaryString = 'opqrstuvwxyz';
-        var randomString = Guid.randomNumber.toString();
-        randomString = guid + temproaryString.substr(0, (12 - randomString.length)) + randomString;
-        return randomString;
+        return 'aaaaaaaa-aaaa-4aaa-baaa-aaaaaaaaaaaa'.replace(/[ab]/g, function (c) {
+            var random = Math.random() * 16 | 0;
+            var result = c === 'a' ? random : (random & 0x3 | 0x8);
+            return result.toString(16);
+        });
     };
-    /**
-     * static field to store `endding value of current GUID`.
-     * @private
-     */
-    Guid.guid = 0;
     return Guid;
 }());
+
+/* tslint:enable */
 
 /**
  * The abstract base class for all pages,

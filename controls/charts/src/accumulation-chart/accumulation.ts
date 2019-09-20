@@ -23,7 +23,7 @@ import { AccumulationLegend } from './renderer/legend';
 import { LegendSettingsModel } from '../common/legend/legend-model';
 import { ChartLocation, subtractRect, indexFinder, appendChildElement, redrawElement, blazorTemplatesReset } from '../common/utils/helper';
 import { RectOption, showTooltip } from '../common/utils/helper';
-import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase } from '../common/utils/helper';
+import { textElement, createSvg, calculateSize, removeElement, firstToLowerCase, withInBounds } from '../common/utils/helper';
 import { getElement, titlePositionX } from '../common/utils/helper';
 import { Rect, Size, measureText, TextOption, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { Data } from '../common/model/data';
@@ -865,7 +865,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         if (!this.isTouch) {
             this.titleTooltip(e, this.mouseX, this.mouseY);
-       }
+        }
+        if (this.type === 'Pie' && this.pieSeriesModule &&
+            withInBounds(this.mouseX, this.mouseY, this.initialClipRect)) {
+            this.pieSeriesModule.findSeries(e);
+        }
         this.notify(Browser.touchMoveEvent, e);
 
         return false;
@@ -900,6 +904,9 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         if (this.visibleSeries[0].explode) {
             this.accBaseModule.processExplode(e);
+        }
+        if (this.pieSeriesModule && this.type === 'Pie') {
+            this.pieSeriesModule.findSeries(e);
         }
         this.trigger(chartMouseClick, { target: (<Element>e.target).id, x: this.mouseX, y: this.mouseY });
         if (this.pointClick) {
@@ -979,6 +986,7 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         }
         removeElement('EJ2_legend_tooltip');
         removeElement('EJ2_datalabel_tooltip');
+        removeElement(this.element.id + 'PointHover_Border');
     }
     /**
      * Method to create the secondary element for tooltip, datalabel and annotaitons.

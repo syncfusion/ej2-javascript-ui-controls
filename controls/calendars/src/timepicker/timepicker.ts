@@ -731,7 +731,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 Input.setEnabled(true, this.inputElement, this.floatLabelType);
             }
         }
-        if (this.inputWrapper.container) { remove(this.inputWrapper.container); }
+        if (this.inputWrapper.container) { detach(this.inputWrapper.container); }
         this.inputWrapper = this.popupWrapper = this.cloneElement = undefined;
         this.liCollections = this.timeCollections = this.disableItemCollection = [];
         if (!isNullOrUndefined(this.rippleFn)) {

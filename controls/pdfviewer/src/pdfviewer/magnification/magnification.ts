@@ -73,6 +73,7 @@ export class Magnification {
      * @private
      */
     public isAutoZoom: boolean = false;
+    private isWebkitMobile: boolean = false;
     /**
      * @private
      */
@@ -80,6 +81,8 @@ export class Magnification {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = viewerBase;
         this.zoomLevel = 2;
+        // tslint:disable-next-line:max-line-length
+        this.isWebkitMobile = /Chrome/.test(navigator.userAgent) || /Google Inc/.test(navigator.vendor) || (navigator.userAgent.indexOf('Safari') !== -1);
     }
 
     /**
@@ -172,7 +175,11 @@ export class Magnification {
             this.isAutoZoom = false;
             this.onZoomChanged(zoomValue);
             if (Browser.isDevice) {
-                this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+                if (this.isWebkitMobile) {
+                    this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+                } else {
+                    this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+                }
             } else {
                 this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
             }
@@ -296,12 +303,16 @@ export class Magnification {
         this.zoomLevel = this.getZoomLevel(zoomValue);
         this.zoomFactor = this.getZoomFactor(zoomValue);
         if (Browser.isDevice) {
-            this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+            if (this.isWebkitMobile) {
+                this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
+            } else {
+                this.pdfViewerBase.viewerContainer.style.overflowY = 'hidden';
+            }
         } else {
             this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
         }
         if (this.pdfViewerBase.pageCount > 0) {
-            if (this.previousZoomFactor !== this.zoomFactor) {
+            if ((this.previousZoomFactor !== this.zoomFactor) || this.isInitialLoading ) {
                 if (!this.isPinchZoomed) {
                     this.magnifyPages();
                 } else {
@@ -507,6 +518,18 @@ export class Magnification {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];
+            let pageDivs: NodeList = document.querySelectorAll('canvas[id*="' + this.pdfViewer.element.id + '_pageCanvas_"]');
+            let viewportWidth: number = this.pdfViewer.element.clientWidth;
+            for (let i: number = 0; i < pageDivs.length; i++) {
+                // tslint:disable-next-line:radix
+                let pageNumber: number = parseInt((pageDivs[i] as HTMLElement).id.split('_pageCanvas_')[1]);
+                let pageWidth: number = this.pdfViewerBase.pageSize[pageNumber].width;
+                if (viewportWidth < pageWidth) {
+                    (pageDivs[i] as HTMLCanvasElement).width = pageWidth * this.pdfViewerBase.getZoomFactor();
+                    // tslint:disable-next-line:max-line-length
+                    (pageDivs[i] as HTMLCanvasElement).height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor();
+                }
+            }
             if (this.pdfViewerBase.textLayer) {
                 let textLayers: NodeList = document.querySelectorAll('div[id*="' + this.pdfViewer.element.id + '_textLayer_"]');
                 for (let i: number = 0; i < textLayers.length; i++) {
@@ -598,6 +621,7 @@ export class Magnification {
             let canvas: HTMLElement = this.pdfViewerBase.getElement('_pageCanvas_' + i);
             if (canvas) {
                 canvas.id = this.pdfViewer.element.id + '_oldCanvas_' + i;
+                canvas.style.backgroundColor = '#fff';
                 if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
                     let annotationCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + i);
                     annotationCanvas.id = this.pdfViewer.element.id + '_old_annotationCanvas_' + i;
@@ -671,8 +695,8 @@ export class Magnification {
                         if (canvas) {
                             canvas.style.width = width + 'px';
                             canvas.style.height = height + 'px';
-                            if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
-                                this.pdfViewer.annotationModule.textMarkupAnnotationModule.resizeAnnotations(width, height, i);
+                            if (this.pdfViewer.annotation) {
+                                this.pdfViewer.annotationModule.resizeAnnotations(width, height, i);
                             }
                         }
                         if (textLayer) {

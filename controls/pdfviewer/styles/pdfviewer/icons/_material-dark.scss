@@ -335,4 +335,73 @@
   .e-pv-annotation-stamp-container .e-menu-wrapper ul .e-menu-item .e-caret::before {
     content: '\e969';
   }
+
+  .e-pv-freetext-icon::before {
+    content: '\ec0e';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-textcolor-icon::before {
+    content: '\e34c';
+  }
+
+  .e-pv-annotation-textalign-icon::before {
+    content: '\e33a';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-textprop-icon::before {
+    content: '\eb04';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-left-align-icon::before {
+    content: '\e33a';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-right-align-icon::before {
+    content: '\eb5f';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-center-align-icon::before {
+    content: '\e35e';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-justfiy-align-icon::before {
+    content: '\e334';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-bold-icon::before {
+    content: '\eb47';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-italic-icon::before {
+    content: '\e35a';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-strikeout-icon::before {
+    content: '\e332';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-underlinetext-icon::before {
+    content: '\e343';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-superscript-icon::before {
+    content: '\e352';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-subscript-icon::before {
+    content: '\e357';
+    font-family: 'e-icons';
+  }
 }

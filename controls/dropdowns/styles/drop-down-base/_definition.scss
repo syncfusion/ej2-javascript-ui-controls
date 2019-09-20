@@ -1,7 +1,7 @@
 $list-line-height: 36px;
 $header-font-weight: 600;
 $last-child-bottom-border: 0;
-$default-font-family: $font-family;
+$default-font-family: inherit;
 $list-font-size: 15px;
 $list-border-size: 1px;
 $default-header-font-color: $default-font-color;
@@ -10,7 +10,7 @@ $list-border-color: $default-border-color;
 $list-bg-color: $default-bg-color;
 $list-bottom-border: $list-border-size;
 $list-gradient-color: $default-gradient-color;
-$list-font-family: $default-font-family;
+$list-font-family: inherit;
 $list-header-border-color: $header-border-color;
 $list-header-bg-color: $header-bg-color;
 $list-active-bg-color: $active-bg-color;

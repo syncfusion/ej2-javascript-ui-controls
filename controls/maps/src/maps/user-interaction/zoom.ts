@@ -2,7 +2,7 @@ import { Maps, doubleClick, Orientation, ITouches, ZoomSettings } from '../../in
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
 import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim, clusterTemplate, marker,
-markerTemplate } from '../utils/helper';
+markerTemplate, removeElement } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth, IMarkerRenderingEventArgs, markerRendering, } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
@@ -119,13 +119,13 @@ export class Zoom {
         let map: Maps = this.maps; let zoomArgs: IMapZoomEventArgs;
         if (!map.isTileMap) {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.scale > map.previousScale ? zoomIn : zoomOut, maps: map,
+                cancel: false, name: 'zoom', type: map.scale > map.previousScale ? zoomIn : zoomOut, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: {}, scale: { previous: map.previousScale, current: map.scale }
             };
         } else {
             zoomArgs = {
-                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: map.isBlazor ? null : map,
+                cancel: false, name: 'zoom', type: map.tileZoomLevel > prevLevel ? zoomIn : zoomOut, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint }, translatePoint: { previous: map.previousPoint, current: map.translatePoint },
                 tileZoomLevel: { previous: prevLevel, current: map.tileZoomLevel }, scale: { previous: map.previousScale, current: map.scale }
             };
@@ -401,7 +401,7 @@ export class Zoom {
                 style: 'pointer-events: auto;'
             });
             if (document.getElementById(markerSVGObject.id)) {
-                document.getElementById(markerSVGObject.id).remove();
+                removeElement(markerSVGObject.id);
             }
             let markerTemplateEle: HTMLElement = createElement('div', {
                 id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
@@ -413,8 +413,8 @@ export class Zoom {
                     'width:' + this.maps.mapAreaRect.width + 'px;'
             });
             if (document.getElementById(markerTemplateEle.id)) {
-                document.getElementById(markerTemplateEle.id).remove();
-            }      
+                removeElement(markerTemplateEle.id);
+            }
             let markerIndex: number = parseInt(element.id.split('_MarkerIndex_')[1].split('_')[0], 10);
             let currentLayer: LayerSettings = <LayerSettings>this.maps.layersCollection[layerIndex];
             currentLayer.markerSettings.map((markerSettings: MarkerSettings, markerIndex: number) => {
@@ -431,8 +431,8 @@ export class Zoom {
                         eventArgs = blazorEventArgs;
                     }
                     this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                        let long: number = data['longitude'] | data['Longitude'];
-                        let lati: number = data['latitude'] | data['Latitude'];
+                        let long: number = data['longitude'];
+                        let lati: number = data['latitude'];
                         let offset: Point = markerSettings.offset;
                         if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                             let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -686,7 +686,7 @@ export class Zoom {
             let panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height) >= (elementRect.top + elementRect.height) + map.mapAreaRect.y + map.margin.top)));
             panArgs = {
-                cancel: false, name: pan, maps: map.isBlazor ? null : map,
+                cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
                 scale: map.scale, tileZoomLevel: map.tileZoomLevel
             };
@@ -711,7 +711,7 @@ export class Zoom {
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
             panArgs = {
-                cancel: false, name: pan, maps: map.isBlazor ? null : map,
+                cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
                 translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
                 tileZoomLevel: map.tileZoomLevel

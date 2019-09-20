@@ -33,7 +33,7 @@ export class Splitter {
         this.parent.splitterElement.appendChild(this.parent.chartPane);
 
         this.splitterObject = new SplitterLayout({
-            height: (this.parent.ganttHeight - toolbarHeight).toString(),
+            height: null,
             width: this.parent.ganttWidth.toString(),
             separatorSize: this.parent.splitterSettings.separatorSize,
             paneSettings: [

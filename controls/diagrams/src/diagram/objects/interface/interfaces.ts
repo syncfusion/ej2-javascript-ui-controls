@@ -152,12 +152,24 @@ export interface IExportOptions extends IPrintOptions {
 /** Interface to cancel the diagram context menu click event */
 export interface DiagramMenuEventArgs extends MenuEventArgs {
     cancel?: boolean;
+    /**
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel
+     */
+    item: MenuItemModel;
 }
 
 /** Defines the event before opening the context menu */
 export interface DiagramBeforeMenuOpenEventArgs extends BeforeOpenCloseMenuEventArgs {
     /** Defines the hidden items of the diagram context menu */
     hiddenItems: string[];
+    /**
+     * @blazorType List<Syncfusion.EJ2.Blazor.Navigations.MenuItemModel>
+     */
+    items: MenuItemModel[];
+    /**
+     * @blazorType Syncfusion.EJ2.Blazor.Navigations.MenuItemModel
+     */
+    parentItem: MenuItemModel;
 }
 
 /**
@@ -198,6 +210,7 @@ export interface View {
     mode: RenderingMode;
     removeDocument: Function;
     updateView: Function;
+    updateHtmlLayer: Function;
     renderDocument: Function;
     element: HTMLElement;
     contentWidth?: number;

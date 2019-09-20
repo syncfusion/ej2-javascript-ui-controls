@@ -1,4 +1,4 @@
-import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler, updateBlazorTemplate } from '@syncfusion/ej2-base';import { Draggable } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
+import { Component, Property, Event, Collection, L10n, Browser, EmitType, Complex, compile, createElement  } from '@syncfusion/ej2-base';import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';import { EventHandler, updateBlazorTemplate, BlazorDragEventArgs } from '@syncfusion/ej2-base';import { Draggable } from '@syncfusion/ej2-base';import { Popup, PositionData, getZindexPartial } from '../popup/popup';import { PositionDataModel } from '../popup/popup-model';import { Button, ButtonModel } from '@syncfusion/ej2-buttons';import { createResize, removeResize, setMinHeight } from '../common/resize';
 import {ButtonType,DialogEffect,BeforeOpenEventArgs,BeforeCloseEventArgs} from "./dialog";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -239,6 +239,7 @@ export interface DialogModel extends ComponentModel{
      * Event triggers when a dialog is opened.
      * @event
      * @blazorProperty 'Opened'
+     * @blazorType DialogOpenEvent
      */
     open?: EmitType<Object>;
 
@@ -255,6 +256,7 @@ export interface DialogModel extends ComponentModel{
      * Event triggers after the dialog has been closed.
      * @event
      * @blazorProperty 'Closed'
+     * @blazorType DialogCloseEvent
      */
     close?: EmitType<Object>;
 
@@ -271,6 +273,7 @@ export interface DialogModel extends ComponentModel{
      * Event triggers when the user begins dragging the dialog.
      * @event
      * @blazorProperty 'OnDragStart'
+     * @blazorType DialogDragStartEvent
      */
     dragStart?: EmitType<Object>;
 
@@ -278,6 +281,7 @@ export interface DialogModel extends ComponentModel{
      * Event triggers when the user stop dragging the dialog.
      * @event
      * @blazorProperty 'OnDragStop'
+     * @blazorType DialogDragStopEvent
      */
     dragStop?: EmitType<Object>;
 
@@ -285,6 +289,7 @@ export interface DialogModel extends ComponentModel{
      * Event triggers when the user drags the dialog.
      * @event
      * @blazorProperty 'OnDrag'
+     * @blazorType DialogDragEvent
      */
     drag?: EmitType<Object>;
 

@@ -53,6 +53,13 @@ describe('RTE BASIC PROPERTIES - readonly - ', () => {
                 rteObj.selectAll();
                 expect(rteObj.getSelection()).toBe("RichTextEditor");
             });
+            it(' When no content in Rich Text Editor', () => {
+                rteObj = renderRTE({
+                    value: ''
+                });
+                rteObj.selectAll();
+                expect(rteObj.getSelection()).toEqual('');
+            });
         });
     });
 });

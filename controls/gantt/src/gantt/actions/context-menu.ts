@@ -155,7 +155,7 @@ export class ContextMenu {
                 this.parent.treeGrid.endEdit();
                 break;
             case 'Dependency' + index:
-                this.parent.predecessorModule.removePredecessor(this.rowData, index);
+                this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
                 break;
         }
         args.type = 'Content';

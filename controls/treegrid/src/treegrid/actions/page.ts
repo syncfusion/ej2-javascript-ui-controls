@@ -4,7 +4,7 @@ import { TreeGrid, ITreeData, RowCollapsedEventArgs } from '../base';
 import * as events from '../base/constant';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { getValue, isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
-import { getExpandStatus } from '../utils';
+import { getExpandStatus, isFilterChildHierarchy } from '../utils';
 
 /**
  * The `Page` module is used to render pager and handle paging action.
@@ -130,9 +130,14 @@ export class Page {
         let dm: DataManager = new DataManager(pageingDetails.result);
         let expanded: Predicate = new Predicate('expanded', 'notequal', null).or('expanded', 'notequal', undefined);
         let parents: ITreeData[] = dm.executeLocal(new Query().where(expanded));
-        let visualData: ITreeData[] = parents.filter((e: ITreeData) => {
-          return getExpandStatus(this.parent, e, parents);
-        });
+        let visualData: ITreeData[];
+        if (isFilterChildHierarchy(this.parent)) {
+          visualData = parents;
+        } else {
+          visualData = parents.filter((e: ITreeData) => {
+            return getExpandStatus(this.parent, e, parents);
+          });
+        }
         pageingDetails.count = visualData.length;
         let query: Query = new Query();
         let size: number = this.parent.grid.pageSettings.pageSize;

@@ -237,3 +237,16 @@ export type BorderType =
     'WithoutTopandBottomBorder' |
     /** CurlyBrace */
     'Brace';
+/**
+ * Specifies the type of label display for smart legend.
+ * * Table:  Calculated Minimum and Maximum for Overall dataSource.
+ * * Row: Calculated Minimum and Maximum for Every Row.
+ * * Column : Calculated Minimum and Maximum for Every Column. 
+ */
+export type ColorGradientMode =
+    /**  Calculate minimum and maximum for overall datasource */
+    'Table' |
+    /** Calculate minimum and maximum for each row */
+    'Row' |
+    /** Calculate minimum and maximum for each column */
+    'Column';

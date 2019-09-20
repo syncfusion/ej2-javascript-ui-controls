@@ -19,7 +19,6 @@ export interface ISmithchartPrintEventArgs extends ISmithchartEventArgs {
 
 /**
  * Specifies the Load Event arguments.
- * @deprecated
  */
 export interface ISmithchartLoadEventArgs extends ISmithchartEventArgs {
     /** Defines the current Smithchart instance */
@@ -50,7 +49,6 @@ export interface ISmithchartLegendRenderEventArgs extends ISmithchartEventArgs {
 
 /**
  * Specifies the Title Render Event arguments.
- * @deprecated
  */
 export interface ITitleRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current title text */
@@ -63,7 +61,6 @@ export interface ITitleRenderEventArgs extends ISmithchartEventArgs {
 
 /**
  * Specifies the SubTitle Render Event arguments.
- * @deprecated
  */
 export interface ISubTitleRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current subtitle text */
@@ -76,7 +73,6 @@ export interface ISubTitleRenderEventArgs extends ISmithchartEventArgs {
 
 /**
  * Specifies the Text Render Event arguments.
- * @deprecated
  */
 export interface ISmithchartTextRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current datalabel text */
@@ -93,7 +89,6 @@ export interface ISmithchartTextRenderEventArgs extends ISmithchartEventArgs {
 
 /**
  * Specifies the Axis Label Render Event arguments.
- * @deprecated
  */
 export interface ISmithchartAxisLabelRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current axis label text */
@@ -106,7 +101,6 @@ export interface ISmithchartAxisLabelRenderEventArgs extends ISmithchartEventArg
 
 /**
  * Specifies the Series Render Event arguments.
- * @deprecated
  */
 export interface ISmithchartSeriesRenderEventArgs extends ISmithchartEventArgs {
     /** Defines name of the event */
@@ -117,7 +111,6 @@ export interface ISmithchartSeriesRenderEventArgs extends ISmithchartEventArgs {
 
 /**
  * Specifies the Legend Render Event arguments.
- * @deprecated
  */
 export interface ISmithchartLegendRenderEventArgs extends ISmithchartEventArgs {
     /** Defines the current legend text */

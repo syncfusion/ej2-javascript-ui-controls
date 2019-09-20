@@ -1,4 +1,4 @@
-import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend } from '@syncfusion/ej2-base';
+﻿import { Component, ModuleDeclaration, ChildProperty, Browser, closest, extend, TouchEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setValue, getValue, isBlazor, blazorTemplates } from '@syncfusion/ej2-base';
 import { addClass, removeClass, append, remove, updateBlazorTemplate, classList, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Property, Collection, Complex, Event, NotifyPropertyChanges, INotifyPropertyChanged, L10n } from '@syncfusion/ej2-base';
@@ -8,7 +8,7 @@ import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { GridModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
-import { getRowHeight, setColumnIndex } from './util';
+import { getRowHeight, setColumnIndex, Global } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
 import { IDialogUI, ScrollPositionType } from './interface';
@@ -2278,6 +2278,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.trigger(events.load);
         prepareColumns(this.columns as Column[], this.enableColumnVirtualization);
+        if (this.enablePersistence) {
+            this.notify(events.columnsPrepared, {});
+        }
         this.getMediaColumns();
         setColumnIndex(this.columns as Column[]);
         this.checkLockColumns(this.columns as Column[]);
@@ -2757,6 +2760,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the columns from the Grid.
      * @return {Column[]} 
+     * @blazorType List<GridColumn>
      */
     public getColumns(isRefresh?: boolean): Column[] {
         let inview: number[] = this.inViewIndexes.map((v: number) => v - this.groupSettings.columns.length).filter((v: number) => v > -1);
@@ -2819,6 +2823,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the visible columns from the Grid.
      * @return {Column[]} 
+     * @blazorType List<GridColumn>
      */
     public getVisibleColumns(): Column[] {
         let cols: Column[] = [];
@@ -3245,6 +3250,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @hidden
+     * @blazorType GridColumn
      */
 
     public getColumnByIndex(index: number): Column {
@@ -3260,6 +3266,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a Column by column name.
      * @param  {string} field - Specifies the column name.
      * @return {Column}
+     * @blazorType GridColumn
      */
     public getColumnByField(field: string): Column {
         return iterateArrayOrObject<Column, Column>(<Column[]>this.getColumns(), (item: Column, index: number) => {
@@ -3289,6 +3296,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Gets a column by UID.
      * @param  {string} uid - Specifies the column UID.
      * @return {Column}
+     * @blazorType GridColumn
      */
     public getColumnByUid(uid: string): Column {
         return iterateArrayOrObject<Column, Column>(
@@ -4357,6 +4365,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.add(this.getContent().firstElementChild, 'scroll', this.scrollHandler, this);
         EventHandler.add(this.element, 'mousemove', this.mouseMoveHandler, this);
         EventHandler.add(this.element, 'mouseout', this.mouseMoveHandler, this);
+        EventHandler.add(this.getContent(), 'touchstart', this.tapEvent, this);
     }
 
     /**
@@ -4371,6 +4380,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
         EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
         EventHandler.remove(this.element,'keydown',this.keyPressHandler);
+        EventHandler.remove(this.getContent(), 'touchstart', this.tapEvent);
     }
     /**
      * @hidden
@@ -4483,7 +4493,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             parentsUntil(e.target as Element, 'e-rowcell').classList.contains('e-editedbatchcell')));
     }
 
-    private dblClickHandler(e: MouseEvent): void {
+    private dblClickHandler(e: MouseEvent | TouchEventArgs): void {
         let grid: Element = parentsUntil(e.target as Element, 'e-grid');
         if (isNullOrUndefined(grid) || grid.id !== this.element.id || closest(<Node>e.target, '.e-unboundcelldiv')) {
             return;
@@ -4642,6 +4652,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**
      * Gets the foreign columns from Grid.
      * @return {Column[]}
+     * @blazorType List<GridColumn>
      */
     public getForeignKeyColumns(): Column[] {
         return this.getColumns().filter((col: Column) => {
@@ -4672,6 +4683,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
+     * @blazorType void
      */
     public excelExport(
         excelExportProperties?: ExcelExportProperties, isMultipleExport?: boolean,
@@ -4688,7 +4700,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
-     * 
+     * @blazorType void
      */
     public csvExport(
         excelExportProperties?: ExcelExportProperties,
@@ -4704,7 +4716,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @param  {pdfDoc} pdfDoc - Defined the Pdf Document if multiple export is enabled.
      * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
      * @return {Promise<any>} 
-     * 
+     * @blazorType void
      */
     public pdfExport(
         pdfExportProperties?: PdfExportProperties,
@@ -4982,4 +4994,30 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         });
         return column;
     }
+
+    private getUserAgent(): boolean {
+        let userAgent: string = Browser.userAgent.toLowerCase();
+        return (/iphone|ipod|ipad/ as RegExp).test(userAgent);
+    }
+
+    /** 
+     * @hidden
+     */
+     // Need to have all columns while filtering with ColumnVirtualization.
+     public tapEvent(e: TouchEventArgs){
+        if (this.getUserAgent()) {
+            if (!Global.timer) {
+                Global.timer = (setTimeout(
+                    () => {
+                        Global.timer = null;
+                    },
+                    300) as Object);
+            } else {
+                clearTimeout(Global.timer as number);
+                Global.timer = null;
+                this.dblClickHandler(e);
+                this.notify(events.doubleTap, e);
+            }
+        }
+     }
 }

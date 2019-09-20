@@ -1,4 +1,4 @@
-import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component } from '@syncfusion/ej2-base';
+import { Property, NotifyPropertyChanges, INotifyPropertyChanged, Component, isBlazor } from '@syncfusion/ej2-base';
 import { addClass, Event, EmitType, detach, removeClass, rippleEffect, EventHandler } from '@syncfusion/ej2-base';
 import { ButtonModel } from './button-model';
 import { getTextNode } from '../common/common';
@@ -127,10 +127,12 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
         if (this.isPrimary) {
             this.element.classList.add(cssClassName.PRIMARY);
         }
-        if (this.content) {
-            this.element.innerHTML = this.content;
+        if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+            if (this.content) {
+                this.element.innerHTML = this.content;
+            }
+            this.setIconCss();
         }
-        this.setIconCss();
         if (this.enableRtl) {
             this.element.classList.add(cssClassName.RTL);
         }
@@ -312,8 +314,10 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    this.element.innerHTML = newProp.content;
-                    this.setIconCss();
+                    if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+                        this.element.innerHTML = newProp.content;
+                        this.setIconCss();
+                    }
                     break;
                 case 'isToggle':
                     if (newProp.isToggle) {

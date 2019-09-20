@@ -59,15 +59,31 @@ describe('PdfResources.ts', () => {
     })
 })
 describe('Guid.ts', () => {
-    describe('Constructor initializing',()=> {
-        let guid : Guid = new Guid('test');
-        let value : string = guid.toString();
-        it('-this.toString()', () => {
-            expect(guid.toString()).toEqual('test');
+    describe('Create a new GUID',()=> {
+        let obj : Guid = new Guid();
+        let guid = Guid.getNewGuidString();
+        let index : number;
+        it('-Length test', () => {
+            expect(guid.length).toEqual(36);
         })
-        let id : Guid = new Guid();
-        it('-guid1 != guid2', () => {
-            expect(id).not.toBeUndefined();
+        it('-token matching 1', () => {
+            index = guid.indexOf('-');
+            expect(index).toEqual(8);
+        })
+        it('-token matching 2', () => {
+            index = guid.indexOf('-', 9);
+            expect(index).toEqual(13);
+        })
+        it('-token matching 3', () => {
+            index = guid.indexOf('-', 14);
+            expect(index).toEqual(18);
+        })
+        it('-token matching 4', () => {
+            index = guid.indexOf('-', 19);
+            expect(index).toEqual(23);
+        })
+        it('-token matching 5', () => {
+            expect(guid[14]).toEqual('4');
         })
     })
 })

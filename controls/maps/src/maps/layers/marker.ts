@@ -58,8 +58,8 @@ export class Marker {
                     eventArgs = blazorEventArgs;
                 }
                 this.maps.trigger('markerRendering', eventArgs, (MarkerArgs: IMarkerRenderingEventArgs) => {
-                    let lng: number = data['longitude'] | data['Longitude'];
-                    let lat: number = data['latitude'] | data['Latitude'];
+                    let lng: number = data['longitude'];
+                    let lat: number = data['latitude'];
                     let offset: Point = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(lng) && !isNullOrUndefined(lat)) {
                         let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -83,6 +83,7 @@ export class Marker {
                         }
                     }
                 });
+
             });
         });
         if (this.markerSVGObject.childElementCount > 0) {
@@ -119,10 +120,11 @@ export class Marker {
         }
         let eventArgs: IMarkerClickEventArgs = {
             cancel: false, name: markerClick, data: options.data, maps: this.maps,
-            marker: options.marker, target: target, x: e.clientX, y: e.clientY
+            marker: options.marker, target: target, x: e.clientX, y: e.clientY,
+            latitude : options.data["latitude"] || options.data["Latitude"], longitude : options.data["longitude"] || options.data["Longitude"]
         };
         if (this.maps.isBlazor) {
-            const {maps, marker, ...blazorEventArgs}: IMarkerClickEventArgs = eventArgs;
+            const {maps, marker, data, ...blazorEventArgs}: IMarkerClickEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClick, eventArgs);
@@ -141,10 +143,11 @@ export class Marker {
         }
         let eventArgs: IMarkerClusterClickEventArgs = {
             cancel: false, name: markerClusterClick, data: options.data, maps: this.maps,
-            target: target, x: e.clientX, y: e.clientY
+            target: target, x: e.clientX, y: e.clientY,
+            latitude : options.data["latitude"] || options.data["Latitude"], longitude : options.data["longitude"] || options.data["Longitude"]
         };
         if (this.maps.isBlazor) {
-            const { maps, ...blazorEventArgs } : IMarkerClusterClickEventArgs =  eventArgs;
+            const { maps, data, ...blazorEventArgs } : IMarkerClusterClickEventArgs =  eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClusterClick, eventArgs);

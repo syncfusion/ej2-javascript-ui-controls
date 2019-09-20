@@ -151,6 +151,12 @@ export interface RangeModel {
 
     opacity?: number;
 
+    /**
+     * Specifies the text for legend.
+     * @default ''
+     */
+    legendText?: string;
+
 }
 
 /**
@@ -481,6 +487,13 @@ export interface AxisModel {
      */
 
     showLastLabel?: boolean;
+
+    /**
+     * Specifies to hide the intersecting axis labels
+     * @default false
+     */
+
+    hideIntersectingLabel?: boolean;
 
     /**
      * Specifies the rounding Off value in the label

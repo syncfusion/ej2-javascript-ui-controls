@@ -7,7 +7,7 @@ import { firstToLowerCase, ChartLocation, CircleOption, IHistogramValues } from 
 import { Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
 import { ChartSeriesType, ChartShape, LegendShape, LabelPosition, SeriesValueType, EmptyPointMode, SplineType } from '../utils/enum';
 import { ChartDrawType } from '../utils/enum';
-import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel } from '../../common/model/base-model';
+import { BorderModel, FontModel, MarginModel, AnimationModel, EmptyPointSettingsModel, OffsetModel } from '../../common/model/base-model';
 import { ConnectorModel } from '../../common/model/base-model';
 import { CornerRadiusModel, DragSettingsModel } from '../../common/model/base-model';
 import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes } from '../utils/enum';
@@ -16,6 +16,7 @@ import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { Chart } from '../chart';
 import { Axis, Column, Row } from '../axis/axis';
 import { Data } from '../../common/model/data';
+import { Offset } from '../../common/model/base';
 import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { seriesRender } from '../../common/model/constants';
 import { Alignment, SeriesCategories } from '../../common/utils/enum';
@@ -61,6 +62,22 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
 
     @Property(1)
     public opacity: number;
+
+    /**
+     * Specifies angle for data label.
+     * @default 0
+     */
+
+    @Property(0)
+    public angle: number;
+
+    /**
+     * Enables rotation for data label.
+     * @default false
+     */
+
+    @Property(false)
+    public enableRotation: boolean;
 
     /**
      * Specifies the position of the data label. They are,
@@ -196,6 +213,13 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
     public border: BorderModel;
 
     /**
+     * Options for customizing the marker position.
+     */
+
+    @Complex<OffsetModel>({ x: 0, y: 0 }, Offset)
+    public offset: OffsetModel;
+
+    /**
      *  The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. By default, it will take series' color.
      * @default null
      */
@@ -283,6 +307,8 @@ export class Points {
     public error: number;
     /** point interior value */
     public interior: string;
+    /** To know the point is selected */
+    public isSelect: boolean = false;
     /** point marker */
     public marker: MarkerSettingsModel = {
         visible: false
@@ -1390,6 +1416,13 @@ export class Series extends SeriesBase {
      */
     @Property(true)
     public enableTooltip: boolean;
+
+    /**
+     * user can format now each series tooltip format separately.
+     * @default ''
+     */
+    @Property('')
+    public tooltipFormat : string;
 
     /**
      * The provided value will be considered as a Tooltip name 

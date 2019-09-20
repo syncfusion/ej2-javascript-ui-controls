@@ -14,9 +14,10 @@
  * * TimelineWeek
  * * TimelineWorkWeek
  * * TimelineMonth
+ * * TimelineYear
  */
-export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' | 'TimelineWorkWeek' |
-    'TimelineMonth';
+export type View = 'Day' | 'Week' | 'WorkWeek' | 'Month' | 'Agenda' | 'MonthAgenda' | 'TimelineDay' | 'TimelineWeek' |
+    'TimelineWorkWeek' | 'TimelineMonth' | 'TimelineYear';
 
 export type CurrentAction = 'Add' | 'Save' | 'Delete' | 'DeleteOccurrence' | 'DeleteSeries' | 'EditOccurrence'
     | 'EditSeries' | 'EditFollowingEvents' | 'DeleteFollowingEvents';
@@ -28,4 +29,8 @@ export type PopupType = 'Editor' | 'EventContainer' | 'QuickInfo' | 'RecurrenceA
 
 export type HeaderRowType = 'Year' | 'Month' | 'Week' | 'Date' | 'Hour';
 
+export type Orientation = 'Vertical' | 'Horizontal';
+
 export type ExcelFormat = 'csv' | 'xlsx';
+
+export type TemplateType = 'Both' | 'Cell' | 'Event';

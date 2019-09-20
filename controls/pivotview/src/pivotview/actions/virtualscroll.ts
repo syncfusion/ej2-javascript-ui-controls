@@ -2,7 +2,7 @@ import { EventHandler, setStyleAttribute } from '@syncfusion/ej2-base';
 import { PivotView } from '../base/pivotview';
 import { contentReady, scroll } from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { IAxisSet } from '../../base';
+import { IAxisSet, PivotEngine, OlapEngine } from '../../base';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { Column } from '@syncfusion/ej2-grids';
 
@@ -15,6 +15,7 @@ export class VirtualScroll {
     private frozenPreviousValues: { top: number, left: number } = { top: 0, left: 0 };
     private pageXY: { x: number, y: number };
     private eventType: string = '';
+    private engineModule: PivotEngine | OlapEngine;
     /** @hidden */
     public direction: string;
 
@@ -24,6 +25,7 @@ export class VirtualScroll {
      */
     constructor(parent?: PivotView) {
         this.parent = parent;
+        this.engineModule = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
         this.addInternalEvents();
     }
 
@@ -46,7 +48,7 @@ export class VirtualScroll {
         let mHdr: HTMLElement = this.parent.element.querySelector('.' + cls.MOVABLEHEADER_DIV) as HTMLElement;
         EventHandler.clearEvents(mCont);
         EventHandler.clearEvents(fCont);
-        if (this.parent.engineModule) {
+        if (this.engineModule) {
             EventHandler.add(mCont, 'scroll touchmove pointermove', this.onHorizondalScroll(mHdr, mCont, fCont), this);
             EventHandler.add(mCont, 'scroll wheel touchmove pointermove', this.onVerticalScroll(fCont, mCont), this);
             EventHandler.add(mCont, 'mouseup touchend', this.common(mHdr, mCont, fCont), this);
@@ -118,50 +120,74 @@ export class VirtualScroll {
 
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
         this.parent.isScrolling = true;
-        if (this.direction === 'vertical') {
-            let rowValues: number = this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.dataSourceSettings.values.length : 1;
-            let exactSize: number = (this.parent.pageSettings.rowSize * rowValues * this.parent.gridSettings.rowHeight);
-            let section: number = Math.ceil(top / exactSize);
-            if (this.parent.scrollPosObject.vertical === section ||
-                this.parent.engineModule.pageSettings.rowSize >= this.parent.engineModule.rowCount) {
-                hideSpinner(this.parent.element);
-                return;
+        let engine: PivotEngine | OlapEngine = this.parent.dataType === 'pivot' ? this.parent.engineModule : this.parent.olapEngineModule;
+        if (this.parent.pageSettings && engine.pageSettings) {
+            if (this.direction === 'vertical') {
+                let rowValues: number = this.parent.dataType === 'pivot' ?
+                    (this.parent.dataSourceSettings.valueAxis === 'row' ? this.parent.dataSourceSettings.values.length : 1) : 1;
+                let exactSize: number = (this.parent.pageSettings.rowSize * rowValues * this.parent.gridSettings.rowHeight);
+                let section: number = Math.ceil(top / exactSize);
+                if ((this.parent.scrollPosObject.vertical === section ||
+                    engine.pageSettings.rowSize >= engine.rowCount)) {
+                    hideSpinner(this.parent.element);
+                    return;
+                }
+                showSpinner(this.parent.element);
+                //setTimeout(() => {
+                this.parent.scrollPosObject.vertical = section;
+                engine.pageSettings.rowCurrentPage = section > 1 ? section : 1;
+                let rowStartPos: number = 0;
+                if (this.parent.dataType === 'pivot') {
+                    this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
+                    rowStartPos = this.parent.engineModule.rowStartPos;
+                } else {
+                    this.parent.olapEngineModule.scrollPage('scroll');
+                    rowStartPos = this.parent.olapEngineModule.pageRowStartPos;
+                }
+                this.parent.pivotValues = engine.pivotValues;
+                let exactPage: number = Math.ceil(rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
+                let pos: number = exactSize * exactPage -
+                    (engine.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
+                this.parent.scrollPosObject.verticalSection = pos;
+                //});
+            } else {
+                let colValues: number =
+                    this.parent.dataType === 'pivot' ?
+                        (this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1) : 1;
+                let exactSize: number = (this.parent.pageSettings.columnSize *
+                    colValues * this.parent.gridSettings.columnWidth);
+                let section: number = Math.ceil(left / exactSize);
+                if (this.parent.scrollPosObject.horizontal === section) {
+                    hideSpinner(this.parent.element);
+                    return;
+                }
+                showSpinner(this.parent.element);
+                let pivot: PivotView = this.parent;
+                //setTimeout(() => {
+                pivot.scrollPosObject.horizontal = section;
+                engine.pageSettings.columnCurrentPage = section > 1 ? section : 1;
+                let colStartPos: number = 0;
+                if (pivot.dataType === 'pivot') {
+                    pivot.engineModule.generateGridData(pivot.dataSourceSettings, pivot.engineModule.headerCollection);
+                    colStartPos = pivot.engineModule.colStartPos;
+                } else {
+                    pivot.olapEngineModule.scrollPage('scroll');
+                    colStartPos = pivot.olapEngineModule.pageColStartPos;
+                }
+                // let isLastPage: boolean =
+                //     (engine.pivotValues[0] as IAxisSet[])[engine.pivotValues[0].length - 1].type
+                //     === 'grand sum' && section > 0;
+                pivot.pivotValues = engine.pivotValues;
+                let exactPage: number = Math.ceil(colStartPos / (pivot.pageSettings.columnSize * colValues));
+                // let pos: number = isLastPage ?
+                //     ((left + mHdr.clientWidth) - ((mHdr.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth)) :
+                //     exactSize * exactPage - (engine.colFirstLvl *
+                //         colValues * pivot.gridSettings.columnWidth);
+                let pos: number = exactSize * exactPage - (engine.colFirstLvl *
+                    colValues * pivot.gridSettings.columnWidth);
+                pivot.scrollPosObject.horizontalSection = pos;
+                //});
             }
-            showSpinner(this.parent.element);
-            this.parent.scrollPosObject.vertical = section;
-            this.parent.engineModule.pageSettings.rowCurrentPage = section > 1 ? section : 1;
-            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
-            this.parent.pivotValues = this.parent.engineModule.pivotValues;
-            let exactPage: number = Math.ceil(this.parent.engineModule.rowStartPos / (this.parent.pageSettings.rowSize * rowValues));
-            let pos: number = exactSize * exactPage -
-                (this.parent.engineModule.rowFirstLvl * rowValues * this.parent.gridSettings.rowHeight);
-            this.parent.scrollPosObject.verticalSection = pos;
-        } else {
-            let colValues: number =
-                this.parent.dataSourceSettings.valueAxis === 'column' ? this.parent.dataSourceSettings.values.length : 1;
-            let exactSize: number = (this.parent.pageSettings.columnSize *
-                colValues * this.parent.gridSettings.columnWidth);
-            let section: number = Math.ceil(left / exactSize);
-            if (this.parent.scrollPosObject.horizontal === section) {
-                hideSpinner(this.parent.element);
-                return;
-            }
-            showSpinner(this.parent.element);
-            this.parent.scrollPosObject.horizontal = section;
-            this.parent.engineModule.pageSettings.columnCurrentPage = section > 1 ? section : 1;
-            this.parent.engineModule.generateGridData(this.parent.dataSourceSettings, this.parent.engineModule.headerCollection);
-            // let isLastPage: boolean =
-            //     (this.parent.engineModule.pivotValues[0] as IAxisSet[])[this.parent.engineModule.pivotValues[0].length - 1].type
-            //     === 'grand sum' && section > 0;
-            this.parent.pivotValues = this.parent.engineModule.pivotValues;
-            let exactPage: number = Math.ceil(this.parent.engineModule.colStartPos / (this.parent.pageSettings.columnSize * colValues));
-            // let pos: number = isLastPage ?
-            //     ((left + mHdr.clientWidth) - ((mHdr.querySelector('.' + cls.TABLE) as HTMLElement).offsetWidth)) :
-            //     exactSize * exactPage - (this.parent.engineModule.colFirstLvl *
-            //         colValues * this.parent.gridSettings.columnWidth);
-            let pos: number = exactSize * exactPage - (this.parent.engineModule.colFirstLvl *
-                colValues * this.parent.gridSettings.columnWidth);
-            this.parent.scrollPosObject.horizontalSection = pos;
         }
     }
 
@@ -228,7 +254,7 @@ export class VirtualScroll {
                     excessMove = -this.parent.scrollPosObject.horizontalSection;
                 }
                 horiOffset = -((left - (this.parent.scrollPosObject.horizontalSection + excessMove) - mCont.scrollLeft));
-                let vWidth: number = (this.parent.gridSettings.columnWidth * this.parent.engineModule.columnCount
+                let vWidth: number = (this.parent.gridSettings.columnWidth * this.engineModule.columnCount
                     - ((this.parent.grid.columns[0] as Column).width as number));
                 if (vWidth > this.parent.scrollerBrowserLimit) {
                     this.parent.horizontalScrollScale = vWidth / this.parent.scrollerBrowserLimit;
@@ -300,7 +326,7 @@ export class VirtualScroll {
                 let movableTable: HTMLElement =
                     this.parent.element.querySelector('.' + cls.MOVABLECONTENT_DIV).querySelector('.e-table') as HTMLElement;
                 vertiOffset = -((top - (this.parent.scrollPosObject.verticalSection + excessMove) - mCont.scrollTop));
-                let vHeight: number = (this.parent.gridSettings.rowHeight * this.parent.engineModule.rowCount + 0.1
+                let vHeight: number = (this.parent.gridSettings.rowHeight * this.engineModule.rowCount + 0.1
                     - movableTable.clientHeight);
                 if (vHeight > this.parent.scrollerBrowserLimit) {
                     this.parent.verticalScrollScale = vHeight / this.parent.scrollerBrowserLimit;

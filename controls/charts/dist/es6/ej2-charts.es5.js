@@ -376,6 +376,22 @@ var Border = /** @__PURE__ @class */ (function (_super) {
     return Border;
 }(ChildProperty));
 /**
+ * Configures the marker position in the chart.
+ */
+var Offset = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(Offset, _super);
+    function Offset() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$1([
+        Property(0)
+    ], Offset.prototype, "x", void 0);
+    __decorate$1([
+        Property(0)
+    ], Offset.prototype, "y", void 0);
+    return Offset;
+}(ChildProperty));
+/**
  * Configures the chart area.
  */
 var ChartArea = /** @__PURE__ @class */ (function (_super) {
@@ -1021,6 +1037,8 @@ var chartMouseUp = 'chartMouseUp';
 var zoomComplete = 'zoomComplete';
 /** @private */
 var dragComplete = 'dragComplete';
+/** @private */
+var selectionComplete = 'selectionComplete';
 /** @private */
 var resized = 'resized';
 /** @private */
@@ -2554,7 +2572,6 @@ function markerAnimate(element, delay, duration, series, pointIndex, point, isLa
         },
         end: function (model) {
             element.style.visibility = '';
-            element.removeAttribute('transform');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
@@ -3510,6 +3527,7 @@ function blazorTemplatesReset(control) {
     for (var i = 0; i < control.annotations.length; i++) {
         resetBlazorTemplate((control.element.id + '_Annotation_' + i).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate');
     }
+    resetBlazorTemplate(control.element.id + '_tooltipparent_template' + '_blazorTemplate', 'Template');
 }
 /** @private */
 var CustomizeOption = /** @__PURE__ @class */ (function () {
@@ -4910,7 +4928,8 @@ var ChartData = /** @__PURE__ @class */ (function () {
         return new PointData(point, series);
     };
     ChartData.prototype.isSelected = function (chart) {
-        return (chart.selectionMode.indexOf('Drag') > -1 && chart.selectionModule && chart.selectionModule.rectPoints !== null);
+        return ((chart.selectionMode.indexOf('Drag') > -1 || chart.selectionMode.indexOf('Lasso') > -1) && chart.selectionModule &&
+            chart.selectionModule.rectPoints !== null);
     };
     ChartData.prototype.getRectPoint = function (series, rect, x, y) {
         var chart = this.chart;
@@ -5117,6 +5136,12 @@ var DataLabelSettings = /** @__PURE__ @class */ (function (_super) {
         Property(1)
     ], DataLabelSettings.prototype, "opacity", void 0);
     __decorate$4([
+        Property(0)
+    ], DataLabelSettings.prototype, "angle", void 0);
+    __decorate$4([
+        Property(false)
+    ], DataLabelSettings.prototype, "enableRotation", void 0);
+    __decorate$4([
         Property('Auto')
     ], DataLabelSettings.prototype, "position", void 0);
     __decorate$4([
@@ -5169,6 +5194,9 @@ var MarkerSettings = /** @__PURE__ @class */ (function (_super) {
         Complex({ width: 2, color: null }, Border)
     ], MarkerSettings.prototype, "border", void 0);
     __decorate$4([
+        Complex({ x: 0, y: 0 }, Offset)
+    ], MarkerSettings.prototype, "offset", void 0);
+    __decorate$4([
         Property(null)
     ], MarkerSettings.prototype, "fill", void 0);
     __decorate$4([
@@ -5193,6 +5221,8 @@ var Points = /** @__PURE__ @class */ (function () {
         this.percentage = null;
         /** point region data */
         this.regionData = null;
+        /** To know the point is selected */
+        this.isSelect = false;
         /** point marker */
         this.marker = {
             visible: false
@@ -6156,6 +6186,9 @@ var Series = /** @__PURE__ @class */ (function (_super) {
     ], Series.prototype, "enableTooltip", void 0);
     __decorate$4([
         Property('')
+    ], Series.prototype, "tooltipFormat", void 0);
+    __decorate$4([
+        Property('')
     ], Series.prototype, "tooltipMappingName", void 0);
     __decorate$4([
         Property('SeriesType')
@@ -6498,6 +6531,8 @@ var Marker = /** @__PURE__ @class */ (function (_super) {
         var previousPath;
         var circlePath;
         var shapeOption;
+        location.x = location.x + marker.offset.x;
+        location.y = location.y - marker.offset.y;
         var isBoxPlot = series.type === 'BoxAndWhisker';
         var fill = marker.fill || (isBoxPlot ? point.interior || series.interior : '#ffffff');
         var argsData;
@@ -7784,6 +7819,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         }
         this.renderElements();
         removeElement$1('chartmeasuretext');
+        this.removeSelection();
     };
     /**
      * To calcualte the stack values
@@ -7799,6 +7835,31 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 series.calculateStackedValue(series.type.indexOf('100') > -1, this);
                 isCalculateStacking = true;
             }
+        }
+    };
+    Chart.prototype.removeSelection = function () {
+        for (var _i = 0, _a = this.visibleSeries; _i < _a.length; _i++) {
+            var series = _a[_i];
+            if (series.visible) {
+                for (var _b = 0, _c = series.points; _b < _c.length; _b++) {
+                    var point = _c[_b];
+                    point.isSelect = false;
+                }
+            }
+        }
+        if (getElement(this.element.id + '_ej2_drag_multi_group')) {
+            if (this.selectionMode.indexOf('Drag') > -1) {
+                this.selectionModule.filterArray = [];
+            }
+            removeElement$1(this.element.id + '_ej2_drag_multi_group');
+            this.selectionModule.calculateDragSelectedElements(this, new Rect(0, 0, 0, 0), true);
+        }
+        else if (getElement(this.element.id + '_ej2_drag_group')) {
+            if (this.selectionMode !== 'Lasso') {
+                this.selectionModule.filterArray = [];
+            }
+            removeElement$1(this.element.id + '_ej2_drag_group');
+            this.selectionModule.calculateDragSelectedElements(this, new Rect(0, 0, 0, 0), true);
         }
     };
     Chart.prototype.renderElements = function () {
@@ -9481,6 +9542,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], Chart.prototype, "isMultiSelect", void 0);
     __decorate([
+        Property(false)
+    ], Chart.prototype, "allowMultiSelection", void 0);
+    __decorate([
         Property(true)
     ], Chart.prototype, "enableExport", void 0);
     __decorate([
@@ -9582,6 +9646,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Chart.prototype, "dragComplete", void 0);
+    __decorate([
+        Event()
+    ], Chart.prototype, "selectionComplete", void 0);
     __decorate([
         Event()
     ], Chart.prototype, "zoomComplete", void 0);
@@ -17424,6 +17491,7 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
                 arrowPadding: this.text.length > 1 || this.chart.stockChart ? 0 : 12,
                 availableSize: chart.availableSize,
                 isCanvas: this.chart.enableCanvas,
+                blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                 tooltipRender: function () {
                     module.removeHighlight(module.control);
                     module.highlightPoints();
@@ -17694,6 +17762,10 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         var rect = chart.chartAxisLayoutPanel.seriesClipRect;
         this.currentPoints = [];
         if (this.findData(data, this.previousPoints[0])) {
+            if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index
+                && data.series.index === this.previousPoints[0].series.index) {
+                return null;
+            }
             if (this.pushData(data, isFirst, tooltipDiv, true)) {
                 this.triggerTooltipRender(data, isFirst, this.getTooltipText(data), this.findHeader(data));
             }
@@ -17997,7 +18069,13 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
         return textValue;
     };
     Tooltip$$1.prototype.getFormat = function (chart, series) {
-        if (chart.tooltip.format) {
+        if (series.tooltipFormat) {
+            if (series.seriesType === 'XY' && series.category === 'Indicator') {
+                return this.getIndicatorTooltipFormat(series, chart, chart.tooltip.format);
+            }
+            return series.tooltipFormat;
+        }
+        if (!series.tooltipFormat && chart.tooltip.format) {
             if (series.seriesType === 'XY' && series.category === 'Indicator') {
                 return this.getIndicatorTooltipFormat(series, chart, chart.tooltip.format);
             }
@@ -19198,6 +19276,7 @@ var __extends$52 = (undefined && undefined.__extends) || (function () {
 /**
  * Selection src file
  */
+// tslint:disable:no-string-literal
 /**
  * `Selection` module handles the selection for chart.
  * @private
@@ -19211,8 +19290,17 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
     function Selection(chart) {
         var _this = _super.call(this, chart) || this;
         _this.isdrawRect = true;
+        _this.multiDataIndexes = [];
+        _this.pathIndex = 0;
+        _this.seriesIndex = 0;
+        _this.count = -1;
+        _this.dragRectArray = [];
+        _this.filterArray = [];
+        _this.totalSelectedPoints = [];
         _this.chart = chart;
         _this.renderer = chart.renderer;
+        var mode = chart.selectionMode;
+        _this.isMultiDrag = chart.isMultiSelect && (mode.indexOf('Drag') > -1);
         _this.addEventListener();
         return _this;
     }
@@ -19263,7 +19351,9 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         this.unselected = chart.element.id + '_ej2_deselected';
         this.closeIconId = chart.element.id + '_ej2_drag_close';
         this.draggedRectGroup = chart.element.id + '_ej2_drag_group';
+        this.multiRectGroup = chart.element.id + '_ej2_drag_multi_group';
         this.draggedRect = chart.element.id + '_ej2_drag_rect';
+        this.lassoPath = chart.element.id + '_ej2_drag_path';
         this.selectedDataIndexes = [];
         this.rectPoints = null;
         this.isSeriesMode = chart.selectionMode === 'Series';
@@ -19343,25 +19433,112 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         switch (chart.selectionMode) {
             case 'Series':
                 this.selection(chart, index, this.getSeriesElements(chart.series[index.series]));
+                this.selectionComplete(chart, index, chart.selectionMode);
                 this.blurEffect(chart.element.id, chart.visibleSeries);
                 break;
             case 'Point':
                 if (!isNaN(index.point)) {
                     this.selection(chart, index, [element]);
+                    this.selectionComplete(chart, index, chart.selectionMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
             case 'Cluster':
                 if (!isNaN(index.point)) {
                     this.clusterSelection(chart, chart.series, index);
+                    this.selectionComplete(chart, index, chart.selectionMode);
                     this.blurEffect(chart.element.id, chart.visibleSeries);
                 }
                 break;
         }
     };
+    Selection.prototype.selectionComplete = function (chart, index, selectionMode) {
+        var points;
+        var pointIndex;
+        var seriesIndex;
+        var selectedPointValues = [];
+        if (selectionMode === 'Cluster') {
+            for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
+                var series = _a[_i];
+                if (series.visible) {
+                    for (var i = 0; i < this.selectedDataIndexes.length; i++) {
+                        pointIndex = chart.isMultiSelect ? this.selectedDataIndexes[i].point : index.point;
+                        seriesIndex = series.index;
+                        points = series.points;
+                        var yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                            points[pointIndex].regions[0].y;
+                        var selectedPointX = points[pointIndex].xValue;
+                        if (chart.primaryXAxis.valueType === 'Category') {
+                            selectedPointX = points[pointIndex].x.toLocaleString();
+                        }
+                        else if (chart.primaryXAxis.valueType === 'DateTime') {
+                            selectedPointX = new Date(points[pointIndex].xValue);
+                        }
+                        if (series.category !== 'Indicator') {
+                            selectedPointValues.push({
+                                x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                                pointIndex: pointIndex
+                            });
+                        }
+                        if (series.type === 'RangeArea') {
+                            selectedPointValues.push({
+                                x: selectedPointX, y: points[pointIndex].regions[0].y,
+                                seriesIndex: seriesIndex, pointIndex: pointIndex
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        else if (selectionMode === 'Series') {
+            if (chart.isMultiSelect) {
+                for (var i = 0; i < this.selectedDataIndexes.length; i++) {
+                    seriesIndex = this.selectedDataIndexes[i].series;
+                    selectedPointValues.push({
+                        seriesIndex: seriesIndex,
+                    });
+                }
+            }
+            else {
+                seriesIndex = (this.selectedDataIndexes.length > 0) ? this.selectedDataIndexes[0].series : 0;
+                selectedPointValues.push({
+                    seriesIndex: seriesIndex,
+                });
+            }
+        }
+        else if (selectionMode === 'Point') {
+            for (var i = 0; i < this.selectedDataIndexes.length; i++) {
+                pointIndex = this.selectedDataIndexes[i].point;
+                seriesIndex = this.selectedDataIndexes[i].series;
+                var series = chart.series[seriesIndex];
+                points = series.points;
+                var selectedPointX = points[pointIndex].xValue;
+                var yValue = series.type !== 'RangeArea' ? points[pointIndex].yValue :
+                    points[pointIndex].regions[0].y;
+                if (chart.primaryXAxis.valueType === 'Category') {
+                    selectedPointX = points[pointIndex].x.toLocaleString();
+                }
+                else if (chart.primaryXAxis.valueType === 'DateTime') {
+                    selectedPointX = new Date(points[pointIndex].xValue);
+                }
+                selectedPointValues.push({
+                    x: selectedPointX, y: yValue, seriesIndex: seriesIndex,
+                    pointIndex: pointIndex
+                });
+            }
+        }
+        var args = {
+            name: selectionComplete,
+            selectedDataValues: selectedPointValues,
+            cancel: false
+        };
+        chart.trigger(selectionComplete, args);
+    };
     Selection.prototype.selection = function (chart, index, selectedElements) {
-        if (!chart.isMultiSelect && (chart.selectionMode.indexOf('Drag') === -1)) {
-            this.removeMultiSelectEelments(chart, this.selectedDataIndexes, index, chart.series);
+        if (!(chart.selectionMode === 'Lasso')) {
+            if (!chart.isMultiSelect && (chart.selectionMode.indexOf('Drag') === -1)) {
+                this.removeMultiSelectEelments(chart, this.selectedDataIndexes, index, chart.series);
+            }
         }
         var className = selectedElements[0] && (selectedElements[0].getAttribute('class') || '');
         if (selectedElements[0] && className.indexOf(this.getSelectionClass(selectedElements[0].id)) > -1) {
@@ -19554,8 +19731,9 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Selection.prototype.calculateDragSelectedElements = function (chart, dragRect) {
+    Selection.prototype.calculateDragSelectedElements = function (chart, dragRect, isClose) {
         this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+        var isLasso = chart.selectionMode === 'Lasso';
         var rect = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
         var axisOffset = new ChartLocation(chart.chartAxisLayoutPanel.seriesClipRect.x, chart.chartAxisLayoutPanel.seriesClipRect.y);
         this.removeOffset(rect, axisOffset);
@@ -19564,6 +19742,14 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         var selectedPointValues = [];
         var selectedSeriesValues = [];
         this.isSeriesMode = false;
+        var isDragResize = (chart.allowMultiSelection) && (this.rectGrabbing || this.resizing);
+        this.rectPoints = this.dragRectArray[isDragResize ? this.targetIndex : this.count] =
+            new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
+        if (dragRect.width && dragRect.height && !isClose) {
+            var rt = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
+            this.removeOffset(rt, axisOffset);
+            this.filterArray[isDragResize ? this.targetIndex : this.count] = rt;
+        }
         var _loop_1 = function (series) {
             if (series.visible) {
                 points = series.points;
@@ -19596,9 +19782,16 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                         });
                     }
                     else {
-                        isCurrentPoint = points[j].symbolLocations.some(function (location) {
-                            return location && withInBounds(location.x + xAxisOffset_1, location.y + yAxisOffset_1, rect);
-                        });
+                        if (chart.selectionMode === 'Lasso') {
+                            isCurrentPoint = points[j].isSelect;
+                        }
+                        else {
+                            isCurrentPoint = (chart.allowMultiSelection) ?
+                                this_1.isPointSelect(points[j], xAxisOffset_1, yAxisOffset_1, this_1.filterArray, axisOffset) :
+                                points[j].symbolLocations.some(function (location) {
+                                    return location && withInBounds(location.x + xAxisOffset_1, location.y + yAxisOffset_1, rect);
+                                });
+                        }
                     }
                     if (isCurrentPoint && series.category !== 'Indicator') {
                         index = new Index(series.index, points[j].index);
@@ -19618,8 +19811,11 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
             _loop_1(series);
         }
         this.blurEffect(chart.element.id, chart.visibleSeries);
-        this.rectPoints = new Rect(dragRect.x, dragRect.y, dragRect.width, dragRect.height);
-        this.createCloseButton((dragRect.x + dragRect.width), dragRect.y);
+        var x = isLasso ? chart.mouseDownX : (dragRect.x + dragRect.width);
+        var y = isLasso ? chart.mouseDownY : dragRect.y;
+        if (!isClose) {
+            this.createCloseButton(x, y);
+        }
         var args = {
             name: dragComplete,
             selectedDataValues: selectedSeriesValues,
@@ -19631,14 +19827,27 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         rect.x -= clip.x;
         rect.y -= clip.y;
     };
+    Selection.prototype.isPointSelect = function (points, xAxisOffset, yAxisOffset, rectCollection, axisOffset) {
+        var location = points.symbolLocations[0];
+        for (var _i = 0, rectCollection_1 = rectCollection; _i < rectCollection_1.length; _i++) {
+            var rect = rectCollection_1[_i];
+            if (rect && location && withInBounds(location.x + xAxisOffset, location.y + yAxisOffset, rect)) {
+                return true;
+            }
+        }
+        return false;
+    };
     /**
      * Method to draw dragging rect.
      * @return {void}
      * @private
      */
-    Selection.prototype.drawDraggingRect = function (chart, dragRect) {
+    Selection.prototype.drawDraggingRect = function (chart, dragRect, target) {
         var cartesianLayout = chart.chartAxisLayoutPanel.seriesClipRect;
         var border = chart.chartArea.border.width;
+        var rectFill = chart.themeStyle.selectionRectFill;
+        var rectStroke = chart.themeStyle.selectionRectStroke;
+        var isLasso = chart.selectionMode === 'Lasso';
         if (this.isdrawRect) {
             cartesianLayout.x = cartesianLayout.x - border / 2;
             cartesianLayout.y = cartesianLayout.y - border / 2;
@@ -19656,40 +19865,117 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                 dragRect.width = cartesianLayout.width;
                 break;
         }
-        if (dragRect.width < 5 || dragRect.height < 5) {
+        if ((dragRect.width < 5 || dragRect.height < 5) && !isLasso) {
             return null;
         }
-        var element = getElement(this.draggedRect);
-        if (this.closeIcon) {
-            removeElement$1(this.closeIconId);
-        }
-        if (element) {
-            this.setAttributes(element, dragRect);
+        var isDragMode = chart.selectionMode.indexOf('Drag') > -1 || chart.selectionMode === 'Lasso';
+        if ((chart.allowMultiSelection) && isDragMode) {
+            var element = void 0;
+            var dragGroup = void 0;
+            var multiGroup = getElement(this.multiRectGroup);
+            if (!multiGroup) {
+                multiGroup = chart.svgRenderer.createGroup({ id: this.multiRectGroup });
+                chart.svgObject.appendChild(multiGroup);
+            }
+            if (this.rectGrabbing || this.resizing) {
+                var rectElement = void 0;
+                if (this.resizing) {
+                    rectElement = getElement(this.draggedRect + this.targetIndex);
+                }
+                else {
+                    rectElement = getElement(target.id);
+                }
+                if (rectElement.nextSibling) {
+                    remove(rectElement.nextSibling);
+                }
+                this.setAttributes(rectElement, dragRect);
+            }
+            else if (!getElement(this.draggedRectGroup + this.count)) {
+                dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup + this.count });
+                var svgElement = document.getElementById(chart.element.id + '_series_svg');
+                chart.enableCanvas ? svgElement.appendChild(dragGroup) : multiGroup.appendChild(dragGroup);
+            }
+            if (!(chart.selectionMode === 'Lasso')) {
+                element = chart.svgRenderer.drawRectangle(new RectOption(this.draggedRect + this.count, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
+                element.setAttribute('style', 'cursor:move;');
+            }
+            else {
+                element = chart.svgRenderer.drawPath(new PathOption(this.lassoPath + this.count, rectFill, 3, rectStroke, 1, '', this.path));
+            }
+            if (!dragGroup && !this.rectGrabbing && !this.resizing) {
+                getElement(this.draggedRectGroup + this.count).appendChild(element);
+            }
+            else if (!this.rectGrabbing && !this.resizing) {
+                dragGroup.appendChild(element);
+            }
         }
         else {
-            var dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
-            var svgElement = document.getElementById(chart.element.id + '_series_svg');
-            chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
-            element = chart.svgRenderer.drawRectangle(new RectOption(this.draggedRect, chart.themeStyle.selectionRectFill, { color: chart.themeStyle.selectionRectStroke, width: 1 }, 1, dragRect));
-            element.setAttribute('style', 'cursor:move;');
-            dragGroup.appendChild(element);
+            var element = isLasso ?
+                getElement(this.lassoPath) : getElement(this.draggedRect);
+            if (this.closeIcon) {
+                removeElement$1(this.closeIconId);
+            }
+            if (element) {
+                if (isLasso) {
+                    element.setAttribute('d', this.path);
+                }
+                else {
+                    this.setAttributes(element, dragRect);
+                }
+            }
+            else {
+                var dragGroup = chart.svgRenderer.createGroup({ id: this.draggedRectGroup });
+                var svgElement = document.getElementById(chart.element.id + '_series_svg');
+                chart.enableCanvas ? svgElement.appendChild(dragGroup) : chart.svgObject.appendChild(dragGroup);
+                if (!(chart.selectionMode === 'Lasso')) {
+                    element = chart.svgRenderer.drawRectangle(new RectOption(this.draggedRect, rectFill, { color: rectStroke, width: 1 }, 1, dragRect));
+                }
+                else {
+                    element = chart.svgRenderer.drawPath(new PathOption(this.lassoPath, rectFill, 3, rectStroke, 1, '', this.path));
+                }
+                //element.setAttribute('style', 'cursor:move;');
+                dragGroup.appendChild(element);
+            }
         }
     };
+    /**
+     * To get drag selected group element index from its id
+     * @param id
+     */
+    Selection.prototype.getIndex = function (id) {
+        var i;
+        for (i = id.length - 1; i > 0; i--) {
+            var x = Number(id[i]);
+            if (!isNaN(x)) {
+                continue;
+            }
+            else {
+                break;
+            }
+        }
+        var index = +id.substr(i + 1, id.length - 1);
+        return index;
+    };
     Selection.prototype.createCloseButton = function (x, y) {
+        var isMultiDrag = this.chart.allowMultiSelection;
+        var circleStroke = this.chart.themeStyle.selectionCircleStroke;
+        var isDrag = this.rectGrabbing || this.resizing;
         var closeIcon = this.chart.svgRenderer.createGroup({
-            id: this.closeIconId,
+            id: this.closeIconId + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''),
             style: 'cursor:pointer; visibility: visible;'
         });
-        closeIcon.appendChild(this.chart.svgRenderer.drawCircle(new CircleOption(this.closeIconId + '_circle', '#FFFFFF', { color: this.chart.themeStyle.selectionCircleStroke, width: 1 }, 1, x, y, 10)));
+        closeIcon.appendChild(this.chart.svgRenderer.drawCircle(new CircleOption(this.closeIconId + '_circle' + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), '#FFFFFF', { color: circleStroke, width: 1 }, 1, x, y, 10)));
         var direction = 'M ' + (x - 4) + ' ' + (y - 4) + ' L ' + (x + 4) + ' ' + (y + 4) + ' M ' + (x - 4) + ' ' + (y + 4) +
             ' L ' + (x + 4) + ' ' + (y - 4);
         closeIcon.appendChild(this.chart.svgRenderer.drawPath({
-            id: this.closeIconId + '_cross', d: direction,
-            stroke: this.chart.themeStyle.selectionCircleStroke,
-            'stroke-width': 2, fill: this.chart.themeStyle.selectionCircleStroke
+            id: this.closeIconId + '_cross' + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''), d: direction,
+            stroke: circleStroke, 'stroke-width': 2, fill: circleStroke
         }, null));
         this.closeIcon = closeIcon;
-        getElement(this.draggedRectGroup).appendChild(closeIcon);
+        var pathElement = getElement(this.draggedRectGroup + (isMultiDrag ? (isDrag ? this.targetIndex : this.count) : ''));
+        if (pathElement) {
+            pathElement.appendChild(closeIcon);
+        }
     };
     /**
      * Method to remove dragged element.
@@ -19698,11 +19984,58 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      */
     Selection.prototype.removeDraggedElements = function (chart, event) {
         if ((event.target.id.indexOf(this.closeIconId) > -1) && (event.type.indexOf('move') === -1)) {
-            this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+            var isSelectedvalues = true;
+            if ((chart.allowMultiSelection)) {
+                var index = this.getIndex(event.target.id);
+                var multiRectGroupElement = getElement(this.multiRectGroup);
+                remove(getElement(this.draggedRectGroup + index));
+                this.dragRectArray[index] = null;
+                this.filterArray[index] = null;
+                this.totalSelectedPoints[index] = null;
+                if (multiRectGroupElement && multiRectGroupElement.childElementCount === 0) {
+                    removeElement$1(multiRectGroupElement);
+                    this.dragRectArray = [];
+                    this.filterArray = [];
+                    this.totalSelectedPoints = [];
+                }
+                if (this.chart.selectionMode === 'Lasso') {
+                    if (this.multiDataIndexes[index] != null) {
+                        for (var i = 0; i < this.multiDataIndexes[index].length; i++) {
+                            this.multiDataIndexes[index][i].isSelect = false;
+                        }
+                    }
+                    this.multiDataIndexes[index] = null;
+                    for (var j = 0; j < this.multiDataIndexes.length; j++) {
+                        if (this.multiDataIndexes[j] != null) {
+                            isSelectedvalues = false;
+                            for (var k = 0; k < this.multiDataIndexes[j].length; k++) {
+                                this.multiDataIndexes[j][k].isSelect = true;
+                            }
+                        }
+                    }
+                    this.calculateDragSelectedElements(chart, this.dragRect, true);
+                }
+                else if (this.filterArray.length) {
+                    for (var i = 0; i < this.filterArray.length; i++) {
+                        if (this.filterArray[i]) {
+                            isSelectedvalues = false;
+                            this.calculateDragSelectedElements(chart, this.filterArray[i], true);
+                        }
+                    }
+                }
+                else {
+                    this.calculateDragSelectedElements(chart, new Rect(0, 0, 0, 0), true);
+                }
+            }
+            else {
+                remove(getElement(this.draggedRectGroup));
+                this.removeSelectedElements(chart, this.selectedDataIndexes, chart.series);
+            }
             this.blurEffect(chart.element.id, chart.visibleSeries);
-            remove(getElement(this.draggedRectGroup));
             this.changeCursorStyle(false, chart.svgObject, 'auto');
-            this.rectPoints = null;
+            if (!(chart.allowMultiSelection) || isSelectedvalues) {
+                this.rectPoints = null;
+            }
         }
     };
     /**
@@ -19710,27 +20043,43 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Selection.prototype.resizingSelectionRect = function (chart, location, tapped) {
-        var rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
-        var resize = this.findResizeMode(chart.svgObject, rect, location);
-        if (this.resizing) {
-            rect = getDraggedRectLocation(rect.x, rect.y, (rect.x + rect.width), (rect.y + rect.height), chart.chartAxisLayoutPanel.seriesClipRect);
-            this.drawDraggingRect(chart, rect);
-            this.dragRect = rect;
+    Selection.prototype.resizingSelectionRect = function (chart, location, tapped, target) {
+        var rect;
+        if (((chart.allowMultiSelection) && (target.id.indexOf('_ej2_drag_rect') > -1)) ||
+            this.dragRectArray[this.targetIndex]) {
+            if (target.id.indexOf('_ej2_drag_rect') > -1) {
+                this.targetIndex = this.getIndex(target.id);
+            }
+            var r = this.dragRectArray[this.targetIndex];
+            rect = new Rect(r.x, r.y, r.width, r.height);
         }
-        if (tapped) {
-            this.resizing = resize;
+        if (!(chart.allowMultiSelection)) {
+            rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
+        }
+        if (rect) {
+            var resize = this.findResizeMode(chart.svgObject, rect, location);
+            if (this.resizing) {
+                rect = getDraggedRectLocation(rect.x, rect.y, (rect.x + rect.width), (rect.y + rect.height), chart.chartAxisLayoutPanel.seriesClipRect);
+                this.drawDraggingRect(chart, rect);
+                this.dragRect = rect;
+            }
+            if (tapped) {
+                this.resizing = resize;
+            }
+        }
+        else {
+            return;
         }
     };
     Selection.prototype.findResizeMode = function (chartSvgObject, rect, location) {
         var cursorStyle = 'se-resize';
         var resize = false;
         if (!this.resizing) {
-            var resizeEdges = [new Rect(rect.x, (rect.y - 10), rect.width - 5, 20),
-                new Rect((rect.x - 10), rect.y, 20, rect.height),
-                new Rect(rect.x, (rect.y + rect.height - 10), rect.width - 10, 20),
-                new Rect((rect.x + rect.width - 10), rect.y + 5, 20, rect.height - 15),
-                new Rect((rect.x + rect.width - 10), (rect.y + rect.height - 10), 20, 20)]; //corner
+            var resizeEdges = [new Rect(rect.x, (rect.y), rect.width - 5, 5),
+                new Rect((rect.x), rect.y, 5, rect.height),
+                new Rect(rect.x, (rect.y + rect.height - 5), rect.width - 5, 5),
+                new Rect((rect.x + rect.width - 5), rect.y + 5, 5, rect.height - 15),
+                new Rect((rect.x + rect.width - 10), (rect.y + rect.height - 10), 10, 10)]; //corner
             for (var i = 0; i < resizeEdges.length; i++) {
                 if (withInBounds(location.x, location.y, resizeEdges[i])) {
                     cursorStyle = (i === 4) ? cursorStyle : (i % 2 === 0) ? 'ns-resize' : 'ew-resize';
@@ -19772,13 +20121,18 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
-        this.changeCursorStyle(resize, getElement(this.draggedRect), cursorStyle);
+        if (this.chart.selectionMode !== 'Lasso') {
+            this.changeCursorStyle(resize, getElement((this.chart.allowMultiSelection) ? this.draggedRect +
+                this.targetIndex : this.draggedRect), cursorStyle);
+        }
         this.changeCursorStyle(resize, chartSvgObject, cursorStyle);
         return resize;
     };
     Selection.prototype.changeCursorStyle = function (isResize, rectelement, cursorStyle) {
         cursorStyle = isResize ? cursorStyle : (this.control.svgObject === rectelement) ? 'auto' : 'move';
-        rectelement.setAttribute('style', 'cursor:' + cursorStyle + ';');
+        if (rectelement) {
+            rectelement.setAttribute('style', 'cursor:' + cursorStyle + ';');
+        }
     };
     Selection.prototype.removeSelectedElements = function (chart, index, seriesCollection) {
         index.splice(0, index.length);
@@ -19805,13 +20159,20 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      * @private
      */
-    Selection.prototype.draggedRectMoved = function (chart, grabbedPoint, doDrawing) {
-        var rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
+    Selection.prototype.draggedRectMoved = function (chart, grabbedPoint, doDrawing, target) {
+        var rect;
+        if ((this.resizing || this.rectGrabbing) && (chart.allowMultiSelection)) {
+            var r = this.dragRectArray[this.targetIndex];
+            rect = new Rect(r.x, r.y, r.width, r.height);
+        }
+        else {
+            rect = new Rect(this.rectPoints.x, this.rectPoints.y, this.rectPoints.width, this.rectPoints.height);
+        }
         rect.x -= (grabbedPoint.x - chart.mouseX);
         rect.y -= (grabbedPoint.y - chart.mouseY);
         rect = getDraggedRectLocation(rect.x, rect.y, rect.x + rect.width, rect.height + rect.y, chart.chartAxisLayoutPanel.seriesClipRect);
         if (doDrawing) {
-            this.drawDraggingRect(chart, rect);
+            this.drawDraggingRect(chart, rect, target);
         }
         else {
             this.calculateDragSelectedElements(chart, rect);
@@ -19830,8 +20191,27 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         if ((this.dragging || this.resizing) && this.dragRect.width > 5 && this.dragRect.height > 5) {
             this.calculateDragSelectedElements(chart, this.dragRect);
         }
-        else if (this.rectGrabbing && this.rectPoints.width && this.rectPoints.height) {
+        else if (!(chart.allowMultiSelection) && this.rectGrabbing &&
+            this.rectPoints.width && this.rectPoints.height) {
             this.draggedRectMoved(chart, this.dragRect);
+        }
+        else if (this.rectGrabbing && this.dragRectArray[this.targetIndex].width && this.dragRectArray[this.targetIndex].height) {
+            this.draggedRectMoved(chart, this.dragRect);
+        }
+        if (chart.selectionMode === 'Lasso' && this.dragging && this.path) {
+            if (this.path.indexOf('L') !== -1) {
+                if (!(chart.allowMultiSelection)) {
+                    getElement(this.lassoPath).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement(this.lassoPath));
+                }
+                else if (getElement(this.lassoPath + this.count)) {
+                    getElement(this.lassoPath + this.count).setAttribute('d', this.path + 'Z');
+                    this.pointChecking(getElement(this.lassoPath + this.count));
+                }
+                if (this.dragging || this.resizing) {
+                    this.calculateDragSelectedElements(chart, this.dragRect);
+                }
+            }
         }
         this.dragging = false;
         this.rectGrabbing = false;
@@ -19843,24 +20223,55 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     Selection.prototype.dragStart = function (chart, seriesClipRect, mouseDownX, mouseDownY, event) {
-        this.dragging = (chart.selectionMode.indexOf('Drag') > -1) && (chart.isDoubleTap || !chart.isTouch) &&
+        var mode = chart.selectionMode;
+        this.dragging = (mode.indexOf('Drag') > -1 || mode === 'Lasso') && (chart.isDoubleTap || !chart.isTouch) &&
             chart.chartAreaType !== 'PolarRadar';
+        var target = event.target;
+        this.path = undefined;
         if (this.dragging) {
+            this.count = getElement(this.multiRectGroup) ? (this.count + 1) : 0;
             this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
             if (chart.mouseDownX < seriesClipRect.x || chart.mouseDownX > (seriesClipRect.x + seriesClipRect.width) ||
                 chart.mouseDownY < seriesClipRect.y || chart.mouseDownY > (seriesClipRect.y + seriesClipRect.height)) {
                 this.dragging = false;
             }
         }
-        if (this.rectPoints) {
-            this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
-            this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true);
-            this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.rectPoints);
+        if (mode === 'Lasso') {
+            for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
+                var series = _a[_i];
+                if (series.visible) {
+                    for (var _b = 0, _c = series.points; _b < _c.length; _b++) {
+                        var point = _c[_b];
+                        if (!(chart.allowMultiSelection)) {
+                            point.isSelect = false;
+                        }
+                    }
+                }
+            }
         }
+        if (!(mode === 'Lasso')) {
+            if (this.rectPoints && !(chart.allowMultiSelection)) {
+                this.dragRect = new Rect(chart.mouseDownX, chart.mouseDownY, 0, 0);
+                this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true);
+                this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.rectPoints);
+            }
+            if ((chart.allowMultiSelection)) {
+                var index = this.getIndex(target.id);
+                this.targetIndex = this.isDragRect(target.id) ? index : undefined;
+                if (this.dragRectArray.length && this.isDragRect(target.id)) {
+                    this.resizingSelectionRect(chart, new ChartLocation(mouseDownX, mouseDownY), true, target);
+                    this.rectGrabbing = withInBounds(mouseDownX, mouseDownY, this.dragRectArray[index]);
+                }
+            }
+        }
+    };
+    Selection.prototype.isDragRect = function (id) {
+        return id.indexOf('_ej2_drag_rect') > -1;
     };
     /** @private */
     Selection.prototype.mouseMove = function (event) {
         var chart = this.chart;
+        var target = event.target;
         if (chart.selectionMode === 'None') {
             return;
         }
@@ -19870,19 +20281,64 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
         var insideMoving = withInBounds(chart.mouseX, chart.mouseY, chart.chartAxisLayoutPanel.seriesClipRect);
         if (insideMoving) {
             if (this.rectGrabbing && !this.resizing) {
-                this.draggedRectMoved(chart, this.dragRect, true);
+                this.draggedRectMoved(chart, this.dragRect, true, target);
             }
             else if (this.dragging && !this.resizing) {
-                this.dragRect = this.getDragRect(chart, chart.chartAxisLayoutPanel.seriesClipRect);
-                this.drawDraggingRect(chart, this.dragRect);
+                if (chart.selectionMode === 'Lasso') {
+                    this.getPath(chart.mouseDownX, chart.mouseDownY, chart.mouseX, chart.mouseY);
+                    this.drawDraggingRect(chart, this.dragRect, target);
+                }
+                else {
+                    this.dragRect = this.getDragRect(chart, chart.chartAxisLayoutPanel.seriesClipRect);
+                    this.drawDraggingRect(chart, this.dragRect, target);
+                }
             }
-            if (this.rectPoints) {
-                this.resizingSelectionRect(chart, new ChartLocation(chart.mouseX, chart.mouseY));
+            if (this.rectPoints && !(chart.allowMultiSelection)) {
+                this.resizingSelectionRect(chart, new ChartLocation(chart.mouseX, chart.mouseY), null, target);
+            }
+            else if (((chart.allowMultiSelection) && !this.dragging) || this.resizing) {
+                this.resizingSelectionRect(chart, new ChartLocation(chart.mouseX, chart.mouseY), null, target);
             }
         }
         else {
             this.completeSelection(event);
         }
+    };
+    Selection.prototype.getPath = function (startX, startY, endX, endY) {
+        if (this.dragging) {
+            if (this.path) {
+                this.path = this.path + ' L' + endX + ' ' + endY;
+            }
+            else {
+                this.path = 'M ' + startX + ' ' + startY;
+            }
+        }
+    };
+    Selection.prototype.pointChecking = function (path) {
+        var _this = this;
+        var chart = this.chart;
+        var element;
+        var svgRect = getElement(chart.svgId).getBoundingClientRect();
+        var offsetX = chart.chartAxisLayoutPanel.seriesClipRect.x + Math.max(svgRect.left, 0);
+        var offsetY = chart.chartAxisLayoutPanel.seriesClipRect.y + Math.max(svgRect.top, 0);
+        this.multiDataIndexes[this.count] = [];
+        for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
+            var series = _a[_i];
+            series.points.filter(function (point) {
+                element = document.elementFromPoint(point.symbolLocations[0].x + offsetX, point.symbolLocations[0].y + offsetY);
+                if (element === path) {
+                    point.isSelect = true;
+                    if ((_this.chart.allowMultiSelection) && _this.chart.selectionMode === 'Lasso') {
+                        _this.multiDataIndexes[_this.count][_this.seriesIndex] = point;
+                        _this.seriesIndex++;
+                    }
+                }
+                else if (!(chart.allowMultiSelection)) {
+                    point.isSelect = false;
+                }
+            });
+        }
+        this.seriesIndex = 0;
     };
     /**
      * Get module name.
@@ -20154,6 +20610,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
      * Render the data label for series.
      * @return {void}
      */
+    // tslint:disable-next-line:max-func-body-length
     DataLabel.prototype.render = function (series, chart, dataLabel) {
         var _this = this;
         // initialize the private variable
@@ -20164,6 +20621,8 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         var argsData;
         var border;
         var textSize;
+        var angle;
+        var degree;
         this.inverted = chart.requireInvertedAxis;
         this.yAxisInversed = series.yAxis.isInversed;
         var redraw = chart.redraw;
@@ -20177,8 +20636,13 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             _this.margin = dataLabel.margin;
             var labelText = [];
             var labelLength;
+            var xPos;
+            var yPos;
+            var xValue;
+            var yValue;
             var clip = series.clipRect;
             var shapeRect;
+            angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             var argsFont = (extend({}, getValue('properties', dataLabel.font), null, true));
             if ((point.symbolLocations.length && point.symbolLocations[0]) ||
@@ -20213,7 +20677,20 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                                 // Checking the font color
                                 rgbValue = convertHexToColor(colorNameToHex(_this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                textElement(chart.renderer, new TextOption(_this.commonId + index + '_Text_' + i, rect.x + _this.margin.left + textSize.width / 2, rect.y + _this.margin.top + textSize.height * 3 / 4, 'middle', argsData.text, 'rotate(0,' + (rect.x) + ',' + (rect.y) + ')', 'auto'), argsData.font, argsData.font.color ||
+                                xPos = rect.x + _this.margin.left + textSize.width / 2;
+                                yPos = rect.y + _this.margin.top + textSize.height * 3 / 4;
+                                if (angle !== 0 && dataLabel.enableRotation) {
+                                    xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
+                                    yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
+                                        (dataLabel.margin.bottom) / 2;
+                                    degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
+                                }
+                                else {
+                                    degree = 0;
+                                    xValue = rect.x;
+                                    yValue = rect.y;
+                                }
+                                textElement(chart.renderer, new TextOption(_this.commonId + index + '_Text_' + i, xPos, yPos, 'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree), argsData.font, argsData.font.color ||
                                     ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect);
                             }
                         }
@@ -23738,6 +24215,12 @@ var AccumulationDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
         Property(5)
     ], AccumulationDataLabelSettings.prototype, "ry", void 0);
     __decorate$8([
+        Property(0)
+    ], AccumulationDataLabelSettings.prototype, "angle", void 0);
+    __decorate$8([
+        Property(false)
+    ], AccumulationDataLabelSettings.prototype, "enableRotation", void 0);
+    __decorate$8([
         Complex({ width: null, color: null }, Border)
     ], AccumulationDataLabelSettings.prototype, "border", void 0);
     __decorate$8([
@@ -24455,6 +24938,12 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
      */
     AccumulationBase.prototype.deExplodeSlice = function (index, sliceId, animationDuration) {
         var element = getElement(sliceId + index);
+        if (element) {
+            var borderElement = (element.parentElement.lastElementChild).hasAttribute('transform');
+            if (borderElement) {
+                (element.parentElement.lastElementChild).removeAttribute('transform');
+            }
+        }
         var transform = element ? element.getAttribute('transform') : null;
         if (this.accumulation.enableAnimation && element && transform &&
             transform !== 'translate(0, 0)' && transform !== 'translate(0)') {
@@ -24468,12 +24957,12 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
     /**
      * To translate the point elements by index and position
      */
-    AccumulationBase.prototype.setTranslate = function (index, sliceId, position) {
+    AccumulationBase.prototype.setTranslate = function (index, sliceId, position, transform) {
         this.setElementTransform(sliceId + index, position);
         if (this.accumulation.visibleSeries[0].dataLabel.visible) {
             sliceId = this.accumulation.element.id + '_datalabel_Series_0_';
             this.setElementTransform(sliceId + 'shape_' + index, position);
-            this.setElementTransform(sliceId + 'text_' + index, position);
+            this.setElementTransform(sliceId + 'text_' + index, position + transform);
             this.setElementTransform(sliceId + 'connector_' + index, position);
         }
     };
@@ -24502,8 +24991,13 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
      */
     AccumulationBase.prototype.performAnimation = function (index, sliceId, startX, startY, endX, endY, duration, isReverse) {
         var _this = this;
+        var chart = this.accumulation;
+        var seriesIndex;
+        var point;
+        seriesIndex = parseInt(sliceId.split('_')[2], 10);
+        point = chart.visibleSeries[seriesIndex].points[index];
         if (duration <= 0) {
-            this.setTranslate(index, sliceId, 'translate(' + (endX) + ', ' + (endY) + ')');
+            this.setTranslate(index, sliceId, 'translate(' + (endX) + ', ' + (endY) + ')', point.transform);
             return null;
         }
         var xValue;
@@ -24513,10 +25007,10 @@ var AccumulationBase = /** @__PURE__ @class */ (function () {
             progress: function (args) {
                 xValue = linear(args.timeStamp, startX, endX, args.duration);
                 yValue = linear(args.timeStamp, startY, endY, args.duration);
-                _this.setTranslate(index, sliceId, 'translate(' + (isReverse ? endX - xValue : xValue) + ', ' + (isReverse ? endY - yValue : yValue) + ')');
+                _this.setTranslate(index, sliceId, 'translate(' + (isReverse ? endX - xValue : xValue) + ', ' + (isReverse ? endY - yValue : yValue) + ')', point.transform);
             },
             end: function (model) {
-                _this.setTranslate(index, sliceId, 'translate(' + (isReverse ? startX : endX) + ', ' + (isReverse ? startX : endY) + ')');
+                _this.setTranslate(index, sliceId, 'translate(' + (isReverse ? startX : endX) + ', ' + (isReverse ? startX : endY) + ')', point.transform);
             }
         });
     };
@@ -24766,6 +25260,7 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
      */
     PieSeries.prototype.renderPoint = function (point, series, chart, option, seriesGroup, redraw) {
         var sum$$1 = series.sumOfPoints;
+        point.startAngle = this.startAngle;
         var yValue = point.visible ? point.y : 0;
         var degree = (sum$$1) ? ((Math.abs(yValue) / sum$$1) * (this.totalAngle)) : null;
         var start = Math.PI / 180 * ((90 - (360 - this.startAngle)) - 90);
@@ -24781,6 +25276,58 @@ var PieSeries = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.refresh(point, degree, start, chart, option, seriesGroup);
+        }
+    };
+    PieSeries.prototype.findSeries = function (e) {
+        var innerRadius;
+        var radius;
+        var borderGap = 3; // Gap between pie/doughnut chart and border
+        var width = 2; // width of the border
+        radius = this.innerRadius === 0 ? this.radius + borderGap : this.innerRadius - borderGap;
+        innerRadius = this.innerRadius === 0 ? radius + width : radius - width;
+        this.toggleInnerPoint(e, radius, innerRadius);
+    };
+    PieSeries.prototype.toggleInnerPoint = function (event, radius, innerRadius) {
+        var target = event.target;
+        var id = indexFinder(target.id, true);
+        var borderElement = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
+        var createBorderEle;
+        if (!isNaN(id.series)) {
+            var seriesIndex = id.series;
+            var pointIndex = id.point;
+            if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
+                var point = this.accumulation.visibleSeries[0].points[pointIndex];
+                var srcElem = getElement(this.accumulation.element.id + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+                var opacity = srcElem.getAttribute('class') === this.accumulation.element.id + '_ej2_deselected' ?
+                    this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
+                var innerPie = this.getPathArc(this.accumulation.pieSeriesModule.center, point.startAngle % 360, (point.startAngle + point.degree) % 360, radius, innerRadius);
+                if ((borderElement) && (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
+                    borderElement.remove();
+                    borderElement = null;
+                }
+                var seriousGroup = getElement(this.accumulation.element.id + '_Series_' + seriesIndex);
+                if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
+                    var path = new PathOption(this.accumulation.element.id + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
+                    createBorderEle = this.accumulation.renderer.drawPath(path);
+                    createBorderEle.removeAttribute('transform');
+                    seriousGroup.appendChild(createBorderEle);
+                    if (point.isExplode && createBorderEle) {
+                        var borderExplode = srcElem.getAttribute('transform');
+                        createBorderEle.setAttribute('transform', borderExplode);
+                    }
+                }
+            }
+        }
+        else if (borderElement) {
+            this.removeBorder(borderElement, 1000);
+            borderElement = null;
+        }
+    };
+    PieSeries.prototype.removeBorder = function (borderElement, duration) {
+        if (borderElement) {
+            setTimeout(function () {
+                borderElement.remove();
+            }, duration);
         }
     };
     PieSeries.prototype.refresh = function (point, degree, start, chart, option, seriesGroup) {
@@ -25215,6 +25762,10 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         if (!this.isTouch) {
             this.titleTooltip(e, this.mouseX, this.mouseY);
         }
+        if (this.type === 'Pie' && this.pieSeriesModule &&
+            withInBounds(this.mouseX, this.mouseY, this.initialClipRect)) {
+            this.pieSeriesModule.findSeries(e);
+        }
         this.notify(Browser.touchMoveEvent, e);
         return false;
     };
@@ -25244,6 +25795,9 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.visibleSeries[0].explode) {
             this.accBaseModule.processExplode(e);
+        }
+        if (this.pieSeriesModule && this.type === 'Pie') {
+            this.pieSeriesModule.findSeries(e);
         }
         this.trigger(chartMouseClick, { target: e.target.id, x: this.mouseX, y: this.mouseY });
         if (this.pointClick) {
@@ -25318,6 +25872,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         }
         removeElement$1('EJ2_legend_tooltip');
         removeElement$1('EJ2_datalabel_tooltip');
+        removeElement$1(this.element.id + 'PointHover_Border');
     };
     /**
      * Method to create the secondary element for tooltip, datalabel and annotaitons.
@@ -27185,6 +27740,8 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
             text: point.label, border: border, color: dataLabel.fill, template: dataLabel.template, font: argsFont
         };
         this.accumulation.trigger(textRender, argsData);
+        var angle;
+        var degree;
         var isTemplate = argsData.template !== null;
         point.labelVisible = !argsData.cancel;
         point.text = point.label = argsData.text;
@@ -27209,6 +27766,7 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
         var location;
         var element;
         if (point.labelVisible) {
+            angle = degree = dataLabel.angle;
             this.correctLabelRegion(point.labelRegion, textSize);
             if (isTemplate) {
                 this.setTemplateStyle(childElement, point, templateElement, dataLabel.font.color, argsData.color, redraw);
@@ -27219,7 +27777,34 @@ var AccumulationDataLabel = /** @__PURE__ @class */ (function (_super) {
                 var startLocation = element ? new ChartLocation(+element.getAttribute('x'), +element.getAttribute('y')) : null;
                 dataLabelElement = this.accumulation.renderer.drawRectangle(new RectOption(id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
                 appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null, false, false, null, this.accumulation.duration);
-                textElement(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, '', 'auto'), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
+                var textWidth = textSize.width;
+                var textHeight = textSize.height;
+                var rotate = void 0;
+                if (angle !== 0 && dataLabel.enableRotation) {
+                    if (point.labelPosition === 'Outside') {
+                        degree = 0;
+                    }
+                    else {
+                        if (point.midAngle >= 90 && point.midAngle <= 270) {
+                            degree = point.midAngle + 180;
+                        }
+                        else {
+                            degree = point.midAngle;
+                        }
+                    }
+                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y - (textHeight / 4)) + ')';
+                }
+                else {
+                    if (angle) {
+                        degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
+                    }
+                    else {
+                        degree = 0;
+                    }
+                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
+                }
+                point.transform = rotate;
+                textElement(this.accumulation.renderer, new TextOption(id + 'text_' + point.index, location.x, location.y, 'start', point.label, rotate, 'auto', degree), argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup, false, redraw, true, false, this.accumulation.duration);
                 element = null;
             }
             if (this.accumulation.accumulationLegendModule && (dataLabel.position === 'Outside' || this.accumulation.enableSmartLabels)) {
@@ -27402,6 +27987,10 @@ var AccumulationTooltip = /** @__PURE__ @class */ (function (_super) {
         var rect = chart.initialClipRect;
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
+            if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index
+                && data.series.index === this.previousPoints[0].series.index) {
+                return null;
+            }
             if (this.pushData(data, isFirst, tooltipDiv, false)) {
                 this.triggerTooltipRender(data, isFirst, this.getTooltipText(data, chart.tooltip), this.findHeader(data));
             }
@@ -28939,7 +29528,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         this.sliderY = bounds.y > this.thumpY ? this.thumpY : bounds.y;
         if (sliderGroup && !control.disableRangeSelector) {
             shadowElement = render.createDefs();
-            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="' + this.control.element.id + '_shadow' + '" x="0" ' +
+            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="path-1" x="0" ' +
                 'y="' + this.thumpY + '" width="' + control.themeStyle.thumbWidth + '" height="' + control.themeStyle.thumbHeight + '"' +
                 ' rx="' + (thump.type === 'Circle' ? '50%' : '0%') + '"/>' +
                 '<filter xmlns="http://www.w3.org/2000/svg" x="-25.0%" y="-20.0%" width="150.0%" height="150.0%"' +
@@ -29179,7 +29768,7 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
         var control = this.control;
         var range = control.chartSeries.xAxis.actualRange;
         var trigger = control.enableDeferredUpdate;
-        var endbledTooltip = control.tooltip.enable;
+        var enabledTooltip = control.tooltip.enable;
         if (control.stockChart) {
             control.stockChart.zoomChange = false;
         }
@@ -29208,11 +29797,11 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
             trigger = false;
         }
         if (this.isDrag && control.allowSnapping) {
-            this.setAllowSnapping(control, this.currentStart, this.currentEnd, trigger, endbledTooltip);
+            this.setAllowSnapping(control, this.currentStart, this.currentEnd, trigger, enabledTooltip);
             trigger = false;
         }
         if (trigger) {
-            this.setSlider(this.currentStart, this.currentEnd, true, endbledTooltip);
+            this.setSlider(this.currentStart, this.currentEnd, true, enabledTooltip);
         }
         if (this.currentSlider !== null) {
             if (this.control.periodSelectorSettings.periods.length > 0) {
@@ -29278,6 +29867,9 @@ var RangeSlider = /** @__PURE__ @class */ (function () {
      * Mouse Cancel Handler
      */
     RangeSlider.prototype.mouseCancelHandler = function () {
+        if (this.isDrag && this.control.allowSnapping) {
+            this.setAllowSnapping(this.control, this.currentStart, this.currentEnd, false, this.control.tooltip.enable);
+        }
         this.isDrag = false;
         this.currentSlider = null;
         this.control.startValue = this.currentStart;
@@ -29550,7 +30142,6 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
             return false;
         }
         this.animateSeries = false;
-        this.removeAllTooltip();
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -29572,22 +30163,6 @@ var RangeNavigator = /** @__PURE__ @class */ (function (_super) {
             _this.chartSeries.renderChart(_this);
         }, 500);
         return false;
-    };
-    /**
-     * Bug task ID: EJ2-30797
-     * while resizing tooltip shows in wrong position
-     * Cause: Due to time lag in resize, tooltip did not remove until the component calculation
-     * Fix: Removed the tooltip element on resize
-     */
-    RangeNavigator.prototype.removeAllTooltip = function () {
-        if (this.tooltip.enable && this.tooltip.displayMode === 'Always') {
-            if (getElement(this.element.id + '_leftTooltip')) {
-                remove(getElement(this.element.id + '_leftTooltip'));
-            }
-            if (getElement(this.element.id + '_rightTooltip')) {
-                remove(getElement(this.element.id + '_rightTooltip'));
-            }
-        }
     };
     /**
      * Handles the mouse move.
@@ -34297,6 +34872,52 @@ var AreaBounds = /** @__PURE__ @class */ (function () {
     return AreaBounds;
 }());
 
+/**
+ * Specifies smithchart animationComplete event name.
+ * @private
+ */
+var animationComplete$1 = 'animationComplete';
+/**
+ * Specifies smithchart legendRender event name.
+ * @private
+ */
+var legendRender$1 = 'legendRender';
+/**
+ * Specifies smithchart titleRender event name.
+ * @private
+ */
+var titleRender = 'titleRender';
+/**
+ * Specifies smithchart subtitleRender event name.
+ * @private
+ */
+var subtitleRender = 'subtitleRender';
+/**
+ * Specifies smithchart textRender event name.
+ * @private
+ */
+var textRender$1 = 'textRender';
+/**
+ * Specifies smithchart seriesRender event name.
+ * @private
+ */
+var seriesRender$1 = 'seriesRender';
+/**
+ * Specifies smithchart load event name.
+ * @private
+ */
+var load$1 = 'load';
+/**
+ * Specifies smithchart loaded event name.
+ * @private
+ */
+var loaded$1 = 'loaded';
+/**
+ * Specifies smithchart axisLabelRender event name.
+ * @private
+ */
+var axisLabelRender$1 = 'axisLabelRender';
+
 /* tslint:disable:no-string-literal */
 var AxisRender = /** @__PURE__ @class */ (function () {
     function AxisRender() {
@@ -34884,9 +35505,9 @@ var AxisRender = /** @__PURE__ @class */ (function () {
         var preWidth;
         var preX;
         var groupEle = smithchart.renderer.createGroup({ id: smithchart.element.id + '_HAxisLabels' });
-        for (var i = 0; i < this.horizontalLabelCollections.length; i++) {
-            circleAxis = this.horizontalLabelCollections[i];
-            label = this.horizontalLabelCollections[i].value.toString();
+        var _loop_1 = function (i) {
+            circleAxis = this_1.horizontalLabelCollections[i];
+            label = this_1.horizontalLabelCollections[i].value.toString();
             if (circleAxis.value !== 0.0) {
                 x = (smithchart.renderType === 'Impedance') ?
                     circleAxis.centerX - circleAxis.radius : circleAxis.centerX + circleAxis.radius;
@@ -34899,14 +35520,14 @@ var AxisRender = /** @__PURE__ @class */ (function () {
                 else {
                     y += textSize.height;
                 }
-                this.horizontalLabelCollections[i].region = this.calculateRegion(label, textSize, x, y);
+                this_1.horizontalLabelCollections[i].region = this_1.calculateRegion(label, textSize, x, y);
                 if (hAxis.labelIntersectAction === 'Hide') {
-                    curLabel = this.horizontalLabelCollections[i];
+                    curLabel = this_1.horizontalLabelCollections[i];
                     curLabelBounds = curLabel.region.bounds;
                     curWidth = curLabelBounds.width;
                     curX = curLabelBounds.x;
                     for (var j = 1; j < i; j++) {
-                        preLabel = this.horizontalLabelCollections[j];
+                        preLabel = this_1.horizontalLabelCollections[j];
                         preLabelBounds = preLabel.region.bounds;
                         preWidth = preLabelBounds.width;
                         preX = preLabelBounds.x;
@@ -34920,15 +35541,29 @@ var AxisRender = /** @__PURE__ @class */ (function () {
                         }
                     }
                 }
-                var axisLabelRenderEventArgs = { text: label.toString(), x: x, y: y,
-                    name: 'axisLabelRender', cancel: false };
-                smithchart.trigger('axisLabelRender', axisLabelRenderEventArgs);
-                var options = new TextOption$1(smithchart.element.id + '_HLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
-                var color = font.color ? font.color : smithchart.themeStyle.axisLabel;
-                font.fontFamily = font.fontFamily || smithchart.themeStyle.labelFontFamily;
-                var element = renderTextElement(options, font, color, groupEle);
-                groupEle.appendChild(element);
+                var axisLabelRenderEventArgs_1 = {
+                    text: label.toString(),
+                    x: x,
+                    y: y,
+                    name: axisLabelRender$1,
+                    cancel: false
+                };
+                var axisLabelRenderSuccess = function (args) {
+                    if (!args.cancel) {
+                        var options = new TextOption$1(smithchart.element.id + '_HLabel_' + i, axisLabelRenderEventArgs_1.x, axisLabelRenderEventArgs_1.y, 'none', axisLabelRenderEventArgs_1.text);
+                        var color = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                        font.fontFamily = font.fontFamily || smithchart.themeStyle.labelFontFamily;
+                        var element = renderTextElement(options, font, color, groupEle);
+                        groupEle.appendChild(element);
+                    }
+                };
+                axisLabelRenderSuccess.bind(this_1);
+                smithchart.trigger(axisLabelRender$1, axisLabelRenderEventArgs_1, axisLabelRenderSuccess);
             }
+        };
+        var this_1 = this;
+        for (var i = 0; i < this.horizontalLabelCollections.length; i++) {
+            _loop_1(i);
         }
         smithchart.svgObject.appendChild(groupEle);
     };
@@ -34956,29 +35591,29 @@ var AxisRender = /** @__PURE__ @class */ (function () {
         var preLabelBounds;
         var rAxis = smithchart.radialAxis;
         var groupEle = smithchart.renderer.createGroup({ id: smithchart.element.id + '_RAxisLabels' });
-        for (var i = 0; i < this.labelCollections.length; i++) {
-            interSectPoint = this.labelCollections[i];
+        var _loop_2 = function (i) {
+            interSectPoint = this_2.labelCollections[i];
             label = interSectPoint.value.toString();
             textSize = measureText$1(label, font);
             angle = Math.round(interSectPoint.angle * 100) / 100;
             if (rAxis.labelPosition === 'Outside') {
-                position = this.circlePointPosition(this.circleCenterX, this.circleCenterY, interSectPoint['angle'], this.areaRadius + paddingRadius);
-                textPosition = this.setLabelsOutsidePosition(angle, position.x, position.y, textSize);
+                position = this_2.circlePointPosition(this_2.circleCenterX, this_2.circleCenterY, interSectPoint['angle'], this_2.areaRadius + paddingRadius);
+                textPosition = this_2.setLabelsOutsidePosition(angle, position.x, position.y, textSize);
             }
             else {
-                position = this.circlePointPosition(this.circleCenterX, this.circleCenterY, interSectPoint['angle'], this.areaRadius - paddingRadius);
-                textPosition = this.setLabelsInsidePosition(angle, position.x, position.y, textSize);
+                position = this_2.circlePointPosition(this_2.circleCenterX, this_2.circleCenterY, interSectPoint['angle'], this_2.areaRadius - paddingRadius);
+                textPosition = this_2.setLabelsInsidePosition(angle, position.x, position.y, textSize);
             }
-            this.labelCollections[i]['region'] = this.calculateRegion(label, textSize, textPosition.x, textPosition.y);
+            this_2.labelCollections[i]['region'] = this_2.calculateRegion(label, textSize, textPosition.x, textPosition.y);
             if (rAxis.labelIntersectAction === 'Hide') {
-                curLabel = this.labelCollections[i];
+                curLabel = this_2.labelCollections[i];
                 curLabelBounds = curLabel['region']['bounds'];
                 curWidth = curLabelBounds['width'];
                 curHeight = curLabelBounds['height'];
                 curX = curLabelBounds['x'];
                 curY = curLabelBounds['y'];
                 for (var j = 0; j < i; j++) {
-                    preLabel = this.labelCollections[j];
+                    preLabel = this_2.labelCollections[j];
                     preLabelBounds = preLabel['region']['bounds'];
                     preWidth = preLabelBounds['width'];
                     preHeight = preLabelBounds['height'];
@@ -34990,14 +35625,28 @@ var AxisRender = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            var axisLabelRenderEventArgs = { text: label.toString(), x: textPosition.x,
-                y: textPosition.y, name: 'axisLabelRender', cancel: false };
-            smithchart.trigger('axisLabelRender', axisLabelRenderEventArgs);
-            var options = new TextOption$1(smithchart.element.id + '_RLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
-            var color = font.color ? font.color : smithchart.themeStyle.axisLabel;
-            font.fontFamily = smithchart.themeStyle.labelFontFamily ? smithchart.themeStyle.labelFontFamily : font.fontFamily;
-            var element = renderTextElement(options, font, color, groupEle);
-            groupEle.appendChild(element);
+            var axisLabelRenderEventArgs = {
+                text: label.toString(),
+                x: textPosition.x,
+                y: textPosition.y,
+                name: axisLabelRender$1,
+                cancel: false
+            };
+            var axisLabelRenderSuccess = function (args) {
+                if (!args.cancel) {
+                    var options = new TextOption$1(smithchart.element.id + '_RLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
+                    var color = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                    font.fontFamily = smithchart.themeStyle.labelFontFamily ? smithchart.themeStyle.labelFontFamily : font.fontFamily;
+                    var element = renderTextElement(options, font, color, groupEle);
+                    groupEle.appendChild(element);
+                }
+            };
+            axisLabelRenderSuccess.bind(this_2);
+            smithchart.trigger(axisLabelRender$1, axisLabelRenderEventArgs, axisLabelRenderSuccess);
+        };
+        var this_2 = this;
+        for (var i = 0; i < this.labelCollections.length; i++) {
+            _loop_2(i);
         }
         smithchart.svgObject.appendChild(groupEle);
     };
@@ -35442,31 +36091,6 @@ var Marker$1 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Specifies smithchart animationComplete event name.
- * @private
- */
-var animationComplete$1 = 'animationComplete';
-/**
- * Specifies smithchart legendRender event name.
- * @private
- */
-
-/**
- * Specifies smithchart titleRender event name.
- * @private
- */
-var titleRender = 'titleRender';
-/**
- * Specifies smithchart subtitleRender event name.
- * @private
- */
-var subtitleRender = 'subtitleRender';
-/**
- * Specifies smithchart textRender event name.
- * @private
- */
-
-/**
  *
  */
 /* tslint:disable:no-string-literal */
@@ -35742,8 +36366,10 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
         var reactance = series.reactance;
         series.points = [];
         for (var i = 0; i < dataArray.length; i++) {
-            series.points.push({ resistance: dataArray[i][resistance],
-                reactance: dataArray[i][reactance] });
+            series.points.push({
+                resistance: dataArray[i][resistance],
+                reactance: dataArray[i][reactance]
+            });
         }
     };
     // tslint:disable:max-func-body-length
@@ -35770,8 +36396,10 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
             var chartAreaCx = axisRender.circleCenterX;
             var chartAreaCy = axisRender.circleCenterY;
             var diameter = axisRender.areaRadius * 2;
-            var reactanceStartPoint = { x: chartAreaCx + ((smithchart.renderType === 'Impedance') ?
-                    chartAreaRadius : -chartAreaRadius), y: chartAreaCy };
+            var reactanceStartPoint = {
+                x: chartAreaCx + ((smithchart.renderType === 'Impedance') ?
+                    chartAreaRadius : -chartAreaRadius), y: chartAreaCy
+            };
             var resistantCy = chartAreaCy;
             var reactanceCx = reactanceStartPoint.x;
             for (var k = 0; k < series[m].points.length; k++) {
@@ -35808,8 +36436,10 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
         }
         for (var j = 0; j < smithchart.series.length; j++) {
             if (smithchart.series[j].enableSmartLabels && smithchart.series[j].marker.dataLabel.visible) {
-                var gdlcEle = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg'
-                        + '_series' + j + '_Datalabel' + '_connectorLines' });
+                var gdlcEle = smithchart.renderer.createGroup({
+                    'id': smithchart.element.id + '_svg'
+                        + '_series' + j + '_Datalabel' + '_connectorLines'
+                });
                 var element = document.getElementById(smithchart.element.id + '_svg' + '_seriesCollection' + j);
                 if (element) {
                     element.appendChild(gdlcEle);
@@ -35829,46 +36459,67 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        for (var j = 0; j < smithchart.series.length; j++) {
+        var _loop_1 = function (j) {
             var dataLabel = smithchart.series[j].marker.dataLabel;
             if (smithchart.series[j].marker.dataLabel.visible) {
                 var element = document.getElementById(smithchart.element.id + '_svg' + '_seriesCollection' + j);
-                var gdEle = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg'
-                        + '_series' + j + '_Datalabel' });
+                var gdEle_1 = smithchart.renderer.createGroup({
+                    'id': smithchart.element.id + '_svg'
+                        + '_series' + j + '_Datalabel'
+                });
                 if (element) {
-                    element.appendChild(gdEle);
+                    element.appendChild(gdEle_1);
                 }
-                for (var k = 0; k < smithchart.series[j].points.length; k++) {
-                    var currentPoint = this.dataLabel.labelOptions[j]['textOptions'][k];
+                var _loop_2 = function (k) {
+                    var currentPoint = this_1.dataLabel.labelOptions[j]['textOptions'][k];
                     if (!dataLabel.template && currentPoint.visible) {
-                        var options = new DataLabelTextOptions();
-                        options = this.dataLabel.labelOptions[j]['textOptions'][k];
-                        var font = dataLabel.textStyle;
-                        var x = options['xPosition'];
-                        var y = options['yPosition'];
+                        var options_1 = new DataLabelTextOptions();
+                        options_1 = this_1.dataLabel.labelOptions[j]['textOptions'][k];
+                        var font_1 = dataLabel.textStyle;
+                        var x = options_1['xPosition'];
+                        var y = options_1['yPosition'];
                         var id = smithchart.element.id + '_Series' + j + '_Points' + k + '_dataLabel' + '_symbol' + k;
                         var fill = dataLabel['fill'] ? dataLabel['fill'] : (smithchart.series[j].fill ||
                             smithchart.seriesColors[j % smithchart.seriesColors.length]);
                         var border = smithchart.series[j].marker.dataLabel.border;
-                        var rectOptions = new RectOption$1(id, fill, border, options['opacity'], new SmithchartRect(x, y, options['width'], options['height']));
+                        var rectOptions = new RectOption$1(id, fill, border, options_1['opacity'], new SmithchartRect(x, y, options_1['width'], options_1['height']));
                         var dataEle = smithchart.renderer.drawRectangle(rectOptions);
-                        gdEle.appendChild(dataEle);
-                        var textRenderEventArgs = { text: options['text'], x: options['x'], y: options['y'], seriesIndex: j,
-                            pointIndex: k, name: 'textRender', cancel: false };
-                        smithchart.trigger('textRender', textRenderEventArgs);
-                        var textoptions = new TextOption$1(options['id'], textRenderEventArgs.x, textRenderEventArgs.y, 'start', textRenderEventArgs.text);
-                        var color = font.color ? font.color : smithchart.themeStyle.dataLabel;
-                        var element_1 = renderTextElement(textoptions, font, color, gdEle);
-                        gdEle.appendChild(element_1);
+                        gdEle_1.appendChild(dataEle);
+                        var textRenderEventArgs = {
+                            text: options_1['text'],
+                            x: options_1['x'],
+                            y: options_1['y'],
+                            seriesIndex: j,
+                            pointIndex: k,
+                            name: textRender$1,
+                            cancel: false
+                        };
+                        var textRenderSuccess = function (args) {
+                            if (!args.cancel) {
+                                var textoptions = new TextOption$1(options_1['id'], args.x, args.y, 'start', args.text);
+                                var color = font_1.color ? font_1.color : smithchart.themeStyle.dataLabel;
+                                var element_1 = renderTextElement(textoptions, font_1, color, gdEle_1);
+                                gdEle_1.appendChild(element_1);
+                            }
+                        };
+                        textRenderSuccess.bind(this_1);
+                        smithchart.trigger(textRender$1, textRenderEventArgs, textRenderSuccess);
                     }
                     else if (dataLabel.template) {
                         var element_2 = document.getElementById(dataLabel.template + '_seriesIndex' + j + '_pointIndex' +
                             k + smithchart.element.id);
-                        element_2.style.left = this.dataLabel.labelOptions[j]['textOptions'][k].xPosition + 'px';
-                        element_2.style.top = this.dataLabel.labelOptions[j]['textOptions'][k].yPosition + 'px';
+                        element_2.style.left = this_1.dataLabel.labelOptions[j]['textOptions'][k].xPosition + 'px';
+                        element_2.style.top = this_1.dataLabel.labelOptions[j]['textOptions'][k].yPosition + 'px';
                     }
+                };
+                for (var k = 0; k < smithchart.series[j].points.length; k++) {
+                    _loop_2(k);
                 }
             }
+        };
+        var this_1 = this;
+        for (var j = 0; j < smithchart.series.length; j++) {
+            _loop_1(j);
         }
         for (var i = 0; i < smithchart.series.length; i++) {
             if (smithchart.series[i].enableAnimation && smithchart.animateSeries) {
@@ -35881,9 +36532,12 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
         }
     };
     SeriesRender.prototype.drawSeries = function (smithchart, seriesindex, groupElement, bounds) {
-        var gsEle = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + '_seriesCollection' + seriesindex,
+        var _this = this;
+        var gsEle = smithchart.renderer.createGroup({
+            'id': smithchart.element.id + '_svg' + '_seriesCollection' + seriesindex,
             'clip-path': 'url(#' + smithchart.element.id + '_ChartSeriesClipRect_' +
-                seriesindex + ')' });
+                seriesindex + ')'
+        });
         gsEle.setAttribute('visibility', smithchart.series[seriesindex].visibility);
         groupElement.appendChild(gsEle);
         var sb = '';
@@ -35899,20 +36553,29 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
         }
         path = sb.toString();
         var fill = smithchart.series[seriesindex].fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length];
-        var seriesEventArgs = { text: smithchart.series[seriesindex].name, fill: fill,
-            name: 'seriesRender', cancel: false };
-        smithchart.trigger('seriesRender', seriesEventArgs);
-        var options = new PathOption$1(smithchart.element.id + '_series' + seriesindex + '_points', 'none', smithchart.series[seriesindex].width, seriesEventArgs.fill, smithchart.series[seriesindex].opacity, 'none', path);
-        this.clipRectElement = smithchart.renderer.drawClipPath(new RectOption$1(smithchart.element.id + '_ChartSeriesClipRect_' + seriesindex, 'transparent', { width: 1, color: 'Gray' }, 1, {
-            x: bounds.x, y: bounds.y,
-            width: smithchart.availableSize.width,
-            height: smithchart.availableSize.height
-        }));
-        gsEle.appendChild(this.clipRectElement);
-        var gspEle = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + seriesindex });
-        element = smithchart.renderer.drawPath(options);
-        gspEle.appendChild(element);
-        gsEle.appendChild(gspEle);
+        var seriesEventArgs = {
+            text: smithchart.series[seriesindex].name,
+            fill: fill,
+            name: seriesRender$1,
+            cancel: false
+        };
+        var seriesRenderSuccess = function (args) {
+            if (!args.cancel) {
+                var options = new PathOption$1(smithchart.element.id + '_series' + seriesindex + '_points', 'none', smithchart.series[seriesindex].width, seriesEventArgs.fill, smithchart.series[seriesindex].opacity, 'none', path);
+                _this.clipRectElement = smithchart.renderer.drawClipPath(new RectOption$1(smithchart.element.id + '_ChartSeriesClipRect_' + seriesindex, 'transparent', { width: 1, color: 'Gray' }, 1, {
+                    x: bounds.x, y: bounds.y,
+                    width: smithchart.availableSize.width,
+                    height: smithchart.availableSize.height
+                }));
+                gsEle.appendChild(_this.clipRectElement);
+                var gspEle = smithchart.renderer.createGroup({ 'id': smithchart.element.id + '_svg' + seriesindex });
+                element = smithchart.renderer.drawPath(options);
+                gspEle.appendChild(element);
+                gsEle.appendChild(gspEle);
+            }
+        };
+        seriesRenderSuccess.bind(this);
+        smithchart.trigger(seriesRender$1, seriesEventArgs, seriesRenderSuccess);
         var markerrender = new Marker$1();
         markerrender.drawMarker(smithchart, seriesindex, gsEle, this.pointsRegion[seriesindex]);
         this.dataLabel.drawDataLabel(smithchart, seriesindex, gsEle, this.pointsRegion[seriesindex], bounds);
@@ -35971,8 +36634,9 @@ var SeriesRender = /** @__PURE__ @class */ (function () {
                     clipRect.setAttribute('x', x.toString());
                 }
                 var event = {
-                    cancel: false, name: animationComplete$1,
-                    smithchart: smithchart.isBlazor ? null : smithchart
+                    cancel: false,
+                    name: animationComplete$1,
+                    smithchart: !smithchart.isBlazor ? smithchart : null
                 };
                 smithchart.trigger(animationComplete$1, event);
             }
@@ -36014,7 +36678,9 @@ var ExportUtils$1 = /** @__PURE__ @class */ (function () {
         this.smithchartPrint.moveTo(0, 0);
         this.smithchartPrint.resizeTo(screen.availWidth, screen.availHeight);
         var argsData = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: smithchartBeforePrint
+            cancel: false,
+            htmlContent: !this.control.isBlazor ? this.getHTMLContent(elements) : null,
+            name: smithchartBeforePrint
         };
         this.control.trigger(smithchartBeforePrint, argsData);
         if (!argsData.cancel) {
@@ -36174,6 +36840,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         createSvg$1(this);
     };
     Smithchart.prototype.renderTitle = function (title, type, groupEle) {
+        var _this = this;
         var font = title.font ? title.font : title.textStyle;
         var textSize = measureText$1(title.text, font);
         var x;
@@ -36198,20 +36865,33 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
             textSize = measureText$1(titleText, font);
         }
         groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
-        var titleEventArgs = { text: titleText, x: x, y: y, name: 'titleRender', cancel: false };
-        this.trigger(titleRender, titleEventArgs);
-        var options = new TextOption$1(this.element.id + '_Smithchart_' + type, titleEventArgs.x, titleEventArgs.y, 'start', titleEventArgs.text);
-        font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
-        font.size = this.themeStyle.fontSize || title.textStyle.size;
-        var element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
-        element.setAttribute('aria-label', title.description || title.text);
-        var titleLocation = { x: x, y: y, textSize: textSize };
-        this.svgObject.appendChild(groupEle);
-        if (title.subtitle.text !== '' && title.subtitle.visible) {
-            this.renderSubtitle(title, type, textSize, this.availableSize, titleLocation, groupEle);
-        }
+        var titleEventArgs = {
+            text: titleText,
+            x: x,
+            y: y,
+            name: titleRender,
+            cancel: false
+        };
+        var options;
+        var titleRenderSuccess = function (args) {
+            if (!args.cancel) {
+                options = new TextOption$1(_this.element.id + '_Smithchart_' + type, args.x, args.y, 'start', args.text);
+                font.fontFamily = _this.themeStyle.fontFamily || title.textStyle.fontFamily;
+                font.size = _this.themeStyle.fontSize || title.textStyle.size;
+                var element = renderTextElement(options, font, _this.themeStyle.chartTitle, groupEle);
+                element.setAttribute('aria-label', title.description || args.text);
+                var titleLocation = { x: args.x, y: args.y, textSize: textSize };
+                _this.svgObject.appendChild(groupEle);
+                if (title.subtitle.text !== '' && title.subtitle.visible) {
+                    _this.renderSubtitle(title, type, textSize, _this.availableSize, titleLocation, groupEle);
+                }
+            }
+        };
+        titleRenderSuccess.bind(this);
+        this.trigger(titleRender, titleEventArgs, titleRenderSuccess);
     };
     Smithchart.prototype.renderSubtitle = function (title, type, textSize, size, titleLocation, groupEle) {
+        var _this = this;
         var x;
         var y;
         var font = title.subtitle.textStyle;
@@ -36230,12 +36910,23 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         y = titleLocation.y + (2 * this.elementSpacing);
         textAnchor = title['subtitle'].textAlignment === 'Far' ? 'end' :
             (title['subtitle'].textAlignment === 'Near') ? 'start' : 'middle';
-        var subtitleEventArgs = { text: subTitleText, x: x, y: y, name: 'subtitleRender', cancel: false };
-        this.trigger(subtitleRender, subtitleEventArgs);
-        var options = new TextOption$1(this.element.id + '_Smithchart_' + type, subtitleEventArgs.x, subtitleEventArgs.y, textAnchor, subtitleEventArgs.text);
-        var element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
-        element.setAttribute('aria-label', subTitle.description || subTitle.text);
-        groupEle.appendChild(element);
+        var subtitleEventArgs = {
+            text: subTitleText,
+            x: x,
+            y: y,
+            name: subtitleRender,
+            cancel: false
+        };
+        var subtitleRenderSuccess = function (args) {
+            if (!args.cancel) {
+                var options = new TextOption$1(_this.element.id + '_Smithchart_' + type, args.x, args.y, textAnchor, args.text);
+                var element = renderTextElement(options, font, _this.themeStyle.chartTitle, groupEle);
+                element.setAttribute('aria-label', subTitle.description || args.text);
+                groupEle.appendChild(element);
+            }
+        };
+        subtitleRenderSuccess.bind(this);
+        this.trigger(subtitleRender, subtitleEventArgs, subtitleRenderSuccess);
     };
     /**
      * @private
@@ -36285,7 +36976,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
     Smithchart.prototype.preRender = function () {
         var blazor = 'Blazor';
         this.isBlazor = window[blazor];
-        this.trigger('load', { smithchart: this });
+        this.trigger(load$1, { smithchart: !this.isBlazor ? this : null });
         this.unWireEVents();
         this.initPrivateVariable();
         this.wireEVents();
@@ -36325,7 +37016,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
         this.renderComplete();
-        this.trigger('loaded', { smithchart: this.isBlazor ? null : this });
+        this.trigger(loaded$1, { smithchart: !this.isBlazor ? this : null });
     };
     Smithchart.prototype.createSecondaryElement = function () {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
@@ -36638,8 +37329,10 @@ var TooltipRender = /** @__PURE__ @class */ (function () {
         var markerHeight = smithchart.series[seriesindex].marker.height / 2;
         var div = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');
         if (isNullOrUndefined(div)) {
-            div = createElement('div', { id: smithchart.element.id + '_smithchart_tooltip_div',
-                styles: 'pointer-events: none; position: absolute;z-index:1;' });
+            div = createElement('div', {
+                id: smithchart.element.id + '_smithchart_tooltip_div',
+                styles: 'pointer-events: none; position: absolute;z-index:1;'
+            });
             document.getElementById(smithchart.element.id + '_Secondary_Element').appendChild(div);
         }
         this.tooltipElement = new Tooltip({
@@ -36650,20 +37343,22 @@ var TooltipRender = /** @__PURE__ @class */ (function () {
             fill: smithchart.themeStyle.tooltipFill,
             data: { reactance: pointY },
             template: series.tooltip.template,
-            location: { x: this.locationX + smithchart.element.offsetLeft,
-                y: this.locationY - markerHeight + smithchart.element.offsetTop },
+            location: {
+                x: this.locationX + smithchart.element.offsetLeft,
+                y: this.locationY - markerHeight + smithchart.element.offsetTop
+            },
             shared: false,
             areaBounds: new SmithchartRect(smithchart.bounds.x, smithchart.bounds.y, smithchart.bounds.width, smithchart.bounds.height),
             palette: [series.fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]],
             shapes: ['Circle'],
             availableSize: smithchart.availableSize,
-            theme: smithchart.theme
+            theme: smithchart.theme,
+            blazorTemplate: { name: 'TooltipTemplate', parent: smithchart.series[seriesindex].tooltip }
         });
         this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
         this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
         this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
         this.tooltipElement.appendTo(div);
-        updateBlazorTemplate(div.id + 'Template', 'Template');
     };
     TooltipRender.prototype.closestPointXY = function (smithchart, x, y, series, seriesindex) {
         var pointIndex;
@@ -36975,6 +37670,7 @@ var SmithchartLegend = /** @__PURE__ @class */ (function () {
         return element;
     };
     SmithchartLegend.prototype.drawLegendItem = function (smithchart, legend, legendSeries, k, x, y, legendBounds) {
+        var _this = this;
         var location;
         var radius;
         var symbol = legend.itemStyle;
@@ -36988,18 +37684,28 @@ var SmithchartLegend = /** @__PURE__ @class */ (function () {
         };
         var legendGroup = smithchart.renderer.createGroup({ id: smithchart.element.id + '_svg' + '_Legend' + k.toString() });
         legendGroup['style']['cursor'] = legend.toggleVisibility ? 'pointer' : 'default';
-        var legendEventArgs = { text: legendSeries['text'], fill: legendSeries['fill'],
-            shape: legendSeries['shape'], name: 'legendRender', cancel: false };
-        smithchart.trigger('legendRender', legendEventArgs);
-        var shape = this.drawLegendShape(smithchart, legendSeries, location.x, location.y, k, legend, legendEventArgs);
-        legendGroup.appendChild(shape);
-        var options = new TextOption$1(smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2 + legend.shapePadding, location.y + textHeight / 4, 'start', legendEventArgs.text);
-        legend.textStyle.fontFamily = smithchart.themeStyle.fontFamily || legend.textStyle.fontFamily;
-        legend.textStyle.size = smithchart.themeStyle.fontSize || legend.textStyle.size;
-        var element = renderTextElement(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
-        element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + options.text + ' series');
-        legendGroup.appendChild(element);
-        this.legendItemGroup.appendChild(legendGroup);
+        var legendEventArgs = {
+            text: legendSeries['text'],
+            fill: legendSeries['fill'],
+            shape: legendSeries['shape'],
+            name: legendRender$1,
+            cancel: false
+        };
+        var legendRenderSuccess = function (args) {
+            if (!args.cancel) {
+                var shape = _this.drawLegendShape(smithchart, legendSeries, location.x, location.y, k, legend, args);
+                legendGroup.appendChild(shape);
+                var options = new TextOption$1(smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2 + legend.shapePadding, location.y + textHeight / 4, 'start', args.text);
+                legend.textStyle.fontFamily = smithchart.themeStyle.fontFamily || legend.textStyle.fontFamily;
+                legend.textStyle.size = smithchart.themeStyle.fontSize || legend.textStyle.size;
+                var element = renderTextElement(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
+                element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + options.text + ' series');
+                legendGroup.appendChild(element);
+                _this.legendItemGroup.appendChild(legendGroup);
+            }
+        };
+        legendRenderSuccess.bind(this);
+        smithchart.trigger(legendRender$1, legendEventArgs, legendRenderSuccess);
         return this.legendItemGroup;
     };
     SmithchartLegend.prototype.drawLegendShape = function (smithchart, legendSeries, locX, locY, index, legend, legendEventArgs) {
@@ -37803,29 +38509,38 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
      * @private
      */
     SparklineRenderer.prototype.renderSeries = function () {
+        var _this = this;
         var spark = this.sparkline;
         this.clipId = spark.element.id + '_sparkline_clip_path';
         this.drawAxis();
-        var args = {
-            name: 'seriesRendering', cancel: false, lineWidth: spark.lineWidth, border: spark.border, fill: spark.fill, sparkline: spark
+        var argsData = {
+            name: 'seriesRendering',
+            cancel: false,
+            lineWidth: spark.lineWidth,
+            border: spark.border,
+            fill: spark.fill,
+            sparkline: !this.sparkline.isBlazor ? spark : null
         };
-        spark.trigger(args.name, args);
-        if (!this.visiblePoints || args.cancel) {
-            return;
-        }
-        if (spark.type !== 'Pie' && spark.type !== 'WinLoss' && spark.rangeBandSettings.length) {
-            var group = this.sparkline.renderer.createGroup({ id: this.sparkline.element.id + '_sparkline_rangeband_g' });
-            for (var i = 0; i < spark.rangeBandSettings.length; i++) {
-                if ((spark.axisSettings.minY <= spark.rangeBandSettings[i].startRange) ||
-                    (spark.axisSettings.maxY >= spark.rangeBandSettings[i].endRange)) {
-                    this.rangeBand(spark.rangeBandSettings[i], group, i);
-                }
+        var seriesRenderingSuccess = function (args) {
+            if (!_this.visiblePoints || args.cancel) {
+                return;
             }
-            this.sparkline.svgObject.appendChild(group);
-        }
-        this['render' + spark.type](this.visiblePoints, args);
-        this.renderMarker(this.visiblePoints);
-        this.renderLabel(this.visiblePoints);
+            if (spark.type !== 'Pie' && spark.type !== 'WinLoss' && spark.rangeBandSettings.length) {
+                var group = _this.sparkline.renderer.createGroup({ id: _this.sparkline.element.id + '_sparkline_rangeband_g' });
+                for (var i = 0; i < spark.rangeBandSettings.length; i++) {
+                    if ((spark.axisSettings.minY <= spark.rangeBandSettings[i].startRange) ||
+                        (spark.axisSettings.maxY >= spark.rangeBandSettings[i].endRange)) {
+                        _this.rangeBand(spark.rangeBandSettings[i], group, i);
+                    }
+                }
+                _this.sparkline.svgObject.appendChild(group);
+            }
+            _this['render' + spark.type](_this.visiblePoints, args);
+            _this.renderMarker(_this.visiblePoints);
+            _this.renderLabel(_this.visiblePoints);
+        };
+        seriesRenderingSuccess.bind(this);
+        spark.trigger('seriesRendering', argsData, seriesRenderingSuccess);
     };
     /**
      * To render a range band
@@ -38127,8 +38842,11 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             render = this.getSpecialPoint(render, temp, spark, option, i, highPos, lowPos, length_1, visible.toLowerCase());
             option.stroke = marker.border.color || option.fill;
             var markerArgs = {
-                name: 'markerRendering', cancel: false, border: { color: option.stroke, width: marker.border.width }, fill: option.fill,
-                pointIndex: i, sparkline: this.sparkline, x: option.cx, y: option.cy, size: marker.size
+                name: 'markerRendering', cancel: false,
+                border: { color: option.stroke, width: marker.border.width },
+                fill: option.fill, pointIndex: i,
+                sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
+                x: option.cx, y: option.cy, size: marker.size
             };
             this.sparkline.trigger(markerArgs.name, markerArgs);
             if (render && !markerArgs.cancel) {
@@ -38214,8 +38932,10 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             option.text = (dataLabel.format !== '') ? this.formatter(dataLabel.format, this.sparkline.dataSource[i]) :
                 temp.yVal.toString();
             var labelArgs = {
-                name: 'dataLabelRendering', cancel: false, border: dataLabel.border, fill: dataLabel.fill, pointIndex: i,
-                sparkline: this.sparkline, x: option.x, y: option.y, text: option.text, color: color
+                name: 'dataLabelRendering', cancel: false,
+                border: dataLabel.border, fill: dataLabel.fill, pointIndex: i,
+                sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
+                x: option.x, y: option.y, text: option.text, color: color
             };
             this.sparkline.trigger(labelArgs.name, labelArgs);
             size = measureText$2(labelArgs.text, labelStyle);
@@ -38406,8 +39126,9 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             min = isNullOrUndefined(axis.minY) ? min : axis.minY;
             var color = axis.lineSettings.color || this.sparkline.sparkTheme.axisLineColor;
             var eventArgs = {
-                name: 'axisRendering', cancel: false, sparkline: model, maxX: maxX, minX: minX, maxY: max, minY: min,
-                value: axis.value, lineColor: color, lineWidth: axis.lineSettings.width
+                name: 'axisRendering', cancel: false, sparkline: !this.sparkline.isBlazor ? model : null,
+                maxX: maxX, minX: minX, maxY: max, minY: min, value: axis.value,
+                lineColor: color, lineWidth: axis.lineSettings.width
             };
             model.trigger('axisRendering', eventArgs);
             if (eventArgs.cancel) {
@@ -38539,8 +39260,9 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
      */
     SparklineRenderer.prototype.triggerPointRender = function (name, i, fill, border) {
         var args = {
-            name: name, cancel: false, border: border,
-            fill: fill, sparkline: this.sparkline.isBlazor ? null : this.sparkline,
+            name: name, cancel: false,
+            border: border, fill: fill,
+            sparkline: !this.sparkline.isBlazor ? this.sparkline : null,
             pointIndex: i
         };
         this.sparkline.trigger(name, args);
@@ -38598,7 +39320,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         var blazor = 'Blazor';
         this.isBlazor = window[blazor];
         this.unWireEvents();
-        this.trigger('load', { sparkline: this });
+        this.trigger('load', { sparkline: !this.isBlazor ? this : null });
         this.sparkTheme = getThemeColor$2(this.theme);
         this.sparklineRenderer = new SparklineRenderer(this);
         this.createSVG();
@@ -38621,7 +39343,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
         this.setSecondaryElementPosition();
-        this.trigger('loaded', { sparkline: this.isBlazor ? null : this });
+        this.trigger('loaded', { sparkline: !this.isBlazor ? this : null });
     };
     /**
      * To render sparkline elements
@@ -38754,7 +39476,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         var args = {
             name: 'resize',
             previousSize: this.availableSize,
-            sparkline: this.isBlazor ? null : this,
+            sparkline: !this.isBlazor ? this : null,
             currentSize: new Size$1(0, 0)
         };
         if (this.resizeTo) {
@@ -38785,14 +39507,14 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         this.notify(Browser.touchMoveEvent, e);
         var args = {
             name: 'sparklineMouseMove', cancel: false,
-            sparkline: this.isBlazor ? null : this, event: e
+            sparkline: !this.isBlazor ? this : null, event: e
         };
         this.trigger(args.name, args);
         var pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             var pointArgs = {
                 name: 'pointRegionMouseMove', cancel: false,
-                event: e, sparkline: this.isBlazor ? null : this,
+                event: e, sparkline: !this.isBlazor ? this : null,
                 pointIndex: pointClick.pointIndex
             };
             this.trigger(pointArgs.name, pointArgs);
@@ -38808,14 +39530,14 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         this.setSparklineMouseXY(e);
         var args = {
             name: 'sparklineMouseClick', cancel: false,
-            sparkline: this.isBlazor ? null : this, event: e
+            sparkline: !this.isBlazor ? this : null, event: e
         };
         this.trigger(args.name, args);
         var pointClick = this.isPointRegion(e);
         if (pointClick.isPointRegion) {
             var pointArgs = {
                 name: 'pointRegionMouseClick', cancel: false,
-                event: e, sparkline: this.isBlazor ? null : this,
+                event: e, sparkline: !this.isBlazor ? this : null,
                 pointIndex: pointClick.pointIndex
             };
             this.trigger(pointArgs.name, pointArgs);
@@ -38899,6 +39621,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
                 case 'yName':
                 case 'dataSource':
                 case 'axisSettings':
+                case 'rangeBandSettings':
                 case 'type':
                 case 'valueType':
                 case 'enableRtl':
@@ -39257,11 +39980,11 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
             shared: false,
             availableSize: this.sparkline.availableSize,
             areaBounds: new Rect$1(0, 0, spark.availableSize.width, spark.availableSize.height),
-            theme: spark.theme
+            theme: spark.theme,
+            blazorTemplate: { name: 'TooltipTemplate', parent: spark.tooltipSettings }
         });
         element.opacity = spark.sparkTheme.tooltipFillOpacity || element.opacity;
         element.appendTo(div);
-        updateBlazorTemplate(div.id + 'Template', 'Template');
     };
     /**
      * To get tooltip format.
@@ -39324,5 +40047,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

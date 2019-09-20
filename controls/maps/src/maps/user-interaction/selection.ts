@@ -2,6 +2,7 @@ import { Maps } from '../../index';
 import { SelectionSettingsModel, click, ISelectionEventArgs, itemSelection } from '../index';
 import { getElementsByClassName, getElement, createStyle, customizeStyle, removeClass, getTargetElement } from '../utils/helper';
 import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { BorderModel } from '../model/base-model';
 /**
  * Selection module class
  */
@@ -46,7 +47,7 @@ export class Selection {
             layerIndex = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
             if (targetEle.id.indexOf('shapeIndex') > -1) {
                 shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                shapeData = this.maps.layers[layerIndex].shapeData['features'] ?
+                shapeData = this.maps.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
                 this.maps.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
                 dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
                 data = isNullOrUndefined(dataIndex) ? null : this.maps.layers[layerIndex].dataSource[dataIndex];
@@ -107,21 +108,23 @@ export class Selection {
         let parentElement: Element;
         let children: HTMLCollection;
         let selectionsettings: SelectionSettingsModel = this.selectionsettings;
+        let border : BorderModel = {
+            color: this.selectionsettings.border.color,
+            width: this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)
+        };
         let eventArgs: ISelectionEventArgs = {
             opacity: this.selectionsettings.opacity,
             fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
-            border: {
-                color: this.selectionsettings.border.color,
-                width: this.selectionsettings.border.width / (this.selectionType === 'Marker' ? 1 : this.maps.scale)
-            },
+            border: border,
             name: itemSelection,
             target: targetEle.id,
             cancel: false,
             shapeData: shapeData,
-            data: data
+            data: data,
+            maps: this.maps
         };
         if (this.maps.isBlazor) {
-            const {shapeData, ...blazorEventArgs } :  ISelectionEventArgs = eventArgs;
+            const {shapeData, maps, ...blazorEventArgs } :  ISelectionEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {

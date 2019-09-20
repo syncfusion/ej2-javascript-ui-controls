@@ -69,7 +69,7 @@ export interface DiagramTooltipModel {
      * }
      * ```
      * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
+     * @blazorType Syncfusion.EJ2.Blazor.Popups.AnimationModel
      * @default { open: { effect: 'FadeIn', duration: 150, delay: 0 }, close: { effect: 'FadeOut', duration: 150, delay: 0 } }
      */
     animation?: AnimationModel;

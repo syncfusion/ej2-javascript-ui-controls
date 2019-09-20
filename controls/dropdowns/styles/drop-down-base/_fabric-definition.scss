@@ -1,12 +1,12 @@
 $ddl-header-font-weight: 600 !default;
 $ddl-last-child-bottom-border: 0 !default;
-$ddl-default-font-family: $font-family !default;
+$ddl-default-font-family: inherit !default;
 $ddl-list-border-size: 1px !default;
 $ddl-default-header-font-color: $default-font-color !default;
 $ddl-list-bottom-border: $ddl-list-border-size !default;
 $ddl-list-padding-right: 16px !default;
 $ddl-list-border-color: rgba($neutral-light, .25) !default;
-$ddl-list-font-family: $font-family !default;
+$ddl-list-font-family: inherit !default;
 $ddl-list-gradient-color: none !default;
 $ddl-list-bg-color: $neutral-white !default;
 $ddl-list-header-bg-color: $neutral-white !default;

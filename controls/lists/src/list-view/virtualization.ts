@@ -1,5 +1,5 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
-import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass, compile } from '@syncfusion/ej2-base';
+import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass, compile, formatUnit } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
 import { DataManager } from '@syncfusion/ej2-data';
 
@@ -17,8 +17,8 @@ export class Virtualization {
 
     /* tslint:disable-next-line:no-any */
     private listViewInstance: any;
-    private headerData: { [key: string]: Object };
-    private templateData: { [key: string]: Object };
+    private headerData: DataSource;
+    private templateData: DataSource;
     private topElementHeight: number;
     private bottomElementHeight: number;
     public listItemHeight: number;
@@ -98,8 +98,10 @@ export class Virtualization {
     }
 
     private ValidateItemCount(dataSourceLength: number): number {
-        let itemCount: number = this.listViewInstance.isWindow ? Math.round((window.innerHeight / this.listItemHeight) * 3) :
-            Math.round(((this.listViewInstance.height as number) / this.listItemHeight) * 1.5);
+        const height: number = parseFloat(formatUnit(this.listViewInstance.height));
+        let itemCount: number = this.listViewInstance.isWindow ?
+            Math.round((window.innerHeight / this.listItemHeight) * 3) :
+            Math.round((height / this.listItemHeight) * 1.5);
         if (itemCount > dataSourceLength) {
             itemCount = dataSourceLength;
         }
@@ -108,7 +110,7 @@ export class Virtualization {
 
     private uiIndicesInitialization(): void {
         this.uiIndices = { 'activeIndices': [], 'disabledItemIndices': [], 'hiddenItemIndices': [] };
-        (this.listViewInstance.curViewDS as { [key: string]: Object }[]).forEach((ds: { [key: string]: Object }, index: number) => {
+        (this.listViewInstance.curViewDS as DataSource[]).forEach((ds: DataSource, index: number) => {
             if (this.listViewInstance.showCheckBox && ds[this.listViewInstance.fields.isChecked]) {
                 this.uiIndices.activeIndices.push(index);
             }
@@ -208,7 +210,7 @@ export class Virtualization {
     }
 
     private updateUiContent(element: HTMLElement, index: number): void {
-        let curViewDs: { [key: string]: Object; }[] = this.listViewInstance.curViewDS as { [key: string]: Object }[];
+        let curViewDs: { [key: string]: Object; }[] = this.listViewInstance.curViewDS as DataSource[];
         if (typeof (this.listViewInstance.dataSource as string[])[0] === 'string' ||
             typeof (this.listViewInstance.dataSource as number[])[0] === 'number') {
             element.dataset.uid = ListBase.generateId();
@@ -306,7 +308,7 @@ export class Virtualization {
     }
 
     private findDSAndIndexFromId(
-        ds: { [key: string]: Object }[] | string[] | number[], fields: Fields | Element): { [key: string]: Object } {
+        ds: DataSource[] | string[] | number[], fields: Fields | Element): DataSource {
         let resultJSON: { [key: string]: Object | number } = {};
         fields = this.listViewInstance.getElementUID(fields);
         if (!isNullOrUndefined(fields)) {
@@ -356,7 +358,7 @@ export class Virtualization {
                 if (this.listViewInstance.showCheckBox) {
                     this.uiIndices.activeIndices.forEach((index: number) => {
                         textCollection.push((curViewDS[index] as { [key: string]: string; })[text]);
-                        (dataCollection as { [key: string]: Object; }[]).push(curViewDS[index] as { [key: string]: Object });
+                        (dataCollection as { [key: string]: Object; }[]).push(curViewDS[index] as DataSource);
                     });
                     let dataSource: { [key: string]: Object; }[] =
                         this.listViewInstance.dataSource instanceof DataManager
@@ -365,7 +367,7 @@ export class Virtualization {
                         text: textCollection,
                         data: dataCollection,
                         index: this.uiIndices.activeIndices.map((index: number) =>
-                            dataSource.indexOf(curViewDS[index] as { [key: string]: Object }))
+                            dataSource.indexOf(curViewDS[index] as DataSource))
                     };
                 } else {
                     let dataSource: { [key: string]: Object; }[] =
@@ -467,13 +469,14 @@ export class Virtualization {
     }
 
     public removeItem(obj: HTMLElement | Element | Fields): void {
-        let dataSource: { [key: string]: Object };
-        let resutJSON: { [key: string]: Object | number } = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
+        let dataSource: DataSource;
+        const curViewDS: DataSource[] = this.listViewInstance.curViewDS;
+        let resutJSON: { [key: string]: Object | number } = this.findDSAndIndexFromId(curViewDS, obj);
         if (Object.keys(resutJSON).length) {
-            dataSource = resutJSON.data as { [key: string]: Object };
-            if (this.listViewInstance.curViewDS[(resutJSON.index as number) - 1] &&
-                (this.listViewInstance.curViewDS as { [key: string]: Object; }[])[(resutJSON.index as number) - 1].isHeader &&
-                (((this.listViewInstance.curViewDS as { [key: string]: Object; }[])[(resutJSON.index as number) - 1])
+            dataSource = resutJSON.data as DataSource;
+            if (curViewDS[(resutJSON.index as number) - 1] &&
+                curViewDS[(resutJSON.index as number) - 1].isHeader &&
+                ((curViewDS[(resutJSON.index as number) - 1])
                     .items as { [key: string]: Object; }[]).length === 1) {
                 this.removeUiItem((resutJSON.index as number) - 1);
                 this.removeUiItem((resutJSON.index as number) - 1);
@@ -481,10 +484,12 @@ export class Virtualization {
                 this.removeUiItem((resutJSON.index as number));
             }
         }
-        let index: number = (this.listViewInstance.dataSource as { [key: string]: Object }[]).indexOf(dataSource);
+        const listDataSource: DataSource[] = this.listViewInstance.dataSource instanceof DataManager
+            ? this.listViewInstance.localData : this.listViewInstance.dataSource;
+        let index: number = listDataSource.indexOf(dataSource);
         if (index !== -1) {
-            (this.listViewInstance.dataSource as { [key: string]: Object }[]).splice(index, 1);
-            this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource as { [key: string]: Object }[]);
+            listDataSource.splice(index, 1);
+            this.listViewInstance.setViewDataSource(listDataSource);
         }
         // recollect all the list item into collection
         this.listViewInstance.liCollection =
@@ -510,7 +515,7 @@ export class Virtualization {
         if (checked) {
             this.uiIndices.activeIndices = [];
             this.activeIndex = undefined;
-            (this.listViewInstance.curViewDS as { [key: string]: Object }[]).forEach((ds: { [key: string]: Object }, index: number) => {
+            (this.listViewInstance.curViewDS as DataSource[]).forEach((ds: DataSource, index: number) => {
                 if (!ds.isHeader) {
                     this.uiIndices.activeIndices.push(index);
                 }
@@ -528,7 +533,7 @@ export class Virtualization {
         // if the scroll bar is at the top, just pretend the new item has been added since no UI
         // change is required for the item that has been added at last but when scroll bar is at the bottom
         // just detach top and inject into bottom to mimic new item is added
-        let curViewDs: { [key: string]: Object }[] = this.listViewInstance.curViewDS as { [key: string]: Object }[];
+        let curViewDs: DataSource[] = this.listViewInstance.curViewDS as DataSource[];
         this.changeUiIndices(index, true);
         if (this.activeIndex && this.activeIndex >= index) {
             this.activeIndex++;
@@ -572,7 +577,7 @@ export class Virtualization {
 
     private removeUiItem(index: number): void {
         this.totalHeight -= this.listItemHeight;
-        let curViewDS: { [key: string]: Object } = (this.listViewInstance.curViewDS as { [key: string]: Object; }[])[index];
+        let curViewDS: DataSource = (this.listViewInstance.curViewDS as { [key: string]: Object; }[])[index];
         let liItem: HTMLElement = this.listViewInstance.getLiFromObjOrElement(curViewDS);
         (this.listViewInstance.curViewDS as { [key: string]: Object; }[]).splice(index, 1);
         if (this.activeIndex && this.activeIndex >= index) {
@@ -636,12 +641,12 @@ export class Virtualization {
         });
     }
 
-    public addItem(data: { [key: string]: Object }[], fields: Fields): void {
-        data.forEach((dataSource: { [key: string]: Object; }) => {
+    public addItem(data: DataSource[], fields: Fields, dataSource: DataSource[]): void {
+        data.forEach((currentItem: { [key: string]: Object; }) => {
             // push the given data to main data array
-            (this.listViewInstance.dataSource as { [key: string]: Object; }[]).push(dataSource);
+            dataSource.push(currentItem);
             // recalculate all the group data or other datasource related things
-            this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource);
+            this.listViewInstance.setViewDataSource(dataSource);
             // render list items for first time due to no datasource present earlier
             if (!this.domItemCount) {
                 // fresh rendering for first time
@@ -653,18 +658,18 @@ export class Virtualization {
                 this.uiVirtualization();
                 // when expected expected DOM count doesn't meet the condition we need to create and inject new item into DOM
             } else if (this.domItemCount < this.expectedDomItemCount) {
-                let ds: { [key: string]: Object } = this.listViewInstance.findItemFromDS(this.listViewInstance.dataSource, fields);
+                let ds: DataSource = this.listViewInstance.findItemFromDS(dataSource, fields);
 
                 if (ds instanceof Array) {
                     if (this.listViewInstance.ulElement) {
-                        let index: number = (this.listViewInstance.curViewDS as { [key: string]: Object }[]).indexOf(dataSource);
+                        let index: number = (this.listViewInstance.curViewDS as DataSource[]).indexOf(currentItem);
                         // inject new list item into DOM
-                        this.createAndInjectNewItem(dataSource, index);
+                        this.createAndInjectNewItem(currentItem, index);
 
                         // check for group header item
-                        let curViewDS: { [key: string]: Object } =
-                            (this.listViewInstance.curViewDS as { [key: string]: Object }[])[index - 1];
-                        if (curViewDS && curViewDS.isHeader && (curViewDS.items as { [key: string]: Object }[]).length === 1) {
+                        let curViewDS: DataSource =
+                            (this.listViewInstance.curViewDS as DataSource[])[index - 1];
+                        if (curViewDS && curViewDS.isHeader && (curViewDS.items as DataSource[]).length === 1) {
                             // target group item index in datasource
                             --index;
                             // inject new group header into DOM for previously created list item
@@ -676,19 +681,19 @@ export class Virtualization {
                         <HTMLElement[] & NodeListOf<HTMLLIElement>>this.listViewInstance.curUL.querySelectorAll('li');
                 }
             } else {
-                let index: number = (this.listViewInstance.curViewDS as { [key: string]: Object; }[]).indexOf(dataSource);
+                let index: number = (this.listViewInstance.curViewDS as { [key: string]: Object; }[]).indexOf(currentItem);
                 // virtually new add list item based on the scollbar position
                 this.addUiItem(index);
                 // check for group header item needs to be added
-                let curViewDS: { [key: string]: Object } = (this.listViewInstance.curViewDS as { [key: string]: Object }[])[index - 1];
-                if (curViewDS && curViewDS.isHeader && (curViewDS.items as { [key: string]: Object }[]).length === 1) {
+                let curViewDS: DataSource = (this.listViewInstance.curViewDS as DataSource[])[index - 1];
+                if (curViewDS && curViewDS.isHeader && (curViewDS.items as DataSource[]).length === 1) {
                     this.addUiItem(index - 1);
                 }
             }
         });
     }
 
-    private createAndInjectNewItem(itemData: { [key: string]: Object }, index: number): void {
+    private createAndInjectNewItem(itemData: DataSource, index: number): void {
         // generate li item for given datasource
         let target: HTMLElement;
         let li: HTMLElement[] = ListBase.createListItemFromJson(
@@ -730,7 +735,7 @@ export class Virtualization {
         if (args.curData.isHeader) {
             this.headerData = args.curData;
         }
-        this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: Object[]; }).items[0] as { [key: string]: Object } :
+        this.templateData = args.curData.isHeader ? (args.curData as { [key: string]: Object[]; }).items[0] as DataSource :
             args.curData;
         args.item.innerHTML = '';
         (<ElementContext>args.item).context = { data: args.curData, nodes: { flatTemplateNodes: [], groupTemplateNodes: [] } };
@@ -753,7 +758,7 @@ export class Virtualization {
         this.attributeProperty(element, item, isHeader);
     }
 
-    private onChange(newData: { [key: string]: Object }, listElement: HTMLElement): void {
+    private onChange(newData: DataSource, listElement: HTMLElement): void {
         (<ElementContext>listElement).context.data = newData;
         let groupTemplateNodes: Object[] = ((<ElementContext>listElement).context.nodes as { [key: string]: Object[] }).groupTemplateNodes;
         let flatTemplateNodes: Object[] = ((<ElementContext>listElement).context.nodes as { [key: string]: Object[] }).flatTemplateNodes;
@@ -813,7 +818,7 @@ export class Virtualization {
                 } else {
                     subNode.bindedvalue = classFunction(this.templateData);
                 }
-                subNode.onChange = (value: { [key: string]: Object }) => {
+                subNode.onChange = (value: DataSource) => {
                     if (subNode.bindedvalue) {
                         removeClass([element], (subNode.bindedvalue as string).split(' ').filter((css: string) => css));
                     }
@@ -871,7 +876,7 @@ export class Virtualization {
                 }
                 subNode.attrName = (subNode.bindedvalue as string[])[0] === undefined ?
                     attributeName : (subNode.bindedvalue as string[])[0];
-                subNode.onChange = (value: { [key: string]: Object }) => {
+                subNode.onChange = (value: DataSource) => {
                     let bindedvalue: string = (subNode.bindedvalue as string[])[1] === undefined ?
                         element.getAttribute(subNode.attrName as string) : attributeValueFunction(value);
                     element.removeAttribute(subNode.attrName as string);
@@ -926,7 +931,7 @@ export class Virtualization {
                 } else {
                     subNode.bindedvalue = textFunction(this.templateData);
                 }
-                subNode.onChange = (value: { [key: string]: Object }) => {
+                subNode.onChange = (value: DataSource) => {
                     element.innerText = element.innerText.replace(subNode.bindedvalue as string, textFunction(value));
                     subNode.bindedvalue = textFunction(value);
                 };
@@ -945,13 +950,14 @@ export class Virtualization {
         // resetting the dom count to 0, to avoid edge case of dataSource suddenly becoming zero
         // and then manually adding item using addItem API
         this.domItemCount = 0;
+        this.listViewInstance.header();
         this.listViewInstance.setLocalData();
     }
 
     private updateUI(element: HTMLElement, index: number, targetElement?: HTMLElement): void {
         let onChange: Function = this.isNgTemplate() ? this.onNgChange : this.onChange;
         if (this.listViewInstance.template || this.listViewInstance.groupTemplate) {
-            let curViewDS: { [key: string]: Object } = (this.listViewInstance.curViewDS as { [key: string]: Object }[])[index];
+            let curViewDS: DataSource = (this.listViewInstance.curViewDS as DataSource[])[index];
             element.dataset.uid = curViewDS[this.listViewInstance.fields.id] ?
                 curViewDS[this.listViewInstance.fields.id].toString() : ListBase.generateId();
             onChange(curViewDS, element, this);
@@ -964,7 +970,7 @@ export class Virtualization {
         }
     }
 
-    private onNgChange(newData: { [key: string]: Object }, listElement: ElementContext, virtualThis: Virtualization): void {
+    private onNgChange(newData: DataSource, listElement: ElementContext, virtualThis: Virtualization): void {
         // compile given target element with template for new data
         let templateCompiler: Function = compile(virtualThis.listViewInstance.template);
         let resultElement: NodeList = templateCompiler(newData);
@@ -981,4 +987,8 @@ export class Virtualization {
     public destroy(): void {
         this.wireScrollEvent(true);
     }
+}
+
+interface DataSource {
+    [key: string]: Object;
 }

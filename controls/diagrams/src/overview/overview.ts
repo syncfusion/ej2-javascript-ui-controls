@@ -3,7 +3,7 @@ import { RenderingMode } from '../diagram/enum/enum';
 import { DiagramRenderer } from '../diagram/rendering/renderer';
 import { CanvasRenderer } from '../diagram/rendering/canvas-renderer';
 import { INotifyPropertyChanged, Component, Property, Browser, EventHandler, Event, EmitType } from '@syncfusion/ej2-base';
-import { setAttributeHtml, setAttributeSvg, createHtmlElement } from '../diagram/utility/dom-util';
+import { setAttributeHtml, setAttributeSvg, createHtmlElement, getHTMLLayer } from '../diagram/utility/dom-util';
 import { createSvgElement, getNativeLayer, hasClass } from '../diagram/utility/dom-util';
 import { Rect } from '../diagram/primitives/rect';
 import { Size } from '../diagram/primitives/size';
@@ -383,6 +383,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         }
         let attr: Object = ({
             id: this.canvas.id + '_overviewsvg',
+            class: 'overviewsvg',
             version: '1.1',
             xlink: 'http://www.w3.org/1999/xlink',
             'style': 'position:absolute;left:0px;top:0px; aria-label:Specifies overview',
@@ -588,7 +589,7 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         let dify: number = this.currentPoint.y - this.prevPoint.y;
         let viewPort: Rect;
         let zoom: number = Math.min(this.parent.scroller.viewPortWidth / offwidth, this.parent.scroller.viewPortHeight / offheight);
-        let svg: SVGSVGElement = this.element.getElementsByTagName('svg')[2];
+        let svg: SVGSVGElement = <SVGSVGElement>this.element.getElementsByClassName('overviewsvg')[0];
         let panel: SVGRectElement = (svg as SVGSVGElement).getElementById(this.canvas.id
             + 'overviewrect') as SVGRectElement;
         let bounds: SVGRect = panel.getBBox();
@@ -668,10 +669,30 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
+    public updateHtmlLayer(view: Overview): void {
+        let htmlLayer: HTMLElement = getHTMLLayer(view.element.id);
+        let bounds: Rect = this.parent.scroller.getPageBounds(true);
+        let width: number = bounds.width;
+        let height: number = bounds.height;
+        let w: number = Math.max(width, this.parent.scroller.viewPortWidth);
+        let h: number = Math.max(height, this.parent.scroller.viewPortHeight);
+        let scale: number = Math.min(Number(this.model.width) / w, Number(this.model.height) / h);
+        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + this.parent.scroller.transform.tx + 'px,'
+            + (this.parent.scroller.transform.ty) + 'px)';
+    }
+
     /** @private */
     public updateView(view: Overview): void {
         let width: number; let height: number;
         let bounds: Rect = this.parent.scroller.getPageBounds();
+        let diagramBoundsWidth: number = this.parent.scroller.viewPortWidth / this.parent.scroller.currentZoom;
+        let diagramBoundsHeight: number = this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom;
+        let transformWidth: number = 0;
+        let transformHeight: number = 0;
+        if (this.parent.scroller.currentZoom < 1 && diagramBoundsWidth > bounds.width && diagramBoundsHeight > bounds.height) {
+            transformWidth = (diagramBoundsWidth - bounds.width) / 2;
+            transformHeight = (diagramBoundsHeight - bounds.height) / 2;
+        }
         width = bounds.width;
         height = bounds.height;
         let offwidth: number = Number(this.model.width);
@@ -684,7 +705,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
         scale = Math.min(offwidth / w, offheight / h);
         let htmlLayer: HTMLElement = document.getElementById(this.element.id + '_htmlLayer');
         htmlLayer.style.webkitTransform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
-        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
+        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + ((-(bounds.x)) + transformWidth) + 'px,'
+            + (((-bounds.y) + transformHeight)) + 'px)';
         let ovw: HTMLElement = document.getElementById(this.element.id + '_overviewlayer');
         ovw.setAttribute('transform', 'translate(' + (-bounds.x * scale) + ',' + (-bounds.y * scale) + ')');
         this.horizontalOffset = bounds.x * scale;

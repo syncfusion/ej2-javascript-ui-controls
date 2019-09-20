@@ -194,10 +194,10 @@ describe('Diagram Control', () => {
             
 
             //first label
-                expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 100 || Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 99 )
-                && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 28.799999999999997 &&
-                (((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 99.6875)||(Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX )=== 99)) &&
-                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 74.4) &&
+                expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 100 || Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 99 || Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) >= 77 || Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) <= 79 )
+                && ((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 28.799999999999997  || (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height >=42 || (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height <= 46) &&
+                (((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 99.6875)||(Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX )=== 99) || (Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX )>=88) || (Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX)<= 90)) &&
+                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 74.4 || (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY >= 72 || (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY <= 76) &&
                 //second label
                 ((Math.ceil((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width) === 67 || Math.floor((diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.width) === 66)
                     && (diagram.nodes[1] as NodeModel).wrapper.children[1].actualSize.height === 57.599999999999994 &&

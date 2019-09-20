@@ -1,5 +1,5 @@
 ﻿import { Virtualization } from './virtualization';
-import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor } from '@syncfusion/ej2-base';
+import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor, extend } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';
 import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';
@@ -190,7 +190,7 @@ export type checkBoxPosition = 'Left' | 'Right';
  * ```html
  * <div id="listview">
  * <ul>
- * <li>Favourite</li>
+ * <li>Favorite</li>
  * <li>Documents</li>
  * <li>Downloads</li>
  * </ul>
@@ -209,9 +209,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private onUIScrolled: Function;
     private curUL: HTMLElement;
     private curDSLevel: string[];
-    private curViewDS: { [key: string]: Object }[] | string[] | number[];
-    private curDSJSON: { [key: string]: Object };
-    public localData: { [key: string]: Object }[];
+    private curViewDS: DataSource[] | string[] | number[];
+    private curDSJSON: DataSource;
+    public localData: DataSource[];
     private liCollection: HTMLElement[];
     private headerEle: HTMLElement;
     private contentContainer: HTMLElement;
@@ -664,7 +664,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             fields: (this.fields as ListViewModel & { properties: Object }).properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
             itemCreated: this.renderCheckbox.bind(this),
             templateID: `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`,
-            groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`
+            groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`,
+            removeBlazorID: true
         };
         this.initialization();
     }
@@ -681,6 +682,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.LISTVIEW_GROUPTEMPLATE_ID = `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`;
         this.LISTVIEW_HEADERTEMPLATE_ID = `${this.element.id}${LISTVIEW_HEADERTEMPLATE_PROPERTY}`;
         this.aniObj = new Animation(this.animateOptions);
+        this.removeElement(this.curUL);
+        this.removeElement(this.ulElement);
+        this.removeElement(this.headerEle);
+        this.removeElement(this.contentContainer);
+        this.curUL = this.ulElement = this.liCollection = this.headerEle = this.contentContainer = undefined;
     }
 
     private renderCheckbox(args: ItemCreatedArgs): void {
@@ -689,7 +695,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.showCheckBox && this.isValidLI(args.item)) {
             let checkboxElement: Element;
-            let fieldData: { [key: string]: Object };
+            let fieldData: DataSource;
             checkboxElement = createCheckBox(this.createElement, false, {
                 checked: false, enableRtl: this.enableRtl,
                 cssClass: classNames.listviewCheckbox
@@ -699,7 +705,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             args.item.classList.add(classNames.itemCheckList);
             args.item.firstElementChild.classList.add(classNames.checkbox);
             if (typeof (this.dataSource as string[])[0] !== 'string' && typeof (this.dataSource as number[])[0] !== 'number') {
-                fieldData = <{ [key: string]: Object }>getFieldValues(args.curData, this.listBaseOption.fields);
+                fieldData = <DataSource>getFieldValues(args.curData, this.listBaseOption.fields);
                 if (<string>fieldData[this.listBaseOption.fields.isChecked]) {
                     this.checkInternally(args, checkboxElement);
                 }
@@ -1169,8 +1175,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private selectEventData(li: Element, e?: MouseEvent | KeyboardEvent | FocusEvent): Object {
-        let data: { [key: string]: Object } = this.getItemData(li);
-        let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(data, this.listBaseOption.fields);
+        let data: DataSource = this.getItemData(li);
+        let fieldData: DataSource = <DataSource>getFieldValues(data, this.listBaseOption.fields);
         let selectedItem: SelectedItem;
         if (!isNullOrUndefined(data)
             && typeof (this.dataSource as string[])[0] === 'string' || typeof (this.dataSource as number[])[0] === 'number') {
@@ -1187,8 +1193,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setSelectedItemData(li: Element): void {
-        let data: { [key: string]: Object } = this.getItemData(li);
-        let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(data, this.listBaseOption.fields);
+        let data: DataSource = this.getItemData(li);
+        let fieldData: DataSource = <DataSource>getFieldValues(data, this.listBaseOption.fields);
         if (!isNullOrUndefined(data) && ((typeof (this.dataSource as string[])[0] === 'string') ||
             (typeof (this.dataSource as number[])[0] === 'number'))) {
             this.selectedItems = {
@@ -1235,54 +1241,55 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     //Data Source Related Functions
-    private getSubDS(): { [key: string]: Object }[] {
+    private getSubDS(): DataSource[] {
         let levelKeys: string[] = this.curDSLevel;
         if (levelKeys.length) {
-            let ds: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.localData;
+            let ds: DataSource[] = <DataSource[]>this.localData;
             for (let key of levelKeys) {
-                let field: { [key: string]: Object } = {};
+                let field: DataSource = {};
                 field[this.fields.id] = key;
-                this.curDSJSON = <{ [key: string]: Object }[] & { [key: string]: Object }>this.findItemFromDS(ds, field);
-                let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues
+                this.curDSJSON = <DataSource[] & DataSource>this.findItemFromDS(ds, field);
+                let fieldData: DataSource = <DataSource>getFieldValues
                     (this.curDSJSON, this.listBaseOption.fields);
-                ds = this.curDSJSON ? <{ [key: string]: Object }[] & { [key: string]: Object }>fieldData[this.fields.child] : ds;
+                ds = this.curDSJSON ? <DataSource[] & DataSource>fieldData[this.fields.child] : ds;
             }
             return ds;
         }
-        return <{ [key: string]: Object }[]>this.localData;
+        return <DataSource[]>this.localData;
     }
 
-    private getItemData(li: Element | HTMLElement | Fields): { [key: string]: Object } {
-        let dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
+    private getItemData(li: Element | HTMLElement | Fields): DataSource {
+        let dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
         let fields: Fields = this.getElementUID(li);
-        let curDS: { [key: string]: Object }[];
+        let curDS: DataSource[];
         if (isNullOrUndefined(this.element.querySelector('.' + classNames.hasChild)) && this.fields.groupBy) {
-            curDS = <{ [key: string]: Object }[]>this.curViewDS;
+            curDS = <DataSource[]>this.curViewDS;
         } else {
-            curDS = <{ [key: string]: Object }[]>dataSource;
+            curDS = <DataSource[]>dataSource;
         }
 
-        return <{ [key: string]: Object }>this.findItemFromDS(curDS, <{ [key: string]: Object }>fields);
+        return <DataSource>this.findItemFromDS(curDS, <DataSource>fields);
     }
 
     private findItemFromDS(
-        dataSource: { [key: string]: Object }[],
-        fields: { [key: string]: Object }, parent?: boolean): { [key: string]: Object }[] | { [key: string]: Object } {
+        dataSource: DataSource[],
+        fields: DataSource,
+        parent?: boolean): DataSource[] | DataSource {
 
-        let resultJSON: { [key: string]: Object }[] | { [key: string]: Object };
+        let resultJSON: DataSource[] | DataSource;
 
         if (dataSource && dataSource.length && fields) {
-            dataSource.some((data: { [key: string]: Object }) => {
-                let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(data, this.listBaseOption.fields);
+            dataSource.some((data: DataSource) => {
+                let fieldData: DataSource = <DataSource>getFieldValues(data, this.listBaseOption.fields);
                 //(!(fid) || id === fid) && (!(ftext) || text === ftext) && (!!fid || !!ftext)
                 if ((fields[this.fields.id] || fields[this.fields.text]) &&
                     (!fields[this.fields.id] || (!isNullOrUndefined(fieldData[this.fields.id]) &&
                         fieldData[this.fields.id].toString()) === fields[this.fields.id].toString()) &&
                     (!fields[this.fields.text] || fieldData[this.fields.text] === fields[this.fields.text])) {
-                    resultJSON = (parent ? <{ [key: string]: Object }[] | { [key: string]: Object }>dataSource : data);
+                    resultJSON = (parent ? <DataSource[] | DataSource>dataSource : data);
                 } else if (typeof data !== 'object' && dataSource.indexOf(data) !== -1) {
-                    resultJSON = (parent ? <{ [key: string]: Object }[] | { [key: string]: Object }>dataSource : data);
+                    resultJSON = (parent ? <DataSource[] | DataSource>dataSource : data);
                 } else if (!isNullOrUndefined(fields[this.fields.id]) && isNullOrUndefined(fieldData[this.fields.id])) {
                     let li: Element = this.element.querySelector('[data-uid="'
                         + fields[this.fields.id] + '"]');
@@ -1290,16 +1297,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                         resultJSON = data;
                     }
                 } else if ((fieldData as Object).hasOwnProperty(this.fields.child) && (fieldData[this.fields.child] as Object[]).length) {
-                    resultJSON = <{ [key: string]: Object } & { [key: string]: Object }[]>this.findItemFromDS(
-                        <{ [key: string]: Object }[]>fieldData[this.fields.child], fields, parent);
+                    resultJSON = <DataSource & DataSource[]>this.findItemFromDS(
+                        <DataSource[]>fieldData[this.fields.child], fields, parent);
                 }
                 return !!resultJSON;
             });
         } else {
-            resultJSON = <{ [key: string]: Object }[] & { [key: string]: Object }>dataSource;
+            resultJSON = <DataSource[] & DataSource>dataSource;
         }
 
-        return <{ [key: string]: Object }[] & { [key: string]: Object }>resultJSON;
+        return <DataSource[] & DataSource>resultJSON;
     }
 
     private getQuery(): Query {
@@ -1307,9 +1314,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         let query: Query = (this.query ? this.query : new Query());
         if (!this.query) {
             for (let column of Object.keys((this.fields as ListViewModel & { properties: Object }).properties)) {
-                if (column !== 'tableName' && !!((this.fields as { [key: string]: Object })[column]) &&
-                    (this.fields as { [key: string]: Object })[column] !==
-                    (ListBase.defaultMappedFields as { [key: string]: Object })[column]
+                if (column !== 'tableName' && !!((this.fields as DataSource)[column]) &&
+                    (this.fields as DataSource)[column] !==
+                    (ListBase.defaultMappedFields as DataSource)[column]
                     && columns.indexOf((this.fields as { [key: string]: string })[column]) === -1) {
 
                     columns.push((this.fields as { [key: string]: string })[column]);
@@ -1325,9 +1332,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         return query;
     }
 
-    private setViewDataSource(
-        dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.localData): void {
-
+    private setViewDataSource(dataSource: DataSource[] = <DataSource[]>this.localData): void {
         if (dataSource && this.fields.groupBy) {
             if (this.sortOrder !== 'None') {
                 this.curViewDS = ListBase.groupDataSource(
@@ -1360,17 +1365,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 if (this.isDestroyed) { return; }
                 this.trigger('actionFailure', e);
             });
-        } else if (!this.dataSource || !(<{ [key: string]: Object }[]>this.dataSource).length) {
+        } else if (!this.dataSource || !(<DataSource[]>this.dataSource).length) {
             let ul: HTMLElement = <HTMLElement>this.element.querySelector('ul');
             if (ul) {
                 remove(ul);
                 this.setProperties({ dataSource: ListBase.createJsonFromElement(ul) }, true);
-                this.localData = <{ [key: string]: Object }[]>this.dataSource;
+                this.localData = <DataSource[]>this.dataSource;
                 this.renderList();
                 this.trigger('actionComplete', { data: this.localData });
             }
         } else {
-            this.localData = <{ [key: string]: Object }[]>this.dataSource;
+            this.localData = <DataSource[]>this.dataSource;
             this.renderList();
             this.trigger('actionComplete', { data: this.localData });
         }
@@ -1391,7 +1396,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private resetCurrentList(): void {
         this.resetBlazorTemplates();
-        this.setViewDataSource(this.curViewDS as { [key: string]: Object; }[]);
+        this.setViewDataSource(this.curViewDS as DataSource[]);
         this.contentContainer.innerHTML = '';
         this.createList();
         this.renderIntoDom(this.curUL);
@@ -1401,7 +1406,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.currentLiElements = [];
         this.isNestedList = false;
         this.ulElement = this.curUL = ListBase.createList(
-            this.createElement, this.curViewDS as { [key: string]: Object; }[], this.listBaseOption);
+            this.createElement, this.curViewDS as DataSource[], this.listBaseOption);
         this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
         this.updateBlazorTemplates(true);
     }
@@ -1445,7 +1450,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.curDSLevel.push(uID);
             this.setViewDataSource(this.getSubDS());
             if (!ele) {
-                let data: { [key: string]: Object; }[] = this.curViewDS as { [key: string]: Object; }[];
+                let data: DataSource[] = this.curViewDS as DataSource[];
                 ele = ListBase.createListFromJson(this.createElement, data, this.listBaseOption, this.curDSLevel.length);
                 ele.setAttribute('pID', <string>uID);
                 (ele as HTMLElement).style.display = 'none';
@@ -1455,8 +1460,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             this.switchView(<HTMLElement>ul, <HTMLElement>ele);
             this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
             if (this.selectedItems) {
-                let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>
-                    getFieldValues(<{ [key: string]: Object } | string>this.selectedItems.data, this.listBaseOption.fields);
+                let fieldData: DataSource = <DataSource>
+                    getFieldValues(<DataSource | string>this.selectedItems.data, this.listBaseOption.fields);
                 this.header(<string>(fieldData[this.listBaseOption.fields.text]), true);
             }
             this.selectedLI = undefined;
@@ -1467,7 +1472,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         this.contentContainer.appendChild(ele);
     }
 
-    private renderList(data?: { [key: string]: Object; }[]): void {
+    private renderList(data?: DataSource[]): void {
         this.setViewDataSource(data);
         if (this.enableVirtualization) {
             if (Object.keys(this.dataSource).length) {
@@ -1487,11 +1492,11 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getElementUID(obj: Fields | HTMLElement | Element): Fields {
-        let fields: { [key: string]: Object } = {};
+        let fields: DataSource = {};
         if (obj instanceof Element) {
             fields[this.fields.id] = obj.getAttribute('data-uid');
         } else {
-            fields = <{ [key: string]: Object }>obj;
+            fields = <DataSource>obj;
         }
         return fields;
     }
@@ -1550,7 +1555,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         } else {
             toUL = toUL.parentElement;
         }
-        let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(this.curDSJSON, this.listBaseOption.fields);
+        let fieldData: DataSource = <DataSource>getFieldValues(this.curDSJSON, this.listBaseOption.fields);
         let text: string = <string>fieldData[this.fields.text];
         this.switchView(fromUL, toUL, true);
         this.removeFocus();
@@ -1583,7 +1588,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private getLiFromObjOrElement(obj: Fields | HTMLElement | Element): HTMLElement {
         let li: Element;
-        let dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
+        let dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
         if (!isNullOrUndefined(obj)) {
             if (typeof (dataSource as string[])[0] === 'string' || typeof (dataSource as number[])[0] === 'number') {
@@ -1606,12 +1611,12 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     });
                 }
             } else {
-                let resultJSON: { [key: string]: Object }[] | { [key: string]: Object } = this.getItemData(obj);
-                let fieldData: { [key: string]: Object } =
-                    <{ [key: string]: Object }>getFieldValues(resultJSON, this.listBaseOption.fields);
+                let resultJSON: DataSource[] | DataSource = this.getItemData(obj);
+                let fieldData: DataSource =
+                    <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
                 if (resultJSON) {
                     li = this.element.querySelector('[data-uid="'
-                        + (<{ [key: string]: Object }>fieldData)[this.fields.id] + '"]');
+                        + (<DataSource>fieldData)[this.fields.id] + '"]');
                     if (!this.enableVirtualization && isNullOrUndefined(li)) {
                         let curLi: NodeListOf<Element> = this.element.querySelectorAll('.' + classNames.listItem);
                         for (let i: number = 0; i < curLi.length; i++) {
@@ -1660,7 +1665,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         let finalValue: any;
         let isCompleted: boolean = false;
         this.selectedId = [];
-        let dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
+        let dataSource: DataSource[] | string[] | number[] | DataManager = this.dataSource instanceof DataManager ?
             this.localData : this.dataSource;
         if (this.enableVirtualization && !isCompleted) {
             finalValue = this.virtualizationModule.getSelectedItems();
@@ -1668,15 +1673,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         } else if (this.showCheckBox && !isCompleted) {
             // tslint:disable-next-line:no-any
             let liCollection: any = this.curUL.getElementsByClassName(classNames.selected);
-            let liTextCollection: string[] = []; let liDataCollection: { [key: string]: Object }[] = []; this.selectedId = [];
+            let liTextCollection: string[] = []; let liDataCollection: DataSource[] = []; this.selectedId = [];
             let dataParent: DataAndParent[] = [];
             for (let i: number = 0; i < liCollection.length; i++) {
                 if (typeof (dataSource as string[])[0] === 'string' || typeof (dataSource as number[])[0] === 'number') {
                     liTextCollection.push((liCollection[i] as HTMLElement).innerText.trim());
                 } else {
-                    let tempData: { [key: string]: Object; } = this.getItemData(liCollection[i] as HTMLElement);
-                    let fieldData: { [key: string]: Object } =
-                        <{ [key: string]: Object }>getFieldValues(tempData, this.listBaseOption.fields);
+                    let tempData: DataSource = this.getItemData(liCollection[i] as HTMLElement);
+                    let fieldData: DataSource =
+                        <DataSource>getFieldValues(tempData, this.listBaseOption.fields);
                     if (this.isNestedList) {
                         dataParent.push({ data: tempData, parentId: this.getParentId() });
                     } else {
@@ -1706,8 +1711,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             }
         } else if (!isCompleted) {
             let liElement: Element = this.element.getElementsByClassName(classNames.selected)[0];
-            let fieldData: { [key: string]: Object } =
-                <{ [key: string]: Object }>getFieldValues(this.getItemData(liElement), this.listBaseOption.fields);
+            let fieldData: DataSource =
+                <DataSource>getFieldValues(this.getItemData(liElement), this.listBaseOption.fields);
             if ((typeof (dataSource as string[])[0] === 'string'
                 || typeof (dataSource as number[])[0] === 'number')
                 && !isCompleted) {
@@ -1781,7 +1786,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * @blazorType TValue
      */
     public findItem(obj: Fields | HTMLElement | Element): SelectedItem {
-        return <SelectedItem & { [key: string]: Object }>this.getItemData(obj);
+        return <SelectedItem & DataSource>this.getItemData(obj);
     }
 
     /**
@@ -1808,8 +1813,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     //A function that used to set state of the list item like enable, disable.
     private setItemState(obj: Fields | HTMLElement | Element, isEnable: boolean): void {
-        let resultJSON: { [key: string]: Object } = this.getItemData(obj);
-        let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(resultJSON, this.listBaseOption.fields);
+        let resultJSON: DataSource = this.getItemData(obj);
+        let fieldData: DataSource = <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
         if (resultJSON) {
             let li: Element = this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
             if (isEnable) {
@@ -1845,8 +1850,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private showHideItem(obj: Fields | HTMLElement | Element, isHide: boolean, display: string): void {
-        let resultJSON: { [key: string]: Object } = this.getItemData(obj);
-        let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(resultJSON, this.listBaseOption.fields);
+        let resultJSON: DataSource = this.getItemData(obj);
+        let fieldData: DataSource = <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
         if (resultJSON) {
             let li: HTMLElement = <HTMLElement>this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
             if (li) { li.style.display = display; }
@@ -1859,59 +1864,118 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It adds new item to current ListView.
-     * To add a new item in the list view, we need to pass ‘data’ as array or object and ‘fields’ as object.
+     * It adds new item(s) to current ListView.
+     * To add a new item(s) in the listview, we need to pass `data` as array of items that needs
+     * to be added and `fields` as the target item to which we need to add the given item(s) as its children.
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
-     * @param  {{[key:string]:Object}[]} data - Array JSON Data that need to add.
-     * @param  {Fields} fields - Fields as an Object with ID and Text fields.
+     * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
+     * @param  {Fields} fields - Target item to add the given data as its children (can be null).
+     * @blazorArgsType data|List<TValue>,fields|TValue
      */
     public addItem(data: { [key: string]: Object }[], fields: Fields = undefined): void {
-        if (!(this.dataSource instanceof DataManager)) {
-            if (data instanceof Array) {
-                if (this.enableVirtualization) {
-                    this.virtualizationModule.addItem(data, fields);
-                } else {
-                    let ds: { [key: string]: Object } = <{ [key: string]: Object }>this.findItemFromDS(
-                        <{ [key: string]: Object }[]>this.dataSource, <{ [key: string]: Object }>fields);
-                    let fieldData: { [key: string]: Object } = <{ [key: string]: Object }>getFieldValues(ds, this.listBaseOption.fields);
-                    let child: { [key: string]: Object }[] = <{ [key: string]: Object }[]>fieldData[this.fields.child];
+        const dataSource: DataSource[] = this.dataSource instanceof DataManager
+            ? this.localData : this.dataSource as DataSource[];
+        this.addItemInternally(data, fields, dataSource);
+    }
+
+    private addItemInternally(data: DataSource[], fields: Fields, dataSource: DataSource[]): void {
+        if (data instanceof Array) {
+            if (this.enableVirtualization) {
+                this.virtualizationModule.addItem(data, fields, dataSource);
+            } else {
+                const ds: DataSource = <DataSource>this.findItemFromDS(
+                    <DataSource[]>dataSource, <DataSource>fields);
+                let child: DataSource[];
+                if (ds) {
+                    const fieldData: DataSource = <DataSource>getFieldValues(ds, this.listBaseOption.fields);
+                    child = <DataSource[]>fieldData[this.fields.child];
                     if (!child) {
                         child = [];
                     }
                     child = child.concat(data);
-                    if (ds instanceof Array) {
-                        data.forEach((dataSource: { [key: string]: Object; }) => {
-                            (this.dataSource as { [key: string]: Object; }[]).push(dataSource);
-                            this.setViewDataSource(this.dataSource as { [key: string]: Object; }[]);
-                            if (this.ulElement) {
-                                let index: number = (this.curViewDS as { [key: string]: Object; }[]).indexOf(dataSource);
-                                this.addListItem(dataSource, index);
-                                let curViewDS: { [key: string]: Object; } = (this.curViewDS as { [key: string]: Object; }[])[index - 1];
-                                if (curViewDS && curViewDS.isHeader && (curViewDS.items as { [key: string]: Object; }[]).length === 1) {
-                                    this.addListItem(curViewDS, (index - 1));
-                                }
-                            } else {
-                                this.reRender();
-                            }
-                        });
-                        if (this.ulElement) {
-                            this.updateBlazorTemplates(true);
+                }
+                // check for whether target is nested level or top level in list
+                if (ds instanceof Array) {
+                    data.forEach((currentItem: DataSource) => {
+                        dataSource.push(currentItem);
+                        this.setViewDataSource(dataSource);
+                        // since it is top level target, get the content container's first child
+                        // as it is always the top level UL
+                        const targetUL: HTMLElement = this.contentContainer
+                            ? <HTMLElement>this.contentContainer.children[0]
+                            : null;
+                        // check for whether the list was previously empty or not, if it is
+                        // proceed to call initial render
+                        if (this.contentContainer && targetUL) {
+                            this.addItemIntoDom(currentItem, targetUL, this.curViewDS as DataSource[]);
+                        } else {
+                            this.reRender();
                         }
-                        this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
-                    } else {
+                    });
+                    if (this.curUL) {
+                        this.updateBlazorTemplates(true);
+                    }
+                    this.liCollection = <HTMLElement[] & NodeListOf<Element>>this.curUL.querySelectorAll('.' + classNames.listItem);
+                } else {
+                    // proceed as target item is in nested level, only if it is a valid target ds
+                    if (ds) {
                         ds[this.fields.child] = child;
-                        this.reRender();
+                        this.addItemInNestedList(ds, data);
                     }
                 }
             }
         }
     }
 
-    private addListItem(dataSource: { [key: string]: Object; }, index: number): void {
-        let target: HTMLElement = this.getLiFromObjOrElement((this.curViewDS as { [key: string]: Object; }[])[index + 1]) ||
-            this.getLiFromObjOrElement((this.curViewDS as { [key: string]: Object; }[])[index + 2]) || null;
+    private addItemInNestedList(targetItemData: DataSource, itemQueue: DataSource[]): void {
+        const targetItemId: string = targetItemData[this.fields.id] as string;
+        const targetChildDS: DataSource[] = targetItemData[this.fields.child] as DataSource[];
+        const isAlreadyRenderedUL: HTMLElement | null = this.element.querySelector('[pid=\'' + targetItemId + '\']');
+        const targetLi: HTMLElement | null = this.element.querySelector('[data-uid=\'' + targetItemId + '\']');
+        const targetUL: HTMLElement | null = isAlreadyRenderedUL
+            ? isAlreadyRenderedUL
+            : targetLi
+                ? <HTMLElement>closest(targetLi, 'ul')
+                : null;
+        const targetDS: DataSource[] = isAlreadyRenderedUL ? targetChildDS : [targetItemData];
+        const isTargetEmptyChild: boolean = targetLi ? !targetLi.classList.contains(classNames.hasChild) : false;
+        let isRefreshTemplateNeeded: boolean = false;
+        // if li element is already rendered, that element needs to be refreshed so that
+        // it becomes child viewable due to new child items are added now
+        if (isTargetEmptyChild) {
+            const targetRefreshedElement: HTMLElement[] = ListBase.createListItemFromJson(
+                this.createElement, targetDS, this.listBaseOption);
+            targetUL.insertBefore(targetRefreshedElement[0], targetLi);
+            detach(targetLi);
+            isRefreshTemplateNeeded = true;
+        }
+        // if it is already rendered element, we need to create and append new elements
+        if (isAlreadyRenderedUL && itemQueue) {
+            itemQueue.forEach((currentItem: DataSource) => {
+                targetDS.push(currentItem);
+                this.addItemIntoDom(currentItem, targetUL, targetDS);
+            });
+            isRefreshTemplateNeeded = true;
+        }
+        if (isRefreshTemplateNeeded) {
+            this.updateBlazorTemplates(true);
+        }
+    }
+
+    private addItemIntoDom(currentItem: DataSource, targetUL: HTMLElement, curViewDS: DataSource[]): void {
+        let index: number = curViewDS.indexOf(currentItem);
+        this.addListItem(currentItem, index, targetUL, curViewDS);
+        let curItemDS: DataSource = curViewDS[index - 1];
+        if (curItemDS && curItemDS.isHeader && (curItemDS.items as DataSource[]).length === 1) {
+            this.addListItem(curItemDS, (index - 1), targetUL, curViewDS);
+        }
+    }
+
+    private addListItem(dataSource: DataSource, index: number, ulElement: HTMLElement, curViewDS: DataSource[]): void {
+        let target: HTMLElement = this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 1]) ||
+            this.getLiFromObjOrElement((curViewDS as DataSource[])[index + 2]) || null;
         let li: HTMLElement[] = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption);
-        this.ulElement.insertBefore(li[0], target);
+        ulElement.insertBefore(li[0], target);
     }
 
     /**
@@ -1919,30 +1983,31 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
      */
     public removeItem(obj: Fields | HTMLElement | Element): void {
-        if (!(this.dataSource instanceof DataManager)) {
-            if (this.enableVirtualization) {
-                this.virtualizationModule.removeItem(obj);
-            } else {
-                this.removeItemFromList(obj);
-                this.updateBlazorTemplates(true);
-            }
+        const listDataSource: DataSource[] = this.dataSource instanceof DataManager
+            ? this.localData : this.dataSource as DataSource[];
+        if (this.enableVirtualization) {
+            this.virtualizationModule.removeItem(obj);
+        } else {
+            this.removeItemFromList(obj, listDataSource);
+            this.updateBlazorTemplates(true);
         }
     }
 
-    private removeItemFromList(obj: Fields | Element | HTMLElement): void {
+    private removeItemFromList(obj: Fields | Element | HTMLElement, listDataSource: DataSource[]): void {
+        const curViewDS: DataSource[] = this.curViewDS as DataSource[];
         let fields: Fields = obj instanceof Element ? this.getElementUID(obj) : obj;
-        let dataSource: { [key: string]: Object; }[] | { [key: string]: Object };
-        dataSource = this.findItemFromDS(this.dataSource as { [key: string]: Object; }[], <{ [key: string]: Object }>fields, true);
+        let dataSource: DataSource[] | DataSource;
+        dataSource = this.findItemFromDS(listDataSource, <DataSource>fields, true);
         if (dataSource) {
-            let data: { [key: string]: Object } | { [key: string]: Object }[];
-            data = this.findItemFromDS(dataSource as { [key: string]: Object; }[], <{ [key: string]: Object }>fields);
-            let index: number = (this.curViewDS as { [key: string]: Object; }[]).indexOf(data as { [key: string]: Object });
+            let data: DataSource | DataSource[];
+            data = this.findItemFromDS(dataSource as DataSource[], <DataSource>fields);
+            let index: number = curViewDS.indexOf(data as DataSource);
             let li: HTMLElement = this.getLiFromObjOrElement(obj);
             let groupLi: HTMLElement;
+            this.validateNestedView(li);
             if (this.fields.groupBy && this.curViewDS[index - 1] &&
-                (this.curViewDS as { [key: string]: Object; }[])[index - 1].isHeader &&
-                (((this.curViewDS as { [key: string]: Object; }[])[index - 1])
-                    .items as { [key: string]: Object; }[]).length === 1) {
+                curViewDS[index - 1].isHeader &&
+                (curViewDS[index - 1].items as DataSource[]).length === 1) {
                 if (li && (li.previousElementSibling as HTMLElement).classList.contains(classNames.groupListItem) &&
                     (isNullOrUndefined(li.nextElementSibling) || (li.nextElementSibling &&
                         (li.nextElementSibling as HTMLElement).classList.contains(classNames.groupListItem)))) {
@@ -1955,10 +2020,44 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
             if (groupLi) {
                 detach(groupLi);
             }
-            let dsIndex: number = (dataSource as { [key: string]: Object }[]).indexOf(data as { [key: string]: Object });
-            (dataSource as { [key: string]: Object }[]).splice(dsIndex, 1);
-            this.setViewDataSource(this.dataSource as { [key: string]: Object; }[]);
+            // tslint:disable-next-line:no-any
+            const foundData: any = ((<DataSource[]>dataSource).length - 1) <= 0
+                ? this.findParent(
+                    this.localData,
+                    this.fields.id,
+                    (value: string) => value === (data as DataSource)[this.fields.id],
+                    null) : null;
+            let dsIndex: number = (dataSource as DataSource[]).indexOf(data as DataSource);
+            (dataSource as DataSource[]).splice(dsIndex, 1);
+            this.setViewDataSource(listDataSource);
+            if (foundData
+                && foundData.parent
+                && Array.isArray(foundData.parent[this.fields.child])
+                && foundData.parent[this.fields.child].length <= 0) {
+                const parentLi: HTMLElement | null = this.getLiFromObjOrElement(foundData.parent);
+                if (parentLi) {
+                    let li: HTMLElement[] = ListBase.createListItemFromJson(
+                        this.createElement,
+                        [foundData.parent],
+                        this.listBaseOption);
+                    parentLi.parentElement.insertBefore(li[0], parentLi);
+                    parentLi.parentElement.removeChild(parentLi);
+                }
+            }
+            if (dataSource.length <= 0) {
+                this.back();
+            }
             this.liCollection = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.listItem));
+        }
+    }
+
+    // validate before removing an element whether the current view is inside target element's child view
+    private validateNestedView(li: HTMLElement | null): void {
+        const liID: string = li ? li.getAttribute('data-uid').toString().toLowerCase() : null;
+        if (liID && this.curDSLevel && this.curDSLevel.length > 0) {
+            while (this.curDSLevel.some((id: string) => id.toString().toLowerCase() === liID)) {
+                this.back();
+            }
         }
     }
 
@@ -1967,18 +2066,32 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
      * @param  {Fields[] | HTMLElement[] | Element[]} obj - We can pass array of elements or array of field Object with ID and Text fields.
      */
     public removeMultipleItems(obj: HTMLElement[] | Element[] | Fields[]): void {
-        if (!(this.dataSource instanceof DataManager)) {
-            if (obj.length) {
-                for (let i: number = 0; i < obj.length; i++) {
-                    if (this.enableVirtualization) {
-                        this.removeItem(obj[i]);
-                    } else {
-                        this.removeItemFromList(obj[i]);
-                    }
+        if (obj.length) {
+            for (let i: number = 0; i < obj.length; i++) {
+                this.removeItem(obj[i]);
+            }
+            this.updateBlazorTemplates(true);
+        }
+    }
+
+    // tslint:disable-next-line:no-any
+    private findParent(dataSource: any, id: string, callback: Function, parent: object): object {
+        if (dataSource.hasOwnProperty(id) && callback(dataSource[id]) === true) {
+            return extend({}, dataSource);
+        }
+
+        for (let i: number = 0; i < Object.keys(dataSource).length; i++) {
+            if (dataSource[Object.keys(dataSource)[i]]
+                && typeof dataSource[Object.keys(dataSource)[i]] === 'object') {
+                // tslint:disable-next-line:no-any
+                let result: any = this.findParent(dataSource[Object.keys(dataSource)[i]], id, callback, dataSource);
+                if (result != null) {
+                    if (!result.parent) { result.parent = parent; }
+                    return result;
                 }
-                this.updateBlazorTemplates(true);
             }
         }
+        return null;
     }
 
     // Module Required function
@@ -2182,4 +2295,8 @@ export interface ItemCreatedArgs {
     item: HTMLElement;
     options: ListBaseOptions;
     text: string;
+}
+
+interface DataSource {
+    [key: string]: Object;
 }

@@ -11,7 +11,7 @@ export interface ActionEventArgs extends BaseEventArgs {
     requestType: string;
     /**
      * Defines the type of the event.
-     * @blazorType UIMouseEventArgs
+     * @blazorType MouseEventArgs
      */
     event?: Event;
     /** Defines the cancel option for the action taking place. */
@@ -59,7 +59,7 @@ export interface CellClickEventArgs extends BaseEventArgs {
     cancel?: boolean;
     /**
      * Defines the type of the event.
-     * @blazorType UIMouseEventArgs
+     * @blazorType MouseEventArgs
      */
     event?: Event;
     /** Returns the group index of the cell. */
@@ -71,7 +71,7 @@ export interface SelectEventArgs extends BaseEventArgs {
     requestType: string;
     /** 
      * Defines the type of the event.
-     * @blazorType UIMouseEventArgs
+     * @blazorType MouseEventArgs
      */
     event?: Event;
     /** Returns the single or collection of HTML element(s). */
@@ -90,10 +90,10 @@ export interface SelectEventArgs extends BaseEventArgs {
 }
 
 export interface EventClickArgs extends BaseEventArgs {
-    /**
-     * Returns the date of the event.
-     * @deprecated
-     */
+     /**
+      * Returns the date of the event.
+      * @deprecated
+      */
     date?: Date;
     /**
      * Returns a single or collection of selected or clicked events.
@@ -104,6 +104,13 @@ export interface EventClickArgs extends BaseEventArgs {
     element: HTMLElement | HTMLElement[];
     /** Defines the cancel option. */
     cancel?: boolean;
+}
+
+export interface HoverEventArgs extends BaseEventArgs {
+    /** Returns the mouse event. */
+    event: MouseEvent;
+    /** Returns the single or collection of HTML element(s). */
+    element: HTMLElement;
 }
 
 export interface EventRenderedArgs extends BaseEventArgs {
@@ -139,6 +146,22 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
      *  will be processed based on the `interval` value within the `timeScale` property. 
      */
     duration?: number;
+}
+
+export interface PopupCloseEventArgs extends BaseEventArgs {
+    /** Returns the type of the popup which is currently being opted to open. */
+    type: PopupType;
+    /**
+     * Returns the cell or event data.
+     * @isGenericType true
+     */
+    data?: Object;
+    /** Returns the target element on which the popup is getting opened. */
+    target?: Element;
+    /** Returns the popup wrapper element. */
+    element: Element;
+    /** Defines the cancel option. */
+    cancel: boolean;
 }
 
 export interface NavigatingEventArgs extends BaseEventArgs {
@@ -177,7 +200,7 @@ export interface ResizeEventArgs extends BaseEventArgs {
     data: { [key: string]: Object };
     /**
      * Returns the mouse event.
-     * @blazorType UIMouseEventArgs
+     * @blazorType MouseEventArgs
      */
     event: MouseEvent;
     /** Defines the cancel option. */
@@ -202,10 +225,10 @@ export interface DragEventArgs extends BaseEventArgs {
      * @isGenericType true
      */
     data: { [key: string]: Object };
-     /**
-      * Returns the mouse event.
-      * @blazorType UIMouseEventArgs
-      */
+    /**
+     * Returns the mouse event.
+     * @blazorType MouseEventArgs
+     */
     event: MouseEvent;
     /** Defines the cancel option. */
     cancel?: boolean;
@@ -506,6 +529,7 @@ export interface PredicateData {
 }
 
 export interface ViewsData extends ViewsModel {
+    cellHeaderTemplateName?: string;
     dateHeaderTemplateName?: string;
     cellTemplateName?: string;
     resourceHeaderTemplateName?: string;

@@ -1,9 +1,9 @@
 import * as events from '../base/constant';
-import { IRichTextEditor, NotifyArgs, IRenderer, ActionCompleteEventArgs } from '../base/interface';
-import { Dialog, DialogModel } from '@syncfusion/ej2-popups';
+import { IRichTextEditor, NotifyArgs, IRenderer } from '../base/interface';
+import { Dialog, DialogModel, Popup } from '@syncfusion/ej2-popups';
 import { RadioButton } from '@syncfusion/ej2-buttons';
 import { RendererFactory } from '../services/renderer-factory';
-import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, L10n, isNullOrUndefined, detach, isBlazor, extend, addClass } from '@syncfusion/ej2-base';
 import { CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT } from '../base/classes';
 import { CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT } from '../base/classes';
 import { pasteCleanupGroupingTags } from '../../common/config';
@@ -12,6 +12,9 @@ import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { RenderType } from '../base/enum';
 import { DialogRenderer } from '../renderer/dialog-renderer';
+import { Uploader, MetaData } from '@syncfusion/ej2-inputs';
+import * as classes from '../base/classes';
+import { IHtmlFormatterCallBack } from '../../common';
 /**
  * PasteCleanup module called when pasting content in RichTextEditor
  */
@@ -24,11 +27,18 @@ export class PasteCleanup {
   private saveSelection: NodeSelection;
   private nodeSelectionObj: NodeSelection;
   private dialogRenderObj: DialogRenderer;
-  private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'button',
-    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe', 'img', 'input',
+  private popupObj: Popup;
+  private uploadObj: Uploader;
+  private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'font', 'i', 'iframe', 'img', 'input',
     'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
     'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
     'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
+  private blockNode: string[] = ['div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'address', 'blockquote', 'button', 'center', 'dd', 'dir', 'dl', 'dt', 'fieldset',
+    'frameset', 'hr', 'iframe', 'isindex', 'li', 'map', 'menu', 'noframes', 'noscript',
+    'object', 'ol', 'pre', 'td', 'tr', 'th', 'tbody', 'tfoot', 'thead', 'table', 'ul',
+    'header', 'article', 'nav', 'footer', 'section', 'aside', 'main', 'figure', 'figcaption'];
   constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
     this.parent = parent;
     this.locator = serviceLocator;
@@ -82,7 +92,7 @@ export class PasteCleanup {
                 'Images',
                 'Image',
                 e.args,
-                this.imageFormatting.bind(args),
+                this.imageFormatting.bind(this, args),
                 'pasteCleanup',
                 imageproperties,
                 'pasteCleanupModule');
@@ -147,26 +157,157 @@ export class PasteCleanup {
     }
   }
 
+  private imgUploading(elm: HTMLElement): void {
+    let base64Src: string[] = [];
+    let imgName: string[] = [];
+    let imgElem: Element[] = [];
+    let allImgElm: NodeListOf<HTMLImageElement> = elm.querySelectorAll('img');
+    if (allImgElm.length > 0) {
+      for (let i: number = 0; i < allImgElm.length; i++) {
+        if (!isNOU(allImgElm[i].getAttribute('id')) && allImgElm[i].getAttribute('id').indexOf('msWordImg') >= 0) {
+          imgElem.push(allImgElm[i]);
+        }
+      }
+      if (imgElem.length > 0) {
+        for (let i: number = 0; i < imgElem.length; i++) {
+          base64Src.push(imgElem[i].getAttribute('src'));
+          imgName.push(imgElem[i].getAttribute('id'));
+        }
+        let fileList: File[] = [];
+        for (let i: number = 0; i < base64Src.length; i++) {
+            fileList.push(this.base64ToFile(base64Src[i], imgName[i]));
+        }
+        for (let i: number = 0; i < fileList.length; i++) {
+          this.uploadMethod(fileList[i], imgElem[i]);
+          imgElem[i].removeAttribute('id');
+        }
+
+      }
+    }
+  }
+
+  private uploadMethod(fileList: File, imgElem: Element): void {
+      let uploadEle: HTMLInputElement | HTMLElement = document.createElement('div');
+      document.body.appendChild(uploadEle);
+      uploadEle.setAttribute('display', 'none');
+      (imgElem as HTMLElement).style.opacity = '0.5';
+      let popupEle: HTMLElement = this.parent.createElement('div');
+      this.parent.element.appendChild(popupEle);
+      let contentEle: HTMLElement = this.parent.createElement('div');
+      let offsetY: number = this.parent.iframeSettings.enable ? -50 : -90;
+      let popupObj: Popup = new Popup(popupEle, {
+          relateTo: imgElem as HTMLElement,
+          height: '85px',
+          width: '300px',
+          offsetY: offsetY,
+          content: contentEle,
+          viewPortElement: this.parent.element,
+          position: { X: 'center', Y: 'top' },
+          enableRtl: this.parent.enableRtl,
+          zIndex: 10001,
+          close: (event: { [key: string]: object }) => {
+              this.parent.isBlur = false;
+              popupObj.destroy();
+              detach(popupObj.element);
+          }
+      });
+      popupObj.element.style.display = 'none';
+      addClass([popupObj.element], [classes.CLS_POPUP_OPEN, classes.CLS_RTE_UPLOAD_POPUP]);
+      let timeOut: number = fileList.size > 1000000 ? 300 : 100;
+      setTimeout(() => { this.refreshPopup(imgElem as HTMLElement, popupObj); }, timeOut);
+
+      let uploadObj: Uploader = new Uploader({
+        asyncSettings: {
+            saveUrl: this.parent.insertImageSettings.saveUrl
+        },
+        cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
+        dropArea: this.parent.inputElement,
+        allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
+        success: (e: object) => {
+          if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
+            let url: string = this.parent.insertImageSettings.path +
+            (e as MetaData).file.name + '.' + (e as MetaData).file.type.split('image/')[1];
+            (imgElem as HTMLElement).removeAttribute('src');
+            (imgElem as HTMLElement).setAttribute('src', url);
+          }
+          setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900); },
+        failure: (e: Object) => {
+          if (popupObj) {
+            popupObj.close();
+          }
+          this.parent.trigger(events.imageUploadFailed, e);
+        }
+      });
+      uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
+
+      /* tslint:disable */
+      let fileData: any = [{
+          name: fileList.name,
+          rawFile: fileList,
+          size: fileList.size,
+          type: fileList.type,
+          validationMessages: { minSize: "", maxSize: "" },
+          statusCode: '1'
+      }];
+      (uploadObj as any).createFileList(fileData);
+      (uploadObj as any).filesData.push(fileData[0]);
+      /* tslint:enable */
+      uploadObj.upload(fileData);
+      (popupObj.element.getElementsByClassName('e-file-select-wrap')[0] as HTMLElement).style.display = 'none';
+      detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
+  }
+  private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: Object): void {
+    popupObj.close();
+    (imgElem as HTMLElement).style.opacity = '1';
+    this.parent.trigger(events.imageUploadSuccess, e);
+    uploadObj.destroy();
+  }
+  private refreshPopup(imageElement: HTMLElement, popupObj: Popup): void {
+    let imgPosition: number = this.parent.iframeSettings.enable ? this.parent.element.offsetTop +
+    imageElement.offsetTop : imageElement.offsetTop;
+    let rtePosition: number = this.parent.element.offsetTop + this.parent.element.offsetHeight;
+    if (imgPosition > rtePosition) {
+        popupObj.relateTo = this.parent.inputElement;
+        popupObj.offsetY = this.parent.iframeSettings.enable ? -30 : -65;
+        popupObj.element.style.display = 'block';
+    } else {
+        if (popupObj) {
+        popupObj.refreshPosition(imageElement);
+        popupObj.element.style.display = 'block';
+        }
+    }
+  }
+  private base64ToFile(base64: string, filename: string): File {
+    let baseStr: string[] = base64.split(',');
+    let typeStr: string = baseStr[0].match(/:(.*?);/)[1];
+    let decodeStr: string = atob(baseStr[1]);
+    let strLen: number = decodeStr.length;
+    let decodeArr: Uint8Array = new Uint8Array(strLen);
+    while (strLen--) {
+        decodeArr[strLen] = decodeStr.charCodeAt(strLen);
+    }
+    return new File([decodeArr], filename, {type: typeStr});
+  }
   /**
    * Method for image formatting when pasting
    * @hidden
    */
-  public imageFormatting(args: ActionCompleteEventArgs): void {
+  private imageFormatting(pasteArgs: Object, imgElement: { [key: string]: Element[] }): void {
     let imageElement: HTMLElement = this.parent.createElement('span');
-    imageElement.appendChild(args.elements[0]);
+    imageElement.appendChild(imgElement.elements[0]);
     let imageValue: string = imageElement.innerHTML;
     this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
     let currentDocument: Document = this.contentRenderer.getDocument();
     let range: Range = this.nodeSelectionObj.getRange(currentDocument);
     this.saveSelection = this.nodeSelectionObj.save(range, currentDocument);
     if (this.parent.pasteCleanupSettings.prompt) {
-      this.pasteDialog(imageValue, args);
+      this.pasteDialog(imageValue, pasteArgs);
     } else if (this.parent.pasteCleanupSettings.plainText) {
-      this.plainFormatting(imageValue, args);
+      this.plainFormatting(imageValue, pasteArgs);
     } else if (this.parent.pasteCleanupSettings.keepFormat) {
-      this.formatting(imageValue, false, args);
+      this.formatting(imageValue, false, pasteArgs);
     } else {
-      this.formatting(imageValue, true, args);
+      this.formatting(imageValue, true, pasteArgs);
     }
   }
 
@@ -185,12 +326,10 @@ export class PasteCleanup {
     plainTextRadioButton.appendTo(plainTextElement);
   }
 
-  private selectFormatting(value: string, args: Object): void {
-    let keepFormatElement: HTMLInputElement = this.parent.element.querySelector('#keepFormating');
-    let cleanFormatElement: HTMLInputElement = this.parent.element.querySelector('#cleanFormat');
-    if (keepFormatElement.checked) {
+  private selectFormatting(value: string, args: Object, keepChecked: boolean, cleanChecked: boolean): void {
+    if (keepChecked) {
       this.formatting(value, false, args);
-    } else if (cleanFormatElement.checked) {
+    } else if (cleanChecked) {
       this.formatting(value, true, args);
     } else {
       this.plainFormatting(value, args);
@@ -202,11 +341,13 @@ export class PasteCleanup {
         {
           click: () => {
             if (!dialog.isDestroyed) {
-              this.selectFormatting(value, args);
+              let keepChecked: boolean = (this.parent.element.querySelector('#keepFormating') as HTMLInputElement).checked;
+              let cleanChecked: boolean = (this.parent.element.querySelector('#cleanFormat') as HTMLInputElement).checked;
               dialog.hide();
               let argument: Dialog = isBlazor() ? null : dialog;
               this.dialogRenderObj.close(argument);
               dialog.destroy();
+              this.selectFormatting(value, args, keepChecked, cleanChecked);
             }
           },
           buttonModel: {
@@ -283,106 +424,160 @@ export class PasteCleanup {
       clipBoardElem = this.allowedStyle(clipBoardElem);
     }
     this.saveSelection.restore();
-    this.parent.executeCommand('insertHTML', clipBoardElem);
+    this.parent.formatter.editorManager.execCommand(
+      'inserthtml',
+      'pasteCleanup',
+      args,
+      (returnArgs: IHtmlFormatterCallBack) => {
+        extend(args, {elements: [returnArgs.elements]}, true);
+        this.parent.formatter.onSuccess(this.parent, args);
+      },
+      clipBoardElem
+    );
     this.parent.notify(events.toolbarRefresh, {});
-    extend(args, {elements: [clipBoardElem]}, true);
-    this.parent.formatter.onSuccess(this.parent, args);
+    if (!isNOU(this.parent.insertImageSettings.saveUrl)) {
+      this.imgUploading(this.parent.inputElement);
+    }
   }
 
   //Plain Formatting
   private plainFormatting(value: string, args: Object): void {
-    let clipBoardElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
+    let clipBoardElem: HTMLElement = this.parent.createElement(
+      'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
     clipBoardElem.innerHTML = value;
     this.detachInlineElements(clipBoardElem);
-    let text: string = this.getTextContent(clipBoardElem);
-    let resultElement: HTMLElement = this.parent.createElement(
-      'div', { className: 'pasteContent', styles: 'display:inline;'}) as HTMLElement;
-    resultElement.innerHTML = text;
-    this.saveSelection.restore();
-    this.parent.executeCommand('insertHTML', resultElement);
-    extend(args, {elements: [resultElement]}, true);
-    this.parent.formatter.onSuccess(this.parent, args);
-  }
-
-  private detachInlineElements(element: HTMLElement): void {
-    while (!isNullOrUndefined(element)) {
-      let isInlineElement: boolean = false;
-      for (let j: number = 0; j < this.inlineNode.length && !isInlineElement; j++) {
-        if (element.tagName.toLocaleLowerCase() === this.inlineNode[j]) {
-          let node: HTMLElement = (element.nextElementSibling as HTMLElement) ?
-          (element.nextElementSibling as HTMLElement) : (element.parentElement.nextElementSibling as HTMLElement);
-          if (!isNullOrUndefined(element.childNodes[0]) && element.childNodes[0].textContent !== '') {
-            element.parentElement.insertBefore(this.getTextNode(element), element);
+    this.getTextContent(clipBoardElem);
+    if (clipBoardElem.textContent.trim() !== '') {
+      if (clipBoardElem.firstElementChild.tagName !== 'BR') {
+        let firstElm: Element | Node = clipBoardElem.firstElementChild;
+        if (!isNOU(clipBoardElem.firstElementChild)) {
+          let spanElm: HTMLElement = this.parent.createElement('span') as HTMLElement;
+          for (let i: number = 0, j: number = 0;  i < firstElm.childNodes.length; i++, j++) {
+            if (firstElm.childNodes[i].nodeName === '#text') {
+              spanElm.appendChild(firstElm.childNodes[i]);
+              clipBoardElem.insertBefore(spanElm, clipBoardElem.firstElementChild);
+              i--;
+            } else if (firstElm.childNodes[i].nodeName !== '#text' && j === 0) {
+              for (let k: number = 0; k < firstElm.childNodes[i].childNodes.length; k++) {
+                spanElm.appendChild(firstElm.childNodes[i].childNodes[k]);
+                clipBoardElem.insertBefore(spanElm, clipBoardElem.firstElementChild);
+                k--;
+              }
+              i--;
+            } else {
+              break;
+            }
           }
-          detach(element);
-          element = node;
-          isInlineElement = true;
+          if (!firstElm.hasChildNodes()) {
+            detach(firstElm);
+          }
         }
       }
-      if (!isNullOrUndefined(element)) {
-        if (isInlineElement) {
-          element = element;
-        } else if (element.firstElementChild) {
-          element = element.firstElementChild as HTMLElement;
-        } else if (element.nextElementSibling) {
-          element = element.nextElementSibling as HTMLElement;
-        } else if (!isNOU(element.parentElement) && element.parentElement.nextElementSibling) {
-          element = element.parentElement.nextElementSibling as HTMLElement;
-        } else {
-          element = null;
-        }
-      } else {
-        element = null;
-      }
-    }
-  }
-  private getTextNode(element: Node): Node {
-    let rootElement: HTMLElement = this.parent.createElement('span');
-    rootElement.innerHTML = element.textContent;
-    return rootElement.childNodes[0];
-  }
-
-  private insertAfter(newNode: Element, referenceNode: Element): void {
-    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
-  }
-
-  private getTextContent(element: Element): string {
-    let result: string;
-    let text: string;
-    result = '';
-    let brElement: NodeListOf<HTMLBRElement> = element.nodeType === 1 ? element.querySelectorAll('br') : null;
-    if (brElement) {
-      for (let i: number = 0; i < brElement.length; i++) {
-        if (!isNullOrUndefined(brElement[i].previousSibling)) {
-          let resultElement: HTMLElement = this.parent.createElement('div') as HTMLElement;
-          resultElement.innerHTML = brElement[i].previousSibling.textContent;
-          detach(brElement[i].previousSibling);
-          brElement[i].parentElement.insertBefore(resultElement, brElement[i]);
-        }
-        if (i + 1 === brElement.length && !isNullOrUndefined(brElement[i].nextSibling)) {
-          let divNextElement: HTMLElement = this.parent.createElement('div') as HTMLElement;
-          divNextElement.innerHTML = brElement[i].nextSibling.textContent;
-          detach(brElement[i].nextSibling);
-          this.insertAfter(divNextElement, brElement[i]);
-        }
-        detach(brElement[i]);
-      }
-    }
-    if (element.children.length === 0 && element.textContent.trim() !== '') {
-      text = '<p>' + element.textContent + '</p>';
-      result += text;
+      this.removeEmptyElements(clipBoardElem);
+      this.saveSelection.restore();
+      this.parent.formatter.editorManager.execCommand(
+        'inserthtml',
+        'pasteCleanup',
+        args,
+        (returnArgs: IHtmlFormatterCallBack) => {
+          extend(args, {elements: []}, true);
+          this.parent.formatter.onSuccess(this.parent, args);
+        },
+        clipBoardElem
+      );
     } else {
-      for (let i: number = 0; i < element.children.length; i++) {
-        if (!isNullOrUndefined(element.children[i])) {
-          text = this.getTextContent(element.children[i] as Element);
-        } else {
-          text = '<p>' + element.children[i].textContent + '</p>';
+      this.saveSelection.restore();
+      extend(args, {elements: []}, true);
+      this.parent.formatter.onSuccess(this.parent, args);
+    }
+  }
+
+  private getTextContent(clipBoardElem: HTMLElement): void {
+    for (let i: number = 0; i < this.blockNode.length; i++) {
+      let inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.blockNode[i]);
+      for (let j: number = 0; j < inElem.length; j++) {
+        let parElem: HTMLElement;
+        for (let k: number = 0, l: number = 0, preNode: string; k < inElem[j].childNodes.length; k++, l++) {
+          if (inElem[j].childNodes[k].nodeName === 'DIV' || inElem[j].childNodes[k].nodeName === 'P' ||
+          (inElem[j].childNodes[k].nodeName === '#text' && (inElem[j].childNodes[k].nodeValue.replace(/\u00a0/g, '&nbsp;') !== '&nbsp;') &&
+          inElem[j].childNodes[k].textContent.trim() === '')) {
+            parElem = inElem[j].childNodes[k].parentElement;
+            inElem[j].childNodes[k].parentElement.parentElement.insertBefore(
+              inElem[j].childNodes[k], inElem[j].childNodes[k].parentElement);
+            k--;
+          } else {
+            parElem = inElem[j].childNodes[k].parentElement;
+            if (preNode === 'text') {
+              let previousElem: Element = parElem.previousElementSibling;
+              previousElem.appendChild(inElem[j].childNodes[k]);
+            } else {
+              let divElement: HTMLElement = this.parent.createElement('div', { id: 'newDiv' } );
+              divElement.appendChild(inElem[j].childNodes[k]);
+              parElem.parentElement.insertBefore(divElement, parElem);
+            }
+            k--;
+            preNode = 'text';
+          }
         }
-        result += text;
+        if (!isNOU(parElem)) {
+          detach(parElem);
+        }
       }
     }
-    return result;
+    let allElems: NodeListOf<Element> = clipBoardElem.querySelectorAll('*');
+    for (let i: number = 0; i < allElems.length; i++) {
+      let allAtr: NamedNodeMap = allElems[i].attributes;
+      for (let j: number = 0; j < allAtr.length; j++) {
+        allElems[i].removeAttribute(allAtr[j].name);
+        j--;
+      }
+    }
   }
+
+  private detachInlineElements(clipBoardElem: HTMLElement): void {
+    for (let i: number = 0; i < this.inlineNode.length; i++) {
+      let inElem: NodeListOf<Element> = clipBoardElem.querySelectorAll(this.inlineNode[i]);
+      for (let j: number = 0; j < inElem.length; j++) {
+        let parElem: HTMLElement;
+        for (let k: number = 0; k < inElem[j].childNodes.length; k++) {
+          parElem = inElem[j].childNodes[k].parentElement;
+          inElem[j].childNodes[k].parentElement.parentElement.insertBefore(
+            inElem[j].childNodes[k], inElem[j].childNodes[k].parentElement);
+          k--;
+        }
+        if (!isNOU(parElem)) {
+          detach(parElem);
+        }
+      }
+    }
+  }
+
+  private findDetachEmptyElem(element: Element): HTMLElement {
+    let removableElement: HTMLElement;
+    if (!isNOU(element.parentElement)) {
+        if (element.parentElement.textContent.trim() === '' &&
+        element.parentElement.getAttribute('class') !== 'pasteContent') {
+            removableElement = this.findDetachEmptyElem(element.parentElement);
+        } else {
+            removableElement = element as HTMLElement;
+        }
+    } else {
+        removableElement = null;
+    }
+    return removableElement;
+  }
+  private removeEmptyElements(element: HTMLElement): void {
+      let emptyElements: NodeListOf<Element> = element.querySelectorAll(':empty');
+      for (let i: number = 0; i < emptyElements.length; i++) {
+          if (emptyElements[i].tagName !== 'BR') {
+              let detachableElement: HTMLElement = this.findDetachEmptyElem(emptyElements[i]);
+              if (!isNOU(detachableElement)) {
+                detach(detachableElement);
+              }
+          }
+      }
+  }
+
   //GroupingTags
   private tagGrouping(deniedTags: string[]): string[] {
     let groupingTags: string[] = [...deniedTags];

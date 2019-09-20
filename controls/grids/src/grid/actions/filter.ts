@@ -925,13 +925,20 @@ export class Filter implements IAction {
             let gObj: IGrid = this.parent;
             let target: Element = e.target as Element;
             let datepickerEle: boolean = target.classList.contains('e-day'); // due to datepicker popup cause
+            let dialog: Element = parentsUntil(this.parent.element, 'e-dialog');
+            let hasDialog: boolean = false;
+            let popupEle: Element = parentsUntil(target, 'e-popup');
+            if (dialog && popupEle) {
+                hasDialog = dialog.id === popupEle.id;
+            }
             if (parentsUntil(target, 'e-filter-popup') || target.classList.contains('e-filtermenudiv')) {
                 return;
-            } else if (this.filterModule &&
-                (!parentsUntil(target, 'e-popup-wrapper')
-                    && (!closest(target, '.e-filter-item.e-menu-item'))
-                    && (!parentsUntil(target, 'e-filter-popup'))) && !datepickerEle) {
-                this.filterModule.closeDialog(target);
+            } else if (this.filterModule && (!parentsUntil(target, 'e-popup-wrapper')
+                && (!closest(target, '.e-filter-item.e-menu-item'))) && !datepickerEle) {
+                if ((hasDialog && (!parentsUntil(target, 'e-filter-popup'))
+                    && (!parentsUntil(target, 'e-popup-flmenu'))) || (!popupEle)) {
+                    this.filterModule.closeDialog(target);
+                }
             }
             if (this.filterSettings.mode === 'Immediate' && target.classList.contains('e-clear-icon')) {
                 let targetText: HTMLInputElement = target.previousElementSibling as HTMLInputElement;

@@ -482,6 +482,84 @@ describe('FileManager control LargeIcons view', () => {
                 }, 500);
             }, 500);
         });
+        
+        it('for allowMultiSelection worst case with selected items', function (done) {
+            let mouseEventArgs: any, tapEvent: any;
+            let feObj: any;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                allowMultiSelection:false,
+                selectedItems:['Food','Nature']
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let li: any = document.getElementById('file_largeicons').querySelectorAll('.e-active');
+                expect(li.length).toBe(1);
+                expect(feObj.selectedItems.length).toBe(1);
+                expect(feObj.selectedItems[0]).toBe('Nature');
+                feObj.selectedItems = ['Nature','Food']
+                feObj.dataBind();
+                li = document.getElementById('file_largeicons').querySelectorAll('.e-active');
+                expect(li.length).toBe(1);
+                expect(feObj.selectedItems.length).toBe(1);
+                expect(feObj.selectedItems[0]).toBe('Food');
+                feObj.allowMultiSelection = true;
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    li = document.getElementById('file_largeicons').querySelectorAll('.e-active');
+                    expect(li.length).toBe(1);
+                    expect(feObj.selectedItems.length).toBe(1);
+                    feObj.selectedItems = ['Nature','Food']
+                    feObj.dataBind();
+                    li = document.getElementById('file_largeicons').querySelectorAll('.e-active');
+                    expect(li.length).toBe(2);
+                    expect(feObj.selectedItems.length).toBe(2);
+                    feObj.allowMultiSelection = false;
+                    feObj.dataBind();
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data1)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function () {
+                        li = document.getElementById('file_largeicons').querySelectorAll('.e-active');
+                        expect(li.length).toBe(1);
+                        expect(feObj.selectedItems.length).toBe(1);
+                        done();
+                    },500);
+                }, 500);
+            }, 500);
+        });
         it('for showThumbnail', function (done) {
             feObj = new FileManager({
                 view: 'LargeIcons',

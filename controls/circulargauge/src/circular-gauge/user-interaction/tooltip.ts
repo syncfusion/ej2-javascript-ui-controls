@@ -1,13 +1,14 @@
 import { CircularGauge } from '../circular-gauge';
-import { Axis, Pointer } from '../axes/axis';
+import { Axis, Pointer, Range, Annotation } from '../axes/axis';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { IVisiblePointer, ITooltipRenderEventArgs } from '../model/interface';
-import { GaugeLocation, getPointer, Rect, getMousePosition, Size, getElementSize } from '../utils/helper';
+import {GaugeLocation, getPointer, Rect, getMousePosition, Size, getElementSize, stringToNumber} from '../utils/helper';
 import { getAngleFromValue, getLabelFormat, getLocationFromAngle } from '../utils/helper';
 import { TooltipSettings } from '../model/base';
 import { FontModel, BorderModel } from '../model/base-model';
-import { Browser, createElement, remove, isNullOrUndefined, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { Browser, createElement, remove } from '@syncfusion/ej2-base';
 import { tooltipRender } from '../model/constants';
+
 /**
  * Tooltip Module handles the tooltip of the circular gauge
  */
@@ -18,15 +19,19 @@ export class GaugeTooltip {
     private currentAxis: Axis;
     private tooltip: TooltipSettings;
     private currentPointer: Pointer;
+    private currentRange: Range;
+    private currentAnnotation: Annotation;
     private borderStyle: BorderModel;
     private textStyle: FontModel;
     private svgTooltip: Tooltip;
     private tooltipId: string;
+    private gaugeId: string;
     private tooltipPosition: string;
     private arrowInverted: boolean;
     private tooltipRect: Rect;
     private clearTimeout: number;
     private pointerEle: Element;
+    private annotationTargetElement: HTMLElement;
     /**
      * Constructor for Tooltip module.
      * @private.
@@ -46,6 +51,7 @@ export class GaugeTooltip {
     /* tslint:disable:no-string-literal */
     /* tslint:disable:max-func-body-length */
     public renderTooltip(e: PointerEvent): void {
+        this.gaugeId = this.gauge.element.getAttribute('id');
         let pageX: number; let pageY: number; let target: Element; let touchArg: TouchEvent;
         let location: GaugeLocation; let samePointerEle: boolean = false;
         if (e.type.indexOf('touch') !== - 1) {
@@ -58,7 +64,9 @@ export class GaugeTooltip {
             pageX = e.pageX;
             pageY = e.pageY;
         }
-        if (target.id.indexOf('_Pointer_') >= 0) {
+
+        if ((this.tooltip.type.indexOf('Pointer') > -1) && (target.id.indexOf('_Pointer_') >= 0) &&
+            (target.id.indexOf(this.gaugeId) >= 0)) {
             if (this.pointerEle !== null) {
                 samePointerEle = (this.pointerEle === target);
             }
@@ -82,102 +90,271 @@ export class GaugeTooltip {
             let format: Function = this.gauge.intl.getNumberFormat({
                 format: getLabelFormat(tooltipFormat), useGrouping: this.gauge.useGroupingSeparator
             });
-            if (document.getElementById(this.tooltipId)) {
-                this.tooltipEle = document.getElementById(this.tooltipId);
-            } else {
-                this.tooltipEle = createElement('div', {
-                    id: this.tooltipId,
-                    className: 'EJ2-CircularGauge-Tooltip',
-                    styles: 'position: absolute;pointer-events:none;'
-                });
-                document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
+            this.tooltipElement();
+            if (this.tooltipEle.childElementCount !== 0 && !this.gauge.enablePointerDrag && !this.gauge.tooltip.showAtMousePosition) {
+                return null;
             }
-            let roundValue: number;
-            roundValue = this.currentAxis.roundingPlaces ?
-                parseFloat(this.currentPointer.currentValue.toFixed(this.currentAxis.roundingPlaces)) :
-                    this.currentPointer.currentValue;
-            let content: string = customLabelFormat ?
+            let roundValue: number = this.roundedValue(this.currentPointer.currentValue);
+            let pointerContent: string = customLabelFormat ?
                 tooltipFormat.replace(new RegExp('{value}', 'g'), format(roundValue)) :
                 format(roundValue);
-            location = getLocationFromAngle(
-                angle, this.currentAxis.currentRadius, this.gauge.midPoint
-            );
+            location = getLocationFromAngle(angle, this.currentAxis.currentRadius, this.gauge.midPoint);
             location.x = (this.tooltip.template && ((angle >= 150 && angle <= 250) || (angle >= 330 && angle <= 360) ||
                 (angle >= 0 && angle <= 45))) ? (location.x + 10) : location.x;
             let tooltipArgs: ITooltipRenderEventArgs = {
-                name: tooltipRender, cancel: false, content: content, location: location, axis: this.currentAxis,
-                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge,
-                appendInBodyTag: false
+                name: tooltipRender, cancel: false, content: pointerContent, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, pointer: this.currentPointer, event: e, gauge: this.gauge, appendInBodyTag: false
             };
-            this.gauge.trigger(tooltipRender, tooltipArgs, (observedArgs: ITooltipRenderEventArgs) => {
-                let template: string = tooltipArgs.tooltip.template;
-                if (template !== null && template.length === 1) {
-                    template = template[template[0]];
-                }
-                if (!this.tooltip.showAtMousePosition) {
-                    if (template) {
-                        let elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
-                        this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
-                            this.findPosition(rect, angle, content, tooltipArgs.location) : rect;
-                    } else {
-                        this.findPosition(rect, angle, content, tooltipArgs.location);
-                    }
-                } else {
-                    tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
-                    this.tooltipRect = rect;
-                }
-                if (!tooltipArgs.cancel && !samePointerEle) {
-                    tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
-                    tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
-                    tooltipArgs.tooltip.textStyle.opacity =
-                        this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
-                    this.svgTooltip = new Tooltip({
-                        enable: true,
-                        data: { value: tooltipArgs.content },
-                        template: template,
-                        enableAnimation: tooltipArgs.tooltip.enableAnimation,
-                        content: [tooltipArgs.content],
-                        location: tooltipArgs.location,
-                        inverted: this.arrowInverted,
-                        areaBounds: this.tooltipRect,
-                        fill: tooltipArgs.tooltip.fill || this.gauge.themeStyle.tooltipFillColor,
-                        textStyle: tooltipArgs.tooltip.textStyle,
-                        availableSize: this.gauge.availableSize,
-                        border: tooltipArgs.tooltip.border
-                    });
-                    this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                    this.svgTooltip.appendTo(this.tooltipEle);
-                    if (this.gauge.tooltip.template) {
-                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-                    }
-                    if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
-                        this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
-                    }
-                    if (tooltipArgs.appendInBodyTag) {
-                        let bodyToolElement : Object = document.getElementsByClassName('EJ2-CircularGauge-Tooltip e-control e-tooltip');
-                        if (!isNullOrUndefined(bodyToolElement)) {
-                            this.removeTooltip();
-                        }
-                        document.body.appendChild(this.tooltipEle);
-                        this.tooltipEle.style.zIndex = '100000000001';
-                        let bounds: ClientRect = this.tooltipEle.getBoundingClientRect();
-                        if (pageX + bounds['width'] <= window.innerWidth && bounds['x'] <= 0) {
-                            this.tooltipEle.style.left = pageX + 20 + 'px';
-                            this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
-                        } else {
-                            this.tooltipEle.style.left = pageX - bounds['width'] + 20 + 'px';
-                            this.tooltipEle.style.top = bounds['top'] + 20 + 'px';
-                        }
-                    }
-                }
-            });
-
-        } else {
-            this.removeTooltip();
-            if (this.gauge.tooltip.template) {
-                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
+            if (this.gauge.isBlazor) {
+                const { name, cancel, content, location, tooltip, event, appendInBodyTag } : ITooltipRenderEventArgs =  tooltipArgs;
+                tooltipArgs = { name, cancel, content, location, tooltip, event, appendInBodyTag };
             }
+            this.gauge.trigger(tooltipRender, tooltipArgs);
+            let template: string = tooltipArgs.tooltip.template;
+            if (template !== null && template.length === 1) {
+                template = template[template[0]];
+            }
+            if (!this.tooltip.showAtMousePosition) {
+                if (template) {
+                    let elementSize: Size = getElementSize(template, this.gauge, this.tooltipEle);
+                    this.tooltipRect = Math.abs(axisRect.left - svgRect.left) > elementSize.width ?
+                        this.findPosition(rect, angle, pointerContent, tooltipArgs.location) : rect;
+                } else {
+                    this.findPosition(rect, angle, pointerContent, tooltipArgs.location);
+                }
+            } else {
+                tooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                this.tooltipRect = rect;
+            }
+            if (!tooltipArgs.cancel && !samePointerEle) {
+                tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
+                this.svgTooltip = this.svgTooltipCreate(this.svgTooltip, tooltipArgs, template, this.arrowInverted, this.tooltipRect,
+                                                        this.gauge, tooltipArgs.tooltip.fill, tooltipArgs.tooltip.textStyle,
+                                                        tooltipArgs.tooltip.border);
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.appendTo(this.tooltipEle);
+                if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                }
+            }
+        } else if ((this.tooltip.type.indexOf('Range') > -1) && (target.id.indexOf('_Range_') >= 0) && (!this.gauge.isDrag) &&
+                   (target.id.indexOf(this.gaugeId) >= 0)) {
+            let rangeSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+            let rangeElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+            let rangeAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            let rect: Rect = new Rect(
+                Math.abs(rangeElementRect.left - rangeSvgRect.left),
+                Math.abs(rangeElementRect.top - rangeSvgRect.top),
+                rangeSvgRect.width, rangeSvgRect.height
+            );
+            let currentRange: IVisiblePointer = getPointer(target.id, this.gauge);
+            this.currentAxis = <Axis>this.gauge.axes[currentRange.axisIndex];
+            this.currentRange = <Range>(this.currentAxis.ranges)[currentRange.pointerIndex];
+            let rangeAngle: number = getAngleFromValue(
+                (this.currentRange.end - Math.abs((this.currentRange.end - this.currentRange.start) / 2 ) ),
+                this.currentAxis.visibleRange.max, this.currentAxis.visibleRange.min,
+                this.currentAxis.startAngle, this.currentAxis.endAngle, this.currentAxis.direction === 'ClockWise'
+            ) % 360;
+            let rangeTooltipFormat: string = this.gauge.tooltip.rangeSettings.format || this.currentAxis.labelStyle.format;
+            let customLabelFormat: boolean = rangeTooltipFormat && ( rangeTooltipFormat.match('{end}') !== null ||
+            rangeTooltipFormat.match('{start}') !== null );
+            let rangeFormat: Function = this.gauge.intl.getNumberFormat({
+                format: getLabelFormat(rangeTooltipFormat), useGrouping: this.gauge.useGroupingSeparator
+            });
+            this.tooltipElement();
+            let roundStartValue: number = this.roundedValue(this.currentRange.start);
+            let roundEndValue: number = this.roundedValue(this.currentRange.end);
+            let startData: string = (this.currentRange.start).toString();
+            let endData: string = (this.currentRange.end).toString();
+            let rangeContent: string = customLabelFormat ?
+            rangeTooltipFormat.replace(/{start}/g, startData).replace(/{end}/g, endData) :
+            'Start : ' + rangeFormat(roundStartValue) + '<br>' + 'End : ' + rangeFormat(roundEndValue);
+            location = getLocationFromAngle(
+                rangeAngle, this.currentAxis.currentRadius, this.gauge.midPoint
+            );
+            location.x = (this.tooltip.rangeSettings.template && ((rangeAngle >= 150 && rangeAngle <= 250) ||
+            (rangeAngle >= 330 && rangeAngle <= 360) ||
+                (rangeAngle >= 0 && rangeAngle <= 45))) ? (location.x + 10) : location.x;
+            let rangeTooltipArgs: ITooltipRenderEventArgs = {
+                name: tooltipRender, cancel: false, content: rangeContent, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, range: this.currentRange, event: e, gauge: this.gauge, appendInBodyTag: false
+            };
+            if (this.gauge.isBlazor) {
+                const {gauge, ...blazorEventArgs} : ITooltipRenderEventArgs = rangeTooltipArgs;
+                rangeTooltipArgs = blazorEventArgs;
+            }
+            this.gauge.trigger(tooltipRender, rangeTooltipArgs);
+            let rangeTemplate: string = rangeTooltipArgs.tooltip.rangeSettings.template;
+            if (rangeTemplate !== null && rangeTemplate.length === 1) {
+                rangeTemplate = rangeTemplate[rangeTemplate[0]];
+            }
+            if (rangeTemplate) {
+                rangeTemplate = rangeTemplate.replace(/[$]{start}/g, startData);
+                rangeTemplate = rangeTemplate.replace(/[$]{end}/g , endData);
+            }
+            if (!this.tooltip.rangeSettings.showAtMousePosition) {
+                if (rangeTemplate) {
+                    let elementSize: Size = getElementSize(rangeTemplate, this.gauge, this.tooltipEle);
+                    this.tooltipRect = Math.abs(rangeAxisRect.left - rangeSvgRect.left) > elementSize.width ?
+                        this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location) : rect;
+                } else {
+                    this.findPosition(rect, rangeAngle, rangeContent, rangeTooltipArgs.location);
+                }
+            } else {
+                rangeTooltipArgs.location = getMousePosition(pageX, pageY, this.gauge.svgObject);
+                this.tooltipRect = rect;
+            }
+            if (!rangeTooltipArgs.cancel) {
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.color = rangeTooltipArgs.tooltip.rangeSettings.textStyle.color ||
+                this.gauge.themeStyle.tooltipFontColor;
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.fontFamily;
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
+                rangeTooltipArgs.tooltip.rangeSettings.textStyle.opacity;
+                this.svgTooltip = this.svgTooltipCreate
+                (this.svgTooltip, rangeTooltipArgs, rangeTemplate, this.arrowInverted, this.tooltipRect, this.gauge,
+                 rangeTooltipArgs.tooltip.rangeSettings.fill, rangeTooltipArgs.tooltip.rangeSettings.textStyle,
+                 rangeTooltipArgs.tooltip.rangeSettings.border);
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.appendTo(this.tooltipEle);
+                if (rangeTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                }
+            }
+        } else if ((this.tooltip.type.indexOf('Annotation') > -1) && this.checkParentAnnotationId(target) && ((!this.gauge.isDrag)) &&
+                   (this.annotationTargetElement.id.indexOf(this.gaugeId) >= 0)) {
+            let annotationSvgRect: ClientRect = this.gauge.svgObject.getBoundingClientRect();
+            let annotationElementRect: ClientRect = this.gauge.element.getBoundingClientRect();
+            let annotationAxisRect: ClientRect = document.getElementById(this.gauge.element.id + '_AxesCollection').getBoundingClientRect();
+            let rect: Rect = new Rect(
+                Math.abs(annotationElementRect.left - annotationSvgRect.left),
+                Math.abs(annotationElementRect.top - annotationSvgRect.top),
+                annotationSvgRect.width, annotationSvgRect.height
+            );
+            let currentAnnotation: IVisiblePointer = getPointer(this.annotationTargetElement.id, this.gauge);
+            this.currentAxis = <Axis>this.gauge.axes[currentAnnotation.axisIndex];
+            this.currentAnnotation = <Annotation>(this.currentAxis.annotations)[currentAnnotation.pointerIndex];
+            let annotationAngle: number = (this.currentAnnotation.angle - 90);
+            this.tooltipEle = createElement('div', {
+                id: this.tooltipId,
+                className: 'EJ2-CircularGauge-Tooltip',
+                styles: 'position: absolute;pointer-events:none;'
+            });
+            document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
+            let annotationContent: string = (this.gauge.tooltip.annotationSettings.format !== null) ?
+                                             this.gauge.tooltip.annotationSettings.format : '' ;
+            location = getLocationFromAngle(
+                annotationAngle, stringToNumber(this.currentAnnotation.radius, this.currentAxis.currentRadius), this.gauge.midPoint
+            );
+            location.x = (this.tooltip.annotationSettings.template && ((annotationAngle >= 150 && annotationAngle <= 250) ||
+            (annotationAngle >= 330 && annotationAngle <= 360) || (annotationAngle >= 0 && annotationAngle <= 45))) ?
+            (location.x + 10) : location.x;
+            let annotationTooltipArgs: ITooltipRenderEventArgs = {
+                name: tooltipRender, cancel: false, content: annotationContent, location: location, axis: this.currentAxis,
+                tooltip: this.tooltip, annotation: this.currentAnnotation, event: e, gauge: this.gauge, appendInBodyTag: false
+
+            };
+            if (this.gauge.isBlazor) {
+                const {gauge, ...blazorEventArgs} : ITooltipRenderEventArgs = annotationTooltipArgs;
+                annotationTooltipArgs = blazorEventArgs;
+            }
+            this.gauge.trigger(tooltipRender, annotationTooltipArgs);
+            let annotationTemplate: string = annotationTooltipArgs.tooltip.annotationSettings.template;
+            if (annotationTemplate !== null && annotationTemplate.length === 1) {
+                annotationTemplate = annotationTemplate[annotationTemplate[0]];
+            }
+            let elementSizeAn: ClientRect = this.annotationTargetElement.getBoundingClientRect();
+            this.tooltipPosition = 'RightTop';
+            this.arrowInverted = true;
+            annotationTooltipArgs.location.x = annotationTooltipArgs.location.x + (elementSizeAn.width / 2);
+            this.tooltipRect = new Rect(rect.x, rect.y, rect.width, rect.height);
+            if (!annotationTooltipArgs.cancel && ( this.gauge.tooltip.annotationSettings.format !== null ||
+                this.gauge.tooltip.annotationSettings.template !== null)) {
+                annotationTooltipArgs.tooltip.annotationSettings.textStyle.color = annotationTooltipArgs.tooltip.textStyle.color ||
+                this.gauge.themeStyle.tooltipFontColor;
+                annotationTooltipArgs.tooltip.annotationSettings.textStyle.fontFamily = this.gauge.themeStyle.fontFamily ||
+                annotationTooltipArgs.tooltip.textStyle.fontFamily;
+                annotationTooltipArgs.tooltip.annotationSettings.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity ||
+                annotationTooltipArgs.tooltip.textStyle.opacity;
+                this.svgTooltip = this.svgTooltipCreate
+                                  (this.svgTooltip, annotationTooltipArgs, annotationTemplate, this.arrowInverted, this.tooltipRect,
+                                   this.gauge, annotationTooltipArgs.tooltip.annotationSettings.fill,
+                                   annotationTooltipArgs.tooltip.annotationSettings.textStyle,
+                                   annotationTooltipArgs.tooltip.annotationSettings.border);
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                this.svgTooltip.appendTo(this.tooltipEle);
+                if (annotationTemplate && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
+                    this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
+                }
+            }
+        } else { this.removeTooltip(); }
+    };
+
+    /**
+     * Method to create tooltip svg element.
+     */
+    private svgTooltipCreate(svgTooltip: Tooltip, tooltipArg: ITooltipRenderEventArgs, template: string, arrowInverted: boolean,
+                             tooltipRect: Rect, gauge: CircularGauge, fill: string, textStyle: FontModel, border: BorderModel ): Tooltip {
+        svgTooltip = new Tooltip({
+            enable: true,
+            data: { value: tooltipArg.content },
+            template: template,
+            enableAnimation: tooltipArg.tooltip.enableAnimation,
+            content: [tooltipArg.content],
+            location: tooltipArg.location,
+            inverted: arrowInverted,
+            areaBounds: tooltipRect,
+            fill: fill || gauge.themeStyle.tooltipFillColor,
+            textStyle: textStyle,
+            availableSize: gauge.availableSize,
+            border: border,
+            blazorTemplate: { name: 'TooltipTemplate', parent: gauge.tooltip }
+        });
+        return svgTooltip;
+    }
+
+    /**
+     * Method to create or modify tolltip element.
+     */
+    private tooltipElement(): void {
+        if (document.getElementById(this.tooltipId)) {
+            this.tooltipEle = document.getElementById(this.tooltipId);
+        } else {
+            this.tooltipEle = createElement('div', {
+                id: this.tooltipId,
+                className: 'EJ2-CircularGauge-Tooltip',
+                styles: 'position: absolute;pointer-events:none;'
+            });
+            document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(this.tooltipEle);
         }
+    };
+
+    /**
+     * Method to get parent annotation element.
+     */
+    private checkParentAnnotationId(child: Element ): boolean {
+        this.annotationTargetElement = child.parentElement;
+        while ( this.annotationTargetElement != null) {
+            if (( this.annotationTargetElement.id.indexOf('_Annotation_') >= 0)) {
+                child =  this.annotationTargetElement;
+                return true;
+            }
+            this.annotationTargetElement =  this.annotationTargetElement.parentElement;
+        }
+        return false;
+   }
+
+    /**
+     * Method to apply label rounding places.
+     */
+    private roundedValue(currentValue: number): number {
+        let roundNumber: number;
+        roundNumber = this.currentAxis.roundingPlaces ?
+        parseFloat(currentValue.toFixed(this.currentAxis.roundingPlaces)) :
+        currentValue;
+        return roundNumber;
     }
 
     /**
@@ -235,8 +412,6 @@ export class GaugeTooltip {
         }
         return this.tooltipRect;
     }
-
-
     public removeTooltip(): void {
         if (document.getElementsByClassName('EJ2-CircularGauge-Tooltip').length > 0) {
             let tooltip: Element = document.getElementsByClassName('EJ2-CircularGauge-Tooltip')[0];

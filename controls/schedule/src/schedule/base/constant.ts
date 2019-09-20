@@ -8,6 +8,8 @@ export const cellDoubleClick: string = 'cellDoubleClick';
 /** @hidden */
 export const select: string = 'select';
 /** @hidden */
+export const hover: string = 'hover';
+/** @hidden */
 export const actionBegin: string = 'actionBegin';
 /** @hidden */
 export const actionComplete: string = 'actionComplete';
@@ -27,6 +29,8 @@ export const dataBinding: string = 'dataBinding';
 export const dataBound: string = 'dataBound';
 /** @hidden */
 export const popupOpen: string = 'popupOpen';
+/** @hidden */
+export const popupClose: string = 'popupClose';
 /** @hidden */
 export const dragStart: string = 'dragStart';
 /** @hidden */
@@ -49,6 +53,8 @@ export const initialLoad: string = 'initial-load';
 export const initialEnd: string = 'initial-end';
 /** @hidden */
 export const dataReady: string = 'data-ready';
+/** @hidden */
+export const eventsLoaded: string = 'events-loaded';
 /** @hidden */
 export const contentReady: string = 'content-ready';
 /** @hidden */

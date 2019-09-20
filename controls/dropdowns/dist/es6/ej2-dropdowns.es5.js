@@ -2383,6 +2383,17 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             });
         }
     };
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    DropDownList.prototype.filter = function (dataSource, query, fields) {
+        this.isCustomFilter = true;
+        this.filteringAction(dataSource, query, fields);
+    };
     DropDownList.prototype.filteringAction = function (dataSource, query, fields) {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
@@ -5340,6 +5351,18 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * To filter the data from given data source by using query
+     * @param  {Object[] | DataManager } dataSource - Set the data source to filter.
+     * @param  {Query} query - Specify the query to filter the data.
+     * @param  {FieldSettingsModel} fields - Specify the fields to map the column in the data table.
+     * @return {void}.
+     */
+    MultiSelect.prototype.filter = function (dataSource, query, fields) {
+        this.isFiltered = true;
+        this.remoteFilterAction = true;
+        this.dataUpdater(dataSource, query, fields);
+    };
     MultiSelect.prototype.getQuery = function (query) {
         var filterQuery = query ? query.clone() : this.query ? this.query.clone() : new Query();
         if (this.filterAction) {
@@ -6454,6 +6477,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         };
         this.trigger('tagging', eventArgs, function (eventArgs) {
             if (!eventArgs.cancel) {
+                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && isBlazor()) {
+                    addClass([chip], eventArgs.setClass);
+                }
                 if (Browser.isDevice) {
                     chip.classList.add(MOBILE_CHIP);
                     append([chipClose], chip);
@@ -6579,8 +6605,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                             if (!_this.isFirstClick) {
                                 var ulElement = _this.list.querySelector('ul');
                                 if (ulElement) {
-                                    var isBlazor$$1 = Object.keys(window).indexOf('Blazor') >= 0;
-                                    if (_this.itemTemplate && (_this.mode === 'CheckBox') && isBlazor$$1) {
+                                    if (_this.itemTemplate && (_this.mode === 'CheckBox') && isBlazor()) {
                                         setTimeout(function () {
                                             _this.mainList = _this.ulElement;
                                         }, 0);

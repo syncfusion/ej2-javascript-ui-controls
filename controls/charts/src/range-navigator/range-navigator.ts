@@ -714,7 +714,6 @@ export class RangeNavigator extends Component<HTMLElement> {
             return false;
         }
         this.animateSeries = false;
-        this.removeAllTooltip();
         if (this.resizeTo) {
             clearTimeout(this.resizeTo);
         }
@@ -741,23 +740,6 @@ export class RangeNavigator extends Component<HTMLElement> {
             },
             500);
         return false;
-    }
-
-    /**
-     * Bug task ID: EJ2-30797
-     * while resizing tooltip shows in wrong position
-     * Cause: Due to time lag in resize, tooltip did not remove until the component calculation
-     * Fix: Removed the tooltip element on resize
-     */
-    private removeAllTooltip(): void {
-        if (this.tooltip.enable && this.tooltip.displayMode === 'Always') {
-            if (getElement(this.element.id + '_leftTooltip')) {
-                remove(getElement(this.element.id + '_leftTooltip'));
-            }
-            if (getElement(this.element.id + '_rightTooltip')) {
-                remove(getElement(this.element.id + '_rightTooltip'));
-            }
-        }
     }
 
     /**

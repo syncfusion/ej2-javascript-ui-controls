@@ -1,5 +1,5 @@
 import { Column } from '../models/column';
-import { SaveEventArgs } from '@syncfusion/ej2-grids';
+import { SaveEventArgs, DataStateChangeEventArgs } from '@syncfusion/ej2-grids';
 /**
  * Specifies FlatData interfaces.
  * @hidden
@@ -113,4 +113,21 @@ export interface RowCollapsingEventArgs {
 export interface CellSaveEventArgs extends SaveEventArgs {
     /** Defines edited column */
     column?: Column;
+}
+export interface DataStateChangeEventArgs extends DataStateChangeEventArgs {
+    /** Defines the child records for the respective parent row */
+    childData? : ITreeData[];
+    /**
+     * Defines the parent row data.
+     * @isGenericType true
+     */
+    data?: Object;
+    /** Defines the parent row element. */
+    row?: HTMLTableRowElement;
+    /** Cancel the row expanding action */
+    cancel?: boolean;
+    /** Defines the expand or collapse request for the parent record. */
+    requestType?: string;
+    /** Defines the resolve function for the promise. */
+    childDataBind?: Function;
 }

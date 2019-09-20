@@ -355,6 +355,9 @@ __decorate$1([
 __decorate$1([
     Property('')
 ], PaletteSettings.prototype, "emptyPointColor", void 0);
+__decorate$1([
+    Property('Table')
+], PaletteSettings.prototype, "colorGradientMode", void 0);
 /**
  * Helper class for colormapping
  */
@@ -577,6 +580,9 @@ class CellColor {
                 }
             }
             else {
+                if (this.heatMap.paletteSettings.colorGradientMode !== 'Table') {
+                    this.getColorCollection();
+                }
                 if (text < this.heatMap.colorCollection[0].value) {
                     color = this.heatMap.colorCollection[0].color;
                 }
@@ -634,9 +640,9 @@ function measureText(text, font) {
 class TextElement {
     constructor(fontModel, fontColor) {
         this['font-size'] = fontModel.size;
-        this['font-style'] = fontModel.fontStyle;
+        this['font-style'] = fontModel.fontStyle.toLowerCase();
         this['font-family'] = fontModel.fontFamily;
-        this['font-weight'] = fontModel.fontWeight;
+        this['font-weight'] = fontModel.fontWeight.toLowerCase();
         this.fill = fontColor ? fontColor : '';
     }
 }
@@ -799,11 +805,11 @@ class TextBasic {
         this.baseline = 'auto';
         this.x = x ? x : 0;
         this.y = y ? y : 0;
-        this['text-anchor'] = anchor ? anchor : '';
+        this['text-anchor'] = anchor ? anchor : 'start';
         this.text = text ? text : '';
         this.transform = transform ? transform : '';
         this.labelRotation = labelRotation;
-        this['dominant-baseline'] = baseLine ? baseLine : '';
+        this['dominant-baseline'] = baseLine ? baseLine : 'auto';
         this.baseline = baseLine ? baseLine : '';
         this.dy = dy ? dy : '';
     }
@@ -896,9 +902,9 @@ function rotateTextSize(font, text, angle) {
     let htmlObject;
     options = {
         'font-size': font.size,
-        'font-style': font.fontStyle,
+        'font-style': font.fontStyle.toLowerCase(),
         'font-family': font.fontFamily,
-        'font-weight': font.fontWeight,
+        'font-weight': font.fontWeight.toLowerCase(),
         'transform': 'rotate(' + angle + ', 0, 0)',
         'text-anchor': 'middle'
     };
@@ -920,6 +926,7 @@ class DrawSvgCanvas {
     //Svg & Canvas Rectangle Part
     drawRectangle(properties, parentElement, isFromSeries) {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.d;
             parentElement.appendChild(this.heatMap.renderer.drawRectangle(properties));
         }
         else {
@@ -929,6 +936,7 @@ class DrawSvgCanvas {
     //Svg & Canvas Bubble Part
     drawCircle(properties, parentElement) {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.d;
             parentElement.appendChild(this.heatMap.renderer.drawCircle(properties));
         }
         else {
@@ -938,6 +946,8 @@ class DrawSvgCanvas {
     //Svg & Canvas Pie Part
     drawPath(properties, options, parentElement) {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.x;
+            delete properties.y;
             parentElement.appendChild(this.heatMap.renderer.drawPath(properties));
         }
         else {
@@ -947,7 +957,11 @@ class DrawSvgCanvas {
     //Svg & Canvas Text Part
     createText(properties, parentElement, text) {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.labelRotation;
+            delete properties.baseline;
+            delete properties.text;
             parentElement.appendChild(this.heatMap.renderer.createText(properties, text));
+            properties.text = text;
         }
         else {
             this.canvasDrawText(properties, text);
@@ -968,7 +982,7 @@ class DrawSvgCanvas {
             'font-size': font.size,
             'font-style': font.fontStyle,
             'font-family': font.fontFamily,
-            'font-weight': font.fontWeight,
+            'font-weight': font.fontWeight.toLowerCase(),
             'text-anchor': options['text-anchor'],
             'transform': options.transform,
             'dominant-baseline': options['dominant-baseline']
@@ -1003,6 +1017,7 @@ class DrawSvgCanvas {
     }
     drawLine(properties, parentElement) {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.d;
             parentElement.appendChild(this.heatMap.renderer.drawLine(properties));
         }
         else {
@@ -2884,6 +2899,14 @@ class Series {
         }
         circleRadius = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
+            if (heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataYIndex];
+                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataYIndex];
+            }
+            else if (heatMap.paletteSettings.colorGradientMode === 'Row' && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataXIndex];
+                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataXIndex];
+            }
             this.setTextAndColor(dataXIndex, dataYIndex);
             let rectPosition = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '', true);
             borderColor = tempBorder.color;
@@ -3072,8 +3095,7 @@ class Series {
     createSeriesGroup() {
         if (!this.heatMap.enableCanvasRendering) {
             this.containerRectObject = this.heatMap.renderer.createGroup({
-                id: this.heatMap.element.id + '_Container_RectGroup',
-                x: this.heatMap.initialClipRect.x, y: this.heatMap.initialClipRect.y, transform: 'translate( 0, 0)'
+                id: this.heatMap.element.id + '_Container_RectGroup'
             });
             if (this.heatMap.cellSettings.showLabel &&
                 !(this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Sector')) {
@@ -3461,9 +3483,9 @@ class Tooltip$1 {
             },
             textStyle: {
                 size: this.heatMap.tooltipSettings.textStyle.size,
-                fontWeight: this.heatMap.tooltipSettings.textStyle.fontWeight,
+                fontWeight: this.heatMap.tooltipSettings.textStyle.fontWeight.toLowerCase(),
                 color: this.heatMap.tooltipSettings.textStyle.color,
-                fontStyle: this.heatMap.tooltipSettings.textStyle.fontStyle,
+                fontStyle: this.heatMap.tooltipSettings.textStyle.fontStyle.toLowerCase(),
                 fontFamily: this.heatMap.tooltipSettings.textStyle.fontFamily
             },
             areaBounds: {
@@ -3638,7 +3660,9 @@ class TwoDimensional {
         this.tempColorArray = [];
         this.heatMap.minColorValue = null;
         this.heatMap.maxColorValue = null;
-        for (let z = axis[1].valueType === 'Category' ? axis[1].min : 0; z < yLength; z++) {
+        this.heatMap.dataMax = [];
+        this.heatMap.dataMin = [];
+        for (let z = axis[1].valueType === 'Category' ? axis[1].min : 0; z < (this.heatMap.paletteSettings.colorGradientMode === 'Column' ? xLength : yLength); z++) {
             let tempIndex = axis[0].valueType === 'Category' ? axis[0].min : 0;
             this.completeDataSource.push([]);
             while (tempIndex < xLength) {
@@ -3647,10 +3671,27 @@ class TwoDimensional {
                 }
                 tempIndex++;
             }
-            tempVariable = extend([], this.completeDataSource[cloneDataIndex], null, true);
+            if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
+                tempVariable = extend([], tempCloneData[cloneDataIndex], null, true);
+                for (let i = 0; i < tempVariable.length; i++) {
+                    if (typeof (tempVariable[i]) === 'object') {
+                        tempVariable[i] = tempVariable[i][0];
+                    }
+                }
+            }
+            else {
+                tempVariable = extend([], this.completeDataSource[cloneDataIndex], null, true);
+            }
             let minMaxVal = this.getMinMaxValue(minVal, maxVal, tempVariable);
-            minVal = minMaxVal[0];
-            maxVal = minMaxVal[1];
+            if ((this.heatMap.paletteSettings.colorGradientMode === 'Column' ||
+                this.heatMap.paletteSettings.colorGradientMode === 'Row') && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.heatMap.dataMax[z] = minMaxVal[1];
+                this.heatMap.dataMin[z] = minMaxVal[0];
+            }
+            else {
+                minVal = minMaxVal[0];
+                maxVal = minMaxVal[1];
+            }
             if (this.heatMap.xAxis.isInversed) {
                 this.completeDataSource[cloneDataIndex] = this.completeDataSource[cloneDataIndex].reverse();
             }
@@ -3658,6 +3699,16 @@ class TwoDimensional {
                 minMaxDatasource.push(this.completeDataSource[cloneDataIndex]);
             }
             cloneDataIndex++;
+        }
+        if (this.heatMap.paletteSettings.colorGradientMode === 'Row' && !this.heatMap.yAxis.isInversed &&
+            this.heatMap.paletteSettings.type === 'Gradient') {
+            this.heatMap.dataMax = this.heatMap.dataMax.reverse();
+            this.heatMap.dataMin = this.heatMap.dataMin.reverse();
+        }
+        if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.xAxis.isInversed &&
+            this.heatMap.paletteSettings.type === 'Gradient') {
+            this.heatMap.dataMax = this.heatMap.dataMax.reverse();
+            this.heatMap.dataMin = this.heatMap.dataMin.reverse();
         }
         if (!this.heatMap.yAxis.isInversed) {
             this.completeDataSource.reverse();
@@ -3759,6 +3810,10 @@ class TwoDimensional {
         else if (this.performSort(tempVariable) < minVal) {
             minVal = this.performSort(tempVariable);
         }
+        else if ((this.heatMap.paletteSettings.colorGradientMode === 'Row' ||
+            this.heatMap.paletteSettings.colorGradientMode === 'Column') && this.heatMap.paletteSettings.type === 'Gradient') {
+            minVal = this.performSort(tempVariable);
+        }
         return !isNullOrUndefined(minVal) ? parseFloat(minVal.toString()) : minVal;
     }
     /**
@@ -3770,6 +3825,10 @@ class TwoDimensional {
             maxVal = Math.max(...tempVariable);
         }
         else if (Math.max(...tempVariable) > maxVal) {
+            maxVal = Math.max(...tempVariable);
+        }
+        else if ((this.heatMap.paletteSettings.colorGradientMode === 'Row' ||
+            this.heatMap.paletteSettings.colorGradientMode === 'Column') && this.heatMap.paletteSettings.type === 'Gradient') {
             maxVal = Math.max(...tempVariable);
         }
         return !isNullOrUndefined(maxVal) ? parseFloat(maxVal.toString()) : maxVal;
@@ -4070,7 +4129,7 @@ class Legend {
         this.legendTextRange = [];
         if (heatMap.legendSettings.showLabel && (heatMap.paletteSettings.type === 'Gradient' ||
             (heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.labelDisplayType !== 'None'))) {
-            let anchor;
+            let anchor = 'start';
             let dominantBaseline;
             let legendLabel;
             let textWrapWidth = 0;
@@ -4112,7 +4171,7 @@ class Legend {
                         (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
                             heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
                         heatMap.legendSettings.labelDisplayType === 'Edge' &&
-                        heatMap.paletteSettings.type === 'Fixed') ? 'baseline' : 'middle';
+                        heatMap.paletteSettings.type === 'Fixed') ? 'auto' : 'middle';
                 }
                 textWrapWidth = heatMap.horizontalGradient ? this.textWrapCollections[i] : this.width - (this.legendRectScale.width +
                     this.labelPadding + this.legendRectPadding);
@@ -5664,10 +5723,12 @@ let HeatMap = class HeatMap extends Component {
     onPropertyChanged(newProp, oldProp) {
         let renderer = false;
         let refreshBounds = false;
+        let isUpdateSelection = true;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'renderingMode':
                     this.rendering = false;
+                    isUpdateSelection = false;
                     renderer = true;
                     break;
                 case 'cellSettings':
@@ -5676,6 +5737,9 @@ let HeatMap = class HeatMap extends Component {
                         oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
+                    }
+                    if (this.cellSettings.tileType === 'Bubble') {
+                        isUpdateSelection = false;
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -5686,12 +5750,9 @@ let HeatMap = class HeatMap extends Component {
                 case 'dataSource':
                 case 'dataSourceSettings':
                     this.isCellData = false;
-                    this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    }
+                    this.paletteCellSelectionUpdation();
                     this.reRenderDatasource();
+                    isUpdateSelection = false;
                     renderer = true;
                     break;
                 case 'titleSettings':
@@ -5714,20 +5775,14 @@ let HeatMap = class HeatMap extends Component {
                     break;
                 case 'yAxis':
                 case 'xAxis':
-                    this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    }
+                    this.paletteCellSelectionUpdation();
                     this.reRenderDatasource();
+                    isUpdateSelection = false;
                     refreshBounds = true;
                     break;
                 case 'paletteSettings':
-                    this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    }
+                    this.paletteCellSelectionUpdation();
+                    this.twoDimensional.processDataSource(this.completeAdaptDataSource);
                     this.cellColor.getColorCollection();
                     this.calculateBounds();
                     renderer = true;
@@ -5752,7 +5807,9 @@ let HeatMap = class HeatMap extends Component {
             this.renderElements();
             this.appendSvgObject();
             this.trigger('created');
-            this.clearSelection();
+            if (!isUpdateSelection) {
+                this.clearSelection();
+            }
         }
         else if (refreshBounds) {
             this.createSvg();
@@ -5761,9 +5818,21 @@ let HeatMap = class HeatMap extends Component {
             this.trigger('created');
         }
         if (this.allowSelection && this.rectSelected) {
-            this.clearSelection();
+            if (isUpdateSelection) {
+                this.updateCellSelection();
+            }
+            else {
+                this.clearSelection();
+            }
         }
         this.rendering = true;
+    }
+    paletteCellSelectionUpdation() {
+        this.updateBubbleHelperProperty();
+        if (this.legendVisibilityByCellType) {
+            this.legendOnLoad = true;
+            this.legendModule.updateLegendRangeCollections();
+        }
     }
     /**
      * create svg or canvas element
@@ -5974,6 +6043,23 @@ let HeatMap = class HeatMap extends Component {
             && this.legendVisibilityByCellType) || this.titleSettings.textStyle.size === '0px' ? 0 : 16; // title padding
         let left = margin.left;
         let width = this.availableSize.width - left - margin.right;
+        if ((this.paletteSettings.colorGradientMode === 'Column' || this.paletteSettings.colorGradientMode === 'Row') &&
+            this.paletteSettings.type === 'Gradient') {
+            if (this.paletteSettings.palette.length === 0) {
+                this.legendVisibilityByCellType = false;
+            }
+            else {
+                for (let i = 0; i < this.paletteSettings.palette.length; i++) {
+                    if (this.paletteSettings.palette[i].value !== null || '') {
+                        this.legendVisibilityByCellType = true;
+                    }
+                    else if (this.paletteSettings.palette[i].value === null || '') {
+                        this.legendVisibilityByCellType = false;
+                        break;
+                    }
+                }
+            }
+        }
         if (this.titleSettings.text) {
             this.titleCollection = getTitle(this.titleSettings.text, this.titleSettings.textStyle, width);
             titleHeight = (measureText(this.titleSettings.text, this.titleSettings.textStyle).height * this.titleCollection.length) +

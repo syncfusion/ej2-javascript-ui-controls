@@ -6,7 +6,6 @@ import { LabelPosition, Alignment, HighLightMode, SelectionMode, LabelIntersectA
 import { LabelAlignment, LegendShape, LegendPosition, LegendMode, LegendOrientation } from '../utils/enum';
 import { BorderModel, FontModel, SubTitleSettingsModel, ColorMappingModel, CommonTitleSettingsModel } from './base-model';
 import { Location } from '../utils/helper';
-import { defaultFont } from './constants';
 
 /**
  * Configures the borders in the maps.
@@ -87,9 +86,9 @@ export class Font extends ChildProperty<Font> {
 
     /**
      * fontFamily for the text.
-     * @default ''
+     * @default null
      */
-    @Property(defaultFont)
+    @Property(null)
     public fontFamily: string;
 
     /**
@@ -509,15 +508,15 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public format: string;
     /**
      * To fill the tooltip background.
-     * @default '#000816'
+     * @default null
      */
-    @Property('#000816')
+    @Property(null)
     public fill: string;
     /**
      * Specifies the opacity for fill.
-     * @default 0.75
+     * @default null
      */
-    @Property(0.75)
+    @Property(null)
     public opacity: number;
     /**
      * Specifies the marker shapes.
@@ -533,7 +532,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
      * Specifies the text style.
      */
-    @Complex<FontModel>({fontFamily: defaultFont, size: '13px' }, Font)
+    @Complex<FontModel>({fontFamily: null, size: '13px' }, Font)
     public textStyle: FontModel;
 }
 

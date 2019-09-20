@@ -12,62 +12,29 @@
     <script data-main="quick-info-templates" src="../../node_modules/requirejs/require.js"></script>
     <script src="require.config.js"></script>
     <style>
-        .e-textlabel {
-            font-weight: bold;
-            padding-right: 5px;
+        .e-quick-popup-wrapper .e-event-popup .e-popup-content {
+            padding: 15px;
         }
 
-        .custom-event-editor td {
-            padding: 5px;
-        }
-
-        .e-quick-popup-wrapper .e-cell-content {
-            padding: 0 10px 10px 10px;
-        }
-
-        .e-quick-popup-wrapper .e-cell-content div {
-            padding-bottom: 10px;
-        }
-
-        .e-quick-popup-wrapper .e-cell-content .e-field {
-            border-left-width: 0;
-            border-top-width: 0;
-            border-right-width: 0;
-            height: 25px;
-            width: 100%;
-        }
-
-        .e-quick-popup-wrapper .e-event-content {
+        .e-quick-popup-wrapper .e-event-popup .e-popup-content .content-template .e-event-content {
             display: flex;
         }
 
-        .e-quick-popup-wrapper .e-event-content img {
-            width: 100px;
+        .e-quick-popup-wrapper .e-event-popup .e-popup-content .content-template .e-event-content .e-image-wrap {
+            padding-right: 25px;
         }
 
-        .e-quick-popup-wrapper .e-event-header {
-            position: absolute;
-            right: 0;
+        .e-quick-popup-wrapper .e-event-popup .e-popup-content .content-template .e-event-content .e-image-wrap img {
+            height: 50px;
+            width: 50px;
         }
 
-        .e-quick-popup-wrapper .e-cell-footer .e-event-create,
-        .e-quick-popup-wrapper .e-event-footer .e-event-edit {
-            position: absolute;
-            right: 0;
-        }
-
-        .e-quick-popup-wrapper .e-event-footer .e-event-delete {
-            padding-left: 100px;
-        }
-
-        .e-quick-popup-wrapper .e-event-content .subject {
-            padding-top: 30px;
-            font-weight: 500;
-            font-size: 14px;
+        .e-quick-popup-wrapper .e-event-popup .e-popup-footer {
+            display: block;
         }
     </style>
     <script id="headerTemplate" type="text/x-template">
-        <div>
+        <div class="header-template">
             ${if (elementType === 'cell')}
             <div class="e-cell-header">
                 <div class="e-header-icon-wrapper">
@@ -84,15 +51,15 @@
         </div>
     </script>
     <script id="contentTemplate" type="text/x-template">
-        <div>
+        <div class="content-template">
             ${if (elementType === 'cell')}
             <div class="e-cell-content">
                 <form class="e-schedule-form">
                     <div>
-                        <input class="subject e-field" type="text" name="Subject" placeholder="Title">
+                        <input class="e-subject e-field e-input" type="text" name="Subject" placeholder="Title">
                     </div>
                     <div>
-                        <input class="location e-field" type="text" name="Location" placeholder="Location">
+                        <input class="e-location e-field e-input" type="text" name="Location" placeholder="Location">
                     </div>
                 </form>
             </div>
@@ -102,17 +69,16 @@
                     <img src="images/${getResourceName(data)}.png" alt="logo" />
                 </div>
                 <div class="e-subject-wrap">
-                    ${if (Subject)}
-                    <div class="subject">${Subject}</div>${/if} ${if (Location)}
-                    <div class="location">${Location}</div>${/if} ${if (Description)}
-                    <div class="description">${Description}</div>${/if}
+                    ${if (Subject)}<div class="e-subject">${Subject}</div>${/if}
+                    ${if (Location)}<div class="e-location">${Location}</div>${/if} 
+                    ${if (Description)}<div class="e-description">${Description}</div>${/if}
                 </div>
             </div>
             ${/if}
         </div>
     </script>
     <script id="footerTemplate" type="text/x-template">
-        <div>
+        <div class="footer-template">
             ${if (elementType === 'cell')}
             <div class="e-cell-footer">
                 <button class="e-event-details" title="Extra Details">Extra Details</button>
@@ -140,7 +106,8 @@
                         <div class="col-md-10">
                             <div class="form-check">
                                 <label class="form-check-label">
-                                    <input id="hT" checked="true" class="form-check-input" type="checkbox"> Header Template
+                                    <input id="hT" checked="true" class="form-check-input" type="checkbox"> Header
+                                    Template
                                 </label>
                             </div>
                         </div>
@@ -149,7 +116,8 @@
                         <div class="col-md-10">
                             <div class="form-check">
                                 <label class="form-check-label">
-                                    <input id="cT" checked="true" class="form-check-input" type="checkbox"> Content Template
+                                    <input id="cT" checked="true" class="form-check-input" type="checkbox"> Content
+                                    Template
                                 </label>
                             </div>
                         </div>
@@ -158,7 +126,8 @@
                         <div class="col-md-10">
                             <div class="form-check">
                                 <label class="form-check-label">
-                                    <input id="fT" checked="true" class="form-check-input" type="checkbox"> Footer Template
+                                    <input id="fT" checked="true" class="form-check-input" type="checkbox"> Footer
+                                    Template
                                 </label>
                             </div>
                         </div>

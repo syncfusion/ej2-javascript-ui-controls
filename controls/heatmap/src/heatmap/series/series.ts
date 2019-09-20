@@ -141,6 +141,13 @@ export class Series {
         }
         circleRadius = this.getBubbleRadius(tempWidth, tempHeight);
         for (let x: number = 0; x < (heatMap.xLength * heatMap.yLength); x++) {
+            if (heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataYIndex];
+                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataYIndex];
+            } else if (heatMap.paletteSettings.colorGradientMode === 'Row' && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.heatMap.dataSourceMinValue = this.heatMap.dataMin[dataXIndex];
+                this.heatMap.dataSourceMaxValue = this.heatMap.dataMax[dataXIndex];
+            }
             this.setTextAndColor(dataXIndex, dataYIndex);
             let rectPosition: CurrentRect = new CurrentRect(0, 0, 0, 0, 0, '', 0, 0, 0, 0, true, '', '', true);
             borderColor = tempBorder.color;
@@ -332,11 +339,8 @@ export class Series {
      */
     private createSeriesGroup(): void {
         if (!this.heatMap.enableCanvasRendering) {
-            this.containerRectObject = this.heatMap.renderer.createGroup(
-                {
-                    id: this.heatMap.element.id + '_Container_RectGroup',
-                    x: this.heatMap.initialClipRect.x, y: this.heatMap.initialClipRect.y, transform: 'translate( 0, 0)'
-                });
+            this.containerRectObject = this.heatMap.renderer.createGroup({
+                    id: this.heatMap.element.id + '_Container_RectGroup'});
             if (this.heatMap.cellSettings.showLabel &&
                 !(this.heatMap.cellSettings.tileType === 'Bubble' && this.heatMap.cellSettings.bubbleType === 'Sector')) {
                 this.containerTextObject = this.heatMap.renderer.createGroup(

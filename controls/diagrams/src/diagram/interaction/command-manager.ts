@@ -3415,6 +3415,7 @@ export class CommandHandler {
      */
     public updateSelectedNodeProperties(object?: NodeModel | ConnectorModel[]): void {
         if (this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+            this.diagram.protectPropertyChange(true);
             let objects: NodeModel | ConnectorModel[] = []; let connectors: string[] = [];
             let actualObject: NodeModel = this.diagram.selectedObject.actualObject;
             let helperObject: NodeModel = this.diagram.selectedObject.helperObject;
@@ -3426,7 +3427,8 @@ export class CommandHandler {
                 let height: number = (helperObject.height - actualObject.height);
                 let rotateAngle: number = (helperObject.rotateAngle - actualObject.rotateAngle);
                 this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
-                if (actualObject instanceof Node) {
+                if (actualObject instanceof Node &&
+                    actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader) {
                     actualObject.offsetX += offsetX; actualObject.offsetY += offsetY;
                     actualObject.width += width; actualObject.height += height; actualObject.rotateAngle += rotateAngle;
                     this.diagram.nodePropertyChange(actualObject as Node, {} as Node, {
@@ -3437,13 +3439,16 @@ export class CommandHandler {
                 } else if (actualObject instanceof Selector) {
                     for (let i: number = 0; i < actualObject.nodes.length; i++) {
                         let node: Node = actualObject.nodes[i] as Node;
-                        node.offsetX += offsetX; node.offsetY += offsetY;
-                        node.width += width; node.height += height; node.rotateAngle += rotateAngle;
-                        this.diagram.nodePropertyChange(node, {} as Node, {
-                            offsetX: node.offsetX, offsetY: node.offsetY,
-                            width: node.width, height: node.height, rotateAngle: node.rotateAngle
-                        } as Node);
-                        objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect));
+                        if (node instanceof Node && node.shape.type !== 'SwimLane' && !node.isLane
+                            && !node.isPhase && !node.isHeader) {
+                            node.offsetX += offsetX; node.offsetY += offsetY;
+                            node.width += width; node.height += height; node.rotateAngle += rotateAngle;
+                            this.diagram.nodePropertyChange(node, {} as Node, {
+                                offsetX: node.offsetX, offsetY: node.offsetY,
+                                width: node.width, height: node.height, rotateAngle: node.rotateAngle
+                            } as Node);
+                            objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds as Rect));
+                        }
                     }
                 }
             } else {
@@ -3465,6 +3470,8 @@ export class CommandHandler {
                     this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
                 }
             }
+            this.updateSelector();
+            this.diagram.protectPropertyChange(false);
         }
     }
     /** @private */

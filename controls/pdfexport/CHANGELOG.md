@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.2.40 (2019-08-06)
+## 17.3.9-beta (2019-09-20)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Improper GUID creation issue has been resolved.
+
+## 17.2.48-beta (2019-08-28)
 
 ### Pdf Export
 
@@ -10,23 +18,11 @@
 
 - Iterative constructor call issue has been resolved.
 
-## 17.2.35 (2019-07-17)
-
-### Pdf Export
-
-#### Bug Fixes
+- Preservation issue in headers and footers with section is fixed.
 
 - Super constructor may only be called once exception has been resolved.
 
 - Preservation issue in page orientation is fixed.
-
-## 17.2.28-beta (2019-06-27)
-
-### Pdf Export
-
-#### Bug Fixes
-
-- Preservation issue in headers and footers with section is fixed.
 
 ## 17.1.1-beta (2019-01-29)
 

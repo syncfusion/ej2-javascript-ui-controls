@@ -13,6 +13,8 @@ export const beforeDataBound: string = 'beforeDataBound';
 /** @hidden */
 export const actionBegin: string = 'actionBegin';
 /** @hidden */
+export const dataStateChange: string = 'dataStateChange';
+/** @hidden */
 export const actionComplete: string = 'actionComplete';
 /** @hidden */
 export const rowSelecting: string = 'rowSelecting';

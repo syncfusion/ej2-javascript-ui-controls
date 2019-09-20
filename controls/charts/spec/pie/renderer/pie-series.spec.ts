@@ -309,6 +309,73 @@ describe('Pie Series checking', () => {
         };
         pie.refresh();
     });
+
+    it('checking  doughnut border with mousemove', (done: Function) => {
+        pie.series[0].innerRadius = "50%";
+        pie.refresh();
+        pie.loaded = (args: IAccLoadedEventArgs) => {
+            let pointEle: Element = getElement(sliceid + 1);
+            trigger.mousemoveEvent(pointEle, 0, 0, 200, 200);
+            let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+            let borderId: string = pie.element.id + 'PointHover_Border';
+            expect(seriousGroup.lastElementChild.getAttribute('opacity') === '1').toBe(true);
+            expect(seriousGroup.lastElementChild.getAttribute('id') === borderId).toBe(true);
+            done();
+        }
+        pie.refresh();
+    });
+
+    it('checking  doughnut border with mouseclick', (done: Function) => {
+        pie.loaded = (args: IAccLoadedEventArgs) => {
+            let pointEle: Element = getElement(sliceid + 1);
+            trigger.clickEvent(pointEle);
+            let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+            expect(seriousGroup.lastElementChild.getAttribute('id') === pie.element.id + 'PointHover_Border').toBe(true);
+            done();
+        }
+        pie.refresh();
+    });
+
+    it('checking  doughnut border with explode', (done: Function) => {
+        pie.loaded = (args: IAccLoadedEventArgs) => {
+            let pointEle: Element = getElement(sliceid + 4);
+            trigger.clickEvent(pointEle);
+            let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+            expect(seriousGroup.lastElementChild.getAttribute('id') === sliceid + (args.accumulation.visibleSeries[0].points.length-1)).toBe(true);
+            done();
+        }
+        pie.series[0].explode = true;
+        pie.series[0].explodeIndex = 3 ;
+        pie.refresh();
+    });
+
+    it('checking  pie border with mousemove', (done: Function) => {
+        pie.series[0].innerRadius = '0';
+        pie.refresh();
+        pie.loaded = (args: IAccLoadedEventArgs) => {
+            let pointEle: Element = getElement(sliceid + 1);
+            trigger.mousemoveEvent(pointEle, 0, 0, 200, 200);
+            let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+            let borderId: string = pie.element.id + 'PointHover_Border';
+            expect(seriousGroup.lastElementChild.getAttribute('opacity') === '1').toBe(true);
+            expect(seriousGroup.lastElementChild.getAttribute('id') === borderId).toBe(true);
+            done();
+        }
+        pie.series[0].explode = false;
+        pie.refresh();
+    });
+
+    it('checking  pie border with mouseclick', (done: Function) => {
+        pie.loaded = (args: IAccLoadedEventArgs) => {
+            let pointEle: Element = getElement(sliceid + 1);
+            trigger.clickEvent(pointEle);
+            let seriousGroup: Element = getElement(pie.element.id + '_Series_' + 0);
+            expect(seriousGroup.lastElementChild.getAttribute('id') === pie.element.id + 'PointHover_Border').toBe(true);
+            done();
+        }
+        pie.refresh();
+    });
+
     it('checking club point with point mode', (done: Function) => {
         pie.series[0].startAngle = 0;
         pie.series[0].endAngle = 360;

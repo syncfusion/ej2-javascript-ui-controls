@@ -26,7 +26,10 @@ describe('MaskedTextBox Control', () => {
             editorObj = renderEditor({
                 mode: 'Inline',
                 type: 'Mask',
-                value: '00000'
+                value: '00000',
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -57,6 +60,9 @@ describe('MaskedTextBox Control', () => {
         it('Clear icon availability testing', () => {
             expect(editorObj.componentObj.showClearButton).toBe(true);
             expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('Clear icon availability testing for false', () => {
             editorObj.componentObj.showClearButton = false;

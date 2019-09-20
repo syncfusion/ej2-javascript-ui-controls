@@ -425,7 +425,15 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     renderComponent(ele) {
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
-        extend(this.model, this.model, { cssClass: ELEMENTS });
+        let classProp;
+        if (!isNullOrUndefined(this.model.cssClass)) {
+            classProp = this.model.cssClass.indexOf(ELEMENTS) < 0 ? this.model.cssClass + ' ' + ELEMENTS :
+                this.model.cssClass;
+        }
+        else {
+            classProp = ELEMENTS;
+        }
+        extend(this.model, this.model, { cssClass: classProp });
         if (!isNullOrUndefined(this.value)) {
             this.updateModelValue();
         }
@@ -547,14 +555,15 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.extendModelValue(this.componentObj.value);
         }
     }
-    getDropDownsValue() {
+    getDropDownsValue(display) {
         let value;
         if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1 && this.type !== 'MultiSelect') {
-            value = select('.e-' + this.type.toLocaleLowerCase(), this.containerEle).value;
+            value = display ? select('.e-' + this.type.toLocaleLowerCase(), this.containerEle).value :
+                this.value.toString();
         }
         else if (this.type === 'MultiSelect') {
             this.notify(accessValue, { type: this.type });
-            value = this.printValue;
+            value = display ? this.printValue : this.value.join();
         }
         return value;
     }
@@ -563,7 +572,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             return '';
         }
         if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
-            return this.getDropDownsValue();
+            return this.getDropDownsValue(false);
         }
         else if (Array.prototype.indexOf.call(this.dateType, this.type) > -1) {
             return this.value.toISOString();
@@ -583,7 +592,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             return this.componentRoot.value;
         }
         else if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
-            return this.getDropDownsValue();
+            return this.getDropDownsValue(true);
         }
         else {
             return parseValue(this.type, this.value, this.model);

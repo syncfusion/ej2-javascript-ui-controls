@@ -1,9 +1,9 @@
-import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged} from '@syncfusion/ej2-base';
-import {  extend,  compile as templateComplier, Component} from '@syncfusion/ej2-base';
+import {  NotifyPropertyChanges, Property, Event, Complex, INotifyPropertyChanged, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import {  extend,  compile as templateComplier, Component, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '../svg-render/index';
 import {  ChildProperty, createElement, EmitType, remove, Browser, AnimationOptions, Animation} from '@syncfusion/ej2-base';
 import { TextStyleModel, TooltipBorderModel, TooltipModel, ToolLocationModel, AreaBoundsModel } from './tooltip-model';
-import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs} from './interface';
+import { ITooltipThemeStyle, ITooltipRenderingEventArgs, ITooltipAnimationCompleteArgs, IBlazorTemplate} from './interface';
 import { ITooltipLoadedEventArgs, getTooltipThemeColor } from './interface';
 import { Size, Rect, Side, measureText, getElement, findDirection, drawSymbol, textElement } from './helper';
 import { removeElement, TextOption, TooltipLocation, PathOption } from './helper';
@@ -366,6 +366,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     public availableSize: Size;
 
     /**
+     * Blazor templates
+     */
+    @Property()
+    public blazorTemplate: IBlazorTemplate;
+
+    /**
      * To check chart is canvas.
      * @default false.
      * @private.
@@ -454,6 +460,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     private removeSVG(): void {
         let svgObject: Element = document.getElementById(this.element.id + '_svg');
         let templateObject: Element = document.getElementById(this.element.id + 'parent_template');
+        if (this.blazorTemplate) {
+            resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
+        }
         if (svgObject && svgObject.parentNode) {
             remove(svgObject);
         }
@@ -750,10 +759,15 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             remove(firstElement);
         }
         if (!argsData.cancel) {
-            let templateElement: HTMLCollection = this.templateFn(this.data);
             let elem: Element = createElement('div', { id: this.element.id + 'parent_template' });
+            let templateElement: HTMLCollection = this.templateFn(this.data, null, null, elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
-                elem.appendChild(templateElement[0]);
+                if (isBlazor()) {
+                    elem.appendChild(templateElement[0]);
+                    templateElement = null;
+                } else {
+                    elem.appendChild(templateElement[0]);
+                }
             }
             parent.appendChild(elem);
             let element: Element = this.isCanvas ? elem : this.element;
@@ -765,6 +779,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.animateTooltipDiv(<HTMLDivElement>this.element, tooltipRect);
             } else {
                 this.updateDiv(<HTMLDivElement>element, tooltipRect.x, tooltipRect.y);
+            }
+            if (this.blazorTemplate) {
+                updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate',
+                                     this.blazorTemplate.name, this.blazorTemplate.parent);
             }
         } else {
             remove(getElement(this.element.id + '_tooltip'));
@@ -985,6 +1003,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
 
 
     public onPropertyChanged(newProp: TooltipModel, oldProp: TooltipModel): void {
+        if (this.blazorTemplate) {
+            resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
+        }
         this.isFirst = false;
         this.render();
     }

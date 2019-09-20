@@ -1,4 +1,4 @@
-import { BaseEventArgs, Component, EmitType, Event, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { Browser, closest, detach, EventHandler, getInstance, select, selectAll, formatUnit } from '@syncfusion/ej2-base';import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel, ClickEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, TooltipEventArgs, getZindexPartial, Popup } from '@syncfusion/ej2-popups';import { Input } from './../input/index';import { NumericTextBox, NumericTextBoxModel, ChangeEventArgs } from './../numerictextbox/index';import { Slider, SliderChangeEventArgs } from './../slider/slider';
+import { BaseEventArgs, Component, EmitType, Event, INotifyPropertyChanged, NotifyPropertyChanges, Property } from '@syncfusion/ej2-base';import { Browser, closest, detach, EventHandler, getInstance, select, selectAll, formatUnit } from '@syncfusion/ej2-base';import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel, ClickEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Deferred } from '@syncfusion/ej2-splitbuttons';import { Tooltip, TooltipEventArgs, getZindexPartial, Popup } from '@syncfusion/ej2-popups';import { Input } from './../input/index';import { NumericTextBox, NumericTextBoxModel, ChangeEventArgs } from './../numerictextbox/index';import { Slider, SliderChangeEventArgs } from './../slider/slider';
 import {ColorPickerMode,ColorPickerEventArgs,PaletteTileEventArgs,BeforeOpenCloseEventArgs,OpenEventArgs,ModeSwitchEventArgs} from "./color-picker";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -107,7 +107,6 @@ export interface ColorPickerModel extends ComponentModel{
      * Triggers before opening the ColorPicker popup.
      * @event
      * @blazorProperty 'OnOpen'
-     * @deprecated
      */
     beforeOpen?: EmitType<BeforeOpenCloseEventArgs>;
 
@@ -122,7 +121,6 @@ export interface ColorPickerModel extends ComponentModel{
      * Triggers before closing the ColorPicker popup.
      * @event
      * @blazorProperty 'OnClose'
-     * @deprecated
      */
     beforeClose?: EmitType<BeforeOpenCloseEventArgs>;
 

@@ -1,8 +1,8 @@
-import { createElement,  compile as templateComplier, remove } from '@syncfusion/ej2-base';
+import { createElement, compile as templateComplier, remove } from '@syncfusion/ej2-base';
 import { Smithchart } from '../../smithchart/smithchart';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
-import {SmithchartFontModel, SmithchartBorderModel} from '../../smithchart/utils/utils-model';
-import { Animation, AnimationOptions, Effect} from '@syncfusion/ej2-base';
+import { SmithchartFontModel, SmithchartBorderModel } from '../../smithchart/utils/utils-model';
+import { Animation, AnimationOptions, Effect } from '@syncfusion/ej2-base';
 import { SmithchartSize, SmithchartRect } from '../../smithchart/utils/utils';
 
 
@@ -60,8 +60,8 @@ export function getTemplateFunction(templateString: string): Function {
     return templateFn;
 }
 
-export function convertElementFromLabel(element: Element,  labelId: string,
-                                        data: object, index: number, smithchart: Smithchart): HTMLElement {
+export function convertElementFromLabel(
+    element: Element, labelId: string, data: object, index: number, smithchart: Smithchart): HTMLElement {
     let labelEle: Element = element[0];
     let templateHtml: string = labelEle.outerHTML;
     let properties: Object[] = Object.keys(data);
@@ -76,12 +76,12 @@ export function convertElementFromLabel(element: Element,  labelId: string,
 }
 
 export function _getEpsilonValue(): number {
-            let e: number = 1.0;
-            while ((1.0 + 0.5 * e) !== 1.0) {
-                e *= 0.5;
-            }
-            return e;
-        }
+    let e: number = 1.0;
+    while ((1.0 + 0.5 * e) !== 1.0) {
+        e *= 0.5;
+    }
+    return e;
+}
 
 
 /**
@@ -104,9 +104,9 @@ export function calculateSize(smithchart: Smithchart): void {
 
 export function templateAnimate(smithchart: Smithchart, element: Element, delay: number, duration: number, name: Effect
 ): void {
-    let opacity : number = 0;
-    let delta : number;
-    let value : number;
+    let opacity: number = 0;
+    let delta: number;
+    let value: number;
     new Animation({}).animate(<HTMLElement>element, {
         duration: duration,
         delay: delay,
@@ -117,7 +117,7 @@ export function templateAnimate(smithchart: Smithchart, element: Element, delay:
             args.element.style.opacity = value.toString();
         },
         end: (args: AnimationOptions): void => {
-            let opacity : number = 1;
+            let opacity: number = 1;
             args.element.style.opacity = opacity.toString();
             smithchart.trigger('animationComplete', event);
         },
@@ -220,7 +220,7 @@ export function measureText(text: string, font: SmithchartFontModel): Smithchart
     htmlObject.style.fontWeight = font.fontWeight;
     htmlObject.style.fontStyle = font.fontStyle;
     htmlObject.style.fontFamily = font.fontFamily;
-     // For bootstrap line height issue
+    // For bootstrap line height issue
     htmlObject.style.lineHeight = 'normal';
     return new SmithchartSize(htmlObject.clientWidth, htmlObject.clientHeight);
 }
@@ -278,7 +278,7 @@ export function getAnimationFunction(effect: string): Function {
         case 'Linear':
             functionName = linear;
             break;
-            case 'Reverse':
+        case 'Reverse':
             functionName = reverselinear;
             break;
     }

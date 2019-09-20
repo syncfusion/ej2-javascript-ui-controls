@@ -3,14 +3,14 @@
  */
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';
 import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection } from '@syncfusion/ej2-base';
-import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';
+import { getInstance, addClass, removeClass, rippleEffect, detach, classList, isBlazor } from '@syncfusion/ej2-base';
 import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel } from './query-builder-model';
 import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
 import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';
 import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';
-import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';
+import { Query, Predicate, DataManager, Deferred, UrlAdaptor } from '@syncfusion/ej2-data';
 import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -922,16 +922,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let ddlObj: DropDownList = getComponent(ddlArgs.element, 'dropdownlist') as DropDownList;
         let element: Element = closest(ddlArgs.element, '.e-group-container');
         let groupID: string = element.id.replace(this.element.id + '_', '');
-        let operatorElem: Element = closest(ddlArgs.element, '.e-rule-operator');
         this.changeFilter(filterElem, ddlObj, groupID, rule, tempRule, ddlArgs);
-        if (!this.isOperatorRendered) {
-            this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
-        }
-        if (!this.isValueRendered) {
-            this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
-        }
-        this.isValueRendered = false;
-        this.isOperatorRendered = false;
     }
     private changeFilter(
         flt: Element, dl: DropDownList, grID: string, rl: RuleModel, tmpRl: RuleModel, dArg: DropDownChangeEventArgs): void {
@@ -947,6 +938,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else {
                 this.fieldChangeSuccess(eventsArgs, tmpRl, flt, rl, dArg);
             }
+        } else {
+            let operatorElem: Element = closest(dArg.element, '.e-rule-operator');
+            this.changeOperator(flt, operatorElem, dl, grID, rl, tmpRl, dArg);
         }
     }
     private changeOperator(
@@ -962,26 +956,26 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             } else {
                 this.operatorChangeSuccess(eventsArgs, flt, tmpRl, rl, dArg);
             }
+        } else {
+            this.changeRuleValues(flt, rl, tmpRl, dArg);
         }
     }
     private fieldChangeSuccess(
         args: ChangeEventArgs, tempRule: RuleModel, filterElem: Element, rule: RuleModel, ddlArgs: DropDownChangeEventArgs): void {
         let ruleElem: Element = closest(filterElem, '.e-rule-container');
+        let operatorElem: Element = closest(ddlArgs.element, '.e-rule-operator');
+        let element: Element = closest(ddlArgs.element, '.e-group-container');
+        let groupID: string = element.id.replace(this.element.id + '_', '');
+        let ddlObj: DropDownList = getComponent(ddlArgs.element, 'dropdownlist') as DropDownList;
         if (!args.cancel) {
             tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
-            let element: Element = closest(ddlArgs.element, '.e-group-container');
-            let operatorElem: Element = closest(ddlArgs.element, '.e-rule-operator');
-            let groupID: string = element.id.replace(this.element.id + '_', '');
-            let ddlObj: DropDownList = getComponent(ddlArgs.element, 'dropdownlist') as DropDownList;
             this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         } else {
-            this.isOperatorRendered = true;
-            this.isValueRendered = true;
+             this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         }
-        this.isOperatorRendered = true;
     }
 
     private operatorChangeSuccess(
@@ -1179,8 +1173,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let dropDownObj: DropDownList =
             getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
             this.selectedColumn =  dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
-            let value: string = this.selectedColumn.field;
-            let isFetched: boolean = false;
+            let value: string = this.selectedColumn.field; let isFetched: boolean = false;
             if (this.dataColl[1]) {
                 if (Object.keys(this.dataColl[1]).indexOf(value) > -1) {
                     isFetched = true;
@@ -1188,27 +1181,40 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             if (!isFetched) {
                 args.cancel = true;
-                let multiselectObj: MultiSelect = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect);
-                multiselectObj.hideSpinner();
-                let data: Promise<Object> = this.dataManager.executeQuery(new Query().select(value)) as Promise<Object>;
-                let deferred: Deferred = new Deferred();  let dummyData: Object[];
-                this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
-                showSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
-                data.then((e: {actual: {result: Object[], count: number}, result: Object[]}) => {
-                   if (e.actual && e.actual.result) {
-                       dummyData = e.actual.result;
-                   } else {
-                       dummyData = e.result;
-                   }
-                   this.dataColl = extend(this.dataColl, dummyData, [], true) as object [];
-                   let ds: object[] = this.getDistinctValues(this.dataColl, value);
-                   multiselectObj.dataSource = ds as {[key: string]: object}[];
-                   hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
-                }).catch((e: ReturnType) => {
-                    deferred.reject(e);
-                });
+                if (isBlazor()) {
+                    this.bindBlazorMultiSelectData(element, value);
+                } else {
+                    this.bindMultiSelectData(element, value);
+                }
             }
         }
+    }
+    private async bindBlazorMultiSelectData(element: Element, value: string): Promise<void> {
+        await this.getMultiSelectData(element, value);
+        return;
+    }
+    private bindMultiSelectData(element: Element, value: string): void {
+        this.getMultiSelectData(element, value);
+    }
+    private getMultiSelectData(element: Element, value: string): void {
+        let dummyData: Object[]; let deferred: Deferred = new Deferred();
+        let data: Promise<Object> = this.dataManager.executeQuery(new Query().select(value)) as Promise<Object>;
+        let multiselectObj: MultiSelect = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect);
+        multiselectObj.hideSpinner();
+        this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+        showSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
+        data.then((e: {actual: {result: Object[], count: number}, result: Object[]}) => {
+            if (e.actual && e.actual.result) {
+                dummyData = e.actual.result;
+            } else {
+                dummyData = e.result;
+            }
+            this.dataColl = extend(this.dataColl, dummyData, [], true) as object [];
+            multiselectObj.dataSource = this.getDistinctValues(this.dataColl, value) as {[key: string]: object}[];
+            hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
+        }).catch((e: ReturnType) => {
+            deferred.reject(e);
+        });
     }
     private createSpinner(element: Element): void {
         let spinnerElem: HTMLElement = this.createElement('span', { attrs: { class: 'e-qb-spinner' } });
@@ -2103,6 +2109,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.dataColl = this.dataManager.executeLocal(new Query());
             this.initControl();
         }
+        this.renderComplete();
     }
     private executeDataManager(query: Query): void {
         let data: Promise<Object> = this.dataManager.executeQuery(query) as Promise<Object>;
@@ -2358,12 +2365,21 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     /**
      * return the Query from current rules collection.
-     * @returns Promise.   
+     * @returns Promise.
+     * @blazorType object
      */
-    public getFilteredRecords(): Promise<Object> {
+    public getFilteredRecords(): Promise<Object> | object {
         let predicate: Predicate = this.getPredicate(this.getValidRules(this.rule));
         let dataManagerQuery: Query = new Query().where(predicate);
-        return this.dataManager.executeQuery(dataManagerQuery);
+        if (this.isBlazor()) {
+            let adaptr: UrlAdaptor = new UrlAdaptor();
+            let dm: DataManager = new DataManager({ url: '', adaptor: new UrlAdaptor });
+            let state: { data?: string, pvtData?: Object[] } = adaptr.processQuery(dm, dataManagerQuery);
+            let data: Object = JSON.parse(state.data);
+            return data;
+        } else {
+            return this.dataManager.executeQuery(dataManagerQuery);
+        }
     }
     /**
      * Deletes the rule or rules based on the rule ID.
@@ -2923,6 +2939,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         }
         return rules;
+    }
+    private isBlazor(): boolean {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
     }
 }
 

@@ -164,6 +164,8 @@ export type DateGroup =
     'Years' |
     /**  Defines group as 'Quarters' of date field */
     'Quarters' |
+    /**  Defines group as 'Quarter Year' of date field */
+    'QuarterYear' |
     /**  Defines group as 'Months' of date field */
     'Months' |
     /**  Defines group as 'Days' of date field */
@@ -179,3 +181,8 @@ export type GroupType =
     'Date' |
     /**  Defines group type as 'Number' for numeric field */
     'Number';
+export type ProviderType =
+    /**  Defines data type as 'Relational' for relation mode */
+    'Relational' |
+    /**  Defines data type as 'SSAS' for OLAP mode */
+    'SSAS';

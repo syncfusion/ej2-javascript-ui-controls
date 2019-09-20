@@ -152,6 +152,21 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
     public ry: number;
 
     /**
+     * Specifies angle for data label.
+     * @default 0
+     */
+    @Property(0)
+    public angle: number;
+
+    /**
+     * Enables rotation for data label.
+     * @default false
+     */
+
+    @Property(false)
+    public enableRotation: boolean;
+
+    /**
      * Option for customizing the border lines.
      */
 
@@ -238,6 +253,8 @@ export class AccPoints {
     /** @private */
     public midAngle: number;
     /** @private */
+    public startAngle: number;
+    /** @private */
     public endAngle: number;
     /** @private */
     public labelAngle: number;
@@ -266,6 +283,8 @@ export class AccPoints {
     public start: number;
     /** @private */
     public degree: number;
+    /** @private */
+    public transform: string;
 }
 
 /**

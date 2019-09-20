@@ -77,8 +77,8 @@
         padding: $calendar-yeardeacde-span-padding;
         text-align: center;&.e-week-number {
           color: $calendar-week-number-font-color;
-          font-family: $calendar-week-number-font-style;
           font-size: $calendar-week-number-font-size-style;
+          font-style: $calendar-week-number-font-style;
           font-weight: 500;
 }&.e-overlay {
           background: $calendar-none-style;

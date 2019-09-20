@@ -306,7 +306,6 @@ describe('Highlight Settings', () => {
             highlight.loaded = (args: ILoadedEventArgs) => {
             spec = getElement('container_Legend_Shape_Index_0');
             trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
-          
             done();
         };
             highlight.refresh();

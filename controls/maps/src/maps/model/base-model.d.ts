@@ -497,6 +497,7 @@ export interface BubbleSettingsModel {
     /**
      * Specifies the data source for bubble.
      * @isdatamanager false
+     * @isObservable true
      * @default []
      */
     dataSource?: object[];
@@ -735,6 +736,42 @@ export interface ZoomSettingsModel {
 }
 
 /**
+ * Interface for a class ToggleLegendSettings
+ */
+export interface ToggleLegendSettingsModel {
+
+    /**
+     * To toggle the legend
+     * @default false
+     */
+    enable?: boolean;
+
+    /**
+     * To apply the shape settings
+     * @default true
+     */
+    applyShapeSettings?: boolean;
+
+    /**
+     * To specify the opacity of the shape
+     * @default 1
+     */
+    opacity?: number;
+
+    /**
+     * To fill the color for shape
+     * @default ''
+     */
+    fill?: string;
+
+    /**
+     * To apply border for the shapes
+     */
+    border?: BorderModel;
+
+}
+
+/**
  * Interface for a class LegendSettings
  */
 export interface LegendSettingsModel {
@@ -899,6 +936,11 @@ export interface LegendSettingsModel {
      * @default false
      */
     removeDuplicateLegend?: boolean;
+
+    /**
+     * Options for customizing the color and width of the selection.
+     */
+    toggleLegendSettings?: ToggleLegendSettingsModel;
 
 }
 
@@ -1179,6 +1221,7 @@ export interface LayerSettingsModel {
     /**
      * Specifies the data source for the layer.
      * @isdatamanager false
+     * @isObservable true
      * @default []
      */
     dataSource?: object[] | DataManager | MapAjax;
@@ -1282,6 +1325,11 @@ export interface LayerSettingsModel {
      * To configure the highlight settings of the maps.
      */
     highlightSettings?: HighlightSettingsModel;
+
+    /**
+     * To configure the legend toggle settings.
+     */
+    toggleLegendSettings?: ToggleLegendSettingsModel;
 
 }
 

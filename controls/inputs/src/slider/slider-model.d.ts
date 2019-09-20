@@ -1,4 +1,4 @@
-import { Component, EventHandler, Property, Event, EmitType, Complex, isBlazor } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
+import { Component, EventHandler, Property, Event, EmitType, Complex, Collection, isBlazor } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
 import {Placement,TooltipPlacement,TooltipShowOn,SliderType,SliderOrientation,SliderChangeEventArgs,SliderTickEventArgs,SliderTickRenderedEventArgs,SliderTooltipEventArgs} from "./slider";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -41,6 +41,31 @@ export interface TicksDataModel {
      * It is used to customize the Slider scale value to the desired format using Internationalization or events(custom formatting).
      */
     format?: string;
+
+}
+
+/**
+ * Interface for a class ColorRangeData
+ */
+export interface ColorRangeDataModel {
+
+    /**
+     * It is used to set the color in the slider bar.
+     * @default ''
+     */
+    color?: string;
+
+    /**
+     * It is used to get the starting value for applying color.
+     * @default null
+     */
+    start?: number;
+
+    /**
+     * It is used to get the end value for applying color.
+     * @default null
+     */
+    end?: number;
 
 }
 
@@ -197,6 +222,11 @@ export interface SliderModel extends ComponentModel{
      *  * range - Used to select a range of values in the Slider. It displays shadow in-between the selection range.
      */
     type?: SliderType;
+
+    /**
+     * It is used to render the color to the slider based on the given  value
+     */
+    colorRange?: ColorRangeDataModel[];
 
     /**
      * It is used to render the slider ticks options such as placement and step values.

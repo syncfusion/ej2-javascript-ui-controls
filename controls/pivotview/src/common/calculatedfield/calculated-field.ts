@@ -1,5 +1,5 @@
-import { Dialog, OffsetPosition, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
-import { Droppable, createElement, extend, remove, addClass, closest } from '@syncfusion/ej2-base';
+import { Dialog, OffsetPosition, BeforeOpenEventArgs, Tooltip, ButtonPropsModel } from '@syncfusion/ej2-popups';
+import { Droppable, createElement, extend, remove, addClass, closest, getInstance } from '@syncfusion/ej2-base';
 import { prepend, append, KeyboardEvents, KeyboardEventArgs, removeClass } from '@syncfusion/ej2-base';
 import { IDataOptions, IFieldOptions, ICalculatedFields } from '../../base/engine';
 import { PivotView } from '../../pivotview/base/pivotview';
@@ -8,13 +8,16 @@ import { MaskedTextBox } from '@syncfusion/ej2-inputs';
 import * as cls from '../../common/base/css-constant';
 import {
     TreeView, DragAndDropEventArgs, NodeExpandEventArgs, BeforeOpenCloseMenuEventArgs,
-    NodeClickEventArgs, MenuEventArgs, DrawNodeEventArgs, ExpandEventArgs
+    NodeClickEventArgs, MenuEventArgs, DrawNodeEventArgs, ExpandEventArgs, NodeSelectEventArgs
 } from '@syncfusion/ej2-navigations';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { IAction } from '../../common/base/interface';
 import * as events from '../../common/base/constant';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
 import { Tab, Accordion, AccordionItemModel } from '@syncfusion/ej2-navigations';
+import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
+import { PivotUtil } from '../../base/util';
+import { IOlapField, OlapEngine } from '../../base/olap/engine';
 
 /**
  * Module to render Calculated Field Dialog
@@ -37,6 +40,8 @@ const AGRTYPE: string = 'AggregateType';
 /** @hidden */
 export class CalculatedField implements IAction {
     public parent: PivotView | PivotFieldList;
+    /** @hidden */
+    public isFormula: boolean = false;
 
     /**
      * Internal variables.
@@ -57,6 +62,7 @@ export class CalculatedField implements IAction {
     private isEdit: boolean;
     private currentFieldName: string;
     private confirmPopUp: Dialog;
+    private field: string;
 
     /** Constructor for calculatedfield module */
     constructor(parent: PivotView | PivotFieldList) {
@@ -93,24 +99,38 @@ export class CalculatedField implements IAction {
         if (node) {
             switch (e.action) {
                 case 'moveRight':
-                    this.displayMenu(node.previousSibling as HTMLElement);
+                    if (this.parent.dataType === 'pivot') {
+                        this.displayMenu(node.previousSibling as HTMLElement);
+                    }
                     break;
                 case 'enter':
                     let field: string = node.getAttribute('data-field');
                     let type: string = node.getAttribute('data-type');
                     let dropField: HTMLTextAreaElement =
                         this.dialog.element.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
-                    if (dropField.value === '') {
-                        if (type === CALC) {
-                            dropField.value = node.getAttribute('data-uid');
-                        } else {
-                            dropField.value = '"' + type + '(' + field + ')' + '"';
+                    if (this.parent.dataType === 'pivot') {
+                        if (dropField.value === '') {
+                            if (type === CALC) {
+                                dropField.value = node.getAttribute('data-uid');
+                            } else {
+                                dropField.value = '"' + type + '(' + field + ')' + '"';
+                            }
+                        } else if (dropField.value !== '') {
+                            if (type === CALC) {
+                                dropField.value = dropField.value + node.getAttribute('data-uid');
+                            } else {
+                                dropField.value = dropField.value + '"' + type + '(' + field + ')' + '"';
+                            }
                         }
-                    } else if (dropField.value !== '') {
-                        if (type === CALC) {
-                            dropField.value = dropField.value + node.getAttribute('data-uid');
-                        } else {
-                            dropField.value = dropField.value + '"' + type + '(' + field + ')' + '"';
+                    } else {
+                        if (this.parent.olapEngineModule && this.parent.olapEngineModule.fieldList[field] &&
+                            this.parent.olapEngineModule.fieldList[field].isCalculatedField) {
+                            field = this.parent.olapEngineModule.fieldList[field].tag;
+                        }
+                        if (dropField.value === '') {
+                            dropField.value = field;
+                        } else if (dropField.value !== '') {
+                            dropField.value = dropField.value + field;
                         }
                     }
                     break;
@@ -132,35 +152,97 @@ export class CalculatedField implements IAction {
         }
     }
 
+    private clearFormula(): void {
+        if (this.treeObj && this.treeObj.element.querySelector('li')) {
+            removeClass(this.treeObj.element.querySelectorAll('li'), 'e-active');
+            this.displayMenu(this.treeObj.element.querySelector('li'));
+        }
+    }
+
     /**
      * To display context menu.
      * @param  {HTMLElement} node
      * @returns void
      */
     private displayMenu(node: HTMLElement): void {
-        if (document.querySelector('.' + this.parentID + 'calculatedmenu') !== null &&
+        if (this.parent.dataType === 'pivot' && document.querySelector('.' + this.parentID + 'calculatedmenu') !== null &&
             node.querySelector('.e-list-icon').classList.contains(cls.ICON) &&
             !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) &&
             !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) && node.tagName === 'LI') {
             this.menuObj.close();
             this.curMenu = (node.querySelector('.' + cls.LIST_TEXT_CLASS) as HTMLElement);
             this.openContextMenu();
-        } else if (node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) && node.tagName === 'LI') {
-            addClass([node.querySelector('.e-list-icon')], cls.CALC_EDITED);
-            removeClass([node.querySelector('.e-list-icon')], cls.CALC_EDIT);
-            node.querySelector('.' + cls.CALC_EDITED).setAttribute('title', this.parent.localeObj.getConstant('clear'));
+        } else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) ||
+            (this.parent.dataType === 'olap' && node.getAttribute('data-type') === CALC && node.classList.contains('e-active')))) {
             this.isEdit = true;
-            this.currentFieldName = node.getAttribute('data-field');
-            this.inputObj.value = node.getAttribute('data-caption');
-            (this.dialog.element.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = node.getAttribute('data-caption');
-            (document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = node.getAttribute('data-uid');
-        } else if (node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) && node.tagName === 'LI') {
-            addClass([node.querySelector('.e-list-icon')], cls.CALC_EDIT);
-            removeClass([node.querySelector('.e-list-icon')], cls.CALC_EDITED);
-            node.querySelector('.' + cls.CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
+            let fieldName: string = node.getAttribute('data-field');
+            let caption: string = node.getAttribute('data-caption');
+            this.currentFieldName = fieldName;
+            this.inputObj.value = caption;
+            this.inputObj.dataBind();
+            if (this.parent.dataType === 'olap') {
+                let memberType: string = node.getAttribute('data-membertype');
+                let parentHierarchy: string = node.getAttribute('data-hierarchy');
+                let expression: string = node.getAttribute('data-formula');
+                let formatString: string = node.getAttribute('data-formatString');
+                let customString: string = node.getAttribute('data-customString');
+                let dialogElement: HTMLElement = this.dialog.element;
+                /* tslint:disable */
+                let fieldTitle: HTMLElement = dialogElement.querySelector('#' + this.parentID + '_' + 'FieldNameTitle');
+                let customFormat: MaskedTextBox = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                let memberTypeDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div') as HTMLElement, DropDownList) as DropDownList;
+                let hierarchyDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div') as HTMLElement, DropDownList) as DropDownList;
+                let formatDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div') as HTMLElement, DropDownList) as DropDownList;
+                /* tslint:enable */
+                fieldTitle.innerHTML = this.parent.localeObj.getConstant('caption');
+                (document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = expression;
+                memberTypeDrop.readonly = true;
+                memberTypeDrop.value = memberType;
+                memberTypeDrop.dataBind();
+                if (memberType === 'Dimension') {
+                    hierarchyDrop.value = parentHierarchy;
+                }
+                if (formatString !== '') {
+                    formatDrop.value = formatString;
+                    formatDrop.dataBind();
+                }
+                customFormat.value = customString;
+                customFormat.dataBind();
+            } else {
+                addClass([node.querySelector('.e-list-icon')], cls.CALC_EDITED);
+                removeClass([node.querySelector('.e-list-icon')], cls.CALC_EDIT);
+                node.querySelector('.' + cls.CALC_EDITED).setAttribute('title', this.parent.localeObj.getConstant('clear'));
+                (document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = node.getAttribute('data-uid');
+            }
+        } else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) ||
+            (this.parent.dataType === 'olap' && !node.classList.contains('e-active')))) {
             this.isEdit = false;
             this.inputObj.value = '';
-            (this.dialog.element.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = '';
+            this.inputObj.dataBind();
+            if (this.parent.dataType === 'olap') {
+                let dialogElement: HTMLElement = this.dialog.element;
+                /* tslint:disable */
+                let hierarchyDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div') as HTMLElement, DropDownList) as DropDownList;
+                let formatDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div') as HTMLElement, DropDownList) as DropDownList;
+                let customFormat: MaskedTextBox = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                let memberTypeDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div') as HTMLElement, DropDownList) as DropDownList;
+                let fieldTitle: HTMLElement = dialogElement.querySelector('#' + this.parentID + '_' + 'FieldNameTitle');
+                /* tslint:enable */
+                fieldTitle.innerHTML = this.parent.localeObj.getConstant('fieldTitle');
+                hierarchyDrop.index = 0;
+                hierarchyDrop.dataBind();
+                formatDrop.index = 0;
+                formatDrop.dataBind();
+                customFormat.value = '';
+                customFormat.dataBind();
+                memberTypeDrop.index = 0;
+                memberTypeDrop.readonly = false;
+                memberTypeDrop.dataBind();
+            } else {
+                addClass([node.querySelector('.e-list-icon')], cls.CALC_EDIT);
+                removeClass([node.querySelector('.e-list-icon')], cls.CALC_EDITED);
+                node.querySelector('.' + cls.CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
+            }
             (document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = '';
         }
     }
@@ -227,6 +309,7 @@ export class CalculatedField implements IAction {
         this.menuObj.appendTo(contextMenu);
     }
 
+    /* tslint:disable */
     /**
      * Triggers while click OK button.
      * @returns void
@@ -235,12 +318,20 @@ export class CalculatedField implements IAction {
         let currentObj: CalculatedField = this;
         let isExist: boolean = false;
         removeClass([document.getElementById(this.parentID + 'ddlelement')], cls.EMPTY_FIELD);
-        Object.keys(currentObj.parent.engineModule.fieldList).forEach((key: string, index: number) => {
-            if (currentObj.inputObj.value && currentObj.inputObj.value === key &&
-                currentObj.parent.engineModule.fieldList[key].aggregateType !== 'CalculatedField') {
+        if (currentObj.parent.dataType === 'olap') {
+            let field: string = currentObj.inputObj.value;
+            if (currentObj.parent.olapEngineModule.fieldList[field] &&
+                currentObj.parent.olapEngineModule.fieldList[field].type !== 'CalculatedField') {
                 isExist = true;
             }
-        });
+        } else {
+            Object.keys(currentObj.parent.engineModule.fieldList).forEach((key: string, index: number) => {
+                if (currentObj.inputObj.value && currentObj.inputObj.value === key &&
+                    currentObj.parent.engineModule.fieldList[key].aggregateType !== 'CalculatedField') {
+                    isExist = true;
+                }
+            });
+        }
         if (isExist) {
             currentObj.parent.pivotCommon.errorDialog.createErrorDialog(
                 currentObj.parent.localeObj.getConstant('error'), currentObj.parent.localeObj.getConstant('fieldExist'));
@@ -249,52 +340,114 @@ export class CalculatedField implements IAction {
         this.newFields =
             extend([], (this.parent.dataSourceSettings as IDataOptions).calculatedFieldSettings, null, true) as ICalculatedFields[];
         this.existingReport = extend({}, this.parent.dataSourceSettings, null, true) as IDataOptions;
-        let report: IDataOptions = this.parent.dataSourceSettings;
+        let report: IDataOptions = this.parent.dataSourceSettings as IDataOptions;
         let dropField: HTMLTextAreaElement = document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
         if (this.inputObj.value !== null && this.inputObj.value !== '' && dropField.value !== '') {
-            let field: IFieldOptions = {
-                name: this.inputObj.value,
-                type: 'CalculatedField'
-            };
-            let cField: ICalculatedFields = {
-                name: this.inputObj.value,
-                formula: dropField.value
-            };
-            this.isFieldExist = true;
-            if (!this.isEdit) {
-                for (let i: number = 0; i < report.values.length; i++) {
-                    if (report.values[i].type === CALC && report.values[i].name === field.name) {
-                        for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
-                            if (report.calculatedFieldSettings[j].name === field.name) {
-                                this.createConfirmDialog(
-                                    currentObj.parent.localeObj.getConstant('alert'),
-                                    currentObj.parent.localeObj.getConstant('confirmText'));
-                                return;
+            let field: ICalculatedFields;
+            if (this.parent.dataType === 'olap') {
+                let dialogElement: HTMLElement = this.parent.isAdaptive ? (this.parent as PivotFieldList).dialogRenderer.adaptiveElement.element : this.dialog.element;
+                let memberTypeDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div') as HTMLElement, DropDownList) as DropDownList;
+                let customFormat: MaskedTextBox = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                let hierarchyDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div') as HTMLElement, DropDownList) as DropDownList;
+                let formatDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div') as HTMLElement, DropDownList) as DropDownList;
+                field = {
+                    name: this.inputObj.value,
+                    formula: dropField.value,
+                    formatString: (formatDrop.value === 'Custom' ? customFormat.value : formatDrop.value as string)
+                };
+                if (memberTypeDrop.value === 'Dimension') {
+                    field.hierarchyUniqueName = hierarchyDrop.value as string;
+                }
+                this.isFieldExist = false;
+                if (!this.isEdit) {
+                    for (let i: number = 0; i < report.calculatedFieldSettings.length; i++) {
+                        if (report.calculatedFieldSettings[i].name === field.name) {
+                            this.createConfirmDialog(
+                                currentObj.parent.localeObj.getConstant('alert'),
+                                currentObj.parent.localeObj.getConstant('confirmText'));
+                            return;
+                        }
+                    }
+                } else {
+                    for (let i: number = 0; i < report.calculatedFieldSettings.length; i++) {
+                        if (report.calculatedFieldSettings[i].name === this.currentFieldName && this.isEdit) {
+                            if (memberTypeDrop.value === 'Dimension') {
+                                report.calculatedFieldSettings[i].hierarchyUniqueName = field.hierarchyUniqueName;
+                            }
+                            this.parent.olapEngineModule.fieldList[this.currentFieldName].caption = this.inputObj.value;
+                            report.calculatedFieldSettings[i].formatString = field.formatString;
+                            report.calculatedFieldSettings[i].formula = field.formula;
+                            field = report.calculatedFieldSettings[i];
+                            this.isFieldExist = true;
+                            break;
+                        }
+                    }
+                    let axisFields: IFieldOptions[][] = [report.rows, report.columns, report.values, report.filters];
+                    let isFieldExist: boolean = false;
+                    for (let fields of axisFields) {
+                        for (let item of fields) {
+                            if (item.isCalculatedField && this.currentFieldName !== null &&
+                                item.name === this.currentFieldName && this.isEdit) {
+                                item.caption = this.inputObj.value;
+                                this.isFieldExist = true;
+                                isFieldExist = true;
+                                break;
                             }
                         }
-                        this.isFieldExist = false;
+                        if (isFieldExist) {
+                            break;
+                        }
                     }
                 }
+                if (!this.isFieldExist) {
+                    report.calculatedFieldSettings.push(field);
+                }
+                this.parent.lastCalcFieldInfo = field;
             } else {
-                for (let i: number = 0; i < report.values.length; i++) {
-                    if (report.values[i].type === CALC && this.currentFieldName !== null &&
-                        report.values[i].name === this.currentFieldName && this.isEdit) {
-                        for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
-                            if (report.calculatedFieldSettings[j].name === this.currentFieldName) {
-                                report.values[i].caption = this.inputObj.value;
-                                report.calculatedFieldSettings[j].formula = dropField.value;
-                                this.parent.engineModule.fieldList[this.currentFieldName].caption = this.inputObj.value;
-                                this.isFieldExist = false;
+                field = {
+                    name: this.inputObj.value,
+                    type: 'CalculatedField'
+                } as IFieldOptions;
+                let cField: ICalculatedFields = {
+                    name: this.inputObj.value,
+                    formula: dropField.value
+                };
+                this.isFieldExist = true;
+                if (!this.isEdit) {
+                    for (let i: number = 0; i < report.values.length; i++) {
+                        if (report.values[i].type === CALC && report.values[i].name === field.name) {
+                            for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
+                                if (report.calculatedFieldSettings[j].name === field.name) {
+                                    this.createConfirmDialog(
+                                        currentObj.parent.localeObj.getConstant('alert'),
+                                        currentObj.parent.localeObj.getConstant('confirmText'));
+                                    return;
+                                }
+                            }
+                            this.isFieldExist = false;
+                        }
+                    }
+                } else {
+                    for (let i: number = 0; i < report.values.length; i++) {
+                        if (report.values[i].type === CALC && this.currentFieldName !== null &&
+                            report.values[i].name === this.currentFieldName && this.isEdit) {
+                            for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
+                                if (report.calculatedFieldSettings[j].name === this.currentFieldName) {
+                                    report.values[i].caption = this.inputObj.value;
+                                    report.calculatedFieldSettings[j].formula = dropField.value;
+                                    this.parent.engineModule.fieldList[this.currentFieldName].caption = this.inputObj.value;
+                                    this.isFieldExist = false;
+                                }
                             }
                         }
                     }
                 }
+                if (this.isFieldExist) {
+                    report.values.push(field);
+                    report.calculatedFieldSettings.push(cField);
+                }
+                this.parent.lastCalcFieldInfo = cField;
             }
-            if (this.isFieldExist) {
-                report.values.push(field);
-                report.calculatedFieldSettings.push(cField);
-            }
-            this.parent.lastCalcFieldInfo = cField;
             this.addFormula(report, field.name);
         } else {
             if (this.inputObj.value === null || this.inputObj.value === '') {
@@ -306,36 +459,48 @@ export class CalculatedField implements IAction {
             }
         }
     }
+    /* tslint:enable */
 
     private addFormula(report: IDataOptions, field: string): void {
-        try {
-            this.parent.setProperties({ dataSourceSettings: report }, true);
-            if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
-                (this.parent as PivotFieldList).isRequiredUpdate = false;
-            }
-            this.parent.updateDataSource(false);
-            this.isEdit = false;
-            if (this.dialog) {
-                this.dialog.close();
-            } else {
-                this.inputObj.value = '';
-                this.formulaText = null;
-                this.fieldText = null;
-                ((this.parent as PivotFieldList).
-                    dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = '';
-                ((this.parent as PivotFieldList).
-                    dialogRenderer.parentElement.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = '';
-            }
-        } catch (exception) {
-            if (this.parent.engineModule.fieldList[field]) {
-                delete this.parent.engineModule.fieldList[field];
-            }
-            this.parent.pivotCommon.errorDialog.createErrorDialog(
-                this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
-            this.parent.setProperties({ dataSourceSettings: this.existingReport }, true);
-            this.parent.lastCalcFieldInfo = {};
-            this.parent.updateDataSource(false);
+        this.isFormula = true;
+        this.field = field;
+        this.parent.setProperties({ dataSourceSettings: report }, true);
+        if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.allowDeferLayoutUpdate) {
+            (this.parent as PivotFieldList).isRequiredUpdate = false;
         }
+        try {
+            this.parent.updateDataSource(false);
+            let thisObj: CalculatedField = this;
+            //setTimeout(() => {
+            thisObj.isEdit = false;
+            if (thisObj.dialog) {
+                thisObj.dialog.close();
+            } else {
+                thisObj.inputObj.value = '';
+                thisObj.formulaText = null;
+                thisObj.fieldText = null;
+                ((thisObj.parent as PivotFieldList).
+                    dialogRenderer.parentElement.querySelector('.' + cls.CALCINPUT) as HTMLInputElement).value = '';
+                ((thisObj.parent as PivotFieldList).
+                    dialogRenderer.parentElement.querySelector('#' + thisObj.parentID + 'droppable') as HTMLTextAreaElement).value = '';
+            }
+            //});
+        } catch (exception) {
+            this.showError();
+        }
+    }
+
+    /** @hidden */
+    public showError(): void {
+        if (this.parent.engineModule.fieldList[this.field]) {
+            delete this.parent.engineModule.fieldList[this.field];
+        }
+        this.parent.pivotCommon.errorDialog.createErrorDialog(
+            this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('invalidFormula'));
+        this.parent.setProperties({ dataSourceSettings: this.existingReport }, true);
+        this.parent.lastCalcFieldInfo = {};
+        this.parent.updateDataSource(false);
+        this.isFormula = false;
     }
 
     /**
@@ -345,25 +510,39 @@ export class CalculatedField implements IAction {
      */
     private getFieldListData(parent: PivotView | PivotFieldList): { [key: string]: Object }[] {
         let fields: { [key: string]: Object }[] = [];
-        Object.keys(parent.engineModule.fieldList).forEach((key: string) => {
-            let type: string = null;
-            if (parent.engineModule.fieldList[key].type === 'string' || parent.engineModule.fieldList[key].type === 'include' ||
-                parent.engineModule.fieldList[key].type === 'exclude') {
-                type = COUNT;
-            } else {
-                type = parent.engineModule.fieldList[key].aggregateType !== undefined ?
-                    parent.engineModule.fieldList[key].aggregateType : SUM;
+        if (this.parent.dataType === 'olap') {
+            fields = PivotUtil.getClonedData(parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
+            for (let item of fields as IOlapField[]) {
+                if (item.spriteCssClass &&
+                    (item.spriteCssClass.indexOf('e-attributeCDB-icon') > -1 ||
+                        item.spriteCssClass.indexOf('e-level-members') > -1)) {
+                    item.hasChildren = true;
+                } else if (item.spriteCssClass &&
+                    (item.spriteCssClass.indexOf('e-namedSetCDB-icon') > -1)) {
+                    item.hasChildren = false;
+                }
             }
-            fields.push({
-                index: parent.engineModule.fieldList[key].index,
-                name: parent.engineModule.fieldList[key].caption + ' (' + type + ')',
-                type: type,
-                icon: cls.FORMAT + ' ' + cls.ICON,
-                formula: parent.engineModule.fieldList[key].formula,
-                field: key,
-                caption: parent.engineModule.fieldList[key].caption ? parent.engineModule.fieldList[key].caption : key
+        } else {
+            Object.keys(parent.engineModule.fieldList).forEach((key: string) => {
+                let type: string = null;
+                if (parent.engineModule.fieldList[key].type === 'string' || parent.engineModule.fieldList[key].type === 'include' ||
+                    parent.engineModule.fieldList[key].type === 'exclude') {
+                    type = COUNT;
+                } else {
+                    type = parent.engineModule.fieldList[key].aggregateType !== undefined ?
+                        parent.engineModule.fieldList[key].aggregateType : SUM;
+                }
+                fields.push({
+                    index: parent.engineModule.fieldList[key].index,
+                    name: parent.engineModule.fieldList[key].caption + ' (' + type + ')',
+                    type: type,
+                    icon: cls.FORMAT + ' ' + cls.ICON,
+                    formula: parent.engineModule.fieldList[key].formula,
+                    field: key,
+                    caption: parent.engineModule.fieldList[key].caption ? parent.engineModule.fieldList[key].caption : key
+                });
             });
-        });
+        }
         return fields;
     }
 
@@ -384,33 +563,58 @@ export class CalculatedField implements IAction {
      */
     private fieldDropped(args: DragAndDropEventArgs): void {
         args.cancel = true;
-        let field: string = args.draggedNode.getAttribute('data-field');
-        let type: string = args.draggedNode.getAttribute('data-type');
         let dropField: HTMLTextAreaElement = this.dialog.element.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
-        if (args.target.id === this.parentID + 'droppable' && dropField.value === '') {
-            if (type === CALC) {
-                dropField.value = args.draggedNodeData.id.toString();
-            } else {
-                dropField.value = '"' + type + '(' + field + ')' + '"';
+        removeClass([dropField], 'e-copy-drop');
+        removeClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
+        let field: string = args.draggedNode.getAttribute('data-field');
+        if (this.parent.dataType === 'olap') {
+            if (this.parent.olapEngineModule.fieldList[field] &&
+                this.parent.olapEngineModule.fieldList[field].isCalculatedField) {
+                field = this.parent.olapEngineModule.fieldList[field].tag;
             }
-            dropField.focus();
-        } else if (args.target.id === (this.parentID + 'droppable') && dropField.value !== '') {
-            let textCovered: string;
-            let cursorPos: number = dropField.selectionStart;
-            let currentValue: string = dropField.value;
-            let textBeforeText: string = currentValue.substring(0, cursorPos);
-            let textAfterText: string = currentValue.substring(cursorPos, currentValue.length);
-            if (type === CALC) {
-                textCovered = textBeforeText + args.draggedNodeData.id.toString();
-                dropField.value = textBeforeText + args.draggedNodeData.id.toString() + textAfterText;
+            if (args.target.id === this.parentID + 'droppable' && dropField.value === '') {
+                dropField.value = field;
+                dropField.focus();
+            } else if (args.target.id === (this.parentID + 'droppable') && dropField.value !== '') {
+                let textCovered: string;
+                let currentValue: string = dropField.value;
+                let cursorPos: number = dropField.selectionStart;
+                let textAfterText: string = currentValue.substring(cursorPos, currentValue.length);
+                let textBeforeText: string = currentValue.substring(0, cursorPos);
+                textCovered = textBeforeText + field;
+                dropField.value = textBeforeText + field + textAfterText;
+                dropField.focus();
+                dropField.setSelectionRange(textCovered.length, textCovered.length);
             } else {
-                textCovered = textBeforeText + '"' + type + '(' + field + ')' + '"';
-                dropField.value = textBeforeText + '"' + type + '(' + field + ')' + '"' + textAfterText;
+                args.cancel = true;
             }
-            dropField.focus();
-            dropField.setSelectionRange(textCovered.length, textCovered.length);
         } else {
-            args.cancel = true;
+            let type: string = args.draggedNode.getAttribute('data-type');
+            if (args.target.id === this.parentID + 'droppable' && dropField.value === '') {
+                if (type === CALC) {
+                    dropField.value = args.draggedNodeData.id.toString();
+                } else {
+                    dropField.value = '"' + type + '(' + field + ')' + '"';
+                }
+                dropField.focus();
+            } else if (args.target.id === (this.parentID + 'droppable') && dropField.value !== '') {
+                let textCovered: string;
+                let cursorPos: number = dropField.selectionStart;
+                let currentValue: string = dropField.value;
+                let textBeforeText: string = currentValue.substring(0, cursorPos);
+                let textAfterText: string = currentValue.substring(cursorPos, currentValue.length);
+                if (type === CALC) {
+                    textCovered = textBeforeText + args.draggedNodeData.id.toString();
+                    dropField.value = textBeforeText + args.draggedNodeData.id.toString() + textAfterText;
+                } else {
+                    textCovered = textBeforeText + '"' + type + '(' + field + ')' + '"';
+                    dropField.value = textBeforeText + '"' + type + '(' + field + ')' + '"' + textAfterText;
+                }
+                dropField.focus();
+                dropField.setSelectionRange(textCovered.length, textCovered.length);
+            } else {
+                args.cancel = true;
+            }
         }
     }
 
@@ -424,28 +628,44 @@ export class CalculatedField implements IAction {
         }
         this.parent.element.appendChild(createElement('div', {
             id: this.parentID + 'calculateddialog',
-            className: cls.CALCDIALOG
+            className: cls.CALCDIALOG + ' ' + (this.parent.dataType === 'olap' ? cls.OLAP_CALCDIALOG : '')
         }));
+        let calcButtons: ButtonPropsModel[] = [
+            {
+                click: this.applyFormula.bind(this),
+                buttonModel: {
+                    content: this.parent.localeObj.getConstant('ok'),
+                    isPrimary: true
+                }
+            },
+            {
+                click: this.cancelClick.bind(this),
+                buttonModel: {
+                    content: this.parent.localeObj.getConstant('cancel')
+                }
+            }
+        ];
+        if (this.parent.dataType === 'olap') {
+            let clearButton: ButtonPropsModel = {
+                click: this.clearFormula.bind(this),
+                buttonModel: {
+                    cssClass: 'e-calc-clear-btn',
+                    content: this.parent.localeObj.getConstant('clear'),
+                }
+            };
+            calcButtons.splice(0, 0, clearButton);
+        }
         this.dialog = new Dialog({
             allowDragging: true,
             position: { X: 'center', Y: 'center' },
-            buttons: [
-                {
-                    click: this.applyFormula.bind(this),
-                    buttonModel: {
-                        content: this.parent.localeObj.getConstant('ok'),
-                        isPrimary: true
-                    }
-                },
-                {
-                    click: this.cancelClick.bind(this),
-                    buttonModel: {
-                        content: this.parent.localeObj.getConstant('cancel')
-                    }
-                }
-            ],
+            buttons: calcButtons,
             close: this.closeDialog.bind(this),
             beforeOpen: this.beforeOpen.bind(this),
+            open: () => {
+                if (this.dialog.element.querySelector('#' + this.parentID + 'ddlelement')) {
+                    (this.dialog.element.querySelector('#' + this.parentID + 'ddlelement') as HTMLElement).focus();
+                }
+            },
             animationSettings: { effect: 'Zoom' },
             width: '25%',
             isModal: false,
@@ -465,7 +685,7 @@ export class CalculatedField implements IAction {
     }
 
     private beforeOpen(args: BeforeOpenEventArgs): void {
-        this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('createCalculatedField');
+        // this.dialog.element.querySelector('.e-dlg-header').innerHTML = this.parent.localeObj.getConstant('createCalculatedField');
         this.dialog.element.querySelector('.e-dlg-header').
             setAttribute('title', this.parent.localeObj.getConstant('createCalculatedField'));
     }
@@ -485,12 +705,18 @@ export class CalculatedField implements IAction {
         remove(document.querySelector('.' + this.parentID + 'calculatedmenu'));
     }
 
+    /* tslint:disable */
     /**
      * To render dialog elements.
      * @returns void
      */
     private renderDialogElements(): HTMLElement {
-        let outerDiv: HTMLElement = createElement('div', { id: this.parentID + 'outerDiv', className: cls.CALCOUTERDIV });
+        let outerDiv: HTMLElement = createElement('div', {
+            id: this.parentID + 'outerDiv',
+            className: (this.parent.dataType === 'olap' ? cls.OLAP_CALCOUTERDIV + ' ' : '') + cls.CALCOUTERDIV
+        });
+        let olapFieldTreeDiv: HTMLElement = createElement('div', { id: this.parentID + 'Olap_Tree_Div', className: 'e-olap-field-tree-div' });
+        let olapCalcDiv: HTMLElement = createElement('div', { id: this.parentID + 'Olap_Calc_Div', className: 'e-olap-calculated-div' });
         if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).
             dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) !== null && this.parent.isAdaptive) {
             let accordDiv: HTMLElement = createElement('div', { id: this.parentID + 'accordDiv', className: cls.CALCACCORD });
@@ -508,40 +734,75 @@ export class CalculatedField implements IAction {
             buttonDiv.appendChild(addBtn);
             outerDiv.appendChild(buttonDiv);
         } else {
+            if (!this.parent.isAdaptive && this.parent.dataType === 'olap') {
+                let formulaTitle: HTMLElement = createElement('div', {
+                    className: cls.PIVOT_FIELD_TITLE_CLASS, id: this.parentID + '_' + 'FieldNameTitle',
+                    innerHTML: this.parent.localeObj.getConstant('fieldTitle')
+                });
+                olapCalcDiv.appendChild(formulaTitle);
+            }
             let inputDiv: HTMLElement = createElement('div', { id: this.parentID + 'outerDiv', className: cls.CALCINPUTDIV });
             let inputObj: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'ddlelement',
-                attrs: { 'type': 'text', 'tabindex': '1' },
+                attrs: { 'type': 'text' },
                 className: cls.CALCINPUT
             }) as HTMLInputElement;
             inputDiv.appendChild(inputObj);
-            outerDiv.appendChild(inputDiv);
+            (this.parent.dataType === 'olap' && !this.parent.isAdaptive ? olapCalcDiv.appendChild(inputDiv) : outerDiv.appendChild(inputDiv));
+            let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_wrapper', className: cls.TREEVIEWOUTER });
             if (!this.parent.isAdaptive) {
                 let fieldTitle: HTMLElement = createElement('div', {
                     className: cls.PIVOT_ALL_FIELD_TITLE_CLASS,
-                    innerHTML: this.parent.localeObj.getConstant('formulaField')
+                    innerHTML: (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('allFields') :
+                        this.parent.localeObj.getConstant('formulaField'))
                 });
-                outerDiv.appendChild(fieldTitle);
+                if (this.parent.dataType === 'olap') {
+                    let headerWrapperDiv: HTMLElement = createElement('div', { className: cls.PIVOT_ALL_FIELD_TITLE_CLASS + '-wrapper' });
+                    headerWrapperDiv.appendChild(fieldTitle);
+                    let spanElement: HTMLElement = createElement('span', {
+                        attrs: {
+                            'tabindex': '0',
+                            'aria-disabled': 'false',
+                            'aria-label': this.parent.localeObj.getConstant('fieldTooltip'),
+                        },
+                        className: cls.ICON + ' ' + cls.CALC_INFO
+                    });
+                    headerWrapperDiv.appendChild(spanElement);
+                    let tooltip: Tooltip = new Tooltip({
+                        content: this.parent.localeObj.getConstant('fieldTooltip'),
+                        position: (this.parent.enableRtl ? 'RightCenter' : 'LeftCenter'),
+                        target: '.' + cls.CALC_INFO,
+                        offsetY: (this.parent.enableRtl ? -10 : -10),
+                        width: 220
+                    });
+                    tooltip.appendTo(headerWrapperDiv);
+                    wrapDiv.appendChild(headerWrapperDiv);
+                } else {
+                    outerDiv.appendChild(fieldTitle)
+                }
             }
-            let wrapDiv: HTMLElement = createElement('div', { id: this.parentID + 'control_wrapper', className: cls.TREEVIEWOUTER });
-            wrapDiv.appendChild(createElement('div', { id: this.parentID + 'tree', className: cls.TREEVIEW }));
-            outerDiv.appendChild(wrapDiv);
+            let treeOuterDiv: HTMLElement = createElement('div', { className: cls.TREEVIEW + '-outer-div' })
+            wrapDiv.appendChild(treeOuterDiv);
+            treeOuterDiv.appendChild(createElement('div', { id: this.parentID + 'tree', className: cls.TREEVIEW }));
+            (this.parent.dataType === 'olap' && !this.parent.isAdaptive ? olapFieldTreeDiv.appendChild(wrapDiv) : outerDiv.appendChild(wrapDiv));
             if (!this.parent.isAdaptive) {
                 let formulaTitle: HTMLElement = createElement('div', {
                     className: cls.PIVOT_FORMULA_TITLE_CLASS,
-                    innerHTML: this.parent.localeObj.getConstant('formula')
+                    innerHTML: (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('expressionField') :
+                        this.parent.localeObj.getConstant('formula'))
                 });
-                outerDiv.appendChild(formulaTitle);
+                (this.parent.dataType === 'olap' ? olapCalcDiv.appendChild(formulaTitle) : outerDiv.appendChild(formulaTitle));
             }
             let dropDiv: HTMLElement = createElement('textarea', {
                 id: this.parentID + 'droppable',
                 className: cls.FORMULA,
                 attrs: {
                     'placeholder': this.parent.isAdaptive ? this.parent.localeObj.getConstant('dropTextMobile') :
-                        this.parent.localeObj.getConstant('dropText')
+                        (this.parent.dataType === 'olap' ? this.parent.localeObj.getConstant('olapDropText') :
+                            this.parent.localeObj.getConstant('dropText'))
                 }
             });
-            outerDiv.appendChild(dropDiv);
+            (this.parent.dataType === 'olap' && !this.parent.isAdaptive ? olapCalcDiv.appendChild(dropDiv) : outerDiv.appendChild(dropDiv));
             if (this.parent.isAdaptive) {
                 let buttonDiv: HTMLElement = createElement('div', { id: this.parentID + 'buttonDiv', className: cls.CALCBUTTONDIV });
                 let okBtn: HTMLElement = createElement('button', {
@@ -551,10 +812,56 @@ export class CalculatedField implements IAction {
                 buttonDiv.appendChild(okBtn);
                 outerDiv.appendChild(buttonDiv);
             }
+            if (this.parent.dataType === 'olap') {
+                if (!this.parent.isAdaptive) {
+                    let memberTypeTitle: HTMLElement = createElement('div', {
+                        className: cls.OLAP_MEMBER_TITLE_CLASS,
+                        innerHTML: this.parent.localeObj.getConstant('memberType')
+                    });
+                    olapCalcDiv.appendChild(memberTypeTitle);
+                }
+                let memberTypeDrop: HTMLElement = createElement('div', { id: this.parentID + 'Member_Type_Div', className: cls.CALC_MEMBER_TYPE_DIV });
+                (this.parent.isAdaptive ? outerDiv.appendChild(memberTypeDrop) : olapCalcDiv.appendChild(memberTypeDrop));
+                if (!this.parent.isAdaptive) {
+                    let hierarchyTitle: HTMLElement = createElement('div', {
+                        className: cls.OLAP_HIERARCHY_TITLE_CLASS,
+                        innerHTML: this.parent.localeObj.getConstant('selectedHierarchy')
+                    });
+                    olapCalcDiv.appendChild(hierarchyTitle);
+                }
+                let hierarchyDrop: HTMLElement = createElement('div', { id: this.parentID + 'Hierarchy_List_Div', className: cls.CALC_HIERARCHY_LIST_DIV });
+                (this.parent.isAdaptive ? outerDiv.appendChild(hierarchyDrop) : olapCalcDiv.appendChild(hierarchyDrop));
+                if (!this.parent.isAdaptive) {
+                    let formatTitle: HTMLElement = createElement('div', {
+                        className: cls.OLAP_FORMAT_TITLE_CLASS,
+                        innerHTML: this.parent.localeObj.getConstant('formatString')
+                    });
+                    olapCalcDiv.appendChild(formatTitle);
+                }
+                let formatDrop: HTMLElement = createElement('div', { id: this.parentID + 'Format_Div', className: cls.CALC_FORMAT_TYPE_DIV });
+                (this.parent.isAdaptive ? outerDiv.appendChild(formatDrop) : olapCalcDiv.appendChild(formatDrop));
+                let customFormatDiv: HTMLElement = createElement('div', { id: this.parentID + 'custom_Format_Div', className: cls.CALC_CUSTOM_FORMAT_INPUTDIV });
+                let customFormatObj: HTMLInputElement = createElement('input', {
+                    id: this.parentID + 'Custom_Format_Element',
+                    attrs: { 'type': 'text' },
+                    className: cls.CALC_FORMAT_INPUT
+                }) as HTMLInputElement;
+                customFormatDiv.appendChild(customFormatObj);
+                olapCalcDiv.appendChild(customFormatDiv);
+                (this.parent.isAdaptive ? outerDiv.appendChild(customFormatDiv) : olapCalcDiv.appendChild(customFormatDiv));
+                if (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).
+                    dialogRenderer.parentElement.querySelector('.' + cls.FORMULA) === null && this.parent.isAdaptive) {
+                    let okBtn: HTMLElement = outerDiv.querySelector('.' + cls.CALCOKBTN);
+                    outerDiv.appendChild(okBtn);
+                } else {
+                    outerDiv.appendChild(olapFieldTreeDiv);
+                    outerDiv.appendChild(olapCalcDiv);
+                }
+            }
         }
         return outerDiv;
     }
-
+    /* tslint:enable */
 
     /**
      * To create calculated field adaptive layout.
@@ -572,29 +879,178 @@ export class CalculatedField implements IAction {
      * To create treeview.
      * @returns void
      */
-    private createTreeView(): void {
-        this.treeObj = new TreeView({
-            fields: { dataSource: this.getFieldListData(this.parent), id: 'formula', text: 'name', iconCss: 'icon' },
-            allowDragAndDrop: true,
-            enableRtl: this.parent.enableRtl,
-            nodeCollapsing: this.nodeCollapsing.bind(this),
-            nodeDragStart: this.dragStart.bind(this),
-            nodeClicked: this.fieldClickHandler.bind(this),
-            nodeDragStop: this.fieldDropped.bind(this),
-            drawNode: this.drawTreeNode.bind(this),
-            sortOrder: 'Ascending'
+    private createOlapDropElements(): void {
+        let dialogElement: HTMLElement = (this.parent.isAdaptive ?
+            (this.parent as PivotFieldList).dialogRenderer.parentElement : this.dialog.element);
+        let mData: { [key: string]: Object }[] = [];
+        let fData: { [key: string]: Object }[] = [];
+        let fieldData: { [key: string]: Object }[] = [];
+        let memberTypeData: string[] = ['Measure', 'Dimension'];
+        let formatStringData: string[] = ['Standard', 'Currency', 'Percent', 'Custom'];
+        for (let type of memberTypeData) {
+            mData.push({ value: type, text: this.parent.localeObj.getConstant(type) });
+        }
+        for (let format of formatStringData) {
+            fData.push({ value: format, text: this.parent.localeObj.getConstant(format) });
+        }
+        let fields: { [key: string]: Object }[] =
+            PivotUtil.getClonedData(this.parent.olapEngineModule.fieldListData as { [key: string]: Object }[]);
+        for (let item of fields as IOlapField[]) {
+            if (item.spriteCssClass &&
+                (item.spriteCssClass.indexOf('e-attributeCDB-icon') > -1 ||
+                    item.spriteCssClass.indexOf('e-hierarchyCDB-icon') > -1)) {
+                fieldData.push({ value: item.id, text: item.caption });
+            }
+        }
+        let memberTypeObj: DropDownList = new DropDownList({
+            dataSource: mData, enableRtl: this.parent.enableRtl,
+            fields: { value: 'value', text: 'text' }, index: 0,
+            cssClass: cls.MEMBER_OPTIONS_CLASS, width: '100%',
+            change(args: ChangeEventArgs): void {
+                hierarchyListObj.enabled = args.value === 'Dimension' ? true : false;
+                hierarchyListObj.dataBind();
+            }
         });
+        memberTypeObj.isStringTemplate = true;
+        memberTypeObj.appendTo(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div') as HTMLElement);
+        let hierarchyListObj: DropDownList = new DropDownList({
+            dataSource: fieldData, enableRtl: this.parent.enableRtl,
+            allowFiltering: true, enabled: false,
+            filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldData[0].text.toString(),
+            fields: { value: 'value', text: 'text' }, index: 0,
+            cssClass: cls.MEMBER_OPTIONS_CLASS, width: '100%'
+        });
+        hierarchyListObj.isStringTemplate = true;
+        hierarchyListObj.appendTo(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div') as HTMLElement);
+        let formatStringObj: DropDownList = new DropDownList({
+            dataSource: fData, enableRtl: this.parent.enableRtl,
+            fields: { value: 'value', text: 'text' }, index: 0,
+            cssClass: cls.MEMBER_OPTIONS_CLASS, width: '100%',
+            change(args: ChangeEventArgs): void {
+                customerFormatObj.enabled = args.value === 'Custom' ? true : false;
+                customerFormatObj.dataBind();
+            }
+        });
+        formatStringObj.isStringTemplate = true;
+        formatStringObj.appendTo(dialogElement.querySelector('#' + this.parentID + 'Format_Div') as HTMLElement);
+        let customerFormatObj: MaskedTextBox = new MaskedTextBox({
+            placeholder: this.parent.localeObj.getConstant('customFormat'),
+            enabled: false
+        });
+        customerFormatObj.isStringTemplate = true;
+        customerFormatObj.appendTo('#' + this.parentID + 'Custom_Format_Element');
+    }
+    /**
+     * To create treeview.
+     * @returns void
+     */
+    private createTreeView(): void {
+        if (this.parent.dataType === 'olap') {
+            this.treeObj = new TreeView({
+                /* tslint:disable-next-line:max-line-length */
+                fields: { dataSource: this.getFieldListData(this.parent), id: 'id', text: 'caption', parentID: 'pid', iconCss: 'spriteCssClass' },
+                allowDragAndDrop: true,
+                enableRtl: this.parent.enableRtl,
+                nodeDragStart: this.dragStart.bind(this),
+                nodeDragging: (e: DragAndDropEventArgs) => {
+                    if (e.event.target && (e.event.target as HTMLElement).classList.contains(cls.FORMULA)) {
+                        removeClass([e.clonedNode], cls.NO_DRAG_CLASS);
+                        addClass([(e.event.target as HTMLElement)], 'e-copy-drop');
+                    } else {
+                        addClass([e.clonedNode], cls.NO_DRAG_CLASS);
+                        removeClass([(e.event.target as HTMLElement)], 'e-copy-drop');
+                        e.dropIndicator = 'e-no-drop';
+                        addClass([e.clonedNode.querySelector('.' + cls.ICON)], 'e-icon-expandable');
+                        removeClass([e.clonedNode.querySelector('.' + cls.ICON)], 'e-list-icon');
+                    }
+                },
+                nodeClicked: this.fieldClickHandler.bind(this),
+                nodeSelected: (args: NodeSelectEventArgs) => {
+                    if (args.node.getAttribute('data-type') === CALC) {
+                        this.displayMenu(args.node);
+                    } else {
+                        removeClass([args.node], 'e-active');
+                        args.cancel = true;
+                    }
+                },
+                nodeDragStop: this.fieldDropped.bind(this),
+                drawNode: this.drawTreeNode.bind(this),
+                nodeExpanding: this.updateNodeIcon.bind(this),
+                nodeCollapsed: this.updateNodeIcon.bind(this),
+                sortOrder: 'None',
+            });
+        } else {
+            this.treeObj = new TreeView({
+                fields: { dataSource: this.getFieldListData(this.parent), id: 'formula', text: 'name', iconCss: 'icon' },
+                allowDragAndDrop: true,
+                enableRtl: this.parent.enableRtl,
+                nodeCollapsing: this.nodeCollapsing.bind(this),
+                nodeDragStart: this.dragStart.bind(this),
+                nodeClicked: this.fieldClickHandler.bind(this),
+                nodeDragStop: this.fieldDropped.bind(this),
+                drawNode: this.drawTreeNode.bind(this),
+                sortOrder: 'Ascending'
+            });
+        }
         this.treeObj.isStringTemplate = true;
         this.treeObj.appendTo('#' + this.parentID + 'tree');
     }
-
+    private updateNodeIcon(args: NodeExpandEventArgs): void {
+        if (args.node && args.node.querySelector('.e-list-icon') &&
+            args.node.querySelector('.e-icon-expandable.e-process') &&
+            (args.node.querySelector('.e-list-icon').className.indexOf('e-folderCDB-icon') > -1)) {
+            let node: HTMLElement = args.node.querySelector('.e-list-icon');
+            removeClass([node], 'e-folderCDB-icon');
+            addClass([node], 'e-folderCDB-open-icon');
+        } else if (args.node && args.node.querySelector('.e-list-icon') &&
+            args.node.querySelector('.e-icon-expandable') &&
+            (args.node.querySelector('.e-list-icon').className.indexOf('e-folderCDB-open-icon') > -1)) {
+            let node: HTMLElement = args.node.querySelector('.e-list-icon');
+            removeClass([node], 'e-folderCDB-open-icon');
+            addClass([node], 'e-folderCDB-icon');
+        } else {
+            let curTreeData: { [key: string]: Object }[] = (this.treeObj.fields.dataSource as { [key: string]: Object }[]);
+            let fieldListData: IOlapField[] = curTreeData as IOlapField[];
+            let childNodes: IOlapField[] = [];
+            for (let item of fieldListData) {
+                if (item.pid === args.nodeData.id.toString()) {
+                    childNodes.push(item);
+                }
+            }
+            if (childNodes.length === 0) {
+                this.parent.olapEngineModule.calcChildMembers = [];
+                this.parent.olapEngineModule.getCalcChildMembers(this.parent.dataSourceSettings, args.nodeData.id.toString());
+                childNodes = this.parent.olapEngineModule.calcChildMembers;
+                this.parent.olapEngineModule.calcChildMembers = [];
+                for (let node of childNodes) {
+                    node.pid = args.nodeData.id.toString();
+                    node.hasChildren = false;
+                    node.spriteCssClass = 'e-level-members';
+                    node.caption = (node.caption === '' ? this.parent.localeObj.getConstant('blank') : node.caption);
+                    curTreeData.push(node as { [key: string]: Object });
+                }
+                this.treeObj.addNodes(childNodes as { [key: string]: Object }[], args.node);
+            } else {
+                return;
+            }
+        }
+    }
     private nodeCollapsing(args: NodeExpandEventArgs): void {
         args.cancel = true;
     }
 
     private dragStart(args: DragAndDropEventArgs): void {
-        if ((args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS)) {
-            let dragItem: HTMLElement = document.querySelector('.e-drag-item.e-treeview') as HTMLElement;
+        let isDrag: boolean = false;
+        let dragItem: HTMLElement = args.clonedNode;
+        if (dragItem && ((this.parent.dataType === 'olap' &&
+            (dragItem.querySelector('.e-calc-dimension-icon,.e-calc-measure-icon,.e-measure-icon') ||
+                dragItem.querySelector('.e-dimensionCDB-icon,.e-attributeCDB-icon,.e-hierarchyCDB-icon') ||
+                dragItem.querySelector('.e-level-members,.e-namedSetCDB-icon'))) || (this.parent.dataType === 'pivot' &&
+                    (args.event.target as HTMLElement).classList.contains(cls.DRAG_CLASS)))) {
+            isDrag = true;
+        }
+        if (isDrag) {
+            addClass([args.draggedNode.querySelector('.' + cls.LIST_TEXT_CLASS)], cls.SELECTED_NODE_CLASS);
             addClass([dragItem], cls.PIVOTCALC);
             dragItem.style.zIndex = (this.dialog.zIndex + 1).toString();
             dragItem.style.display = 'inline';
@@ -609,26 +1065,70 @@ export class CalculatedField implements IAction {
      * @returns void
      */
     private drawTreeNode(args: DrawNodeEventArgs): void {
-        let field: string = args.nodeData.field as string;
-        args.node.setAttribute('data-field', field);
-        args.node.setAttribute('data-caption', args.nodeData.caption as string);
-        args.node.setAttribute('data-type', args.nodeData.type as string);
-        let dragElement: Element = createElement('span', {
-            attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('dragField') },
-            className: cls.ICON + ' e-drag'
-        });
-        prepend([dragElement], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
-        append([args.node.querySelector('.' + cls.FORMAT)], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
-        if (this.parent.engineModule.fieldList[field].type !== 'number' &&
-            this.parent.engineModule.fieldList[field].aggregateType !== CALC) {
-            removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.ICON);
+        if (this.parent.dataType === 'olap') {
+            if (args.node.querySelector('.e-measure-icon')) {
+                (args.node.querySelector('.e-list-icon') as HTMLElement).style.display = 'none';
+            }
+            let field: IOlapField = args.nodeData;
+            args.node.setAttribute('data-field', field.id);
+            args.node.setAttribute('data-caption', field.caption);
+            let liTextElement: HTMLElement = args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS);
+            if (args.nodeData && args.nodeData.type === CALC &&
+                liTextElement && args.node.querySelector('.e-list-icon.e-calc-member')) {
+                args.node.setAttribute('data-type', field.type);
+                args.node.setAttribute('data-membertype', field.fieldType);
+                args.node.setAttribute('data-hierarchy', field.parentHierarchy ? field.parentHierarchy : '');
+                args.node.setAttribute('data-formula', field.formula);
+                let formatStringData: string[] = ['Standard', 'Currency', 'Percent'];
+                let formatString: string;
+                formatString = (field.formatString ? formatStringData.indexOf(field.formatString) > -1 ?
+                    field.formatString : 'Custom' : '');
+                args.node.setAttribute('data-formatString', formatString);
+                args.node.setAttribute('data-customString', (formatString === 'Custom' ? field.formatString : ''));
+                // if (!this.parent.isAdaptive) {
+                //     let editElement: Node = args.node.querySelector('.e-list-icon.e-calc-member').cloneNode(true);
+                //     let calcClasses: string[] = ['e-calc-measure-icon', 'e-calc-dimension-icon', 'e-calc-member'];
+                //     removeClass([editElement as Element], calcClasses);
+                //     addClass([editElement as Element], cls.CALC_EDIT);
+                //     (editElement as Element).setAttribute('title', this.parent.localeObj.getConstant('edit'));
+                //     liTextElement.insertBefore(editElement, args.node.querySelector('.e-list-icon'));
+                // }
+            }
+            if (this.parent.isAdaptive) {
+                let liTextElement: HTMLElement = args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS);
+                if (args.node && args.node.querySelector('.e-list-icon') && liTextElement) {
+                    let liIconElement: HTMLElement = args.node.querySelector('.e-list-icon');
+                    liTextElement.insertBefore(liIconElement, args.node.querySelector('.e-list-text'));
+                }
+                if (args.node && args.node.querySelector('.e-calcMemberGroupCDB,.e-measureGroupCDB-icon,.e-folderCDB-icon')) {
+                    (args.node.querySelector('.e-checkbox-wrapper') as HTMLElement).style.display = 'none';
+                }
+                if (args.node && args.node.querySelector('.e-level-members')) {
+                    (args.node.querySelector('.e-list-icon') as HTMLElement).style.display = 'none';
+                }
+            }
         } else {
-            args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
-        }
-        if (this.parent.engineModule.fieldList[field].aggregateType === CALC) {
-            args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
-            addClass([args.node.querySelector('.' + cls.FORMAT)], cls.CALC_EDIT);
-            removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.FORMAT);
+            let field: string = args.nodeData.field as string;
+            args.node.setAttribute('data-field', field);
+            args.node.setAttribute('data-caption', args.nodeData.caption as string);
+            args.node.setAttribute('data-type', args.nodeData.type as string);
+            let dragElement: Element = createElement('span', {
+                attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('dragField') },
+                className: cls.ICON + ' e-drag'
+            });
+            prepend([dragElement], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
+            append([args.node.querySelector('.' + cls.FORMAT)], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
+            if (this.parent.engineModule.fieldList[field].type !== 'number' &&
+                this.parent.engineModule.fieldList[field].aggregateType !== CALC) {
+                removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.ICON);
+            } else {
+                args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
+            }
+            if (this.parent.engineModule.fieldList[field].aggregateType === CALC) {
+                args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
+                addClass([args.node.querySelector('.' + cls.FORMAT)], cls.CALC_EDIT);
+                removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.FORMAT);
+            }
         }
     }
 
@@ -678,6 +1178,9 @@ export class CalculatedField implements IAction {
     private renderMobileLayout(tabObj?: Tab): void {
         tabObj.items[4].content = this.renderDialogElements().outerHTML;
         tabObj.dataBind();
+        if (this.parent.dataType === 'olap' && this.parent.isAdaptive) {
+            this.createOlapDropElements();
+        }
         let cancelBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true });
         cancelBtn.isStringTemplate = true;
         cancelBtn.appendTo('#' + this.parentID + 'cancelBtn');
@@ -710,17 +1213,33 @@ export class CalculatedField implements IAction {
                 okBtn.element.onclick = this.applyFormula.bind(this);
             }
         } else if (this.parent.isAdaptive) {
-            let accordion: Accordion = new Accordion({
-                items: this.getAccordionData(this.parent),
-                enableRtl: this.parent.enableRtl,
-                expanding: this.accordionExpand.bind(this),
-            });
             let addBtn: Button = new Button({ cssClass: cls.FLAT, isPrimary: true });
             addBtn.isStringTemplate = true;
             addBtn.appendTo('#' + this.parentID + 'addBtn');
-            accordion.isStringTemplate = true;
-            accordion.appendTo('#' + this.parentID + 'accordDiv');
-            Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
+            if (this.parent.dataType === 'olap') {
+                this.treeObj = new TreeView({
+                    /* tslint:disable-next-line:max-line-length */
+                    fields: { dataSource: this.getFieldListData(this.parent), id: 'id', text: 'caption', parentID: 'pid', iconCss: 'spriteCssClass' },
+                    showCheckBox: true,
+                    autoCheck: false,
+                    sortOrder: 'None',
+                    enableRtl: this.parent.enableRtl,
+                    drawNode: this.drawTreeNode.bind(this),
+                    nodeExpanding: this.updateNodeIcon.bind(this),
+                    nodeCollapsed: this.updateNodeIcon.bind(this)
+                });
+                this.treeObj.isStringTemplate = true;
+                this.treeObj.appendTo('#' + this.parentID + 'accordDiv');
+            } else {
+                let accordion: Accordion = new Accordion({
+                    items: this.getAccordionData(this.parent),
+                    enableRtl: this.parent.enableRtl,
+                    expanding: this.accordionExpand.bind(this),
+                });
+                accordion.isStringTemplate = true;
+                accordion.appendTo('#' + this.parentID + 'accordDiv');
+                Object.keys(this.parent.engineModule.fieldList).forEach(this.updateType.bind(this));
+            }
             if (addBtn.element) {
                 addBtn.element.onclick = this.addBtnClick.bind(this);
             }
@@ -790,22 +1309,31 @@ export class CalculatedField implements IAction {
      * @returns void
      */
     private addBtnClick(): void {
-        let node: NodeListOf<Element> = document.querySelectorAll('.e-accordion .e-check');
         let fieldText: string = '';
         let field: string = null;
         let type: string = null;
-        for (let i: number = 0; i < node.length; i++) {
-            field = node[i].parentElement.querySelector('[data-field]').getAttribute('data-field');
-            type = node[i].parentElement.querySelector('[data-field]').getAttribute('data-type');
-            if (type.indexOf(CALC) === -1) {
-                fieldText = fieldText + ('"' + type + '(' + field + ')' + '"');
-            } else {
-                for (let j: number = 0; j < this.parent.dataSourceSettings.calculatedFieldSettings.length; j++) {
-                    if (this.parent.dataSourceSettings.calculatedFieldSettings[j].name === field) {
-                        fieldText = fieldText + this.parent.dataSourceSettings.calculatedFieldSettings[j].formula;
-                        break;
+        if (this.parent.dataType === 'pivot') {
+            let node: NodeListOf<Element> = document.querySelectorAll('.e-accordion .e-check');
+            for (let i: number = 0; i < node.length; i++) {
+                field = node[i].parentElement.querySelector('[data-field]').getAttribute('data-field');
+                type = node[i].parentElement.querySelector('[data-field]').getAttribute('data-type');
+                if (type.indexOf(CALC) === -1) {
+                    fieldText = fieldText + ('"' + type + '(' + field + ')' + '"');
+                } else {
+                    for (let j: number = 0; j < this.parent.dataSourceSettings.calculatedFieldSettings.length; j++) {
+                        if (this.parent.dataSourceSettings.calculatedFieldSettings[j].name === field) {
+                            fieldText = fieldText + this.parent.dataSourceSettings.calculatedFieldSettings[j].formula;
+                            break;
+                        }
                     }
                 }
+            }
+        } else {
+            let nodes: string[] = this.treeObj.getAllCheckedNodes();
+            let olapEngine: OlapEngine = this.parent.olapEngineModule;
+            for (let item of nodes) {
+                fieldText = fieldText + (olapEngine.fieldList[item] &&
+                    olapEngine.fieldList[item].type === CALC ? olapEngine.fieldList[item].tag : item);
             }
         }
         this.formulaText = this.formulaText !== null ? (this.formulaText + fieldText) : fieldText;
@@ -841,6 +1369,9 @@ export class CalculatedField implements IAction {
         });
         this.inputObj.isStringTemplate = true;
         this.inputObj.appendTo('#' + this.parentID + 'ddlelement');
+        if (this.parent.dataType === 'olap' && !this.parent.isAdaptive) {
+            this.createOlapDropElements();
+        }
         this.createTreeView();
         this.createMenu();
         this.droppable = new Droppable(this.dialog.element.querySelector('#' + this.parentID + 'droppable') as HTMLElement);
@@ -893,22 +1424,44 @@ export class CalculatedField implements IAction {
             visible: true,
             closeOnEscape: true,
             target: document.body,
-            close: this.removeErrorDialog.bind(this)
+            close: this.removeErrorDialog.bind(this),
         });
         this.confirmPopUp.isStringTemplate = true;
         this.confirmPopUp.appendTo(errorDialog);
-        this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
+        // this.confirmPopUp.element.querySelector('.e-dlg-header').innerHTML = title;
     }
 
     private replaceFormula(): void {
-        let report: IDataOptions = this.parent.dataSourceSettings;
+        let report: IDataOptions = this.parent.dataSourceSettings as IDataOptions;
         let dropField: HTMLTextAreaElement = document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
-        for (let i: number = 0; i < report.values.length; i++) {
-            if (report.values[i].type === CALC && report.values[i].name === this.inputObj.value) {
-                for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
-                    if (report.calculatedFieldSettings[j].name === this.inputObj.value) {
-                        report.calculatedFieldSettings[j].formula = dropField.value;
-                        this.parent.lastCalcFieldInfo = report.calculatedFieldSettings[j];
+        if (this.parent.dataType === 'olap') {
+            let dialogElement: HTMLElement = this.dialog.element;
+            /* tslint:disable */
+            let customFormat: MaskedTextBox = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
+            let formatDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Format_Div') as HTMLElement, DropDownList) as DropDownList;
+            let memberTypeDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Member_Type_Div') as HTMLElement, DropDownList) as DropDownList;
+            let hierarchyDrop: DropDownList = getInstance(dialogElement.querySelector('#' + this.parentID + 'Hierarchy_List_Div') as HTMLElement, DropDownList) as DropDownList;
+            /* tslint:enable */
+            for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
+                if (report.calculatedFieldSettings[j].name === this.inputObj.value) {
+                    if (memberTypeDrop.value === 'Dimension') {
+                        report.calculatedFieldSettings[j].hierarchyUniqueName = hierarchyDrop.value as string;
+                    }
+                    report.calculatedFieldSettings[j].formatString =
+                        (formatDrop.value === 'Custom' ? customFormat.value : formatDrop.value as string);
+                    report.calculatedFieldSettings[j].formula = dropField.value;
+                    this.parent.lastCalcFieldInfo = report.calculatedFieldSettings[j];
+                    break;
+                }
+            }
+        } else {
+            for (let i: number = 0; i < report.values.length; i++) {
+                if (report.values[i].type === CALC && report.values[i].name === this.inputObj.value) {
+                    for (let j: number = 0; j < report.calculatedFieldSettings.length; j++) {
+                        if (report.calculatedFieldSettings[j].name === this.inputObj.value) {
+                            report.calculatedFieldSettings[j].formula = dropField.value;
+                            this.parent.lastCalcFieldInfo = report.calculatedFieldSettings[j];
+                        }
                     }
                 }
             }

@@ -93,7 +93,7 @@ describe('Heatmap Control', () => {
             heatmap.cellSettings.format = "{value}$";
             heatmap.refresh();
             tempElement = document.getElementById('container_HeatMapRectLabels_0');
-            expect(tempElement.getAttribute('text') == '100$').toBe(true);
+            expect(tempElement.innerHTML == '100$').toBe(true);
         });
         it('Check showlable property', () => {
             heatmap.cellSettings.showLabel = false;

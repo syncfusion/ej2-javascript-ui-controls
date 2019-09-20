@@ -953,7 +953,7 @@ export function generateEventData(startDate: Date, endDate: Date, eventCount: nu
                 id++;
             }
         }
-    }
+    };
     while (data.length < eventCount) {
         generate();
     }
@@ -1614,3 +1614,22 @@ export let levelBasedData: Object[] = [
         OwnerId: 1
     }
 ];
+
+export function yearDataGenerator(count: number = 100, date: Date = new Date(), yearCount: number = 0): Object[] {
+    let startDate: Date = new Date(date.getFullYear(), 0, 1);
+    let endDate: Date = new Date(date.getFullYear() + yearCount, 11, 31);
+    let dateCollections: Object[] = [];
+    for (let a: number = 0, id: number = 1; a < count; a++) {
+        let start: Date = new Date(Math.random() * (endDate.getTime() - startDate.getTime()) + startDate.getTime());
+        let end: Date = new Date(new Date(start.getTime()).setHours(start.getHours() + 1));
+        dateCollections.push({
+            Id: id,
+            Subject: id.toString(),
+            StartTime: new Date(start.getTime()),
+            EndTime: new Date(end.getTime()),
+            IsAllDay: (id % 10) ? true : false
+        });
+        id++;
+    }
+    return dateCollections;
+}

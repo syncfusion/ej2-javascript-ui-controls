@@ -3,7 +3,7 @@ $ddl-input-font-size: 14px !default;
 $ddl-zero-value: 0 !default;
 $ddl-default-border-color: transparent !default;
 $ddl-input-border: $border-size $border-type !default;
-$ddl-input-font-family: $font-family !default;
+$ddl-input-font-family: inherit !default;
 $ddl-input-margin-bottom: 4px !default;
 $ddl-input-padding: 8px $ddl-zero-value 4px !default;
 $ddl-input-group-border-width: $ddl-zero-value !default;

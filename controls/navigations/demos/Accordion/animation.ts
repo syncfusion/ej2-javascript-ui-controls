@@ -1,7 +1,7 @@
 /**
  *  Toolbar default Sample
  */
-import { Accordion, AccordionClickArgs, ExpandEventArgs, ExpandedEventArgs } from '../../src/accordion/index';
+import { Accordion, AccordionClickArgs, ExpandEventArgs } from '../../src/accordion/index';
 
     let ctn: string = 'TypeScript is a free and open-source programming language developed and maintained by Microsoft. It is a strict syntactical superset of JavaScript, and adds optional static typing to the language';
     let ctn1: string = 'React is a declarative, efficient, and flexible JavaScript library for building user interfaces';
@@ -20,7 +20,7 @@ import { Accordion, AccordionClickArgs, ExpandEventArgs, ExpandedEventArgs } fro
     function click(e: AccordionClickArgs): void {
       console.log(e.name);
     }
-    function expanded (e: ExpandedEventArgs ): void {
+    function expanded (e: ExpandEventArgs): void {
       console.log(e.name);
     }
     function expanding (e: ExpandEventArgs): void {

@@ -1,6 +1,6 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';
+import { EmitType, Event, formatUnit, ChildProperty, compile, closest, isBlazor } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler, Browser } from '@syncfusion/ej2-base';
 import { DashboardLayoutModel, PanelModel } from './dashboard-layout-model';
 
@@ -945,7 +945,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.upTarget = (<HTMLElement>this.downTarget);
         let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.upTarget), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
-        this.trigger('resizeStop', args);
         if (el) {
             addClass([el], 'e-panel-transition');
             let moveEventName: string = (Browser.info.name === 'msie') ? 'mousemove pointermove' : 'mousemove';
@@ -965,6 +964,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.setPanelPosition(el, panelModel.row, panelModel.col);
             this.setHeightAndWidth(el, panelModel);
         }
+        this.trigger('resizeStop', args);
         this.resizeCalled = false;
         this.lastMouseX = this.lastMouseY = undefined;
         this.mOffX = this.mOffY = 0;
@@ -2267,9 +2267,13 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         }
     }
 
-    private onDraggingStart(args: DragEventArgs): void {
-        this.dragStartArgs = { event: args.event, element: args.element, cancel: false };
-        this.trigger('dragStart', this.dragStartArgs);
+    private onDraggingStart(args: DragEventArgs & BlazorDragEventArgs): void {
+        let dragArgs: DragEventArgs & BlazorDragEventArgs = args;
+        this.trigger('dragStart', dragArgs, (dragArgs: DragEventArgs & BlazorDragEventArgs) => {
+            if (isBlazor()) {
+                dragArgs.bindEvents(args.element);
+            }
+        });
         this.panelsInitialModel = this.cloneModels(this.panels);
         this.mainElement = args.element;
         this.cloneObject = JSON.parse(JSON.stringify(this.cloneObject));

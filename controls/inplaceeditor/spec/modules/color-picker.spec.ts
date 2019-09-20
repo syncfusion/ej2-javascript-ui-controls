@@ -29,7 +29,10 @@ describe('ColorPicker module', () => {
             editorObj = renderEditor({
                 type: 'Color',
                 value: '#035a',
-                mode: 'Inline'
+                mode: 'Inline',
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -56,6 +59,9 @@ describe('ColorPicker module', () => {
         });
         it('Initial focus testing', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('Value property testing', () => {
             editorObj.colorModule.compObj.value === '#035a';

@@ -1906,6 +1906,9 @@ let MenuBase = class MenuBase extends Component {
                 this.clickHandler(e);
             }
         }
+        else if (this.isMenu && this.showItemOnClick) {
+            this.removeLIStateByClass([FOCUSED], [wrapper].concat(this.getPopups()));
+        }
         if (this.isMenu) {
             if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
@@ -4887,12 +4890,12 @@ let Accordion = class Accordion extends Component {
      * @private
      */
     render() {
+        this.initializeheaderTemplate();
+        this.initializeItemTemplate();
         this.initialize();
         this.renderControl();
         this.wireEvents();
-        if (isBlazor()) {
-            this.renderComplete();
-        }
+        this.renderComplete();
     }
     initialize() {
         let width = formatUnit(this.width);
@@ -4933,6 +4936,43 @@ let Accordion = class Accordion extends Component {
             });
         }
     }
+    templateParser(template) {
+        if (template) {
+            try {
+                if (document.querySelectorAll(template).length) {
+                    return compile(document.querySelector(template).innerHTML.trim());
+                }
+            }
+            catch (error) {
+                return compile(template);
+            }
+        }
+        return undefined;
+    }
+    initializeheaderTemplate() {
+        if (this.headerTemplate) {
+            this.headerTemplateFn = this.templateParser(this.headerTemplate);
+        }
+    }
+    initializeItemTemplate() {
+        if (this.itemTemplate) {
+            this.itemTemplateFn = this.templateParser(this.itemTemplate);
+        }
+    }
+    getheaderTemplate() {
+        return this.headerTemplateFn;
+    }
+    getItemTemplate() {
+        return this.itemTemplateFn;
+    }
+    updateContentBlazorTemplate(item, index) {
+        if (this.itemTemplate && isBlazor() && !this.isStringTemplate) {
+            updateBlazorTemplate(this.element.id + '_itemTemplate', 'ItemTemplate', this);
+        }
+        if (item && item.content && isBlazor() && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
+            updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
+        }
+    }
     focusIn(e) {
         e.target.parentElement.classList.add(CLS_ITEMFOCUS);
     }
@@ -4950,13 +4990,15 @@ let Accordion = class Accordion extends Component {
             innerEles = this.element.children;
         }
         let items = [];
+        /* tslint:disable */
         [].slice.call(innerEles).forEach((el) => {
             items.push({
-                header: (el.childElementCount > 0 && el.children[0]) ? (el.children[0]).innerHTML : '',
-                content: (el.childElementCount > 1 && el.children[1]) ? (el.children[1]).innerHTML : ''
+                header: (el.childElementCount > 0 && el.children[0]) ? (el.children[0]) : '',
+                content: (el.childElementCount > 1 && el.children[1]) ? (el.children[1]) : ''
             });
             el.parentNode.removeChild(el);
         });
+        /* tslint:enable */
         if (rootEle) {
             this.element.removeChild(rootEle);
         }
@@ -4985,31 +5027,46 @@ let Accordion = class Accordion extends Component {
     renderItems() {
         let ele = this.element;
         let innerItem;
+        let innerDataSourceItem;
         if (isNullOrUndefined(this.initExpand)) {
             this.initExpand = [];
         }
         if (!isNullOrUndefined(this.trgtEle)) {
             this.ctrlTemplate();
         }
-        let items = this.items;
-        if (ele && items.length > 0) {
-            items.forEach((item, index) => {
-                innerItem = this.renderInnerItem(item, index);
-                ele.appendChild(innerItem);
-                let blazorContain = Object.keys(window);
-                if (item.header && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate
-                    && item.header.indexOf('<div>Blazor') === 0) {
-                    updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
-                }
-                if (innerItem.childElementCount > 0) {
-                    EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
-                    EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
+        if (this.dataSource.length > 0) {
+            this.dataSource.forEach((item, index) => {
+                innerDataSourceItem = this.renderInnerItem(item, index);
+                ele.appendChild(innerDataSourceItem);
+                if (innerDataSourceItem.childElementCount > 0) {
+                    EventHandler.add(innerDataSourceItem.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
+                    EventHandler.add(innerDataSourceItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
                 }
             });
+            if (this.headerTemplate && isBlazor() && !this.isStringTemplate) {
+                updateBlazorTemplate(this.element.id + '_headerTemplate', 'headerTemplate', this);
+            }
+        }
+        else {
+            let items = this.items;
+            if (ele && items.length > 0) {
+                items.forEach((item, index) => {
+                    innerItem = this.renderInnerItem(item, index);
+                    ele.appendChild(innerItem);
+                    if (item.header && isBlazor() && !this.isStringTemplate && item.header.indexOf('<div>Blazor') === 0) {
+                        updateBlazorTemplate(this.element.id + index + '_header', 'HeaderTemplate', item);
+                    }
+                    if (innerItem.childElementCount > 0) {
+                        EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'focus', this.focusIn, this);
+                        EventHandler.add(innerItem.querySelector('.' + CLS_HEADER), 'blur', this.focusOut, this);
+                    }
+                });
+            }
         }
     }
     clickHandler(e) {
         let trgt = e.target;
+        let items = this.getItems();
         let eventArgs = {};
         let index;
         let tglIcon;
@@ -5038,16 +5095,22 @@ let Accordion = class Accordion extends Component {
         let acrdActive = [];
         index = this.getIndexByItem(acrdnItem);
         if (acrdnCtnItem) {
-            eventArgs.item = this.items[this.getIndexByItem(acrdnCtnItem)];
+            eventArgs.item = items[this.getIndexByItem(acrdnCtnItem)];
         }
         eventArgs.originalEvent = e;
         let ctnCheck = !isNullOrUndefined(tglIcon) && acrdnItem.childElementCount <= 1;
         if (ctnCheck && (isNullOrUndefined(acrdnCtn) || !isNullOrUndefined(select('.' + CLS_HEADER + ' .' + CLS_TOOGLEICN, acrdnCtnItem)))) {
-            acrdnItem.appendChild(this.contentRendering(index));
-            let blazorContain = Object.keys(window);
-            if (eventArgs.item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate
-                && eventArgs.item.content.indexOf('<div>Blazor') === 0) {
-                updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', eventArgs.item);
+            if (this.dataSource.length > 0) {
+                this.dataSource.forEach((item, index) => {
+                    let itemEle = this.getItemElements();
+                    let ele = itemEle[index];
+                    let ctn = this.contentRendering(index);
+                    ele.appendChild(ctn);
+                });
+                this.updateContentBlazorTemplate(eventArgs.item, index);
+            }
+            else {
+                acrdnItem.appendChild(this.contentRendering(index));
             }
             this.ariaAttrUpdate(acrdnItem);
         }
@@ -5154,9 +5217,10 @@ let Accordion = class Accordion extends Component {
     }
     headerEleGenerate() {
         let header = this.createElement('div', { className: CLS_HEADER, id: getUniqueID('acrdn_header') });
+        let items = this.getItems();
         let ariaAttr = {
             'tabindex': '0', 'role': 'heading', 'aria-expanded': 'false', 'aria-selected': 'false',
-            'aria-disabled': 'false', 'aria-level': this.items.length.toString()
+            'aria-disabled': 'false', 'aria-level': items.length.toString()
         };
         attributes(header, ariaAttr);
         return header;
@@ -5165,6 +5229,16 @@ let Accordion = class Accordion extends Component {
         let innerEle;
         innerEle = this.createElement('div', { className: CLS_ITEM$1 });
         innerEle.id = getUniqueID('acrdn_item');
+        if (this.headerTemplate) {
+            let ctnEle = this.headerEleGenerate();
+            let hdrEle = this.createElement('div', { className: CLS_HEADERCTN });
+            ctnEle.appendChild(hdrEle);
+            append(this.getheaderTemplate()(item, this, 'headerTemplate', this.element.id + '_headerTemplate', false), hdrEle);
+            innerEle.appendChild(ctnEle);
+            ctnEle.appendChild(this.toggleIconGenerate());
+            this.add(innerEle, CLS_SLCT);
+            return innerEle;
+        }
         if (item.header && this.angularnativeCondiCheck(item, 'header')) {
             let ctnEle = this.headerEleGenerate();
             let hdrEle = this.createElement('div', { className: CLS_HEADERCTN });
@@ -5179,7 +5253,12 @@ let Accordion = class Accordion extends Component {
             }
         }
         if (item.cssClass) {
-            innerEle.classList.add(item.cssClass);
+            let acrdnClass = item.cssClass;
+            let arcdnClassList = [];
+            arcdnClassList = acrdnClass.split(' ');
+            arcdnClassList.forEach((el) => {
+                addClass([innerEle], el);
+            });
         }
         if (item.iconCss) {
             let hdrIcnEle = this.createElement('div', { className: CLS_HEADERICN });
@@ -5226,7 +5305,6 @@ let Accordion = class Accordion extends Component {
         }
     }
     fetchElement(ele, value, index, isHeader) {
-        let blazorContain = Object.keys(window);
         let templateFn;
         let temString;
         try {
@@ -5238,8 +5316,14 @@ let Accordion = class Accordion extends Component {
             }
         }
         catch (e) {
-            if (typeof (value) === 'string' && blazorContain.indexOf('Blazor') > -1 && value.indexOf('<div>Blazor') !== 0) {
+            if (typeof (value) === 'string' && isBlazor() && value.indexOf('<div>Blazor') !== 0) {
                 ele.innerHTML = value;
+                /* tslint:disable */
+            }
+            else if (!isNullOrUndefined(this.trgtEle) && (value instanceof (HTMLElement))) {
+                ele.appendChild(value);
+                ele.firstElementChild.style.display = '';
+                /* tslint:enable */
             }
             else {
                 templateFn = compile(value);
@@ -5281,15 +5365,21 @@ let Accordion = class Accordion extends Component {
         content.setAttribute('aria-labelledby', header.id);
     }
     contentRendering(index) {
-        let content = this.items[index].content;
         let itemcnt = this.createElement('div', { className: CLS_CONTENT + ' ' + CLS_CTNHIDE, id: getUniqueID('acrdn_panel') });
         attributes(itemcnt, { 'aria-hidden': 'true' });
         let ctn = this.createElement('div', { className: CLS_CTENT });
-        itemcnt.appendChild(this.fetchElement(ctn, content, index, false));
+        if (this.dataSource.length > 0) {
+            append(this.getItemTemplate()(this.dataSource[index], this, 'itemTemplate', this.element.id + '_itemTemplate', false), ctn);
+            itemcnt.appendChild(ctn);
+        }
+        else {
+            itemcnt.appendChild(this.fetchElement(ctn, this.items[index].content, index, false));
+        }
         return itemcnt;
     }
     expand(trgt) {
         let eventArgs;
+        let items = this.getItems();
         let trgtItemEle = closest(trgt, '.' + CLS_ITEM$1);
         if (isNullOrUndefined(trgt) || (isVisible(trgt) && trgt.getAttribute('e-animate') !== 'true') || trgtItemEle.classList.contains(CLS_DISABLE$3)) {
             return;
@@ -5303,7 +5393,7 @@ let Accordion = class Accordion extends Component {
         };
         let icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
         eventArgs = { element: trgtItemEle,
-            item: this.items[this.getIndexByItem(trgtItemEle)],
+            item: items[this.getIndexByItem(trgtItemEle)],
             index: this.getIndexByItem(trgtItemEle),
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: true };
@@ -5396,6 +5486,7 @@ let Accordion = class Accordion extends Component {
     }
     collapse(trgt) {
         let eventArgs;
+        let items = this.getItems();
         let trgtItemEle = closest(trgt, '.' + CLS_ITEM$1);
         if (isNullOrUndefined(trgt) || !isVisible(trgt) || trgtItemEle.classList.contains(CLS_DISABLE$3)) {
             return;
@@ -5407,7 +5498,7 @@ let Accordion = class Accordion extends Component {
         };
         let icon = select('.' + CLS_TOOGLEICN, trgtItemEle).firstElementChild;
         eventArgs = { element: trgtItemEle,
-            item: this.items[this.getIndexByItem(trgtItemEle)],
+            item: items[this.getIndexByItem(trgtItemEle)],
             index: this.getIndexByItem(trgtItemEle),
             content: trgtItemEle.querySelector('.' + CLS_CONTENT),
             isExpanded: false };
@@ -5487,15 +5578,26 @@ let Accordion = class Accordion extends Component {
         return 'accordion';
     }
     itemAttribUpdate() {
+        let items = this.getItems();
         let itemEle = this.getItemElements();
-        let itemLen = this.items.length;
+        let itemLen = items.length;
         itemEle.forEach((ele) => {
             select('.' + CLS_HEADER, ele).setAttribute('aria-level', '' + itemLen);
         });
     }
+    getItems() {
+        let items;
+        if (this.itemTemplate && this.headerTemplate) {
+            items = this.dataSource;
+        }
+        else {
+            items = this.items;
+        }
+        return items;
+    }
     /**
      * Adds new item to the Accordion with the specified index of the Accordion.
-     * @param  {AccordionItemModel} item - Item array that is to be added to the Accordion.
+     * @param  {AccordionItemModel | Object} item - Item array that is to be added to the Accordion.
      * @param  {number} index - Number value that determines where the item should be added.
      * By default, item is added at the last index if the index is not specified.
      * @returns void
@@ -5503,11 +5605,12 @@ let Accordion = class Accordion extends Component {
     addItem(item, index) {
         let ele = this.element;
         let itemEle = this.getItemElements();
+        let items = this.getItems();
         if (isNullOrUndefined(index)) {
-            index = this.items.length;
+            index = items.length;
         }
         if (ele.childElementCount >= index) {
-            this.items.splice(index, 0, item);
+            items.splice(index, 0, item);
             let innerItemEle = this.renderInnerItem(item, index);
             if (ele.childElementCount === index) {
                 ele.appendChild(innerItemEle);
@@ -5521,7 +5624,7 @@ let Accordion = class Accordion extends Component {
         }
         this.expandedItems = [];
         this.expandedItemRefresh(ele);
-        if (item.expanded) {
+        if (item && item.expanded) {
             this.expandItem(true, index);
         }
     }
@@ -5541,12 +5644,13 @@ let Accordion = class Accordion extends Component {
     removeItem(index) {
         let itemEle = this.getItemElements();
         let ele = itemEle[index];
+        let items = this.getItems();
         if (isNullOrUndefined(ele)) {
             return;
         }
         this.restoreContent(index);
         detach(ele);
-        this.items.splice(index, 1);
+        items.splice(index, 1);
         this.itemAttribUpdate();
         this.expandedItems = [];
         this.expandedItemRefresh(this.element);
@@ -5656,17 +5760,14 @@ let Accordion = class Accordion extends Component {
     }
     itemExpand(isExpand, ele, index) {
         let ctn = ele.children[1];
+        let items = this.getItems();
         if (ele.classList.contains(CLS_DISABLE$3)) {
             return;
         }
         if (isNullOrUndefined(ctn) && isExpand) {
             ctn = this.contentRendering(index);
             ele.appendChild(ctn);
-            let blazorContain = Object.keys(window);
-            let item = this.items[index];
-            if (item.content && blazorContain.indexOf('Blazor') > -1 && !this.isStringTemplate && item.content.indexOf('<div>Blazor') === 0) {
-                updateBlazorTemplate(this.element.id + index + '_content', 'ContentTemplate', item);
-            }
+            this.updateContentBlazorTemplate(items[index], index);
             this.ariaAttrUpdate(ele);
         }
         else if (isNullOrUndefined(ctn)) {
@@ -5696,8 +5797,9 @@ let Accordion = class Accordion extends Component {
     }
     updateItem(item, index) {
         if (!isNullOrUndefined(item)) {
-            let itemObj = this.items[index];
-            this.items.splice(index, 1);
+            let items = this.getItems();
+            let itemObj = items[index];
+            items.splice(index, 1);
             this.restoreContent(index);
             detach(item);
             this.addItem(itemObj, index);
@@ -5716,6 +5818,7 @@ let Accordion = class Accordion extends Component {
      */
     onPropertyChanged(newProp, oldProp) {
         let acrdn = this.element;
+        let isRefresh = false;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'items':
@@ -5744,10 +5847,19 @@ let Accordion = class Accordion extends Component {
                         }
                     }
                     else {
-                        this.destroyItems();
-                        this.renderItems();
-                        this.initItemExpand();
+                        isRefresh = true;
                     }
+                    break;
+                case 'dataSource':
+                    isRefresh = true;
+                    break;
+                case 'headerTemplate':
+                    this.initializeheaderTemplate();
+                    isRefresh = true;
+                    break;
+                case 'itemTemplate':
+                    this.initializeItemTemplate();
+                    isRefresh = true;
                     break;
                 case 'enableRtl':
                     newProp.enableRtl ? this.add(acrdn, CLS_RTL$3) : this.remove(acrdn, CLS_RTL$3);
@@ -5771,11 +5883,25 @@ let Accordion = class Accordion extends Component {
                     break;
             }
         }
+        if (isRefresh) {
+            this.destroyItems();
+            this.renderItems();
+            this.initItemExpand();
+        }
     }
 };
 __decorate$4([
     Collection([], AccordionItem)
 ], Accordion.prototype, "items", void 0);
+__decorate$4([
+    Property([])
+], Accordion.prototype, "dataSource", void 0);
+__decorate$4([
+    Property()
+], Accordion.prototype, "itemTemplate", void 0);
+__decorate$4([
+    Property()
+], Accordion.prototype, "headerTemplate", void 0);
 __decorate$4([
     Property('100%')
 ], Accordion.prototype, "width", void 0);
@@ -6895,7 +7021,9 @@ let Tab = class Tab extends Component {
         this.select(this.selectedItem);
     }
     setOrientation(place, ele) {
-        if (place === 'Bottom' && Array.prototype.indexOf.call(this.element.children, ele) !== 1) {
+        let headerPos = Array.prototype.indexOf.call(this.element.children, ele);
+        let contentPos = Array.prototype.indexOf.call(this.element.children, this.element.querySelector('.' + CLS_CONTENT$1));
+        if (place === 'Bottom' && (contentPos > headerPos)) {
             this.element.appendChild(ele);
         }
         else {
@@ -7970,6 +8098,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.disableNode = [];
         this.parentNodeCheck = [];
         this.expandChildren = [];
+        this.isFieldChange = false;
         this.mouseDownStatus = false;
     }
     /**
@@ -8340,13 +8469,13 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let childCheckedElement;
         for (let i = 0; i < indeterminate.length; i++) {
             let node = closest(indeterminate[i], '.' + LISTITEM);
-            let parentData = this.getTreeData(node);
-            let id = parentData[0][this.fields.id].toString();
+            let nodeId = node.getAttribute('data-uid').toString();
             if (this.dataType === 1) {
-                childCheckedElement = this.getChildNodes(this.treeData, id);
+                childCheckedElement = new DataManager(this.treeData).
+                    executeLocal(new Query().where(this.fields.parentID, 'equal', nodeId, true));
             }
             else {
-                childCheckedElement = getValue(this.fields.child.toString(), parentData[0]);
+                childCheckedElement = this.getChildNodes(this.treeData, nodeId);
             }
             let count = 0;
             if (childCheckedElement) {
@@ -9067,11 +9196,13 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     afterFinalized() {
         this.doSelectionAction();
         this.updateCheckedProp();
-        this.isLoaded = true;
         this.isAnimate = true;
         this.isInitalExpand = false;
-        let eventArgs = { data: this.treeData };
-        this.trigger('dataBound', eventArgs);
+        if (!this.isLoaded || this.isFieldChange) {
+            let eventArgs = { data: this.treeData };
+            this.trigger('dataBound', eventArgs);
+        }
+        this.isLoaded = true;
     }
     doSelectionAction() {
         let sNodes = selectAll('.' + SELECTED$1, this.element);
@@ -10300,6 +10431,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
+        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     }
@@ -10537,14 +10669,15 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                         else {
                             this.dragStartAction = true;
                         }
+                        if (isBlazor()) {
+                            e.bindEvents(getElement(e.dragElement));
+                        }
                     });
                 }
             },
             drag: (e) => {
-                if ((this.isBlazorPlatform && this.dragStartAction) || !this.isBlazorPlatform) {
-                    this.dragObj.setProperties({ cursorAt: { top: (!isNullOrUndefined(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
-                    this.dragAction(e, virtualEle);
-                }
+                this.dragObj.setProperties({ cursorAt: { top: (!isNullOrUndefined(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
+                this.dragAction(e, virtualEle);
             },
             dragStop: (e) => {
                 removeClass([this.element], DRAGGING);
@@ -10610,15 +10743,16 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         if (dropRoot) {
             let dropLi = closest(e.target, '.' + LISTITEM);
+            let checkWrapper = closest(e.target, '.' + CHECKBOXWRAP);
             if (!dropRoot.classList.contains(ROOT) || (dropWrap &&
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
-                if (dropLi && e && (e.event.offsetY < 7)) {
+                if (dropLi && e && (e.event.offsetY < 7) && !checkWrapper) {
                     addClass([icon], DROPNEXT);
                     let virEle = this.createElement('div', { className: SIBLING });
                     let index = this.fullRowSelect ? (1) : (0);
                     dropLi.insertBefore(virEle, dropLi.children[index]);
                 }
-                else if (dropLi && e && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10))) {
+                else if (dropLi && e && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) {
                     addClass([icon], DROPNEXT);
                     let virEle = this.createElement('div', { className: SIBLING });
                     let index = this.fullRowSelect ? (2) : (1);
@@ -10717,7 +10851,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.triggerEvent();
     }
     appendNode(dropTarget, dragLi, dropLi, e, dragObj, offsetY) {
-        if (!dragLi.classList.contains('e-disable') && !dropLi.classList.contains('e-disable')) {
+        let checkWrapper = closest(dropTarget, '.' + CHECKBOXWRAP);
+        if (!dragLi.classList.contains('e-disable') && !dropLi.classList.contains('e-disable') && !checkWrapper) {
             if (dropTarget.nodeName === 'LI') {
                 this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
             }
@@ -10729,6 +10864,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             else {
                 this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY);
             }
+        }
+        else if (checkWrapper) {
+            this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY, true);
         }
     }
     dropAsSiblingNode(dragLi, dropLi, e, dragObj) {
@@ -10754,15 +10892,15 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             this.updateInstance();
         }
     }
-    dropAsChildNode(dragLi, dropLi, dragObj, index, e, pos) {
+    dropAsChildNode(dragLi, dropLi, dragObj, index, e, pos, isCheck) {
         let dragParentUl = closest(dragLi, '.' + PARENTITEM);
         let dragParentLi = closest(dragParentUl, '.' + LISTITEM);
         let dropParentUl = closest(dropLi, '.' + PARENTITEM);
-        if (e && (pos < 7)) {
+        if (e && (pos < 7) && !isCheck) {
             dropParentUl.insertBefore(dragLi, dropLi);
             this.moveData(dragLi, dropLi, dropParentUl, true, dragObj);
         }
-        else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10))) {
+        else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10)) && !isCheck) {
             dropParentUl.insertBefore(dragLi, dropLi.nextElementSibling);
             this.moveData(dragLi, dropLi, dropParentUl, false, dragObj);
         }
@@ -11718,11 +11856,13 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     break;
                 case 'fields':
                     this.isAnimate = false;
+                    this.isFieldChange = true;
                     this.initialRender = true;
                     this.updateListProp(this.fields);
                     this.reRenderNodes();
                     this.initialRender = false;
                     this.isAnimate = true;
+                    this.isFieldChange = false;
                     break;
                 case 'fullRowSelect':
                     this.setFullRow(this.fullRowSelect);
@@ -11789,7 +11929,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         nodes = JSON.parse(JSON.stringify(nodes));
         let dropLi = this.getElement(target);
         this.preventExpand = preventTargetExpand;
-        if (this.fields.dataSource instanceof DataManager) {
+        if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             let dropUl;
             let icon = dropLi ? dropLi.querySelector('.' + ICON) : null;
             let proxy = this;
@@ -11933,50 +12073,12 @@ let TreeView = TreeView_1 = class TreeView extends Component {
      */
     getAllCheckedNodes() {
         let checkNodes = this.checkedNodes;
-        let newCheck = [];
-        let i = 0;
-        let id = this.fields.id;
-        for (i; i < this.treeData.length; i++) {
-            //Checks if isChecked is enabled while node is not loaded in DOM
-            let checked = null;
-            let childNode = null;
-            let isLoaded = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
-            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
-                //Checks if isChecked is enabled for parent
-                if (this.getTreeData()[i][this.fields.isChecked] === true
-                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
-                    newCheck.push(this.treeData[i][id].toString());
-                    checked = 2;
-                }
-                //Checks for child nodes with isChecked enabled
-                if (checked !== 2) {
-                    checked = 1;
-                }
-                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
-                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
-            }
-        }
-        i = 0;
-        //Gets checked nodes based on UI interaction
-        while (i < checkNodes.length) {
-            if (newCheck.indexOf(checkNodes[i]) !== -1) {
-                i++;
-                continue;
-            }
-            newCheck.push(checkNodes[i]);
-            //Gets all child which is not loaded while parent is checked
-            let parentNode = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
-            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
-                let child = this.getChildNodes(this.treeData, checkNodes[i].toString());
-                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
-            }
-            i++;
-        }
-        return newCheck;
+        return checkNodes;
     }
     /**
      * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
+     * @BlazorType NodeData
      */
     getNode(node) {
         let ele = this.getElement(node);
@@ -12871,5 +12973,5 @@ Sidebar = __decorate$9([
  * Navigation all modules
  */
 
-export { MenuAnimationSettings, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
+export { MenuAnimationSettings, MenuItem, HScroll, VScroll, Item, Toolbar, AccordionActionSettings, AccordionAnimationSettings, AccordionItem, Accordion, ContextMenu, Menu, TabActionSettings, TabAnimationSettings, Header, TabItem, Tab, FieldsSettings, ActionSettings, NodeAnimationSettings, TreeView, Sidebar };
 //# sourceMappingURL=ej2-navigations.es2015.js.map

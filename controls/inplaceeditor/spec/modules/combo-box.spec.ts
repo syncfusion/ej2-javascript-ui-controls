@@ -29,7 +29,10 @@ describe('ComboBox module', () => {
             editorObj = renderEditor({
                 value: 'test',
                 mode: 'Inline',
-                type: 'ComboBox'
+                type: 'ComboBox',
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -50,6 +53,9 @@ describe('ComboBox module', () => {
         it('Clear icon availability testing', () => {
             expect(editorObj.comboBoxModule.compObj.showClearButton).toBe(true);
             expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('Clear icon availability testing for false', () => {
             editorObj.comboBoxModule.compObj.showClearButton = false;
@@ -576,7 +582,7 @@ describe('ComboBox module', () => {
             expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -632,7 +638,7 @@ describe('ComboBox module', () => {
             expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -688,7 +694,7 @@ describe('ComboBox module', () => {
             expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -744,7 +750,7 @@ describe('ComboBox module', () => {
             expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -787,7 +793,7 @@ describe('ComboBox module', () => {
             expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -813,7 +819,7 @@ describe('ComboBox module', () => {
             expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('Basketball');
             editorObj.save();
             expect(editorObj.value).toEqual('game2');
-            expect(serverValue).toEqual('Basketball');
+            expect(serverValue).toEqual('game2');
             expect(valueEle.innerHTML).toEqual('Basketball');
         });
     });

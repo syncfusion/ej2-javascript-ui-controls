@@ -3,7 +3,7 @@ import { addClass, removeClass, detach, attributes, prepend, setStyleAttribute }
 import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, append } from '@syncfusion/ej2-base';
 import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
-import { EventHandler, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { EventHandler, updateBlazorTemplate, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Draggable } from '@syncfusion/ej2-base';
 import { Popup, PositionData, getZindexPartial } from '../popup/popup';
 import { PositionDataModel } from '../popup/popup-model';
@@ -173,6 +173,117 @@ export interface BeforeCloseEventArgs {
      * Returns the original event arguments.
      */
     event: Event;
+}
+
+export interface DialogOpenEvent {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Returns the root container element of the dialog.
+     */
+    container: HTMLElement;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Specify the name of the event.
+     */
+    name: string;
+}
+
+export interface DialogCloseEvent {
+    /**
+     * Defines whether the current action can be prevented.
+     */
+    cancel: boolean;
+    /**
+     * Returns the root container element of the dialog.
+     */
+    container: HTMLElement;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Determines whether the event is triggered by interaction.
+     */
+    isInteracted: boolean;
+    /**
+     * DEPRECATED-Determines whether the event is triggered by interaction.
+     */
+    isInteraction: boolean;
+    /**
+     * Specify the name of the event.
+     */
+    name: string;
+}
+
+export interface DialogDragStartEvent {
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Returns the target element of the dialog.
+     */
+    target: HTMLElement;
+    /**
+     * Returns the name of the event.
+     */
+    name: String;
+}
+
+export interface DialogDragStopEvent {
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Returns the target element of the dialog.
+     */
+    target: HTMLElement;
+    /**
+     * Returns the helper element.
+     */
+    helper: Element;
+    /**
+     * Returns the name of the event.
+     */
+    name: String;
+}
+
+export interface DialogDragEvent {
+    /**
+     * Returns the original event arguments.
+     */
+    event: Event;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: Element;
+    /**
+     * Returns the target element of the dialog.
+     */
+    target: HTMLElement;
+    /**
+     * Returns the name of the event.
+     */
+    name: String;
 }
 
 /**
@@ -382,6 +493,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Event triggers when a dialog is opened.
      * @event
      * @blazorProperty 'Opened'
+     * @blazorType DialogOpenEvent
      */
     @Event()
     public open: EmitType<Object>;
@@ -398,6 +510,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Event triggers after the dialog has been closed.
      * @event
      * @blazorProperty 'Closed'
+     * @blazorType DialogCloseEvent
      */
     @Event()
     public close: EmitType<Object>;
@@ -414,6 +527,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Event triggers when the user begins dragging the dialog.
      * @event
      * @blazorProperty 'OnDragStart'
+     * @blazorType DialogDragStartEvent
      */
     @Event()
     public dragStart: EmitType<Object>;
@@ -421,6 +535,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Event triggers when the user stop dragging the dialog.
      * @event
      * @blazorProperty 'OnDragStop'
+     * @blazorType DialogDragStopEvent
      */
     @Event()
     public dragStop: EmitType<Object>;
@@ -428,6 +543,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * Event triggers when the user drags the dialog.
      * @event
      * @blazorProperty 'OnDrag'
+     * @blazorType DialogDragEvent
      */
     @Event()
     public drag: EmitType<Object>;
@@ -813,8 +929,12 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             clone: false,
             abort: '.e-dlg-closeicon-btn',
             handle: handleContent,
-            dragStart: (event: Object) => {
-                this.trigger('dragStart', event);
+            dragStart: (event: Object & BlazorDragEventArgs) => {
+                this.trigger('dragStart', event, (dragEventArgs: Object & BlazorDragEventArgs) => {
+                    if (isBlazor()) {
+                        dragEventArgs.bindEvents(event.dragElement);
+                    }
+                 });
             },
             dragStop: (event: Object) => {
                 if (this.isModal) {

@@ -204,6 +204,18 @@
     }
   }
 
+  .e-slider-horizantal-color {
+    height: 100%;
+    position: absolute;
+    top: -1px;
+  }
+
+  .e-slider-vertical-color {
+    left: -1px;
+    position: absolute;
+    width: 100%;
+  }
+
   .e-bigger {
     @if ($skin-name != 'material' and $skin-name != 'material-dark') {
       .e-slider-tooltip.e-tooltip-wrap.e-popup {
@@ -716,26 +728,31 @@
         width: 100%;
         @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           background: $slider-handle-start-border-color;
+          overflow: hidden;
           top: calc(50% - 1px);
         }
         @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           background: $slider-track-color;
+          overflow: hidden;
           top: calc(50% - 2px);
         }
         @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           background: $slider-track-color;
           border-radius: 4px;
+          overflow: hidden;
           top: calc(50% - 4px);
         }
         @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
           background: $slider-handle-start-border-color;
           border: 1px solid $slider-track-border-color;
           border-radius: 4px;
+          overflow: hidden;
           top: calc(50% - 5px);
         }
         @if $skin-name == 'bootstrap4' {
           background: $slider-handle-start-border-color;
           border-radius: 6px;
+          overflow: hidden;
           top: calc(50% - 3px);
         }
       }
@@ -825,26 +842,31 @@
         position: absolute;
         @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           left: calc(50% - 2px);
+          overflow: hidden;
           width: 4px;
         }
         @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           border-radius: 4px;
           left: calc(50% - 4px);
+          overflow: hidden;
           width: 8px;
         }
         @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
           border: 1px solid $slider-track-border-color;
           border-radius: 3px;
           left: calc(50% - 5px);
+          overflow: hidden;
           width: 10px;
         }
         @if ($skin-name == 'bootstrap4') {
           border-radius: 6px;
           left: calc(50% - 3px);
+          overflow: hidden;
           width: 6px;
         }
         @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           left: calc(50% - 1px);
+          overflow: hidden;
           width: 2px;
         }
       }

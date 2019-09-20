@@ -75,6 +75,10 @@ export class AccumulationTooltip extends BaseTooltip {
         let rect : Rect = chart.initialClipRect;
         this.currentPoints = [];
         if (data.point && (!this.previousPoints[0] || (this.previousPoints[0].point !== data.point))) {
+            if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index
+                && data.series.index === this.previousPoints[0].series.index) {
+                return null;
+            }
             if (this.pushData(data, isFirst, tooltipDiv, false)) {
                 this.triggerTooltipRender(data, isFirst, this.getTooltipText(data, chart.tooltip), this.findHeader(data));
             }

@@ -1,4 +1,4 @@
-import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getInstance, getUniqueID, getValue, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
+import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Initialize wrapper element for angular.
@@ -166,10 +166,12 @@ let Button = class Button extends Component {
         if (this.isPrimary) {
             this.element.classList.add(cssClassName.PRIMARY);
         }
-        if (this.content) {
-            this.element.innerHTML = this.content;
+        if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+            if (this.content) {
+                this.element.innerHTML = this.content;
+            }
+            this.setIconCss();
         }
-        this.setIconCss();
         if (this.enableRtl) {
             this.element.classList.add(cssClassName.RTL);
         }
@@ -349,8 +351,10 @@ let Button = class Button extends Component {
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    this.element.innerHTML = newProp.content;
-                    this.setIconCss();
+                    if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+                        this.element.innerHTML = newProp.content;
+                        this.setIconCss();
+                    }
                     break;
                 case 'isToggle':
                     if (newProp.isToggle) {
@@ -452,6 +456,8 @@ let CheckBox = class CheckBox extends Component {
         super(options, element);
         this.isFocused = false;
         this.isMouseClick = false;
+        this.start = 0;
+        this.end = 0;
     }
     changeState(state) {
         let ariaState;
@@ -491,6 +497,12 @@ let CheckBox = class CheckBox extends Component {
         this.getWrapper().setAttribute('aria-checked', ariaState);
     }
     clickHandler(event) {
+        if ((this.end - this.start) > 750) {
+            this.end = 0;
+            this.end = 0;
+            event.stopPropagation();
+            return;
+        }
         if (this.isMouseClick) {
             this.focusOutHandler();
             this.isMouseClick = false;
@@ -754,12 +766,23 @@ let CheckBox = class CheckBox extends Component {
     changeHandler(e) {
         e.stopPropagation();
     }
+    touchStartHandler(e) {
+        this.start = new Date().getTime();
+    }
+    touchEndHandler(e) {
+        this.end = new Date().getTime();
+    }
     formResetHandler() {
         this.checked = this.initialCheckedValue;
-        attributes(this.element, { 'checked': this.initialCheckedValue.toString() });
+        this.element.checked = this.initialCheckedValue;
     }
     unWireEvents() {
         let wrapper = this.getWrapper();
+        let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (iOS) {
+            EventHandler.remove(wrapper, 'touchstart', this.touchStartHandler);
+            EventHandler.remove(wrapper, 'touchend', this.touchEndHandler);
+        }
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
@@ -776,6 +799,11 @@ let CheckBox = class CheckBox extends Component {
     }
     wireEvents() {
         let wrapper = this.getWrapper();
+        let iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (iOS) {
+            EventHandler.add(wrapper, 'touchstart', this.touchStartHandler, this);
+            EventHandler.add(wrapper, 'touchend', this.touchEndHandler, this);
+        }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
@@ -1502,12 +1530,9 @@ let Switch = class Switch extends Component {
             }
         }
     }
-    changeHandler(e) {
-        e.stopPropagation();
-    }
     formResetHandler() {
         this.checked = this.initialSwitchCheckedValue;
-        attributes(this.element, { 'checked': this.initialSwitchCheckedValue.toString() });
+        this.element.checked = this.initialSwitchCheckedValue;
     }
     /**
      * Toggle the Switch component state into checked/unchecked.
@@ -1531,9 +1556,6 @@ let Switch = class Switch extends Component {
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
-        if (this.tagName === 'EJS-SWITCH') {
-            EventHandler.add(this.element, 'change', this.changeHandler, this);
-        }
     }
     unWireEvents() {
         let wrapper = this.getWrapper();
@@ -1547,9 +1569,6 @@ let Switch = class Switch extends Component {
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-        }
-        if (this.tagName === 'EJS-SWITCH') {
-            EventHandler.remove(this.element, 'change', this.changeHandler);
         }
     }
     /**

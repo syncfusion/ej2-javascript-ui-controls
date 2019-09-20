@@ -1213,7 +1213,8 @@ export class TextSelection {
      */
     public applySpanForSelection(): void {
         let selection: Selection = window.getSelection();
-        if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset) {
+        // tslint:disable-next-line:max-line-length
+        if (selection.anchorNode === selection.focusNode && selection.anchorOffset === selection.focusOffset && !selection.isCollapsed) {
             selection.removeAllRanges();
         }
         // tslint:disable-next-line:max-line-length
@@ -1765,6 +1766,10 @@ export class TextSelection {
             let textArea: HTMLElement = document.createElement('textarea');
             textArea.contentEditable = 'true';
             textArea.textContent = selectionText;
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.annotation && this.pdfViewer.annotation.freeTextAnnotationModule) {
+                this.pdfViewer.annotation.freeTextAnnotationModule.selectedText = selectionText;
+            }
             textArea.style.position = 'fixed';
             document.body.appendChild(textArea);
             (textArea as HTMLInputElement).select();

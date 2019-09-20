@@ -3,9 +3,10 @@ import { Schedule } from '../base/schedule';
 import { VerticalView } from './vertical-view';
 import { TimelineEvent } from '../event-renderer/timeline-view';
 import { TdData, TimeSlotData } from '../base/interface';
-import * as cls from '../base/css-constant';
-import { getDateInMs, resetTime } from '../base/util';
 import { TimelineHeaderRow } from './timeline-header-row';
+import * as event from '../base/constant';
+import * as cls from '../base/css-constant';
+import * as util from '../base/util';
 
 /**
  * timeline view
@@ -61,7 +62,7 @@ export class TimelineViews extends VerticalView {
     private generateTimeSlots(dateSlots: TdData[]): TdData[] {
         let handler: Function = (r: TimeSlotData): TimeSlotData => {
             r.type = r.first ? 'majorSlot' : 'minorSlot';
-            r.className = r.first ? ['e-time-slots'] : ['e-time-slots', cls.TIME_CELLS_CLASS];
+            r.className = r.first ? [cls.TIME_SLOT_CLASS] : [cls.TIME_SLOT_CLASS, cls.TIME_CELLS_CLASS];
             r.workDays = this.parent.activeViewOptions.workDays;
             return r;
         };
@@ -71,7 +72,7 @@ export class TimelineViews extends VerticalView {
             data.colSpan = timeSlotData.length;
             let tempTimeSlots: TdData[] = <TdData[]>extend([], timeSlotData, null, true);
             for (let slot of tempTimeSlots) {
-                slot.date = new Date(+resetTime(data.date) + getDateInMs(slot.date));
+                slot.date = new Date(+util.resetTime(data.date) + util.getDateInMs(slot.date));
                 slots.push(slot);
             }
         }
@@ -136,7 +137,7 @@ export class TimelineViews extends VerticalView {
     }
     public getCurrentTimeIndicatorIndex(): number[] {
         let currentDateIndex: number[] = [];
-        let index: number = this.parent.getIndexOfDate(this.renderDates, resetTime(this.parent.getCurrentTime()));
+        let index: number = this.parent.getIndexOfDate(this.renderDates, util.resetTime(this.parent.getCurrentTime()));
         if (index >= 0) {
             currentDateIndex.push(index);
         }
@@ -212,7 +213,7 @@ export class TimelineViews extends VerticalView {
             let appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
             appointment.renderAppointments();
         }
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(event.eventsLoaded, {});
     }
 
     protected getModuleName(): string {

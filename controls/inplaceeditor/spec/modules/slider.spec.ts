@@ -29,7 +29,10 @@ describe('Slider module', () => {
             editorObj = renderEditor({
                 value: 10,
                 mode: 'Inline',
-                type: 'Slider'
+                type: 'Slider',
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -48,6 +51,9 @@ describe('Slider module', () => {
             expect(editorObj.sliderModule.compObj.value === 10).toEqual(true);
             expect(editorObj.value === editorObj.sliderModule.compObj.value).toEqual(true);
             expect((<HTMLInputElement>select('input', ele)).value === '10').toEqual(true);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('save method with value property testing', () => {
             editorObj.sliderModule.compObj.value = 20;

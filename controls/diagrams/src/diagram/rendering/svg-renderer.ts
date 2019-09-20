@@ -597,7 +597,7 @@ export class SvgRenderer implements IRenderer {
             if (style.stroke === 'none') { style.stroke = 'transparent'; }
             let dashArray: number[] = [];
             let fill: string;
-            if (style.dashArray !== undefined) {
+            if (style.dashArray) {
                 let canvasRenderer: CanvasRenderer = new CanvasRenderer();
                 dashArray = canvasRenderer.parseDashArray(style.dashArray);
             }
@@ -614,7 +614,7 @@ export class SvgRenderer implements IRenderer {
                 svg.setAttribute('stroke-width', style.strokeWidth.toString());
             }
             if (dashArray) {
-                svg.setAttribute('stroke-dasharray', dashArray.toString());
+                svg.setAttribute('stroke-dasharray', dashArray.toString() || 'none');
             }
             if (fill) {
                 svg.setAttribute('fill', fill);

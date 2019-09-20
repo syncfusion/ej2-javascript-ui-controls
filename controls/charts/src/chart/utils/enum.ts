@@ -506,6 +506,7 @@ export type ToolbarItems =
  * * dragXY - To select points, by dragging with respect to both horizontal and vertical axis
  * * dragX - To select points, by dragging with respect to horizontal axis.
  * * dragY - To select points, by dragging with respect to vertical axis.
+ * * lasso - To select points, by dragging with respect to free form.
  */
 export type SelectionMode =
     /** Disable the selection. */
@@ -521,7 +522,9 @@ export type SelectionMode =
     /** To select points, by dragging with respect to vertical axis. */
     'DragY' |
     /** To select points, by dragging with respect to horizontal axis. */
-    'DragX';
+    'DragX' |
+    /** To select points, by dragging with respect to free form. */
+    'Lasso';
 
 /**
  * Defines the LabelPosition, They are.

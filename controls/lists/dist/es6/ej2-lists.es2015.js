@@ -657,6 +657,12 @@ var ListBase;
                 { role: (grpLI === true ? ariaAttributes.groupItemRole : ariaAttributes.itemRole) } : {})
         });
         !isNullOrUndefined(uID) ? li.setAttribute('data-uid', uID) : li.setAttribute('data-uid', generateId());
+        const blazId = 'BlazId';
+        if (options && !!options.removeBlazorID
+            && typeof item === 'object'
+            && item.hasOwnProperty(blazId)) {
+            delete item[blazId];
+        }
         if (grpLI && options && options.groupTemplate) {
             let compiledString = compile(options.groupTemplate);
             append(compiledString(item, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
@@ -843,7 +849,7 @@ __decorate([
  * ```html
  * <div id="listview">
  * <ul>
- * <li>Favourite</li>
+ * <li>Favorite</li>
  * <li>Documents</li>
  * <li>Downloads</li>
  * </ul>
@@ -1083,7 +1089,8 @@ let ListView = class ListView extends Component {
             fields: this.fields.properties, sortOrder: this.sortOrder, showIcon: this.showIcon,
             itemCreated: this.renderCheckbox.bind(this),
             templateID: `${this.element.id}${LISTVIEW_TEMPLATE_PROPERTY}`,
-            groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`
+            groupTemplateID: `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`,
+            removeBlazorID: true
         };
         this.initialization();
     }
@@ -1099,6 +1106,11 @@ let ListView = class ListView extends Component {
         this.LISTVIEW_GROUPTEMPLATE_ID = `${this.element.id}${LISTVIEW_GROUPTEMPLATE_PROPERTY}`;
         this.LISTVIEW_HEADERTEMPLATE_ID = `${this.element.id}${LISTVIEW_HEADERTEMPLATE_PROPERTY}`;
         this.aniObj = new Animation(this.animateOptions);
+        this.removeElement(this.curUL);
+        this.removeElement(this.ulElement);
+        this.removeElement(this.headerEle);
+        this.removeElement(this.contentContainer);
+        this.curUL = this.ulElement = this.liCollection = this.headerEle = this.contentContainer = undefined;
     }
     renderCheckbox(args) {
         if (args.item.classList.contains(classNames.hasChild)) {
@@ -2262,90 +2274,146 @@ let ListView = class ListView extends Component {
         }
     }
     /**
-     * It adds new item to current ListView.
-     * To add a new item in the list view, we need to pass ‘data’ as array or object and ‘fields’ as object.
+     * It adds new item(s) to current ListView.
+     * To add a new item(s) in the listview, we need to pass `data` as array of items that needs
+     * to be added and `fields` as the target item to which we need to add the given item(s) as its children.
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
-     * @param  {{[key:string]:Object}[]} data - Array JSON Data that need to add.
-     * @param  {Fields} fields - Fields as an Object with ID and Text fields.
+     * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
+     * @param  {Fields} fields - Target item to add the given data as its children (can be null).
+     * @blazorArgsType data|List<TValue>,fields|TValue
      */
     addItem(data, fields = undefined) {
-        if (!(this.dataSource instanceof DataManager)) {
-            if (data instanceof Array) {
-                if (this.enableVirtualization) {
-                    this.virtualizationModule.addItem(data, fields);
-                }
-                else {
-                    let ds = this.findItemFromDS(this.dataSource, fields);
-                    let fieldData = getFieldValues(ds, this.listBaseOption.fields);
-                    let child = fieldData[this.fields.child];
+        const dataSource = this.dataSource instanceof DataManager
+            ? this.localData : this.dataSource;
+        this.addItemInternally(data, fields, dataSource);
+    }
+    addItemInternally(data, fields, dataSource) {
+        if (data instanceof Array) {
+            if (this.enableVirtualization) {
+                this.virtualizationModule.addItem(data, fields, dataSource);
+            }
+            else {
+                const ds = this.findItemFromDS(dataSource, fields);
+                let child;
+                if (ds) {
+                    const fieldData = getFieldValues(ds, this.listBaseOption.fields);
+                    child = fieldData[this.fields.child];
                     if (!child) {
                         child = [];
                     }
                     child = child.concat(data);
-                    if (ds instanceof Array) {
-                        data.forEach((dataSource) => {
-                            this.dataSource.push(dataSource);
-                            this.setViewDataSource(this.dataSource);
-                            if (this.ulElement) {
-                                let index = this.curViewDS.indexOf(dataSource);
-                                this.addListItem(dataSource, index);
-                                let curViewDS = this.curViewDS[index - 1];
-                                if (curViewDS && curViewDS.isHeader && curViewDS.items.length === 1) {
-                                    this.addListItem(curViewDS, (index - 1));
-                                }
-                            }
-                            else {
-                                this.reRender();
-                            }
-                        });
-                        if (this.ulElement) {
-                            this.updateBlazorTemplates(true);
+                }
+                // check for whether target is nested level or top level in list
+                if (ds instanceof Array) {
+                    data.forEach((currentItem) => {
+                        dataSource.push(currentItem);
+                        this.setViewDataSource(dataSource);
+                        // since it is top level target, get the content container's first child
+                        // as it is always the top level UL
+                        const targetUL = this.contentContainer
+                            ? this.contentContainer.children[0]
+                            : null;
+                        // check for whether the list was previously empty or not, if it is
+                        // proceed to call initial render
+                        if (this.contentContainer && targetUL) {
+                            this.addItemIntoDom(currentItem, targetUL, this.curViewDS);
                         }
-                        this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+                        else {
+                            this.reRender();
+                        }
+                    });
+                    if (this.curUL) {
+                        this.updateBlazorTemplates(true);
                     }
-                    else {
+                    this.liCollection = this.curUL.querySelectorAll('.' + classNames.listItem);
+                }
+                else {
+                    // proceed as target item is in nested level, only if it is a valid target ds
+                    if (ds) {
                         ds[this.fields.child] = child;
-                        this.reRender();
+                        this.addItemInNestedList(ds, data);
                     }
                 }
             }
         }
     }
-    addListItem(dataSource, index) {
-        let target = this.getLiFromObjOrElement(this.curViewDS[index + 1]) ||
-            this.getLiFromObjOrElement(this.curViewDS[index + 2]) || null;
+    addItemInNestedList(targetItemData, itemQueue) {
+        const targetItemId = targetItemData[this.fields.id];
+        const targetChildDS = targetItemData[this.fields.child];
+        const isAlreadyRenderedUL = this.element.querySelector('[pid=\'' + targetItemId + '\']');
+        const targetLi = this.element.querySelector('[data-uid=\'' + targetItemId + '\']');
+        const targetUL = isAlreadyRenderedUL
+            ? isAlreadyRenderedUL
+            : targetLi
+                ? closest(targetLi, 'ul')
+                : null;
+        const targetDS = isAlreadyRenderedUL ? targetChildDS : [targetItemData];
+        const isTargetEmptyChild = targetLi ? !targetLi.classList.contains(classNames.hasChild) : false;
+        let isRefreshTemplateNeeded = false;
+        // if li element is already rendered, that element needs to be refreshed so that
+        // it becomes child viewable due to new child items are added now
+        if (isTargetEmptyChild) {
+            const targetRefreshedElement = ListBase.createListItemFromJson(this.createElement, targetDS, this.listBaseOption);
+            targetUL.insertBefore(targetRefreshedElement[0], targetLi);
+            detach(targetLi);
+            isRefreshTemplateNeeded = true;
+        }
+        // if it is already rendered element, we need to create and append new elements
+        if (isAlreadyRenderedUL && itemQueue) {
+            itemQueue.forEach((currentItem) => {
+                targetDS.push(currentItem);
+                this.addItemIntoDom(currentItem, targetUL, targetDS);
+            });
+            isRefreshTemplateNeeded = true;
+        }
+        if (isRefreshTemplateNeeded) {
+            this.updateBlazorTemplates(true);
+        }
+    }
+    addItemIntoDom(currentItem, targetUL, curViewDS) {
+        let index = curViewDS.indexOf(currentItem);
+        this.addListItem(currentItem, index, targetUL, curViewDS);
+        let curItemDS = curViewDS[index - 1];
+        if (curItemDS && curItemDS.isHeader && curItemDS.items.length === 1) {
+            this.addListItem(curItemDS, (index - 1), targetUL, curViewDS);
+        }
+    }
+    addListItem(dataSource, index, ulElement, curViewDS) {
+        let target = this.getLiFromObjOrElement(curViewDS[index + 1]) ||
+            this.getLiFromObjOrElement(curViewDS[index + 2]) || null;
         let li = ListBase.createListItemFromJson(this.createElement, [dataSource], this.listBaseOption);
-        this.ulElement.insertBefore(li[0], target);
+        ulElement.insertBefore(li[0], target);
     }
     /**
      * A function that removes the item from data source based on passed element like fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
      */
     removeItem(obj) {
-        if (!(this.dataSource instanceof DataManager)) {
-            if (this.enableVirtualization) {
-                this.virtualizationModule.removeItem(obj);
-            }
-            else {
-                this.removeItemFromList(obj);
-                this.updateBlazorTemplates(true);
-            }
+        const listDataSource = this.dataSource instanceof DataManager
+            ? this.localData : this.dataSource;
+        if (this.enableVirtualization) {
+            this.virtualizationModule.removeItem(obj);
+        }
+        else {
+            this.removeItemFromList(obj, listDataSource);
+            this.updateBlazorTemplates(true);
         }
     }
-    removeItemFromList(obj) {
+    removeItemFromList(obj, listDataSource) {
+        const curViewDS = this.curViewDS;
         let fields = obj instanceof Element ? this.getElementUID(obj) : obj;
         let dataSource;
-        dataSource = this.findItemFromDS(this.dataSource, fields, true);
+        dataSource = this.findItemFromDS(listDataSource, fields, true);
         if (dataSource) {
             let data;
             data = this.findItemFromDS(dataSource, fields);
-            let index = this.curViewDS.indexOf(data);
+            let index = curViewDS.indexOf(data);
             let li = this.getLiFromObjOrElement(obj);
             let groupLi;
+            this.validateNestedView(li);
             if (this.fields.groupBy && this.curViewDS[index - 1] &&
-                this.curViewDS[index - 1].isHeader &&
-                (this.curViewDS[index - 1])
-                    .items.length === 1) {
+                curViewDS[index - 1].isHeader &&
+                curViewDS[index - 1].items.length === 1) {
                 if (li && li.previousElementSibling.classList.contains(classNames.groupListItem) &&
                     (isNullOrUndefined(li.nextElementSibling) || (li.nextElementSibling &&
                         li.nextElementSibling.classList.contains(classNames.groupListItem)))) {
@@ -2358,10 +2426,36 @@ let ListView = class ListView extends Component {
             if (groupLi) {
                 detach(groupLi);
             }
+            // tslint:disable-next-line:no-any
+            const foundData = (dataSource.length - 1) <= 0
+                ? this.findParent(this.localData, this.fields.id, (value) => value === data[this.fields.id], null) : null;
             let dsIndex = dataSource.indexOf(data);
             dataSource.splice(dsIndex, 1);
-            this.setViewDataSource(this.dataSource);
+            this.setViewDataSource(listDataSource);
+            if (foundData
+                && foundData.parent
+                && Array.isArray(foundData.parent[this.fields.child])
+                && foundData.parent[this.fields.child].length <= 0) {
+                const parentLi = this.getLiFromObjOrElement(foundData.parent);
+                if (parentLi) {
+                    let li = ListBase.createListItemFromJson(this.createElement, [foundData.parent], this.listBaseOption);
+                    parentLi.parentElement.insertBefore(li[0], parentLi);
+                    parentLi.parentElement.removeChild(parentLi);
+                }
+            }
+            if (dataSource.length <= 0) {
+                this.back();
+            }
             this.liCollection = Array.prototype.slice.call(this.element.querySelectorAll('.' + classNames.listItem));
+        }
+    }
+    // validate before removing an element whether the current view is inside target element's child view
+    validateNestedView(li) {
+        const liID = li ? li.getAttribute('data-uid').toString().toLowerCase() : null;
+        if (liID && this.curDSLevel && this.curDSLevel.length > 0) {
+            while (this.curDSLevel.some((id) => id.toString().toLowerCase() === liID)) {
+                this.back();
+            }
         }
     }
     /**
@@ -2369,19 +2463,32 @@ let ListView = class ListView extends Component {
      * @param  {Fields[] | HTMLElement[] | Element[]} obj - We can pass array of elements or array of field Object with ID and Text fields.
      */
     removeMultipleItems(obj) {
-        if (!(this.dataSource instanceof DataManager)) {
-            if (obj.length) {
-                for (let i = 0; i < obj.length; i++) {
-                    if (this.enableVirtualization) {
-                        this.removeItem(obj[i]);
+        if (obj.length) {
+            for (let i = 0; i < obj.length; i++) {
+                this.removeItem(obj[i]);
+            }
+            this.updateBlazorTemplates(true);
+        }
+    }
+    // tslint:disable-next-line:no-any
+    findParent(dataSource, id, callback, parent) {
+        if (dataSource.hasOwnProperty(id) && callback(dataSource[id]) === true) {
+            return extend({}, dataSource);
+        }
+        for (let i = 0; i < Object.keys(dataSource).length; i++) {
+            if (dataSource[Object.keys(dataSource)[i]]
+                && typeof dataSource[Object.keys(dataSource)[i]] === 'object') {
+                // tslint:disable-next-line:no-any
+                let result = this.findParent(dataSource[Object.keys(dataSource)[i]], id, callback, dataSource);
+                if (result != null) {
+                    if (!result.parent) {
+                        result.parent = parent;
                     }
-                    else {
-                        this.removeItemFromList(obj[i]);
-                    }
+                    return result;
                 }
-                this.updateBlazorTemplates(true);
             }
         }
+        return null;
     }
     // Module Required function
     getModuleName() {
@@ -2537,8 +2644,10 @@ class Virtualization {
         }
     }
     ValidateItemCount(dataSourceLength) {
-        let itemCount = this.listViewInstance.isWindow ? Math.round((window.innerHeight / this.listItemHeight) * 3) :
-            Math.round((this.listViewInstance.height / this.listItemHeight) * 1.5);
+        const height = parseFloat(formatUnit(this.listViewInstance.height));
+        let itemCount = this.listViewInstance.isWindow ?
+            Math.round((window.innerHeight / this.listItemHeight) * 3) :
+            Math.round((height / this.listItemHeight) * 1.5);
         if (itemCount > dataSourceLength) {
             itemCount = dataSourceLength;
         }
@@ -2905,12 +3014,13 @@ class Virtualization {
     }
     removeItem(obj) {
         let dataSource;
-        let resutJSON = this.findDSAndIndexFromId(this.listViewInstance.curViewDS, obj);
+        const curViewDS = this.listViewInstance.curViewDS;
+        let resutJSON = this.findDSAndIndexFromId(curViewDS, obj);
         if (Object.keys(resutJSON).length) {
             dataSource = resutJSON.data;
-            if (this.listViewInstance.curViewDS[resutJSON.index - 1] &&
-                this.listViewInstance.curViewDS[resutJSON.index - 1].isHeader &&
-                (this.listViewInstance.curViewDS[resutJSON.index - 1])
+            if (curViewDS[resutJSON.index - 1] &&
+                curViewDS[resutJSON.index - 1].isHeader &&
+                (curViewDS[resutJSON.index - 1])
                     .items.length === 1) {
                 this.removeUiItem(resutJSON.index - 1);
                 this.removeUiItem(resutJSON.index - 1);
@@ -2919,10 +3029,12 @@ class Virtualization {
                 this.removeUiItem(resutJSON.index);
             }
         }
-        let index = this.listViewInstance.dataSource.indexOf(dataSource);
+        const listDataSource = this.listViewInstance.dataSource instanceof DataManager
+            ? this.listViewInstance.localData : this.listViewInstance.dataSource;
+        let index = listDataSource.indexOf(dataSource);
         if (index !== -1) {
-            this.listViewInstance.dataSource.splice(index, 1);
-            this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource);
+            listDataSource.splice(index, 1);
+            this.listViewInstance.setViewDataSource(listDataSource);
         }
         // recollect all the list item into collection
         this.listViewInstance.liCollection =
@@ -3075,12 +3187,12 @@ class Virtualization {
             });
         });
     }
-    addItem(data, fields) {
-        data.forEach((dataSource) => {
+    addItem(data, fields, dataSource) {
+        data.forEach((currentItem) => {
             // push the given data to main data array
-            this.listViewInstance.dataSource.push(dataSource);
+            dataSource.push(currentItem);
             // recalculate all the group data or other datasource related things
-            this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource);
+            this.listViewInstance.setViewDataSource(dataSource);
             // render list items for first time due to no datasource present earlier
             if (!this.domItemCount) {
                 // fresh rendering for first time
@@ -3093,12 +3205,12 @@ class Virtualization {
                 // when expected expected DOM count doesn't meet the condition we need to create and inject new item into DOM
             }
             else if (this.domItemCount < this.expectedDomItemCount) {
-                let ds = this.listViewInstance.findItemFromDS(this.listViewInstance.dataSource, fields);
+                let ds = this.listViewInstance.findItemFromDS(dataSource, fields);
                 if (ds instanceof Array) {
                     if (this.listViewInstance.ulElement) {
-                        let index = this.listViewInstance.curViewDS.indexOf(dataSource);
+                        let index = this.listViewInstance.curViewDS.indexOf(currentItem);
                         // inject new list item into DOM
-                        this.createAndInjectNewItem(dataSource, index);
+                        this.createAndInjectNewItem(currentItem, index);
                         // check for group header item
                         let curViewDS = this.listViewInstance.curViewDS[index - 1];
                         if (curViewDS && curViewDS.isHeader && curViewDS.items.length === 1) {
@@ -3114,7 +3226,7 @@ class Virtualization {
                 }
             }
             else {
-                let index = this.listViewInstance.curViewDS.indexOf(dataSource);
+                let index = this.listViewInstance.curViewDS.indexOf(currentItem);
                 // virtually new add list item based on the scollbar position
                 this.addUiItem(index);
                 // check for group header item needs to be added
@@ -3383,6 +3495,7 @@ class Virtualization {
         // resetting the dom count to 0, to avoid edge case of dataSource suddenly becoming zero
         // and then manually adding item using addItem API
         this.domItemCount = 0;
+        this.listViewInstance.header();
         this.listViewInstance.setLocalData();
     }
     updateUI(element, index, targetElement) {
@@ -3522,7 +3635,13 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             this.target = this.getSortableElement(e.target);
             this.target.classList.add('e-grabbed');
             this.curTarget = this.target;
-            this.trigger('dragStart', { event: e.event, element: this.element, target: this.target });
+            if (isBlazor) {
+                this.trigger('dragStart', { event: e.event, element: this.element, target: this.target,
+                    bindEvents: e.bindEvents, dragElement: e.dragElement });
+            }
+            else {
+                this.trigger('dragStart', { event: e.event, element: this.element, target: this.target });
+            }
         };
         this.onDragStop = (e) => {
             let dropInst = this.getSortableInstance(this.curTarget);

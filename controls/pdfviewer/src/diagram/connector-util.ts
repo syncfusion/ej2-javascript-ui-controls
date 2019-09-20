@@ -135,6 +135,13 @@ export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointMode
     textele = textElement(obj, angle);
     textele.content = measure.setConversion(findPointsLength([points[0], points[1]]) * measure.pixelToPointFactor, obj);
     textele.rotateValue = { y: -10, angle: angle };
+    if (obj.enableShapeLabel === true) {
+        textele.style.strokeColor = obj.labelBorderColor;
+        textele.style.fill = obj.labelFillColor;
+        textele.style.fontSize = obj.fontSize;
+        textele.style.color = obj.fontColor;
+        textele.style.fontFamily = obj.fontFamily;
+    }
     labels.push(textele);
     return labels;
 }
@@ -189,6 +196,13 @@ export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointMod
     let textele: TextElement;
     let angle: number = Point.findAngle(points[0], points[1]);
     textele = textElement(obj, angle);
+    if (obj.enableShapeLabel === true) {
+        textele.style.strokeColor = obj.labelBorderColor;
+        textele.style.fill = obj.labelFillColor;
+        textele.style.fontSize = obj.fontSize;
+        textele.style.color = obj.fontColor;
+        textele.style.fontFamily = obj.fontFamily;
+    }
     textele.rotateValue = { y: -10, angle: angle };
     labels.push(textele);
     return labels;

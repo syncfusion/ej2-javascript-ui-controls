@@ -12,7 +12,6 @@ import { RadialGradientModel, LinearGradientModel, StopModel } from '../src/draw
 import { Rect } from '../src/drawing/primitives/rect';
 import { randomId, wordBreakToString, whiteSpaceToString, middleElement } from '../src/drawing/utility/base-util';
 import { Canvas } from '../src/drawing/core/containers/canvas';
-
 describe('Diagram Control', () => {
     let renderer = new DrawingRenderer('diagram', false);
 

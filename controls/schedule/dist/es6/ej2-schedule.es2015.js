@@ -19,6 +19,8 @@ const cellDoubleClick = 'cellDoubleClick';
 /** @hidden */
 const select = 'select';
 /** @hidden */
+const hover = 'hover';
+/** @hidden */
 const actionBegin = 'actionBegin';
 /** @hidden */
 const actionComplete = 'actionComplete';
@@ -38,6 +40,8 @@ const dataBinding = 'dataBinding';
 const dataBound = 'dataBound';
 /** @hidden */
 const popupOpen = 'popupOpen';
+/** @hidden */
+const popupClose = 'popupClose';
 /** @hidden */
 const dragStart = 'dragStart';
 /** @hidden */
@@ -59,6 +63,8 @@ const initialLoad = 'initial-load';
 const initialEnd = 'initial-end';
 /** @hidden */
 const dataReady = 'data-ready';
+/** @hidden */
+const eventsLoaded = 'events-loaded';
 /** @hidden */
 const contentReady = 'content-ready';
 /** @hidden */
@@ -99,6 +105,11 @@ function getWeekFirstDate(date1, firstDayOfWeek) {
     let date = new Date(date1.getTime());
     firstDayOfWeek = (firstDayOfWeek - date.getDay() + 7 * (-1)) % 7;
     return new Date(date.setDate(date.getDate() + firstDayOfWeek));
+}
+function getWeekLastDate(date, firstDayOfWeek) {
+    let weekFirst = getWeekFirstDate(date, firstDayOfWeek);
+    let weekLast = new Date(weekFirst.getFullYear(), weekFirst.getMonth(), weekFirst.getDate() + 6);
+    return new Date(weekLast.getTime());
 }
 function firstDateOfMonth(date) {
     return new Date(date.getFullYear(), date.getMonth());
@@ -208,7 +219,7 @@ function getOuterHeight(element) {
     return element.offsetHeight + (parseInt(style.marginTop, 10) || 0) + (parseInt(style.marginBottom, 10) || 0);
 }
 function removeChildren(element) {
-    while (element.firstElementChild) {
+    while (element.firstElementChild && !(element.firstElementChild.classList.contains('blazor-template'))) {
         element.removeChild(element.firstElementChild);
     }
 }
@@ -303,6 +314,8 @@ const TIME_CELLS_WRAP_CLASS = 'e-time-cells-wrap';
 /** @hidden */
 const TIME_CELLS_CLASS = 'e-time-cells';
 /** @hidden */
+const TIME_SLOT_CLASS = 'e-time-slots';
+/** @hidden */
 const ALTERNATE_CELLS_CLASS = 'e-alternate-cells';
 /** @hidden */
 const CURRENT_TIME_CLASS = 'e-current-time';
@@ -373,7 +386,7 @@ const AGENDA_CURRENT_DAY_CLASS = 'e-current-day';
 /** @hidden */
 const AGENDA_SELECTED_CELL = 'e-active-appointment-agenda';
 /** @hidden */
-const AGENDA_MONTH_HEADER_CLASS = 'e-month-header';
+const MONTH_HEADER_CLASS = 'e-month-header';
 /** @hidden */
 const AGENDA_HEADER_CLASS = 'e-day-date-header';
 /** @hidden */
@@ -579,8 +592,6 @@ const EVENT_WINDOW_BACK_ICON_CLASS = 'e-back-icon';
 /** @hidden */
 const EVENT_WINDOW_SAVE_ICON_CLASS = 'e-save-icon';
 /** @hidden */
-const EVENT_WINDOW_DELETE_BUTTON_CLASS = 'e-event-delete';
-/** @hidden */
 const EVENT_WINDOW_CANCEL_BUTTON_CLASS = 'e-event-cancel';
 /** @hidden */
 const EVENT_WINDOW_SAVE_BUTTON_CLASS = 'e-event-save';
@@ -648,6 +659,8 @@ const AUTO_HEIGHT = 'e-auto-height';
 const EVENT_TEMPLATE = 'e-template';
 /** @hidden */
 const READ_ONLY = 'e-read-only';
+/** @hidden */
+const MONTH_HEADER_WRAPPER = 'e-month-header-wrapper';
 
 /**
  * Header module
@@ -744,11 +757,15 @@ class HeaderRenderer {
         }
     }
     getCalendarView() {
-        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' ||
-            this.parent.currentView === 'TimelineMonth') {
+        if (['Month', 'MonthAgenda', 'TimelineMonth'].indexOf(this.parent.currentView) > -1) {
             return 'Year';
         }
-        return 'Month';
+        else if (['Year', 'TimelineYear'].indexOf(this.parent.currentView) > -1) {
+            return 'Decade';
+        }
+        else {
+            return 'Month';
+        }
     }
     setCalendarView() {
         if (this.headerCalendar) {
@@ -848,6 +865,12 @@ class HeaderRenderer {
                     text: displayName || this.l10n.getConstant('month'), cssClass: 'e-views e-month'
                 };
                 break;
+            case 'year':
+                view = {
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-year',
+                    text: displayName || this.l10n.getConstant('year'), cssClass: 'e-views e-year'
+                };
+                break;
             case 'agenda':
                 view = {
                     align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda', text: this.l10n.getConstant('agenda'),
@@ -884,6 +907,12 @@ class HeaderRenderer {
                     text: displayName || this.l10n.getConstant('timelineMonth'), cssClass: 'e-views e-timeline-month'
                 };
                 break;
+            case 'timelineyear':
+                view = {
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-timeline-year',
+                    text: displayName || this.l10n.getConstant('timelineYear'), cssClass: 'e-views e-timeline-year'
+                };
+                break;
         }
         return view;
     }
@@ -903,7 +932,7 @@ class HeaderRenderer {
         let calendarView = this.getCalendarView();
         this.headerCalendar = new Calendar({
             value: this.parent.selectedDate,
-            firstDayOfWeek: this.parent.firstDayOfWeek,
+            firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             depth: calendarView,
@@ -955,15 +984,12 @@ class HeaderRenderer {
             case 'e-month':
                 this.parent.changeView('Month', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
+            case 'e-year':
+                // this.parent.changeView('Year', args.originalEvent, undefined, this.calculateViewIndex(args));
+                break;
             case 'e-agenda':
                 this.parent.changeView('Agenda', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
-            // case 'e-week-agenda':
-            //     this.parent.changeView('weekAgenda', args.originalEvent);
-            //     break;
-            // case 'e-work-week-agenda':
-            //     this.parent.changeView('workWeekAgenda', args.originalEvent);
-            //     break;
             case 'e-month-agenda':
                 this.parent.changeView('MonthAgenda', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
@@ -978,6 +1004,9 @@ class HeaderRenderer {
                 break;
             case 'e-timeline-month':
                 this.parent.changeView('TimelineMonth', args.originalEvent, undefined, this.calculateViewIndex(args));
+                break;
+            case 'e-timeline-year':
+                this.parent.changeView('TimelineYear', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
             case 'e-today':
                 if (!this.parent.isSelectedDate(resetTime(this.parent.getCurrentTime()))) {
@@ -1458,12 +1487,12 @@ class KeyboardInteraction {
         if (this.parent.activeViewOptions.readonly || this.parent.currentView === 'MonthAgenda' || !this.initialTarget) {
             return;
         }
-        if (e.event.target.classList.contains(WORK_CELLS_CLASS)) {
+        if (e.event.target.classList.contains(WORK_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             EventHandler.add(this.parent.getContentTable(), 'mousemove', this.onMouseSelection, this);
             EventHandler.add(this.parent.getContentTable(), 'mouseup', this.onMoveup, this);
         }
-        if (e.event.target.classList.contains(ALLDAY_CELLS_CLASS)) {
+        if (e.event.target.classList.contains(ALLDAY_CELLS_CLASS) && e.event.which !== 3) {
             this.parent.removeSelectedClass();
             let allDayRow = this.parent.getAllDayRow();
             EventHandler.add(allDayRow, 'mousemove', this.onMouseSelection, this);
@@ -2145,6 +2174,220 @@ class Data {
     }
 }
 
+class Gregorian {
+    firstDateOfMonth(date) {
+        return new Date(date.getFullYear(), date.getMonth());
+    }
+    lastDateOfMonth(dt) {
+        return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
+    }
+    isMonthStart(date) {
+        return (date.getDate() === 1);
+    }
+    getLeapYearDaysCount() {
+        return 366;
+    }
+    getYearDaysCount(date, interval) {
+        return ((date.getFullYear() + interval) % 4 === 0) ? 366 : 365;
+    }
+    getDate(date) {
+        return date.getDate();
+    }
+    getMonth(date) {
+        return (date.getMonth() + 1);
+    }
+    getFullYear(date) {
+        return date.getFullYear();
+    }
+    getYearLastDate(date, interval) {
+        return new Date(date.getFullYear() + interval, 0, 0);
+    }
+    getMonthDaysCount(date) {
+        return this.lastDateOfMonth(date).getDate();
+    }
+    getMonthStartDate(date) {
+        return new Date(date.getFullYear(), date.getMonth(), 1, date.getHours(), date.getMinutes());
+    }
+    getMonthEndDate(date) {
+        date.setDate(1);
+        return new Date(date.setMonth(date.getMonth() + 1));
+    }
+    getExpectedDays(date, days) {
+        return days;
+    }
+    setDate(dateObj, date) {
+        dateObj.setDate(date);
+    }
+    setValidDate(date, interval, startDate, monthValue, beginDate) {
+        if (!isNullOrUndefined(beginDate)) {
+            date.setMonth((beginDate ? monthValue : date.getMonth()) + interval);
+        }
+        else {
+            date.setMonth(date.getMonth() + interval, startDate);
+        }
+    }
+    setMonth(date, interval, startDate) {
+        date.setFullYear(date.getFullYear());
+        date.setMonth(interval - 1);
+        date.setDate(startDate);
+    }
+    addYears(date, interval) {
+        date.setFullYear(date.getFullYear() + interval);
+    }
+    isSameMonth(date1, date2) {
+        return (date1.getMonth() === date2.getMonth());
+    }
+    checkMonth(date, months) {
+        return (months.indexOf(date.getMonth() + 1) === -1);
+    }
+    compareMonth(date1, date2) {
+        return (date1.getMonth() > date2.getMonth());
+    }
+    isSameYear(date1, date2) {
+        return (date1.getFullYear() === date2.getFullYear());
+    }
+    isLastMonth(date) {
+        return (date.getMonth() === 11);
+    }
+    isLeapYear(year, interval) {
+        return ((year + interval) % 4 === 0);
+    }
+}
+class Islamic {
+    firstDateOfMonth(date) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, 1);
+        return gDate;
+    }
+    lastDateOfMonth(date) {
+        let hDate = this.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, this.getDaysInMonth(hDate.month, hDate.year));
+        let finalGDate = new Date(gDate.getTime());
+        new Date(finalGDate.setDate(finalGDate.getDate() + 1));
+        let finalHDate = this.getHijriDate(finalGDate);
+        if (hDate.month === finalHDate.month) {
+            return finalGDate;
+        }
+        finalHDate = HijriParser.getHijriDate(gDate);
+        if (hDate.month === finalHDate.month) {
+            return gDate;
+        }
+        return new Date(gDate.setDate(gDate.getDate() - 1));
+    }
+    isMonthStart(date) {
+        let hijriDate = this.getHijriDate(date);
+        return (hijriDate.date === 1);
+    }
+    getLeapYearDaysCount() {
+        return 355;
+    }
+    getYearDaysCount(date, interval) {
+        let hDate = this.getHijriDate(date);
+        return this.isLeapYear(hDate.year, interval) ? 355 : 354;
+    }
+    getDate(date) {
+        let hijriDate = this.getHijriDate(date);
+        return hijriDate.date;
+    }
+    getMonth(date) {
+        let hDate = this.getHijriDate(date);
+        return hDate.month;
+    }
+    getFullYear(date) {
+        let hDate = this.getHijriDate(date);
+        return hDate.year;
+    }
+    getYearLastDate(date, interval) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year + interval, 1, 0);
+        return gDate;
+    }
+    getMonthDaysCount(date) {
+        let maxDate = this.lastDateOfMonth(date);
+        let hijriDate = this.getHijriDate(maxDate);
+        return hijriDate.date;
+    }
+    getMonthStartDate(date) {
+        let firstDate = this.firstDateOfMonth(date);
+        return new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate(), date.getHours(), date.getMinutes());
+    }
+    getMonthEndDate(date) {
+        let lastDate = this.lastDateOfMonth(date);
+        lastDate.setDate(lastDate.getDate() + 1);
+        return new Date(lastDate.setMonth(lastDate.getMonth()));
+    }
+    getExpectedDays(date, days) {
+        let hDate = this.getHijriDate(date);
+        let day = [];
+        for (let i = 0; i < days.length; i++) {
+            let gDate = HijriParser.toGregorian(hDate.year, hDate.month, days[i]);
+            day.push(gDate.getDate());
+        }
+        return day;
+    }
+    setDate(dateObj, date) {
+        let hDate = HijriParser.getHijriDate(dateObj);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, date);
+        this.updateDateObj(dateObj, gDate);
+    }
+    setValidDate(date, interval, startDate, monthValue, beginDate) {
+        let firstDate = (!isNullOrUndefined(beginDate)) ? this.firstDateOfMonth(beginDate) : date;
+        let hDate = HijriParser.getHijriDate(firstDate);
+        let gDate = HijriParser.toGregorian(hDate.year, hDate.month + interval, startDate);
+        this.updateDateObj(date, gDate);
+    }
+    setMonth(date, interval, startDate) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year, interval, startDate);
+        this.updateDateObj(date, gDate);
+    }
+    addYears(date, interval, monthValue) {
+        let hDate = HijriParser.getHijriDate(date);
+        let gDate = HijriParser.toGregorian(hDate.year + interval, monthValue, 1);
+        this.updateDateObj(date, gDate);
+    }
+    isSameMonth(date1, date2) {
+        let currentHijri = this.getHijriDate(date1);
+        let tempHijri = this.getHijriDate(date2);
+        return (currentHijri.month === tempHijri.month);
+    }
+    checkMonth(date, months) {
+        let hDate = this.getHijriDate(date);
+        return (months.indexOf(hDate.month) === -1);
+    }
+    compareMonth(date1, date2) {
+        let hDate = this.getHijriDate(date1);
+        let hDate1 = this.getHijriDate(date2);
+        return (hDate.month > hDate1.month);
+    }
+    isSameYear(date1, date2) {
+        let hDate = this.getHijriDate(date1);
+        let hDate1 = this.getHijriDate(date2);
+        return (hDate.year === hDate1.year);
+    }
+    isLastMonth(date) {
+        let hDate = this.getHijriDate(date);
+        return (hDate.month === 12);
+    }
+    updateDateObj(date, gDate) {
+        date.setFullYear(gDate.getFullYear(), gDate.getMonth(), gDate.getDate());
+    }
+    isLeapYear(year, interval) {
+        return (14 + 11 * (year + interval)) % 30 < 11;
+    }
+    getDaysInMonth(month, year) {
+        let length = 0;
+        length = 29 + ((month + 1) % 2);
+        if (month === 11 && this.isLeapYear(year, 0)) {
+            length++;
+        }
+        return length;
+    }
+    getHijriDate(date) {
+        return HijriParser.getHijriDate(date);
+    }
+}
+
 /**
  * Time zone
  */
@@ -2441,220 +2684,6 @@ let timezoneData = [
     { Value: 'Pacific/Apia', Text: '(UTC+14:00) Apia' },
     { Value: 'Pacific/Kiritimati', Text: '(UTC+14:00) Kiritimati' }
 ];
-
-class Gregorian {
-    firstDateOfMonth(date) {
-        return new Date(date.getFullYear(), date.getMonth());
-    }
-    lastDateOfMonth(dt) {
-        return new Date(dt.getFullYear(), dt.getMonth() + 1, 0);
-    }
-    isMonthStart(date) {
-        return (date.getDate() === 1);
-    }
-    getLeapYearDaysCount() {
-        return 366;
-    }
-    getYearDaysCount(date, interval) {
-        return ((date.getFullYear() + interval) % 4 === 0) ? 366 : 365;
-    }
-    getDate(date) {
-        return date.getDate();
-    }
-    getMonth(date) {
-        return (date.getMonth() + 1);
-    }
-    getFullYear(date) {
-        return date.getFullYear();
-    }
-    getYearLastDate(date, interval) {
-        return new Date(date.getFullYear() + interval, 0, 0);
-    }
-    getMonthDaysCount(date) {
-        return this.lastDateOfMonth(date).getDate();
-    }
-    getMonthStartDate(date) {
-        return new Date(date.getFullYear(), date.getMonth(), 1, date.getHours(), date.getMinutes());
-    }
-    getMonthEndDate(date) {
-        date.setDate(1);
-        return new Date(date.setMonth(date.getMonth() + 1));
-    }
-    getExpectedDays(date, days) {
-        return days;
-    }
-    setDate(dateObj, date) {
-        dateObj.setDate(date);
-    }
-    setValidDate(date, interval, startDate, monthValue, beginDate) {
-        if (!isNullOrUndefined(beginDate)) {
-            date.setMonth((beginDate ? monthValue : date.getMonth()) + interval);
-        }
-        else {
-            date.setMonth(date.getMonth() + interval, startDate);
-        }
-    }
-    setMonth(date, interval, startDate) {
-        date.setFullYear(date.getFullYear());
-        date.setMonth(interval - 1);
-        date.setDate(startDate);
-    }
-    addYears(date, interval) {
-        date.setFullYear(date.getFullYear() + interval);
-    }
-    isSameMonth(date1, date2) {
-        return (date1.getMonth() === date2.getMonth());
-    }
-    checkMonth(date, months) {
-        return (months.indexOf(date.getMonth() + 1) === -1);
-    }
-    compareMonth(date1, date2) {
-        return (date1.getMonth() > date2.getMonth());
-    }
-    isSameYear(date1, date2) {
-        return (date1.getFullYear() === date2.getFullYear());
-    }
-    isLastMonth(date) {
-        return (date.getMonth() === 11);
-    }
-    isLeapYear(year, interval) {
-        return ((year + interval) % 4 === 0);
-    }
-}
-class Islamic {
-    firstDateOfMonth(date) {
-        let hDate = HijriParser.getHijriDate(date);
-        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, 1);
-        return gDate;
-    }
-    lastDateOfMonth(date) {
-        let hDate = this.getHijriDate(date);
-        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, this.getDaysInMonth(hDate.month, hDate.year));
-        let finalGDate = new Date(gDate.getTime());
-        new Date(finalGDate.setDate(finalGDate.getDate() + 1));
-        let finalHDate = this.getHijriDate(finalGDate);
-        if (hDate.month === finalHDate.month) {
-            return finalGDate;
-        }
-        finalHDate = HijriParser.getHijriDate(gDate);
-        if (hDate.month === finalHDate.month) {
-            return gDate;
-        }
-        return new Date(gDate.setDate(gDate.getDate() - 1));
-    }
-    isMonthStart(date) {
-        let hijriDate = this.getHijriDate(date);
-        return (hijriDate.date === 1);
-    }
-    getLeapYearDaysCount() {
-        return 355;
-    }
-    getYearDaysCount(date, interval) {
-        let hDate = this.getHijriDate(date);
-        return this.isLeapYear(hDate.year, interval) ? 355 : 354;
-    }
-    getDate(date) {
-        let hijriDate = this.getHijriDate(date);
-        return hijriDate.date;
-    }
-    getMonth(date) {
-        let hDate = this.getHijriDate(date);
-        return hDate.month;
-    }
-    getFullYear(date) {
-        let hDate = this.getHijriDate(date);
-        return hDate.year;
-    }
-    getYearLastDate(date, interval) {
-        let hDate = HijriParser.getHijriDate(date);
-        let gDate = HijriParser.toGregorian(hDate.year + interval, 1, 0);
-        return gDate;
-    }
-    getMonthDaysCount(date) {
-        let maxDate = this.lastDateOfMonth(date);
-        let hijriDate = this.getHijriDate(maxDate);
-        return hijriDate.date;
-    }
-    getMonthStartDate(date) {
-        let firstDate = this.firstDateOfMonth(date);
-        return new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate(), date.getHours(), date.getMinutes());
-    }
-    getMonthEndDate(date) {
-        let lastDate = this.lastDateOfMonth(date);
-        lastDate.setDate(lastDate.getDate() + 1);
-        return new Date(lastDate.setMonth(lastDate.getMonth()));
-    }
-    getExpectedDays(date, days) {
-        let hDate = this.getHijriDate(date);
-        let day = [];
-        for (let i = 0; i < days.length; i++) {
-            let gDate = HijriParser.toGregorian(hDate.year, hDate.month, days[i]);
-            day.push(gDate.getDate());
-        }
-        return day;
-    }
-    setDate(dateObj, date) {
-        let hDate = HijriParser.getHijriDate(dateObj);
-        let gDate = HijriParser.toGregorian(hDate.year, hDate.month, date);
-        this.updateDateObj(dateObj, gDate);
-    }
-    setValidDate(date, interval, startDate, monthValue, beginDate) {
-        let firstDate = (!isNullOrUndefined(beginDate)) ? this.firstDateOfMonth(beginDate) : date;
-        let hDate = HijriParser.getHijriDate(firstDate);
-        let gDate = HijriParser.toGregorian(hDate.year, hDate.month + interval, startDate);
-        this.updateDateObj(date, gDate);
-    }
-    setMonth(date, interval, startDate) {
-        let hDate = HijriParser.getHijriDate(date);
-        let gDate = HijriParser.toGregorian(hDate.year, interval, startDate);
-        this.updateDateObj(date, gDate);
-    }
-    addYears(date, interval, monthValue) {
-        let hDate = HijriParser.getHijriDate(date);
-        let gDate = HijriParser.toGregorian(hDate.year + interval, monthValue, 1);
-        this.updateDateObj(date, gDate);
-    }
-    isSameMonth(date1, date2) {
-        let currentHijri = this.getHijriDate(date1);
-        let tempHijri = this.getHijriDate(date2);
-        return (currentHijri.month === tempHijri.month);
-    }
-    checkMonth(date, months) {
-        let hDate = this.getHijriDate(date);
-        return (months.indexOf(hDate.month) === -1);
-    }
-    compareMonth(date1, date2) {
-        let hDate = this.getHijriDate(date1);
-        let hDate1 = this.getHijriDate(date2);
-        return (hDate.month > hDate1.month);
-    }
-    isSameYear(date1, date2) {
-        let hDate = this.getHijriDate(date1);
-        let hDate1 = this.getHijriDate(date2);
-        return (hDate.year === hDate1.year);
-    }
-    isLastMonth(date) {
-        let hDate = this.getHijriDate(date);
-        return (hDate.month === 12);
-    }
-    updateDateObj(date, gDate) {
-        date.setFullYear(gDate.getFullYear(), gDate.getMonth(), gDate.getDate());
-    }
-    isLeapYear(year, interval) {
-        return (14 + 11 * (year + interval)) % 30 < 11;
-    }
-    getDaysInMonth(month, year) {
-        let length = 0;
-        length = 29 + ((month + 1) % 2);
-        if (month === 11 && this.isLeapYear(year, 0)) {
-            length++;
-        }
-        return length;
-    }
-    getHijriDate(date) {
-        return HijriParser.getHijriDate(date);
-    }
-}
 
 /**
  * Date Generator from Recurrence Rule
@@ -3812,7 +3841,6 @@ class EventBase {
     constructor(parent) {
         this.slots = [];
         this.parent = parent;
-        this.timezone = new Timezone();
     }
     processData(events, timeZonePropChanged, oldTimezone) {
         let start = this.parent.activeView.startDate();
@@ -3890,24 +3918,27 @@ class EventBase {
             let startTz = eventData[fields.startTimezone];
             let endTz = eventData[fields.endTimezone];
             eventData[fields.startTime] =
-                this.timezone.convert(eventData[fields.startTime], this.parent.timezone, startTz);
+                this.parent.tzModule.convert(eventData[fields.startTime], this.parent.timezone, startTz);
             eventData[fields.endTime] =
-                this.timezone.convert(eventData[fields.endTime], this.parent.timezone, endTz);
+                this.parent.tzModule.convert(eventData[fields.endTime], this.parent.timezone, endTz);
         }
     }
     processTimezoneChange(event, oldTimezone) {
         let fields = this.parent.eventFields;
+        if (event[fields.isAllDay]) {
+            return;
+        }
         if (oldTimezone && this.parent.timezone) {
-            event[fields.startTime] = this.timezone.convert(event[fields.startTime], oldTimezone, this.parent.timezone);
-            event[fields.endTime] = this.timezone.convert(event[fields.endTime], oldTimezone, this.parent.timezone);
+            event[fields.startTime] = this.parent.tzModule.convert(event[fields.startTime], oldTimezone, this.parent.timezone);
+            event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], oldTimezone, this.parent.timezone);
         }
         else if (!oldTimezone && this.parent.timezone) {
-            event[fields.startTime] = this.timezone.add(event[fields.startTime], this.parent.timezone);
-            event[fields.endTime] = this.timezone.add(event[fields.endTime], this.parent.timezone);
+            event[fields.startTime] = this.parent.tzModule.add(event[fields.startTime], this.parent.timezone);
+            event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], this.parent.timezone);
         }
         else if (oldTimezone && !this.parent.timezone) {
-            event[fields.startTime] = this.timezone.remove(event[fields.startTime], oldTimezone);
-            event[fields.endTime] = this.timezone.remove(event[fields.endTime], oldTimezone);
+            event[fields.startTime] = this.parent.tzModule.remove(event[fields.startTime], oldTimezone);
+            event[fields.endTime] = this.parent.tzModule.remove(event[fields.endTime], oldTimezone);
         }
     }
     processTimezone(event) {
@@ -3915,17 +3946,17 @@ class EventBase {
         if (event[fields.startTimezone] || event[fields.endTimezone]) {
             let startTimezone = event[fields.startTimezone] || event[fields.endTimezone];
             let endTimezone = event[fields.endTimezone] || event[fields.startTimezone];
-            event[fields.startTime] = this.timezone.add(event[fields.startTime], startTimezone);
-            event[fields.endTime] = this.timezone.add(event[fields.endTime], endTimezone);
+            event[fields.startTime] = this.parent.tzModule.add(event[fields.startTime], startTimezone);
+            event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], endTimezone);
             if (this.parent.timezone) {
                 let zone = this.parent.timezone;
-                event[fields.startTime] = this.timezone.convert(event[fields.startTime], startTimezone, zone);
-                event[fields.endTime] = this.timezone.convert(event[fields.endTime], endTimezone, zone);
+                event[fields.startTime] = this.parent.tzModule.convert(event[fields.startTime], startTimezone, zone);
+                event[fields.endTime] = this.parent.tzModule.convert(event[fields.endTime], endTimezone, zone);
             }
         }
         else if (this.parent.timezone) {
-            event[fields.startTime] = this.timezone.add(event[fields.startTime], this.parent.timezone);
-            event[fields.endTime] = this.timezone.add(event[fields.endTime], this.parent.timezone);
+            event[fields.startTime] = this.parent.tzModule.add(event[fields.startTime], this.parent.timezone);
+            event[fields.endTime] = this.parent.tzModule.add(event[fields.endTime], this.parent.timezone);
         }
     }
     filterBlockEvents(eventObj) {
@@ -4293,13 +4324,14 @@ class EventBase {
             this.removeSelectedAppointmentClass();
         }
     }
-    wireAppointmentEvents(element, isAllDay = false, event) {
+    wireAppointmentEvents(element, isAllDay = false, event, isPreventDragAndResize = false) {
         let isReadOnly = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
         }
-        if (!this.parent.activeViewOptions.readonly && !isReadOnly && ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1) {
+        if (!this.parent.activeViewOptions.readonly && !isReadOnly &&
+            ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1 && !isPreventDragAndResize) {
             if (this.parent.resizeModule) {
                 this.parent.resizeModule.wireResizeEvent(element);
             }
@@ -4380,8 +4412,8 @@ class EventBase {
                 if (isBlazor()) {
                     let eventFields = this.parent.eventFields;
                     let eventObj = eventClickArgs.event;
-                    eventObj.startTime = this.parent.getDateTime(eventObj[eventFields.startTime]);
-                    eventObj.endTime = this.parent.getDateTime(eventObj[eventFields.endTime]);
+                    eventObj[eventFields.startTime] = this.parent.getDateTime(eventObj[eventFields.startTime]);
+                    eventObj[eventFields.endTime] = this.parent.getDateTime(eventObj[eventFields.endTime]);
                     if (eventClickArgs.element) {
                         eventClickArgs.element = getElement(eventClickArgs.element);
                     }
@@ -4479,8 +4511,8 @@ class EventBase {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        let newTimezone = this.parent.timezone || this.timezone.getLocalTimezoneName();
-        let firstDay = this.parent.firstDayOfWeek;
+        let newTimezone = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+        let firstDay = this.parent.activeViewOptions.firstDayOfWeek;
         let calendarMode = this.parent.calendarMode;
         let dates = generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
@@ -4680,586 +4712,6 @@ class EventBase {
 }
 
 /**
- * Schedule CRUD operations
- */
-class Crud {
-    constructor(parent) {
-        this.parent = parent;
-        this.timezone = new Timezone();
-    }
-    getQuery() {
-        let start = this.parent.activeView.startDate();
-        let end = this.parent.activeView.endDate();
-        return this.parent.dataModule.generateQuery(start, end);
-    }
-    getTable() {
-        if (this.parent.eventSettings.query) {
-            let query = this.parent.eventSettings.query.clone();
-            return query.fromTable;
-        }
-        return null;
-    }
-    refreshData(args) {
-        let actionArgs = {
-            requestType: args.requestType, cancel: false, data: args.data,
-            addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
-            deletedRecords: args.editParms.deletedRecords
-        };
-        if (this.parent.dataModule.dataManager.dataSource.offline) {
-            this.parent.trigger(actionComplete, actionArgs);
-            this.parent.renderModule.refreshDataManager();
-            return;
-        }
-        else {
-            args.promise.then((e) => {
-                if (this.parent.isDestroyed) {
-                    return;
-                }
-                this.parent.trigger(actionComplete, actionArgs);
-                if (actionArgs.cancel) {
-                    return;
-                }
-                this.parent.renderModule.refreshDataManager();
-            }).catch((e) => {
-                if (this.parent.isDestroyed) {
-                    return;
-                }
-                this.parent.trigger(actionFailure, { error: e });
-            });
-        }
-    }
-    addEvent(eventData) {
-        if (this.parent.eventBase.isBlockRange(eventData)) {
-            let data = (eventData instanceof Array) ? [eventData] : eventData;
-            this.parent.quickPopup.openValidationError('blockAlert', data);
-            return;
-        }
-        let fields = this.parent.eventFields;
-        let promise = null;
-        let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-        let args = {
-            cancel: false,
-            data: (eventData instanceof Array) ? eventData : [eventData],
-            requestType: 'eventCreate'
-        };
-        this.parent.trigger(actionBegin, args);
-        if (args.cancel) {
-            return;
-        }
-        if (eventData instanceof Array) {
-            for (let event of eventData) {
-                this.processCrudTimezone(event);
-                editParms.addedRecords.push(event);
-            }
-            promise =
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-        }
-        else {
-            this.processCrudTimezone(eventData);
-            editParms.addedRecords.push(eventData);
-            promise = this.parent.dataModule.dataManager.insert(eventData, this.getTable(), this.getQuery());
-        }
-        let crudArgs = {
-            requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
-        };
-        this.refreshData(crudArgs);
-    }
-    saveEvent(event, action) {
-        if (this.parent.eventBase.isBlockRange(event)) {
-            let data = (event instanceof Array) ? [event] : event;
-            this.parent.quickPopup.openValidationError('blockAlert', data);
-            return;
-        }
-        this.parent.currentAction = action;
-        let fields = this.parent.eventFields;
-        let promise = null;
-        let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-        let args = { requestType: 'eventChange', cancel: false };
-        let data = event;
-        if (isNullOrUndefined(action)) {
-            args.data = data;
-            this.parent.trigger(actionBegin, args);
-            if (args.cancel) {
-                return;
-            }
-            this.processCrudTimezone(data);
-            if ((event instanceof Array)) {
-                editParms.changedRecords = event;
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-            }
-            else {
-                editParms.changedRecords.push(event);
-                promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery());
-            }
-        }
-        else {
-            let parentEvent = this.getParentEvent(data);
-            switch (action) {
-                case 'EditOccurrence':
-                    let edited = this.getEditedOccurrence(data.Guid);
-                    args.data = { occurrence: event, parent: parentEvent };
-                    this.parent.trigger(actionBegin, args);
-                    if (args.cancel) {
-                        return;
-                    }
-                    let exDate = this.excludeDateCheck(edited[0][fields.startTime], parentEvent[fields.recurrenceException]);
-                    if (exDate !== parentEvent[fields.recurrenceException]) {
-                        parentEvent[fields.recurrenceException] = exDate;
-                        data[fields.recurrenceID] = parentEvent[fields.id];
-                        if (!isNullOrUndefined(data[fields.followingID])) {
-                            delete (data[fields.followingID]);
-                        }
-                        this.processCrudTimezone(parentEvent);
-                        editParms.changedRecords.push(parentEvent);
-                        this.processCrudTimezone(data);
-                        editParms.addedRecords.push(data);
-                    }
-                    else {
-                        this.processCrudTimezone(data);
-                        editParms.changedRecords.push(data);
-                    }
-                    break;
-                case 'EditFollowingEvents':
-                    if (!this.processEditFutureOccurence(data, parentEvent, editParms)) {
-                        return;
-                    }
-                    break;
-                case 'EditSeries':
-                    if (!this.processEditSeries(data, parentEvent, editParms)) {
-                        return;
-                    }
-                    this.parent.uiStateValues.isIgnoreOccurrence = false;
-                    break;
-            }
-            promise =
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-        }
-        // if (!this.parent.activeView.isTimelineView()) {
-        //     this.parent.eventBase.selectWorkCellByTime(dataObj);
-        // }
-        let crudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise, editParms: editParms };
-        this.refreshData(crudArgs);
-    }
-    processEditFutureOccurence(data, parentEvent, editParms) {
-        let args = { requestType: 'eventChange', cancel: false };
-        args.data = data;
-        let edited = this.getEditedOccurrence(data.Guid);
-        let fields = this.parent.eventFields;
-        this.parent.trigger(actionBegin, args);
-        if (args.cancel) {
-            return false;
-        }
-        let isEventStart = edited[0][fields.startTime].getTime() === parentEvent[fields.startTime].getTime();
-        let date;
-        let immediateParentEvent;
-        if (edited[0][fields.id] === parentEvent[fields.id] && isEventStart) {
-            data[fields.id] = parentEvent[fields.id];
-            immediateParentEvent = extend({}, parentEvent);
-        }
-        else {
-            immediateParentEvent = extend({}, this.parent.eventBase.getEventById(edited[0][fields.id]));
-        }
-        let initialRecRule = immediateParentEvent[fields.recurrenceRule];
-        if (data[fields.startTime] !== immediateParentEvent[fields.startTime]) {
-            immediateParentEvent[fields.recurrenceRule] = this.getUpdatedParentRule(immediateParentEvent, edited[0]);
-        }
-        data[fields.recurrenceID] = null;
-        let deleteRecurrenceEventList = [];
-        let deleteFutureEditEventList = this.parent.eventBase.getSeriesEvents(immediateParentEvent, edited[0][fields.startTime]);
-        if (deleteFutureEditEventList.length > 0) {
-            initialRecRule = deleteFutureEditEventList.slice(-1)[0][fields.recurrenceRule];
-        }
-        if ((data[fields.recurrenceRule].indexOf('COUNT') > -1
-            || data[fields.recurrenceRule].indexOf('UNTIL') > -1)) {
-            let datecollection = generate(parentEvent[fields.startTime], initialRecRule, null, 0);
-            date = datecollection[datecollection.length - 1];
-        }
-        deleteRecurrenceEventList = deleteRecurrenceEventList.concat(this.parent.eventBase.getEditedOccurrences(edited, edited[0][fields.startTime]));
-        // To reset following id when start/end time changed or when doing following edit from 1st occurrence of the series
-        if (new Date('' + data[fields.startTime]).getTime() !== new Date('' + edited[0][fields.startTime]).getTime()
-            || new Date('' + data[fields.endTime]).getTime() !== new Date('' + edited[0][fields.endTime]).getTime() || isEventStart) {
-            delete (data[fields.followingID]);
-        }
-        // To update recurrencce exception 
-        data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence
-            ? this.updateRecurrenceException(deleteFutureEditEventList, data, parentEvent) : null;
-        // To get the update recurrence rule
-        data = this.updateRecurrenceRule(deleteFutureEditEventList, data, date);
-        if (!isEventStart) {
-            this.processCrudTimezone(immediateParentEvent);
-            editParms.changedRecords.push(immediateParentEvent);
-            this.processCrudTimezone(data);
-            editParms.addedRecords.push(data);
-        }
-        else {
-            this.processCrudTimezone(data);
-            editParms.changedRecords.push(data);
-        }
-        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
-            this.updateParentRecurrentException(immediateParentEvent, edited[0], editParms);
-            deleteRecurrenceEventList = deleteRecurrenceEventList.concat(this.parent.eventBase.getEditedOccurrences(deleteFutureEditEventList, edited[0][fields.startTime]));
-            editParms.deletedRecords = editParms.deletedRecords.concat(deleteRecurrenceEventList);
-        }
-        else {
-            // to delete the existing events when edit events using following events
-            let deleteFutureEditEvents = new Predicate(fields.recurrenceID, 'equal', null);
-            deleteFutureEditEventList = this.parent.eventBase.getFilterEventsList(deleteFutureEditEventList, deleteFutureEditEvents);
-        }
-        // to update the edited event recurrence id & recurrence exception when delele the events
-        this.updateRecurrenceIdAfterFollowingSeriesEdit(data, deleteRecurrenceEventList, edited[0], editParms);
-        // To delete the existing events after updating futuer edit series.
-        editParms.deletedRecords = editParms.deletedRecords.concat(deleteFutureEditEventList);
-        this.parent.uiStateValues.isIgnoreOccurrence = false;
-        return true;
-    }
-    processEditSeries(data, parentEvent, editParms) {
-        let args = { requestType: 'eventChange', cancel: false };
-        let fields = this.parent.eventFields;
-        args.data = data;
-        this.parent.trigger(actionBegin, args);
-        if (args.cancel) {
-            return false;
-        }
-        if (!this.parent.eventSettings.editFollowingEvents) {
-            this.editSeries(data, parentEvent, editParms);
-            return true;
-        }
-        let deleteRecurrenceEventList = [];
-        let deleteExistingEvents = this.parent.eventBase.getSeriesEvents(parentEvent);
-        if (deleteExistingEvents.length === 0) {
-            this.editSeries(data, parentEvent, editParms);
-            return true;
-        }
-        else {
-            if (data[fields.recurrenceRule] === parentEvent[fields.recurrenceRule]) {
-                data[fields.recurrenceRule] = deleteExistingEvents.slice(-1)[0][fields.recurrenceRule];
-            }
-            deleteRecurrenceEventList = this.parent.eventBase.getEditedOccurrences(deleteExistingEvents);
-            data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence
-                ? this.updateRecurrenceException(deleteRecurrenceEventList, data, parentEvent) : null;
-        }
-        data[fields.id] = parentEvent[fields.id];
-        data[fields.recurrenceID] = null;
-        if (!isNullOrUndefined(data[fields.followingID])) {
-            delete (data[fields.followingID]);
-        }
-        this.processCrudTimezone(data);
-        editParms.changedRecords.push(data);
-        // to update the edited event recurrence id & recurrence exception when delele the events
-        this.updateRecurrenceIdAfterFollowingSeriesEdit(data, deleteRecurrenceEventList, parentEvent, editParms);
-        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
-            editParms.deletedRecords = editParms.deletedRecords.concat(deleteRecurrenceEventList);
-        }
-        for (let event of deleteExistingEvents) {
-            if (data[fields.id] !== event[fields.id]) {
-                editParms.deletedRecords.push(event);
-            }
-        }
-        return true;
-    }
-    editSeries(data, parentEvent, editParms) {
-        let fields = this.parent.eventFields;
-        let query = new Query().where(fields.recurrenceID, 'equal', parentEvent[fields.id]);
-        let delApp = new DataManager(this.parent.eventsData).executeLocal(query);
-        data[fields.id] = parentEvent[fields.id];
-        data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence ?
-            parentEvent[fields.recurrenceException] : null;
-        data[fields.recurrenceID] = null;
-        this.processCrudTimezone(data);
-        editParms.changedRecords.push(data);
-        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
-            for (let event of delApp) {
-                editParms.deletedRecords.push(event);
-            }
-        }
-    }
-    updateRecurrenceIdAfterFollowingSeriesEdit(data, eventsList, edited, editParms) {
-        let fields = this.parent.eventFields;
-        let updateRecurrenceId = (new Predicate(fields.recurrenceID, 'notequal', null)).
-            and(new Predicate(fields.startTime, 'greaterthanorequal', edited[fields.startTime]));
-        let eventsToUpdateRecurrenceId = this.parent.eventBase.getFilterEventsList(eventsList, updateRecurrenceId);
-        for (let event of eventsToUpdateRecurrenceId) {
-            event[fields.recurrenceID] = data[fields.id];
-            event[fields.recurrenceException] = data[fields.recurrenceException];
-            event[fields.followingID] = null;
-            editParms.changedRecords.push(event);
-        }
-    }
-    updateRecurrenceRule(followingEventsList, data, lastEventDate) {
-        let fields = this.parent.eventFields;
-        if (followingEventsList.length > 0) {
-            data[fields.recurrenceRule] = followingEventsList.slice(-1)[0][fields.recurrenceRule];
-        }
-        if (!isNullOrUndefined(lastEventDate) && (data[fields.recurrenceRule].indexOf('COUNT') > -1
-            || data[fields.recurrenceRule].indexOf('UNTIL') > -1)) {
-            let date = new Date(lastEventDate);
-            let startTime = new Date(date.setDate((new Date(lastEventDate)).getDate()));
-            data[fields.recurrenceRule] = this.formatRecurrenceRule(data, startTime);
-        }
-        return data;
-    }
-    updateRecurrenceException(ignoreFutureEventList, data, parentEvent) {
-        let fields = this.parent.eventFields;
-        for (let event of ignoreFutureEventList) {
-            if (isNullOrUndefined(event[fields.recurrenceException])) {
-                let followingEvent = new Predicate(fields.id, 'equal', event[fields.recurrenceID]);
-                let recParentEvent = this.parent.eventBase.getFilterEventsList(this.parent.eventsData, followingEvent);
-                event[fields.recurrenceException] = recParentEvent.length > 0 ?
-                    recParentEvent[0][fields.recurrenceException] : event[fields.recurrenceException];
-            }
-            if (!isNullOrUndefined(data[fields.recurrenceException]) && !isNullOrUndefined(event[fields.recurrenceException]) &&
-                data[fields.recurrenceException].indexOf(event[fields.recurrenceException]) === -1) {
-                data[fields.recurrenceException] = data[fields.recurrenceException] + ',' + event[fields.recurrenceException];
-            }
-            else if (isNullOrUndefined(data[fields.recurrenceException])) {
-                data[fields.recurrenceException] = !isNullOrUndefined(parentEvent[fields.recurrenceException])
-                    ? parentEvent[fields.recurrenceException] : event[fields.recurrenceException];
-            }
-        }
-        return data[fields.recurrenceException];
-    }
-    updateParentRecurrentException(parentEvent, edited, editParms) {
-        let fields = this.parent.eventFields;
-        let recurrenceString = isNullOrUndefined(parentEvent[fields.recurrenceException])
-            ? [] : parentEvent[fields.recurrenceException].split(',');
-        let flag = 0;
-        let parentExceptionUpdated = false;
-        for (let recucrrence of recurrenceString) {
-            flag++;
-            let recurrenceDate = getDateFromRecurrenceDateString(recucrrence);
-            if (recurrenceDate >= edited[fields.startTime]) {
-                let replaceString = flag > 1 ? ',' + recucrrence : recucrrence;
-                parentEvent[fields.recurrenceException] = parentEvent[fields.recurrenceException]
-                    .replace(replaceString, '');
-                parentEvent[fields.recurrenceException] = parentEvent[fields.recurrenceException] === '' ? null
-                    : parentEvent[fields.recurrenceException];
-                parentExceptionUpdated = true;
-            }
-        }
-        if (parentExceptionUpdated) {
-            editParms.changedRecords.push(parentEvent);
-        }
-    }
-    deleteEvent(id, action) {
-        let fields = this.parent.eventFields;
-        let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
-        let dataObj = [];
-        let normalEvent = [];
-        let recEvent = [];
-        this.parent.currentAction = action;
-        switch (typeof id) {
-            case 'string':
-            case 'number':
-                dataObj = new DataManager(this.parent.eventsData).executeLocal(new Query().where(fields.id, 'equal', id));
-                break;
-            case 'object':
-                dataObj = (id instanceof Array) ? id : [id];
-                break;
-        }
-        for (let event of dataObj) {
-            (!isNullOrUndefined(event[fields.recurrenceRule])) ? recEvent.push(event) : normalEvent.push(event);
-        }
-        let args = { requestType: 'eventRemove', cancel: false };
-        if (action !== 'DeleteOccurrence') {
-            args.data = dataObj;
-            this.parent.trigger(actionBegin, args);
-            if (args.cancel) {
-                return;
-            }
-        }
-        if (isNullOrUndefined(action) || normalEvent.length > 0) {
-            for (let event of normalEvent) {
-                editParms.deletedRecords.push(event);
-            }
-        }
-        if (recEvent.length > 0) {
-            switch (action) {
-                case 'Delete':
-                case 'DeleteOccurrence':
-                    for (let i = 0; i < recEvent.length; i++) {
-                        let parentEvent = this.getParentEvent(recEvent[i]);
-                        args.data = { occurrence: recEvent[i], parent: parentEvent };
-                        this.parent.trigger(actionBegin, args);
-                        if (args.cancel) {
-                            return;
-                        }
-                        parentEvent[fields.recurrenceException] =
-                            this.excludeDateCheck(recEvent[i][fields.startTime], parentEvent[fields.recurrenceException]);
-                        this.processCrudTimezone(parentEvent);
-                        editParms.changedRecords.push(parentEvent);
-                        if (recEvent[i][fields.id] !== parentEvent[fields.id]) {
-                            editParms.deletedRecords.push(recEvent[i]);
-                        }
-                    }
-                    break;
-                case 'DeleteFollowingEvents':
-                case 'DeleteSeries':
-                    if (!this.parent.eventSettings.editFollowingEvents) {
-                        for (let app of recEvent) {
-                            let predicate = new Predicate(fields.id, 'equal', (app[fields.recurrenceID] || id)).
-                                or(new Predicate(fields.recurrenceID, 'equal', (app[fields.recurrenceID] || id)));
-                            let delApp = new DataManager(this.parent.eventsData).executeLocal(new Query().where(predicate));
-                            for (let event of delApp) {
-                                editParms.deletedRecords.push(event);
-                            }
-                        }
-                    }
-                    else {
-                        editParms = this.processDeleteSeries(recEvent, editParms, id);
-                    }
-                    break;
-            }
-        }
-        let promise;
-        if (editParms.deletedRecords.length === 1 && editParms.changedRecords.length === 0) {
-            let deleteEvent = editParms.deletedRecords[0];
-            promise =
-                this.parent.dataModule.dataManager.remove(fields.id, deleteEvent, this.getTable(), this.getQuery());
-        }
-        else {
-            promise =
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
-        }
-        this.parent.eventBase.selectWorkCellByTime(dataObj);
-        let crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise, editParms: editParms };
-        this.refreshData(crudArgs);
-    }
-    processDeleteSeries(recEvent, editParms, id) {
-        let fields = this.parent.eventFields;
-        for (let app of recEvent) {
-            // To set recurrenceID when directly call deleteEvent, Since the parent event is taken based on recucrrence id.
-            app[fields.recurrenceID] = isNullOrUndefined(app[fields.recurrenceID]) ? app[fields.id] : app[fields.recurrenceID];
-            let parentEvent;
-            let followingEvents = [];
-            let delApp;
-            let eventID;
-            let recurrenceEvent;
-            if (this.parent.currentAction === 'DeleteFollowingEvents') {
-                parentEvent = this.parent.eventBase.getRecurrenceEvent(app);
-                eventID = app[fields.id];
-                // To update until date for every future delete occurences 
-                parentEvent[fields.recurrenceRule] = this.getUpdatedParentRule(parentEvent, app);
-                this.processCrudTimezone(parentEvent);
-                editParms.changedRecords = editParms.changedRecords.concat(parentEvent);
-                // To ignore the past date of clicked event's from edit 
-                let delEventQuery = new Predicate(fields.id, 'equal', eventID).
-                    and(new Predicate(fields.startTime, 'lessthanorequal', app[fields.startTime]));
-                followingEvents = this.parent.eventBase.getSeriesEvents(parentEvent, app[fields.startTime]);
-                this.updateParentRecurrentException(parentEvent, app, editParms);
-                let currentEvent = this.parent.eventBase.getFilterEventsList(this.parent.eventsProcessed, delEventQuery);
-                if (currentEvent.length === 1) {
-                    editParms.deletedRecords = editParms.deletedRecords.concat(app);
-                }
-                recurrenceEvent = (new Predicate(fields.recurrenceID, 'equal', eventID).and(new Predicate(fields.startTime, 'greaterthanorequal', app[fields.startTime])));
-            }
-            else {
-                parentEvent = this.getParentEvent(app);
-                eventID = parentEvent[fields.id];
-                followingEvents = this.parent.eventBase.getSeriesEvents(parentEvent);
-                editParms.deletedRecords = editParms.deletedRecords.concat(parentEvent);
-                recurrenceEvent = (new Predicate(fields.recurrenceID, 'equal', eventID));
-            }
-            if (followingEvents.length === 0) {
-                delApp = this.parent.eventBase.getFilterEventsList(this.parent.eventsData, recurrenceEvent);
-            }
-            else {
-                delApp = followingEvents.concat(this.parent.eventBase.getEditedOccurrences(followingEvents, parentEvent[fields.startTime]));
-            }
-            editParms.deletedRecords = editParms.deletedRecords.concat(delApp);
-        }
-        return editParms;
-    }
-    getParentEvent(event) {
-        let fields = this.parent.eventFields;
-        let parentEvent;
-        if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(event[fields.followingID]) ||
-            (!isNullOrUndefined(fields.recurrenceID) && event[fields.recurrenceID] !== event[fields.id])) &&
-            this.parent.currentAction !== 'EditOccurrence' && this.parent.currentAction !== 'DeleteOccurrence') {
-            parentEvent = this.parent.eventBase.getParentEvent(event);
-        }
-        else {
-            parentEvent = this.parent.eventBase.getRecurrenceEvent(event);
-        }
-        if (parentEvent[fields.startTimezone] || parentEvent[fields.endTimezone]) {
-            this.parent.eventBase.timezoneConvert(parentEvent);
-        }
-        return parentEvent;
-    }
-    processCrudTimezone(events) {
-        let fields = this.parent.eventFields;
-        if (events[fields.startTimezone] || events[fields.endTimezone]) {
-            let startTimezone = events[fields.startTimezone] || events[fields.endTimezone];
-            let endTimezone = events[fields.endTimezone] || events[fields.startTimezone];
-            if (this.parent.timezone) {
-                let zone = this.parent.timezone;
-                events[fields.startTime] = this.timezone.convert(events[fields.startTime], startTimezone, zone);
-                events[fields.endTime] = this.timezone.convert(events[fields.endTime], endTimezone, zone);
-                events[fields.startTime] = this.timezone.remove(events[fields.startTime], zone);
-                events[fields.endTime] = this.timezone.remove(events[fields.endTime], zone);
-            }
-            else {
-                events[fields.startTime] = this.timezone.remove(events[fields.startTime], startTimezone);
-                events[fields.endTime] = this.timezone.remove(events[fields.endTime], endTimezone);
-            }
-        }
-        else if (this.parent.timezone) {
-            events[fields.startTime] = this.timezone.remove(events[fields.startTime], this.parent.timezone);
-            events[fields.endTime] = this.timezone.remove(events[fields.endTime], this.parent.timezone);
-        }
-    }
-    excludeDateCheck(eventStartTime, exceptionDateList) {
-        let exDate = getRecurrenceStringFromDate(eventStartTime);
-        if (!isNullOrUndefined(exceptionDateList)) {
-            if (exceptionDateList.indexOf(exDate) === -1) {
-                exceptionDateList = !(isNullOrUndefined(exceptionDateList)) ? exceptionDateList + ',' + exDate : exDate;
-            }
-        }
-        else {
-            exceptionDateList = exDate;
-        }
-        return exceptionDateList;
-    }
-    getEditedOccurrence(guid) {
-        let query = new Query().where('Guid', 'equal', guid);
-        return new DataManager(this.parent.eventsProcessed).executeLocal(query);
-    }
-    getUpdatedParentRule(parentEvent, edited) {
-        let fields = this.parent.eventFields;
-        let date = new Date('' + edited[fields.startTime]);
-        let startTime = new Date(date.setDate(date.getDate() + (-1)));
-        return this.formatRecurrenceRule(parentEvent, startTime);
-    }
-    formatRecurrenceRule(event, startTime) {
-        let fields = this.parent.eventFields;
-        let untilDate = getRecurrenceStringFromDate(startTime);
-        let rule = '';
-        let splitRecRule = event[fields.recurrenceRule].split(';');
-        if (event[fields.recurrenceRule].indexOf('UNTIL') > -1) {
-            for (let recProperty of splitRecRule) {
-                if (recProperty.indexOf('COUNT') === -1 && recProperty !== '') {
-                    if (recProperty.indexOf('UNTIL') > -1) {
-                        recProperty = recProperty.replace(recProperty, 'UNTIL=' + untilDate);
-                    }
-                    rule = rule + recProperty + ';';
-                }
-            }
-        }
-        else {
-            let updatedRecRule;
-            let countProp;
-            for (let prop of splitRecRule) {
-                countProp = prop.indexOf('COUNT') > -1 ? prop.replace(';', '') : countProp;
-            }
-            updatedRecRule = event[fields.recurrenceRule];
-            let lastChar = updatedRecRule.slice(-1)[0];
-            rule = lastChar === ';' ? updatedRecRule + 'UNTIL=' + untilDate + ';' : updatedRecRule + ';UNTIL=' + untilDate + ';';
-            rule = rule.indexOf('UNTIL') > -1 ? rule.replace(countProp + ';', '') : rule;
-        }
-        return rule;
-    }
-}
-
-/**
  * Appointment window field validation
  */
 class FieldValidator {
@@ -5332,7 +4784,7 @@ class FieldValidator {
      * @hidden
      */
     destroy() {
-        if (this.formObj && !this.formObj.isDestroyed) {
+        if (this.formObj && this.formObj.element && !this.formObj.isDestroyed) {
             this.formObj.destroy();
         }
     }
@@ -5350,7 +4802,6 @@ class QuickPopups {
         this.isMultipleEventSelect = false;
         this.parent = parent;
         this.l10n = this.parent.localeObj;
-        this.crudAction = new Crud(parent);
         this.fieldValidator = new FieldValidator();
         this.render();
         this.addEventListener();
@@ -5380,7 +4831,7 @@ class QuickPopups {
                 (this.parent.enableRtl ? { X: 'flip', Y: 'fit' } : { X: 'none', Y: 'fit' })),
             position: (this.parent.isAdaptive || this.parent.enableRtl ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
-            zIndex: (this.parent.isAdaptive ? 1000 : 3)
+            zIndex: (this.parent.isAdaptive ? 1004 : 3)
         });
         this.quickPopup.isStringTemplate = true;
     }
@@ -5393,17 +4844,24 @@ class QuickPopups {
             className: MORE_POPUP_WRAPPER_CLASS + ' e-popup-close',
             innerHTML: moreEventPopup
         });
-        this.parent.element.appendChild(moreEventWrapper);
+        if (this.parent.isAdaptive) {
+            document.body.appendChild(moreEventWrapper);
+            addClass([moreEventWrapper], DEVICE_CLASS);
+        }
+        else {
+            this.parent.element.appendChild(moreEventWrapper);
+        }
         this.morePopup = new Popup(moreEventWrapper, {
-            targetType: 'relative',
+            targetType: (this.parent.isAdaptive ? 'container' : 'relative'),
             enableRtl: this.parent.enableRtl,
             hideAnimation: { name: 'ZoomOut', duration: 300 },
             showAnimation: { name: 'ZoomIn', duration: 300 },
             open: this.morePopupOpen.bind(this),
             close: this.morePopupClose.bind(this),
-            collision: { X: 'flip', Y: 'flip' },
-            viewPortElement: this.parent.element.querySelector('.' + TABLE_CONTAINER_CLASS),
-            zIndex: 2
+            collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } :
+                (this.parent.enableRtl ? { X: 'flip', Y: 'fit' } : { X: 'flip', Y: 'flip' })),
+            viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
+            zIndex: (this.parent.isAdaptive ? 1002 : 2)
         });
         this.morePopup.isStringTemplate = true;
         let closeButton = this.morePopup.element.querySelector('.' + MORE_EVENT_CLOSE_CLASS);
@@ -5557,7 +5015,9 @@ class QuickPopups {
                 dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
         }
-        this.showQuickDialog('RecurrenceValidationAlert');
+        if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
+            this.showQuickDialog('RecurrenceValidationAlert');
+        }
     }
     openDeleteAlert() {
         if (this.parent.activeViewOptions.readonly) {
@@ -5625,7 +5085,14 @@ class QuickPopups {
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
-                appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
+                let templateElement;
+                if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+                    templateElement = this.parent.getAppointmentTemplate()(eventData);
+                    append(templateElement, appointmentEle);
+                }
+                else {
+                    appointmentEle.appendChild(createElement('div', { className: SUBJECT_CLASS, innerHTML: eventText }));
+                }
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     appointmentEle.setAttribute('data-group-index', groupIndex);
                 }
@@ -5638,7 +5105,12 @@ class QuickPopups {
                 this.parent.trigger(eventRendered, args, (eventArgs) => {
                     if (!eventArgs.cancel) {
                         moreEventWrapperEle.appendChild(appointmentEle);
-                        this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData);
+                        if (this.parent.isAdaptive) {
+                            this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData, true);
+                        }
+                        else {
+                            this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData);
+                        }
                         this.parent.eventBase.applyResourceColor(appointmentEle, eventData, 'backgroundColor', groupOrder);
                     }
                 });
@@ -5690,7 +5162,8 @@ class QuickPopups {
     // tslint:disable-next-line:max-func-body-length
     cellClick(args) {
         this.resetQuickPopupTemplates();
-        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
+        if (!this.parent.showQuickInfo || !this.parent.eventSettings.allowAdding ||
+            this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
         }
@@ -5727,51 +5200,10 @@ class QuickPopups {
         temp[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
         temp[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
         temp[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
-        let cellDetails = this.getFormattedString(temp);
         let quickCellPopup = createElement('div', { className: CELL_POPUP_CLASS });
-        let tArgs = extend({}, temp, { elementType: 'cell' }, true);
-        let templateId = this.parent.element.id + '_';
-        if (this.parent.quickInfoTemplates.header) {
-            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
-            append(headerTemp, quickCellPopup);
-        }
-        else {
-            let headerTemplate = createElement('div', {
-                className: POPUP_HEADER_CLASS,
-                innerHTML: `<div class="${POPUP_HEADER_ICON_WRAPPER}">` +
-                    `<button class="${CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>`
-            });
-            quickCellPopup.appendChild(headerTemplate);
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            let contentTemp = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
-            append(contentTemp, quickCellPopup);
-        }
-        else {
-            let tempStr = `<table class="${POPUP_TABLE_CLASS}"><tbody><tr><td>` +
-                `<form class="${FORM_CLASS}" onsubmit="return false;"><input class="${SUBJECT_CLASS} ${EVENT_FIELD}" type="text" ` +
-                `name="${this.parent.eventFields.subject}" /></form></td></tr><tr><td><div class="${DATE_TIME_CLASS}">` +
-                `<div class="${DATE_TIME_ICON_CLASS} ${ICON}"></div><div class="${DATE_TIME_DETAILS_CLASS} ` +
-                `${TEXT_ELLIPSIS}">${cellDetails.details}</div></div>` +
-                `${this.parent.activeViewOptions.group.resources.length > 0 ? `<div class="${RESOURCE_CLASS}">` +
-                    `<div class="${RESOURCE_ICON_CLASS} ${ICON} "></div><div class="${RESOURCE_DETAILS_CLASS} ` +
-                    `${TEXT_ELLIPSIS}">${this.getResourceText(args, 'cell')}</div></div>` : ''}</td></tr></tbody></table>`;
-            let contentTemplate = createElement('div', { className: POPUP_CONTENT_CLASS, innerHTML: tempStr });
-            quickCellPopup.appendChild(contentTemplate);
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
-            append(footerTemp, quickCellPopup);
-        }
-        else {
-            let footerTemplate = createElement('div', {
-                className: POPUP_FOOTER_CLASS, innerHTML: `<button class="${QUICK_POPUP_EVENT_DETAILS_CLASS + ' ' +
-                    TEXT_ELLIPSIS}" title="${this.l10n.getConstant('moreDetails')}">${this.l10n.getConstant('moreDetails')}</button>` +
-                    `<button class="${EVENT_CREATE_CLASS} ${TEXT_ELLIPSIS}" title="${this.l10n.getConstant('save')}">` +
-                    `${this.l10n.getConstant('save')}</button>`
-            });
-            quickCellPopup.appendChild(footerTemplate);
-        }
+        quickCellPopup.appendChild(this.getPopupHeader('Cell', temp));
+        quickCellPopup.appendChild(this.getPopupContent('Cell', args, temp));
+        quickCellPopup.appendChild(this.getPopupFooter('Cell', temp));
         let subjectElement = quickCellPopup.querySelector('.' + SUBJECT_CLASS);
         if (subjectElement) {
             Input.createInput({ element: subjectElement, properties: { placeholder: this.l10n.getConstant('addTitle') } });
@@ -5814,7 +5246,9 @@ class QuickPopups {
         }
         return false;
     }
-    // tslint:disable-next-line:max-func-body-length
+    isQuickTemplate(type) {
+        return this.parent.quickInfoTemplates.templateType === 'Both' || this.parent.quickInfoTemplates.templateType === type;
+    }
     eventClick(events) {
         this.resetQuickPopupTemplates();
         if (this.parent.eventTooltip) {
@@ -5832,88 +5266,33 @@ class QuickPopups {
                 return;
             }
             let eventData = events.event;
-            let args = this.getFormattedString(eventData);
             let quickEventPopup = createElement('div', { className: EVENT_POPUP_CLASS });
-            let tArgs = extend({}, eventData, { elementType: 'event' }, true);
-            let templateId = this.parent.element.id + '_';
-            if (this.parent.quickInfoTemplates.header) {
-                let headerTemp = this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
-                append(headerTemp, quickEventPopup);
-            }
-            else {
-                let headerTemplate = createElement('div', {
-                    className: POPUP_HEADER_CLASS,
-                    innerHTML: `<div class="${POPUP_HEADER_ICON_WRAPPER}">` +
-                        `<button class="${EDIT_CLASS + ' ' + ICON}" title="${this.l10n.getConstant('edit')}"></button>` +
-                        `<button class="${DELETE_CLASS + ' ' + ICON}" title="${this.l10n.getConstant('delete')}"></button>` +
-                        `<button class="${CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>` +
-                        `<div class="${SUBJECT_WRAP}"><div class="${SUBJECT_CLASS} ${TEXT_ELLIPSIS}" ` +
-                        `title="${args.eventSubject}">${args.eventSubject}</div></div >`
-                });
-                quickEventPopup.appendChild(headerTemplate);
-            }
-            if (this.parent.quickInfoTemplates.content) {
-                let content = this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
-                append(content, quickEventPopup);
-            }
-            else {
-                let tempStr = `<div class="${DATE_TIME_CLASS}">` +
-                    `<div class="${DATE_TIME_ICON_CLASS} ${ICON}"></div><div class="${DATE_TIME_WRAPPER_CLASS} ` +
-                    `${TEXT_ELLIPSIS}"><div class="${DATE_TIME_DETAILS_CLASS} ${TEXT_ELLIPSIS}">${args.details}</div>` +
-                    `${eventData[this.parent.eventFields.recurrenceRule] ? `<div class="${RECURRENCE_SUMMARY_CLASS} ` +
-                        `${TEXT_ELLIPSIS}">${this.getRecurrenceSummary(eventData)}</div>` : ''}</div></div>` +
-                    `${eventData[this.parent.eventFields.location] ? `<div class="${LOCATION_CLASS}"><div class="` +
-                        `${LOCATION_ICON_CLASS} ${ICON}"></div><div class="${LOCATION_DETAILS_CLASS} ${TEXT_ELLIPSIS}">` +
-                        `${eventData[this.parent.eventFields.location]}</div></div>` : ''}` +
-                    `${eventData[this.parent.eventFields.startTimezone] ||
-                        eventData[this.parent.eventFields.endTimezone] ? `<div class="${TIME_ZONE_CLASS}"><div class="` +
-                        `${TIME_ZONE_ICON_CLASS} ${ICON}"></div><div class="${TIME_ZONE_DETAILS_CLASS} ${TEXT_ELLIPSIS}">` +
-                        `${this.getTimezone(eventData)} </div></div>` : ''}` +
-                    `${eventData[this.parent.eventFields.description] ? `<div class="${DESCRIPTION_CLASS}"><div class="` +
-                        `${DESCRIPTION_ICON_CLASS} ${ICON}"></div><div class="${DESCRIPTION_DETAILS_CLASS} ` +
-                        `${TEXT_ELLIPSIS}">${eventData[this.parent.eventFields.description]}</div></div>` : ''}` +
-                    `${this.parent.resourceCollection.length > 0 ? `<div class="${RESOURCE_CLASS}"><div class="` +
-                        `${RESOURCE_ICON_CLASS} ${ICON}"></div><div class="${RESOURCE_DETAILS_CLASS} ${TEXT_ELLIPSIS}">` +
-                        `${this.getResourceText(events, 'event')}</div></div>` : ''}`;
-                let contentTemplate = createElement('div', {
-                    className: POPUP_CONTENT_CLASS, innerHTML: tempStr
-                });
-                quickEventPopup.appendChild(contentTemplate);
-            }
-            if (this.parent.quickInfoTemplates.footer) {
-                let footerTemp = this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
-                append(footerTemp, quickEventPopup);
-            }
-            else {
-                let footerTemplate = createElement('div', {
-                    className: POPUP_FOOTER_CLASS,
-                    innerHTML: `${this.parent.isAdaptive ? '' : `<button class="${EDIT_EVENT_CLASS} ` +
-                        `${TEXT_ELLIPSIS}" title="${this.l10n.getConstant('edit')}">${this.l10n.getConstant('edit')}</button>` +
-                        `<button class="${DELETE_EVENT_CLASS} ${TEXT_ELLIPSIS}" title="${this.l10n.getConstant('delete')}">` +
-                        `${this.l10n.getConstant('delete')}</button>`}`
-                });
-                quickEventPopup.appendChild(footerTemplate);
-            }
+            quickEventPopup.appendChild(this.getPopupHeader('Event', eventData));
+            quickEventPopup.appendChild(this.getPopupContent('Event', events, eventData));
+            quickEventPopup.appendChild(this.getPopupFooter('Event', eventData));
             let readonly = this.parent.activeViewOptions.readonly || eventData[this.parent.eventFields.isReadonly];
+            let editAction = !this.parent.eventSettings.allowEditing || readonly;
+            let deleteAction = !this.parent.eventSettings.allowDeleting || readonly;
             let editIcon = quickEventPopup.querySelector('.' + EDIT_CLASS);
+            let buttonClass = 'e-flat e-round e-small';
             if (editIcon) {
-                this.renderButton('e-flat e-round e-small', ICON + ' ' + EDIT_ICON_CLASS, readonly, editIcon, this.editClick);
+                this.renderButton(buttonClass, ICON + ' ' + EDIT_ICON_CLASS, editAction, editIcon, this.editClick);
             }
             let deleteIcon = quickEventPopup.querySelector('.' + DELETE_CLASS);
             if (deleteIcon) {
-                this.renderButton('e-flat e-round e-small', ICON + ' ' + DELETE_ICON_CLASS, readonly, deleteIcon, this.deleteClick);
+                this.renderButton(buttonClass, ICON + ' ' + DELETE_ICON_CLASS, deleteAction, deleteIcon, this.deleteClick);
             }
             let closeIcon = quickEventPopup.querySelector('.' + CLOSE_CLASS);
             if (closeIcon) {
-                this.renderButton('e-flat e-round e-small', ICON + ' ' + CLOSE_ICON_CLASS, false, closeIcon, this.quickPopupHide);
+                this.renderButton(buttonClass, ICON + ' ' + CLOSE_ICON_CLASS, false, closeIcon, this.quickPopupHide);
             }
             let editButton = quickEventPopup.querySelector('.' + EDIT_EVENT_CLASS);
             if (editButton) {
-                this.renderButton('e-flat e-primary', '', readonly, editButton, this.editClick);
+                this.renderButton('e-flat e-primary', '', editAction, editButton, this.editClick);
             }
             let deleteButton = quickEventPopup.querySelector('.' + DELETE_EVENT_CLASS);
             if (deleteButton) {
-                this.renderButton('e-flat', '', readonly, deleteButton, this.deleteClick);
+                this.renderButton('e-flat', '', deleteAction, deleteButton, this.deleteClick);
             }
             this.quickPopup.content = quickEventPopup;
             this.quickPopup.dataBind();
@@ -5925,7 +5304,118 @@ class QuickPopups {
             this.beforeQuickPopupOpen(events.element);
         }
     }
+    getPopupHeader(headerType, headerData) {
+        let headerTemplate = createElement('div', { className: POPUP_HEADER_CLASS });
+        if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
+            let headerArgs = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
+            let templateId = this.parent.element.id + '_';
+            let headerTemp = this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false);
+            append([].slice.call(headerTemp), headerTemplate);
+        }
+        else {
+            let header;
+            switch (headerType) {
+                case 'Cell':
+                    header = `<div class="${POPUP_HEADER_ICON_WRAPPER}"><button class="${CLOSE_CLASS}" title=` +
+                        `"${this.l10n.getConstant('close')}"></button></div>`;
+                    break;
+                case 'Event':
+                    let args = this.getFormattedString(headerData);
+                    header = `<div class="${POPUP_HEADER_ICON_WRAPPER}">` +
+                        `<button class="${EDIT_CLASS + ' ' + ICON}" title="${this.l10n.getConstant('edit')}"></button>` +
+                        `<button class="${DELETE_CLASS + ' ' + ICON}" title="${this.l10n.getConstant('delete')}"></button>` +
+                        `<button class="${CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>` +
+                        `<div class="${SUBJECT_WRAP}"><div class="${SUBJECT_CLASS} ${TEXT_ELLIPSIS}" ` +
+                        `title="${args.eventSubject}">${args.eventSubject}</div></div >`;
+                    break;
+            }
+            let templateWrapper = createElement('div', { innerHTML: header });
+            append([].slice.call(templateWrapper.childNodes), headerTemplate);
+        }
+        return headerTemplate;
+    }
+    getPopupContent(type, args, data) {
+        let contentTemplate = createElement('div', { className: POPUP_CONTENT_CLASS });
+        if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
+            let contentArgs = extend({}, data, { elementType: type.toLowerCase() }, true);
+            let templateId = this.parent.element.id + '_';
+            let contentTemp = this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false);
+            append([].slice.call(contentTemp), contentTemplate);
+        }
+        else {
+            let content;
+            let resourceText = this.getResourceText(args, type.toLowerCase());
+            switch (type) {
+                case 'Cell':
+                    let cellDetails = this.getFormattedString(data);
+                    content = `<table class="${POPUP_TABLE_CLASS}"><tbody><tr><td><form class="${FORM_CLASS}" onsubmit=` +
+                        `"return false;"><input class="${SUBJECT_CLASS} ${EVENT_FIELD}" type="text" name=` +
+                        `"${this.parent.eventFields.subject}" /></form></td></tr><tr><td><div class="${DATE_TIME_CLASS}">` +
+                        `<div class="${DATE_TIME_ICON_CLASS} ${ICON}"></div><div class="${DATE_TIME_DETAILS_CLASS} ` +
+                        `${TEXT_ELLIPSIS}">${cellDetails.details}</div></div>` +
+                        `${this.parent.activeViewOptions.group.resources.length > 0 ? `<div class="${RESOURCE_CLASS}">` +
+                            `<div class="${RESOURCE_ICON_CLASS} ${ICON} "></div><div class="${RESOURCE_DETAILS_CLASS} ` +
+                            `${TEXT_ELLIPSIS}">${resourceText}</div></div>` : ''}</td></tr></tbody></table>`;
+                    break;
+                case 'Event':
+                    let args = this.getFormattedString(data);
+                    content = `<div class="${DATE_TIME_CLASS}">` +
+                        `<div class="${DATE_TIME_ICON_CLASS} ${ICON}"></div><div class="${DATE_TIME_WRAPPER_CLASS} ` +
+                        `${TEXT_ELLIPSIS}"><div class="${DATE_TIME_DETAILS_CLASS} ${TEXT_ELLIPSIS}">${args.details}</div>` +
+                        `${data[this.parent.eventFields.recurrenceRule] ? `<div class="${RECURRENCE_SUMMARY_CLASS} ` +
+                            `${TEXT_ELLIPSIS}">${this.getRecurrenceSummary(data)}</div>` : ''}</div></div>` +
+                        `${data[this.parent.eventFields.location] ? `<div class="${LOCATION_CLASS}"><div class="` +
+                            `${LOCATION_ICON_CLASS} ${ICON}"></div>` +
+                            `<div class="${LOCATION_DETAILS_CLASS} ${TEXT_ELLIPSIS}">` +
+                            `${data[this.parent.eventFields.location]}</div></div>` : ''}` +
+                        `${data[this.parent.eventFields.startTimezone] || data[this.parent.eventFields.endTimezone] ? +`<div class="${TIME_ZONE_CLASS}"><div class="${TIME_ZONE_ICON_CLASS} ${ICON}"></div><div class=` +
+                            `"${TIME_ZONE_DETAILS_CLASS} ${TEXT_ELLIPSIS}">${this.getTimezone(data)} </div></div>` : ''}` +
+                        `${data[this.parent.eventFields.description] ? `<div class="${DESCRIPTION_CLASS}"><div class="` +
+                            `${DESCRIPTION_ICON_CLASS} ${ICON}"></div><div class="${DESCRIPTION_DETAILS_CLASS} ` +
+                            `${TEXT_ELLIPSIS}">${data[this.parent.eventFields.description]}</div></div>` : ''}` +
+                        `${this.parent.resourceCollection.length > 0 ? `<div class="${RESOURCE_CLASS}"><div class="` +
+                            `${RESOURCE_ICON_CLASS} ${ICON}"></div>` +
+                            `<div class="${RESOURCE_DETAILS_CLASS} ${TEXT_ELLIPSIS}">${resourceText}</div></div>` : ''}`;
+                    break;
+            }
+            let templateWrapper = createElement('div', { innerHTML: content });
+            append([].slice.call(templateWrapper.childNodes), contentTemplate);
+        }
+        return contentTemplate;
+    }
+    getPopupFooter(footerType, footerData) {
+        let footerTemplate = createElement('div', { className: POPUP_FOOTER_CLASS });
+        if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
+            let footerArgs = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
+            let templateId = this.parent.element.id + '_';
+            let footerTemp = this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
+            append([].slice.call(footerTemp), footerTemplate);
+        }
+        else {
+            let footer;
+            switch (footerType) {
+                case 'Cell':
+                    footer = `<button class="${QUICK_POPUP_EVENT_DETAILS_CLASS + ' ' + TEXT_ELLIPSIS}" title=` +
+                        `"${this.l10n.getConstant('moreDetails')}">${this.l10n.getConstant('moreDetails')}</button>` +
+                        `<button class="${EVENT_CREATE_CLASS} ${TEXT_ELLIPSIS}" title="${this.l10n.getConstant('save')}">` +
+                        `${this.l10n.getConstant('save')}</button>`;
+                    break;
+                case 'Event':
+                    footer = `${this.parent.isAdaptive ? '' : `<button class="${EDIT_EVENT_CLASS} ` +
+                        `${TEXT_ELLIPSIS}" title="${this.l10n.getConstant('edit')}">${this.l10n.getConstant('edit')}</button>` +
+                        `<button class="${DELETE_EVENT_CLASS} ${TEXT_ELLIPSIS}" title="${this.l10n.getConstant('delete')}">` +
+                        `${this.l10n.getConstant('delete')}</button>`}`;
+                    break;
+            }
+            let templateWrapper = createElement('div', { innerHTML: footer });
+            append([].slice.call(templateWrapper.childNodes), footerTemplate);
+        }
+        return footerTemplate;
+    }
     getResourceText(args, type) {
+        if (this.parent.resourceCollection.length === 0) {
+            return null;
+        }
         let resourceValue = '';
         if (this.parent.activeViewOptions.group.resources.length === 0) {
             let resourceCollection = this.parent.resourceBase.resourceCollection.slice(-1)[0];
@@ -6008,7 +5498,7 @@ class QuickPopups {
             remove(moreEventContentEle);
         }
         let selectedDate = ((data.date).getTime()).toString();
-        let target = closest(data.element, '.' + MORE_INDICATOR_CLASS);
+        let target = closest(data.element, '.' + MORE_INDICATOR_CLASS + ',.' + WORK_CELLS_CLASS);
         this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DAY_CLASS).innerHTML = this.getDateFormat(data.date, 'E');
         let dateElement = this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS);
         dateElement.innerHTML = this.getDateFormat(data.date, 'd');
@@ -6025,22 +5515,29 @@ class QuickPopups {
         if (resetTime(data.date).getTime() === resetTime(this.parent.getCurrentTime()).getTime()) {
             addClass(this.morePopup.element.querySelector('.' + MORE_EVENT_DATE_HEADER_CLASS).childNodes, CURRENTDATE_CLASS);
         }
-        if (this.parent.currentView.indexOf('Timeline') !== -1) {
-            let gIndex = target.getAttribute('data-group-index');
-            let startDate = new Date(parseInt(target.getAttribute('data-start-date'), 10));
-            startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
-            let tdDate = startDate.getTime().toString();
-            if (isNullOrUndefined(gIndex)) {
-                this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-date="' + tdDate + '"]');
+        if (!this.parent.isAdaptive) {
+            if (this.parent.currentView.indexOf('Timeline') !== -1) {
+                let gIndex = target.getAttribute('data-group-index');
+                let startDate = new Date(parseInt(target.getAttribute('data-start-date'), 10));
+                startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
+                let tdDate = startDate.getTime().toString();
+                if (isNullOrUndefined(gIndex)) {
+                    this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
+                        ' tbody tr td[data-date="' + tdDate + '"]');
+                }
+                else {
+                    this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
+                        ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]');
+                }
             }
             else {
-                this.morePopup.relateTo = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]');
+                this.morePopup.relateTo = closest(target, '.' + WORK_CELLS_CLASS);
             }
         }
-        else {
-            this.morePopup.relateTo = closest(target, '.' + WORK_CELLS_CLASS);
+        if (this.parent.isAdaptive) {
+            this.morePopup.element.style.top = '0px';
+            this.morePopup.element.style.left = '0px';
+            this.morePopup.element.style.height = formatUnit(window.innerHeight);
         }
         let eventProp = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
@@ -6067,7 +5564,7 @@ class QuickPopups {
             this.parent.resourceBase.setResourceValues(saveObj, true);
         }
         this.parent.currentAction = 'Add';
-        this.crudAction.addEvent(saveObj);
+        this.parent.crudModule.addEvent(saveObj);
         this.quickPopupHide();
     }
     detailsClick() {
@@ -6130,15 +5627,16 @@ class QuickPopups {
     dialogButtonClick(event) {
         this.quickDialog.hide();
         let target = event.target;
-        let cancelButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
+        let cancelBtn = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_CANCEL);
+        let eventData = this.parent.activeEventData.event;
         if (target.classList.contains(QUICK_DIALOG_OCCURRENCE_CLASS)) {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteOccurrence' : 'EditOccurrence';
             switch (this.parent.currentAction) {
                 case 'EditOccurrence':
-                    this.parent.eventWindow.openEditor(this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.eventWindow.openEditor(eventData, this.parent.currentAction);
                     break;
                 case 'DeleteOccurrence':
-                    this.crudAction.deleteEvent(this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
                     break;
             }
         }
@@ -6146,10 +5644,10 @@ class QuickPopups {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteFollowingEvents' : 'EditFollowingEvents';
             switch (this.parent.currentAction) {
                 case 'EditFollowingEvents':
-                    this.parent.eventWindow.openEditor(this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.eventWindow.openEditor(eventData, this.parent.currentAction);
                     break;
                 case 'DeleteFollowingEvents':
-                    this.crudAction.deleteEvent(this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
                     break;
             }
         }
@@ -6159,27 +5657,25 @@ class QuickPopups {
                 case 'EditSeries':
                     let parentEvent;
                     let fields = this.parent.eventFields;
-                    let event = this.parent.activeEventData.event;
-                    if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(event[fields.followingID]) ||
-                        (!isNullOrUndefined(event[fields.recurrenceID]) && event[fields.recurrenceID] !== event[fields.id]))) {
-                        parentEvent = this.parent.eventBase.getParentEvent(event);
+                    if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(eventData[fields.followingID]) ||
+                        (!isNullOrUndefined(eventData[fields.recurrenceID]) && eventData[fields.recurrenceID] !== eventData[fields.id]))) {
+                        parentEvent = this.parent.eventBase.getParentEvent(eventData);
                     }
                     else {
-                        parentEvent = this.parent.eventBase.getRecurrenceEvent(event);
+                        parentEvent = this.parent.eventBase.getRecurrenceEvent(eventData);
                     }
                     this.parent.eventWindow.openEditor(parentEvent, this.parent.currentAction);
                     break;
                 case 'DeleteSeries':
-                    this.crudAction.deleteEvent(this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
                     break;
             }
         }
         else if (target.classList.contains(QUICK_DIALOG_DELETE_CLASS)) {
-            this.crudAction.deleteEvent(this.parent.activeEventData.event, this.parent.currentAction);
+            this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
         }
-        else if (!cancelButton.classList.contains(DISABLE_CLASS) && (target.classList.contains(QUICK_DIALOG_ALERT_OK) ||
-            (target.classList.contains(QUICK_DIALOG_ALERT_CANCEL) &&
-                !cancelButton.classList.contains(QUICK_DIALOG_CANCEL_CLASS)))) {
+        else if (!cancelBtn.classList.contains(DISABLE_CLASS) && (target.classList.contains(QUICK_DIALOG_ALERT_OK) ||
+            (target.classList.contains(QUICK_DIALOG_ALERT_CANCEL) && !cancelBtn.classList.contains(QUICK_DIALOG_CANCEL_CLASS)))) {
             this.parent.uiStateValues.isIgnoreOccurrence = target.classList.contains(QUICK_DIALOG_ALERT_CANCEL);
             this.parent.eventWindow.eventSave(this.l10n.getConstant('ok'));
         }
@@ -6374,10 +5870,16 @@ class QuickPopups {
         this.parent.eventBase.focusElement();
         this.quickPopup.relateTo = WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
+        if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
+            this.fieldValidator.destroy();
+        }
         this.destroyButtons();
         removeChildren(this.quickPopup.element);
     }
     morePopupOpen() {
+        if (this.parent.isAdaptive) {
+            return;
+        }
         this.morePopup.element.querySelector('.' + MORE_EVENT_HEADER_DATE_CLASS).focus();
         this.morePopup.refreshPosition();
     }
@@ -6405,7 +5907,7 @@ class QuickPopups {
         let navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
         if (!isNullOrUndefined(navigateEle)) {
             let date = this.parent.getDateFromElement(e.currentTarget);
-            if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
+            if (!isNullOrUndefined(date)) {
                 this.closeClick();
                 this.parent.setProperties({ selectedDate: date }, true);
                 this.parent.changeView(this.parent.getNavigateView(), e);
@@ -6424,7 +5926,7 @@ class QuickPopups {
             this.parent.removeNewEventElement();
         }
         if (!closest(target, '.' + MORE_POPUP_WRAPPER_CLASS) && !target.classList.contains(MORE_INDICATOR_CLASS)
-            && (!closest(target, '.' + POPUP_OPEN))) {
+            && (!closest(target, '.' + POPUP_OPEN)) && !closest(target, '.' + WORK_CELLS_CLASS)) {
             this.morePopup.hide();
         }
     }
@@ -6454,7 +5956,9 @@ class QuickPopups {
         });
     }
     destroy() {
-        this.fieldValidator.destroy();
+        if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
+            this.fieldValidator.destroy();
+        }
         this.removeEventListner();
         this.destroyButtons();
         this.quickPopup.destroy();
@@ -6821,7 +6325,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
     initialize() {
         addClass([this.element], 'e-' + this.getModuleName());
         this.renderComponent();
-        if (!isNullOrUndefined(this.value)) {
+        if (!isNullOrUndefined(this.value) && this.value !== '') {
             this.setRecurrenceRule(this.value);
         }
         else {
@@ -6940,7 +6444,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             placeholder: this.localeObj.getConstant(REPEAT),
             htmlAttributes: { 'title': this.localeObj.getConstant(REPEAT) },
             change: (args) => {
-                self.setProperties({ selectedType: args.value }, false);
+                self.setProperties({ selectedType: this.frequencies.indexOf(args.value) }, false);
                 self.element.querySelector('.' + REPEATCONTENT).innerHTML =
                     self.localeObj.getConstant(contentType[args.value]);
                 self.showFormElement();
@@ -7061,6 +6565,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
     renderDatePickers() {
         let self = this;
         this.untilDateObj = new DatePicker({
+            firstDayOfWeek: this.firstDayOfWeek,
             enableRtl: this.enableRtl,
             min: this.minDate,
             max: this.maxDate,
@@ -7660,8 +7165,6 @@ class EventWindow {
         this.l10n = this.parent.localeObj;
         this.fields = this.parent.eventFields;
         this.fieldValidator = new FieldValidator();
-        let timezone = new Timezone();
-        this.localTimezoneName = timezone.getLocalTimezoneName();
         this.renderEventWindow();
     }
     renderEventWindow() {
@@ -7688,12 +7191,15 @@ class EventWindow {
         }
         else {
             dialogModel.buttons = [{
-                    buttonModel: { content: this.l10n.getConstant('deleteButton'), cssClass: EVENT_WINDOW_DELETE_BUTTON_CLASS },
+                    buttonModel: {
+                        content: this.l10n.getConstant('deleteButton'), cssClass: DELETE_EVENT_CLASS,
+                        disabled: !this.parent.eventSettings.allowDeleting || this.parent.readonly
+                    },
                     click: this.eventDelete.bind(this)
                 }, {
                     buttonModel: {
                         content: this.l10n.getConstant('saveButton'), cssClass: 'e-primary ' + EVENT_WINDOW_SAVE_BUTTON_CLASS,
-                        isPrimary: true
+                        isPrimary: true, disabled: !this.parent.eventSettings.allowAdding || this.parent.readonly
                     },
                     click: this.eventSave.bind(this)
                 }, {
@@ -7733,7 +7239,7 @@ class EventWindow {
             this.createRecurrenceEditor(recurrenceEditor);
         }
     }
-    updateRecurrenceEditor(recurrenceEditor) {
+    setRecurrenceEditor(recurrenceEditor) {
         if (this.parent.editorTemplate) {
             this.recurrenceEditor = recurrenceEditor;
         }
@@ -7747,6 +7253,9 @@ class EventWindow {
         }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
+        }
+        if (this.recurrenceEditor) {
+            this.recurrenceEditor.firstDayOfWeek = this.parent.activeViewOptions.firstDayOfWeek;
         }
         switch (type) {
             case 'Add':
@@ -7783,6 +7292,16 @@ class EventWindow {
         if (this.cellClickAction) {
             eventProp.duration = this.getSlotDuration();
         }
+        let saveObj = this.getInstance(EVENT_WINDOW_SAVE_BUTTON_CLASS);
+        if (saveObj) {
+            saveObj.disabled = !(this.cellClickAction ? this.parent.eventSettings.allowAdding : this.parent.eventSettings.allowEditing);
+            saveObj.dataBind();
+        }
+        let deleteObj = this.getInstance(DELETE_EVENT_CLASS);
+        if (deleteObj) {
+            deleteObj.disabled = !this.parent.eventSettings.allowDeleting;
+            deleteObj.dataBind();
+        }
         let callBackPromise = new Deferred();
         this.parent.trigger(popupOpen, eventProp, (popupArgs) => {
             args.cancel = popupArgs.cancel;
@@ -7801,9 +7320,31 @@ class EventWindow {
         });
         return callBackPromise;
     }
-    onBeforeClose() {
-        this.resetForm();
-        this.parent.eventBase.focusElement();
+    onBeforeClose(args) {
+        let eventProp = {
+            type: 'Editor',
+            data: this.eventCrudData,
+            cancel: false,
+            element: this.element,
+            target: (this.cellClickAction ? this.parent.activeCellsData.element : this.parent.activeEventData.element)
+        };
+        let callBackPromise = new Deferred();
+        this.parent.trigger(popupClose, eventProp, (popupArgs) => {
+            args.cancel = popupArgs.cancel;
+            if (!popupArgs.cancel) {
+                if (this.isCrudAction) {
+                    args.cancel = this.processCrudActions(popupArgs.data);
+                    this.isCrudAction = args.cancel;
+                }
+                if (!this.isCrudAction) {
+                    this.resetForm();
+                    this.parent.eventBase.focusElement();
+                    this.eventCrudData = null;
+                }
+            }
+            callBackPromise.resolve(args);
+        });
+        return callBackPromise;
     }
     getEventWindowContent() {
         let container = createElement('div', { className: FORM_CONTAINER_CLASS });
@@ -7915,6 +7456,7 @@ class EventWindow {
         dateTimeDiv.appendChild(dateTimeInput);
         let dateTimePicker = new DateTimePicker({
             change: changeEvent,
+            firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             calendarMode: this.parent.calendarMode,
             cssClass: this.parent.cssClass,
             enableRtl: this.parent.enableRtl,
@@ -7935,6 +7477,7 @@ class EventWindow {
             EVENT_WINDOW_END_CLASS));
         startEndElement.forEach((element) => {
             let instance = element.ej2_instances[0];
+            instance.firstDayOfWeek = this.parent.activeViewOptions.firstDayOfWeek;
             instance.step = duration || this.getSlotDuration();
             instance.dataBind();
         });
@@ -8294,6 +7837,9 @@ class EventWindow {
         this.repeatTempRule = this.recurrenceEditor.getRecurrenceRule();
     }
     onCellDetailsUpdate(event, repeatType) {
+        if (!this.parent.eventSettings.allowAdding) {
+            return;
+        }
         this.element.querySelector('.' + FORM_CLASS).removeAttribute('data-id');
         this.element.querySelector('.' + EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('newEvent');
         let eventObj = {};
@@ -8314,7 +7860,7 @@ class EventWindow {
         this.repeatStartDate = eventObj[this.fields.startTime];
         this.repeatRule = '';
         this.showDetails(eventObj);
-        let deleteButton = this.element.querySelector('.' + EVENT_WINDOW_DELETE_BUTTON_CLASS);
+        let deleteButton = this.element.querySelector('.' + DELETE_EVENT_CLASS);
         if (deleteButton) {
             addClass([deleteButton], DISABLE_CLASS);
         }
@@ -8494,8 +8040,11 @@ class EventWindow {
         return format;
     }
     onEventDetailsUpdate(eventObj) {
+        if (!this.parent.eventSettings.allowEditing) {
+            return;
+        }
         if (!this.parent.isAdaptive) {
-            removeClass([this.element.querySelector('.' + EVENT_WINDOW_DELETE_BUTTON_CLASS)], DISABLE_CLASS);
+            removeClass([this.element.querySelector('.' + DELETE_EVENT_CLASS)], DISABLE_CLASS);
         }
         this.element.querySelector('.' + EVENT_WINDOW_TITLE_TEXT_CLASS).innerHTML = this.l10n.getConstant('editEvent');
         this.element.querySelector('.' + FORM_CLASS).setAttribute('data-id', eventObj[this.fields.id].toString());
@@ -8519,6 +8068,7 @@ class EventWindow {
             this.recurrenceEditor.setRecurrenceRule(eventObj[this.fields.recurrenceRule], eventObj[this.fields.startTime]);
         }
         else if (!this.parent.isAdaptive && this.recurrenceEditor) {
+            this.recurrenceEditor.setProperties({ startDate: eventObj[this.fields.startTime] });
             this.recurrenceEditor.setRecurrenceRule('');
         }
         this.repeatStartDate = eventObj[this.fields.startTime];
@@ -8544,7 +8094,7 @@ class EventWindow {
         let isDisable = (this.parent.readonly || eventObj[this.fields.isReadonly]);
         if (!this.parent.isAdaptive) {
             let saveButton = this.element.querySelector('.' + EVENT_WINDOW_SAVE_BUTTON_CLASS);
-            let deleteButton = this.element.querySelector('.' + EVENT_WINDOW_DELETE_BUTTON_CLASS);
+            let deleteButton = this.element.querySelector('.' + DELETE_EVENT_CLASS);
             this.disableButton(saveButton, isDisable);
             this.disableButton(deleteButton, isDisable);
         }
@@ -8572,7 +8122,7 @@ class EventWindow {
             cssClass: this.parent.cssClass,
             dateFormat: this.parent.dateFormat,
             enableRtl: this.parent.enableRtl,
-            firstDayOfWeek: this.parent.firstDayOfWeek,
+            firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             locale: this.parent.locale
         });
     }
@@ -8585,6 +8135,7 @@ class EventWindow {
         this.repeatStatus.setProperties({ label: data });
     }
     dialogClose() {
+        this.isCrudAction = false;
         this.parent.activeEventData = { event: undefined, element: undefined };
         this.parent.currentAction = null;
         this.dialogObject.hide();
@@ -8598,23 +8149,24 @@ class EventWindow {
     }
     timezoneChangeStyle(value) {
         let timezoneDiv = this.element.querySelector('.' + EVENT_WINDOW_TIME_ZONE_DIV_CLASS);
+        let localTimezoneName = this.parent.tzModule.getLocalTimezoneName();
         if (value) {
             addClass([timezoneDiv], ENABLE_CLASS);
             let startTimezoneObj = this.getInstance(EVENT_WINDOW_START_TZ_CLASS);
             let endTimezoneObj = this.getInstance(EVENT_WINDOW_END_TZ_CLASS);
             let timezone = startTimezoneObj.dataSource;
             if (!startTimezoneObj.value || !this.parent.timezone) {
-                let found = timezone.some((tz) => { return tz.Value === this.localTimezoneName; });
+                let found = timezone.some((tz) => { return tz.Value === localTimezoneName; });
                 if (!found) {
-                    timezone.push({ Value: this.localTimezoneName, Text: this.localTimezoneName });
+                    timezone.push({ Value: localTimezoneName, Text: localTimezoneName });
                     startTimezoneObj.dataSource = timezone;
                     endTimezoneObj.dataSource = timezone;
                     startTimezoneObj.dataBind();
                     endTimezoneObj.dataBind();
                 }
             }
-            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
-            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || this.localTimezoneName;
+            startTimezoneObj.value = startTimezoneObj.value || this.parent.timezone || localTimezoneName;
+            endTimezoneObj.value = endTimezoneObj.value || this.parent.timezone || localTimezoneName;
             startTimezoneObj.dataBind();
             endTimezoneObj.dataBind();
         }
@@ -8632,28 +8184,46 @@ class EventWindow {
         }
     }
     eventSave(alert) {
-        this.parent.uiStateValues.isBlock = false;
-        let alertType;
         let formElement = this.element.querySelector('.' + FORM_CLASS);
         if (formElement && formElement.classList.contains('e-formvalidator') &&
             !formElement.ej2_instances[0].validate()) {
             return;
         }
+        let dataCollection = this.getEventDataFromEditor();
+        if (this.processEventValidation(dataCollection.tempData, alert)) {
+            return;
+        }
+        this.eventCrudData = dataCollection.eventData;
+        this.isCrudAction = true;
+        this.dialogObject.hide();
+    }
+    getEventDataFromEditor() {
         let eventObj = extend({}, this.getObjectFromFormData(EVENT_WINDOW_DIALOG_CLASS));
         if (!eventObj.Timezone) {
             eventObj[this.fields.startTimezone] = null;
             eventObj[this.fields.endTimezone] = null;
         }
+        delete eventObj.Timezone;
+        delete eventObj.Repeat;
+        this.setDefaultValueToObject(eventObj);
+        eventObj[this.fields.recurrenceRule] = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() || null : undefined;
+        let tempObj = extend({}, eventObj, null, true);
+        if (eventObj[this.fields.isAllDay]) {
+            eventObj[this.fields.startTime] = resetTime(new Date(eventObj[this.fields.startTime].getTime()));
+            eventObj[this.fields.endTime] = addDays(resetTime(new Date(eventObj[this.fields.endTime].getTime())), 1);
+        }
+        return { eventData: eventObj, tempData: tempObj };
+    }
+    processEventValidation(eventObj, alert) {
+        let alertType;
         if (isNullOrUndefined(this.parent.editorTemplate)) {
-            delete eventObj.Timezone;
-            delete eventObj.Repeat;
             if (!eventObj[this.fields.startTime] || !eventObj[this.fields.endTime]) {
                 this.parent.quickPopup.openValidationError('invalidDateError');
-                return;
+                return true;
             }
             if (eventObj[this.fields.startTime] > eventObj[this.fields.endTime]) {
                 this.parent.quickPopup.openValidationError('startEndError');
-                return;
+                return true;
             }
         }
         if (this.recurrenceEditor && this.recurrenceEditor.value && this.recurrenceEditor.value !== '') {
@@ -8662,30 +8232,28 @@ class EventWindow {
             if (alertType === 'seriesChangeAlert' && this.parent.uiStateValues.isIgnoreOccurrence) {
                 isShowAlert = false;
             }
-            if (!isNullOrUndefined(alertType) && isShowAlert) {
+            if (!isNullOrUndefined(alertType) && isShowAlert
+                && ((!this.parent.enableRecurrenceValidation && alertType === 'wrongPattern') || this.parent.enableRecurrenceValidation)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert(alertType);
-                return;
+                return true;
             }
         }
-        let eventId = this.getEventIdFromForm();
-        this.setDefaultValueToObject(eventObj);
-        if (eventObj[this.fields.isAllDay]) {
-            eventObj[this.fields.startTime] = resetTime(new Date(eventObj[this.fields.startTime].getTime()));
-            eventObj[this.fields.endTime] = addDays(resetTime(new Date(eventObj[this.fields.endTime].getTime())), 1);
-        }
-        let ruleData = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() : null;
-        eventObj[this.fields.recurrenceRule] = ruleData ? ruleData : undefined;
+        return false;
+    }
+    processCrudActions(eventObj) {
+        this.parent.uiStateValues.isBlock = false;
         let resourceData = this.getResourceData(eventObj);
         let isResourceEventExpand = (this.parent.activeViewOptions.group.resources.length > 0 ||
             this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit
             && !isNullOrUndefined(resourceData);
+        let eventId = this.getEventIdFromForm();
         if (!isNullOrUndefined(eventId)) {
             let eveId = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
                 where(this.fields.id, 'equal', eveId))[0];
             eventObj = extend({}, editedData, eventObj);
             if (eventObj[this.fields.isReadonly]) {
-                return;
+                return false;
             }
             let currentAction;
             if (!isNullOrUndefined(editedData[this.fields.recurrenceRule])) {
@@ -8700,9 +8268,9 @@ class EventWindow {
                         eveId = eventObj[this.fields.recurrenceID];
                         currentAction = null;
                     }
-                    if (this.editOccurrenceValidation(eveId, eventObj)) {
+                    if (this.parent.enableRecurrenceValidation && this.editOccurrenceValidation(eveId, eventObj)) {
                         this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
-                        return;
+                        return true;
                     }
                 }
                 if (this.parent.currentAction === 'EditSeries' || eventObj[this.fields.id] !== editedData[this.fields.id]) {
@@ -8730,10 +8298,7 @@ class EventWindow {
                 this.parent.addEvent(eventObj);
             }
         }
-        if (this.parent.uiStateValues.isBlock) {
-            return;
-        }
-        this.dialogObject.hide();
+        return this.parent.uiStateValues.isBlock;
     }
     getResourceData(eventObj) {
         let resourceData = null;
@@ -9118,7 +8683,8 @@ class EventWindow {
         }
     }
     getInstance(className) {
-        return this.element.querySelector('.' + className).ej2_instances[0];
+        let element = this.element.querySelector('.' + className);
+        return element ? element.ej2_instances[0] : null;
     }
     eventDelete() {
         switch (this.parent.currentAction) {
@@ -9135,6 +8701,7 @@ class EventWindow {
                 this.parent.currentAction = 'DeleteSeries';
                 break;
         }
+        this.isCrudAction = false;
         this.dialogObject.hide();
         this.parent.quickPopup.openDeleteAlert();
     }
@@ -9410,6 +8977,9 @@ class Render {
             case 'Month':
                 this.parent.activeView = this.parent.monthModule;
                 break;
+            // case 'Year':
+            //     this.parent.activeView = this.parent.yearModule;
+            //     break;
             case 'Agenda':
                 this.parent.activeView = this.parent.agendaModule;
                 break;
@@ -9430,6 +9000,9 @@ class Render {
                 break;
             case 'TimelineMonth':
                 this.parent.activeView = this.parent.timelineMonthModule;
+                break;
+            case 'TimelineYear':
+                this.parent.activeView = this.parent.timelineYearModule;
                 break;
         }
         if (isNullOrUndefined(this.parent.activeView)) {
@@ -9459,6 +9032,7 @@ class Render {
             this.parent.uiStateValues.top = 0;
         }
         if (this.parent.headerModule) {
+            this.parent.headerModule.setDayOfWeek(this.parent.activeViewOptions.firstDayOfWeek);
             if (this.parent.activeViewOptions.readonly) {
                 addClass([this.parent.element], READ_ONLY);
             }
@@ -9574,6 +9148,9 @@ var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, 
 class QuickInfoTemplates extends ChildProperty {
 }
 __decorate$4([
+    Property('Both')
+], QuickInfoTemplates.prototype, "templateType", void 0);
+__decorate$4([
     Property()
 ], QuickInfoTemplates.prototype, "header", void 0);
 __decorate$4([
@@ -9600,6 +9177,712 @@ __decorate$5([
 __decorate$5([
     Property()
 ], HeaderRows.prototype, "template", void 0);
+
+/**
+ * Schedule CRUD operations
+ */
+class Crud {
+    constructor(parent) {
+        this.parent = parent;
+    }
+    getQuery() {
+        let start = this.parent.activeView.startDate();
+        let end = this.parent.activeView.endDate();
+        return this.parent.dataModule.generateQuery(start, end);
+    }
+    getTable() {
+        if (this.parent.eventSettings.query) {
+            let query = this.parent.eventSettings.query.clone();
+            return query.fromTable;
+        }
+        return null;
+    }
+    refreshData(args) {
+        let actionArgs = {
+            requestType: args.requestType, cancel: false, data: args.data,
+            addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
+            deletedRecords: args.editParms.deletedRecords
+        };
+        if (this.parent.dataModule.dataManager.dataSource.offline) {
+            this.parent.trigger(actionComplete, actionArgs);
+            this.parent.renderModule.refreshDataManager();
+            return;
+        }
+        else {
+            args.promise.then((e) => {
+                if (this.parent.isDestroyed) {
+                    return;
+                }
+                this.parent.trigger(actionComplete, actionArgs);
+                if (actionArgs.cancel) {
+                    return;
+                }
+                this.parent.renderModule.refreshDataManager();
+            }).catch((e) => {
+                if (this.parent.isDestroyed) {
+                    return;
+                }
+                this.parent.trigger(actionFailure, { error: e });
+            });
+        }
+    }
+    addEvent(eventData) {
+        if (!this.parent.eventSettings.allowAdding) {
+            return;
+        }
+        if (this.parent.eventBase.isBlockRange(eventData)) {
+            let data = (eventData instanceof Array) ? [eventData] : eventData;
+            this.parent.quickPopup.openValidationError('blockAlert', data);
+            return;
+        }
+        let fields = this.parent.eventFields;
+        let promise = null;
+        let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+        let args = {
+            cancel: false,
+            data: (eventData instanceof Array) ? eventData : [eventData],
+            requestType: 'eventCreate'
+        };
+        this.parent.trigger(actionBegin, args);
+        if (args.cancel) {
+            return;
+        }
+        if (eventData instanceof Array) {
+            for (let event of eventData) {
+                this.processCrudTimezone(event);
+                editParms.addedRecords.push(event);
+            }
+            promise =
+                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
+        }
+        else {
+            this.processCrudTimezone(eventData);
+            editParms.addedRecords.push(eventData);
+            promise = this.parent.dataModule.dataManager.insert(eventData, this.getTable(), this.getQuery());
+        }
+        let crudArgs = {
+            requestType: 'eventCreated', cancel: false, data: eventData, promise: promise, editParms: editParms
+        };
+        this.refreshData(crudArgs);
+    }
+    saveEvent(event, action) {
+        if (!this.parent.eventSettings.allowEditing) {
+            return;
+        }
+        if (this.parent.eventBase.isBlockRange(event)) {
+            let data = (event instanceof Array) ? [event] : event;
+            this.parent.quickPopup.openValidationError('blockAlert', data);
+            return;
+        }
+        this.parent.currentAction = action;
+        let fields = this.parent.eventFields;
+        let promise = null;
+        let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+        let args = { requestType: 'eventChange', cancel: false };
+        let data = event;
+        if (isNullOrUndefined(action)) {
+            args.data = data;
+            this.parent.trigger(actionBegin, args);
+            if (args.cancel) {
+                return;
+            }
+            this.processCrudTimezone(data);
+            if ((event instanceof Array)) {
+                editParms.changedRecords = event;
+                promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
+            }
+            else {
+                editParms.changedRecords.push(event);
+                promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery());
+            }
+        }
+        else {
+            let parentEvent = this.getParentEvent(data);
+            switch (action) {
+                case 'EditOccurrence':
+                    args.data = { occurrence: event, parent: parentEvent };
+                    this.parent.trigger(actionBegin, args);
+                    if (args.cancel) {
+                        return;
+                    }
+                    let edited = this.getEditedOccurrence(data.Guid);
+                    if (edited.length === 0) {
+                        edited.push(event);
+                    }
+                    let exDate = this.excludeDateCheck(edited[0][fields.startTime], parentEvent[fields.recurrenceException]);
+                    if (exDate !== parentEvent[fields.recurrenceException]) {
+                        parentEvent[fields.recurrenceException] = exDate;
+                        data[fields.recurrenceID] = parentEvent[fields.id];
+                        if (!isNullOrUndefined(data[fields.followingID])) {
+                            delete (data[fields.followingID]);
+                        }
+                        this.processCrudTimezone(parentEvent);
+                        editParms.changedRecords.push(parentEvent);
+                        this.processCrudTimezone(data);
+                        editParms.addedRecords.push(data);
+                    }
+                    else {
+                        this.processCrudTimezone(data);
+                        editParms.changedRecords.push(data);
+                    }
+                    break;
+                case 'EditFollowingEvents':
+                    if (!this.processEditFutureOccurence(data, parentEvent, editParms)) {
+                        return;
+                    }
+                    break;
+                case 'EditSeries':
+                    if (!this.processEditSeries(data, parentEvent, editParms)) {
+                        return;
+                    }
+                    this.parent.uiStateValues.isIgnoreOccurrence = false;
+                    break;
+            }
+            promise =
+                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
+        }
+        // if (!this.parent.activeView.isTimelineView()) {
+        //     this.parent.eventBase.selectWorkCellByTime(dataObj);
+        // }
+        let crudArgs = { requestType: 'eventChanged', cancel: false, data: args.data, promise: promise, editParms: editParms };
+        this.refreshData(crudArgs);
+    }
+    processEditFutureOccurence(data, parentEvent, editParms) {
+        let args = { requestType: 'eventChange', cancel: false };
+        args.data = data;
+        let edited = this.getEditedOccurrence(data.Guid);
+        let fields = this.parent.eventFields;
+        this.parent.trigger(actionBegin, args);
+        if (args.cancel) {
+            return false;
+        }
+        let isEventStart = edited[0][fields.startTime].getTime() === parentEvent[fields.startTime].getTime();
+        let date;
+        let immediateParentEvent;
+        if (edited[0][fields.id] === parentEvent[fields.id] && isEventStart) {
+            data[fields.id] = parentEvent[fields.id];
+            immediateParentEvent = extend({}, parentEvent);
+        }
+        else {
+            immediateParentEvent = extend({}, this.parent.eventBase.getEventById(edited[0][fields.id]));
+        }
+        let initialRecRule = immediateParentEvent[fields.recurrenceRule];
+        if (data[fields.startTime] !== immediateParentEvent[fields.startTime]) {
+            immediateParentEvent[fields.recurrenceRule] = this.getUpdatedParentRule(immediateParentEvent, edited[0]);
+        }
+        data[fields.recurrenceID] = null;
+        let deleteRecurrenceEventList = [];
+        let deleteFutureEditEventList = this.parent.eventBase.getSeriesEvents(immediateParentEvent, edited[0][fields.startTime]);
+        if (deleteFutureEditEventList.length > 0) {
+            initialRecRule = deleteFutureEditEventList.slice(-1)[0][fields.recurrenceRule];
+        }
+        if ((data[fields.recurrenceRule].indexOf('COUNT') > -1
+            || data[fields.recurrenceRule].indexOf('UNTIL') > -1)) {
+            let datecollection = generate(parentEvent[fields.startTime], initialRecRule, null, 0);
+            date = datecollection[datecollection.length - 1];
+        }
+        deleteRecurrenceEventList = deleteRecurrenceEventList.concat(this.parent.eventBase.getEditedOccurrences(edited, edited[0][fields.startTime]));
+        // To reset following id when start/end time changed or when doing following edit from 1st occurrence of the series
+        if (new Date('' + data[fields.startTime]).getTime() !== new Date('' + edited[0][fields.startTime]).getTime()
+            || new Date('' + data[fields.endTime]).getTime() !== new Date('' + edited[0][fields.endTime]).getTime() || isEventStart) {
+            delete (data[fields.followingID]);
+        }
+        // To update recurrencce exception 
+        data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence
+            ? this.updateRecurrenceException(deleteFutureEditEventList, data, parentEvent) : null;
+        // To get the update recurrence rule
+        data = this.updateRecurrenceRule(deleteFutureEditEventList, data, date);
+        if (!isEventStart) {
+            this.processCrudTimezone(immediateParentEvent);
+            editParms.changedRecords.push(immediateParentEvent);
+            this.processCrudTimezone(data);
+            editParms.addedRecords.push(data);
+        }
+        else {
+            this.processCrudTimezone(data);
+            editParms.changedRecords.push(data);
+        }
+        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
+            this.updateParentRecurrentException(immediateParentEvent, edited[0], editParms);
+            deleteRecurrenceEventList = deleteRecurrenceEventList.concat(this.parent.eventBase.getEditedOccurrences(deleteFutureEditEventList, edited[0][fields.startTime]));
+            editParms.deletedRecords = editParms.deletedRecords.concat(deleteRecurrenceEventList);
+        }
+        else {
+            // to delete the existing events when edit events using following events
+            let deleteFutureEditEvents = new Predicate(fields.recurrenceID, 'equal', null);
+            deleteFutureEditEventList = this.parent.eventBase.getFilterEventsList(deleteFutureEditEventList, deleteFutureEditEvents);
+        }
+        // to update the edited event recurrence id & recurrence exception when delele the events
+        this.updateRecurrenceIdAfterFollowingSeriesEdit(data, deleteRecurrenceEventList, edited[0], editParms);
+        // To delete the existing events after updating futuer edit series.
+        editParms.deletedRecords = editParms.deletedRecords.concat(deleteFutureEditEventList);
+        this.parent.uiStateValues.isIgnoreOccurrence = false;
+        return true;
+    }
+    processEditSeries(data, parentEvent, editParms) {
+        let args = { requestType: 'eventChange', cancel: false };
+        let fields = this.parent.eventFields;
+        args.data = data;
+        this.parent.trigger(actionBegin, args);
+        if (args.cancel) {
+            return false;
+        }
+        if (!this.parent.eventSettings.editFollowingEvents) {
+            this.editSeries(data, parentEvent, editParms);
+            return true;
+        }
+        let deleteRecurrenceEventList = [];
+        let deleteExistingEvents = this.parent.eventBase.getSeriesEvents(parentEvent);
+        if (deleteExistingEvents.length === 0) {
+            this.editSeries(data, parentEvent, editParms);
+            return true;
+        }
+        else {
+            if (data[fields.recurrenceRule] === parentEvent[fields.recurrenceRule]) {
+                data[fields.recurrenceRule] = deleteExistingEvents.slice(-1)[0][fields.recurrenceRule];
+            }
+            deleteRecurrenceEventList = this.parent.eventBase.getEditedOccurrences(deleteExistingEvents);
+            data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence
+                ? this.updateRecurrenceException(deleteRecurrenceEventList, data, parentEvent) : null;
+        }
+        data[fields.id] = parentEvent[fields.id];
+        data[fields.recurrenceID] = null;
+        if (!isNullOrUndefined(data[fields.followingID])) {
+            delete (data[fields.followingID]);
+        }
+        this.processCrudTimezone(data);
+        editParms.changedRecords.push(data);
+        // to update the edited event recurrence id & recurrence exception when delele the events
+        this.updateRecurrenceIdAfterFollowingSeriesEdit(data, deleteRecurrenceEventList, parentEvent, editParms);
+        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
+            editParms.deletedRecords = editParms.deletedRecords.concat(deleteRecurrenceEventList);
+        }
+        for (let event of deleteExistingEvents) {
+            if (data[fields.id] !== event[fields.id]) {
+                editParms.deletedRecords.push(event);
+            }
+        }
+        return true;
+    }
+    editSeries(data, parentEvent, editParms) {
+        let fields = this.parent.eventFields;
+        let query = new Query().where(fields.recurrenceID, 'equal', parentEvent[fields.id]);
+        let delApp = new DataManager(this.parent.eventsData).executeLocal(query);
+        data[fields.id] = parentEvent[fields.id];
+        data[fields.recurrenceException] = this.parent.uiStateValues.isIgnoreOccurrence ?
+            parentEvent[fields.recurrenceException] : null;
+        data[fields.recurrenceID] = null;
+        this.processCrudTimezone(data);
+        editParms.changedRecords.push(data);
+        if (!this.parent.uiStateValues.isIgnoreOccurrence) {
+            for (let event of delApp) {
+                editParms.deletedRecords.push(event);
+            }
+        }
+    }
+    updateRecurrenceIdAfterFollowingSeriesEdit(data, eventsList, edited, editParms) {
+        let fields = this.parent.eventFields;
+        let updateRecurrenceId = (new Predicate(fields.recurrenceID, 'notequal', null)).
+            and(new Predicate(fields.startTime, 'greaterthanorequal', edited[fields.startTime]));
+        let eventsToUpdateRecurrenceId = this.parent.eventBase.getFilterEventsList(eventsList, updateRecurrenceId);
+        for (let event of eventsToUpdateRecurrenceId) {
+            event[fields.recurrenceID] = data[fields.id];
+            event[fields.recurrenceException] = data[fields.recurrenceException];
+            event[fields.followingID] = null;
+            editParms.changedRecords.push(event);
+        }
+    }
+    updateRecurrenceRule(followingEventsList, data, lastEventDate) {
+        let fields = this.parent.eventFields;
+        if (followingEventsList.length > 0) {
+            data[fields.recurrenceRule] = followingEventsList.slice(-1)[0][fields.recurrenceRule];
+        }
+        if (!isNullOrUndefined(lastEventDate) && (data[fields.recurrenceRule].indexOf('COUNT') > -1
+            || data[fields.recurrenceRule].indexOf('UNTIL') > -1)) {
+            let date = new Date(lastEventDate);
+            let startTime = new Date(date.setDate((new Date(lastEventDate)).getDate()));
+            data[fields.recurrenceRule] = this.formatRecurrenceRule(data, startTime);
+        }
+        return data;
+    }
+    updateRecurrenceException(ignoreFutureEventList, data, parentEvent) {
+        let fields = this.parent.eventFields;
+        for (let event of ignoreFutureEventList) {
+            if (isNullOrUndefined(event[fields.recurrenceException])) {
+                let followingEvent = new Predicate(fields.id, 'equal', event[fields.recurrenceID]);
+                let recParentEvent = this.parent.eventBase.getFilterEventsList(this.parent.eventsData, followingEvent);
+                event[fields.recurrenceException] = recParentEvent.length > 0 ?
+                    recParentEvent[0][fields.recurrenceException] : event[fields.recurrenceException];
+            }
+            if (!isNullOrUndefined(data[fields.recurrenceException]) && !isNullOrUndefined(event[fields.recurrenceException]) &&
+                data[fields.recurrenceException].indexOf(event[fields.recurrenceException]) === -1) {
+                data[fields.recurrenceException] = data[fields.recurrenceException] + ',' + event[fields.recurrenceException];
+            }
+            else if (isNullOrUndefined(data[fields.recurrenceException])) {
+                data[fields.recurrenceException] = !isNullOrUndefined(parentEvent[fields.recurrenceException])
+                    ? parentEvent[fields.recurrenceException] : event[fields.recurrenceException];
+            }
+        }
+        return data[fields.recurrenceException];
+    }
+    updateParentRecurrentException(parentEvent, edited, editParms) {
+        let fields = this.parent.eventFields;
+        let recurrenceString = isNullOrUndefined(parentEvent[fields.recurrenceException])
+            ? [] : parentEvent[fields.recurrenceException].split(',');
+        let flag = 0;
+        let parentExceptionUpdated = false;
+        for (let recucrrence of recurrenceString) {
+            flag++;
+            let recurrenceDate = getDateFromRecurrenceDateString(recucrrence);
+            if (recurrenceDate >= edited[fields.startTime]) {
+                let replaceString = flag > 1 ? ',' + recucrrence : recucrrence;
+                parentEvent[fields.recurrenceException] = parentEvent[fields.recurrenceException]
+                    .replace(replaceString, '');
+                parentEvent[fields.recurrenceException] = parentEvent[fields.recurrenceException] === '' ? null
+                    : parentEvent[fields.recurrenceException];
+                parentExceptionUpdated = true;
+            }
+        }
+        if (parentExceptionUpdated) {
+            editParms.changedRecords.push(parentEvent);
+        }
+    }
+    deleteEvent(id, action) {
+        if (!this.parent.eventSettings.allowDeleting) {
+            return;
+        }
+        let fields = this.parent.eventFields;
+        let editParms = { addedRecords: [], changedRecords: [], deletedRecords: [] };
+        let dataObj = [];
+        let normalEvent = [];
+        let recEvent = [];
+        this.parent.currentAction = action;
+        switch (typeof id) {
+            case 'string':
+            case 'number':
+                dataObj = new DataManager(this.parent.eventsData).executeLocal(new Query().where(fields.id, 'equal', id));
+                break;
+            case 'object':
+                dataObj = (id instanceof Array) ? id : [id];
+                break;
+        }
+        for (let event of dataObj) {
+            (!isNullOrUndefined(event[fields.recurrenceRule])) ? recEvent.push(event) : normalEvent.push(event);
+        }
+        let args = { requestType: 'eventRemove', cancel: false };
+        if (action !== 'DeleteOccurrence') {
+            args.data = dataObj;
+            this.parent.trigger(actionBegin, args);
+            if (args.cancel) {
+                return;
+            }
+        }
+        if (isNullOrUndefined(action) || normalEvent.length > 0) {
+            for (let event of normalEvent) {
+                editParms.deletedRecords.push(event);
+            }
+        }
+        if (recEvent.length > 0) {
+            switch (action) {
+                case 'Delete':
+                case 'DeleteOccurrence':
+                    for (let i = 0; i < recEvent.length; i++) {
+                        let parentEvent = this.getParentEvent(recEvent[i]);
+                        args.data = { occurrence: recEvent[i], parent: parentEvent };
+                        this.parent.trigger(actionBegin, args);
+                        if (args.cancel) {
+                            return;
+                        }
+                        parentEvent[fields.recurrenceException] =
+                            this.excludeDateCheck(recEvent[i][fields.startTime], parentEvent[fields.recurrenceException]);
+                        this.processCrudTimezone(parentEvent);
+                        editParms.changedRecords.push(parentEvent);
+                        if (recEvent[i][fields.id] !== parentEvent[fields.id]) {
+                            editParms.deletedRecords.push(recEvent[i]);
+                        }
+                    }
+                    break;
+                case 'DeleteFollowingEvents':
+                case 'DeleteSeries':
+                    if (!this.parent.eventSettings.editFollowingEvents) {
+                        for (let app of recEvent) {
+                            let predicate = new Predicate(fields.id, 'equal', (app[fields.recurrenceID] || id)).
+                                or(new Predicate(fields.recurrenceID, 'equal', (app[fields.recurrenceID] || id)));
+                            let delApp = new DataManager(this.parent.eventsData).executeLocal(new Query().where(predicate));
+                            for (let event of delApp) {
+                                editParms.deletedRecords.push(event);
+                            }
+                        }
+                    }
+                    else {
+                        editParms = this.processDeleteSeries(recEvent, editParms, id);
+                    }
+                    break;
+            }
+        }
+        let promise;
+        if (editParms.deletedRecords.length === 1 && editParms.changedRecords.length === 0) {
+            let deleteEvent = editParms.deletedRecords[0];
+            promise =
+                this.parent.dataModule.dataManager.remove(fields.id, deleteEvent, this.getTable(), this.getQuery());
+        }
+        else {
+            promise =
+                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery());
+        }
+        this.parent.eventBase.selectWorkCellByTime(dataObj);
+        let crudArgs = { requestType: 'eventRemoved', cancel: false, data: args.data, promise: promise, editParms: editParms };
+        this.refreshData(crudArgs);
+    }
+    processDeleteSeries(recEvent, editParms, id) {
+        let fields = this.parent.eventFields;
+        for (let app of recEvent) {
+            // To set recurrenceID when directly call deleteEvent, Since the parent event is taken based on recucrrence id.
+            app[fields.recurrenceID] = isNullOrUndefined(app[fields.recurrenceID]) ? app[fields.id] : app[fields.recurrenceID];
+            let parentEvent;
+            let followingEvents = [];
+            let delApp;
+            let eventID;
+            let recurrenceEvent;
+            if (this.parent.currentAction === 'DeleteFollowingEvents') {
+                parentEvent = this.parent.eventBase.getRecurrenceEvent(app);
+                eventID = app[fields.id];
+                // To update until date for every future delete occurences 
+                parentEvent[fields.recurrenceRule] = this.getUpdatedParentRule(parentEvent, app);
+                this.processCrudTimezone(parentEvent);
+                editParms.changedRecords = editParms.changedRecords.concat(parentEvent);
+                // To ignore the past date of clicked event's from edit 
+                let delEventQuery = new Predicate(fields.id, 'equal', eventID).
+                    and(new Predicate(fields.startTime, 'lessthanorequal', app[fields.startTime]));
+                followingEvents = this.parent.eventBase.getSeriesEvents(parentEvent, app[fields.startTime]);
+                this.updateParentRecurrentException(parentEvent, app, editParms);
+                let currentEvent = this.parent.eventBase.getFilterEventsList(this.parent.eventsProcessed, delEventQuery);
+                if (currentEvent.length === 1) {
+                    editParms.deletedRecords = editParms.deletedRecords.concat(app);
+                }
+                recurrenceEvent = (new Predicate(fields.recurrenceID, 'equal', eventID).and(new Predicate(fields.startTime, 'greaterthanorequal', app[fields.startTime])));
+            }
+            else {
+                parentEvent = this.getParentEvent(app);
+                eventID = parentEvent[fields.id];
+                followingEvents = this.parent.eventBase.getSeriesEvents(parentEvent);
+                editParms.deletedRecords = editParms.deletedRecords.concat(parentEvent);
+                recurrenceEvent = (new Predicate(fields.recurrenceID, 'equal', eventID));
+            }
+            if (followingEvents.length === 0) {
+                delApp = this.parent.eventBase.getFilterEventsList(this.parent.eventsData, recurrenceEvent);
+            }
+            else {
+                delApp = followingEvents.concat(this.parent.eventBase.getEditedOccurrences(followingEvents, parentEvent[fields.startTime]));
+            }
+            editParms.deletedRecords = editParms.deletedRecords.concat(delApp);
+        }
+        return editParms;
+    }
+    getParentEvent(event) {
+        let fields = this.parent.eventFields;
+        let parentEvent;
+        if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(event[fields.followingID]) ||
+            (!isNullOrUndefined(fields.recurrenceID) && event[fields.recurrenceID] !== event[fields.id])) &&
+            this.parent.currentAction !== 'EditOccurrence' && this.parent.currentAction !== 'DeleteOccurrence') {
+            parentEvent = this.parent.eventBase.getParentEvent(event);
+        }
+        else {
+            parentEvent = this.parent.eventBase.getRecurrenceEvent(event);
+        }
+        if (parentEvent[fields.startTimezone] || parentEvent[fields.endTimezone]) {
+            this.parent.eventBase.timezoneConvert(parentEvent);
+        }
+        return parentEvent;
+    }
+    processCrudTimezone(events) {
+        let fields = this.parent.eventFields;
+        if (events[fields.startTimezone] || events[fields.endTimezone]) {
+            let startTimezone = events[fields.startTimezone] || events[fields.endTimezone];
+            let endTimezone = events[fields.endTimezone] || events[fields.startTimezone];
+            if (this.parent.timezone) {
+                let zone = this.parent.timezone;
+                events[fields.startTime] =
+                    this.parent.tzModule.convert(events[fields.startTime], startTimezone, zone);
+                events[fields.endTime] = this.parent.tzModule.convert(events[fields.endTime], endTimezone, zone);
+                events[fields.startTime] = this.parent.tzModule.remove(events[fields.startTime], zone);
+                events[fields.endTime] = this.parent.tzModule.remove(events[fields.endTime], zone);
+            }
+            else {
+                events[fields.startTime] = this.parent.tzModule.remove(events[fields.startTime], startTimezone);
+                events[fields.endTime] = this.parent.tzModule.remove(events[fields.endTime], endTimezone);
+            }
+        }
+        else if (this.parent.timezone) {
+            events[fields.startTime] = this.parent.tzModule.remove(events[fields.startTime], this.parent.timezone);
+            events[fields.endTime] = this.parent.tzModule.remove(events[fields.endTime], this.parent.timezone);
+        }
+    }
+    excludeDateCheck(eventStartTime, exceptionDateList) {
+        let exDate = getRecurrenceStringFromDate(eventStartTime);
+        if (!isNullOrUndefined(exceptionDateList)) {
+            if (exceptionDateList.indexOf(exDate) === -1) {
+                exceptionDateList = !(isNullOrUndefined(exceptionDateList)) ? exceptionDateList + ',' + exDate : exDate;
+            }
+        }
+        else {
+            exceptionDateList = exDate;
+        }
+        return exceptionDateList;
+    }
+    getEditedOccurrence(guid) {
+        let query = new Query().where('Guid', 'equal', guid);
+        return new DataManager(this.parent.eventsProcessed).executeLocal(query);
+    }
+    getUpdatedParentRule(parentEvent, edited) {
+        let fields = this.parent.eventFields;
+        let date = new Date('' + edited[fields.startTime]);
+        let startTime = new Date(date.setDate(date.getDate() + (-1)));
+        return this.formatRecurrenceRule(parentEvent, startTime);
+    }
+    formatRecurrenceRule(event, startTime) {
+        let fields = this.parent.eventFields;
+        let untilDate = getRecurrenceStringFromDate(startTime);
+        let rule = '';
+        let splitRecRule = event[fields.recurrenceRule].split(';');
+        if (event[fields.recurrenceRule].indexOf('UNTIL') > -1) {
+            for (let recProperty of splitRecRule) {
+                if (recProperty.indexOf('COUNT') === -1 && recProperty !== '') {
+                    if (recProperty.indexOf('UNTIL') > -1) {
+                        recProperty = recProperty.replace(recProperty, 'UNTIL=' + untilDate);
+                    }
+                    rule = rule + recProperty + ';';
+                }
+            }
+        }
+        else {
+            let updatedRecRule;
+            let countProp;
+            for (let prop of splitRecRule) {
+                countProp = prop.indexOf('COUNT') > -1 ? prop.replace(';', '') : countProp;
+            }
+            updatedRecRule = event[fields.recurrenceRule];
+            let lastChar = updatedRecRule.slice(-1)[0];
+            rule = lastChar === ';' ? updatedRecRule + 'UNTIL=' + untilDate + ';' : updatedRecRule + ';UNTIL=' + untilDate + ';';
+            rule = rule.indexOf('UNTIL') > -1 ? rule.replace(countProp + ';', '') : rule;
+        }
+        return rule;
+    }
+}
+
+/**
+ * Work cell interactions
+ */
+class WorkCellInteraction {
+    constructor(parent) {
+        this.parent = parent;
+    }
+    cellMouseDown(e) {
+        if (this.isPreventAction(e)) {
+            return;
+        }
+        this.parent.notify(cellMouseDown, { event: e });
+    }
+    cellClick(e) {
+        if (this.isPreventAction(e)) {
+            return;
+        }
+        let queryStr = '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' + HEADER_CELLS_CLASS;
+        let target = closest(e.target, queryStr);
+        if (isNullOrUndefined(target)) {
+            return;
+        }
+        if (!isNullOrUndefined(closest(e.target, '.' + NEW_EVENT_CLASS))) {
+            this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
+            return;
+        }
+        let navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
+        let navigateView = this.parent.getNavigateView();
+        let sameView = this.parent.currentView === navigateView;
+        if (isNullOrUndefined(navigateEle) || sameView ||
+            isNullOrUndefined(this.parent.viewOptions[navigateView.charAt(0).toLowerCase() + navigateView.slice(1)])) {
+            if (this.parent.activeViewOptions.readonly) {
+                this.parent.quickPopup.quickPopupHide();
+                return;
+            }
+            if (this.parent.isAdaptive && (e.target.classList.contains(MORE_INDICATOR_CLASS) ||
+                closest(e.target, '.' + MORE_INDICATOR_CLASS))) {
+                return;
+            }
+            let isWorkCell = target.classList.contains(WORK_CELLS_CLASS) ||
+                target.classList.contains(ALLDAY_CELLS_CLASS);
+            if (isWorkCell && e.shiftKey && e.which === 1 && this.parent.keyboardInteractionModule) {
+                this.parent.keyboardInteractionModule.onMouseSelection(e);
+                return;
+            }
+            this.parent.activeCellsData = this.parent.getCellDetails(target);
+            let args = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
+            this.parent.trigger(cellClick, args, (clickArgs) => {
+                if (isBlazor()) {
+                    clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
+                    clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
+                    if (clickArgs.element) {
+                        clickArgs.element = getElement(clickArgs.element);
+                    }
+                    if (clickArgs.event) {
+                        clickArgs.event = e;
+                    }
+                }
+                if (!clickArgs.cancel) {
+                    if (isWorkCell) {
+                        this.parent.selectCell(target);
+                    }
+                    this.parent.notify(cellClick, clickArgs);
+                }
+            });
+        }
+        else {
+            let date = this.parent.getDateFromElement(target);
+            if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
+                this.parent.setProperties({ selectedDate: date }, true);
+                this.parent.changeView(this.parent.getNavigateView(), e);
+            }
+        }
+    }
+    cellDblClick(e) {
+        if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
+            return;
+        }
+        let args = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellDoubleClick' });
+        this.parent.trigger(cellDoubleClick, args, (clickArgs) => {
+            if (!clickArgs.cancel) {
+                this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
+            }
+        });
+    }
+    onHover(e) {
+        let targetSelector = '.' + WORK_CELLS_CLASS + ',.' + TIME_SLOT_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' +
+            HEADER_CELLS_CLASS + ',.' + RESOURCE_CELLS_CLASS + ',.' + APPOINTMENT_CLASS + ',.' + WEEK_NUMBER_CLASS;
+        let hoverTarget = closest(e.target, targetSelector);
+        if (hoverTarget) {
+            let hoverArgs = { element: hoverTarget, event: e };
+            this.parent.trigger(hover, hoverArgs);
+        }
+    }
+    isPreventAction(e) {
+        if (closest(e.target, '.' + NAVIGATE_CLASS)) {
+            return false;
+        }
+        if (closest(e.target, '.' + APPOINTMENT_WRAPPER_CLASS) &&
+            !closest(e.target, '.' + MORE_INDICATOR_CLASS)) {
+            return true;
+        }
+        let target = closest(e.target, '.' + APPOINTMENT_CLASS + ',.' + RESOURCE_GROUP_CELLS_CLASS);
+        if (!isNullOrUndefined(target)) {
+            return true;
+        }
+        target = closest(e.target, '.' + HEADER_CELLS_CLASS);
+        if (this.parent.activeView.isTimelineView() && !isNullOrUndefined(target)) {
+            return true;
+        }
+        return false;
+    }
+}
 
 var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -9721,6 +10004,15 @@ __decorate$6([
 __decorate$6([
     Property(false)
 ], EventSettings.prototype, "editFollowingEvents", void 0);
+__decorate$6([
+    Property(true)
+], EventSettings.prototype, "allowAdding", void 0);
+__decorate$6([
+    Property(true)
+], EventSettings.prototype, "allowEditing", void 0);
+__decorate$6([
+    Property(true)
+], EventSettings.prototype, "allowDeleting", void 0);
 
 var __decorate$9 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -10657,9 +10949,10 @@ let Schedule = class Schedule extends Component {
         this.scrollModule.setHeight();
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
+        this.workCellAction = new WorkCellInteraction(this);
         this.initializeDataModule();
-        this.on('data-ready', this.resetEventTemplates, this);
-        this.on('events-loaded', this.updateEventTemplates, this);
+        this.on(dataReady, this.resetEventTemplates, this);
+        this.on(eventsLoaded, this.updateEventTemplates, this);
         this.element.appendChild(this.createElement('div', { className: TABLE_CONTAINER_CLASS }));
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
@@ -10671,6 +10964,13 @@ let Schedule = class Schedule extends Component {
     }
     updateLayoutTemplates() {
         let view = this.views[this.viewIndex];
+        if (this.cellHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.cellHeaderTemplateName !== '') {
+            let tempID = this.element.id + '_' + this.activeViewOptions.cellHeaderTemplateName + 'cellHeaderTemplate';
+            updateBlazorTemplate(tempID, 'CellHeaderTemplate', view);
+        }
         if (this.dateHeaderTemplate) {
             updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
         }
@@ -10703,6 +11003,12 @@ let Schedule = class Schedule extends Component {
     }
     resetLayoutTemplates() {
         let view = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.cellHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate');
+        }
+        if (view.cellHeaderTemplate !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.cellHeaderTemplateName + 'cellHeaderTemplate', 'CellHeaderTemplate');
+        }
         if (this.dateHeaderTemplate) {
             resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
         }
@@ -10826,6 +11132,7 @@ let Schedule = class Schedule extends Component {
             }
             let obj = extend({ option: viewName }, isOptions ? view : {});
             let fieldViewName = viewName.charAt(0).toLowerCase() + viewName.slice(1);
+            obj.cellHeaderTemplateName = obj.cellHeaderTemplate ? obj.option : '';
             obj.dateHeaderTemplateName = obj.dateHeaderTemplate ? obj.option : '';
             obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
             obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
@@ -10873,10 +11180,12 @@ let Schedule = class Schedule extends Component {
             readonly: this.readonly,
             startHour: this.startHour,
             allowVirtualScrolling: false,
+            cellHeaderTemplate: this.cellHeaderTemplate,
             cellTemplate: this.cellTemplate,
             eventTemplate: this.eventSettings.template,
             dateHeaderTemplate: this.dateHeaderTemplate,
             resourceHeaderTemplate: this.resourceHeaderTemplate,
+            firstDayOfWeek: this.firstDayOfWeek,
             workDays: workDays,
             showWeekend: this.showWeekend,
             showWeekNumber: this.showWeekNumber,
@@ -10884,7 +11193,8 @@ let Schedule = class Schedule extends Component {
             interval: 1,
             timeScale: timeScale,
             group: group,
-            headerRows: this.headerRows
+            headerRows: this.headerRows,
+            orientation: 'Horizontal'
         };
         return extend(scheduleOptions, this.viewCollections[this.viewIndex], undefined, true);
     }
@@ -10930,6 +11240,7 @@ let Schedule = class Schedule extends Component {
         this.renderModule.render(viewName);
     }
     initializeTemplates() {
+        this.cellHeaderTemplateFn = this.templateParser(this.activeViewOptions.cellHeaderTemplate);
         this.cellTemplateFn = this.templateParser(this.activeViewOptions.cellTemplate);
         this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
         this.majorSlotTemplateFn = this.templateParser(this.activeViewOptions.timeScale.majorSlotTemplate);
@@ -10999,6 +11310,7 @@ let Schedule = class Schedule extends Component {
                         this.setProperties({ currentView: view }, true);
                         if (this.headerModule) {
                             this.headerModule.updateActiveView();
+                            this.headerModule.setCalendarDate(this.selectedDate);
                             this.headerModule.setCalendarView();
                         }
                         this.initializeView(this.currentView);
@@ -11039,14 +11351,14 @@ let Schedule = class Schedule extends Component {
     }
     getCurrentTime() {
         if (this.timezone) {
-            let tmz = new Timezone();
-            return tmz.convert(new Date(), new Date().getTimezoneOffset(), this.timezone);
+            let localOffset = new Date().getTimezoneOffset();
+            return this.tzModule.convert(new Date(), localOffset, this.timezone);
         }
         return new Date();
     }
     getNavigateView() {
         if (this.activeView.isTimelineView()) {
-            return this.currentView === 'TimelineMonth' ? 'TimelineDay' : 'Agenda';
+            return this.currentView === 'TimelineMonth' || this.currentView === 'TimelineYear' ? 'TimelineDay' : 'Agenda';
         }
         return 'Day';
     }
@@ -11105,6 +11417,7 @@ let Schedule = class Schedule extends Component {
     preRender() {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
+        this.tzModule = new Timezone();
         this.uiStateValues = {
             expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, viewIndex: 0,
             isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
@@ -11122,6 +11435,7 @@ let Schedule = class Schedule extends Component {
         this.resourceCollection = [];
         this.currentAction = null;
         this.selectedElements = [];
+        this.isMorePopup = true;
         this.setViewOptions();
     }
     getDefaultLocale() {
@@ -11130,6 +11444,7 @@ let Schedule = class Schedule extends Component {
             week: 'Week',
             workWeek: 'Work Week',
             month: 'Month',
+            year: 'Year',
             agenda: 'Agenda',
             weekAgenda: 'Week Agenda',
             workWeekAgenda: 'Work Week Agenda',
@@ -11195,6 +11510,7 @@ let Schedule = class Schedule extends Component {
             timelineWeek: 'Timeline Week',
             timelineWorkWeek: 'Timeline Work Week',
             timelineMonth: 'Timeline Month',
+            timelineYear: 'Timeline Year',
             editFollowingEvent: 'Following Events',
             deleteTitle: 'Delete Event',
             editTitle: 'Edit Event',
@@ -11208,6 +11524,7 @@ let Schedule = class Schedule extends Component {
         let resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
         EventHandler.add(window, resize, this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
+        EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
         if (this.allowKeyboardInteraction) {
             this.keyboardInteractionModule = new KeyboardInteraction(this);
         }
@@ -11253,8 +11570,8 @@ let Schedule = class Schedule extends Component {
         return collection.map(Number).indexOf(+date);
     }
     isAllDayCell(td) {
-        if (this.currentView === 'Month' || this.currentView === 'TimelineMonth' || td.classList.contains(ALLDAY_CELLS_CLASS)
-            || td.classList.contains(HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
+        if (['Month', 'TimelineMonth', 'TimelineYear'].indexOf(this.currentView) > -1 || td.classList.contains(ALLDAY_CELLS_CLASS) ||
+            td.classList.contains(HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }
         if (this.activeView.isTimelineView() && this.activeViewOptions.headerRows.length > 0 &&
@@ -11269,6 +11586,9 @@ let Schedule = class Schedule extends Component {
             return new Date(dateInMS);
         }
         return undefined;
+    }
+    getCellHeaderTemplate() {
+        return this.cellHeaderTemplateFn;
     }
     getCellTemplate() {
         return this.cellTemplateFn;
@@ -11386,6 +11706,7 @@ let Schedule = class Schedule extends Component {
         let resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
         EventHandler.remove(window, resize, this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
+        EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
         if (this.keyboardInteractionModule) {
             this.keyboardInteractionModule.destroy();
         }
@@ -11459,9 +11780,7 @@ let Schedule = class Schedule extends Component {
                     state.isRefresh = true;
                     break;
                 case 'firstDayOfWeek':
-                    if (this.headerModule) {
-                        this.headerModule.setDayOfWeek(newProp.firstDayOfWeek);
-                    }
+                    this.activeViewOptions.firstDayOfWeek = newProp.firstDayOfWeek;
                     if (this.eventWindow) {
                         this.eventWindow.refreshRecurrenceEditor();
                     }
@@ -11471,6 +11790,11 @@ let Schedule = class Schedule extends Component {
                     if (this.activeViewOptions.timeScale.enable && this.activeView) {
                         this.activeView.highlightCurrentTime();
                     }
+                    break;
+                case 'cellHeaderTemplate':
+                    this.activeViewOptions.cellHeaderTemplate = newProp.cellHeaderTemplate;
+                    this.cellHeaderTemplateFn = this.templateParser(this.activeViewOptions.cellHeaderTemplate);
+                    state.isLayout = true;
                     break;
                 case 'cellTemplate':
                     this.activeViewOptions.cellTemplate = newProp.cellTemplate;
@@ -11650,6 +11974,11 @@ let Schedule = class Schedule extends Component {
                 case 'editFollowingEvents':
                     state.isRefresh = true;
                     break;
+                case 'allowAdding':
+                case 'allowEditing':
+                case 'allowDeleting':
+                    state.isLayout = true;
+                    break;
             }
         }
     }
@@ -11798,7 +12127,11 @@ let Schedule = class Schedule extends Component {
         let duration = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
         if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(ALLDAY_CELLS_CLASS) ||
             lastTd.classList.contains(HEADER_CELLS_CLASS)) {
-            endTime = addDays(new Date(startTime.getTime()), duration);
+            let startDate = new Date(startTime.getTime());
+            if (lastTd.classList.contains(ALLDAY_CELLS_CLASS)) {
+                startDate = new Date(endTime.getTime());
+            }
+            endTime = addDays(startDate, duration);
         }
         else {
             endTime = this.activeView.getEndDateFromStartDate(endTime);
@@ -11964,6 +12297,29 @@ let Schedule = class Schedule extends Component {
         return eventCollections;
     }
     /**
+     * Retrieves the entire collection of events bound to the Schedule.
+     * @method getBlockEvents
+     * @returns {Object[]} Returns the collection of block event objects from the Schedule.
+     * @isGenericType true
+     */
+    getBlockEvents(startDate, endDate, includeOccurrences) {
+        let eventCollections = [];
+        if (includeOccurrences) {
+            eventCollections = this.eventBase.getProcessedEvents(this.blockData);
+        }
+        else {
+            eventCollections = this.blockData;
+        }
+        if (startDate) {
+            startDate = this.getDateTime(startDate);
+        }
+        if (endDate) {
+            endDate = this.getDateTime(endDate);
+        }
+        eventCollections = this.eventBase.filterEventsByRange(eventCollections, startDate, endDate);
+        return eventCollections;
+    }
+    /**
      * Retrieves the occurrences of a single recurrence event based on the provided parent ID.
      * @method getOccurrencesByID
      * @param {number} eventID ID of the parent recurrence data from which the occurrences are fetched.
@@ -11995,11 +12351,11 @@ let Schedule = class Schedule extends Component {
         return this.activeView ? this.activeView.renderDates : [];
     }
     /**
-     * Update the recurrence editor instance from custom editor template.
-     * @method updateRecurrenceEditor
+     * Set the recurrence editor instance from custom editor template.
+     * @method setRecurrenceEditor
      */
-    updateRecurrenceEditor(recurrenceEditor) {
-        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
+    setRecurrenceEditor(recurrenceEditor) {
+        this.eventWindow.setRecurrenceEditor(recurrenceEditor);
     }
     /**
      * Retrieves the events that lies on the current date range of the active view of Schedule.
@@ -12111,6 +12467,26 @@ let Schedule = class Schedule extends Component {
             this.activeEventData.event = data;
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
+    }
+    /**
+     * To manually close the event editor window
+     * @method closeEditor
+     * @return {void}
+     */
+    closeEditor() {
+        if (this.eventWindow) {
+            this.eventWindow.dialogClose();
+        }
+    }
+    /**
+     * To manually close the quick info popup
+     * @method closeQuickInfoPopup
+     * @return {void}
+     */
+    closeQuickInfoPopup() {
+        if (this.quickPopup) {
+            this.quickPopup.quickPopupHide(true);
+        }
     }
     /**
      * Adds the resources to the specified index.
@@ -12226,6 +12602,9 @@ __decorate([
 ], Schedule.prototype, "dateHeaderTemplate", void 0);
 __decorate([
     Property()
+], Schedule.prototype, "cellHeaderTemplate", void 0);
+__decorate([
+    Property()
 ], Schedule.prototype, "cellTemplate", void 0);
 __decorate([
     Property(false)
@@ -12251,6 +12630,9 @@ __decorate([
 __decorate([
     Property(true)
 ], Schedule.prototype, "hideEmptyAgendaDays", void 0);
+__decorate([
+    Property(true)
+], Schedule.prototype, "enableRecurrenceValidation", void 0);
 __decorate([
     Property()
 ], Schedule.prototype, "timezone", void 0);
@@ -12289,6 +12671,9 @@ __decorate([
 ], Schedule.prototype, "cellDoubleClick", void 0);
 __decorate([
     Event()
+], Schedule.prototype, "hover", void 0);
+__decorate([
+    Event()
 ], Schedule.prototype, "select", void 0);
 __decorate([
     Event()
@@ -12317,6 +12702,9 @@ __decorate([
 __decorate([
     Event()
 ], Schedule.prototype, "popupOpen", void 0);
+__decorate([
+    Event()
+], Schedule.prototype, "popupClose", void 0);
 __decorate([
     Event()
 ], Schedule.prototype, "dragStart", void 0);
@@ -12398,7 +12786,8 @@ class ActionBase {
                 eventObj[this.parent.eventFields.id] = this.parent.eventBase.getEventMaxID();
                 currentAction = 'EditOccurrence';
             }
-            if (this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
+            if (this.parent.enableRecurrenceValidation
+                && this.parent.eventWindow.editOccurrenceValidation(eveId, eventObj, this.actionObj.event)) {
                 this.parent.quickPopup.openRecurrenceValidationAlert('sameDayAlert');
                 return;
             }
@@ -12768,7 +13157,7 @@ class MonthEvent extends EventBase {
             let splittedEvents = this.splitEvent(event, this.dateRender);
             for (let event of splittedEvents) {
                 this.updateIndicatorIcon(event);
-                this.renderEvents(event, resIndex);
+                this.renderEvents(event, resIndex, eventsList);
             }
         }
         this.cssClass = null;
@@ -13013,7 +13402,7 @@ class MonthEvent extends EventBase {
             append([iconRight], appointmentDetails);
         }
     }
-    renderEvents(event, resIndex) {
+    renderEvents(event, resIndex, eventsList) {
         let startTime = event[this.fields.startTime];
         let endTime = event[this.fields.endTime];
         let day = this.parent.getIndexOfDate(this.dateRender, resetTime(startTime));
@@ -13082,14 +13471,14 @@ class MonthEvent extends EventBase {
             element.style.width = (firstChild.offsetWidth * width) + 'px';
         }
     }
-    getFilteredEvents(startDate, endDate, groupIndex) {
+    getFilteredEvents(startDate, endDate, groupIndex, eventsList) {
         let filteredEvents;
         if (isNullOrUndefined(groupIndex)) {
             filteredEvents = this.filterEvents(startDate, endDate);
         }
         else {
             let data = this.parent.resourceBase.lastResourceLevel[parseInt(groupIndex, 10)];
-            filteredEvents = this.filterEvents(startDate, endDate, undefined, data);
+            filteredEvents = this.filterEvents(startDate, endDate, isNullOrUndefined(eventsList) ? undefined : eventsList, data);
         }
         return filteredEvents;
     }
@@ -13116,7 +13505,7 @@ class MonthEvent extends EventBase {
     moreIndicatorClick(event) {
         let target = closest(event.target, '.' + MORE_INDICATOR_CLASS);
         let startDate = new Date(parseInt(target.getAttribute('data-start-date'), 10));
-        if (!isNullOrUndefined(startDate) && this.parent.isAdaptive) {
+        if (!isNullOrUndefined(startDate) && !this.parent.isMorePopup) {
             this.parent.setProperties({ selectedDate: startDate }, true);
             this.parent.changeView(this.parent.getNavigateView(), event);
         }
@@ -13693,7 +14082,7 @@ class TimelineEvent extends MonthEvent {
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays, resources[i]);
         }
     }
-    renderEvents(event, resIndex) {
+    renderEvents(event, resIndex, eventsList) {
         let eventData = event.data;
         let startTime = this.getStartTime(event, eventData);
         let endTime = this.getEndTime(event, eventData);
@@ -13749,7 +14138,7 @@ class TimelineEvent extends MonthEvent {
                         if (this.parent.activeViewOptions.group.resources.length > 0 && !isNullOrUndefined(resIndex)) {
                             groupIndex = resIndex.toString();
                         }
-                        let filterEvents = this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex);
+                        let filterEvents = this.getFilterEvents(startDate, endDate, slotStartTime, slotEndTime, groupIndex, eventsList);
                         let appArea = this.cellHeight - this.moreIndicatorHeight;
                         let renderedAppCount = Math.floor(appArea / (appHeight + EVENT_GAP$1));
                         let count = (filterEvents.length - renderedAppCount) <= 0 ? 1 : (filterEvents.length - renderedAppCount);
@@ -13917,12 +14306,13 @@ class TimelineEvent extends MonthEvent {
         }
         return cellIndex * this.cellWidth;
     }
-    getFilterEvents(startDate, endDate, startTime, endTime, gIndex) {
+    //tslint:disable-next-line:max-line-length
+    getFilterEvents(startDate, endDate, startTime, endTime, gIndex, eventsList) {
         if (this.renderType === 'day') {
-            return this.getFilteredEvents(startDate, endDate, gIndex);
+            return this.getFilteredEvents(startDate, endDate, gIndex, eventsList);
         }
         else {
-            return this.getFilteredEvents(startTime, endTime, gIndex);
+            return this.getFilteredEvents(startTime, endTime, gIndex, eventsList);
         }
     }
     isAlreadyAvail(appPos, cellTd) {
@@ -14095,54 +14485,64 @@ class DragAndDrop extends ActionBase {
             navigation: { enable: false, timeDelay: 2000 },
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
-        this.parent.trigger(dragStart, dragArgs);
-        if (dragArgs.cancel || (!isNullOrUndefined(this.actionObj.element) && isNullOrUndefined(this.actionObj.element.parentElement))) {
-            this.actionObj.action = '';
-            this.removeCloneElementClasses();
-            this.removeCloneElement();
-            return;
-        }
-        this.actionClass('addClass');
-        this.parent.uiStateValues.action = true;
-        this.actionObj.start = eventObj[this.parent.eventFields.startTime];
-        this.actionObj.end = eventObj[this.parent.eventFields.endTime];
-        this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
-        this.actionObj.interval = dragArgs.interval;
-        this.actionObj.navigation = dragArgs.navigation;
-        this.actionObj.scroll = dragArgs.scroll;
-        this.actionObj.excludeSelectors = dragArgs.excludeSelectors;
-        let viewElement = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
-        this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
-        this.widthPerMinute = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
-        this.widthUptoCursorPoint = 0;
-        this.cursorPointIndex = -1;
-        this.isHeaderRows = false;
-        this.isTimelineDayProcess = false;
-        this.minDiff = 0;
-        this.isMorePopupOpened = false;
-        this.daysVariation = -1;
-        if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable)) {
-            if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
-                this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS)) {
-                this.isMorePopupOpened = true;
+        this.parent.trigger(dragStart, dragArgs, (dragEventArgs) => {
+            if (dragEventArgs.cancel || (!isNullOrUndefined(this.actionObj.element) &&
+                isNullOrUndefined(this.actionObj.element.parentElement))) {
+                this.actionObj.action = '';
+                this.removeCloneElementClasses();
+                this.removeCloneElement();
+                return;
             }
-            let rows = this.parent.activeViewOptions.headerRows;
-            this.isHeaderRows = rows.length > 0 && rows[rows.length - 1].option !== 'Hour' &&
-                rows[rows.length - 1].option !== 'Date';
-            this.isTimelineDayProcess = !this.parent.activeViewOptions.timeScale.enable || this.isHeaderRows ||
-                this.parent.currentView === 'TimelineMonth' || (rows.length > 0 && rows[rows.length - 1].option === 'Date');
-            this.isStepDragging = !this.isTimelineDayProcess && (this.actionObj.slotInterval !== this.actionObj.interval);
-            if (this.isTimelineDayProcess) {
-                this.timelineEventModule = new TimelineEvent(this.parent, 'day');
+            else if (isBlazor()) {
+                e.bindEvents(e.dragElement);
+                if (dragEventArgs.element) {
+                    dragEventArgs.element = getElement(dragEventArgs.element);
+                }
+                dragEventArgs.data[this.parent.eventFields.startTime] = this.parent.getDateTime(dragEventArgs.data[this.parent.eventFields.startTime]);
+                dragEventArgs.data[this.parent.eventFields.endTime] = this.parent.getDateTime(dragEventArgs.data[this.parent.eventFields.endTime]);
             }
-            else {
-                this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
+            this.actionClass('addClass');
+            this.parent.uiStateValues.action = true;
+            this.actionObj.start = eventObj[this.parent.eventFields.startTime];
+            this.actionObj.end = eventObj[this.parent.eventFields.endTime];
+            this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
+            this.actionObj.interval = dragEventArgs.interval;
+            this.actionObj.navigation = dragEventArgs.navigation;
+            this.actionObj.scroll = dragEventArgs.scroll;
+            this.actionObj.excludeSelectors = dragEventArgs.excludeSelectors;
+            let viewElement = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
+            this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
+            this.widthPerMinute = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
+            this.widthUptoCursorPoint = 0;
+            this.cursorPointIndex = -1;
+            this.isHeaderRows = false;
+            this.isTimelineDayProcess = false;
+            this.minDiff = 0;
+            this.isMorePopupOpened = false;
+            this.daysVariation = -1;
+            if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable)) {
+                if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
+                    this.actionObj.clone.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS)) {
+                    this.isMorePopupOpened = true;
+                }
+                let rows = this.parent.activeViewOptions.headerRows;
+                this.isHeaderRows = rows.length > 0 && rows[rows.length - 1].option !== 'Hour' &&
+                    rows[rows.length - 1].option !== 'Date';
+                this.isTimelineDayProcess = !this.parent.activeViewOptions.timeScale.enable || this.isHeaderRows ||
+                    this.parent.currentView === 'TimelineMonth' || (rows.length > 0 && rows[rows.length - 1].option === 'Date');
+                this.isStepDragging = !this.isTimelineDayProcess && (this.actionObj.slotInterval !== this.actionObj.interval);
+                if (this.isTimelineDayProcess) {
+                    this.timelineEventModule = new TimelineEvent(this.parent, 'day');
+                }
+                else {
+                    this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
+                }
             }
-        }
-        if (this.parent.currentView === 'Month') {
-            this.updateOriginalElement(this.actionObj.clone);
-            this.monthEvent = new MonthEvent(this.parent);
-        }
+            if (this.parent.currentView === 'Month') {
+                this.updateOriginalElement(this.actionObj.clone);
+                this.monthEvent = new MonthEvent(this.parent);
+            }
+        });
     }
     drag(e) {
         this.parent.quickPopup.quickPopupHide(true);
@@ -15018,7 +15418,7 @@ class ViewBase {
         // Due to same code for vertical and time line, week & work week views, if condition has used
         if (this.parent.currentView === 'Week' || this.parent.currentView === 'TimelineWeek') {
             let selectedDate = resetTime(this.parent.selectedDate);
-            let start = getWeekFirstDate(selectedDate, this.parent.firstDayOfWeek);
+            let start = getWeekFirstDate(selectedDate, this.parent.activeViewOptions.firstDayOfWeek);
             for (let i = 0, length = WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
                 if (this.parent.activeViewOptions.showWeekend) {
                     renderDates.push(start);
@@ -15032,7 +15432,7 @@ class ViewBase {
             }
         }
         else if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek') {
-            let start = getWeekFirstDate(resetTime(this.parent.selectedDate), this.parent.firstDayOfWeek);
+            let start = getWeekFirstDate(resetTime(this.parent.selectedDate), this.parent.activeViewOptions.firstDayOfWeek);
             for (let i = 0, length = WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
                 if (this.isWorkDay(start, workDays)) {
                     renderDates.push(start);
@@ -15041,9 +15441,18 @@ class ViewBase {
             }
         }
         else {
-            for (let i = 0, length = this.parent.activeViewOptions.interval; i < length; i++) {
-                renderDates.push(addDays(resetTime(this.parent.selectedDate), i));
-            }
+            let start = resetTime(this.parent.selectedDate);
+            do {
+                if (this.parent.activeViewOptions.showWeekend) {
+                    renderDates.push(start);
+                }
+                else {
+                    if (this.isWorkDay(start, workDays)) {
+                        renderDates.push(start);
+                    }
+                }
+                start = addDays(start, 1);
+            } while (this.parent.activeViewOptions.interval !== renderDates.length);
         }
         if (!workDays) {
             this.renderDates = renderDates;
@@ -15052,14 +15461,29 @@ class ViewBase {
     }
     getNextPreviousDate(type) {
         if (this.parent.currentView === 'Day' || this.parent.currentView === 'TimelineDay') {
-            let daysCount = (type === 'next') ? this.parent.activeViewOptions.interval : -(this.parent.activeViewOptions.interval);
             if (this.parent.activeViewOptions.showWeekend) {
-                return addDays(this.parent.selectedDate, daysCount);
+                let daysCount = this.parent.activeViewOptions.interval;
+                return addDays(this.parent.selectedDate, type === 'next' ? daysCount : -daysCount);
             }
             else {
-                let date = addDays(this.parent.selectedDate, daysCount);
-                while (!this.isWorkDay(date)) {
-                    date = addDays(date, daysCount);
+                let date;
+                if (type === 'next') {
+                    date = addDays(this.renderDates.slice(-1)[0], 1);
+                    while (!this.isWorkDay(date)) {
+                        date = addDays(date, 1);
+                    }
+                }
+                else {
+                    date = addDays(this.renderDates[0], -1);
+                    let count = 0;
+                    do {
+                        if (this.isWorkDay(date)) {
+                            count += 1;
+                        }
+                        if (this.parent.activeViewOptions.interval !== count) {
+                            date = addDays(date, -1);
+                        }
+                    } while (this.parent.activeViewOptions.interval !== count);
                 }
                 return date;
             }
@@ -15206,111 +15630,6 @@ class ViewBase {
     }
     getContentAreaElement() {
         return this.element.querySelector('.' + CONTENT_WRAP_CLASS);
-    }
-}
-
-/**
- * Work cell interactions
- */
-class WorkCellInteraction {
-    constructor(parent) {
-        this.parent = parent;
-    }
-    cellMouseDown(e) {
-        if (this.isPreventAction(e)) {
-            return;
-        }
-        this.parent.notify(cellMouseDown, { event: e });
-    }
-    cellClick(e) {
-        if (this.isPreventAction(e)) {
-            return;
-        }
-        let queryStr = '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' + HEADER_CELLS_CLASS;
-        let target = closest(e.target, queryStr);
-        if (isNullOrUndefined(target)) {
-            return;
-        }
-        if (!isNullOrUndefined(closest(e.target, '.' + NEW_EVENT_CLASS))) {
-            this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
-            return;
-        }
-        let navigateEle = closest(e.target, '.' + NAVIGATE_CLASS);
-        let navigateView = this.parent.getNavigateView();
-        let sameView = this.parent.currentView === navigateView;
-        if (isNullOrUndefined(navigateEle) || sameView ||
-            isNullOrUndefined(this.parent.viewOptions[navigateView.charAt(0).toLowerCase() + navigateView.slice(1)])) {
-            if (this.parent.activeViewOptions.readonly) {
-                this.parent.quickPopup.quickPopupHide();
-                return;
-            }
-            if (this.parent.isAdaptive && (e.target.classList.contains(MORE_INDICATOR_CLASS) ||
-                closest(e.target, '.' + MORE_INDICATOR_CLASS))) {
-                return;
-            }
-            let isWorkCell = target.classList.contains(WORK_CELLS_CLASS) ||
-                target.classList.contains(ALLDAY_CELLS_CLASS);
-            if (isWorkCell && e.shiftKey && e.which === 1 && this.parent.keyboardInteractionModule) {
-                this.parent.keyboardInteractionModule.onMouseSelection(e);
-                return;
-            }
-            this.parent.activeCellsData = this.parent.getCellDetails(target);
-            let args = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
-            this.parent.trigger(cellClick, args, (clickArgs) => {
-                if (isBlazor()) {
-                    clickArgs.startTime = this.parent.getDateTime(clickArgs.startTime);
-                    clickArgs.endTime = this.parent.getDateTime(clickArgs.endTime);
-                    if (clickArgs.element) {
-                        clickArgs.element = getElement(clickArgs.element);
-                    }
-                    if (clickArgs.event) {
-                        clickArgs.event = e;
-                    }
-                }
-                if (!clickArgs.cancel) {
-                    if (isWorkCell) {
-                        this.parent.selectCell(target);
-                    }
-                    this.parent.notify(cellClick, clickArgs);
-                }
-            });
-        }
-        else {
-            let date = this.parent.getDateFromElement(target);
-            if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
-                this.parent.setProperties({ selectedDate: date }, true);
-                this.parent.changeView(this.parent.getNavigateView(), e);
-            }
-        }
-    }
-    cellDblClick(e) {
-        if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
-            return;
-        }
-        let args = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellDoubleClick' });
-        this.parent.trigger(cellDoubleClick, args, (clickArgs) => {
-            if (!clickArgs.cancel) {
-                this.parent.eventWindow.openEditor(this.parent.activeCellsData, 'Add');
-            }
-        });
-    }
-    isPreventAction(e) {
-        if (closest(e.target, '.' + NAVIGATE_CLASS)) {
-            return false;
-        }
-        if (closest(e.target, '.' + APPOINTMENT_WRAPPER_CLASS) &&
-            !closest(e.target, '.' + MORE_INDICATOR_CLASS)) {
-            return true;
-        }
-        let target = closest(e.target, '.' + APPOINTMENT_CLASS + ',.' + RESOURCE_GROUP_CELLS_CLASS);
-        if (!isNullOrUndefined(target)) {
-            return true;
-        }
-        target = closest(e.target, '.' + HEADER_CELLS_CLASS);
-        if (this.parent.activeView.isTimelineView() && !isNullOrUndefined(target)) {
-            return true;
-        }
-        return false;
     }
 }
 
@@ -15528,7 +15847,7 @@ class VerticalEvent extends EventBase {
         let appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
-            let resourceIndex = this.parent.isAdaptive ? this.parent.uiStateValues.groupIndex : resource;
+            let resourceIndex = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
             appointmentWrapper.setAttribute('data-group-index', resourceIndex.toString());
         }
         let templateElement;
@@ -15952,7 +16271,6 @@ class VerticalView extends ViewBase {
         this.viewClass = 'e-day-view';
         this.isInverseTableSelect = true;
         this.baseCssClass = 'e-vertical-view';
-        this.workCellAction = new WorkCellInteraction(parent);
     }
     addEventListener() {
         this.parent.on(scrollUiUpdate, this.scrollUiUpdate, this);
@@ -15971,7 +16289,7 @@ class VerticalView extends ViewBase {
             let appointment = new MonthEvent(this.parent);
             appointment.renderAppointments();
         }
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(eventsLoaded, {});
     }
     onContentScroll(e) {
         this.parent.removeNewEventElement();
@@ -16422,13 +16740,13 @@ class VerticalView extends ViewBase {
         return tdEle;
     }
     wireCellEvents(element) {
-        EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
+        EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
         this.wireMouseEvents(element);
     }
     wireMouseEvents(element) {
-        EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
+        EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
         if (!this.parent.isAdaptive) {
-            EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+            EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
         }
     }
     renderTimeCells() {
@@ -16437,7 +16755,7 @@ class VerticalView extends ViewBase {
         let trEle = createElement('tr');
         let handler = (r) => {
             r.type = r.first ? 'majorSlot' : 'minorSlot';
-            r.className = r.last ? [TIME_CELLS_CLASS] : [];
+            r.className = r.last ? [TIME_CELLS_CLASS, TIME_SLOT_CLASS] : [TIME_SLOT_CLASS];
             let ntr = trEle.cloneNode();
             let data = { date: r.date, type: r.type, className: r.className };
             ntr.appendChild(this.createTd(data));
@@ -16624,6 +16942,10 @@ class VerticalView extends ViewBase {
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
             }
+            if (isBlazor()) {
+                this.parent.resetLayoutTemplates();
+                this.parent.resetEventTemplates();
+            }
             remove(this.element);
             this.element = null;
             if (this.parent.scheduleTouchModule) {
@@ -16703,7 +17025,6 @@ class Month extends ViewBase {
         this.viewClass = 'e-month-view';
         this.isInverseTableSelect = false;
         this.monthDates = {};
-        this.workCellAction = new WorkCellInteraction(parent);
     }
     addEventListener() {
         this.parent.on(scrollUiUpdate, this.onScrollUIUpdate, this);
@@ -16718,7 +17039,7 @@ class Month extends ViewBase {
     onDataReady(args) {
         let monthEvent = new MonthEvent(this.parent);
         monthEvent.renderAppointments();
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(eventsLoaded, {});
     }
     onCellClick(event) {
         // Here cell click
@@ -16838,10 +17159,10 @@ class Month extends ViewBase {
         this.parent.updateLayoutTemplates();
     }
     wireCellEvents(element) {
-        EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
-        EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
+        EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
+        EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
         if (!this.parent.isAdaptive) {
-            EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+            EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
         }
     }
     renderHeader() {
@@ -17095,23 +17416,33 @@ class Month extends ViewBase {
             return;
         }
         let dateHeader = createElement('div', { className: DATE_HEADER_CLASS });
-        dateHeader.innerHTML =
-            (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
-                this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+        if (this.parent.activeViewOptions.cellHeaderTemplate) {
+            let args = { date: data.date, type: data.type, groupIndex: data.groupIndex };
+            let scheduleId = this.parent.element.id + '_';
+            let viewName = this.parent.activeViewOptions.cellHeaderTemplateName;
+            let templateId = scheduleId + viewName + 'cellHeaderTemplate';
+            let cellheaderTemplate = this.parent.getCellHeaderTemplate()(args, this.parent, 'cellHeaderTemplate', templateId, false);
+            append([].slice.call(cellheaderTemplate), dateHeader);
+        }
+        else {
+            dateHeader.innerHTML =
+                (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
+                    this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                    this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+        }
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], NAVIGATE_CLASS);
         }
     }
     getMonthStart(currentDate) {
-        let monthStart = getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        let monthStart = getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.activeViewOptions.firstDayOfWeek);
         let start = new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
         return start;
     }
     getMonthEnd(currentDate) {
         let endDate = addMonths(currentDate, this.parent.activeViewOptions.interval - 1);
-        let lastWeekOfMonth = getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
+        let lastWeekOfMonth = getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.activeViewOptions.firstDayOfWeek);
         let monthEnd = addDays(lastWeekOfMonth, WEEK_LENGTH - 1);
         return monthEnd;
     }
@@ -17543,7 +17874,7 @@ class AgendaBase {
         let tr = createElement('tr', { attrs: { 'role': 'row', 'aria-rowindex': daysCount.toString() } });
         let td = createElement('td', {
             attrs: {
-                'class': (type === 'monthHeader') ? AGENDA_MONTH_HEADER_CLASS : AGENDA_CELLS_CLASS,
+                'class': (type === 'monthHeader') ? MONTH_HEADER_CLASS : AGENDA_CELLS_CLASS,
                 'role': 'gridcell',
                 'aria-selected': 'false',
                 'aria-colindex': daysCount.toString(),
@@ -17628,7 +17959,7 @@ class Agenda extends ViewBase {
         this.agendaBase.wireEventActions();
         let contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
         contentArea.scrollTop = 1;
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(eventsLoaded, {});
     }
     refreshEvent(refreshDate) {
         let processedData = [];
@@ -18059,14 +18390,14 @@ class MonthAgenda extends Month {
             }
             count++;
         }
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(eventsLoaded, {});
     }
     onCellClick(event) {
         this.parent.quickPopup.quickPopupHide();
         let filterData = this.appointmentFiltering(event.startTime);
         this.parent.resetEventTemplates();
         this.onEventRender(filterData, event.startTime);
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(eventsLoaded, {});
         this.parent.setProperties({ selectedDate: new Date('' + event.startTime) }, true);
     }
     onEventRender(events, date) {
@@ -18289,7 +18620,7 @@ class TimelineViews extends VerticalView {
     generateTimeSlots(dateSlots) {
         let handler = (r) => {
             r.type = r.first ? 'majorSlot' : 'minorSlot';
-            r.className = r.first ? ['e-time-slots'] : ['e-time-slots', TIME_CELLS_CLASS];
+            r.className = r.first ? [TIME_SLOT_CLASS] : [TIME_SLOT_CLASS, TIME_CELLS_CLASS];
             r.workDays = this.parent.activeViewOptions.workDays;
             return r;
         };
@@ -18443,7 +18774,7 @@ class TimelineViews extends VerticalView {
             let appointment = new TimelineEvent(this.parent, 'day');
             appointment.renderAppointments();
         }
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(eventsLoaded, {});
     }
     getModuleName() {
         return 'timelineViews';
@@ -18471,7 +18802,7 @@ class TimelineMonth extends Month {
     onDataReady(args) {
         let appointment = new TimelineEvent(this.parent, 'day');
         appointment.renderAppointments();
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(eventsLoaded, {});
     }
     getLeftPanelElement() {
         return this.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);
@@ -18583,13 +18914,694 @@ class TimelineMonth extends Month {
     }
 }
 
+const EVENT_GAP$2 = 2;
+/**
+ * Year view events render
+ */
+class YearEvent extends TimelineEvent {
+    /**
+     * Constructor for year events
+     */
+    constructor(parent) {
+        super(parent, 'day');
+    }
+    renderAppointments() {
+        this.fields = this.parent.eventFields;
+        let eventWrapper = this.parent.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS);
+        eventWrapper.forEach((node) => remove(node));
+        this.renderedEvents = [];
+        if (this.parent.currentView !== 'TimelineYear') {
+            this.yearViewEvents();
+        }
+        else {
+            this.timelineYearViewEvents();
+        }
+        this.parent.notify(contentReady, {});
+    }
+    yearViewEvents() {
+        for (let month = 0; month < 12; month++) {
+            let queryString = `.e-month-calendar:nth-child(${month + 1}) td.e-work-cells`;
+            let workCells = [].slice.call(this.parent.element.querySelectorAll(queryString));
+            let monthDate = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
+            let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+            let monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
+            let startDate = getWeekFirstDate(monthStart, this.parent.firstDayOfWeek);
+            let endDate = addDays(getWeekLastDate(monthEnd, this.parent.firstDayOfWeek), 1);
+            for (let index = 0; startDate.getTime() < endDate.getTime(); index++) {
+                let start = resetTime(new Date(startDate.getTime()));
+                let end = addDays(new Date(start.getTime()), 1);
+                let filterEvents = this.parent.eventBase.filterEvents(start, end);
+                if (filterEvents.length > 0) {
+                    let workCell = workCells[index];
+                    if (workCell) {
+                        workCell.appendChild(createElement('div', { className: APPOINTMENT_CLASS }));
+                    }
+                }
+                startDate = addDays(new Date(startDate.getTime()), 1);
+            }
+        }
+    }
+    timelineYearViewEvents() {
+        let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
+        this.cellWidth = workCell.offsetWidth;
+        this.cellHeight = workCell.offsetHeight;
+        this.cellHeader = workCell.querySelector('.' + DATE_HEADER_CLASS).offsetHeight;
+        let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
+        let wrapperCollection = this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS);
+        for (let row = 0; row < 12; row++) {
+            let wrapper = wrapperCollection.item(row);
+            let eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+            wrapper.appendChild(eventWrapper);
+            let monthStart = new Date(this.parent.selectedDate.getFullYear(), row, 1);
+            let monthEnd = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0);
+            let dayIndex = monthStart.getDay();
+            while (monthStart.getTime() <= monthEnd.getTime()) {
+                let leftValue;
+                if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    let wrapper = wrapperCollection.item(dayIndex);
+                    let eventWrapper = wrapper.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
+                    if (!eventWrapper) {
+                        eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+                        wrapper.appendChild(eventWrapper);
+                    }
+                    leftValue = row * this.cellWidth;
+                }
+                else {
+                    leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth;
+                }
+                let dayStart = resetTime(new Date(monthStart.getTime()));
+                let dayEnd = addDays(new Date(dayStart.getTime()), 1);
+                let dayEvents = this.parent.eventBase.filterEvents(dayStart, dayEnd);
+                for (let index = 0, count = dayEvents.length; index < count; index++) {
+                    let eventData = extend({}, dayEvents[index], null, true);
+                    let overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+                    eventData.Index = overlapIndex;
+                    let availedHeight = this.cellHeader + (this.eventHeight * (index + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
+                    if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                        let isRendered = this.renderedEvents.filter((eventObj) => eventObj.Guid === eventData.Guid);
+                        if (isRendered.length > 0) {
+                            continue;
+                        }
+                    }
+                    if (this.cellHeight > availedHeight) {
+                        this.renderEvent(eventWrapper, eventData, row, leftValue, overlapIndex, dayIndex);
+                    }
+                    else {
+                        let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
+                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, dayEvents);
+                        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                            for (let a = index; a < dayEvents.length; a++) {
+                                let moreData = extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
+                                this.renderedEvents.push(moreData);
+                            }
+                        }
+                        break;
+                    }
+                }
+                monthStart = addDays(new Date(monthStart.getTime()), 1);
+                if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    dayIndex++;
+                    this.renderedEvents = [];
+                }
+            }
+        }
+    }
+    renderEvent(wrapper, eventData, row, left, overlapCount, rowIndex) {
+        let eventObj = this.isSpannedEvent(eventData, row);
+        let wrap = this.createEventElement(eventObj);
+        let width;
+        let top;
+        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+            width = eventObj.isSpanned.count * this.cellWidth;
+            top = this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2 + (this.cellHeight * row);
+        }
+        else {
+            width = this.cellWidth;
+            top = (this.cellHeight * rowIndex) + this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2;
+        }
+        setStyleAttribute(wrap, { 'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'top': top + 'px' });
+        let args = { data: eventObj, element: wrap, cancel: false, type: 'event' };
+        this.parent.trigger(eventRendered, args, (eventArgs) => {
+            if (!eventArgs.cancel) {
+                wrapper.appendChild(wrap);
+                this.wireAppointmentEvents(wrap, null, eventObj);
+                this.renderedEvents.push(extend({}, eventObj, null, true));
+            }
+        });
+    }
+    renderMoreIndicatior(wrapper, count, startDate, row, left, events) {
+        let endDate = addDays(new Date(startDate.getTime()), 1);
+        let moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
+        let rowTr = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`);
+        let top = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
+        left = (Math.floor(left / this.cellWidth) * this.cellWidth);
+        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'top': top + 'px' });
+        wrapper.appendChild(moreIndicator);
+        EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
+    }
+    createEventElement(record) {
+        let eventSubject = (record[this.fields.subject] || this.parent.eventSettings.fields.subject.default);
+        let eventWrapper = createElement('div', {
+            className: APPOINTMENT_CLASS,
+            attrs: {
+                'data-id': 'Appointment_' + record[this.fields.id],
+                'data-guid': record.Guid,
+                'role': 'button', 'tabindex': '0',
+                'aria-readonly': this.parent.eventBase.getReadonlyAttribute(record), 'aria-selected': 'false', 'aria-grabbed': 'true',
+                'aria-label': eventSubject
+            }
+        });
+        if (this.cssClass) {
+            addClass([eventWrapper], this.cssClass);
+        }
+        if (record[this.fields.isReadonly]) {
+            addClass([eventWrapper], READ_ONLY);
+        }
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            let resIndex = this.getGroupIndexFromEvent(record);
+            eventWrapper.setAttribute('data-group-index', resIndex.toString());
+        }
+        let templateElement = [];
+        let eventObj = extend({}, record, null, true);
+        if (this.parent.activeViewOptions.eventTemplate) {
+            let templateId = this.parent.element.id + '_' + this.parent.activeViewOptions.eventTemplateName + 'eventTemplate';
+            templateElement = this.parent.getAppointmentTemplate()(eventObj, this.parent, 'eventTemplate', templateId, false);
+        }
+        else {
+            let locationEle = (record[this.fields.location] || this.parent.eventSettings.fields.location.default || '');
+            let subjectEle = createElement('div', {
+                className: SUBJECT_CLASS,
+                innerHTML: (eventSubject + (locationEle ? ';&nbsp' + locationEle : ''))
+            });
+            let startTimeEle = createElement('div', {
+                className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
+                innerHTML: this.parent.getTimeString(eventObj[this.fields.startTime])
+            });
+            let endTimeEle = createElement('div', {
+                className: APPOINTMENT_TIME + (this.parent.isAdaptive ? ' ' + DISABLE_CLASS : ''),
+                innerHTML: this.parent.getTimeString(eventObj[this.fields.endTime])
+            });
+            addClass([subjectEle], 'e-text-center');
+            if (record[this.fields.isAllDay]) {
+                templateElement = [subjectEle];
+            }
+            else if (!eventObj.isLeft && !eventObj.isRight) {
+                templateElement = [startTimeEle, subjectEle, endTimeEle];
+            }
+            else {
+                if (!eventObj.isLeft) {
+                    templateElement.push(startTimeEle);
+                }
+                templateElement.push(subjectEle);
+                if (!eventObj.isRight) {
+                    templateElement.push(endTimeEle);
+                }
+            }
+        }
+        let appointmentDetails = createElement('div', { className: APPOINTMENT_DETAILS });
+        append(templateElement, appointmentDetails);
+        eventWrapper.appendChild(appointmentDetails);
+        this.applyResourceColor(eventWrapper, eventObj, 'backgroundColor', this.groupOrder);
+        return eventWrapper;
+    }
+    isSpannedEvent(eventObj, month) {
+        let monthStart = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+        let monthEnd = addDays(new Date(this.parent.selectedDate.getFullYear(), month + 1, 0), 1);
+        let eventData = extend({}, eventObj, null, true);
+        let eventStart = eventData[this.fields.startTime];
+        let eventEnd = eventData[this.fields.endTime];
+        eventData.isSpanned = {
+            count: Math.ceil((eventEnd.getTime() - eventStart.getTime()) / MS_PER_DAY),
+            isLeft: eventStart.getTime() < monthStart.getTime(),
+            isRight: eventEnd.getTime() > monthEnd.getTime()
+        };
+        return eventData;
+    }
+    getOverlapEvents(date, appointments) {
+        let appointmentsList = [];
+        for (let app of appointments) {
+            let appStart = new Date(app[this.fields.startTime].getTime());
+            let appEnd = new Date(app[this.fields.endTime].getTime());
+            if ((resetTime(appStart).getTime() <= resetTime(new Date(date.getTime())).getTime()) &&
+                (resetTime(appEnd).getTime() >= resetTime(new Date(date.getTime())).getTime())) {
+                appointmentsList.push(app);
+            }
+        }
+        return appointmentsList;
+    }
+}
+
+/**
+ * year view
+ */
+class Year extends ViewBase {
+    /**
+     * Constructor for year view
+     */
+    constructor(parent) {
+        super(parent);
+        this.viewClass = 'e-year-view';
+        this.isInverseTableSelect = false;
+        this.workCellAction = new WorkCellInteraction(parent);
+    }
+    renderLayout(className) {
+        this.setPanel(createElement('div', { className: TABLE_WRAP_CLASS }));
+        let viewTypeClass = this.parent.activeViewOptions.orientation === 'Horizontal' ? 'e-horizontal' : 'e-vertical';
+        addClass([this.element], [this.viewClass, viewTypeClass, className]);
+        this.renderPanel(className);
+        let calendarTable = this.createTableLayout(OUTER_TABLE_CLASS);
+        this.element.appendChild(calendarTable);
+        let calendarTBody = calendarTable.querySelector('tbody');
+        this.rowCount = this.getRowColumnCount('row');
+        this.columnCount = this.getRowColumnCount('column');
+        this.renderHeader(calendarTBody);
+        this.renderContent(calendarTBody);
+        if (this.parent.uiStateValues.isGroupAdaptive) {
+            this.generateColumnLevels();
+            this.renderResourceMobileLayout();
+        }
+        this.wireEvents(this.element.querySelector('.' + CONTENT_WRAP_CLASS), 'scroll');
+        this.parent.notify(contentReady, {});
+    }
+    // tslint:disable-next-line:no-empty
+    renderHeader(headerWrapper) {
+    }
+    renderContent(content) {
+        let tr = createElement('tr');
+        content.appendChild(tr);
+        let td = createElement('td');
+        tr.appendChild(td);
+        this.element.querySelector('tbody').appendChild(tr);
+        let contentWrapper = createElement('div', { className: CONTENT_WRAP_CLASS });
+        td.appendChild(contentWrapper);
+        let calendarTable = this.createTableLayout('e-calendar-table');
+        contentWrapper.appendChild(calendarTable);
+        let cTr = createElement('tr');
+        calendarTable.querySelector('tbody').appendChild(cTr);
+        let cTd = createElement('td');
+        cTr.appendChild(cTd);
+        let calendarWrapper = createElement('div', { className: 'e-calendar-wrapper' });
+        cTd.appendChild(calendarWrapper);
+        let monthCollection = Array.apply(null, { length: 12 }).map((value, index) => index);
+        for (let month of monthCollection) {
+            let currentMonth = new Date(this.parent.selectedDate.getFullYear(), month, this.parent.selectedDate.getDate());
+            let calendarElement = createElement('div', {
+                className: 'e-month-calendar e-calendar',
+                attrs: { 'data-role': 'calendar' }
+            });
+            calendarElement.appendChild(this.renderCalendarHeader(currentMonth));
+            calendarElement.appendChild(this.renderCalendarContent(currentMonth));
+            calendarWrapper.appendChild(calendarElement);
+        }
+    }
+    renderCalendarHeader(currentDate) {
+        let headerWrapper = createElement('div', { className: 'e-header e-month' });
+        let headerContent = createElement('div', { className: 'e-day e-title', innerHTML: this.getMonthName(currentDate) });
+        headerWrapper.appendChild(headerContent);
+        this.parent.trigger(renderCell, { elementType: 'headerCells', element: headerContent, date: currentDate });
+        return headerWrapper;
+    }
+    renderCalendarContent(currentDate) {
+        let dateCollection = this.getMonthDates(currentDate);
+        let contentWrapper = createElement('div', { className: 'e-content e-month' });
+        let contentTable = this.createTableLayout('e-calendar-table ' + CONTENT_TABLE_CLASS);
+        contentWrapper.appendChild(contentTable);
+        let thead = createElement('thead', { className: 'e-week-header' });
+        let tr = createElement('tr');
+        let currentWeek = getWeekFirstDate(firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        for (let i = 0; i < WEEK_LENGTH; i++) {
+            tr.appendChild(createElement('th', { innerHTML: this.parent.getDayNames('narrow')[currentWeek.getDay()] }));
+            currentWeek = new Date(currentWeek.getTime() + MS_PER_DAY);
+        }
+        thead.appendChild(tr);
+        prepend([thead], contentTable);
+        let tbody = contentTable.querySelector('tbody');
+        while (dateCollection.length > 0) {
+            let weekDates = dateCollection.splice(0, WEEK_LENGTH);
+            let tr = createElement('tr', { attrs: { 'role': 'row' } });
+            if (this.parent.activeViewOptions.showWeekNumber) {
+                let weekNumber = getWeekNumber(weekDates.slice(-1)[0]);
+                let td = createElement('td', {
+                    className: 'e-week-number',
+                    attrs: { 'role': 'gridcell', 'title': 'Week ' + weekNumber },
+                    innerHTML: weekNumber.toString()
+                });
+                tr.appendChild(td);
+                this.parent.trigger(renderCell, { elementType: 'weekNumberCells', element: td });
+            }
+            for (let date of weekDates) {
+                let td = createElement('td', {
+                    className: 'e-cell ' + WORK_CELLS_CLASS,
+                    attrs: { 'role': 'gridcell', 'aria-selected': 'false', 'data-date': date.getTime().toString() }
+                });
+                td.appendChild(createElement('span', { className: 'e-day', innerHTML: date.getDate().toString() }));
+                let classList$$1 = [];
+                if (currentDate.getMonth() !== date.getMonth()) {
+                    classList$$1.push(OTHERMONTH_CLASS);
+                }
+                if (this.isCurrentDate(date) && currentDate.getMonth() === date.getMonth()) {
+                    classList$$1 = classList$$1.concat(['e-today', 'e-selected']);
+                }
+                if (classList$$1.length > 0) {
+                    addClass([td], classList$$1);
+                }
+                tr.appendChild(td);
+                this.wireEvents(td, 'cell');
+                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
+            }
+            tbody.appendChild(tr);
+        }
+        return contentWrapper;
+    }
+    createTableColGroup(count) {
+        let colGroupEle = createElement('colgroup');
+        for (let i = 0; i < count; i++) {
+            colGroupEle.appendChild(createElement('col'));
+        }
+        return colGroupEle;
+    }
+    getMonthName(date) {
+        return this.parent.globalize.formatDate(date, {
+            format: this.parent.activeViewOptions.dateFormat || 'MMMM',
+            calendar: this.parent.getCalendarMode()
+        });
+    }
+    generateColumnLevels() {
+        let colLevels = [];
+        let level = this.getDateSlots([this.parent.selectedDate], this.parent.activeViewOptions.workDays);
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            colLevels = this.parent.resourceBase.generateResourceLevels(level);
+            if (this.parent.uiStateValues.isGroupAdaptive) {
+                let resourceLevel = this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex];
+                colLevels = [this.getDateSlots([this.parent.selectedDate], resourceLevel.workDays)];
+            }
+        }
+        else {
+            colLevels.push(level);
+        }
+        colLevels.pop();
+        this.colLevels = colLevels;
+        return colLevels;
+    }
+    getDateSlots(renderDates, workDays, startHour = this.parent.workHours.start, endHour = this.parent.workHours.end) {
+        let dateCol = [{
+                date: renderDates[0], type: 'dateHeader', className: [HEADER_CELLS_CLASS], colSpan: 1, workDays: workDays,
+                startHour: new Date(+this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' })),
+                endHour: new Date(+this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' }))
+            }];
+        return dateCol;
+    }
+    getMonthDates(date) {
+        let startDate = getWeekFirstDate(firstDateOfMonth(date), this.parent.firstDayOfWeek);
+        let endDate = addDays(new Date(+startDate), (6 * WEEK_LENGTH));
+        let dateCollection = [];
+        for (let start = startDate.getTime(); start < endDate.getTime(); start = start + MS_PER_DAY) {
+            dateCollection.push(resetTime(new Date(start)));
+        }
+        return dateCollection;
+    }
+    getRowColumnCount(type) {
+        let monthCount = 12;
+        let year = this.parent.selectedDate.getFullYear();
+        let months = [];
+        for (let month = 0; month < monthCount; month++) {
+            months.push(new Date(year, month, 1).getDay() + new Date(year, month + 1, 0).getDate());
+        }
+        let maxCount = Math.max.apply(Math, months);
+        let count;
+        if (type === 'row') {
+            count = this.parent.activeViewOptions.orientation === 'Horizontal' ? monthCount : maxCount;
+        }
+        else {
+            count = this.parent.activeViewOptions.orientation === 'Horizontal' ? maxCount : monthCount;
+        }
+        return count;
+    }
+    isCurrentDate(date) {
+        return resetTime(new Date()).getTime() === resetTime(new Date(date.getTime())).getTime();
+    }
+    onCellClick(e) {
+        let target = closest(e.target, '.' + WORK_CELLS_CLASS);
+        let startDate = new Date(parseInt(target.getAttribute('data-date'), 10));
+        let endDate = addDays(new Date(startDate.getTime()), 1);
+        let filteredEvents = this.parent.eventBase.filterEvents(startDate, endDate);
+        let moreEventArgs = { date: startDate, event: filteredEvents, element: e.target };
+        this.parent.quickPopup.moreEventClick(moreEventArgs, new Date());
+    }
+    onContentScroll(e) {
+        let target = e.target;
+        let headerWrapper = this.getDatesHeaderElement();
+        if (headerWrapper) {
+            headerWrapper.firstChild.scrollLeft = target.scrollLeft;
+        }
+        let monthWrapper = this.element.querySelector('.' + MONTH_HEADER_WRAPPER);
+        if (monthWrapper) {
+            monthWrapper.scrollTop = target.scrollTop;
+        }
+    }
+    onScrollUiUpdate(args) {
+        let height = this.parent.element.offsetHeight - this.getHeaderBarHeight();
+        let headerWrapper = this.element.querySelector('.' + DATE_HEADER_CONTAINER_CLASS);
+        if (headerWrapper) {
+            height -= headerWrapper.offsetHeight;
+        }
+        let contentWrapper = this.element.querySelector('.' + CONTENT_WRAP_CLASS);
+        if (contentWrapper) {
+            contentWrapper.style.height = formatUnit(height);
+        }
+        let leftPanelElement = this.element.querySelector('.' + MONTH_HEADER_WRAPPER);
+        if (leftPanelElement) {
+            leftPanelElement.style.height = formatUnit(height - this.getScrollXIndent(contentWrapper));
+        }
+        if (!this.parent.isAdaptive && headerWrapper) {
+            let scrollBarWidth = getScrollBarWidth();
+            // tslint:disable:no-any
+            if (contentWrapper.offsetWidth - contentWrapper.clientWidth > 0) {
+                headerWrapper.firstChild.style[args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
+                headerWrapper.style[args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
+            }
+            else {
+                headerWrapper.firstChild.style[args.cssProperties.border] = '';
+                headerWrapper.style[args.cssProperties.padding] = '';
+            }
+            // tslint:enable:no-any
+        }
+    }
+    startDate() {
+        let startDate = new Date(this.parent.selectedDate.getFullYear(), 0, 1);
+        return getWeekFirstDate(startDate, this.parent.firstDayOfWeek);
+    }
+    endDate() {
+        let endDate = new Date(this.parent.selectedDate.getFullYear(), 11, 31);
+        return addDays(getWeekLastDate(endDate, this.parent.firstDayOfWeek), 1);
+    }
+    getEndDateFromStartDate(start) {
+        return addDays(new Date(start.getTime()), 1);
+    }
+    getNextPreviousDate(type) {
+        return addYears(this.parent.selectedDate, ((type === 'next') ? 1 : -1));
+    }
+    getDateRangeText() {
+        return this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'y' });
+    }
+    addEventListener() {
+        this.parent.on(scrollUiUpdate, this.onScrollUiUpdate, this);
+        this.parent.on(dataReady, this.onDataReady, this);
+    }
+    removeEventListener() {
+        this.parent.off(scrollUiUpdate, this.onScrollUiUpdate);
+        this.parent.off(dataReady, this.onDataReady);
+    }
+    onDataReady(args) {
+        let yearEventModule = new YearEvent(this.parent);
+        yearEventModule.renderAppointments();
+        this.parent.notify('events-loaded', args);
+    }
+    wireEvents(element, type) {
+        if (type === 'cell') {
+            if (this.parent.currentView !== 'TimelineYear') {
+                EventHandler.add(element, 'click', this.onCellClick, this);
+            }
+            else {
+                EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
+                if (!this.parent.isAdaptive) {
+                    EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction);
+                }
+            }
+        }
+        else {
+            EventHandler.add(element, 'scroll', this.onContentScroll, this);
+        }
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'year';
+    }
+    /**
+     * To destroy the year.
+     * @return {void}
+     * @private
+     */
+    destroy() {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        if (this.element) {
+            if (this.parent.resourceBase) {
+                this.parent.resourceBase.destroy();
+            }
+            remove(this.element);
+            this.element = null;
+        }
+    }
+}
+
+/**
+ * timeline year view
+ */
+class TimelineYear extends Year {
+    /**
+     * Constructor for timeline year view
+     */
+    constructor(parent) {
+        super(parent);
+        this.viewClass = 'e-timeline-year-view';
+        this.isInverseTableSelect = true;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'timelineYear';
+    }
+    renderHeader(headerWrapper) {
+        let tr = createElement('tr');
+        headerWrapper.appendChild(tr);
+        tr.appendChild(createElement('td', { className: LEFT_INDENT_CLASS }));
+        let td = createElement('td');
+        tr.appendChild(td);
+        let container = createElement('div', { className: DATE_HEADER_CONTAINER_CLASS });
+        td.appendChild(container);
+        let wrapper = createElement('div', { className: DATE_HEADER_WRAP_CLASS });
+        container.appendChild(wrapper);
+        let table = this.createTableLayout();
+        wrapper.appendChild(table);
+        table.appendChild(this.createTableColGroup(this.columnCount));
+        let innerTr = createElement('tr');
+        table.querySelector('tbody').appendChild(innerTr);
+        for (let column = 0; column < this.columnCount; column++) {
+            let innerTd = createElement('td', { className: HEADER_CELLS_CLASS });
+            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                innerTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[column % 7]}</span>`;
+            }
+            else {
+                let date = new Date(this.parent.selectedDate.getFullYear(), column, 1);
+                innerTd.innerHTML = `<span>${this.getMonthName(date)}</span>`;
+                innerTd.setAttribute('data-date', date.getTime().toString());
+            }
+            innerTr.appendChild(innerTd);
+            this.parent.trigger(renderCell, { elementType: 'headerCells', element: innerTd });
+        }
+    }
+    renderContent(contentWrapper) {
+        let tr = createElement('tr');
+        contentWrapper.appendChild(tr);
+        let firstTd = createElement('td');
+        let lastTd = createElement('td');
+        append([firstTd, lastTd], tr);
+        let monthWrapper = createElement('div', { className: MONTH_HEADER_WRAPPER });
+        firstTd.appendChild(monthWrapper);
+        monthWrapper.appendChild(this.createTableLayout());
+        let content = createElement('div', { className: CONTENT_WRAP_CLASS });
+        lastTd.appendChild(content);
+        content.appendChild(this.createTableLayout(CONTENT_TABLE_CLASS));
+        let eventWrapper = createElement('div', { className: EVENT_TABLE_CLASS });
+        content.appendChild(eventWrapper);
+        let monthTBody = monthWrapper.querySelector('tbody');
+        let contentTBody = content.querySelector('tbody');
+        for (let month = 0; month < this.rowCount; month++) {
+            eventWrapper.appendChild(createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
+            let monthDate = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+            let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+            let monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
+            let tr = createElement('tr', { attrs: { 'role': 'row' } });
+            let monthTr = tr.cloneNode();
+            monthTBody.appendChild(monthTr);
+            let contentTr = tr.cloneNode();
+            contentTBody.appendChild(contentTr);
+            let monthTd = createElement('td', { className: MONTH_HEADER_CLASS, attrs: { 'role': 'gridcell' } });
+            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                monthTd.setAttribute('data-date', monthDate.getTime().toString());
+                monthTd.innerHTML = `<span>${this.getMonthName(monthDate)}</span>`;
+            }
+            else {
+                monthTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[month % 7]}</span>`;
+            }
+            monthTr.appendChild(monthTd);
+            this.parent.trigger(renderCell, { elementType: 'leftHeaderCells', element: monthTd });
+            let date = new Date(monthStart.getTime());
+            for (let column = 0; column < this.columnCount; column++) {
+                let isDateAvail;
+                if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    monthDate = new Date(this.parent.selectedDate.getFullYear(), column, 1);
+                    monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+                    monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
+                    let dayDate = (month - monthStart.getDay()) + 1;
+                    date = new Date(this.parent.selectedDate.getFullYear(), column, dayDate);
+                    isDateAvail = dayDate > 0 && date.getTime() < monthEnd.getTime();
+                }
+                else {
+                    isDateAvail = column >= monthStart.getDay() && date.getTime() < monthEnd.getTime();
+                }
+                let td = createElement('td', {
+                    className: WORK_CELLS_CLASS,
+                    attrs: { 'role': 'gridcell', 'aria-selected': 'false' }
+                });
+                contentTr.appendChild(td);
+                let dateHeader = createElement('div', {
+                    className: DATE_HEADER_CLASS + ' ' + NAVIGATE_CLASS,
+                    innerHTML: (isDateAvail) ? date.getDate().toString() : ''
+                });
+                if (this.parent.activeViewOptions.workDays.indexOf(date.getDay()) > -1 && isDateAvail) {
+                    let classList$$1 = [WORKDAY_CLASS];
+                    let tds = [td];
+                    if (this.isCurrentDate(date)) {
+                        classList$$1.push(CURRENT_DAY_CLASS);
+                        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                            tds.push(this.element.querySelector('.' + HEADER_CELLS_CLASS + `:nth-child(${column + 1})`));
+                        }
+                        else {
+                            tds.push(this.element.querySelectorAll('.' + MONTH_HEADER_CLASS).item(month));
+                        }
+                    }
+                    addClass(tds, classList$$1);
+                }
+                else if (!isDateAvail) {
+                    addClass([td], OTHERMONTH_CLASS);
+                }
+                td.appendChild(dateHeader);
+                if (isDateAvail) {
+                    td.setAttribute('data-date', date.getTime().toString());
+                    this.wireEvents(td, 'cell');
+                    if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                        date = addDays(new Date(date.getTime()), 1);
+                    }
+                }
+                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
+            }
+        }
+    }
+}
+
 /**
  * ICalendar Export Module
  */
 class ICalendarExport {
     constructor(parent) {
         this.parent = parent;
-        this.timezone = new Timezone();
     }
     initializeCalendarExport(fileName) {
         let eventsData = extend([], this.parent.eventsData, null, true);
@@ -18597,7 +19609,7 @@ class ICalendarExport {
         const SEPARATOR = (navigator.appVersion.indexOf('Win') !== -1) ? '\r\n' : '\n';
         let iCalendarEvents = [];
         let filterCollection = [];
-        let timeZone = this.parent.timezone || this.timezone.getLocalTimezoneName();
+        let timeZone = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
         let fields = this.parent.eventFields;
         eventsData.forEach((eventObj) => {
             let uId = this.parent.eventBase.generateGuid();
@@ -18709,7 +19721,8 @@ class ICalendarExport {
         }
     }
     filterEvents(data, field, value) {
-        return new DataManager({ json: data }).executeLocal(new Query().where(field, 'equal', value));
+        let queryManager = new Query().where(field, 'equal', value);
+        return new DataManager({ json: data }).executeLocal(queryManager);
     }
     /**
      * Get module name.
@@ -18726,9 +19739,7 @@ class ICalendarExport {
         if (this.parent.isDestroyed) {
             return;
         }
-        if (this.timezone) {
-            this.timezone = null;
-        }
+        this.parent = null;
     }
 }
 
@@ -19056,5 +20067,5 @@ class Print {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

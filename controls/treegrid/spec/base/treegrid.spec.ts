@@ -1,16 +1,15 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData } from './datasource.spec';
+import { sampleData, projectData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData, stateChangeData, childdata1 } from './datasource.spec';
 import { PageEventArgs, extend, doesImplementInterface, getObject, FilterEventArgs, SearchEventArgs, SortEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
-import { isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, L10n, createElement, EmitType } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { Page } from '../../src/treegrid/actions/page';
 import { Filter } from '../../src/treegrid/actions/filter';
 import { Sort } from '../../src/treegrid/actions/sort';
-
 
 /**
  * Grid base spec 

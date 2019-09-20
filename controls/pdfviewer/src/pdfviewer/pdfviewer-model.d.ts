@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -412,6 +412,38 @@ export interface CircleSettingsModel {
 }
 
 /**
+ * Interface for a class ShapeLabelSettings
+ */
+export interface ShapeLabelSettingsModel {
+
+    /**
+     * specifies the opacity of the label.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the fill color of the label.
+     */
+    fillColor?: string;
+
+    /**
+     * specifies the border color of the label.
+     */
+    fontColor?: string;
+
+    /**
+     * specifies the font size of the label.
+     */
+    fontSize?: number;
+
+    /**
+     * specifies the max-width of the label.
+     */
+    fontFamily?: string;
+
+}
+
+/**
  * Interface for a class PolygonSettings
  */
 export interface PolygonSettingsModel {
@@ -817,6 +849,78 @@ export interface MeasurementSettingsModel {
 }
 
 /**
+ * Interface for a class FreeTextSettings
+ */
+export interface FreeTextSettingsModel {
+
+    /**
+     * specifies the opacity of the annotation.
+     */
+    opacity?: number;
+
+    /**
+     * specifies the border color of the annotation.
+     */
+    borderColor?: string;
+
+    /**
+     * specifies the border with of the annotation.
+     */
+    borderWidth?: number;
+
+    /**
+     * specifies the border style of the annotation.
+     */
+    borderStyle?: string;
+
+    /**
+     * specifies the author of the annotation.
+     */
+    author?: string;
+
+    /**
+     * specifies the subject of the annotation.
+     */
+    subject?: string;
+
+    /**
+     * specifies the modified date of the annotation.
+     */
+    modifiedDate?: string;
+
+    /**
+     * specifies the background fill color of the annotation.
+     */
+    fillColor?: string;
+
+    /**
+     * specifies the text box font size of the annotation.
+     */
+    fontSize?: number;
+
+    /**
+     * specifies the width of the annotation.
+     */
+    width?: number;
+
+    /**
+     * specifies the height of the annotation.
+     */
+    height?: number;
+
+    /**
+     * specifies the text box font color of the annotation.
+     */
+    fontColor?: string;
+
+    /**
+     * specifies the text box font family of the annotation.
+     */
+    fontFamily?: string;
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -910,6 +1014,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableMagnification?: boolean;
 
     /**
+     * Enable or disables the Label for shapeAnnotations of PdfViewer.
+     * @default false
+     */
+    enableShapeLabel?: boolean;
+
+    /**
      * Enable or disables the Pinch zoom of PdfViewer.
      * @default true
      */
@@ -932,6 +1042,18 @@ export interface PdfViewerModel extends ComponentModel{
      * @default true
      */
     enableAnnotation?: boolean;
+
+    /**
+     * Enable or disable the form fields in the Pdfviewer.
+     * @default true
+     */
+    enableFormFields?: boolean;
+
+    /**
+     * Enable or disable the free text annotation in the Pdfviewer.
+     * @default true
+     */
+    enableFreeText?: boolean;
 
     /**
      * Enable or disables the text markup annotation in the PdfViewer.
@@ -1040,6 +1162,12 @@ export interface PdfViewerModel extends ComponentModel{
     rectangleSettings?: RectangleSettingsModel;
 
     /**
+     * Defines the settings of shape label.
+     */
+    // tslint:disable-next-line:max-line-length
+    shapeLabelSettings?: ShapeLabelSettingsModel;
+
+    /**
      * Defines the settings of circle annotation.
      */
     // tslint:disable-next-line:max-line-length
@@ -1097,6 +1225,12 @@ export interface PdfViewerModel extends ComponentModel{
      * Defines the settings of stickyNotes annotation.
      */
     stickyNotesSettings?: StickyNotesSettingsModel;
+
+    /**
+     * Defines the settings of free text annotation.
+     */
+    // tslint:disable-next-line:max-line-length
+    freeTextSettings?: FreeTextSettingsModel;
 
     /**
      * Defines the settings of measurement annotation.
@@ -1206,6 +1340,13 @@ export interface PdfViewerModel extends ComponentModel{
      * @blazorProperty 'AnnotationSelected'
      */
     annotationSelect?: EmitType<AnnotationSelectEventArgs>;
+
+    /**
+     * Triggers an event when the thumbnail is clicked in the thumbnail panel of PDF Viewer.
+     * @event
+     * @blazorProperty 'OnThumbnailClick'
+     */
+    thumbnailClick?: EmitType<ThumbnailClickEventArgs>;
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.

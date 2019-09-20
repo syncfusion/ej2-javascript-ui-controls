@@ -187,7 +187,7 @@ function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: numb
         words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
-            newText = txtValue + (words[i + 1] || '');
+            newText = txtValue + ' ' + (words[i + 1] || '');
             let width: number = bBoxText(newText, text);
             if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {

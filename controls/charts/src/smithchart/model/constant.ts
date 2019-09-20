@@ -29,3 +29,27 @@ export const subtitleRender: string = 'subtitleRender';
  * @private
  */
 export const textRender: string = 'textRender';
+
+/**
+ * Specifies smithchart seriesRender event name.
+ * @private
+ */
+export const seriesRender: string = 'seriesRender';
+
+/**
+ * Specifies smithchart load event name.
+ * @private
+ */
+export const load: string = 'load';
+
+/**
+ * Specifies smithchart loaded event name.
+ * @private
+ */
+export const loaded: string = 'loaded';
+
+/**
+ * Specifies smithchart axisLabelRender event name.
+ * @private
+ */
+export const axisLabelRender: string = 'axisLabelRender';

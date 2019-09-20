@@ -1,5 +1,5 @@
 import { Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
-import { FontModel, BorderModel } from './base-model';
+import { FontModel, BorderModel, RangeTooltipModel, AnnotationTooltipModel } from './base-model';
 
 /**
  * Configures the borders in circular gauge.
@@ -71,6 +71,112 @@ export class Font extends ChildProperty<Font> {
 }
 
 /**
+ * To set tooltip properties for range tooltip.
+ */
+export class RangeTooltip extends ChildProperty<RangeTooltip> {
+    /**
+     * The fill color of the range tooltip, which accepts value in hex, rgba as a valid CSS color string.
+     * @default null
+     */
+
+    @Property(null)
+    public fill: string;
+
+    /**
+     * Options to customize the tooltip text of range.
+     */
+
+    @Complex<FontModel>({ size: '13px' }, Font)
+    public textStyle: FontModel;
+
+    /**
+     * Format of the range tooltip content.
+     * @default null
+     */
+
+    @Property(null)
+    public format: string;
+
+    /**
+     * Custom template to format the  tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
+     * @default null
+     */
+
+    @Property(null)
+    public template: string;
+
+    /**
+     * If set true, range tooltip will animate, while moving from one point to another.
+     * @default true
+     */
+    @Property(true)
+    public enableAnimation: boolean;
+
+    /**
+     * Options to customize the border for range tooltip.
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+
+    /**
+     * Options to show the range tooltip position on pointer.
+     * @default false
+     */
+    @Property(false)
+    public showAtMousePosition: boolean;
+}
+
+/**
+ * To set tooltip properties for annotation tooltip.
+ */
+export class AnnotationTooltip extends ChildProperty<AnnotationTooltip> {
+    /**
+     * The fill color of the annotation tooltip, which accepts value in hex, rgba as a valid CSS color string.
+     * @default null
+     */
+
+    @Property(null)
+    public fill: string;
+
+    /**
+     * Options to customize the tooltip text of annotation.
+     */
+
+    @Complex<FontModel>({ size: '13px' }, Font)
+    public textStyle: FontModel;
+
+    /**
+     * Format of the annotation tooltip content.
+     * @default null
+     */
+
+    @Property(null)
+    public format: string;
+
+    /**
+     * Custom template to format the  tooltip content. Use ${x} and ${y} as a placeholder text to display the corresponding data point.
+     * @default null
+     */
+
+    @Property(null)
+    public template: string;
+
+    /**
+     * If set true, range and annotation tooltip will animate, while moving from one point to another.
+     * @default true
+     */
+    @Property(true)
+    public enableAnimation: boolean;
+
+    /**
+     * Options to customize the border for annotation tooltip.
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+
+}
+
+/**
  * Configures the margin of circular gauge.
  */
 export class Margin extends ChildProperty<Margin> {
@@ -133,6 +239,20 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     public textStyle: FontModel;
 
     /**
+     * Options to customize the range tooltip property.
+     */
+
+    @Complex<RangeTooltipModel>({}, RangeTooltip)
+    public rangeSettings: RangeTooltipModel;
+
+    /**
+     * Options to customize the annotation tooltip property.
+     */
+
+     @Complex<AnnotationTooltipModel>({}, AnnotationTooltip)
+     public annotationSettings: AnnotationTooltipModel;
+
+    /**
      * Format of the tooltip content.
      * @default null
      */
@@ -168,4 +288,10 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
     @Property(false)
     public showAtMousePosition: boolean;
 
+    /**
+     * Option to select the tooltip from Range, Annotation, Pointer
+     * @default Pointer
+     */
+    @Property('Pointer')
+    public type: string[];
 }

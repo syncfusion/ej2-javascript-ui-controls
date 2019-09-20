@@ -24,14 +24,22 @@ export class InsertHtmlExec {
         InsertHtml.Insert(
             this.parent.currentDocument,
             e.value as Node, this.parent.editableElement );
-        if (e.callBack) {
+        if (e.subCommand === 'pasteCleanup') {
             e.callBack({
                 requestType: e.subCommand,
                 editorMode: 'HTML',
-                event: e.event,
-                range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
-                elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
+                elements: e.value as Element
             });
+        } else {
+            if (e.callBack) {
+                e.callBack({
+                    requestType: e.subCommand,
+                    editorMode: 'HTML',
+                    event: e.event,
+                    range: this.parent.nodeSelection.getRange(this.parent.currentDocument),
+                    elements: this.parent.nodeSelection.getSelectedNodes(this.parent.currentDocument) as Element[]
+                });
+            }
         }
     }
 }

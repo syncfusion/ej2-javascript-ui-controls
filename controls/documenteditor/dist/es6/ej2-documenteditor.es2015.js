@@ -10481,6 +10481,10 @@ class WTableHolder {
             // If yes, then set total minimum word width as container width. Else, set the container width to container width.
             if (!isAuto) {
                 let totalMinimumWordWidth = this.getTotalWidth(1);
+                if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
+                    this.fitColumns(containerWidth, preferredTableWidth, isAuto);
+                    return;
+                }
                 // tslint:disable-next-line:max-line-length
                 containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
             }
@@ -16416,8 +16420,10 @@ class Layout {
         let isSingleTab = false;
         // tslint:disable-next-line:max-line-length
         if (element.previousElement instanceof TextElementBox && element.previousElement.previousElement instanceof FieldElementBox && tabs.length === 1) {
-            tabs.length = 0;
-            isSingleTab = true;
+            isSingleTab = element.nextElement instanceof TextElementBox;
+            if (isSingleTab) {
+                tabs.length = 0;
+            }
         }
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
@@ -16499,8 +16505,8 @@ class Layout {
                     else if (element.previousElement instanceof TextElementBox && element.nextElement instanceof TextElementBox) {
                         if (leftIndent > defaultTabWidth) {
                             defaultTabWidth = leftIndent - defaultTabWidth;
+                            break;
                         }
-                        break;
                     }
                 }
             }
@@ -59038,17 +59044,22 @@ class WordExport {
         }
         writer.writeEndElement(); //end of table cell 'tc'        
         if (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1)
-            && (this.row.cells.indexOf(cell) === cell.columnIndex) && cell.nextNode === undefined) {
+            && (((this.row.cells.indexOf(cell) === this.row.cells.length - 1) || this.row.cells.indexOf(cell) === cell.columnIndex))
+            && cell.nextNode === undefined) {
             let collKey = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1;
             writer.writeStartElement(undefined, 'tc', this.wNamespace);
+            let endProperties = true;
             if (!isNullOrUndefined(this.spanCellFormat)) {
-                this.serializeCellFormat(writer, this.spanCellFormat, false, false);
+                endProperties = false;
+                this.serializeCellFormat(writer, this.spanCellFormat, false, endProperties);
             }
             this.serializeColumnSpan(collKey, writer);
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
             writer.writeEndElement();
-            writer.writeEndElement();
+            if (!endProperties) {
+                writer.writeEndElement();
+            }
             this.checkMergeCell(collKey);
             writer.writeStartElement('w', 'p', this.wNamespace);
             writer.writeEndElement(); //end of P
@@ -61546,6 +61557,9 @@ class SfdtExport {
         inline.characterFormat = this.writeCharacterFormat(element.characterFormat);
         if (element instanceof FieldElementBox) {
             inline.fieldType = element.fieldType;
+            if (element.fieldType === 0) {
+                inline.hasFieldEnd = true;
+            }
             if (element.fieldCodeType && element.fieldCodeType !== '') {
                 inline.fieldCodeType = element.fieldCodeType;
             }

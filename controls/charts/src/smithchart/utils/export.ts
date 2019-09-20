@@ -1,5 +1,5 @@
 import { print as smithchartPrint, createElement, isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
-import { Smithchart} from '../../index';
+import { Smithchart } from '../../index';
 import { getElement } from '../utils/helper';
 import { SmithchartExportType, smithchartBeforePrint } from '../utils/enum';
 import { ISmithchartPrintEventArgs } from '../model/interface';
@@ -9,7 +9,7 @@ import { PdfPageOrientation, PdfDocument, PdfBitmap } from '@syncfusion/ej2-pdf-
  * Annotation Module handles the Annotation for Maps 
  */
 export class ExportUtils {
-    private control: Smithchart ;
+    private control: Smithchart;
     private smithchartPrint: Window;
 
     /**
@@ -29,7 +29,9 @@ export class ExportUtils {
         this.smithchartPrint.moveTo(0, 0);
         this.smithchartPrint.resizeTo(screen.availWidth, screen.availHeight);
         let argsData: ISmithchartPrintEventArgs = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: smithchartBeforePrint
+            cancel: false,
+            htmlContent: !this.control.isBlazor ? this.getHTMLContent(elements) : null,
+            name: smithchartBeforePrint
         };
         this.control.trigger(smithchartBeforePrint, argsData);
         if (!argsData.cancel) {

@@ -10,7 +10,7 @@ import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { BarSeries } from '../../../src/chart/series/bar-series';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { MouseEvents } from '../base/events.spec';
-import { tooltipData1, tooltipData2, datetimeData, unbindResizeEvents } from '../base/data.spec';
+import { tooltipData1, tooltipData2,datetimeData } from '../base/data.spec';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Category } from '../../../src/chart/axis/category-axis';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -476,6 +476,33 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.series[0].marker.visible = true;
             chartObj.refresh();
         });
+
+
+        it('Checking with multiple series with tooltip', (done: Function) => {
+            loaded = (args: Object): void => {
+                let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');
+                let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
+                y = parseFloat(target.getAttribute('cy')) + parseFloat(chartArea.getAttribute('y')) + elem.offsetTop;
+                x = parseFloat(target.getAttribute('cx')) + parseFloat(chartArea.getAttribute('x')) + elem.offsetLeft;
+                trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
+
+                let tooltip: HTMLElement = document.getElementById('container_tooltip');
+                expect(tooltip != null).toBe(true);
+                let text1: HTMLElement = tooltip.childNodes[0].childNodes[0].childNodes[1] as HTMLElement;
+                expect(text1.textContent == '40').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.primaryXAxis.valueType = 'Category';
+            chartObj.series[0].type = 'Line';
+            chartObj.tooltip.template = '';
+            chartObj.tooltip.format = '${point.x} : ${point.y}';
+            chartObj.series[0].tooltipMappingName = 'y';
+            chartObj.series[0].tooltipFormat  = '${point.tooltip}';
+            chartObj.series[0].marker.visible = true;
+            chartObj.refresh();
+        });
+
         it('Tooltip for column with marker', (done: Function) => {
             loaded = (args: Object): void => {
                 let target: HTMLElement = document.getElementById('container_Series_0_Point_6_Symbol');

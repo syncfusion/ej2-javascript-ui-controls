@@ -40,6 +40,11 @@ let ganttModel: Object = {
         { type: 'Notes' },
         { type: 'Custom' }
     ],
+    addDialogFields: [
+        { type: 'General'},
+        { type: 'Resources' },
+        { type: 'Dependency' }
+    ],
     columns: [
         { field: 'TaskID', width: 60 },
         { field: 'TaskName', width: 100 },
@@ -48,11 +53,13 @@ let ganttModel: Object = {
         { field: 'Duration', width: 100 },
         { field: 'Predecessor', width: 100 },
         { field: 'Progress', width: 100 },
-        { field: 'BaselineStartDate', editType: 'datepickeredit', width: 100 },
-        { field: 'BaselineEndDate', editType: 'datepickeredit', width: 100 },
+        { field: 'BaselineStartDate', editType: 'datetimepickeredit', width: 100 },
+        { field: 'BaselineEndDate', editType: 'datetimepickeredit', width: 100 },
         { field: 'Resource', width: 100 },
         { field: 'Notes', width: 100 },
-        { field: 'Customcol', headerText: 'Custom Column', width: 100 }
+        { field: 'Customcol1',editType: 'dropdownedit', headerText: 'Custom Column1', width: 100 },
+        { field: 'Customcol2',editType: 'maskededit', headerText: 'Custom Column2', width: 100 },
+        { field: 'Customcol3',editType: 'booleanedit', headerText: 'Custom Column3', width: 100 }
     ],
     toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
     allowUnscheduledTasks: true,
@@ -133,6 +140,18 @@ describe('Gantt dialog module', () => {
                 triggerMouseEvent(saveRecord, 'click');
             }
         });
+        it('Unschedule validation- StartDate', () => {
+            ganttObj.dataBind();
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            SD.value = null;
+            SD.dataBind();
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            expect(ED.value).toBe(null);
+            let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            expect(textObj.value).toBe('0 days');
+            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
+        });
         it('Unschedule validation- endDate', () => {
             ganttObj.dataBind();
             let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
@@ -145,6 +164,57 @@ describe('Gantt dialog module', () => {
             let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
             triggerMouseEvent(cancelRecord, 'click');
         });
+        it('Unschedule validation- Duration', () => {
+            ganttObj.dataBind();
+            let durationField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            durationField.value = null;
+            durationField.dataBind();
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('4/4/2019');
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            expect(ED.value).toBe(null);
+            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
+        });
+        it('Unschedule to schedule- StartDate', () => {
+            ganttObj.dataBind();
+            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
+            ganttObj.openEditDialog(5);
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            ED.value = new Date('04/05/2019');
+            ED.dataBind();
+            let durationField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            expect(durationField.value).toBe('4 days');
+            let cancel: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancel, 'click');
+        });
+        it('Unschedule to schedule- EndDate', () => {
+            ganttObj.dataBind();
+            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
+            ganttObj.openEditDialog(6);
+            let durationField: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+            durationField.value = '3 days';
+            durationField.dataBind();
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            expect(ganttObj.getFormatedDate(SD.value, 'M/d/yyyy')).toBe('3/29/2019');
+            let cancel: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancel, 'click');
+        });
+        it('Unschedule to schedule- Duration', () => {
+            ganttObj.dataBind();
+            let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancelRecord, 'click');
+            ganttObj.openEditDialog(7);
+            let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+            SD.value = new Date('04/02/2019');
+            SD.dataBind();
+            let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+            expect(ganttObj.getFormatedDate(ED.value, 'M/d/yyyy')).toBe('4/8/2019');
+            let cancel: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+            triggerMouseEvent(cancel, 'click');
+        });
         it('Schedule validation- Null values', () => {
             ganttObj.dataBind();
             let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
@@ -152,9 +222,11 @@ describe('Gantt dialog module', () => {
             ganttObj.dataSource[1].StartDate = null;
             ganttObj.dataSource[1].EndDate = null;
             ganttObj.dataSource[1].Duration = null;
+            ganttObj.isAdaptive = true;
+            ganttObj.selectionSettings.mode = 'Both';
             ganttObj.dataBind();
-            ganttObj.refresh();
-            ganttObj.openEditDialog(5);
+            let element: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr.gridrowtaskIdlevel0:nth-Child(5) > td > div.e-left-label-container');
+            triggerMouseEvent(element, 'dblclick');
             let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
             SD.value = new Date('04/09/2019');
             SD.dataBind();
@@ -164,6 +236,32 @@ describe('Gantt dialog module', () => {
             expect(textObj.value).toBe('');
             triggerMouseEvent(cancelRecord, 'click');
         });
+        // it('Edit record by toolbar', () => {
+        //     ganttObj.dataBind();
+        //     let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancelRecord, 'click');
+        //     ganttObj.dataSource[1].StartDate = null;
+        //     ganttObj.dataSource[1].EndDate = null;
+        //     ganttObj.dataSource[1].Duration = null;
+        //     ganttObj.selectionSettings.mode = 'Both';
+        //     ganttObj.dataBind();
+        //     let element: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr.gridrowtaskIdlevel0:nth-Child(5) > td > div.e-left-label-container');
+        //     triggerMouseEvent(element, 'click');
+        //     let edit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-Child(2) > button');
+        //     triggerMouseEvent(edit, 'click');
+        //     let SD: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'StartDate')).ej2_instances[0];
+        //     SD.value = new Date('04/09/2019');
+        //     SD.dataBind();
+        //     let ED: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EndDate')).ej2_instances[0];
+        //     expect(ED.value).toBe(null);
+        //     let textObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
+        //     expect(textObj.value).toBe('');
+        //     let cancel1: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancel1, 'click');
+        //     ganttObj.openEditDialog(1);
+        //     let cancel2: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
+        //     triggerMouseEvent(cancel2, 'click');
+        // });
     });
     describe('Dialog editing - predecessor Tab', () => {
         let ganttObj: Gantt;
@@ -261,6 +359,29 @@ describe('Gantt dialog module', () => {
             ganttObj.dataBind();
             let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
             triggerMouseEvent(saveRecord, 'click');
+        });
+    });
+    describe('Dialog tab', () => {
+        let ganttObj: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj = createGantt(ganttModel, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach(() => {
+            ganttObj.openEditDialog(4);
+        });
+        it('Click event', () => {
+            ganttObj.isAdaptive = true;
+            ganttObj.dataBind();
+            let tab: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-dlg-content > div > div > div > div:nth-Child(3)') as HTMLElement;
+            triggerMouseEvent(tab, 'click');
+            let saveRecord: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control.e-btn.e-lib.e-primary.e-flat') as HTMLElement;
+            triggerMouseEvent(saveRecord, 'click');
+            ganttObj.refresh();
         });
     });
 });

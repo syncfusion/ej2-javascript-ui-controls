@@ -128,7 +128,7 @@ export class StickyNotesAnnotation {
                     let annot: PdfAnnotationBaseModel;
                     annot = {
                         // tslint:disable-next-line:max-line-length
-                        author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: {x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
+                        author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: { x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
                         subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color
                     };
                     if (canvas) {
@@ -296,7 +296,9 @@ export class StickyNotesAnnotation {
             if (data.length !== 0) {
                 this.createPageAccordion(pageIndex);
                 for (let i: number = 0; i < data.length; i++) {
-                    this.createCommentControlPanel(data[i], pageIndex);
+                    if (data[i].AnnotName && (data[i].AnnotName.split('freeText').length === 1)) {
+                        this.createCommentControlPanel(data[i], pageIndex);
+                    }
                 }
                 // tslint:disable-next-line
                 let newCommentsDiv: any = document.querySelectorAll('.e-pv-new-comments-div');
@@ -545,7 +547,7 @@ export class StickyNotesAnnotation {
         let commentsHeight: number = 0;
         if (accordionDiv && commentsContainer) {
             commentsHeight = commentsContainer.getBoundingClientRect().height;
-            let scrollValue: number ;
+            let scrollValue: number;
             if (isCommentsAdded) {
                 scrollValue = accordionDiv.offsetTop + commentsContainer.offsetTop + (commentsHeight / 4);
             } else {
@@ -601,7 +603,12 @@ export class StickyNotesAnnotation {
         });
         if (args.valueEle) {
             if (args.value != null && args.value !== '' && args.value !== ' ') {
-                this.modifyTextProperty(args.value);
+                // tslint:disable-next-line:max-line-length
+                if (this.pdfViewer.selectedItems.annotations[0] && this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'FreeText') {
+                    this.modifyTextProperty(args.value, args.valueEle.parentNode.parentNode.parentNode.parentNode.id);
+                } else {
+                    this.modifyTextProperty(args.value);
+                }
                 this.updateModifiedDate(titleContainer);
             }
             if (args.valueEle.parentElement.parentElement.parentElement.parentElement.childElementCount === 1) {
@@ -826,7 +833,7 @@ export class StickyNotesAnnotation {
             if (data.indent) {
                 this.commentsContainer.setAttribute('name', 'shape_measure');
                 this.createTitleContainer(commentDiv, 'shape_measure', data.subject, data.modifiedDate, data.author);
-            } else if (data.shapeAnnotationType === 'sticky' || data.shapeAnnotationType === 'stamp' ) {
+            } else if (data.shapeAnnotationType === 'sticky' || data.shapeAnnotationType === 'stamp') {
                 // tslint:disable-next-line:max-line-length
                 let annotType: string = this.createTitleContainer(commentDiv, data.shapeAnnotationType, null, data.modifiedDate, data.author);
                 this.commentsContainer.setAttribute('name', annotType);
@@ -838,6 +845,10 @@ export class StickyNotesAnnotation {
             } else if (data.shapeAnnotationType === 'textMarkup') {
                 this.commentsContainer.setAttribute('name', 'textMarkup');
                 this.createTitleContainer(commentDiv, 'textMarkup', data.subject, data.modifiedDate, data.author);
+            } else if (data.shapeAnnotationType === 'FreeText') {
+                data.note = data.dynamicText;
+                this.commentsContainer.setAttribute('name', 'freetext');
+                this.createTitleContainer(commentDiv, 'freeText', data.subject, data.modifiedDate);
             } else {
                 this.commentsContainer.setAttribute('name', 'shape');
                 if (data.shapeAnnotationType === 'Line') {
@@ -935,6 +946,8 @@ export class StickyNotesAnnotation {
             annotationType = 'shape';
         } else if (type === 'textMarkup') {
             annotationType = 'textMarkup';
+        } else if (type === 'freeText') {
+            annotationType = 'freeText';
         } else if (type === 'sticky' || type === 'StickyNotes') {
             annotationType = 'sticky';
         } else if (type === 'measure' || type === 'shape_measure') {
@@ -1041,9 +1054,9 @@ export class StickyNotesAnnotation {
                 commentSpan.className = 'e-pv-calibrate-perimeter-icon e-pv-icon';
             } else if (annotationSubType === 'Radius' || annotationSubType === 'Radius calculation') {
                 commentSpan.className = 'e-pv-calibrate-radius-icon e-pv-icon';
-            }  else if (annotationSubType === 'Area' || annotationSubType === 'Area calculation') {
+            } else if (annotationSubType === 'Area' || annotationSubType === 'Area calculation') {
                 commentSpan.className = 'e-pv-calibrate-area-icon e-pv-icon';
-            }  else if (annotationSubType === 'Volume' || annotationSubType === 'Volume calculation') {
+            } else if (annotationSubType === 'Volume' || annotationSubType === 'Volume calculation') {
                 commentSpan.className = 'e-pv-calibrate-volume-icon e-pv-icon';
             } else {
                 commentSpan.className = 'e-pv-annotation-calibrate-icon e-pv-icon';
@@ -1058,6 +1071,8 @@ export class StickyNotesAnnotation {
             } else {
                 commentSpan.className = 'e-pv-annotation-icon e-pv-icon';
             }
+        } else if (annotationType === 'freeText') {
+            commentSpan.className = 'e-pv-freetext-icon e-pv-icon';
         }
     }
 
@@ -1336,7 +1351,16 @@ export class StickyNotesAnnotation {
             }
         }
         if (event.currentTarget.parentElement.childElementCount === 1) {
-            event.currentTarget.childNodes[1].ej2_instances[0].enableEditMode = true;
+            if (!this.pdfViewer.enableShapeLabel) {
+                event.currentTarget.childNodes[1].ej2_instances[0].enableEditMode = true;
+            } else {
+                let type: string = event.currentTarget.parentElement.getAttribute('name');
+                if (this.isSetAnnotationType && type === 'shape') {
+                    event.currentTarget.childNodes[1].ej2_instances[0].enableEditMode = false;
+                } else {
+                    event.currentTarget.childNodes[1].ej2_instances[0].enableEditMode = true;
+                }
+            }
         }
         this.commentDivOnSelect(event);
         event.preventDefault();
@@ -1572,6 +1596,9 @@ export class StickyNotesAnnotation {
 
     private setAnnotationType(id: string, type: string, pageNumber: number): void {
         let typeString: string = (type === 'measure') ? 'shape_measure' : type;
+        if (typeString === 'freeText') {
+            typeString = 'freetext';
+        }
         // tslint:disable-next-line
         let storeCommentObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_' + typeString);
         if (storeCommentObject) {
@@ -1623,7 +1650,8 @@ export class StickyNotesAnnotation {
         }
     }
 
-    private modifyTextProperty(text: string): void {
+    // tslint:disable-next-line
+    private modifyTextProperty(text: string, annotationName?: any): void {
         // tslint:disable-next-line
         let currentAnnotation: any;
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
@@ -1636,17 +1664,38 @@ export class StickyNotesAnnotation {
             let commentsDiv: HTMLElement = document.getElementById(currentAnnotation.annotName);
             // tslint:disable-next-line
             let pageNumber: any = parseInt(commentsDiv.accessKey);
+            let type: string = commentsDiv.getAttribute('name');
             let pageIndex: number = pageNumber - 1;
             // tslint:disable-next-line
             let pageAnnotations: any;
             let isMeasure: boolean = false;
-            if (currentAnnotation.measureType && currentAnnotation.measureType !== '' ) {
+            // tslint:disable-next-line:max-line-length
+            if (currentAnnotation.shapeAnnotationType === 'FreeText' || (this.pdfViewer.enableShapeLabel && (type === 'shape' || type === 'shape_measure')) ) {
+                let isTextAdded: boolean = false;
+                if (annotationName) {
+                    if (currentAnnotation.annotName !== annotationName) {
+                        this.pdfViewer.annotation.modifyDynamicTextValue(text, annotationName);
+                        isTextAdded = true;
+                    }
+                }
+                if (!isTextAdded) {
+                    this.pdfViewer.annotation.modifyDynamicTextValue(text, currentAnnotation.annotName);
+                    if (currentAnnotation.shapeAnnotationType === 'FreeText') {
+                        currentAnnotation.dynamicText = text;
+                    } else {
+                        currentAnnotation.labelContent = text;
+                        currentAnnotation.notes = text;
+                    }
+                    this.pdfViewer.nodePropertyChange(currentAnnotation, {});
+                }
+            }
+            if (currentAnnotation.measureType && currentAnnotation.measureType !== '') {
                 pageAnnotations = this.getAnnotations(pageIndex, null, 'shape_measure');
                 isMeasure = true;
             } else {
                 pageAnnotations = this.getAnnotations(pageIndex, null, currentAnnotation.shapeAnnotationType);
             }
-            if (pageAnnotations !== null) {
+            if (pageAnnotations !== null && currentAnnotation.shapeAnnotationType !== 'FreeText') {
                 for (let i: number = 0; i < pageAnnotations.length; i++) {
                     if (pageAnnotations[i].annotName === currentAnnotation.annotName) {
                         // tslint:disable-next-line
@@ -1691,7 +1740,7 @@ export class StickyNotesAnnotation {
             let pageAnnotations: any;
             let isMeasure: boolean = false;
             let author: string = commentsDiv.getAttribute('author');
-            if (currentAnnotation.measureType && currentAnnotation.measureType !== '' ) {
+            if (currentAnnotation.measureType && currentAnnotation.measureType !== '') {
                 pageAnnotations = this.getAnnotations(pageIndex, null, 'shape_measure');
                 isMeasure = true;
             } else {
@@ -1751,7 +1800,7 @@ export class StickyNotesAnnotation {
             let pageAnnotations: any;
             let isMeasure: boolean = false;
             let author: string = commentsDiv.getAttribute('author');
-            if (currentAnnotation.measureType && currentAnnotation.measureType !== '' ) {
+            if (currentAnnotation.measureType && currentAnnotation.measureType !== '') {
                 pageAnnotations = this.getAnnotations(pageIndex, null, 'shape_measure');
                 isMeasure = true;
             } else {
@@ -1953,6 +2002,16 @@ export class StickyNotesAnnotation {
                 this.updateUndoRedoCollections(annotation, pageIndex);
                 return annotation;
             }
+        } else if (isAction === 'dynamicText Change') {
+            if (annotation) {
+                // tslint:disable-next-line
+                let commentsMainDiv: any = document.getElementById(annotation.annotName);
+                if (commentsMainDiv) {
+                    // tslint:disable-next-line
+                    commentsMainDiv.firstChild.firstChild.nextSibling.ej2_instances[0].value = undoAnnotation.dynamicText;
+                    return annotation;
+                }
+            }
         }
 
     }
@@ -2046,6 +2105,16 @@ export class StickyNotesAnnotation {
             }
             this.updateUndoRedoCollections(annotation, pageIndex);
             return clonedAnnotationObject;
+        } else if (isAction === 'dynamicText Change') {
+            if (annotation) {
+                // tslint:disable-next-line
+                let commentsMainDiv: any = document.getElementById(annotation.annotName);
+                if (commentsMainDiv) {
+                    // tslint:disable-next-line
+                    commentsMainDiv.firstChild.firstChild.nextSibling.ej2_instances[0].value = annotation.dynamicText;
+                    return annotation;
+                }
+            }
         }
     }
 
@@ -2110,6 +2179,8 @@ export class StickyNotesAnnotation {
             }
             if (type === 'Stamp' || type === 'Image') {
                 type = 'stamp';
+            } else if (type === 'FreeText') {
+                type = 'freetext';
             } else if (type === 'StickyNotes' || type === 'sticky') {
                 type = 'sticky';
             }
@@ -2144,6 +2215,8 @@ export class StickyNotesAnnotation {
         } else if (type === 'shape' || type === 'Line' || type === 'Radius' || type === 'Rectangle' || type === 'Ellipse'
             || type === 'Polygon' || type === 'LineWidthArrowHead' || type === 'Square' || type === 'Circle') {
             type = 'shape';
+        } else if (type === 'FreeText' || type === 'freetext' || type === 'freeText') {
+            type = 'freetext';
         } else {
             type = 'shape_measure';
         }
@@ -2174,6 +2247,8 @@ export class StickyNotesAnnotation {
         } else if (type === 'shape' || type === 'Line' || type === 'Radius' || type === 'Rectangle' || type === 'Ellipse'
             || type === 'Polygon' || type === 'LineWidthArrowHead' || type === 'Square' || type === 'Circle') {
             type = 'shape';
+        } else if (type === 'FreeText') {
+            type = 'freetext';
         } else {
             type = 'shape_measure';
         }
@@ -2287,7 +2362,7 @@ export class StickyNotesAnnotation {
      */
     // tslint:disable-next-line
     public updateAnnotationCollection(newAnnotation: any, annotation: any): void {
-        let type: string =  this.findAnnotationType(annotation);
+        let type: string = this.findAnnotationType(annotation);
         // tslint:disable-next-line
         let pageAnnotations: any = this.getAnnotations(annotation.pageIndex, null, type);
         if (pageAnnotations !== null) {
@@ -2296,12 +2371,14 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line
                     let updateAnnotation: any = cloneObject(pageAnnotations[i]);
                     updateAnnotation.annotName = newAnnotation.annotName;
-                    if (type === 'shape' || type === 'shape_measure') {
+                    if (type === 'shape' || type === 'shape_measure' || type === 'freetext') {
                         updateAnnotation.id = newAnnotation.id;
                     }
                     if (type === 'stamp') {
                         updateAnnotation.randomId = newAnnotation.id;
                     }
+                    updateAnnotation.bounds.left = newAnnotation.bounds.x;
+                    updateAnnotation.bounds.top = newAnnotation.bounds.y;
                     updateAnnotation.note = '';
                     updateAnnotation.comments = [];
                     // tslint:disable-next-line:max-line-length
@@ -2325,6 +2402,8 @@ export class StickyNotesAnnotation {
                 annotType = 'sticky';
             } else if (annotation.shapeAnnotationType === 'Stamp' || annotation.shapeAnnotationType === 'Image') {
                 annotType = 'stamp';
+            } else if (annotation.shapeAnnotationType === 'FreeText') {
+                annotType = 'freetext';
             } else {
                 annotType = 'shape';
             }
@@ -2379,7 +2458,7 @@ export class StickyNotesAnnotation {
         if (titleContainer.id === this.pdfViewer.element.id + '_commenttype_icon') {
             titleContainer = titleContainer.nextSibling;
         }
-        let author: string  = titleContainer.textContent.split('-')[0];
+        let author: string = titleContainer.textContent.split('-')[0];
         titleContainer.textContent = author + ' - ' + this.setModifiedDate();
     }
 
@@ -2396,7 +2475,7 @@ export class StickyNotesAnnotation {
             if (commentsContainer) {
                 if (!isBounds) {
                     titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
-                    let author: string  = titleContainer.textContent.split('-')[0];
+                    let author: string = titleContainer.textContent.split('-')[0];
                     titleContainer.textContent = author + ' - ' + this.setModifiedDate();
                 } else {
                     let type: string = this.findAnnotationType(annotation);
@@ -2408,7 +2487,7 @@ export class StickyNotesAnnotation {
                                 // tslint:disable-next-line:max-line-length
                                 if (annotation.bounds.x !== pageAnnotations[i].bounds.left || annotation.bounds.y !== pageAnnotations[i].bounds.top || annotation.bounds.height !== pageAnnotations[i].bounds.height || annotation.bounds.width !== pageAnnotations[i].bounds.width) {
                                     titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
-                                    let author: string  = titleContainer.textContent.split('-')[0];
+                                    let author: string = titleContainer.textContent.split('-')[0];
                                     titleContainer.textContent = author + ' - ' + this.setModifiedDate();
                                 }
                             }
@@ -2418,7 +2497,7 @@ export class StickyNotesAnnotation {
                 if (isUndoRedoAction) {
                     titleContainer = commentsContainer.firstChild.firstChild.childNodes[1];
                     if (annotation.modifiedDate !== undefined) {
-                        let author: string  = titleContainer.textContent.split('-')[0];
+                        let author: string = titleContainer.textContent.split('-')[0];
                         titleContainer.textContent = author + ' - ' + this.setExistingAnnotationModifiedDate(annotation.modifiedDate);
                     }
                 }

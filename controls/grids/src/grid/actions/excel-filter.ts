@@ -766,6 +766,7 @@ export class ExcelFilter extends CheckBoxFilter {
             query: this.parent.getQuery().clone(),
             sortOrder: 'Ascending',
             locale: this.parent.locale,
+            cssClass: 'e-popup-flmenu',
             autofill: true,
             focus: () => {
                 let isComplex: boolean = !isNullOrUndefined(column) && isComplexField(column);

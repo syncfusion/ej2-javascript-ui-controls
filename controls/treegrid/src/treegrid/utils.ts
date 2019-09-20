@@ -16,6 +16,23 @@ export function isRemoteData(parent: TreeGrid) : boolean {
   return false;
 }
 
+export function isCountRequired(parent: TreeGrid) : boolean {
+  if (parent.dataSource && 'result' in parent.dataSource) {
+    return true;
+  }
+  return false;
+}
+
+export function isFilterChildHierarchy(parent: TreeGrid): boolean {
+  if ((!isNullOrUndefined(parent.grid.searchSettings.key) && parent.grid.searchSettings.key !== '' &&
+    (parent.searchSettings.hierarchyMode === 'Child' || parent.searchSettings.hierarchyMode === 'None')) ||
+    (parent.allowFiltering && parent.grid.filterSettings.columns.length &&
+      (parent.filterSettings.hierarchyMode === 'Child' || parent.filterSettings.hierarchyMode === 'None'))) {
+    return true;
+  }
+  return false;
+}
+
 /**
  * @hidden
  */

@@ -3440,6 +3440,38 @@ describe('Schedule timeline day view', () => {
         });
     });
 
+    describe('Show weekend as False', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let options: ScheduleModel = {
+                showWeekend: false, currentView: 'TimelineDay', selectedDate: new Date(2018, 3, 1),
+                views: [{ displayName: '3 Days', option: 'TimelineDay', interval: 3, showWeekend: false },
+                { option: 'TimelineMonth' }]
+            };
+            schObj = util.createSchedule(options, timelineData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking Rendered Dates are Weekdays', () => {
+            expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(3);
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[0]).innerHTML).toEqual('Apr 2, Monday');
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[1]).innerHTML).toEqual('Apr 3, Tuesday');
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[2]).innerHTML).toEqual('Apr 4, Wednesday');
+            (schObj.element.querySelector('.e-toolbar-item.e-next') as HTMLElement).click();
+            expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(3);
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[0]).innerHTML).toEqual('Apr 5, Thursday');
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[1]).innerHTML).toEqual('Apr 6, Friday');
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[2]).innerHTML).toEqual('Apr 9, Monday');
+            (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
+            expect(schObj.element.querySelectorAll('.e-date-header-container .e-header-cells').length).toEqual(3);
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[0]).innerHTML).toEqual('Apr 2, Monday');
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[1]).innerHTML).toEqual('Apr 3, Tuesday');
+            expect((schObj.element.querySelectorAll('.e-header-date.e-navigate')[2]).innerHTML).toEqual('Apr 4, Wednesday');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

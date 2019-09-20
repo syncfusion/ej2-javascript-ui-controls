@@ -744,7 +744,12 @@ export namespace ListBase {
         });
 
         !isNullOrUndefined(uID) ? li.setAttribute('data-uid', uID) : li.setAttribute('data-uid', generateId());
-
+        const blazId: string = 'BlazId';
+        if (options && !!options.removeBlazorID
+            && typeof item === 'object'
+            && (item as Object).hasOwnProperty(blazId)) {
+            delete item[blazId];
+        }
         if (grpLI && options && options.groupTemplate) {
             let compiledString: Function = compile(options.groupTemplate);
             append(compiledString(item, null, null, curOpt.groupTemplateID, !!curOpt.isStringTemplate), li);
@@ -935,6 +940,10 @@ export interface ListBaseOptions {
      * Force template compiler to compile as string template
      */
     isStringTemplate?: string;
+    /**
+     * Remove Blazor ID from items
+     */
+    removeBlazorID?: boolean;
 }
 
 /**

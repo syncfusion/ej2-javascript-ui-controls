@@ -12,7 +12,7 @@ import { isPointOverConnector } from './connector-util';
 export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer): IElement {
     if (pdfViewer && pdfBase.activeElements.activePageID > -1) {
         let objects: IElement[] = findObjectsUnderMouse(pdfBase, pdfViewer, event as MouseEvent);
-        let object: IElement = findObjectUnderMouse(objects, event, pdfBase);
+        let object: IElement = findObjectUnderMouse(objects, event, pdfBase, pdfViewer);
         return object;
     }
     return undefined;
@@ -34,19 +34,40 @@ export function findObjectsUnderMouse(
 /** @private */
 export function findObjectUnderMouse(
     // tslint:disable-next-line
-    objects: (PdfAnnotationBaseModel)[], event: any, pdfBase: PdfViewerBase
+    objects: (PdfAnnotationBaseModel)[], event: any, pdfBase: PdfViewerBase, pdfViewer: PdfViewer
 ): IElement {
     let actualTarget: PdfAnnotationBaseModel = null;
-    let offsetX: number = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);
-    let offsetY: number = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
+    let touchArg: TouchEvent;
+    let offsetX: number;
+    let offsetY: number;
+    if (event && event.type && event.type.indexOf('touch') !== -1) {
+        touchArg = <TouchEvent & PointerEvent>event;
+        if (pdfViewer.annotation) {
+            let pageDiv: HTMLElement = pdfBase.getElement('_pageDiv_' + pdfViewer.annotation.getEventPageNumber(event));
+            if (pageDiv) {
+                let pageCurrentRect: ClientRect =
+                    pageDiv.getBoundingClientRect();
+
+                offsetX = touchArg.changedTouches[0].clientX - pageCurrentRect.left;
+                offsetY = touchArg.changedTouches[0].clientY - pageCurrentRect.top;
+            }
+        }
+    } else {
+        offsetX = !isNaN(event.offsetX) ? event.offsetX : (event.position ? event.position.x : 0);
+        offsetY = !isNaN(event.offsetY) ? event.offsetY : (event.position ? event.position.y : 0);
+    }
     let offsetForSelector: number = 5;
     for (let i: number = 0; i < objects.length; i++) {
         // tslint:disable-next-line:max-line-length
         if (!(objects[i].shapeAnnotationType === 'Distance' || objects[i].shapeAnnotationType === 'Line' || objects[i].shapeAnnotationType === 'LineWidthArrowHead')) {
             let bounds: PdfBoundsModel = objects[i].wrapper.bounds;
+            let rotationValue: number = 0;
+            if (objects[i].shapeAnnotationType === 'Stamp') {
+                rotationValue = 25;
+            }
             // tslint:disable-next-line:max-line-length
             if ((((bounds.x - offsetForSelector) * pdfBase.getZoomFactor()) < offsetX) && (((bounds.x + bounds.width + offsetForSelector) * pdfBase.getZoomFactor()) > offsetX) &&
-                (((bounds.y - offsetForSelector) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
+                (((bounds.y - offsetForSelector - rotationValue) * pdfBase.getZoomFactor()) < offsetY) && (((bounds.y + bounds.height + offsetForSelector) * pdfBase.getZoomFactor()) > offsetY)) {
                 actualTarget = objects[i];
                 break;
             }

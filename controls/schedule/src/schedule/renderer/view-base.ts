@@ -225,7 +225,7 @@ export class ViewBase {
         // Due to same code for vertical and time line, week & work week views, if condition has used
         if (this.parent.currentView === 'Week' || this.parent.currentView === 'TimelineWeek') {
             let selectedDate: Date = resetTime(this.parent.selectedDate);
-            let start: Date = getWeekFirstDate(selectedDate, this.parent.firstDayOfWeek);
+            let start: Date = getWeekFirstDate(selectedDate, this.parent.activeViewOptions.firstDayOfWeek);
             for (let i: number = 0, length: number = WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
                 if (this.parent.activeViewOptions.showWeekend) {
                     renderDates.push(start);
@@ -237,7 +237,7 @@ export class ViewBase {
                 start = addDays(start, 1);
             }
         } else if (this.parent.currentView === 'WorkWeek' || this.parent.currentView === 'TimelineWorkWeek') {
-            let start: Date = getWeekFirstDate(resetTime(this.parent.selectedDate), this.parent.firstDayOfWeek);
+            let start: Date = getWeekFirstDate(resetTime(this.parent.selectedDate), this.parent.activeViewOptions.firstDayOfWeek);
             for (let i: number = 0, length: number = WEEK_LENGTH * this.parent.activeViewOptions.interval; i < length; i++) {
                 if (this.isWorkDay(start, workDays)) {
                     renderDates.push(start);
@@ -245,9 +245,17 @@ export class ViewBase {
                 start = addDays(start, 1);
             }
         } else {
-            for (let i: number = 0, length: number = this.parent.activeViewOptions.interval; i < length; i++) {
-                renderDates.push(addDays(resetTime(this.parent.selectedDate), i));
-            }
+            let start: Date = resetTime(this.parent.selectedDate);
+            do {
+                if (this.parent.activeViewOptions.showWeekend) {
+                    renderDates.push(start);
+                } else {
+                    if (this.isWorkDay(start, workDays)) {
+                        renderDates.push(start);
+                    }
+                }
+                start = addDays(start, 1);
+            } while (this.parent.activeViewOptions.interval !== renderDates.length);
         }
         if (!workDays) {
             this.renderDates = renderDates;
@@ -256,13 +264,27 @@ export class ViewBase {
     }
     public getNextPreviousDate(type: string): Date {
         if (this.parent.currentView === 'Day' || this.parent.currentView === 'TimelineDay') {
-            let daysCount: number = (type === 'next') ? this.parent.activeViewOptions.interval : -(this.parent.activeViewOptions.interval);
             if (this.parent.activeViewOptions.showWeekend) {
-                return addDays(this.parent.selectedDate, daysCount);
+                let daysCount: number = this.parent.activeViewOptions.interval;
+                return addDays(this.parent.selectedDate, type === 'next' ? daysCount : -daysCount);
             } else {
-                let date: Date = addDays(this.parent.selectedDate, daysCount);
-                while (!this.isWorkDay(date)) {
-                    date = addDays(date, daysCount);
+                let date: Date;
+                if (type === 'next') {
+                    date = addDays(this.renderDates.slice(-1)[0], 1);
+                    while (!this.isWorkDay(date)) {
+                        date = addDays(date, 1);
+                    }
+                } else {
+                    date = addDays(this.renderDates[0], -1);
+                    let count: number = 0;
+                    do {
+                        if (this.isWorkDay(date)) {
+                            count += 1;
+                        }
+                        if (this.parent.activeViewOptions.interval !== count) {
+                            date = addDays(date, -1);
+                        }
+                    } while (this.parent.activeViewOptions.interval !== count);
                 }
                 return date;
             }

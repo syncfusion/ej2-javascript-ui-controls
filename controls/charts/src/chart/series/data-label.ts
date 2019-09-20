@@ -120,7 +120,7 @@ export class DataLabel {
      * Render the data label for series.
      * @return {void}
      */
-
+    // tslint:disable-next-line:max-func-body-length
     public render(series: Series, chart: Chart, dataLabel: DataLabelSettingsModel): void {
         // initialize the private variable
         this.initPrivateVariables(series, series.marker);
@@ -130,6 +130,8 @@ export class DataLabel {
         let argsData: ITextRenderEventArgs;
         let border: BorderModel;
         let textSize: Size;
+        let angle: number;
+        let degree: number;
         this.inverted = chart.requireInvertedAxis;
         this.yAxisInversed = series.yAxis.isInversed;
         let redraw: boolean = chart.redraw;
@@ -143,8 +145,13 @@ export class DataLabel {
             this.margin = dataLabel.margin;
             let labelText: string[] = [];
             let labelLength: number;
+            let xPos: number;
+            let yPos: number;
+            let xValue: number;
+            let yValue: number;
             let clip: Rect = series.clipRect;
             let shapeRect: HTMLElement;
+            angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             let argsFont: FontModel = <FontModel>(extend({}, getValue('properties', dataLabel.font), null, true));
             if (
@@ -188,12 +195,24 @@ export class DataLabel {
                                 // Checking the font color
                                 rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
+                                xPos = rect.x + this.margin.left + textSize.width / 2;
+                                yPos = rect.y + this.margin.top + textSize.height * 3 / 4;
+                                if (angle !== 0 && dataLabel.enableRotation) {
+                                    xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
+                                    yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
+                                    (dataLabel.margin.bottom) / 2;
+                                    degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
+                                } else {
+                                    degree = 0;
+                                    xValue = rect.x;
+                                    yValue = rect.y;
+                                }
                                 textElement(
                                     chart.renderer,
                                     new TextOption(
                                         this.commonId + index + '_Text_' + i,
-                                        rect.x + this.margin.left + textSize.width / 2, rect.y + this.margin.top + textSize.height * 3 / 4,
-                                        'middle', argsData.text, 'rotate(0,' + (rect.x) + ',' + (rect.y) + ')', 'auto'
+                                        xPos, yPos,
+                                        'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                     ),
                                     argsData.font, argsData.font.color ||
                                     ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'),

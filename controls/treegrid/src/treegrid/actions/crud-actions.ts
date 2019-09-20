@@ -250,8 +250,13 @@ export function updateParentRow(key: string, record: ITreeData, action: string, 
         }
         control.grid.setRowData(key, record);
         let row: HTMLTableRowElement = <HTMLTableRowElement>control.getRowByIndex(index);
+        let movableRow: HTMLTableRowElement;
+        if (control.frozenRows || control.getFrozenColumns()) {
+            movableRow = <HTMLTableRowElement>control.getMovableRowByIndex(index);
+        }
         control.renderModule.cellRender({
-            data: record, cell: row.cells[control.treeColumnIndex],
+            data: record, cell: row.cells[control.treeColumnIndex] ? row.cells[control.treeColumnIndex]
+                : movableRow.cells[control.treeColumnIndex - control.frozenColumns],
             column: control.grid.getColumns()[control.treeColumnIndex]
         });
     }

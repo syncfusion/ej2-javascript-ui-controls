@@ -1,7 +1,7 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -25,6 +25,41 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
 };
 /**
  * Query Builder Source
@@ -773,16 +808,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
         var element = closest(ddlArgs.element, '.e-group-container');
         var groupID = element.id.replace(this.element.id + '_', '');
-        var operatorElem = closest(ddlArgs.element, '.e-rule-operator');
         this.changeFilter(filterElem, ddlObj, groupID, rule, tempRule, ddlArgs);
-        if (!this.isOperatorRendered) {
-            this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
-        }
-        if (!this.isValueRendered) {
-            this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
-        }
-        this.isValueRendered = false;
-        this.isOperatorRendered = false;
     };
     QueryBuilder.prototype.changeFilter = function (flt, dl, grID, rl, tmpRl, dArg) {
         var _this = this;
@@ -800,6 +826,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.fieldChangeSuccess(eventsArgs, tmpRl, flt, rl, dArg);
             }
+        }
+        else {
+            var operatorElem = closest(dArg.element, '.e-rule-operator');
+            this.changeOperator(flt, operatorElem, dl, grID, rl, tmpRl, dArg);
         }
     };
     QueryBuilder.prototype.changeOperator = function (flt, opr, dl, grID, rl, tmpRl, dArg) {
@@ -820,25 +850,26 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.operatorChangeSuccess(eventsArgs, flt, tmpRl, rl, dArg);
             }
         }
+        else {
+            this.changeRuleValues(flt, rl, tmpRl, dArg);
+        }
     };
     QueryBuilder.prototype.fieldChangeSuccess = function (args, tempRule, filterElem, rule, ddlArgs) {
         var ruleElem = closest(filterElem, '.e-rule-container');
+        var operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+        var element = closest(ddlArgs.element, '.e-group-container');
+        var groupID = element.id.replace(this.element.id + '_', '');
+        var ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
         if (!args.cancel) {
             tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
-            var element = closest(ddlArgs.element, '.e-group-container');
-            var operatorElem = closest(ddlArgs.element, '.e-rule-operator');
-            var groupID = element.id.replace(this.element.id + '_', '');
-            var ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
             this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         }
         else {
-            this.isOperatorRendered = true;
-            this.isValueRendered = true;
+            this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         }
-        this.isOperatorRendered = true;
     };
     QueryBuilder.prototype.operatorChangeSuccess = function (eventsArgs, filterElem, tempRule, rule, ddlArgs) {
         if (!eventsArgs.cancel) {
@@ -1038,43 +1069,65 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.updateRules(multiSelectObj.element, selectedValue, 0);
     };
     QueryBuilder.prototype.multiSelectOpen = function (parentId, args) {
-        var _this = this;
         if (this.dataSource instanceof DataManager) {
-            var element_1 = document.getElementById(parentId);
-            var dropDownObj = getComponent(closest(element_1, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
+            var element = document.getElementById(parentId);
+            var dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
             this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
-            var value_1 = this.selectedColumn.field;
+            var value = this.selectedColumn.field;
             var isFetched = false;
             if (this.dataColl[1]) {
-                if (Object.keys(this.dataColl[1]).indexOf(value_1) > -1) {
+                if (Object.keys(this.dataColl[1]).indexOf(value) > -1) {
                     isFetched = true;
                 }
             }
             if (!isFetched) {
                 args.cancel = true;
-                var multiselectObj_1 = getComponent(element_1, 'multiselect');
-                multiselectObj_1.hideSpinner();
-                var data = this.dataManager.executeQuery(new Query().select(value_1));
-                var deferred_1 = new Deferred();
-                var dummyData_1;
-                this.createSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
-                showSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
-                data.then(function (e) {
-                    if (e.actual && e.actual.result) {
-                        dummyData_1 = e.actual.result;
-                    }
-                    else {
-                        dummyData_1 = e.result;
-                    }
-                    _this.dataColl = extend(_this.dataColl, dummyData_1, [], true);
-                    var ds = _this.getDistinctValues(_this.dataColl, value_1);
-                    multiselectObj_1.dataSource = ds;
-                    hideSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
-                }).catch(function (e) {
-                    deferred_1.reject(e);
-                });
+                if (isBlazor()) {
+                    this.bindBlazorMultiSelectData(element, value);
+                }
+                else {
+                    this.bindMultiSelectData(element, value);
+                }
             }
         }
+    };
+    QueryBuilder.prototype.bindBlazorMultiSelectData = function (element, value) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getMultiSelectData(element, value)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    QueryBuilder.prototype.bindMultiSelectData = function (element, value) {
+        this.getMultiSelectData(element, value);
+    };
+    QueryBuilder.prototype.getMultiSelectData = function (element, value) {
+        var _this = this;
+        var dummyData;
+        var deferred = new Deferred();
+        var data = this.dataManager.executeQuery(new Query().select(value));
+        var multiselectObj = getComponent(element, 'multiselect');
+        multiselectObj.hideSpinner();
+        this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+        showSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+        data.then(function (e) {
+            if (e.actual && e.actual.result) {
+                dummyData = e.actual.result;
+            }
+            else {
+                dummyData = e.result;
+            }
+            _this.dataColl = extend(_this.dataColl, dummyData, [], true);
+            multiselectObj.dataSource = _this.getDistinctValues(_this.dataColl, value);
+            hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+        }).catch(function (e) {
+            deferred.reject(e);
+        });
     };
     QueryBuilder.prototype.createSpinner = function (element) {
         var spinnerElem = this.createElement('span', { attrs: { class: 'e-qb-spinner' } });
@@ -2044,6 +2097,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             this.dataColl = this.dataManager.executeLocal(new Query());
             this.initControl();
         }
+        this.renderComplete();
     };
     QueryBuilder.prototype.executeDataManager = function (query) {
         var _this = this;
@@ -2319,11 +2373,21 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     /**
      * return the Query from current rules collection.
      * @returns Promise.
+     * @blazorType object
      */
     QueryBuilder.prototype.getFilteredRecords = function () {
         var predicate = this.getPredicate(this.getValidRules(this.rule));
         var dataManagerQuery = new Query().where(predicate);
-        return this.dataManager.executeQuery(dataManagerQuery);
+        if (this.isBlazor()) {
+            var adaptr = new UrlAdaptor();
+            var dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
+            var state = adaptr.processQuery(dm, dataManagerQuery);
+            var data = JSON.parse(state.data);
+            return data;
+        }
+        else {
+            return this.dataManager.executeQuery(dataManagerQuery);
+        }
     };
     /**
      * Deletes the rule or rules based on the rule ID.
@@ -2944,6 +3008,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return rules;
+    };
+    QueryBuilder.prototype.isBlazor = function () {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
     };
     __decorate([
         Event()

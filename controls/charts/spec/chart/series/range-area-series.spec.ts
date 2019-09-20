@@ -299,6 +299,18 @@ describe('Chart', () => {
             chartObj.refresh();
         });
 
+        it('Changing position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let series1: HTMLElement = document.getElementById('container_Series_0_Point_3_Symbol');
+                expect(series1.getAttribute('cx') == '202.77083333333334').toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].marker.visible = true;
+            chartObj.series[0].marker.offset.x = -10;
+            chartObj.refresh();
+        });
+
         it('Checking with category axis OnTicks', (done: Function) => {
             loaded = (args: Object): void => {
                 let point: Element = document.getElementById('container_Series_0');

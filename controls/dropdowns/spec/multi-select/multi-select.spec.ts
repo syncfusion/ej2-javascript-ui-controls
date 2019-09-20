@@ -1424,6 +1424,29 @@ describe('MultiSelect', () => {
             expect(elem.length).toBe(0);
             listObj.destroy();
         });
+        it('filtering methode', () => {
+            let listObj1: any = new MultiSelect({
+                hideSelectedItem: false, dataSource: datasource2, fields: { value: 'text', text: 'text' }, allowFiltering: true,
+                filtering: function (e) {
+                    let query: Query = new Query().select(['text', 'id']);
+                    query = (e.text !== '') ? query.where('text', 'startswith', e.text, true) : query;
+                    listObj1.filter(datasource, query);
+                }
+            });
+            listObj1.appendTo(element);
+            //open action validation
+            listObj1.showPopup();
+            (<any>listObj1).inputElement.value = "JAVA!";
+            //open action validation
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 8;
+            (<any>listObj1).keyDownStatus = true;
+            (<any>listObj1).onInput();
+            (<any>listObj1).KeyUp(keyboardEventArgs);
+            let elem: HTMLElement[] = (<any>listObj1).list.querySelectorAll('li.' + dropDownBaseClasses.focus);
+            expect(elem.length).toBe(0);
+            listObj1.destroy();
+        });
         /*
          */
         /**

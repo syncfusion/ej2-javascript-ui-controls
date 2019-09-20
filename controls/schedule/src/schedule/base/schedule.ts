@@ -19,10 +19,12 @@ import { Day } from '../renderer/day';
 import { Week } from '../renderer/week';
 import { WorkWeek } from '../renderer/work-week';
 import { Month } from '../renderer/month';
+import { Year } from '../renderer/year';
 import { Agenda } from '../renderer/agenda';
 import { MonthAgenda } from '../renderer/month-agenda';
 import { TimelineViews } from '../renderer/timeline-view';
 import { TimelineMonth } from '../renderer/timeline-month';
+import { TimelineYear } from '../renderer/timeline-year';
 import { WorkHours } from '../models/work-hours';
 import { TimeScale } from '../models/time-scale';
 import { QuickInfoTemplates } from '../models/quick-info-templates';
@@ -31,6 +33,7 @@ import { Crud } from '../actions/crud';
 import { Resize } from '../actions/resize';
 import { DragAndDrop } from '../actions/drag';
 import { VirtualScroll } from '../actions/virtual-scroll';
+import { WorkCellInteraction } from '../actions/work-cells';
 import { WorkHoursModel, ViewsModel, EventSettingsModel, GroupModel, ResourcesModel, TimeScaleModel } from '../models/models';
 import { QuickInfoTemplatesModel, HeaderRowsModel } from '../models/models';
 import { EventSettings } from '../models/event-settings';
@@ -38,19 +41,19 @@ import { Group } from '../models/group';
 import { Resources } from '../models/resources';
 import { ICalendarExport } from '../exports/calendar-export';
 import { ICalendarImport } from '../exports/calendar-import';
+import { ExcelExport } from '../exports/excel-export';
+import { Print } from '../exports/print';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
 import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
-import { ViewsData } from '../base/interface';
+import { ViewsData, PopupCloseEventArgs, HoverEventArgs } from '../base/interface';
+import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
 import { ResourceBase } from '../base/resource';
+import { Timezone } from '../timezone/timezone';
 import { RecurrenceEditor } from '../../recurrence-editor/recurrence-editor';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
 import * as util from '../base/util';
-import { CalendarUtil, Gregorian, Islamic, CalendarType } from '../../common/calendar-util';
-import { ExcelExport } from '../exports/excel-export';
-import { Print } from '../exports/print';
-import { Timezone } from '../timezone/timezone';
 
 /**
  * Represents the Schedule component that displays a list of events scheduled against specific date and timings, 
@@ -87,7 +90,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public activeCellsData: CellClickEventArgs;
     public activeEventData: EventClickArgs;
     public eventBase: EventBase;
+    public workCellAction: WorkCellInteraction;
+    public tzModule: Timezone;
     public resourceBase: ResourceBase;
+    private cellHeaderTemplateFn: Function;
     private cellTemplateFn: Function;
     private dateHeaderTemplateFn: Function;
     private majorSlotTemplateFn: Function;
@@ -106,9 +112,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public workWeekModule: WorkWeek;
     public monthAgendaModule: MonthAgenda;
     public monthModule: Month;
+    public yearModule: Year;
     public agendaModule: Agenda;
     public timelineViewsModule: TimelineViews;
     public timelineMonthModule: TimelineMonth;
+    public timelineYearModule: TimelineYear;
     public resizeModule: Resize;
     public dragAndDropModule: DragAndDrop;
     public excelExportModule: ExcelExport;
@@ -130,6 +138,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public uiStateValues: UIStateArgs;
     public timeFormat: string;
     public calendarUtil: CalendarUtil;
+    public isMorePopup: boolean;
 
     // Schedule Options
     /**
@@ -303,6 +312,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     @Property()
     public dateHeaderTemplate: string;
     /**
+     * It accepts either the string or HTMLElement as template design content and parse it appropriately before displaying it onto
+     *  the month date cells. This template is only applicable for month view day cells.
+     * @default null
+     */
+    @Property()
+    public cellHeaderTemplate: string;
+    /**
      * The template option which is used to render the customized work cells on the Schedule. Here, the template accepts either
      *  the string or HTMLElement as template design and then the parsed design is displayed onto the work cells.
      *  The fields accessible via template are as follows.
@@ -374,6 +390,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public hideEmptyAgendaDays: boolean;
+
+    /**
+     * The recurrence validation will be done by default
+     *  When this property is set to `false`, the recurrence validation will be skipped.
+     * @default true
+     */
+    @Property(true)
+    public enableRecurrenceValidation: boolean;
+
     /**
      * Schedule will be assigned with specific timezone, so as to display the events in it accordingly. By default,
      *  Schedule dates are processed with System timezone, as no timezone will be assigned specifically to the Schedule at the initial time.
@@ -471,6 +496,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public cellDoubleClick: EmitType<CellClickEventArgs>;
     /**
+     * Triggers when the scheduler elements are hovered.
+     * @event
+     * @blazorproperty 'OnHover'
+     */
+    @Event()
+    public hover: EmitType<HoverEventArgs>;
+    /**
      * Triggers when multiple cells or events are selected on the Scheduler.
      * @event
      * @blazorproperty 'OnSelect'
@@ -550,10 +582,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public popupOpen: EmitType<PopupOpenEventArgs>;
     /**
+     * Triggers before any of the scheduler popups close on the page.
+     * @event
+     * @blazorproperty 'OnPopupClose'
+     * @blazorType Syncfusion.EJ2.Blazor.Schedule.PopupCloseEventArgs<TValue>
+     */
+    @Event()
+    public popupClose: EmitType<PopupCloseEventArgs>;
+    /**
      * Triggers when an appointment is started to drag.
      * @event
      * @blazorproperty 'OnDragStart'
-     * @deprecated
      */
     @Event()
     public dragStart: EmitType<DragEventArgs>;
@@ -645,9 +684,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.scrollModule.setHeight();
         this.renderModule = new Render(this);
         this.eventBase = new EventBase(this);
+        this.workCellAction = new WorkCellInteraction(this);
         this.initializeDataModule();
-        this.on('data-ready', this.resetEventTemplates, this);
-        this.on('events-loaded', this.updateEventTemplates, this);
+        this.on(events.dataReady, this.resetEventTemplates, this);
+        this.on(events.eventsLoaded, this.updateEventTemplates, this);
         this.element.appendChild(this.createElement('div', { className: cls.TABLE_CONTAINER_CLASS }));
         this.activeViewOptions = this.getActiveViewOptions();
         this.initializeResources();
@@ -661,6 +701,13 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     public updateLayoutTemplates(): void {
         let view: ViewsModel = this.views[this.viewIndex] as ViewsModel;
+        if (this.cellHeaderTemplate) {
+            updateBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate', this);
+        }
+        if (this.activeViewOptions.cellHeaderTemplateName !== '') {
+            let tempID: string = this.element.id + '_' + this.activeViewOptions.cellHeaderTemplateName + 'cellHeaderTemplate';
+            updateBlazorTemplate(tempID, 'CellHeaderTemplate', view);
+        }
         if (this.dateHeaderTemplate) {
             updateBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate', this);
         }
@@ -694,6 +741,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     public resetLayoutTemplates(): void {
         let view: ViewsData = this.viewCollections[this.uiStateValues.viewIndex];
+        if (this.cellHeaderTemplate) {
+            resetBlazorTemplate(this.element.id + '_cellHeaderTemplate', 'CellHeaderTemplate');
+        }
+        if (view.cellHeaderTemplate !== '') {
+            resetBlazorTemplate(this.element.id + '_' + view.cellHeaderTemplateName + 'cellHeaderTemplate', 'CellHeaderTemplate');
+        }
         if (this.dateHeaderTemplate) {
             resetBlazorTemplate(this.element.id + '_dateHeaderTemplate', 'DateHeaderTemplate');
         }
@@ -818,6 +871,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
             let obj: ViewsData = extend({ option: viewName }, isOptions ? view : {});
             let fieldViewName: string = viewName.charAt(0).toLowerCase() + viewName.slice(1);
+            obj.cellHeaderTemplateName = obj.cellHeaderTemplate ? obj.option : '';
             obj.dateHeaderTemplateName = obj.dateHeaderTemplate ? obj.option : '';
             obj.cellTemplateName = obj.cellTemplate ? obj.option : '';
             obj.resourceHeaderTemplateName = obj.resourceHeaderTemplate ? obj.option : '';
@@ -864,10 +918,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             readonly: this.readonly,
             startHour: this.startHour,
             allowVirtualScrolling: false,
+            cellHeaderTemplate: this.cellHeaderTemplate,
             cellTemplate: this.cellTemplate,
             eventTemplate: this.eventSettings.template,
             dateHeaderTemplate: this.dateHeaderTemplate,
             resourceHeaderTemplate: this.resourceHeaderTemplate,
+            firstDayOfWeek: this.firstDayOfWeek,
             workDays: workDays,
             showWeekend: this.showWeekend,
             showWeekNumber: this.showWeekNumber,
@@ -875,7 +931,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             interval: 1,
             timeScale: timeScale,
             group: group,
-            headerRows: this.headerRows
+            headerRows: this.headerRows,
+            orientation: 'Horizontal'
         };
         return extend(scheduleOptions, this.viewCollections[this.viewIndex], undefined, true);
     }
@@ -921,6 +978,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.renderModule.render(viewName);
     }
     private initializeTemplates(): void {
+        this.cellHeaderTemplateFn = this.templateParser(this.activeViewOptions.cellHeaderTemplate);
         this.cellTemplateFn = this.templateParser(this.activeViewOptions.cellTemplate);
         this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
         this.majorSlotTemplateFn = this.templateParser(this.activeViewOptions.timeScale.majorSlotTemplate);
@@ -989,6 +1047,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                         this.setProperties({ currentView: view }, true);
                         if (this.headerModule) {
                             this.headerModule.updateActiveView();
+                            this.headerModule.setCalendarDate(this.selectedDate);
                             this.headerModule.setCalendarView();
                         }
                         this.initializeView(this.currentView);
@@ -1029,14 +1088,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
     public getCurrentTime(): Date {
         if (this.timezone) {
-            let tmz: Timezone = new Timezone();
-            return tmz.convert(new Date(), new Date().getTimezoneOffset() as number & string, this.timezone as number & string);
+            let localOffset: number & string = new Date().getTimezoneOffset() as number & string;
+            return this.tzModule.convert(new Date(), localOffset, this.timezone as number & string);
         }
         return new Date();
     }
     public getNavigateView(): View {
         if (this.activeView.isTimelineView()) {
-            return this.currentView === 'TimelineMonth' ? 'TimelineDay' : 'Agenda';
+            return this.currentView === 'TimelineMonth' || this.currentView === 'TimelineYear' ? 'TimelineDay' : 'Agenda';
         }
         return 'Day';
     }
@@ -1095,6 +1154,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     protected preRender(): void {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
+        this.tzModule = new Timezone();
         this.uiStateValues = {
             expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false, viewIndex: 0,
             isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
@@ -1112,6 +1172,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.resourceCollection = [];
         this.currentAction = null;
         this.selectedElements = [];
+        this.isMorePopup = true;
         this.setViewOptions();
     }
 
@@ -1121,6 +1182,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             week: 'Week',
             workWeek: 'Work Week',
             month: 'Month',
+            year: 'Year',
             agenda: 'Agenda',
             weekAgenda: 'Week Agenda',
             workWeekAgenda: 'Work Week Agenda',
@@ -1186,6 +1248,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             timelineWeek: 'Timeline Week',
             timelineWorkWeek: 'Timeline Work Week',
             timelineMonth: 'Timeline Month',
+            timelineYear: 'Timeline Year',
             editFollowingEvent: 'Following Events',
             deleteTitle: 'Delete Event',
             editTitle: 'Edit Event',
@@ -1200,6 +1263,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let resize: string = 'onorientationchange' in window ? 'orientationchange' : 'resize';
         EventHandler.add(<HTMLElement & Window>window, resize, this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
+        EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
         if (this.allowKeyboardInteraction) {
             this.keyboardInteractionModule = new KeyboardInteraction(this);
         }
@@ -1245,8 +1309,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         return collection.map(Number).indexOf(+date);
     }
     public isAllDayCell(td: Element): boolean {
-        if (this.currentView === 'Month' || this.currentView === 'TimelineMonth' || td.classList.contains(cls.ALLDAY_CELLS_CLASS)
-            || td.classList.contains(cls.HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
+        if (['Month', 'TimelineMonth', 'TimelineYear'].indexOf(this.currentView) > -1 || td.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
+            td.classList.contains(cls.HEADER_CELLS_CLASS) || !this.activeViewOptions.timeScale.enable) {
             return true;
         }
         if (this.activeView.isTimelineView() && this.activeViewOptions.headerRows.length > 0 &&
@@ -1261,6 +1325,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             return new Date(dateInMS);
         }
         return undefined;
+    }
+    public getCellHeaderTemplate(): Function {
+        return this.cellHeaderTemplateFn;
     }
     public getCellTemplate(): Function {
         return this.cellTemplateFn;
@@ -1379,6 +1446,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let resize: string = 'onorientationchange' in window ? 'orientationchange' : 'resize';
         EventHandler.remove(<HTMLElement & Window>window, resize, this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
+        EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
         if (this.keyboardInteractionModule) {
             this.keyboardInteractionModule.destroy();
         }
@@ -1453,9 +1521,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     state.isRefresh = true;
                     break;
                 case 'firstDayOfWeek':
-                    if (this.headerModule) {
-                        this.headerModule.setDayOfWeek(newProp.firstDayOfWeek);
-                    }
+                    this.activeViewOptions.firstDayOfWeek = newProp.firstDayOfWeek;
                     if (this.eventWindow) { this.eventWindow.refreshRecurrenceEditor(); }
                     state.isLayout = true;
                     break;
@@ -1463,6 +1529,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.activeViewOptions.timeScale.enable && this.activeView) {
                         this.activeView.highlightCurrentTime();
                     }
+                    break;
+                case 'cellHeaderTemplate':
+                    this.activeViewOptions.cellHeaderTemplate = newProp.cellHeaderTemplate;
+                    this.cellHeaderTemplateFn = this.templateParser(this.activeViewOptions.cellHeaderTemplate);
+                    state.isLayout = true;
                     break;
                 case 'cellTemplate':
                     this.activeViewOptions.cellTemplate = newProp.cellTemplate;
@@ -1630,6 +1701,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                 case 'editFollowingEvents':
                     state.isRefresh = true;
                     break;
+                case 'allowAdding':
+                case 'allowEditing':
+                case 'allowDeleting':
+                    state.isLayout = true;
+                    break;
             }
         }
     }
@@ -1784,7 +1860,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let duration: number = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
         if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
             lastTd.classList.contains(cls.HEADER_CELLS_CLASS)) {
-            endTime = util.addDays(new Date(startTime.getTime()), duration);
+            let startDate: Date = new Date(startTime.getTime());
+            if (lastTd.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
+                startDate = new Date(endTime.getTime());
+            }
+            endTime = util.addDays(startDate, duration);
         } else {
             endTime = this.activeView.getEndDateFromStartDate(endTime);
         }
@@ -1955,6 +2035,29 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
+     * Retrieves the entire collection of events bound to the Schedule.
+     * @method getBlockEvents
+     * @returns {Object[]} Returns the collection of block event objects from the Schedule.
+     * @isGenericType true
+     */
+    public getBlockEvents(startDate?: Date, endDate?: Date, includeOccurrences?: boolean): Object[] {
+        let eventCollections: Object[] = [];
+        if (includeOccurrences) {
+            eventCollections = this.eventBase.getProcessedEvents(this.blockData);
+        } else {
+            eventCollections = this.blockData;
+        }
+        if (startDate) {
+            startDate = this.getDateTime(startDate);
+        }
+        if (endDate) {
+            endDate = this.getDateTime(endDate);
+        }
+        eventCollections = this.eventBase.filterEventsByRange(eventCollections, startDate, endDate);
+        return eventCollections;
+    }
+
+    /**
      * Retrieves the occurrences of a single recurrence event based on the provided parent ID.
      * @method getOccurrencesByID
      * @param {number} eventID ID of the parent recurrence data from which the occurrences are fetched.
@@ -1989,11 +2092,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * Update the recurrence editor instance from custom editor template.
-     * @method updateRecurrenceEditor
+     * Set the recurrence editor instance from custom editor template.
+     * @method setRecurrenceEditor
      */
-    public updateRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
-        this.eventWindow.updateRecurrenceEditor(recurrenceEditor);
+    public setRecurrenceEditor(recurrenceEditor: RecurrenceEditor): void {
+        this.eventWindow.setRecurrenceEditor(recurrenceEditor);
     }
 
     /**
@@ -2108,6 +2211,28 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.activeEventData.event = data as { [key: string]: Object };
         }
         this.eventWindow.openEditor(data, action, isEventData, repeatType);
+    }
+
+    /**
+     * To manually close the event editor window
+     * @method closeEditor
+     * @return {void}
+     */
+    public closeEditor(): void {
+        if (this.eventWindow) {
+            this.eventWindow.dialogClose();
+        }
+    }
+
+    /**
+     * To manually close the quick info popup
+     * @method closeQuickInfoPopup
+     * @return {void}
+     */
+    public closeQuickInfoPopup(): void {
+        if (this.quickPopup) {
+            this.quickPopup.quickPopupHide(true);
+        }
     }
 
     /**

@@ -138,6 +138,10 @@ export class Tooltip extends BaseTooltip {
         this.currentPoints = [];
         let tool: this;
         if (this.findData(data, this.previousPoints[0] as PointData)) {
+            if (this.previousPoints[0] && data.point.index === this.previousPoints[0].point.index
+                && data.series.index === this.previousPoints[0].series.index) {
+                return null;
+            }
             if (this.pushData(data, isFirst, tooltipDiv, true)) {
                 this.triggerTooltipRender(data, isFirst, this.getTooltipText(data), this.findHeader(data));
             }
@@ -456,7 +460,13 @@ export class Tooltip extends BaseTooltip {
     }
 
     private getFormat(chart: Chart, series: Series): string {
-        if (chart.tooltip.format) {
+        if (series.tooltipFormat) {
+            if (series.seriesType === 'XY' && series.category === 'Indicator') {
+                return this.getIndicatorTooltipFormat(series, chart, chart.tooltip.format);
+            }
+            return series.tooltipFormat;
+        }
+        if (!series.tooltipFormat && chart.tooltip.format) {
             if (series.seriesType === 'XY' && series.category === 'Indicator') {
                 return this.getIndicatorTooltipFormat(series, chart, chart.tooltip.format);
             }

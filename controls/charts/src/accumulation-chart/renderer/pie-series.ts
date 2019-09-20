@@ -3,11 +3,12 @@
  */
 import { AccPoints, AccumulationSeries } from '../model/acc-base';
 import { PathOption } from '@syncfusion/ej2-svg-base';
-import { degreeToLocation, getElement, linear, stringToNumber } from '../../common/utils/helper';
+import { degreeToLocation, getElement, linear, stringToNumber, indexFinder } from '../../common/utils/helper';
 import { PieBase } from '../renderer/pie-base';
 import { AccumulationChart } from '../accumulation';
 import { AnimationModel } from '../../common/model/base-model';
-import { Animation, AnimationOptions, createElement } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Index } from '../../common/model/base';
 /**
  * PieSeries module used to render `Pie` Series.
  */
@@ -21,10 +22,11 @@ export class PieSeries extends PieBase {
         seriesGroup: Element, redraw?: boolean
     ): void {
         let sum: number = series.sumOfPoints;
+        point.startAngle = this.startAngle;
         let yValue: number = point.visible ? point.y : 0;
-        let degree : number  = (sum) ? ((Math.abs(yValue) / sum) * (this.totalAngle)) : null;
-        let start : number = Math.PI / 180 * ((90 - (360 - this.startAngle)) - 90);
-        this.radius = this.isRadiusMapped ? stringToNumber(point.sliceRadius , this.seriesRadius) : this.radius;
+        let degree: number = (sum) ? ((Math.abs(yValue) / sum) * (this.totalAngle)) : null;
+        let start: number = Math.PI / 180 * ((90 - (360 - this.startAngle)) - 90);
+        this.radius = this.isRadiusMapped ? stringToNumber(point.sliceRadius, this.seriesRadius) : this.radius;
         option.d = this.getPathOption(point, degree, this.startAngle % 360, yValue);
         point.midAngle = (this.startAngle - (degree / 2)) % 360;
         point.endAngle = this.startAngle % 360;
@@ -34,36 +36,98 @@ export class PieSeries extends PieBase {
             point.degree = degree;
             point.start = start;
         } else {
-           this.refresh(point, degree, start, chart, option, seriesGroup);
+            this.refresh(point, degree, start, chart, option, seriesGroup);
+        }
+    }
+
+    public findSeries(e: PointerEvent | TouchEvent): void {
+        let innerRadius: number;
+        let radius: number;
+        const borderGap: number = 3; // Gap between pie/doughnut chart and border
+        const width: number = 2; // width of the border
+        radius = this.innerRadius === 0 ? this.radius + borderGap : this.innerRadius - borderGap;
+        innerRadius = this.innerRadius === 0 ? radius + width : radius - width;
+        this.toggleInnerPoint(e, radius, innerRadius);
+    }
+
+    public toggleInnerPoint(event: PointerEvent | TouchEvent, radius: number, innerRadius: number): void {
+        let target: Element = event.target as Element;
+        let id: Index = indexFinder(target.id, true);
+        let borderElement: Element = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
+        let createBorderEle: Element;
+        if (!isNaN(id.series)) {
+            let seriesIndex: number = id.series;
+            let pointIndex: number = id.point;
+            if (!isNullOrUndefined(seriesIndex) && !isNaN(seriesIndex) && !isNullOrUndefined(pointIndex) && !isNaN(pointIndex)) {
+                let point: AccPoints = this.accumulation.visibleSeries[0].points[pointIndex];
+                let srcElem: Element = getElement(this.accumulation.element.id + '_Series_' + seriesIndex + '_Point_' + pointIndex);
+                const opacity: number = srcElem.getAttribute('class') === this.accumulation.element.id + '_ej2_deselected' ?
+                    this.accumulation.tooltip.enable ? 0.5 : 0.3 : this.accumulation.tooltip.enable ? 0.5 : 1;
+                let innerPie: string = this.getPathArc(
+                    this.accumulation.pieSeriesModule.center,
+                    point.startAngle % 360,
+                    (point.startAngle + point.degree) % 360,
+                    radius,
+                    innerRadius);
+                if ((borderElement) && (borderElement.getAttribute('d') !== innerPie || point.isExplode)) {
+                    borderElement.remove();
+                    borderElement = null;
+                }
+                let seriousGroup: Element = getElement(this.accumulation.element.id + '_Series_' + seriesIndex);
+                if (!borderElement && ((!point.isExplode) || (point.isExplode && event.type !== 'click'))) {
+                    let path: PathOption = new PathOption(
+                        this.accumulation.element.id + 'PointHover_Border', point.color, 1, point.color, opacity, '', innerPie);
+                    createBorderEle = this.accumulation.renderer.drawPath(path);
+                    createBorderEle.removeAttribute('transform');
+                    seriousGroup.appendChild(createBorderEle);
+                    if (point.isExplode && createBorderEle) {
+                        let borderExplode: string = srcElem.getAttribute('transform');
+                        createBorderEle.setAttribute('transform', borderExplode);
+                    }
+                }
+            }
+        } else if (borderElement) {
+            this.removeBorder(borderElement, 1000);
+            borderElement = null;
+        }
+    }
+
+    public removeBorder(borderElement: Element, duration: number): void {
+        if (borderElement) {
+            setTimeout(
+                (): void => {
+                    borderElement.remove();
+                },
+                duration);
         }
     }
 
     private refresh(
-        point: AccPoints, degree : number, start: number, chart: AccumulationChart, option: PathOption, seriesGroup: Element) : void {
-       let seriesElement: Element = getElement(option.id);
-       let duration: number = chart.duration ? chart.duration : 300;
-       let currentStartAngle: number;
-       let curentDegree: number;
-       new Animation({}).animate(createElement('div'), {
-                duration: duration,
-                delay: 0,
-                progress: (args: AnimationOptions): void => {
-                    curentDegree = linear(args.timeStamp, point.degree, (degree - point.degree), args.duration);
-                    currentStartAngle = linear(args.timeStamp, point.start, start - point.start, args.duration);
-                    currentStartAngle = ((currentStartAngle / (Math.PI / 180)) + 360) % 360;
-                    seriesElement.setAttribute('d', this.getPathOption(point, curentDegree, currentStartAngle, point.y));
-                    if (point.isExplode) {
-                        chart.accBaseModule.explodePoints(point.index, chart, true);
-                    }
-                    (seriesElement as HTMLElement).style.visibility = 'visible';
-                },
-                end: (args: AnimationOptions) => {
-                    (seriesElement as HTMLElement).style.visibility = point.visible ? 'visible' : 'hidden';
-                    seriesElement.setAttribute('d', option.d);
-                    point.degree = degree;
-                    point.start = start;
+        point: AccPoints, degree: number, start: number, chart: AccumulationChart, option: PathOption, seriesGroup: Element): void {
+        let seriesElement: Element = getElement(option.id);
+        let duration: number = chart.duration ? chart.duration : 300;
+        let currentStartAngle: number;
+        let curentDegree: number;
+        new Animation({}).animate(createElement('div'), {
+            duration: duration,
+            delay: 0,
+            progress: (args: AnimationOptions): void => {
+                curentDegree = linear(args.timeStamp, point.degree, (degree - point.degree), args.duration);
+                currentStartAngle = linear(args.timeStamp, point.start, start - point.start, args.duration);
+                currentStartAngle = ((currentStartAngle / (Math.PI / 180)) + 360) % 360;
+                seriesElement.setAttribute('d', this.getPathOption(point, curentDegree, currentStartAngle, point.y));
+                if (point.isExplode) {
+                    chart.accBaseModule.explodePoints(point.index, chart, true);
                 }
-            });
+                (seriesElement as HTMLElement).style.visibility = 'visible';
+            },
+            end: (args: AnimationOptions) => {
+                (seriesElement as HTMLElement).style.visibility = point.visible ? 'visible' : 'hidden';
+                seriesElement.setAttribute('d', option.d);
+                point.degree = degree;
+                point.start = start;
+            }
+        });
     }
     /**
      * To get path option from the point.

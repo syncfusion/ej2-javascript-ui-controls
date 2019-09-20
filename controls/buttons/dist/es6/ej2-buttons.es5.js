@@ -1,4 +1,4 @@
-import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getInstance, getUniqueID, getValue, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
+import { Component, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, attributes, closest, deleteObject, detach, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, removeClass, rippleEffect, setValue } from '@syncfusion/ej2-base';
 
 /**
  * Initialize wrapper element for angular.
@@ -182,10 +182,12 @@ var Button = /** @__PURE__ @class */ (function (_super) {
         if (this.isPrimary) {
             this.element.classList.add(cssClassName.PRIMARY);
         }
-        if (this.content) {
-            this.element.innerHTML = this.content;
+        if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+            if (this.content) {
+                this.element.innerHTML = this.content;
+            }
+            this.setIconCss();
         }
-        this.setIconCss();
         if (this.enableRtl) {
             this.element.classList.add(cssClassName.RTL);
         }
@@ -366,8 +368,10 @@ var Button = /** @__PURE__ @class */ (function (_super) {
                     if (!node) {
                         this.element.classList.remove(cssClassName.ICONBTN);
                     }
-                    this.element.innerHTML = newProp.content;
-                    this.setIconCss();
+                    if (!isBlazor() || (isBlazor() && this.getModuleName() !== 'progress-btn')) {
+                        this.element.innerHTML = newProp.content;
+                        this.setIconCss();
+                    }
                     break;
                 case 'isToggle':
                     if (newProp.isToggle) {
@@ -484,6 +488,8 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         var _this = _super.call(this, options, element) || this;
         _this.isFocused = false;
         _this.isMouseClick = false;
+        _this.start = 0;
+        _this.end = 0;
         return _this;
     }
     CheckBox.prototype.changeState = function (state) {
@@ -524,6 +530,12 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
         this.getWrapper().setAttribute('aria-checked', ariaState);
     };
     CheckBox.prototype.clickHandler = function (event) {
+        if ((this.end - this.start) > 750) {
+            this.end = 0;
+            this.end = 0;
+            event.stopPropagation();
+            return;
+        }
         if (this.isMouseClick) {
             this.focusOutHandler();
             this.isMouseClick = false;
@@ -789,12 +801,23 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     CheckBox.prototype.changeHandler = function (e) {
         e.stopPropagation();
     };
+    CheckBox.prototype.touchStartHandler = function (e) {
+        this.start = new Date().getTime();
+    };
+    CheckBox.prototype.touchEndHandler = function (e) {
+        this.end = new Date().getTime();
+    };
     CheckBox.prototype.formResetHandler = function () {
         this.checked = this.initialCheckedValue;
-        attributes(this.element, { 'checked': this.initialCheckedValue.toString() });
+        this.element.checked = this.initialCheckedValue;
     };
     CheckBox.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
+        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (iOS) {
+            EventHandler.remove(wrapper, 'touchstart', this.touchStartHandler);
+            EventHandler.remove(wrapper, 'touchend', this.touchEndHandler);
+        }
         EventHandler.remove(this.element, 'click', this.clickHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'focus', this.focusHandler);
@@ -811,6 +834,11 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
     };
     CheckBox.prototype.wireEvents = function () {
         var wrapper = this.getWrapper();
+        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (iOS) {
+            EventHandler.add(wrapper, 'touchstart', this.touchStartHandler, this);
+            EventHandler.add(wrapper, 'touchend', this.touchEndHandler, this);
+        }
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'focus', this.focusHandler, this);
@@ -1573,12 +1601,9 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
-    Switch.prototype.changeHandler = function (e) {
-        e.stopPropagation();
-    };
     Switch.prototype.formResetHandler = function () {
         this.checked = this.initialSwitchCheckedValue;
-        attributes(this.element, { 'checked': this.initialSwitchCheckedValue.toString() });
+        this.element.checked = this.initialSwitchCheckedValue;
     };
     /**
      * Toggle the Switch component state into checked/unchecked.
@@ -1602,9 +1627,6 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
-        if (this.tagName === 'EJS-SWITCH') {
-            EventHandler.add(this.element, 'change', this.changeHandler, this);
-        }
     };
     Switch.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
@@ -1618,9 +1640,6 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(wrapper, 'touchstart touchmove touchend', this.switchMouseUp);
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
-        }
-        if (this.tagName === 'EJS-SWITCH') {
-            EventHandler.remove(this.element, 'change', this.changeHandler);
         }
     };
     /**

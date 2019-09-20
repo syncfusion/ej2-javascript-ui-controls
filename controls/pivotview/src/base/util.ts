@@ -1,4 +1,4 @@
-import { IDataSet } from './engine';
+import { IPivotValues } from './engine';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -18,21 +18,52 @@ export class PivotUtil {
         return date;
     }
 
-    public static getClonedData(data: IDataSet[]): IDataSet[] {
-        let clonedData: IDataSet[] = [];
-        let fields: string[] = Object.keys(data[0]);
-        for (let item of data) {
-            let keyPos: number = 0;
-            /* tslint:disable */
-            let framedSet: any = {};
-            /* tslint:enable */
-            while (keyPos < fields.length) {
-                framedSet[fields[keyPos]] = item[fields[keyPos]];
-                keyPos++;
+    public static getClonedData(data: { [key: string]: Object }[]): { [key: string]: Object }[] {
+        let clonedData: { [key: string]: Object }[] = [];
+        if (data) {
+            for (let item of data as { [key: string]: Object }[]) {
+                let fields: string[] = Object.keys(item);
+                let keyPos: number = 0;
+                /* tslint:disable */
+                let framedSet: any = {};
+                /* tslint:enable */
+                while (keyPos < fields.length) {
+                    framedSet[fields[keyPos]] = item[fields[keyPos]];
+                    keyPos++;
+                }
+                clonedData.push(framedSet);
             }
-            clonedData.push(framedSet);
         }
         return clonedData;
+    }
+
+    public static getClonedPivotValues(pivotValues: IPivotValues): IPivotValues {
+        let clonedSets: IPivotValues = [];
+        for (let i: number = 0; i < pivotValues.length; i++) {
+            clonedSets[i] = [];
+            for (let j: number = 0; j < pivotValues[i].length; j++) {
+                if (pivotValues[i][j]) {
+                    clonedSets[i][j] = this.getClonedObj(pivotValues[i][j] as { [key: string]: Object });
+                }
+            }
+        }
+        return clonedSets;
+    }
+    private static getClonedObj(data: { [key: string]: Object }): { [key: string]: Object } {
+        let keyPos: number = 0;
+        /* tslint:disable */
+        let framedSet: any = {};
+        /* tslint:enable */
+        if (!(data === null || data === undefined)) {
+            let fields: string[] = Object.keys(data);
+            while (keyPos < fields.length) {
+                framedSet[fields[keyPos]] = data[fields[keyPos]];
+                keyPos++;
+            }
+        } else {
+            framedSet = data;
+        }
+        return framedSet;
     }
 
     public static inArray(value: Object, collection: Object[]): number {

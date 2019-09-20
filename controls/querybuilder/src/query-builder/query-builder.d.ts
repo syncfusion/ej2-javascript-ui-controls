@@ -306,6 +306,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getDistinctValues;
     private renderMultiSelect;
     private multiSelectOpen;
+    private bindBlazorMultiSelectData;
+    private bindMultiSelectData;
+    private getMultiSelectData;
     private createSpinner;
     private closePopup;
     private processTemplate;
@@ -392,8 +395,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     /**
      * return the Query from current rules collection.
      * @returns Promise.
+     * @blazorType object
      */
-    getFilteredRecords(): Promise<Object>;
+    getFilteredRecords(): Promise<Object> | object;
     /**
      * Deletes the rule or rules based on the rule ID.
      * @returns void.
@@ -435,6 +439,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getOperator;
     private getTypeFromColumn;
     private processParser;
+    private isBlazor;
 }
 export interface Level {
     [key: string]: number[];

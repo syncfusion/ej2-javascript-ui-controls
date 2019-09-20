@@ -296,7 +296,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private initialize(): void {
         addClass([this.element], 'e-' + this.getModuleName());
         this.renderComponent();
-        if (!isNullOrUndefined(this.value)) {
+        if (!isNullOrUndefined(this.value) && this.value !== '') {
             this.setRecurrenceRule(this.value as string);
         } else {
             this.startState(this.repeatType.value.toString().toUpperCase(), NEVER, this.startDate);
@@ -413,7 +413,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             placeholder: this.localeObj.getConstant(REPEAT),
             htmlAttributes: { 'title': this.localeObj.getConstant(REPEAT) },
             change: (args: ChangeEventArgs) => {
-                self.setProperties({ selectedType: args.value }, false);
+                self.setProperties({ selectedType: this.frequencies.indexOf(args.value as RepeatType) }, false);
                 self.element.querySelector('.' + REPEATCONTENT).innerHTML =
                     self.localeObj.getConstant(contentType[args.value as number | string]);
                 self.showFormElement();
@@ -536,6 +536,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     private renderDatePickers(): void {
         let self: RecurrenceEditor = this;
         this.untilDateObj = new DatePicker({
+            firstDayOfWeek: this.firstDayOfWeek,
             enableRtl: this.enableRtl,
             min: this.minDate,
             max: this.maxDate,

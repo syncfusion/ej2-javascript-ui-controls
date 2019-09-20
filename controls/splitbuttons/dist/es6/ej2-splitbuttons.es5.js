@@ -1,4 +1,4 @@
-import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
+import { Animation, ChildProperty, Collection, Complex, Component, Event, EventHandler, KeyboardEvents, NotifyPropertyChanges, Property, addClass, attributes, classList, closest, createElement, deleteObject, detach, extend, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, remove, removeClass, rippleEffect, select, setValue } from '@syncfusion/ej2-base';
 import { Button } from '@syncfusion/ej2-buttons';
 import { Popup, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
@@ -1216,16 +1216,39 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
         this.element.appendChild(this.createElement('span', { className: PROGRESS }));
     };
     ProgressButton.prototype.setContent = function () {
-        var cont = this.element.innerHTML;
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
-            while (this.element.firstChild) {
-                this.element.removeChild(this.element.firstChild);
-            }
+        var cont;
+        if (isBlazor()) {
+            cont = this.content;
+            this.setContentIcon(cont);
         }
         else {
+            cont = this.element.innerHTML;
             this.element.innerHTML = '';
+            this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
         }
-        this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
+    };
+    ProgressButton.prototype.setContentIcon = function (content) {
+        var contElem = this.createElement('span', { className: CONTENTCLS, innerHTML: content });
+        if (this.iconCss) {
+            var span = this.createElement('span', { className: 'e-btn-icon ' + this.iconCss });
+            if (!this.element.textContent.trim()) {
+                this.element.classList.add('e-icon-btn');
+            }
+            else {
+                span.classList.add('e-icon-' + this.iconPosition.toLowerCase());
+                if (this.iconPosition === 'Top' || this.iconPosition === 'Bottom') {
+                    this.element.classList.add('e-' + this.iconPosition.toLowerCase() + '-icon-btn');
+                }
+            }
+            var node = contElem.childNodes[0];
+            if (node && (this.iconPosition === 'Left' || this.iconPosition === 'Top')) {
+                contElem.insertBefore(span, node);
+            }
+            else {
+                contElem.appendChild(span);
+            }
+        }
+        this.element.appendChild(contElem);
     };
     ProgressButton.prototype.clickHandler = function () {
         if (this.element.classList.contains(PROGRESSACTIVE)) {
@@ -1423,10 +1446,26 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'content':
-                    this.setContent();
-                    this.createSpinner();
-                    if (this.enableProgress) {
-                        this.createProgress();
+                    if (isBlazor()) {
+                        var btnElem = this.element.querySelector('.e-btn-content');
+                        if (this.iconCss) {
+                            if (this.iconPosition === 'Left' || this.iconPosition === 'Top') {
+                                btnElem.childNodes[1].textContent = this.content;
+                            }
+                            else {
+                                btnElem.childNodes[0].textContent = this.content;
+                            }
+                        }
+                        else {
+                            btnElem.textContent = this.content;
+                        }
+                    }
+                    else {
+                        this.setContent();
+                        this.createSpinner();
+                        if (this.enableProgress) {
+                            this.createProgress();
+                        }
                     }
                     ele.setAttribute('aria-label', ele.textContent + ' progress');
                     break;

@@ -309,6 +309,85 @@ var UploadSettings = /** @__PURE__ @class */ (function (_super) {
     return UploadSettings;
 }(ChildProperty));
 
+var __extends$7 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Interface for a class Column
+ */
+/* istanbul ignore next */
+var Column = /** @__PURE__ @class */ (function (_super) {
+    __extends$7(Column, _super);
+    function Column() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$7([
+        Property('')
+    ], Column.prototype, "field", void 0);
+    __decorate$7([
+        Property('')
+    ], Column.prototype, "headerText", void 0);
+    __decorate$7([
+        Property('')
+    ], Column.prototype, "width", void 0);
+    __decorate$7([
+        Property('')
+    ], Column.prototype, "minWidth", void 0);
+    __decorate$7([
+        Property('')
+    ], Column.prototype, "maxWidth", void 0);
+    __decorate$7([
+        Property('Left')
+    ], Column.prototype, "textAlign", void 0);
+    __decorate$7([
+        Property(null)
+    ], Column.prototype, "headerTextAlign", void 0);
+    __decorate$7([
+        Property(null)
+    ], Column.prototype, "type", void 0);
+    __decorate$7([
+        Property(null)
+    ], Column.prototype, "format", void 0);
+    __decorate$7([
+        Property(null)
+    ], Column.prototype, "template", void 0);
+    __decorate$7([
+        Property(null)
+    ], Column.prototype, "headerTemplate", void 0);
+    __decorate$7([
+        Property(true)
+    ], Column.prototype, "allowSorting", void 0);
+    __decorate$7([
+        Property(true)
+    ], Column.prototype, "allowResizing", void 0);
+    __decorate$7([
+        Property(null)
+    ], Column.prototype, "customAttributes", void 0);
+    __decorate$7([
+        Property('')
+    ], Column.prototype, "hideAtMedia", void 0);
+    __decorate$7([
+        Property(null)
+    ], Column.prototype, "customFormat", void 0);
+    return Column;
+}(ChildProperty));
+
 /**
  * FileExplorer common modules
  */
@@ -1367,6 +1446,9 @@ function dragStartHandler(parent, args) {
             }
             else {
                 parent.uploadObj.dropArea = null;
+                if (isBlazor()) {
+                    dragArgs.bindEvents(dragArgs.dragElement);
+                }
             }
         });
     }
@@ -3244,6 +3326,8 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 case 'selectedItems':
                     this.isInteracted = false;
                     var currentSelected = isNullOrUndefined(this.parent.selectedItems) ? [] : this.parent.selectedItems.slice(0);
+                    currentSelected = this.parent.allowMultiSelection ? currentSelected :
+                        currentSelected.slice(currentSelected.length - 1);
                     this.parent.setProperties({ selectedItems: [] }, true);
                     this.onClearAllInit();
                     if (currentSelected.length) {
@@ -3261,10 +3345,10 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                     read(this.parent, pathChanged, this.parent.path);
                     break;
                 case 'allowMultiSelection':
-                    refresh(this.parent);
-                    if (this.parent.selectedItems.length > 1 && !this.parent.allowMultiSelection) {
-                        this.parent.selectedItems = [];
+                    if (this.parent.view !== 'LargeIcons') {
+                        break;
                     }
+                    refresh(this.parent);
                     break;
                 case 'view':
                     updateLayout(this.parent, 'LargeIcons');
@@ -5137,7 +5221,7 @@ var defaultLocale = {
     'ApplyAll-Label': 'Do this for all current items'
 };
 
-var __extends$7 = (undefined && undefined.__extends) || (function () {
+var __extends$8 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -5150,7 +5234,7 @@ var __extends$7 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -5169,7 +5253,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var FileManager = /** @__PURE__ @class */ (function (_super) {
-    __extends$7(FileManager, _super);
+    __extends$8(FileManager, _super);
     function FileManager(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.filterData = null;
@@ -5306,7 +5390,9 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
      */
     FileManager.prototype.render = function () {
         this.initialize();
-        this.setProperties({ selectedItems: (isNullOrUndefined(this.selectedItems)) ? [] : this.selectedItems }, true);
+        var slItems = isNullOrUndefined(this.selectedItems) ? [] :
+            this.allowMultiSelection ? this.selectedItems : this.selectedItems.slice(this.selectedItems.length - 1);
+        this.setProperties({ selectedItems: slItems }, true);
         this.fileView = this.view;
         this.setRtl(this.enableRtl);
         this.addEventListeners();
@@ -5775,6 +5861,9 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
                         addClass([this.element], CHECK_SELECT);
                     }
                     else {
+                        if (this.selectedItems.length > 1) {
+                            this.setProperties({ selectedItems: this.selectedItems.slice(this.selectedItems.length - 1) }, true);
+                        }
                         removeClass([this.element], CHECK_SELECT);
                     }
                     this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
@@ -6136,127 +6225,127 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         }
     };
     var FileManager_1;
-    __decorate$7([
+    __decorate$8([
         Complex({}, AjaxSettings)
     ], FileManager.prototype, "ajaxSettings", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], FileManager.prototype, "allowDragAndDrop", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(true)
     ], FileManager.prototype, "allowMultiSelection", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, ContextMenuSettings)
     ], FileManager.prototype, "contextMenuSettings", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('')
     ], FileManager.prototype, "cssClass", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, DetailsViewSettings)
     ], FileManager.prototype, "detailsViewSettings", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], FileManager.prototype, "enablePersistence", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('400px')
     ], FileManager.prototype, "height", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('LargeIcons')
     ], FileManager.prototype, "view", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, NavigationPaneSettings)
     ], FileManager.prototype, "navigationPaneSettings", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('/')
     ], FileManager.prototype, "path", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, SearchSettings)
     ], FileManager.prototype, "searchSettings", void 0);
-    __decorate$7([
+    __decorate$8([
         Property()
     ], FileManager.prototype, "selectedItems", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(true)
     ], FileManager.prototype, "showFileExtension", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(false)
     ], FileManager.prototype, "showHiddenItems", void 0);
-    __decorate$7([
+    __decorate$8([
         Property(true)
     ], FileManager.prototype, "showThumbnail", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, ToolbarSettings)
     ], FileManager.prototype, "toolbarSettings", void 0);
-    __decorate$7([
+    __decorate$8([
         Complex({}, UploadSettings)
     ], FileManager.prototype, "uploadSettings", void 0);
-    __decorate$7([
+    __decorate$8([
         Property('100%')
     ], FileManager.prototype, "width", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "fileLoad", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "fileOpen", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "beforePopupClose", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "beforePopupOpen", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "beforeSend", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "created", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "destroyed", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "fileDragStart", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "fileDragging", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "fileDragStop", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "fileDropped", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "fileSelect", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "menuClick", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "menuOpen", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "failure", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "popupClose", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "popupOpen", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "success", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "toolbarClick", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "toolbarCreate", void 0);
-    __decorate$7([
+    __decorate$8([
         Event()
     ], FileManager.prototype, "uploadListCreate", void 0);
-    FileManager = FileManager_1 = __decorate$7([
+    FileManager = FileManager_1 = __decorate$8([
         NotifyPropertyChanges
     ], FileManager);
     return FileManager;
@@ -7473,6 +7562,8 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.dragObj = null;
         this.startIndex = null;
         this.firstItemIndex = null;
+        this.isSelectionUpdate = false;
+        this.currentSelectedItem = [];
         this.count = 0;
         this.isRendered = true;
         this.isLoaded = false;
@@ -7635,6 +7726,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     };
     DetailsView.prototype.renderCheckBox = function () {
         this.gridObj.columns = this.getColumns();
+        this.isColumnRefresh = true;
         this.gridObj.refreshColumns();
     };
     DetailsView.prototype.onRowDataBound = function (args) {
@@ -7763,6 +7855,15 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.selectRecords(this.sortSelectedNodes);
             this.sortItem = false;
         }
+        if (this.isSelectionUpdate) {
+            if (!this.isColumnRefresh) {
+                this.selectRecords(this.currentSelectedItem);
+                this.isSelectionUpdate = false;
+            }
+            else {
+                this.isColumnRefresh = false;
+            }
+        }
         if (this.uploadOperation === true) {
             this.count++;
             this.selectRecords(this.parent.uploadItem);
@@ -7862,6 +7963,10 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 case 'selectedItems':
                     this.interaction = false;
                     if (this.parent.selectedItems.length !== 0) {
+                        if (!this.parent.allowMultiSelection) {
+                            var slItems = this.parent.selectedItems.slice(this.parent.selectedItems.length - 1);
+                            this.parent.setProperties({ selectedItems: slItems }, true);
+                        }
                         this.selectRecords(this.parent.selectedItems);
                     }
                     else if (!isNullOrUndefined(this.gridObj)) {
@@ -7876,7 +7981,9 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                     break;
                 case 'allowMultiSelection':
                     if (!isNullOrUndefined(this.gridObj)) {
+                        this.currentSelectedItem = this.parent.selectedItems;
                         this.gridObj.selectionSettings.type = e.newProp.allowMultiSelection ? 'Multiple' : 'Single';
+                        this.isSelectionUpdate = true;
                         this.renderCheckBox();
                     }
                     break;
@@ -9130,5 +9237,5 @@ var DetailsView = /** @__PURE__ @class */ (function () {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, actionFailure, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, Column, TOOLBAR_ID, LAYOUT_ID, NAVIGATION_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, RETRY_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, RETRY_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, NAVIGATION, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, FOCUSED, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, CLONE, DROP_FOLDER, DROP_FILE, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICON_DROP_IN, ICON_DROP_OUT, ICON_NO_DROP, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, filterEnd, beforeDelete, pathDrag, deleteInit, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, layoutRefresh, actionFailure, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, detailsInit, menuItemData, renameInit, renameEndParent, renameEnd, showPaste, hidePaste, selectedData, cutCopyInit, pasteInit, pasteEnd, cutEnd, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, beforeDownload, downloadInit, dropInit, dragEnd, dropPath, dragHelper, dragging, updateSelectionData, methodCall, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createExtDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es5.js.map

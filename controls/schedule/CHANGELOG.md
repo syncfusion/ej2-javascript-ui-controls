@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 17.3.9-beta (2019-09-20)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#147443` - An issue with editor window headers are misaligned in mobile mode has been fixed.
+- `#147383` - An issue with drag and drop action is not working properly when `enableCompactView` disabled in mobile mode has been fixed.
+- `#246161` - An issue with multiple cell selections are not maintained when mouse right button click action has been fixed.
+- `#245932` - An issue with `showWeekend` field showing week ends either it is set as false has been fixed.
+
 ## 17.2.49 (2019-09-04)
 
 ### Schedule

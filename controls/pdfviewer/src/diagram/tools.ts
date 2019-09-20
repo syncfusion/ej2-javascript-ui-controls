@@ -246,7 +246,13 @@ export class SelectTool extends ToolBase {
         let object: IElement = findActiveElement(args as any, this.pdfViewerBase, this.commandHandler);
         if (this.commandHandler) {
             let selectedObject: SelectorModel = this.commandHandler.selectedItems;
-            if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey) {
+            let currentSource: PdfAnnotationBaseModel = args.source as PdfAnnotationBaseModel;
+            if ((selectedObject.annotations.length) && args.info && !args.info.ctrlKey
+                // tslint:disable-next-line
+                && this.commandHandler.annotationModule && this.commandHandler.annotationModule.freeTextAnnotationModule.isInuptBoxInFocus === false) {
+                this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                // tslint:disable-next-line:max-line-length
+            } else if (args.info && args.info.ctrlKey && ((currentSource && currentSource.shapeAnnotationType === 'FreeText') || (this.commandHandler.selectedItems.annotations[0] && this.commandHandler.selectedItems.annotations[0].shapeAnnotationType === 'FreeText'))) {
                 this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
             }
             if (object) {
@@ -356,11 +362,19 @@ export class MoveTool extends ToolBase {
     }
 
     private calculateMouseXDiff(): number {
-        return this.currentPosition.x - this.startPosition.x;
+        if (this.currentPosition && this.startPosition) {
+            return this.currentPosition.x - this.startPosition.x;
+        } else {
+            return 0;
+        }
     }
 
     private calculateMouseYDiff(): number {
-        return this.currentPosition.y - this.startPosition.y;
+        if (this.currentPosition && this.startPosition) {
+            return this.currentPosition.y - this.startPosition.y;
+        } else {
+            return 0;
+        }
     }
 
     private calculateMouseActionXDiff(args: MouseEventArgs): number {
@@ -407,12 +421,21 @@ export class MoveTool extends ToolBase {
                     cobject.fillColor = 'transparent';
                     cobject.stampFillColor = 'transparent';
                     cobject.data = '';
+                } else if (cobject.shapeAnnotationType === 'FreeText') {
+                    cobject.strokeColor = 'blue';
+                    cobject.fillColor = 'transparent';
+                    cobject.thickness = 1;
+                    cobject.opacity = 1;
+                    cobject.dynamicText = '';
                 } else {
                     cobject.strokeColor = 'red';
                     cobject.borderDashArray = '5,5';
                     cobject.fillColor = 'transparent';
                     cobject.thickness = 2;
                     cobject.opacity = 1;
+                }
+                if (cobject.enableShapeLabel === true) {
+                    cobject.labelContent = '';
                 }
                 if (!isStamp) {
                     this.helper = cobject = this.commandHandler.add(cobject as PdfAnnotationBase);
@@ -550,28 +573,31 @@ export class ConnectTool extends ToolBase {
     public mouseUp(args: MouseEventArgs): void {
         if (this.commandHandler) {
             let node: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
-            this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
-            this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
-            this.commandHandler.select([this.prevSource.id]);
-            this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
-            // tslint:disable-next-line
-            let newShapeElementObject: any = {
-                bounds: {
-                    x: args.source.wrapper.offsetX, y: args.source.wrapper.offsetY,
-                    width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
+            if (node) {
+                // tslint:disable-next-line:max-line-length
+                this.commandHandler.nodePropertyChange(this.prevSource, { vertexPoints: node.vertexPoints, leaderHeight: node.leaderHeight });
+                this.commandHandler.clearSelection(this.pdfViewerBase.activeElements.activePageID);
+                this.commandHandler.select([this.prevSource.id]);
+                this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID);
+                // tslint:disable-next-line
+                let newShapeElementObject: any = {
+                    bounds: {
+                        x: args.source.wrapper.offsetX, y: args.source.wrapper.offsetY,
+                        width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
+                    }
+                };
+                // tslint:disable-next-line:max-line-length
+                if (node.measureType === 'Distance' || node.measureType === 'Perimeter' || node.measureType === 'Area' || node.measureType === 'Volume') {
+                    this.commandHandler.annotation.updateCalibrateValues(this.commandHandler.selectedItems.annotations[0]);
+                    newShapeElementObject.notes = (args.source as PdfAnnotationBaseModel).notes;
                 }
-            };
-            // tslint:disable-next-line:max-line-length
-            if (node.measureType === 'Distance' || node.measureType === 'Perimeter' || node.measureType === 'Area' || node.measureType === 'Volume') {
-                this.commandHandler.annotation.updateCalibrateValues(this.commandHandler.selectedItems.annotations[0]);
-                newShapeElementObject.notes = (args.source as PdfAnnotationBaseModel).notes;
+                if (isLineShapes(args.source)) {
+                    newShapeElementObject.vertexPoints = (args.source as PdfAnnotationBaseModel).vertexPoints;
+                    newShapeElementObject.leaderHeight = (args.source as PdfAnnotationBaseModel).leaderHeight;
+                }
+                // tslint:disable-next-line
+                this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.prevSource, 'Resize', '', this.redoElement as any, newShapeElementObject);
             }
-            if (isLineShapes(args.source)) {
-                newShapeElementObject.vertexPoints = (args.source as PdfAnnotationBaseModel).vertexPoints;
-                newShapeElementObject.leaderHeight = (args.source as PdfAnnotationBaseModel).leaderHeight;
-            }
-            // tslint:disable-next-line
-            this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.prevSource, 'Resize', '', this.redoElement as any, newShapeElementObject);
         }
         super.mouseUp(args);
     }
@@ -606,6 +632,9 @@ export class ConnectTool extends ToolBase {
                     cloneShapebject.fillColor = 'transparent';
                     cloneShapebject.thickness = 2;
                     cloneShapebject.opacity = 1;
+                    if (cloneShapebject.enableShapeLabel === true) {
+                        cloneShapebject.labelContent = '';
+                    }
                     this.helper = cloneShapebject = this.commandHandler.add(cloneShapebject as PdfAnnotationBase);
                     this.commandHandler.selectedItems.annotations = [cloneShapebject];
                 }
@@ -722,6 +751,10 @@ export class ResizeTool extends ToolBase {
                     this.commandHandler.annotation.updateCalibrateValues(this.prevSource);
                 }
                 // tslint:disable-next-line
+                if (this.prevSource.shapeAnnotationType === 'FreeText' && this.commandHandler.selectedItems.annotations && this.commandHandler.selectedItems.annotations.length > 0) {
+                    this.commandHandler.nodePropertyChange(this.commandHandler.selectedItems.annotations[0], {});
+                }
+                // tslint:disable-next-line
                 this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.prevSource, 'Resize', '', this.redoElement as any, newObject);
             }
             this.commandHandler.annotation.stampAnnotationModule.updateSessionStorage(args.source, this.prevSource.id, 'Resize');
@@ -755,6 +788,12 @@ export class ResizeTool extends ToolBase {
                 cobject.fillColor = 'transparent';
                 cobject.stampFillColor = 'transparent';
                 cobject.data = '';
+            } else if (cobject.shapeAnnotationType === 'FreeText') {
+                cobject.strokeColor = 'blue';
+                cobject.fillColor = 'transparent';
+                cobject.thickness = 1;
+                cobject.opacity = 1;
+                cobject.dynamicText = '';
             } else {
                 cobject.bounds = this.commandHandler.selectedItems.annotations[0].wrapper.bounds;
                 cobject.strokeColor = 'red';
@@ -762,6 +801,9 @@ export class ResizeTool extends ToolBase {
                 cobject.fillColor = 'transparent';
                 cobject.thickness = 2;
                 cobject.opacity = 1;
+            }
+            if (cobject.enableShapeLabel === true) {
+                cobject.labelContent = '';
             }
             this.helper = cobject = this.commandHandler.add(cobject as PdfAnnotationBase);
             this.commandHandler.selectedItems.annotations = [cobject];
@@ -867,6 +909,8 @@ export class NodeDrawingTool extends ToolBase {
         };
         node.id = randomId();
         this.sourceObject.pageIndex = node.pageIndex = this.pdfViewerBase.activeElements.activePageID || 0;
+        this.sourceObject.enableShapeLabel = this.commandHandler.enableShapeLabel;
+        this.pdfViewerBase.updateFreeTextProperties(this.sourceObject);
         // tslint:disable-next-line
         this.commandHandler.drawingObject = this.drawingObject = this.commandHandler.add(this.sourceObject || node as any) as PdfAnnotationBaseModel;
     }
@@ -961,8 +1005,9 @@ export class PolygonDrawingTool extends ToolBase {
                 notes: this.commandHandler.drawingObject.notes, thickness: this.commandHandler.drawingObject.thickness, author: this.commandHandler.drawingObject.author,
                 subject: this.commandHandler.drawingObject.subject, borderDashArray: this.commandHandler.drawingObject.borderDashArray,
                 modifiedDate: this.commandHandler.drawingObject.modifiedDate, borderStyle: this.commandHandler.drawingObject.borderStyle,
-                measureType: this.commandHandler.drawingObject.measureType
+                measureType: this.commandHandler.drawingObject.measureType, enableShapeLabel: this.commandHandler.enableShapeLabel
             };
+            this.pdfViewerBase.updateFreeTextProperties(nodeAnnotElement);
             // tslint:disable-next-line
             this.drawingObject = this.commandHandler.add(nodeAnnotElement as any);
         } else {
@@ -1001,76 +1046,48 @@ export class PolygonDrawingTool extends ToolBase {
     public mouseUp(args: MouseEventArgs, isDoubleClineck?: boolean): void {
         super.mouseMove(args);
         if (this.drawingObject) {
-        // tslint:disable-next-line:max-line-length
-        let bounds: Rect = new Rect(this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].x - 20, this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].y - 20, 40, 40);
-        let point: PointModel = { x: this.drawingObject.vertexPoints[0].x, y: this.drawingObject.vertexPoints[0].y };
-        if ((bounds.containsPoint(point) || isDoubleClineck) && this.dragging) {
-            if (this.inAction) {
-                this.inAction = false;
-                if (this.drawingObject) {
-                    if (this.drawingObject.vertexPoints.length > 2) {
-                        this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
-                    }
-                    if (this.action === 'Polygon') {
-                        this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1] = this.drawingObject.vertexPoints[0];
-                        this.commandHandler.nodePropertyChange(this.drawingObject, { vertexPoints: this.drawingObject.vertexPoints });
-                        let cobject: PdfAnnotationBase = cloneObject(this.drawingObject) as PdfAnnotationBase;
-                        cobject.shapeAnnotationType = 'Polygon';
-                        cobject.bounds.width = cobject.wrapper.actualSize.width;
-                        cobject.bounds.height = cobject.wrapper.actualSize.height;
-                        cobject.bounds.x = this.drawingObject.wrapper.bounds.x;
-                        cobject.bounds.y = this.drawingObject.wrapper.bounds.y;
-                        this.commandHandler.add(cobject);
-                        this.commandHandler.remove(this.drawingObject);
-                        this.commandHandler.select([cobject.id]);
-                        let drawingObject: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
-                        // tslint:disable-next-line:max-line-length
-                        if (this.commandHandler.enableShapeAnnotation && (isNullOrUndefined(drawingObject.measureType) || drawingObject.measureType === '')) {
-                            this.commandHandler.annotation.shapeAnnotationModule.renderShapeAnnotations(drawingObject, drawingObject.pageIndex);
+            // tslint:disable-next-line:max-line-length
+            let bounds: Rect = new Rect(this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].x - 20, this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1].y - 20, 40, 40);
+            let point: PointModel = { x: this.drawingObject.vertexPoints[0].x, y: this.drawingObject.vertexPoints[0].y };
+            if ((bounds.containsPoint(point) || isDoubleClineck) && this.dragging) {
+                if (this.inAction) {
+                    this.inAction = false;
+                    if (this.drawingObject) {
+                        if (this.drawingObject.vertexPoints.length > 2) {
+                            this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
                         }
-                        // tslint:disable-next-line:max-line-length
-                        if (this.commandHandler.enableMeasureAnnotation && (drawingObject.measureType === 'Area' || drawingObject.measureType === 'Volume')) {
-                            if (drawingObject.measureType === 'Area') {
-                                // tslint:disable-next-line:max-line-length
-                                drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateArea(drawingObject.vertexPoints);
-                                this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
-                            } else if (drawingObject.measureType === 'Volume') {
-                                // tslint:disable-next-line:max-line-length
-                                drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateVolume(drawingObject.vertexPoints);
-                                this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
+                        if (this.action === 'Polygon') {
+                            // tslint:disable-next-line:max-line-length
+                            this.drawingObject.vertexPoints[this.drawingObject.vertexPoints.length - 1] = this.drawingObject.vertexPoints[0];
+                            this.commandHandler.nodePropertyChange(this.drawingObject, { vertexPoints: this.drawingObject.vertexPoints });
+                            let cobject: PdfAnnotationBase = cloneObject(this.drawingObject) as PdfAnnotationBase;
+                            cobject.shapeAnnotationType = 'Polygon';
+                            cobject.bounds.width = cobject.wrapper.actualSize.width;
+                            cobject.bounds.height = cobject.wrapper.actualSize.height;
+                            cobject.bounds.x = this.drawingObject.wrapper.bounds.x;
+                            cobject.bounds.y = this.drawingObject.wrapper.bounds.y;
+                            this.commandHandler.add(cobject);
+                            this.commandHandler.remove(this.drawingObject);
+                            this.commandHandler.select([cobject.id]);
+                            let drawingObject: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
+                            // tslint:disable-next-line:max-line-length
+                            if (this.commandHandler.enableShapeAnnotation && (isNullOrUndefined(drawingObject.measureType) || drawingObject.measureType === '')) {
+                                this.commandHandler.annotation.shapeAnnotationModule.renderShapeAnnotations(drawingObject, drawingObject.pageIndex);
                             }
                             // tslint:disable-next-line:max-line-length
-                            this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(drawingObject, drawingObject.pageIndex);
-                        }
-                        // tslint:disable-next-line
-                        let setting: any = {
-                            opacity: drawingObject.opacity, fillColor: drawingObject.fillColor, strokeColor: drawingObject.strokeColor,
-                            thickness: drawingObject.thickness, author: drawingObject.author, subject: drawingObject.subject,
-                            modifiedDate: drawingObject.modifiedDate, borderDashArray: drawingObject.borderDashArray,
-                            lineHeadStartStyle: this.commandHandler.annotation.getArrowString(drawingObject.sourceDecoraterShapes),
-                            lineHeadEndStyle: this.commandHandler.annotation.getArrowString(drawingObject.taregetDecoraterShapes)
-                        };
-                        // tslint:disable-next-line
-                        let bounds: any = {left: drawingObject.bounds.x, top: drawingObject.bounds.y, width: drawingObject.bounds.width, height: drawingObject.bounds.height};
-                        // tslint:disable-next-line:max-line-length
-                        this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, this.commandHandler.annotation.getAnnotationIndex(drawingObject.pageIndex, drawingObject.id), this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
-                    } else {
-                        this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
-                        this.commandHandler.nodePropertyChange(this.drawingObject, {
-                            // tslint:disable-next-line:max-line-length
-                            vertexPoints: this.drawingObject.vertexPoints, sourceDecoraterShapes: this.commandHandler.drawingObject.sourceDecoraterShapes,
-                            taregetDecoraterShapes: this.commandHandler.drawingObject.taregetDecoraterShapes
-                        });
-                        this.commandHandler.select([this.drawingObject.id]);
-                        if (this.commandHandler.enableMeasureAnnotation && this.drawingObject.measureType === 'Perimeter') {
-                            removePerimeterLabel(this.drawingObject);
-                            this.commandHandler.renderDrawing(null, this.drawingObject.pageIndex);
-                            // tslint:disable-next-line:max-line-length
-                            this.drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculatePerimeter(this.drawingObject);
-                            this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(this.drawingObject.annotName, this.drawingObject.notes);
-                            // tslint:disable-next-line:max-line-length
-                            this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(this.drawingObject, this.drawingObject.pageIndex);
-                            let drawingObject: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
+                            if (this.commandHandler.enableMeasureAnnotation && (drawingObject.measureType === 'Area' || drawingObject.measureType === 'Volume')) {
+                                if (drawingObject.measureType === 'Area') {
+                                    // tslint:disable-next-line:max-line-length
+                                    drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateArea(drawingObject.vertexPoints);
+                                    this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
+                                } else if (drawingObject.measureType === 'Volume') {
+                                    // tslint:disable-next-line:max-line-length
+                                    drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculateVolume(drawingObject.vertexPoints);
+                                    this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(drawingObject.annotName, drawingObject.notes);
+                                }
+                                // tslint:disable-next-line:max-line-length
+                                this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(drawingObject, drawingObject.pageIndex);
+                            }
                             // tslint:disable-next-line
                             let setting: any = {
                                 opacity: drawingObject.opacity, fillColor: drawingObject.fillColor, strokeColor: drawingObject.strokeColor,
@@ -1080,23 +1097,54 @@ export class PolygonDrawingTool extends ToolBase {
                                 lineHeadEndStyle: this.commandHandler.annotation.getArrowString(drawingObject.taregetDecoraterShapes)
                             };
                             // tslint:disable-next-line
-                            let bounds: any = {left: drawingObject.bounds.x, top: drawingObject.bounds.y, width: drawingObject.bounds.width, height: drawingObject.bounds.height};
+                            let bounds: any = { left: drawingObject.bounds.x, top: drawingObject.bounds.y, width: drawingObject.bounds.width, height: drawingObject.bounds.height };
                             // tslint:disable-next-line:max-line-length
-                            this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, 0, this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
+                            this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, this.commandHandler.annotation.getAnnotationIndex(drawingObject.pageIndex, drawingObject.id), this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
+                        } else {
+                            if (isDoubleClineck) {
+                                this.drawingObject.vertexPoints.splice(this.drawingObject.vertexPoints.length - 1, 1);
+                            }
+                            this.commandHandler.nodePropertyChange(this.drawingObject, {
+                                // tslint:disable-next-line:max-line-length
+                                vertexPoints: this.drawingObject.vertexPoints, sourceDecoraterShapes: this.commandHandler.drawingObject.sourceDecoraterShapes,
+                                taregetDecoraterShapes: this.commandHandler.drawingObject.taregetDecoraterShapes
+                            });
+                            this.commandHandler.select([this.drawingObject.id]);
+                            if (this.commandHandler.enableMeasureAnnotation && this.drawingObject.measureType === 'Perimeter') {
+                                removePerimeterLabel(this.drawingObject);
+                                this.commandHandler.renderDrawing(null, this.drawingObject.pageIndex);
+                                // tslint:disable-next-line:max-line-length
+                                this.drawingObject.notes = this.commandHandler.annotation.measureAnnotationModule.calculatePerimeter(this.drawingObject);
+                                this.commandHandler.annotation.stickyNotesAnnotationModule.addTextToComments(this.drawingObject.annotName, this.drawingObject.notes);
+                                // tslint:disable-next-line:max-line-length
+                                this.commandHandler.annotation.measureAnnotationModule.renderMeasureShapeAnnotations(this.drawingObject, this.drawingObject.pageIndex);
+                                let drawingObject: PdfAnnotationBaseModel = this.commandHandler.selectedItems.annotations[0];
+                                // tslint:disable-next-line
+                                let setting: any = {
+                                    opacity: drawingObject.opacity, fillColor: drawingObject.fillColor, strokeColor: drawingObject.strokeColor,
+                                    thickness: drawingObject.thickness, author: drawingObject.author, subject: drawingObject.subject,
+                                    modifiedDate: drawingObject.modifiedDate, borderDashArray: drawingObject.borderDashArray,
+                                    lineHeadStartStyle: this.commandHandler.annotation.getArrowString(drawingObject.sourceDecoraterShapes),
+                                    lineHeadEndStyle: this.commandHandler.annotation.getArrowString(drawingObject.taregetDecoraterShapes)
+                                };
+                                // tslint:disable-next-line
+                                let bounds: any = { left: drawingObject.bounds.x, top: drawingObject.bounds.y, width: drawingObject.bounds.width, height: drawingObject.bounds.height };
+                                // tslint:disable-next-line:max-line-length
+                                this.commandHandler.fireAnnotationAdd(drawingObject.pageIndex, 0, this.commandHandler.annotation.getAnnotationType(drawingObject.shapeAnnotationType, drawingObject.measureType), bounds, setting);
+                            }
+
                         }
+                        // tslint:disable-next-line
+                        this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
 
+                        this.drawingObject = null;
                     }
-                    // tslint:disable-next-line
-                    this.commandHandler.annotation.addAction((this as any).pageIndex, null, this.drawingObject, 'Addition', '', this.drawingObject as any, this.drawingObject);
-
-                    this.drawingObject = null;
                 }
+                this.endAction();
+            } else if (this.inAction && !this.dragging) {
+                this.commandHandler.remove(this.drawingObject);
             }
-            this.endAction();
-        } else if (this.inAction && !this.dragging) {
-            this.commandHandler.remove(this.drawingObject);
         }
-    }
     }
 
     /**   @private  */
@@ -1169,8 +1217,10 @@ export class LineTool extends ToolBase {
                 opacity: this.commandHandler.drawingObject.opacity, thickness: this.commandHandler.drawingObject.thickness, borderDashArray: this.commandHandler.drawingObject.borderDashArray,
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Distance', pageIndex: this.pdfViewerBase.activeElements.activePageID,
-                author: this.commandHandler.drawingObject.author, subject: this.commandHandler.drawingObject.subject
+                author: this.commandHandler.drawingObject.author, subject: this.commandHandler.drawingObject.subject,
+                enableShapeLabel: this.commandHandler.enableShapeLabel
             };
+            this.pdfViewerBase.updateFreeTextProperties(annotationNode);
             // tslint:disable-next-line
             this.drawingObject = this.commandHandler.add(annotationNode as any);
         } else if (!this.dragging) {
@@ -1188,9 +1238,10 @@ export class LineTool extends ToolBase {
                 opacity: this.drawingObject.opacity || 1, borderDashArray: this.drawingObject.borderDashArray, thickness: this.drawingObject.thickness,
                 modifiedDate: this.drawingObject.modifiedDate, author: this.drawingObject.author, subject: this.drawingObject.subject,
                 lineHeadEnd: this.drawingObject.lineHeadEnd, lineHeadStart: this.drawingObject.lineHeadStart,
-                measureType: this.commandHandler.drawingObject.measureType
+                measureType: this.commandHandler.drawingObject.measureType, enableShapeLabel: this.commandHandler.enableShapeLabel
             };
-            // tslint:disable-next-line
+            this.pdfViewerBase.updateFreeTextProperties(nodeAnnot);
+             // tslint:disable-next-line
             this.drawingObject = this.commandHandler.add(nodeAnnot as any);
 
         }
@@ -1301,12 +1352,14 @@ export class RotateTool extends ToolBase {
         let object: PdfAnnotationBaseModel | SelectorModel;
         object = args.source as PdfAnnotationBaseModel | Selector;
         this.currentPosition = args.position;
-        let refPoint: PointModel = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
-        let angle: number = Point.findAngle(refPoint, this.currentPosition) + 90;
-        angle = (angle + 360) % 360;
-        let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
-        let newValue: SelectorModel = { rotateAngle: angle };
-        this.blocked = !(this.commandHandler.rotate(angle - object.wrapper.rotateAngle));
+        if (object.wrapper) {
+            let refPoint: PointModel = { x: object.wrapper.offsetX, y: object.wrapper.offsetY };
+            let angle: number = Point.findAngle(refPoint, this.currentPosition) + 90;
+            angle = (angle + 360) % 360;
+            let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
+            let newValue: SelectorModel = { rotateAngle: angle };
+            this.blocked = !(this.commandHandler.rotate(angle - object.wrapper.rotateAngle));
+        }
         return !this.blocked;
     }
 

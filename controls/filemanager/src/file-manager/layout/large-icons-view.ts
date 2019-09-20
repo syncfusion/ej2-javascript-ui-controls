@@ -608,6 +608,8 @@ export class LargeIconsView {
                 case 'selectedItems':
                     this.isInteracted = false;
                     let currentSelected: string[] = isNOU(this.parent.selectedItems) ? [] : this.parent.selectedItems.slice(0);
+                    currentSelected = this.parent.allowMultiSelection ? currentSelected :
+                        currentSelected.slice(currentSelected.length - 1);
                     this.parent.setProperties({ selectedItems: [] }, true);
                     this.onClearAllInit();
                     if (currentSelected.length) {
@@ -625,10 +627,8 @@ export class LargeIconsView {
                     read(this.parent, events.pathChanged, this.parent.path);
                     break;
                 case 'allowMultiSelection':
+                    if (this.parent.view !== 'LargeIcons') { break; }
                     refresh(this.parent);
-                    if (this.parent.selectedItems.length > 1 && !this.parent.allowMultiSelection) {
-                        this.parent.selectedItems = [];
-                    }
                     break;
                 case 'view':
                     updateLayout(this.parent, 'LargeIcons');

@@ -11,7 +11,7 @@ export type ToolbarItem =
     'PrintOption' |
     'DownloadOption' |
     'UndoRedoTool' |
-    'AnnotationEditTool'|
+    'AnnotationEditTool' |
     'CommentTool';
 
 /**
@@ -28,21 +28,27 @@ export type AnnotationToolbarItem =
     'ThicknessEditTool' |
     'OpacityEditTool' |
     'AnnotationDeleteTool' |
-    'StampAnnotationTool';
+    'StampAnnotationTool' |
+    'FreeTextAnnotationTool' |
+    'FontFamilyAnnotationTool' |
+    'FontSizeAnnotationTool' |
+    'FontStylesAnnotationTool' |
+    'FontAlignAnnotationTool' |
+    'FontColorAnnotationTool';
 /**
  * Enum LinkTarget for hyperlink navigation
  */
-    export type LinkTarget = 'CurrentTab'| 'NewTab' |'NewWindow';
+export type LinkTarget = 'CurrentTab' | 'NewTab' | 'NewWindow';
 /**
  * Enum InteractionMode for interaction mode
  */
-    export type InteractionMode = 'TextSelection' | 'Pan';
+export type InteractionMode = 'TextSelection' | 'Pan';
 
 /**
  * Enum AnnotationType for specifying Annotations
  */
 // tslint:disable-next-line:max-line-length
-export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume';
+export type AnnotationType = 'None' | 'Highlight' | 'Underline' | 'Strikethrough' | 'Line' | 'Arrow' | 'Rectangle' | 'Circle' | 'Polygon' | 'Distance' | 'Perimeter' | 'Area' | 'Radius' | 'Volume' | 'FreeText';
 
 /**
  * Enum LineHeadStyle for line and arrow annotation
@@ -52,7 +58,7 @@ export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'D
 /**
  * Enum unit for calibration annotation
  */
-export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' |'p' | 'ft';
+export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' | 'p' | 'ft';
 
 /**
  * Enum unit for ContextMenu Actions

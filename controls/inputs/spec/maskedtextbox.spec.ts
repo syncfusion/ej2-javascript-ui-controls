@@ -46,7 +46,7 @@ describe('MaskedTextBox Component', () => {
             expect(input.classList.contains('e-maskedtextbox') && input.classList.contains('e-control')).toEqual(true);
             let inputParent: HTMLElement = <HTMLElement>input.parentNode;
             expect(inputParent.classList.contains('e-input-group') || inputParent.classList.contains('e-float-input')).toEqual(true);
-            expect(inputParent.classList.contains('e-widget') && inputParent.classList.contains('e-mask')).toEqual(true);
+            expect(inputParent.classList.contains('e-mask')).toEqual(true);
         });
         it('Check MaskedTextBox with other elements', () => {
             let divEle: HTMLElement = createElement('div', { id: 'maskDiv' });
@@ -64,7 +64,7 @@ describe('MaskedTextBox Component', () => {
             let customParent: HTMLElement = <HTMLElement>document.getElementById('customTag').parentNode;
             expect(customElement.classList.contains('e-control') && customElement.classList.contains('e-maskedtextbox')).toEqual(false);
             expect(customElement.classList.contains('e-mask-container')).toEqual(true);
-            expect(customParent.classList.contains('e-widget') && customParent.classList.contains('e-mask')).toEqual(true);
+            expect(customParent.classList.contains('e-mask')).toEqual(true);
         });
          it('Apply CssClass, rtl property during initialization', () => {
             maskBox = new MaskedTextBox({
@@ -116,7 +116,6 @@ describe('MaskedTextBox Component', () => {
             });
             maskBox.appendTo('#mask1');
             expect(maskBox.inputObj.container.classList.contains('e-input-group')).toEqual(true);
-            expect(maskBox.inputObj.container.classList.contains('e-widget')).toEqual(true);
             expect(maskBox.inputObj.container.nodeName).toBe("SPAN");
             expect(maskBox.inputObj.container.children[0].nodeName).toBe("INPUT");
             expect(maskBox.inputObj.container.children[0].classList.contains('e-maskedtextbox')).toBe(true);
@@ -155,7 +154,7 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === "").toEqual(true);
             expect(input.classList.contains('e-maskedtextbox') && input.classList.contains('e-control')).toEqual(true);
             let inputParent: HTMLElement = <HTMLElement>input.parentNode;
-            expect(inputParent.classList.contains('e-widget') && inputParent.classList.contains('e-mask')).toEqual(true);
+            expect(inputParent.classList.contains('e-mask')).toEqual(true);
         });
         it('MaskedTextBox - Mask and Value as empty', () => {
             maskBox = new MaskedTextBox({
@@ -167,7 +166,7 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === "").toEqual(true);
             expect(input.classList.contains('e-maskedtextbox') && input.classList.contains('e-control')).toEqual(true);
             let inputParent: HTMLElement = <HTMLElement>input.parentNode;
-            expect(inputParent.classList.contains('e-widget') && inputParent.classList.contains('e-mask')).toEqual(true);
+            expect(inputParent.classList.contains('e-mask')).toEqual(true);
         });
         it('MaskedTextBox with built-in masking elemets and empty value', () => {
             maskBox = new MaskedTextBox({
@@ -179,7 +178,7 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === "__ ___ ____").toEqual(true);
             expect(input.classList.contains('e-maskedtextbox') && input.classList.contains('e-control')).toEqual(true);
             let inputParent: HTMLElement = <HTMLElement>input.parentNode;
-            expect(inputParent.classList.contains('e-widget') && inputParent.classList.contains('e-mask')).toEqual(true);
+            expect(inputParent.classList.contains('e-mask')).toEqual(true);
         });
         it('MaskedTextBox with empty mask and value', () => {
             maskBox = new MaskedTextBox({
@@ -191,7 +190,7 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === "994555664").toEqual(true);
             expect(input.classList.contains('e-maskedtextbox') && input.classList.contains('e-control')).toEqual(true);
             let inputParent: HTMLElement = <HTMLElement>input.parentNode;
-            expect(inputParent.classList.contains('e-widget') && inputParent.classList.contains('e-mask')).toEqual(true);
+            expect(inputParent.classList.contains('e-mask')).toEqual(true);
         });
         it('MaskedTextBox with mask as null and value', () => {
             maskBox = new MaskedTextBox({
@@ -203,7 +202,7 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === "994555664").toEqual(true);
             expect(input.classList.contains('e-maskedtextbox') && input.classList.contains('e-control')).toEqual(true);
             let inputParent: HTMLElement = <HTMLElement>input.parentNode;
-            expect(inputParent.classList.contains('e-widget') && inputParent.classList.contains('e-mask')).toEqual(true);
+            expect(inputParent.classList.contains('e-mask')).toEqual(true);
         });
     });
     describe('Edit values in MaskedTextBox through property', () => {
@@ -284,6 +283,62 @@ describe('MaskedTextBox Component', () => {
             maskBox.setProperties({ value: "98032567P" })
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
             expect(input.value === '98 032 567_').toEqual(true);
+        });
+    });
+    describe('Dynamically change enabled state as true', () => {
+        let maskBox: any;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'mask' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Without mask option', () => {
+            maskBox = new MaskedTextBox({ placeholder:"Enter card number", enabled: false, value: "98 765 43211" });
+            maskBox.appendTo('#mask');
+            expect(maskBox.element.hasAttribute('disabled')).toEqual(true);
+            expect(maskBox.element.hasAttribute('aria-disabled')).toEqual(true);
+            expect(maskBox.element.classList.contains('e-disabled')).toBe(true);
+            expect(maskBox.inputObj.container.classList.contains('e-disabled')).toBe(true);
+            maskBox.enabled = true;
+            maskBox.dataBind();
+            expect(maskBox.element.hasAttribute('disabled')).toEqual(false);
+            expect(maskBox.element.hasAttribute('aria-disabled')).toEqual(false);
+            expect(maskBox.element.classList.contains('e-disabled')).toBe(false);
+            expect(maskBox.inputObj.container.classList.contains('e-disabled')).toBe(false);
+        });
+        it('With mask option', () => {
+            maskBox = new MaskedTextBox({ placeholder:"Enter card number", enabled: false, mask: "99 999 99999", value: "98 765 43211" });
+            maskBox.appendTo('#mask');
+            expect(maskBox.element.hasAttribute('disabled')).toEqual(true);
+            expect(maskBox.element.hasAttribute('aria-disabled')).toEqual(true);
+            expect(maskBox.element.classList.contains('e-disabled')).toBe(true);
+            expect(maskBox.inputObj.container.classList.contains('e-disabled')).toBe(true);
+            maskBox.enabled = true;
+            maskBox.dataBind();
+            expect(maskBox.element.hasAttribute('disabled')).toEqual(false);
+            expect(maskBox.element.hasAttribute('aria-disabled')).toEqual(false);
+            expect(maskBox.element.classList.contains('e-disabled')).toBe(false);
+            expect(maskBox.inputObj.container.classList.contains('e-disabled')).toBe(false);
+        });
+        it('Without value property', () => {
+            maskBox = new MaskedTextBox({ placeholder:"Enter card number", enabled: false, mask: '(999) 99-999' });
+            maskBox.appendTo('#mask');
+            expect(maskBox.element.hasAttribute('disabled')).toEqual(true);
+            expect(maskBox.element.hasAttribute('aria-disabled')).toEqual(true);
+            expect(maskBox.element.classList.contains('e-disabled')).toBe(true);
+            expect(maskBox.inputObj.container.classList.contains('e-disabled')).toBe(true);
+            maskBox.enabled = true;
+            maskBox.dataBind();
+            expect(maskBox.element.hasAttribute('disabled')).toEqual(false);
+            expect(maskBox.element.hasAttribute('aria-disabled')).toEqual(false);
+            expect(maskBox.element.classList.contains('e-disabled')).toBe(false);
+            expect(maskBox.inputObj.container.classList.contains('e-disabled')).toBe(false);
         });
     });
     describe('Edit values in MaskedTextBox through keyboard keys', () => {

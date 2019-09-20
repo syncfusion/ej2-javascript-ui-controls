@@ -9,8 +9,7 @@ import { RecurrenceEditor } from '../../recurrence-editor/index';
 import {
     CellClickEventArgs, EventClickArgs, EventFieldsMapping, PopupOpenEventArgs, EventRenderedArgs, EJ2Instance, TdData
 } from '../base/interface';
-import { Crud } from '../actions/crud';
-import { PopupType } from '../base/type';
+import { PopupType, TemplateType } from '../base/type';
 import { FieldValidator } from './form-validator';
 import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -24,7 +23,6 @@ const EVENT_FIELD: string = 'e-field';
 export class QuickPopups {
     private l10n: L10n;
     private parent: Schedule;
-    private crudAction: Crud;
     private isMultipleEventSelect: boolean = false;
     public quickDialog: Dialog;
     public quickPopup: Popup;
@@ -37,7 +35,6 @@ export class QuickPopups {
     constructor(parent: Schedule) {
         this.parent = parent;
         this.l10n = this.parent.localeObj;
-        this.crudAction = new Crud(parent);
         this.fieldValidator = new FieldValidator();
         this.render();
         this.addEventListener();
@@ -68,7 +65,7 @@ export class QuickPopups {
                 (this.parent.enableRtl ? { X: 'flip', Y: 'fit' } : { X: 'none', Y: 'fit' })),
             position: (this.parent.isAdaptive || this.parent.enableRtl ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
-            zIndex: (this.parent.isAdaptive ? 1000 : 3)
+            zIndex: (this.parent.isAdaptive ? 1004 : 3)
         });
         this.quickPopup.isStringTemplate = true;
     }
@@ -82,17 +79,23 @@ export class QuickPopups {
             className: cls.MORE_POPUP_WRAPPER_CLASS + ' e-popup-close',
             innerHTML: moreEventPopup
         });
-        this.parent.element.appendChild(moreEventWrapper);
+        if (this.parent.isAdaptive) {
+            document.body.appendChild(moreEventWrapper);
+            addClass([moreEventWrapper], cls.DEVICE_CLASS);
+        } else {
+            this.parent.element.appendChild(moreEventWrapper);
+        }
         this.morePopup = new Popup(moreEventWrapper, {
-            targetType: 'relative',
+            targetType: (this.parent.isAdaptive ? 'container' : 'relative'),
             enableRtl: this.parent.enableRtl,
             hideAnimation: { name: 'ZoomOut', duration: 300 },
             showAnimation: { name: 'ZoomIn', duration: 300 },
             open: this.morePopupOpen.bind(this),
             close: this.morePopupClose.bind(this),
-            collision: { X: 'flip', Y: 'flip' },
-            viewPortElement: this.parent.element.querySelector('.' + cls.TABLE_CONTAINER_CLASS) as HTMLElement,
-            zIndex: 2
+            collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } :
+                (this.parent.enableRtl ? { X: 'flip', Y: 'fit' } : { X: 'flip', Y: 'flip' })),
+            viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
+            zIndex: (this.parent.isAdaptive ? 1002 : 2)
         });
         this.morePopup.isStringTemplate = true;
         let closeButton: HTMLButtonElement = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS) as HTMLButtonElement;
@@ -251,7 +254,9 @@ export class QuickPopups {
                 dialogCancel.innerHTML = this.l10n.getConstant('cancel');
                 break;
         }
-        this.showQuickDialog('RecurrenceValidationAlert');
+        if ((!this.parent.enableRecurrenceValidation && type === 'wrongPattern') || this.parent.enableRecurrenceValidation) {
+            this.showQuickDialog('RecurrenceValidationAlert');
+        }
     }
 
     public openDeleteAlert(): void {
@@ -322,7 +327,13 @@ export class QuickPopups {
                         'aria-selected': 'false', 'aria-grabbed': 'true', 'aria-label': eventText
                     }
                 });
-                appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
+                let templateElement: HTMLElement[];
+                if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+                    templateElement = this.parent.getAppointmentTemplate()(eventData);
+                    append(templateElement, appointmentEle);
+                } else {
+                    appointmentEle.appendChild(createElement('div', { className: cls.SUBJECT_CLASS, innerHTML: eventText }));
+                }
                 if (this.parent.activeViewOptions.group.resources.length > 0) {
                     appointmentEle.setAttribute('data-group-index', groupIndex);
                 }
@@ -335,7 +346,11 @@ export class QuickPopups {
                 this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (!eventArgs.cancel) {
                         moreEventWrapperEle.appendChild(appointmentEle);
-                        this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData);
+                        if (this.parent.isAdaptive) {
+                            this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData, true);
+                        } else {
+                            this.parent.eventBase.wireAppointmentEvents(appointmentEle, false, eventData);
+                        }
                         this.parent.eventBase.applyResourceColor(appointmentEle, eventData, 'backgroundColor', groupOrder);
                     }
                 });
@@ -390,7 +405,8 @@ export class QuickPopups {
     // tslint:disable-next-line:max-func-body-length
     private cellClick(args: CellClickEventArgs): void {
         this.resetQuickPopupTemplates();
-        if (!this.parent.showQuickInfo || this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
+        if (!this.parent.showQuickInfo || !this.parent.eventSettings.allowAdding ||
+            this.parent.currentView === 'MonthAgenda' || this.isCellBlocked(args)) {
             this.quickPopupHide();
             return;
         }
@@ -427,51 +443,10 @@ export class QuickPopups {
         temp[this.parent.eventFields.startTime] = this.parent.activeCellsData.startTime;
         temp[this.parent.eventFields.endTime] = this.parent.activeCellsData.endTime;
         temp[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
-        let cellDetails: { [key: string]: Object } = this.getFormattedString(temp);
         let quickCellPopup: HTMLElement = createElement('div', { className: cls.CELL_POPUP_CLASS });
-        let tArgs: Object = extend({}, temp, { elementType: 'cell' }, true);
-        let templateId: string = this.parent.element.id + '_';
-        if (this.parent.quickInfoTemplates.header) {
-            let headerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
-            append(headerTemp, quickCellPopup);
-        } else {
-            let headerTemplate: HTMLElement = createElement('div', {
-                className: cls.POPUP_HEADER_CLASS,
-                innerHTML: `<div class="${cls.POPUP_HEADER_ICON_WRAPPER}">` +
-                    `<button class="${cls.CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>`
-            });
-            quickCellPopup.appendChild(headerTemplate);
-        }
-        if (this.parent.quickInfoTemplates.content) {
-            let contentTemp: NodeList =
-                this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
-            append(contentTemp, quickCellPopup);
-        } else {
-            let tempStr: string = `<table class="${cls.POPUP_TABLE_CLASS}"><tbody><tr><td>` +
-                `<form class="${cls.FORM_CLASS}" onsubmit="return false;"><input class="${cls.SUBJECT_CLASS} ${EVENT_FIELD}" type="text" ` +
-                `name="${this.parent.eventFields.subject}" /></form></td></tr><tr><td><div class="${cls.DATE_TIME_CLASS}">` +
-                `<div class="${cls.DATE_TIME_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DATE_TIME_DETAILS_CLASS} ` +
-                `${cls.TEXT_ELLIPSIS}">${cellDetails.details}</div></div>` +
-                `${this.parent.activeViewOptions.group.resources.length > 0 ? `<div class="${cls.RESOURCE_CLASS}">` +
-                    `<div class="${cls.RESOURCE_ICON_CLASS} ${cls.ICON} "></div><div class="${cls.RESOURCE_DETAILS_CLASS} ` +
-                    `${cls.TEXT_ELLIPSIS}">${this.getResourceText(args, 'cell')}</div></div>` : ''}</td></tr></tbody></table>`;
-            let contentTemplate: HTMLElement = createElement('div', { className: cls.POPUP_CONTENT_CLASS, innerHTML: tempStr });
-            quickCellPopup.appendChild(contentTemplate);
-        }
-        if (this.parent.quickInfoTemplates.footer) {
-            let footerTemp: NodeList =
-                this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
-            append(footerTemp, quickCellPopup);
-        } else {
-            let footerTemplate: HTMLElement = createElement('div', {
-                className: cls.POPUP_FOOTER_CLASS, innerHTML: `<button class="${cls.QUICK_POPUP_EVENT_DETAILS_CLASS + ' ' +
-                    cls.TEXT_ELLIPSIS}" title="${this.l10n.getConstant('moreDetails')}">${this.l10n.getConstant('moreDetails')}</button>` +
-                    `<button class="${cls.EVENT_CREATE_CLASS} ${cls.TEXT_ELLIPSIS}" title="${this.l10n.getConstant('save')}">` +
-                    `${this.l10n.getConstant('save')}</button>`
-            });
-            quickCellPopup.appendChild(footerTemplate);
-        }
+        quickCellPopup.appendChild(this.getPopupHeader('Cell', temp));
+        quickCellPopup.appendChild(this.getPopupContent('Cell', args, temp));
+        quickCellPopup.appendChild(this.getPopupFooter('Cell', temp));
         let subjectElement: HTMLInputElement = quickCellPopup.querySelector('.' + cls.SUBJECT_CLASS) as HTMLInputElement;
         if (subjectElement) {
             Input.createInput({ element: subjectElement, properties: { placeholder: this.l10n.getConstant('addTitle') } });
@@ -514,7 +489,10 @@ export class QuickPopups {
         return false;
     }
 
-    // tslint:disable-next-line:max-func-body-length
+    private isQuickTemplate(type: TemplateType): boolean {
+        return this.parent.quickInfoTemplates.templateType === 'Both' || this.parent.quickInfoTemplates.templateType === type;
+    }
+
     private eventClick(events: EventClickArgs): void {
         this.resetQuickPopupTemplates();
         if (this.parent.eventTooltip) {
@@ -529,88 +507,33 @@ export class QuickPopups {
                 return;
             }
             let eventData: { [key: string]: Object; } = <{ [key: string]: Object }>events.event;
-            let args: { [key: string]: Object } = this.getFormattedString(eventData);
             let quickEventPopup: HTMLElement = createElement('div', { className: cls.EVENT_POPUP_CLASS });
-            let tArgs: Object = extend({}, eventData, { elementType: 'event' }, true);
-            let templateId: string = this.parent.element.id + '_';
-            if (this.parent.quickInfoTemplates.header) {
-                let headerTemp: NodeList =
-                    this.parent.getQuickInfoTemplatesHeader()(tArgs, this.parent, 'header', templateId + 'headerTemplate', false);
-                append(headerTemp, quickEventPopup);
-            } else {
-                let headerTemplate: HTMLElement = createElement('div', {
-                    className: cls.POPUP_HEADER_CLASS,
-                    innerHTML: `<div class="${cls.POPUP_HEADER_ICON_WRAPPER}">` +
-                        `<button class="${cls.EDIT_CLASS + ' ' + cls.ICON}" title="${this.l10n.getConstant('edit')}"></button>` +
-                        `<button class="${cls.DELETE_CLASS + ' ' + cls.ICON}" title="${this.l10n.getConstant('delete')}"></button>` +
-                        `<button class="${cls.CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>` +
-                        `<div class="${cls.SUBJECT_WRAP}"><div class="${cls.SUBJECT_CLASS} ${cls.TEXT_ELLIPSIS}" ` +
-                        `title="${args.eventSubject}">${args.eventSubject}</div></div >`
-                });
-                quickEventPopup.appendChild(headerTemplate);
-            }
-            if (this.parent.quickInfoTemplates.content) {
-                let content: NodeList =
-                    this.parent.getQuickInfoTemplatesContent()(tArgs, this.parent, 'content', templateId + 'contentTemplate', false);
-                append(content, quickEventPopup);
-            } else {
-                let tempStr: string = `<div class="${cls.DATE_TIME_CLASS}">` +
-                    `<div class="${cls.DATE_TIME_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DATE_TIME_WRAPPER_CLASS} ` +
-                    `${cls.TEXT_ELLIPSIS}"><div class="${cls.DATE_TIME_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">${args.details}</div>` +
-                    `${eventData[this.parent.eventFields.recurrenceRule] ? `<div class="${cls.RECURRENCE_SUMMARY_CLASS} ` +
-                        `${cls.TEXT_ELLIPSIS}">${this.getRecurrenceSummary(eventData)}</div>` : ''}</div></div>` +
-                    `${eventData[this.parent.eventFields.location] ? `<div class="${cls.LOCATION_CLASS}"><div class="` +
-                        `${cls.LOCATION_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.LOCATION_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">` +
-                        `${eventData[this.parent.eventFields.location]}</div></div>` : ''}` +
-                    `${eventData[this.parent.eventFields.startTimezone] ||
-                        eventData[this.parent.eventFields.endTimezone] ? `<div class="${cls.TIME_ZONE_CLASS}"><div class="` +
-                        `${cls.TIME_ZONE_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.TIME_ZONE_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">` +
-                        `${this.getTimezone(eventData)} </div></div>` : ''}` +
-                    `${eventData[this.parent.eventFields.description] ? `<div class="${cls.DESCRIPTION_CLASS}"><div class="` +
-                        `${cls.DESCRIPTION_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DESCRIPTION_DETAILS_CLASS} ` +
-                        `${cls.TEXT_ELLIPSIS}">${eventData[this.parent.eventFields.description]}</div></div>` : ''}` +
-                    `${this.parent.resourceCollection.length > 0 ? `<div class="${cls.RESOURCE_CLASS}"><div class="` +
-                        `${cls.RESOURCE_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.RESOURCE_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">` +
-                        `${this.getResourceText(events, 'event')}</div></div>` : ''}`;
-                let contentTemplate: HTMLElement = createElement('div', {
-                    className: cls.POPUP_CONTENT_CLASS, innerHTML: tempStr
-                });
-                quickEventPopup.appendChild(contentTemplate);
-            }
-            if (this.parent.quickInfoTemplates.footer) {
-                let footerTemp: NodeList =
-                    this.parent.getQuickInfoTemplatesFooter()(tArgs, this.parent, 'footer', templateId + 'footerTemplate', false);
-                append(footerTemp, quickEventPopup);
-            } else {
-                let footerTemplate: HTMLElement = createElement('div', {
-                    className: cls.POPUP_FOOTER_CLASS,
-                    innerHTML: `${this.parent.isAdaptive ? '' : `<button class="${cls.EDIT_EVENT_CLASS} ` +
-                        `${cls.TEXT_ELLIPSIS}" title="${this.l10n.getConstant('edit')}">${this.l10n.getConstant('edit')}</button>` +
-                        `<button class="${cls.DELETE_EVENT_CLASS} ${cls.TEXT_ELLIPSIS}" title="${this.l10n.getConstant('delete')}">` +
-                        `${this.l10n.getConstant('delete')}</button>`}`
-                });
-                quickEventPopup.appendChild(footerTemplate);
-            }
+            quickEventPopup.appendChild(this.getPopupHeader('Event', eventData));
+            quickEventPopup.appendChild(this.getPopupContent('Event', events, eventData));
+            quickEventPopup.appendChild(this.getPopupFooter('Event', eventData));
             let readonly: boolean = this.parent.activeViewOptions.readonly || eventData[this.parent.eventFields.isReadonly] as boolean;
+            let editAction: boolean = !this.parent.eventSettings.allowEditing || readonly;
+            let deleteAction: boolean = !this.parent.eventSettings.allowDeleting || readonly;
             let editIcon: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.EDIT_CLASS) as HTMLButtonElement;
+            let buttonClass: string = 'e-flat e-round e-small';
             if (editIcon) {
-                this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.EDIT_ICON_CLASS, readonly, editIcon, this.editClick);
+                this.renderButton(buttonClass, cls.ICON + ' ' + cls.EDIT_ICON_CLASS, editAction, editIcon, this.editClick);
             }
             let deleteIcon: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.DELETE_CLASS) as HTMLButtonElement;
             if (deleteIcon) {
-                this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.DELETE_ICON_CLASS, readonly, deleteIcon, this.deleteClick);
+                this.renderButton(buttonClass, cls.ICON + ' ' + cls.DELETE_ICON_CLASS, deleteAction, deleteIcon, this.deleteClick);
             }
             let closeIcon: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.CLOSE_CLASS) as HTMLButtonElement;
             if (closeIcon) {
-                this.renderButton('e-flat e-round e-small', cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.quickPopupHide);
+                this.renderButton(buttonClass, cls.ICON + ' ' + cls.CLOSE_ICON_CLASS, false, closeIcon, this.quickPopupHide);
             }
             let editButton: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.EDIT_EVENT_CLASS) as HTMLButtonElement;
             if (editButton) {
-                this.renderButton('e-flat e-primary', '', readonly, editButton, this.editClick);
+                this.renderButton('e-flat e-primary', '', editAction, editButton, this.editClick);
             }
             let deleteButton: HTMLButtonElement = quickEventPopup.querySelector('.' + cls.DELETE_EVENT_CLASS) as HTMLButtonElement;
             if (deleteButton) {
-                this.renderButton('e-flat', '', readonly, deleteButton, this.deleteClick);
+                this.renderButton('e-flat', '', deleteAction, deleteButton, this.deleteClick);
             }
             this.quickPopup.content = quickEventPopup;
             this.quickPopup.dataBind();
@@ -621,7 +544,122 @@ export class QuickPopups {
         }
     }
 
+    private getPopupHeader(headerType: TemplateType, headerData: { [key: string]: Object }): HTMLElement {
+        let headerTemplate: HTMLElement = createElement('div', { className: cls.POPUP_HEADER_CLASS });
+        if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
+            let headerArgs: Object = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
+            let templateId: string = this.parent.element.id + '_';
+            let headerTemp: NodeList =
+                this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false);
+            append([].slice.call(headerTemp), headerTemplate);
+        } else {
+            let header: string;
+            switch (headerType) {
+                case 'Cell':
+                    header = `<div class="${cls.POPUP_HEADER_ICON_WRAPPER}"><button class="${cls.CLOSE_CLASS}" title=` +
+                        `"${this.l10n.getConstant('close')}"></button></div>`;
+                    break;
+                case 'Event':
+                    let args: { [key: string]: Object } = this.getFormattedString(headerData);
+                    header = `<div class="${cls.POPUP_HEADER_ICON_WRAPPER}">` +
+                        `<button class="${cls.EDIT_CLASS + ' ' + cls.ICON}" title="${this.l10n.getConstant('edit')}"></button>` +
+                        `<button class="${cls.DELETE_CLASS + ' ' + cls.ICON}" title="${this.l10n.getConstant('delete')}"></button>` +
+                        `<button class="${cls.CLOSE_CLASS}" title="${this.l10n.getConstant('close')}"></button></div>` +
+                        `<div class="${cls.SUBJECT_WRAP}"><div class="${cls.SUBJECT_CLASS} ${cls.TEXT_ELLIPSIS}" ` +
+                        `title="${args.eventSubject}">${args.eventSubject}</div></div >`;
+                    break;
+            }
+            let templateWrapper: HTMLElement = createElement('div', { innerHTML: header });
+            append([].slice.call(templateWrapper.childNodes), headerTemplate);
+        }
+        return headerTemplate;
+    }
+
+    private getPopupContent(type: TemplateType, args: CellClickEventArgs | EventClickArgs, data: { [key: string]: Object }): HTMLElement {
+        let contentTemplate: HTMLElement = createElement('div', { className: cls.POPUP_CONTENT_CLASS });
+        if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
+            let contentArgs: Object = extend({}, data, { elementType: type.toLowerCase() }, true);
+            let templateId: string = this.parent.element.id + '_';
+            let contentTemp: NodeList =
+                this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false);
+            append([].slice.call(contentTemp), contentTemplate);
+        } else {
+            let content: string;
+            let resourceText: string = this.getResourceText(args, type.toLowerCase());
+            switch (type) {
+                case 'Cell':
+                    let cellDetails: { [key: string]: Object } = this.getFormattedString(data);
+                    content = `<table class="${cls.POPUP_TABLE_CLASS}"><tbody><tr><td><form class="${cls.FORM_CLASS}" onsubmit=` +
+                        `"return false;"><input class="${cls.SUBJECT_CLASS} ${EVENT_FIELD}" type="text" name=` +
+                        `"${this.parent.eventFields.subject}" /></form></td></tr><tr><td><div class="${cls.DATE_TIME_CLASS}">` +
+                        `<div class="${cls.DATE_TIME_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DATE_TIME_DETAILS_CLASS} ` +
+                        `${cls.TEXT_ELLIPSIS}">${cellDetails.details}</div></div>` +
+                        `${this.parent.activeViewOptions.group.resources.length > 0 ? `<div class="${cls.RESOURCE_CLASS}">` +
+                            `<div class="${cls.RESOURCE_ICON_CLASS} ${cls.ICON} "></div><div class="${cls.RESOURCE_DETAILS_CLASS} ` +
+                            `${cls.TEXT_ELLIPSIS}">${resourceText}</div></div>` : ''}</td></tr></tbody></table>`;
+                    break;
+                case 'Event':
+                    let args: { [key: string]: Object } = this.getFormattedString(data);
+                    content = `<div class="${cls.DATE_TIME_CLASS}">` +
+                        `<div class="${cls.DATE_TIME_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DATE_TIME_WRAPPER_CLASS} ` +
+                        `${cls.TEXT_ELLIPSIS}"><div class="${cls.DATE_TIME_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">${args.details}</div>` +
+                        `${data[this.parent.eventFields.recurrenceRule] ? `<div class="${cls.RECURRENCE_SUMMARY_CLASS} ` +
+                            `${cls.TEXT_ELLIPSIS}">${this.getRecurrenceSummary(data)}</div>` : ''}</div></div>` +
+                        `${data[this.parent.eventFields.location] ? `<div class="${cls.LOCATION_CLASS}"><div class="` +
+                            `${cls.LOCATION_ICON_CLASS} ${cls.ICON}"></div>` +
+                            `<div class="${cls.LOCATION_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">` +
+                            `${data[this.parent.eventFields.location]}</div></div>` : ''}` +
+                        `${data[this.parent.eventFields.startTimezone] || data[this.parent.eventFields.endTimezone] ? +
+                            `<div class="${cls.TIME_ZONE_CLASS}"><div class="${cls.TIME_ZONE_ICON_CLASS} ${cls.ICON}"></div><div class=` +
+                            `"${cls.TIME_ZONE_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">${this.getTimezone(data)} </div></div>` : ''}` +
+                        `${data[this.parent.eventFields.description] ? `<div class="${cls.DESCRIPTION_CLASS}"><div class="` +
+                            `${cls.DESCRIPTION_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DESCRIPTION_DETAILS_CLASS} ` +
+                            `${cls.TEXT_ELLIPSIS}">${data[this.parent.eventFields.description]}</div></div>` : ''}` +
+                        `${this.parent.resourceCollection.length > 0 ? `<div class="${cls.RESOURCE_CLASS}"><div class="` +
+                            `${cls.RESOURCE_ICON_CLASS} ${cls.ICON}"></div>` +
+                            `<div class="${cls.RESOURCE_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">${resourceText}</div></div>` : ''}`;
+                    break;
+            }
+            let templateWrapper: HTMLElement = createElement('div', { innerHTML: content });
+            append([].slice.call(templateWrapper.childNodes), contentTemplate);
+        }
+        return contentTemplate;
+    }
+
+    private getPopupFooter(footerType: TemplateType, footerData: { [key: string]: Object }): HTMLElement {
+        let footerTemplate: HTMLElement = createElement('div', { className: cls.POPUP_FOOTER_CLASS });
+        if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
+            let footerArgs: Object = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
+            let templateId: string = this.parent.element.id + '_';
+            let footerTemp: NodeList =
+                this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false);
+            append([].slice.call(footerTemp), footerTemplate);
+        } else {
+            let footer: string;
+            switch (footerType) {
+                case 'Cell':
+                    footer = `<button class="${cls.QUICK_POPUP_EVENT_DETAILS_CLASS + ' ' + cls.TEXT_ELLIPSIS}" title=` +
+                        `"${this.l10n.getConstant('moreDetails')}">${this.l10n.getConstant('moreDetails')}</button>` +
+                        `<button class="${cls.EVENT_CREATE_CLASS} ${cls.TEXT_ELLIPSIS}" title="${this.l10n.getConstant('save')}">` +
+                        `${this.l10n.getConstant('save')}</button>`;
+                    break;
+                case 'Event':
+                    footer = `${this.parent.isAdaptive ? '' : `<button class="${cls.EDIT_EVENT_CLASS} ` +
+                        `${cls.TEXT_ELLIPSIS}" title="${this.l10n.getConstant('edit')}">${this.l10n.getConstant('edit')}</button>` +
+                        `<button class="${cls.DELETE_EVENT_CLASS} ${cls.TEXT_ELLIPSIS}" title="${this.l10n.getConstant('delete')}">` +
+                        `${this.l10n.getConstant('delete')}</button>`}`;
+                    break;
+            }
+            let templateWrapper: HTMLElement = createElement('div', { innerHTML: footer });
+            append([].slice.call(templateWrapper.childNodes), footerTemplate);
+        }
+        return footerTemplate;
+    }
+
     private getResourceText(args: CellClickEventArgs | EventClickArgs, type: string): string {
+        if (this.parent.resourceCollection.length === 0) {
+            return null;
+        }
         let resourceValue: string = '';
         if (this.parent.activeViewOptions.group.resources.length === 0) {
             let resourceCollection: ResourcesModel = this.parent.resourceBase.resourceCollection.slice(-1)[0];
@@ -700,7 +738,7 @@ export class QuickPopups {
             remove(moreEventContentEle);
         }
         let selectedDate: string = ((data.date).getTime()).toString();
-        let target: Element = closest(<Element>data.element, '.' + cls.MORE_INDICATOR_CLASS);
+        let target: Element = closest(<Element>data.element, '.' + cls.MORE_INDICATOR_CLASS + ',.' + cls.WORK_CELLS_CLASS);
         this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DAY_CLASS).innerHTML = this.getDateFormat(data.date, 'E');
         let dateElement: Element = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS);
         dateElement.innerHTML = this.getDateFormat(data.date, 'd');
@@ -717,20 +755,27 @@ export class QuickPopups {
         if (util.resetTime(data.date).getTime() === util.resetTime(this.parent.getCurrentTime()).getTime()) {
             addClass(this.morePopup.element.querySelector('.' + cls.MORE_EVENT_DATE_HEADER_CLASS).childNodes, cls.CURRENTDATE_CLASS);
         }
-        if (this.parent.currentView.indexOf('Timeline') !== -1) {
-            let gIndex: string = target.getAttribute('data-group-index');
-            let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
-            startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
-            let tdDate: string = startDate.getTime().toString();
-            if (isNullOrUndefined(gIndex)) {
-                this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-date="' + tdDate + '"]') as HTMLElement;
+        if (!this.parent.isAdaptive) {
+            if (this.parent.currentView.indexOf('Timeline') !== -1) {
+                let gIndex: string = target.getAttribute('data-group-index');
+                let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
+                startDate.setHours(startDate.getHours(), startDate.getMinutes(), 0);
+                let tdDate: string = startDate.getTime().toString();
+                if (isNullOrUndefined(gIndex)) {
+                    this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                        ' tbody tr td[data-date="' + tdDate + '"]') as HTMLElement;
+                } else {
+                    this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
+                        ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;
+                }
             } else {
-                this.morePopup.relateTo = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS +
-                    ' tbody tr td[data-group-index="' + gIndex + '"][data-date="' + tdDate + '"]') as HTMLElement;
+                this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;
             }
-        } else {
-            this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;
+        }
+        if (this.parent.isAdaptive) {
+            this.morePopup.element.style.top = '0px';
+            this.morePopup.element.style.left = '0px';
+            this.morePopup.element.style.height = formatUnit(window.innerHeight);
         }
         let eventProp: PopupOpenEventArgs = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
         if (!isBlazor()) {
@@ -759,7 +804,7 @@ export class QuickPopups {
             this.parent.resourceBase.setResourceValues(saveObj, true);
         }
         this.parent.currentAction = 'Add';
-        this.crudAction.addEvent(saveObj);
+        this.parent.crudModule.addEvent(saveObj);
         this.quickPopupHide();
     }
 
@@ -825,25 +870,26 @@ export class QuickPopups {
     private dialogButtonClick(event: Event): void {
         this.quickDialog.hide();
         let target: HTMLElement = event.target as HTMLElement;
-        let cancelButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
+        let cancelBtn: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_CANCEL);
+        let eventData: { [key: string]: Object } = this.parent.activeEventData.event as { [key: string]: Object };
         if (target.classList.contains(cls.QUICK_DIALOG_OCCURRENCE_CLASS)) {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteOccurrence' : 'EditOccurrence';
             switch (this.parent.currentAction) {
                 case 'EditOccurrence':
-                    this.parent.eventWindow.openEditor(this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.eventWindow.openEditor(eventData, this.parent.currentAction);
                     break;
                 case 'DeleteOccurrence':
-                    this.crudAction.deleteEvent(<{ [key: string]: Object }>this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
                     break;
             }
         } else if (target.classList.contains(cls.QUICK_DIALOG_FOLLOWING_EVENTS_CLASS)) {
             this.parent.currentAction = (this.parent.currentAction === 'Delete') ? 'DeleteFollowingEvents' : 'EditFollowingEvents';
             switch (this.parent.currentAction) {
                 case 'EditFollowingEvents':
-                    this.parent.eventWindow.openEditor(this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.eventWindow.openEditor(eventData, this.parent.currentAction);
                     break;
                 case 'DeleteFollowingEvents':
-                    this.crudAction.deleteEvent(<{ [key: string]: Object }>this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
                     break;
             }
         } else if (target.classList.contains(cls.QUICK_DIALOG_SERIES_CLASS)) {
@@ -852,24 +898,22 @@ export class QuickPopups {
                 case 'EditSeries':
                     let parentEvent: { [key: string]: Object };
                     let fields: EventFieldsMapping = this.parent.eventFields;
-                    let event: { [key: string]: Object } = <{ [key: string]: Object }>this.parent.activeEventData.event;
-                    if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(event[fields.followingID]) ||
-                        (!isNullOrUndefined(event[fields.recurrenceID]) && event[fields.recurrenceID] !== event[fields.id]))) {
-                        parentEvent = this.parent.eventBase.getParentEvent(event);
+                    if (this.parent.eventSettings.editFollowingEvents && (!isNullOrUndefined(eventData[fields.followingID]) ||
+                        (!isNullOrUndefined(eventData[fields.recurrenceID]) && eventData[fields.recurrenceID] !== eventData[fields.id]))) {
+                        parentEvent = this.parent.eventBase.getParentEvent(eventData);
                     } else {
-                        parentEvent = this.parent.eventBase.getRecurrenceEvent(event);
+                        parentEvent = this.parent.eventBase.getRecurrenceEvent(eventData);
                     }
                     this.parent.eventWindow.openEditor(parentEvent, this.parent.currentAction);
                     break;
                 case 'DeleteSeries':
-                    this.crudAction.deleteEvent(<{ [key: string]: Object }>this.parent.activeEventData.event, this.parent.currentAction);
+                    this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
                     break;
             }
         } else if (target.classList.contains(cls.QUICK_DIALOG_DELETE_CLASS)) {
-            this.crudAction.deleteEvent(this.parent.activeEventData.event, this.parent.currentAction);
-        } else if (!cancelButton.classList.contains(cls.DISABLE_CLASS) && (target.classList.contains(cls.QUICK_DIALOG_ALERT_OK) ||
-            (target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL) &&
-                !cancelButton.classList.contains(cls.QUICK_DIALOG_CANCEL_CLASS)))) {
+            this.parent.crudModule.deleteEvent(eventData, this.parent.currentAction);
+        } else if (!cancelBtn.classList.contains(cls.DISABLE_CLASS) && (target.classList.contains(cls.QUICK_DIALOG_ALERT_OK) ||
+            (target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL) && !cancelBtn.classList.contains(cls.QUICK_DIALOG_CANCEL_CLASS)))) {
             this.parent.uiStateValues.isIgnoreOccurrence = target.classList.contains(cls.QUICK_DIALOG_ALERT_CANCEL);
             this.parent.eventWindow.eventSave(this.l10n.getConstant('ok'));
         }
@@ -1068,11 +1112,17 @@ export class QuickPopups {
         this.parent.eventBase.focusElement();
         this.quickPopup.relateTo = cls.WORK_CELLS_CLASS;
         this.fieldValidator.destroyToolTip();
+        if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
+            this.fieldValidator.destroy();
+        }
         this.destroyButtons();
         util.removeChildren(this.quickPopup.element);
     }
 
     private morePopupOpen(): void {
+        if (this.parent.isAdaptive) {
+            return;
+        }
         (this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS) as HTMLElement).focus();
         this.morePopup.refreshPosition();
     }
@@ -1102,7 +1152,7 @@ export class QuickPopups {
         let navigateEle: Element = closest((e.target as Element), '.' + cls.NAVIGATE_CLASS);
         if (!isNullOrUndefined(navigateEle)) {
             let date: Date = this.parent.getDateFromElement(e.currentTarget as HTMLTableCellElement);
-            if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
+            if (!isNullOrUndefined(date)) {
                 this.closeClick();
                 this.parent.setProperties({ selectedDate: date }, true);
                 this.parent.changeView(this.parent.getNavigateView(), e);
@@ -1122,7 +1172,7 @@ export class QuickPopups {
             this.parent.removeNewEventElement();
         }
         if (!closest(target, '.' + cls.MORE_POPUP_WRAPPER_CLASS) && !target.classList.contains(cls.MORE_INDICATOR_CLASS)
-            && (!closest(target, '.' + cls.POPUP_OPEN))) {
+            && (!closest(target, '.' + cls.POPUP_OPEN)) && !closest(target, '.' + cls.WORK_CELLS_CLASS)) {
             this.morePopup.hide();
         }
     }
@@ -1157,7 +1207,9 @@ export class QuickPopups {
     }
 
     public destroy(): void {
-        this.fieldValidator.destroy();
+        if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
+            this.fieldValidator.destroy();
+        }
         this.removeEventListner();
         this.destroyButtons();
         this.quickPopup.destroy();

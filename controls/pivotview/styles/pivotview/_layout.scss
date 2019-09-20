@@ -4,8 +4,7 @@
 
     // sass-lint:disable-all
     .e-value-field-settings,
-    .e-member-editor-dialog,
-    .e-pivot-format-dialog {
+    .e-member-editor-dialog {
       max-height: 450px !important;
     }
     // sass-lint:enable-all
@@ -49,12 +48,14 @@
         .e-editor-label-wrapper {
           background-color: $pivotgrid-editor-label-fill;
           padding: $pivotgrid-editor-label-padding-size;
-          width: 240px;
 
           .e-editor-label {
             color: $pivotgrid-editor-label-color;
             font: $pivotgrid-editor-label-font;
             opacity: $pivotgrid-editor-label-opacity;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
           }
         }
 
@@ -115,11 +116,22 @@
             width: 100%;
           }
 
-          .e-member-editor-container {
+          .e-member-editor-container-outer-div {
+            display: inline-block;
             height: $pivotgrid-member-filter-list-height;
             max-width: 400px;
             overflow: auto;
-            overflow-x: hidden;
+            width: 100%;
+          }
+
+          .e-member-editor-container {
+            display: inline-table;
+            height: 100%;
+            width: 100%;
+
+            &.e-olap-field-list-tree {
+              overflow-x: auto;
+            }
           }
 
           .e-select-all-wrapper ul,
@@ -131,15 +143,19 @@
               .e-list-text {
                 font-family: $field-list-font-family;
               }
+
+              .e-list-icon {
+                margin: 0;
+              }
             }
           }
 
+          // sass-lint:disable-all
           .e-disable {
-            display: none;
+            display: none !important;
           }
         }
 
-        // sass-lint:disable-all
         .e-filter-tab-wrapper {
           border: none;
           // sass-lint:enable-all
@@ -174,7 +190,7 @@
         .e-excelfilter {
           padding-top: 20px;
 
-          .e-member-editor-container {
+          .e-member-editor-container-outer-div {
             height: $pivotgrid-excel-member-filter-height;
           }
         }
@@ -234,7 +250,6 @@
 
         .e-editor-label-wrapper {
           padding: $pivotgrid-editor-label-excel-padding-size;
-          width: $pivotgrid-editor-label-excel-width;
         }
       }
 
@@ -249,6 +264,45 @@
         .e-footer-content {
           .e-clear-filter-button {
             float: right;
+          }
+        }
+      }
+
+      &.e-olap-editor-dialog {
+        .e-member-editor-wrapper {
+          .e-select-all-wrapper ul,
+          .e-member-editor-container ul {
+            margin-left: 0;
+          }
+
+          .e-treeview ul:first-child {
+            padding-left: 10px;
+            padding-right: 10px;
+          }
+
+          .e-editor-search-wrapper {
+            display: flex;
+
+            .e-level-drop {
+              margin: 0 5px;
+
+              .e-caret {
+                display: none;
+              }
+
+              li .e-disabled {
+                opacity: .5;
+                pointer-events: none;
+              }
+            }
+          }
+        }
+
+        &.e-rtl {
+          .e-member-editor-wrapper {
+            ul {
+              margin-right: 0;
+            }
           }
         }
       }
@@ -270,7 +324,9 @@
       }
     }
 
+    // sass-lint:disable-all
     .e-pivot-format-dialog {
+      max-height: 500px !important;
       max-width: 350px;
 
       .e-pivot-format-dialog-outer {
@@ -279,46 +335,22 @@
         .e-pivot-format-value-lable,
         .e-pivot-format-lable,
         .e-pivot-format-custom-lable,
-        .e-pivot-format-symbol-lable,
         .e-pivot-format-grouping-lable,
         .e-pivot-format-decimal-lable {
+          color: $pivotview-grid-header-font-color;
           font-weight: 500;
-          margin-bottom: 10px;
         }
 
         .e-pivot-format-value-drop,
         .e-pivot-format-drop,
         .e-pivot-format-custom-text,
-        .e-pivot-format-symbol-drop,
         .e-pivot-format-grouping-drop,
         .e-pivot-format-decimal-drop {
-          margin-bottom: 25px;
-        }
-
-        .e-pivot-format-custom-text.e-disable,
-        .e-pivot-format-symbol-drop.e-disable,
-        .e-pivot-format-custom-lable.e-disable,
-        .e-pivot-format-symbol-lable.e-disable {
-          display: none;
-        }
-
-        table tr td:nth-child(1) {
-          padding-left: 0;
-          padding-right: 30px;
-        }
-      }
-
-      &.e-rtl {
-        .e-pivot-format-dialog-outer {
-          table tr td:nth-child(1) {
-            padding-left: 30px;
-            padding-right: 0;
-          }
+          margin-bottom: 20px;
         }
       }
     }
 
-    // sass-lint:disable-all
     .e-pivot-toolbar {
       border-bottom: 0;
       border-style: solid;
@@ -330,14 +362,33 @@
       .e-menu-wrapper {
         background-color: transparent;
         border: none;
+        @if ($pivotgrid-skin == 'bootstrap4') {
+          background-color: #f8f9fa;
+          color: #495057;
+        }
 
+        // sass-lint:disable-all
         ul .e-menu-item {
           height: $pivotgrid-menubar-height;
           padding-left: 10px;
+          @if ($pivotgrid-skin == 'bootstrap4') {
+            background-color: #f8f9fa;
+            color: #495057;
+          }
 
           .e-menu-icon {
+            margin-left: 0;
             margin-right: 0;
             font-size: 16px;
+            @if ($pivotgrid-skin == 'bootstrap4') {
+              color: #495057;
+            }
+          }
+
+          .e-caret {
+            @if ($pivotgrid-skin == 'bootstrap4') {
+              color: #495057;
+            }
           }
         }
       }
@@ -364,6 +415,13 @@
         .e-reportlist-drop {
           float: left;
         }
+
+        .e-menu-wrapper {
+          ul .e-menu-item {
+            padding-left: 30px;
+            padding-right: 10px;
+          }
+        }
       }
     }
     // sass-lint:enable-all
@@ -379,6 +437,22 @@
 
   .e-pivotview-report-dialog {
     max-width: 350px;
+  }
+
+  .e-mdx-query-content {
+    background-color: $pivotgrid-table-background-color;
+    color: $field-list-default-formula-font-color;
+    font-size: $pivotgrid-default-font-color;
+    font-weight: 500;
+    height: 200px;
+    margin-top: 5px;
+    padding: 5px 10px;
+    resize: none;
+    width: 100%;
+  }
+
+  .e-pivotview-mdx-dialog {
+    max-width: 500px;
   }
 
   .e-pivotview-report-label {
@@ -446,7 +520,7 @@
       height: $pivotgrid-bigger-menubar-height;
     }
 
-    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container {
+    .e-member-editor-dialog .e-dlg-content .e-member-editor-wrapper .e-member-editor-container-outer-div {
       height: $pivotgrid-member-filter-list-bigger-height;
     }
 
@@ -496,7 +570,7 @@
         }
 
         .e-excelfilter {
-          .e-member-editor-container {
+          .e-member-editor-container-outer-div {
             height: $pivotgrid-excel-member-filter-bigger-height;
           }
         }

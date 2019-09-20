@@ -515,7 +515,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
+            let deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS);
             deleteButton.click();
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
@@ -610,7 +610,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-series-event'), 'click');
             expect(quickDialog.classList).toContain('e-popup-close');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
+            let deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS);
             deleteButton.click();
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
@@ -709,7 +709,7 @@ describe('Vertical View Event Render Module', () => {
             util.triggerMouseEvent(appElement, 'click');
             util.triggerMouseEvent(appElement, 'dblclick');
             expect(schObj.eventsData.length).toEqual(19);
-            (schObj.eventWindow.dialogObject.element.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS) as HTMLInputElement).click();
+            (schObj.eventWindow.dialogObject.element.querySelector('.' + cls.DELETE_EVENT_CLASS) as HTMLInputElement).click();
             let quickDialog: Element = document.querySelector('.e-quick-dialog');
             expect(quickDialog.classList).toContain('e-popup-open');
             util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');

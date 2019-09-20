@@ -45,6 +45,9 @@ export class Render {
             case 'Month':
                 this.parent.activeView = this.parent.monthModule;
                 break;
+            // case 'Year':
+            //     this.parent.activeView = this.parent.yearModule;
+            //     break;
             case 'Agenda':
                 this.parent.activeView = this.parent.agendaModule;
                 break;
@@ -65,6 +68,9 @@ export class Render {
                 break;
             case 'TimelineMonth':
                 this.parent.activeView = this.parent.timelineMonthModule;
+                break;
+            case 'TimelineYear':
+                this.parent.activeView = this.parent.timelineYearModule;
                 break;
         }
         if (isNullOrUndefined(this.parent.activeView)) {
@@ -94,6 +100,7 @@ export class Render {
             this.parent.uiStateValues.top = 0;
         }
         if (this.parent.headerModule) {
+            this.parent.headerModule.setDayOfWeek(this.parent.activeViewOptions.firstDayOfWeek);
             if (this.parent.activeViewOptions.readonly) {
                 addClass([this.parent.element], cls.READ_ONLY);
             } else if (this.parent.element.classList.contains(cls.READ_ONLY)) {

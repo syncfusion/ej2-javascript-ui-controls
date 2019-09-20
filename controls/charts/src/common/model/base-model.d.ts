@@ -113,6 +113,25 @@ export interface BorderModel {
 }
 
 /**
+ * Interface for a class Offset
+ */
+export interface OffsetModel {
+
+    /**
+     * x value of the marker position
+     * @default 0
+     */
+    x?: number;
+
+    /**
+     * y value of the marker position
+     * @default 0
+     */
+    y?: number;
+
+}
+
+/**
  * Interface for a class ChartArea
  */
 export interface ChartAreaModel {

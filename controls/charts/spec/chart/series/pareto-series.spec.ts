@@ -298,6 +298,7 @@ describe('chart control', () => {
                 done();
             }
             chartObj.loaded = loaded;
+            chartObj.series[0].marker.offset.x = 0;
             chartObj.series[0].marker.dataLabel.fill = "blue";
             chartObj.refresh();
         });

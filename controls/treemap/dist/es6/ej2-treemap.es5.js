@@ -3,105 +3,6 @@ import { SvgRenderer, Tooltip } from '@syncfusion/ej2-svg-base';
 import { PdfBitmap, PdfDocument, PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 
-/**
- * TreeMap constants doc
- */
-/**
- * Specifies TreeMap load event name.
- * @private
- */
-var load = 'load';
-/**
- * Specifies TreeMap loaded event name.
- * @private
- */
-var loaded = 'loaded';
-/**
- * Specifies TreeMap beforePrint event name.
- * @private
- */
-var beforePrint = 'beforePrint';
-/**
- * Specifies the itemRendering event name.
- * @private
- */
-var itemRendering = 'itemRendering';
-/**
- * Specifies the drilldown start event name.
- * @private
- */
-var drillStart = 'drillStart';
-/**
- * Specifies the drilldown end event name.
- * @private
- */
-var drillEnd = 'drillEnd';
-/**
- * Specifies the item selected event name.
- * @private
- */
-var itemSelected = 'itemSelected';
-/**
- * Specifies the item highlight event name.
- * @private
- */
-var itemHighlight = 'itemHighlight';
-/**
- * Specifies the tooltip rendering event name.
- * @private
- */
-var tooltipRendering = 'tooltipRendering';
-/**
- * Specifies the item click event name.
- * @private
- */
-var itemClick = 'itemClick';
-/**
- * Specifies the item move event name.
- * @private
- */
-var itemMove = 'itemMove';
-/**
- * Specifies the mouse click event name.
- * @private
- */
-var click = 'click';
-/**
- * Specifies maps double click event name.
- * @private
- */
-var doubleClick = 'doubleClick';
-/**
- * Specifies maps right click event name.
- * @private
- */
-var rightClick = 'rightClick';
-/**
- * Specifies the mouse move event name.
- * @private
- */
-var mouseMove = 'mouseMove';
-/**
- * Specifies legend item rendering event name.
- * @private
- */
-var legendItemRendering = 'legendItemRendering';
-/**
- * Specifies legend rendering event name.
- * @private
- */
-var legendRendering = 'legendRendering';
-/**
- * Specifies treemap resize event name.
- * @private
- */
-var resize = 'resize';
-/**
- * Specifies the font family
- * @private
- */
-var defaultFont = 'Roboto, Segoe UI, Noto, Sans-serif';
-
 var __extends$1 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -174,7 +75,7 @@ var Font = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], Font.prototype, "color", void 0);
     __decorate$1([
-        Property(defaultFont)
+        Property(null)
     ], Font.prototype, "fontFamily", void 0);
     __decorate$1([
         Property('Normal')
@@ -440,10 +341,10 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
         Property(null)
     ], TooltipSettings.prototype, "format", void 0);
     __decorate$1([
-        Property('#000816')
+        Property(null)
     ], TooltipSettings.prototype, "fill", void 0);
     __decorate$1([
-        Property(0.75)
+        Property(null)
     ], TooltipSettings.prototype, "opacity", void 0);
     __decorate$1([
         Property(['Circle'])
@@ -452,7 +353,7 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
         Complex({}, Border)
     ], TooltipSettings.prototype, "border", void 0);
     __decorate$1([
-        Complex({ fontFamily: defaultFont, size: '13px' }, Font)
+        Complex({ fontFamily: null, size: '13px' }, Font)
     ], TooltipSettings.prototype, "textStyle", void 0);
     return TooltipSettings;
 }(ChildProperty));
@@ -1457,6 +1358,100 @@ function pushCollection(collection, index, number, legendElement, shapeElement, 
     });
 }
 
+/**
+ * TreeMap constants doc
+ */
+/**
+ * Specifies TreeMap load event name.
+ * @private
+ */
+var load = 'load';
+/**
+ * Specifies TreeMap loaded event name.
+ * @private
+ */
+var loaded = 'loaded';
+/**
+ * Specifies TreeMap beforePrint event name.
+ * @private
+ */
+var beforePrint = 'beforePrint';
+/**
+ * Specifies the itemRendering event name.
+ * @private
+ */
+var itemRendering = 'itemRendering';
+/**
+ * Specifies the drilldown start event name.
+ * @private
+ */
+var drillStart = 'drillStart';
+/**
+ * Specifies the drilldown end event name.
+ * @private
+ */
+var drillEnd = 'drillEnd';
+/**
+ * Specifies the item selected event name.
+ * @private
+ */
+var itemSelected = 'itemSelected';
+/**
+ * Specifies the item highlight event name.
+ * @private
+ */
+var itemHighlight = 'itemHighlight';
+/**
+ * Specifies the tooltip rendering event name.
+ * @private
+ */
+var tooltipRendering = 'tooltipRendering';
+/**
+ * Specifies the item click event name.
+ * @private
+ */
+var itemClick = 'itemClick';
+/**
+ * Specifies the item move event name.
+ * @private
+ */
+var itemMove = 'itemMove';
+/**
+ * Specifies the mouse click event name.
+ * @private
+ */
+var click = 'click';
+/**
+ * Specifies maps double click event name.
+ * @private
+ */
+var doubleClick = 'doubleClick';
+/**
+ * Specifies maps right click event name.
+ * @private
+ */
+var rightClick = 'rightClick';
+/**
+ * Specifies the mouse move event name.
+ * @private
+ */
+var mouseMove = 'mouseMove';
+/**
+ * Specifies legend item rendering event name.
+ * @private
+ */
+var legendItemRendering = 'legendItemRendering';
+/**
+ * Specifies legend rendering event name.
+ * @private
+ */
+var legendRendering = 'legendRendering';
+/**
+ * Specifies treemap resize event name.
+ * @private
+ */
+var resize = 'resize';
+
 var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
@@ -1477,12 +1472,12 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
     LayoutPanel.prototype.processLayoutPanel = function () {
         var data;
         var totalRect;
-        if (this.treemap.levelsOfData && this.treemap.levelsOfData.length > 0) {
+        if (LevelsData.levelsData && LevelsData.levelsData.length > 0) {
             data = (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
                 !isNullOrUndefined(this.treemap.initialDrillDown.groupName)) &&
                 (isNullOrUndefined(this.treemap.drilledItems) ? isNullOrUndefined(this.treemap.drilledItems)
                     : this.treemap.drilledItems.length === 0) ?
-                this.getDrilldownData(this.treemap.levelsOfData[0], [])[0] : this.treemap.levelsOfData[0];
+                this.getDrilldownData(LevelsData.levelsData[0], [])[0] : LevelsData.levelsData[0];
             totalRect = extend({}, this.treemap.areaRect, totalRect, false);
             if (!isNullOrUndefined(this.treemap.treeMapLegendModule) && !isNullOrUndefined(this.treemap.totalRect)) {
                 if (this.treemap.legendSettings.position !== 'Float') {
@@ -1499,8 +1494,8 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                 if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) && !this.treemap.enableBreadcrumb) {
                     this.treemap.currentLevel = this.treemap.drilledItems[count]['data']['groupIndex'];
                 }
-                this.calculateLayoutItems(y || this.treemap.levelsOfData[0], totalRect);
-                this.renderLayoutItems(y || this.treemap.levelsOfData[0]);
+                this.calculateLayoutItems(y || LevelsData.levelsData[0], totalRect);
+                this.renderLayoutItems(y || LevelsData.levelsData[0]);
             }
             else {
                 if (!isNullOrUndefined(this.treemap.initialDrillDown.groupIndex) &&
@@ -1508,8 +1503,8 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                         : this.treemap.drilledItems.length === 0)) {
                     this.treemap.currentLevel = this.treemap.initialDrillDown.groupIndex;
                 }
-                this.calculateLayoutItems(data || this.treemap.levelsOfData[0], totalRect);
-                this.renderLayoutItems(data || this.treemap.levelsOfData[0]);
+                this.calculateLayoutItems(data || LevelsData.levelsData[0], totalRect);
+                this.renderLayoutItems(data || LevelsData.levelsData[0]);
             }
         }
     };
@@ -1941,7 +1936,7 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                 !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :
                     treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index].headerStyle);
-            textStyle.fontFamily = this_1.treemap.themeStyle.labelFontFamily || textStyle.fontFamily;
+            textStyle.fontFamily = textStyle.fontFamily || this_1.treemap.themeStyle.labelFontFamily;
             border = isLeafItem ? leaf.border : levels[index].border;
             position = !isLeafItem ? (levels[index].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index].headerAlignment) === 'Center' ?
                 'TopCenter' : 'TopRight' : leaf.labelPosition;
@@ -2057,12 +2052,12 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
         var treemap = this.treemap;
         var itemFill = isLeafItem ? treemap.leafItemSettings.fill : treemap.levels[item['groupIndex']].fill;
         var itemOpacity = isLeafItem ? treemap.leafItemSettings.opacity : treemap.levels[item['groupIndex']].opacity;
-        if (!isNullOrUndefined(this.treemap.defaultLevelData)) {
-            if (this.treemap.defaultLevelData.length > 0) {
-                treemap.levelsOfData = this.treemap.defaultLevelData;
+        if (!isNullOrUndefined(LevelsData.defaultLevelsData)) {
+            if (LevelsData.defaultLevelsData.length > 0) {
+                LevelsData.levelsData = LevelsData.defaultLevelsData;
             }
         }
-        var parentData = findChildren(treemap.levelsOfData[0])['values'];
+        var parentData = findChildren(LevelsData.levelsData[0])['values'];
         var colorMapping = isLeafItem ? treemap.leafItemSettings.colorMapping :
             treemap.levels[item['groupIndex']].colorMapping;
         if (colorMapping.length > 0) {
@@ -2299,11 +2294,15 @@ function getThemeStyle(theme) {
                 backgroundColor: color,
                 titleFontColor: '#FFFFFF',
                 subTitleFontColor: '#FFFFFF',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#ffffff',
+                tooltipFillOpacity: 0.75,
                 legendTitleColor: '#DADADA',
                 legendTextColor: '#DADADA',
-                fontFamily: 'Roboto, Noto, Sans-serif'
+                fontFamily: 'Roboto, Noto, Sans-serif',
+                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
         case 'highcontrast':
@@ -2311,11 +2310,15 @@ function getThemeStyle(theme) {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
                 subTitleFontColor: '#FFFFFF',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#ffffff',
+                tooltipFillOpacity: 0.75,
                 legendTitleColor: '#FFFFFF',
                 legendTextColor: '#FFFFFF',
-                fontFamily: 'Roboto, Noto, Sans-serif'
+                fontFamily: 'Roboto, Noto, Sans-serif',
+                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
         case 'bootstrap4':
@@ -2323,7 +2326,7 @@ function getThemeStyle(theme) {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 subTitleFontColor: '#212529',
-                tooltipFillColor: '#000000',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#FFFFFF',
                 tooltipFillOpacity: 1,
                 tooltipTextOpacity: 0.9,
@@ -2332,7 +2335,9 @@ function getThemeStyle(theme) {
                 fontFamily: 'HelveticaNeue-Medium',
                 fontSize: '16px',
                 legendFontSize: '14px',
-                labelFontFamily: 'HelveticaNeue'
+                labelFontFamily: 'HelveticaNeue',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
         default:
@@ -2340,11 +2345,14 @@ function getThemeStyle(theme) {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#424242',
                 subTitleFontColor: '#424242',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#353535',
                 legendTextColor: '#353535',
-                fontFamily: 'Roboto, Noto, Sans-serif'
+                fontFamily: 'Roboto, Noto, Sans-serif',
+                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
     }
@@ -2352,7 +2360,7 @@ function getThemeStyle(theme) {
 }
 
 /**
- * Tree Map Component
+ * Tree Map Components
  */
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2404,8 +2412,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.drilledItems = [];
         /** @private */
-        _this.defaultLevelData = [];
-        /** @private */
         _this.isHierarchicalData = false;
         return _this;
     }
@@ -2422,13 +2428,16 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         });
     };
     TreeMap.prototype.render = function () {
+        LevelsData.levelsData = null;
+        LevelsData.defaultLevelsData = null;
+        LevelsData.hierarchyData = null;
         this.createSecondaryElement();
         this.addTabIndex();
         this.themeStyle = getThemeStyle(this.theme);
         this.renderBorder();
         this.renderTitle(this.titleSettings, 'title', null, null);
-        if (!isNullOrUndefined(this.levelsOfData)) {
-            this.defaultLevelData = this.levelsOfData;
+        if (!isNullOrUndefined(LevelsData.levelsData)) {
+            LevelsData.defaultLevelsData = LevelsData.levelsData;
         }
         this.processDataManager();
     };
@@ -2584,7 +2593,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var path;
         this.dataSource = this.dataSource;
         if (!isNullOrUndefined(this.dataSource) && this.dataSource.length > 0 && this.weightValuePath) {
-            this.levelsOfData = [];
+            LevelsData.levelsData = [];
             this.dataSource.map(function (data) {
                 data[_this.weightValuePath] = (data[_this.weightValuePath]) ? data[_this.weightValuePath].toString() :
                     data[_this.weightValuePath];
@@ -2617,27 +2626,27 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                 }
-                this.levelsOfData.push(data_1);
+                LevelsData.levelsData.push(data_1);
             }
             else {
                 if (this.isHierarchicalData) {
-                    this.hierarchyData = [];
-                    this.hierarchyData = extend([], this.dataSource, this.hierarchyData, true);
-                    for (var i = 0; i < this.hierarchyData.length; i++) {
-                        this.processHierarchicalData(this.hierarchyData[i], i);
+                    LevelsData.hierarchyData = [];
+                    LevelsData.hierarchyData = extend([], this.dataSource, LevelsData.hierarchyData, true);
+                    for (var i = 0; i < LevelsData.hierarchyData.length; i++) {
+                        this.processHierarchicalData(LevelsData.hierarchyData[i], i);
                     }
-                    this.levelsOfData = this.hierarchyData;
+                    LevelsData.levelsData = LevelsData.hierarchyData;
                 }
                 else {
                     this.processFlatJsonData();
-                    if (this.levelsOfData.length > 1) {
-                        this.reOrderLevelData(this.levelsOfData.length - 1);
+                    if (LevelsData.levelsData.length > 1) {
+                        this.reOrderLevelData(LevelsData.levelsData.length - 1);
                     }
                 }
                 path = this.levels[0].groupPath;
             }
             if (!this.isHierarchicalData) {
-                this.findTotalWeight(this.levelsOfData[0][path], 'Parent');
+                this.findTotalWeight(LevelsData.levelsData[0][path], 'Parent');
             }
         }
     };
@@ -2696,17 +2705,17 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 _this.processHierarchicalData(currentData, dataCount);
             });
         }
-        if (dataCount === this.hierarchyData.length - 1) {
-            var mainData_1 = this.hierarchyData[0][this.levels[0].groupPath];
-            for (var k = 0; k < this.hierarchyData.length; k++) {
-                childData = findChildren(this.hierarchyData[k])['values'];
+        if (dataCount === LevelsData.hierarchyData.length - 1) {
+            var mainData_1 = LevelsData.hierarchyData[0][this.levels[0].groupPath];
+            for (var k = 0; k < LevelsData.hierarchyData.length; k++) {
+                childData = findChildren(LevelsData.hierarchyData[k])['values'];
                 if (k !== 0 && childData) {
                     childData.forEach(function (currentData) { mainData_1.push(currentData); });
-                    this.hierarchyData.splice(k, 1);
+                    LevelsData.hierarchyData.splice(k, 1);
                     k -= 1;
                 }
             }
-            mainData_1 = this.hierarchyData[0][this.levels[0].groupPath];
+            mainData_1 = LevelsData.hierarchyData[0][this.levels[0].groupPath];
             for (var l = 0; l < mainData_1.length; l++) {
                 newData[this.levels[0].groupPath] = mainData_1;
                 mainData_1[l]['parent'] = newData;
@@ -2739,7 +2748,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
             var level = new Object();
             level['level'] = i;
             level[groupPath] = [];
-            this.levelsOfData.push(level);
+            LevelsData.levelsData.push(level);
             for (var j = 0; j < this.dataSource.length; j++) {
                 var currentData = {};
                 var childName = '';
@@ -2759,7 +2768,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                         currentData['isDrilled'] = false;
                         currentData['groupName'] = groupPath;
                         currentData['data'] = this.dataSource[j];
-                        this.levelsOfData[this.levelsOfData.length - 1][groupPath].push(currentData);
+                        LevelsData.levelsData[LevelsData.levelsData.length - 1][groupPath].push(currentData);
                         orderNames.push((childName) ? childName : name_1);
                     }
                 }
@@ -2770,8 +2779,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var currentName;
         var currentPath = this.levels[start] ? this.levels[start].groupPath : this.leafItemSettings.labelPath;
         var prevPath = this.levels[start - 1].groupPath;
-        var currentData = this.levelsOfData[start][currentPath];
-        var previousData = this.levelsOfData[start - 1][prevPath];
+        var currentData = LevelsData.levelsData[start][currentPath];
+        var previousData = LevelsData.levelsData[start - 1][prevPath];
         for (var i = 0; i < currentData.length; i++) {
             currentName = currentData[i]['levelOrderName'];
             for (var j = 0; j < previousData.length; j++) {
@@ -2785,8 +2794,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
-        this.findTotalWeight(this.levelsOfData[this.levelsOfData.length - 1][currentPath], 'Child');
-        this.levelsOfData.splice(start, 1);
+        this.findTotalWeight(LevelsData.levelsData[LevelsData.levelsData.length - 1][currentPath], 'Child');
+        LevelsData.levelsData.splice(start, 1);
         if ((start - 1) > 0) {
             this.reOrderLevelData(start - 1);
         }
@@ -2942,7 +2951,6 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var moveBlazorArgs = { cancel: false, name: mouseMove, mouseEvent: e };
         this.trigger(mouseMove, this.isBlazor ? moveBlazorArgs : moveArgs);
         var childItems;
-        this.drillMouseMove = this.mouseDown;
         if (targetId.indexOf('_Item_Index') > -1) {
             item = this.layout.renderItems[parseFloat(targetId.split('_')[6])];
             childItems = findChildren(item)['values'];
@@ -3218,6 +3226,9 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                 case 'height':
                 case 'width':
                 case 'layoutType':
+                case 'levels':
+                case 'drillDownView':
+                case 'renderDirection':
                 case 'leafItemSettings':
                 case 'legendSettings':
                     render = true;
@@ -3401,6 +3412,14 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
     ], TreeMap);
     return TreeMap;
 }(Component));
+/**
+ * @private
+ */
+var LevelsData = /** @__PURE__ @class */ (function () {
+    function LevelsData() {
+    }
+    return LevelsData;
+}());
 
 var __rest$2 = (undefined && undefined.__rest) || function (s, e) {
     var t = {};
@@ -3466,10 +3485,10 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
         var _this = this;
         var treemap = this.treemap;
         var legend = treemap.legendSettings;
-        this.findColorMappingLegendItems(treemap.levelsOfData[0]);
+        this.findColorMappingLegendItems(LevelsData.levelsData[0]);
         if ((this.treemap.palette.length > 0 || !isNullOrUndefined(this.treemap.colorValuePath))
             && this.legendCollections.length === 0) {
-            this.findPaletteLegendItems(this.treemap.levelsOfData[0], 'Parent');
+            this.findPaletteLegendItems(LevelsData.levelsData[0], 'Parent');
         }
         if (this.legendCollections.length > 0) {
             var defaultSize = 25;
@@ -4828,11 +4847,11 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
-                this.tooltipSettings.textStyle.fontFamily = this.treemap.themeStyle.fontFamily;
-                this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
-                    || this.tooltipSettings.textStyle.color;
-                this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
-                    || this.tooltipSettings.textStyle.opacity;
+                this.tooltipSettings.textStyle.fontFamily = this.tooltipSettings.textStyle.fontFamily
+                    || this.treemap.themeStyle.fontFamily;
+                this.tooltipSettings.textStyle.color = this.tooltipSettings.textStyle.color
+                    || this.treemap.themeStyle.tooltipFontColor;
+                this.tooltipSettings.textStyle.opacity = this.tooltipSettings.textStyle.opacity;
                 tootipArgs = {
                     cancel: false, name: tooltipRendering, item: item,
                     options: {
@@ -4865,12 +4884,13 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
         }
         else {
             this.removeTooltip();
-            resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
     };
     TreeMapTooltip.prototype.addTooltip = function (tootipArgs, markerFill, tooltipEle, eventArgs) {
         var cancel;
         var args;
+        var width = this.treemap.tooltipSettings.border.width;
+        var color = this.treemap.tooltipSettings.border.color;
         if (!isNullOrUndefined(tootipArgs)) {
             var c = tootipArgs.cancel, otherArgs = __rest$3(tootipArgs, ["cancel"]);
             cancel = c;
@@ -4891,15 +4911,17 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                 location: args['location'],
                 palette: [markerFill],
                 areaBounds: this.treemap.areaRect,
-                textStyle: args['textStyle']
+                textStyle: args['textStyle'],
+                blazorTemplate: { name: 'TooltipTemplate', parent: this.treemap.tooltipSettings }
             });
-            this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+            this.svgTooltip.opacity = this.treemap.tooltipSettings.opacity || this.treemap.themeStyle.tooltipFillOpacity;
+            this.svgTooltip.fill = this.treemap.tooltipSettings.fill || this.treemap.themeStyle.tooltipFillColor;
+            this.svgTooltip.border.width = (width === 0) ? this.treemap.themeStyle.borderWidth : width;
+            this.svgTooltip.border.color = (color === '#808080') ? this.treemap.themeStyle.borderColor : color;
             this.svgTooltip.appendTo(tooltipEle);
-            updateBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
         else {
             this.removeTooltip();
-            resetBlazorTemplate(this.treemap.element.id + 'Template', 'Template');
         }
     };
     TreeMapTooltip.prototype.mouseUpHandler = function (e) {
@@ -4960,5 +4982,5 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
  * exporting all modules from tree map index
  */
 
-export { TreeMap, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
+export { TreeMap, LevelsData, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
 //# sourceMappingURL=ej2-treemap.es5.js.map

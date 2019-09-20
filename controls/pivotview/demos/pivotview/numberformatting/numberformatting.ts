@@ -8,8 +8,11 @@ import { PivotView } from '../../../src/pivotview/base/pivotview';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Button } from '@syncfusion/ej2-buttons';
 import { NumberFormatting } from '../../../src/common/popups/formatting-dialog';
+import { FieldList } from '../../../src/common/actions/field-list';
+import { CalculatedField } from '../../../src/common/calculatedfield/calculated-field';
 
-PivotView.Inject(NumberFormatting);
+
+PivotView.Inject(NumberFormatting, FieldList, CalculatedField);
 let pivotGridObj: PivotView = new PivotView({
     dataSourceSettings: {
         dataSource: pivot_dataset as IDataSet[],
@@ -20,6 +23,8 @@ let pivotGridObj: PivotView = new PivotView({
         filters: [],
         formatSettings:[{ name: 'balance', format: '€ ###.0'}]
     },
+    showFieldList: true,
+    allowCalculatedField: true,
     allowNumberFormatting: true,
     height: 300
 });

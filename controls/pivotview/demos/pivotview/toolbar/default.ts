@@ -112,7 +112,7 @@ let pivotGridObj: PivotView = new PivotView({
         value: 'Amount', enableExport: true, chartSeries: { type: 'Column', animation: { enable: false } }, enableMultiAxis: false,
     },
     toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
-    'Grid', 'Chart', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
+    'Grid', 'Chart', 'MDX', 'Export', 'SubTotal', 'GrandTotal', 'ConditionalFormatting', 'FieldList'],
     allowExcelExport: true,
     allowConditionalFormatting: true,
     allowPdfExport: true,

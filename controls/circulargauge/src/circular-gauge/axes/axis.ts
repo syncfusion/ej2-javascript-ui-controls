@@ -176,6 +176,13 @@ export class Range extends ChildProperty<Range> {
     @Property(1)
     public opacity: number;
 
+    /**
+     * Specifies the text for legend.
+     * @default ''
+     */
+    @Property('')
+    public legendText: string;
+
     /** @private */
     public currentRadius: number;
     /** @private */
@@ -566,6 +573,14 @@ export class Axis extends ChildProperty<Axis> {
 
     @Property(false)
     public showLastLabel: boolean;
+
+    /**
+     * Specifies to hide the intersecting axis labels
+     * @default false
+     */
+
+    @Property(false)
+    public hideIntersectingLabel: boolean;
 
     /**
      * Specifies the rounding Off value in the label

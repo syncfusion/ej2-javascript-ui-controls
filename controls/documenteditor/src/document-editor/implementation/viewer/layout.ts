@@ -1901,8 +1901,10 @@ export class Layout {
         let isSingleTab: boolean = false;
         // tslint:disable-next-line:max-line-length
         if (element.previousElement instanceof TextElementBox && element.previousElement.previousElement instanceof FieldElementBox && tabs.length === 1) {
-            tabs.length = 0;
-            isSingleTab = true;
+            isSingleTab = element.nextElement instanceof TextElementBox;
+            if (isSingleTab) {
+                tabs.length = 0;
+            }
         }
         // tslint:disable-next-line:max-line-length
         if (!isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat.listLevel.paragraphFormat)) {
@@ -1912,7 +1914,7 @@ export class Layout {
             }
         }
         //  Calculate hanging width
-        if (element instanceof ListTextElementBox &&  viewer.clientActiveArea.x < this.viewer.clientArea.x) {
+        if (element instanceof ListTextElementBox && viewer.clientActiveArea.x < this.viewer.clientArea.x) {
             return viewer.clientArea.x - viewer.clientActiveArea.x;
         }
         // Calculates tabwidth based on pageleftmargin and defaulttabwidth property
@@ -1975,8 +1977,8 @@ export class Layout {
                     } else if (element.previousElement instanceof TextElementBox && element.nextElement instanceof TextElementBox) {
                         if (leftIndent > defaultTabWidth) {
                             defaultTabWidth = leftIndent - defaultTabWidth;
+                            break;
                         }
-                        break;
                     }
                 }
             }

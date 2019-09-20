@@ -1,24 +1,16 @@
 /**
  * Predecessor calculation goes here
  */
-import { IGanttData, ITaskData, IPredecessor, IValidateArgs } from '../base/interface';
+import { IGanttData, ITaskData, IPredecessor, IConnectorLineObject } from '../base/interface';
 import { DateProcessor } from '../base/date-processor';
 import { Gantt } from '../base/gantt';
-import { isScheduledTask, formatString, getIndex } from '../base/utils';
-import { getValue, isNullOrUndefined, createElement, extend } from '@syncfusion/ej2-base';
-import { Dialog } from '@syncfusion/ej2-popups';
+import { isScheduledTask } from '../base/utils';
+import { getValue, isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 
 export class Dependency {
 
     private parent: Gantt;
     private dateValidateModule: DateProcessor;
-    public validationPredecessor: IPredecessor[] = null;
-    /** @private */
-    public confirmPredecessorDialog: Dialog = null;
-    /** @private */
-    public predecessorIndex: number = null;
-    /** @private */
-    public childRecord: IGanttData = null;
     constructor(gantt: Gantt) {
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
@@ -378,8 +370,9 @@ export class Dependency {
      * 
      * @param ganttRecord 
      * @param predecessorsCollection 
+     * @private
      */
-    private getPredecessorDate(ganttRecord: IGanttData, predecessorsCollection: IPredecessor[]): Date {
+    public getPredecessorDate(ganttRecord: IGanttData, predecessorsCollection: IPredecessor[]): Date {
         let maxStartDate: Date;
         let tempStartDate: Date;
         let parentGanttRecord: IGanttData;
@@ -519,13 +512,41 @@ export class Dependency {
                 childGanttRecord = this.parent.getRecordByID(predecessor[to]);
                 if (this.parent.currentViewData && this.parent.currentViewData.indexOf(parentGanttRecord) !== -1 &&
                     this.parent.currentViewData.indexOf(childGanttRecord) !== -1) {
-                    this.parent.connectorLineEditModule.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
+                    this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
                 }
             }
         }
     }
 
-
+    /**
+     * To refresh connector line object collections
+     * @param parentGanttRecord 
+     * @param childGanttRecord 
+     * @param predecessor 
+     * @private
+     */
+    public updateConnectorLineObject(
+        parentGanttRecord: IGanttData,
+        childGanttRecord: IGanttData,
+        predecessor: IPredecessor): IConnectorLineObject {
+        let connectorObj: IConnectorLineObject;
+        connectorObj = this.parent.connectorLineModule.createConnectorLineObject(
+            parentGanttRecord, childGanttRecord, predecessor);
+        if (connectorObj) {
+            if (this.parent.connectorLineIds.length > 0 && this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) === -1) {
+                this.parent.updatedConnectorLineCollection.push(connectorObj);
+                this.parent.connectorLineIds.push(connectorObj.connectorLineId);
+            } else if (this.parent.connectorLineIds.length === 0) {
+                this.parent.updatedConnectorLineCollection.push(connectorObj);
+                this.parent.connectorLineIds.push(connectorObj.connectorLineId);
+            } else if (this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) !== -1) {
+                let index: number = this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId);
+                this.parent.updatedConnectorLineCollection[index] = connectorObj;
+            }
+            predecessor.isDrawn = true;
+        }
+        return connectorObj;
+    }
     /**
      * 
      * @param childGanttRecord 
@@ -586,237 +607,6 @@ export class Dependency {
     }
 
     /**
-     * Predecessor link validation dialog template
-     * @param args
-     * @private
-     */
-    public validationDialogTemplate(args: object): HTMLElement {
-        let ganttId: string = this.parent.element.id;
-        let contentdiv: HTMLElement = createElement('div', {
-            className: 'e-ValidationContent'
-        });
-        let taskData: IGanttData = getValue('task', args);
-        let parenttaskData: IGanttData = getValue('parentTask', args);
-        let violationType: string = getValue('violationType', args);
-        let recordName: string = taskData.ganttProperties.taskName;
-        let recordNewStartDate: string = this.parent.getFormatedDate(taskData.ganttProperties.startDate, 'MM/dd/yyyy');
-        let parentName: string = parenttaskData.ganttProperties.taskName;
-        let recordArgs: string[] = [recordName, parentName];
-        let topContent: string; let topContentText: string;
-        if (violationType === 'taskBeforePredecessor_FS') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FS');
-        } else if (violationType === 'taskAfterPredecessor_FS') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FS');
-        } else if (violationType === 'taskBeforePredecessor_SS') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SS');
-        } else if (violationType === 'taskAfterPredecessor_SS') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SS');
-        } else if (violationType === 'taskBeforePredecessor_FF') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FF');
-        } else if (violationType === 'taskAfterPredecessor_FF') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FF');
-        } else if (violationType === 'taskBeforePredecessor_SF') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SF');
-        } else if (violationType === 'taskAfterPredecessor_SF') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SF');
-        }
-        topContentText = formatString(topContentText, recordArgs);
-        topContent = '<div id="' + ganttId + '_ValidationText">' + topContentText + '<div>';
-        let innerTable: string = '<table>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationCancel" name="ValidationRule" checked/><label for="'
-            + ganttId + '_ValidationCancel" id= "' + ganttId + '_cancelLink">Cancel, keep the existing link</label></td></tr>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationRemoveline" name="ValidationRule"/><label for="'
-            + ganttId + '_ValidationRemoveline" id="' + ganttId + '_removeLink">Remove the link and move <b>'
-            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b>.</label></td></tr>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationAddlineOffset" name="ValidationRule"/><label for="'
-            + ganttId + '_ValidationAddlineOffset" id="' + ganttId + '_preserveLink">Move the <b>'
-            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b> and keep the link.</label></td></tr></table>';
-        contentdiv.innerHTML = topContent + innerTable;
-        return contentdiv;
-    }
-
-    /**
-     * To render validation dialog
-     * @return {void}
-     * @private
-     */
-    public renderValidationDialog(): void {
-        let validationDialog: Dialog = new Dialog({
-            header: 'Validate Editing',
-            isModal: true,
-            visible: false,
-            width: '50%',
-            showCloseIcon: true,
-            close: this.validationDialogClose.bind(this),
-            content: '',
-            buttons: [
-                {
-                    click: this.validationDialogOkButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
-                },
-                {
-                    click: this.validationDialogCancelButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
-                }],
-            target: this.parent.element,
-            animationSettings: { effect: 'None' },
-        });
-        document.getElementById(this.parent.element.id + '_dialogValidationRule').innerHTML = '';
-        validationDialog.isStringTemplate = true;
-        validationDialog.appendTo('#' + this.parent.element.id + '_dialogValidationRule');
-        this.parent.validationDialogElement = validationDialog;
-    }
-
-    private validationDialogOkButton(): void {
-        let currentArgs: IValidateArgs = this.parent.currentEditedArgs;
-        currentArgs.validateMode.preserveLinkWithEditing =
-            (document.getElementById(this.parent.element.id + '_ValidationAddlineOffset') as HTMLInputElement).checked;
-        currentArgs.validateMode.removeLink =
-            (document.getElementById(this.parent.element.id + '_ValidationRemoveline') as HTMLInputElement).checked;
-        currentArgs.validateMode.respectLink =
-            (document.getElementById(this.parent.element.id + '_ValidationCancel') as HTMLInputElement).checked;
-        this.applyPredecessorOption();
-        this.parent.validationDialogElement.hide();
-    }
-
-    private validationDialogCancelButton(): void {
-        this.parent.currentEditedArgs.validateMode.respectLink = true;
-        this.applyPredecessorOption();
-        this.parent.validationDialogElement.hide();
-    }
-
-    private validationDialogClose(e: object): void {
-        if (getValue('isInteraction', e)) {
-            this.parent.currentEditedArgs.validateMode.respectLink = true;
-            this.applyPredecessorOption();
-        }
-    }
-
-    /**
-     * Validate and apply the predecessor option from validation dialog
-     * @param buttonType
-     * @return {void}
-     * @private
-     */
-    public applyPredecessorOption(): void {
-        let args: IValidateArgs = this.parent.currentEditedArgs;
-        let ganttRecord: IGanttData = args.data;
-        if (args.validateMode.respectLink) {
-            this.parent.editModule.reUpdatePreviousRecords();
-            this.parent.chartRowsModule.refreshRecords([args.data]);
-        } else if (args.validateMode.removeLink) {
-            this.removePredecessors(ganttRecord, this.validationPredecessor);
-            this.parent.editModule.updateEditedTask(args.editEventArgs);
-        } else if (args.validateMode.preserveLinkWithEditing) {
-            this.calculateOffset(ganttRecord);
-            this.parent.editModule.updateEditedTask(args.editEventArgs);
-        }
-    }
-
-    private calculateOffset(record: IGanttData): void {
-        let prevPredecessor: IPredecessor[] = extend([], record.ganttProperties.predecessor, [], true) as IPredecessor[];
-        let validPredecessor: IPredecessor[] = this.getValidPredecessor(record);
-        for (let i: number = 0; i < validPredecessor.length; i++) {
-            let predecessor: IPredecessor = validPredecessor[i];
-            let parentTask: IGanttData = this.parent.getRecordByID(predecessor.from);
-            let offset: number;
-            if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
-                let tempStartDate: Date;
-                let tempEndDate: Date;
-                let tempDuration: number;
-                let isNegativeOffset: boolean;
-                switch (predecessor.type) {
-                    case 'FS':
-                        tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.startDate.getTime());
-                        break;
-                    case 'SS':
-                        tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.startDate.getTime());
-                        break;
-                    case 'SF':
-                        tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.endDate.getTime());
-                        break;
-                    case 'FF':
-                        tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.endDate.getTime());
-                        break;
-                }
-
-                if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                    tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate);
-                    tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, null);
-                    isNegativeOffset = false;
-                } else {
-                    let tempDate: Date = new Date(tempStartDate.getTime());
-                    tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate);
-                    tempEndDate = this.dateValidateModule.checkEndDate(tempDate, null);
-                    isNegativeOffset = true;
-                }
-                if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                    tempDuration = this.dateValidateModule.getDuration(tempStartDate, tempEndDate, predecessor.offsetUnit, true, true);
-                    offset = isNegativeOffset ? (tempDuration * -1) : tempDuration;
-                } else {
-                    offset = 0;
-                }
-            } else {
-                offset = 0;
-            }
-            let preIndex: number = getIndex(predecessor, 'from', prevPredecessor, 'to');
-            prevPredecessor[preIndex].offset = offset;
-            // Update predecessor in predecessor task
-            let parentPredecessors: IPredecessor = extend([], parentTask.ganttProperties.predecessor, [], true);
-            let parentPreIndex: number = getIndex(predecessor, 'from', parentPredecessors, 'to');
-            parentPredecessors[parentPreIndex].offset = offset;
-            this.parent.setRecordValue('predecessor', parentPredecessors, parentTask.ganttProperties, true);
-        }
-        this.parent.setRecordValue('predecessor', prevPredecessor, record.ganttProperties, true);
-        let predecessorString: string = this.getPredecessorStringValue(record);
-        this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
-        this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
-        this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
-    }
-    /**
-     * Update predecessor value with user selection option in predecessor validation dialog
-     * @param args
-     * @return {void}
-     */
-    private removePredecessors(ganttRecord: IGanttData, predecessor: IPredecessor[]): void {
-        let prevPredecessor: IPredecessor[] =
-            extend([], [], ganttRecord.ganttProperties.predecessor, true) as IPredecessor[];
-        let preLength: number = predecessor.length;
-        for (let i: number = 0; i < preLength; i++) {
-            let parentGanttRecord: IGanttData = this.parent.getRecordByID(predecessor[i].from);
-            let parentPredecessor: IPredecessor[] =
-                extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
-            let index: number = getIndex(predecessor[i], 'from', prevPredecessor, 'to');
-            prevPredecessor.splice(index, 1);
-            let parentIndex: number = getIndex(predecessor[i], 'from', parentPredecessor, 'to');
-            parentPredecessor.splice(parentIndex, 1);
-            this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
-        }
-        if (prevPredecessor.length !== ganttRecord.ganttProperties.predecessor.length) {
-            this.parent.setRecordValue('predecessor', prevPredecessor, ganttRecord.ganttProperties, true);
-            let predecessorString: string = this.getPredecessorStringValue(ganttRecord);
-            this.parent.setRecordValue('predecessorsName', predecessorString, ganttRecord.ganttProperties, true);
-            this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, ganttRecord);
-            this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, ganttRecord);
-        }
-    }
-
-    /**
-     * To open predecessor validation dialog
-     * @param args
-     * @return {void}
-     * @private
-     */
-    public openValidationDialog(args: object): void {
-        let contentTemplate: HTMLElement = this.validationDialogTemplate(args);
-        this.parent.validationDialogElement.setProperties({ content: contentTemplate });
-        this.parent.validationDialogElement.show();
-    }
-    /**
      * Method to get validate able predecessor alone from record
      * @param record 
      * @private
@@ -830,165 +620,5 @@ export class Dependency {
             });
         }
         return validPredecessor;
-    }
-
-    /**
-     * To validate the types while editing the taskbar 
-     * @param args
-     * @return {boolean}
-     * @private
-     */
-    public validateTypes(ganttRecord: IGanttData): object {
-        let predecessor: IPredecessor[] = this.getValidPredecessor(ganttRecord);
-        let parentGanttRecord: IGanttData;
-        this.validationPredecessor = [];
-        let violatedParent: IGanttData;
-        let violateType: string;
-        let startDate: Date = this.getPredecessorDate(ganttRecord, predecessor);
-        let ganttTaskData: ITaskData = ganttRecord.ganttProperties;
-        let endDate: Date =
-            this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);
-        for (let i: number = 0; i < predecessor.length; i++) {
-            parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
-            let violationType: string = null;
-            if (predecessor[i].type === 'FS') {
-                if (ganttTaskData.startDate < startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_FS';
-                } else if (ganttTaskData.startDate > startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_FS';
-                }
-            } else if (predecessor[i].type === 'SS') {
-                if (ganttTaskData.startDate < startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_SS';
-                } else if (ganttTaskData.startDate > startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_SS';
-                }
-            } else if (predecessor[i].type === 'FF') {
-                if (endDate < parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_FF';
-                } else if (endDate > parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_FF';
-                }
-            } else if (predecessor[i].type === 'SF') {
-                if (endDate < parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_SF';
-                } else if (endDate > parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_SF';
-                }
-            }
-            if (!isNullOrUndefined(violationType) && isNullOrUndefined(violateType)) {
-                violatedParent = parentGanttRecord;
-                violateType = violationType;
-            }
-        }
-
-        let validateArgs: object = {
-            parentTask: violatedParent,
-            task: ganttRecord,
-            violationType: violateType
-        };
-        return validateArgs;
-    }
-
-    /**
-     * Method to remove and update new predecessor collection in successor record
-     * @param data 
-     * @private
-     */
-    public addRemovePredecessor(data: IGanttData): void {
-        let prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
-        let newPredecessor: IPredecessor[] = data.ganttProperties.predecessor.slice();
-        if (prevData && prevData.ganttProperties && prevData.ganttProperties.hasOwnProperty('predecessor')) {
-            let prevPredecessor: IPredecessor[] = prevData.ganttProperties.predecessor;
-            if (!isNullOrUndefined(prevPredecessor)) {
-                for (let p: number = 0; p < prevPredecessor.length; p++) {
-                    let parentGanttRecord: IGanttData = this.parent.getRecordByID(prevPredecessor[p].from);
-                    if (parentGanttRecord === data) {
-                        data.ganttProperties.predecessor.push(prevPredecessor[p]);
-                    } else {
-                        let parentPredecessor: IPredecessor[] =
-                            extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
-                        let parentIndex: number = getIndex(prevPredecessor[p], 'from', parentPredecessor, 'to');
-                        if (parentIndex !== -1) {
-                            parentPredecessor.splice(parentIndex, 1);
-                            this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
-                        }
-                    }
-                }
-            }
-            if (!isNullOrUndefined(newPredecessor)) {
-                for (let n: number = 0; n < newPredecessor.length; n++) {
-                    let parentGanttRecord: IGanttData = this.parent.getRecordByID(newPredecessor[n].from);
-                    let parentPredecessor: IPredecessor[] =
-                        extend([], [], parentGanttRecord.ganttProperties.predecessor, true) as IPredecessor[];
-                    parentPredecessor.push(newPredecessor[n]);
-                    this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
-                }
-            }
-        }
-    }
-    /**
-     * Method to remove a predecessor from a record.
-     * @param childRecord
-     * @param index  
-     * @private
-     */
-    public removePredecessor(childRecord: IGanttData, index: number): void {
-        let childPredecessor: IPredecessor[] = childRecord.ganttProperties.predecessor;
-        let predecessor: IPredecessor = childPredecessor.splice(index, 1) as IPredecessor;
-        let parentRecord: IGanttData = this.parent.getRecordByID(predecessor[0].from);
-        let parentPredecessor: IPredecessor[] = parentRecord.ganttProperties.predecessor;
-        let parentIndex: number = getIndex(predecessor[0], 'from', parentPredecessor, 'to');
-        parentPredecessor.splice(parentIndex, 1);
-        let predecessorString: string = this.parent.predecessorModule.getPredecessorStringValue(childRecord);
-        childPredecessor.push(predecessor[0]);
-        this.parent.connectorLineEditModule.updatePredecessor(childRecord, predecessorString);
-    }
-
-    /**
-     * To render predecessor delete confirmation dialog
-     * @return {void}
-     * @private
-     */
-    public renderPredecessorDeleteConfirmDialog(): void {
-        this.confirmPredecessorDialog = new Dialog({
-            width: '320px',
-            isModal: true,
-            content: this.parent.localeObj.getConstant('confirmPredecessorDelete'),
-            buttons: [
-                {
-                    click: this.confirmOkDeleteButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
-                },
-                {
-                    click: this.confirmCloseDialog.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
-                }],
-            target: this.parent.element,
-            animationSettings: { effect: 'None' },
-        });
-        let confirmDialog: HTMLElement = createElement('div', {
-            id: this.parent.element.id + '_deletePredecessorConfirmDialog',
-        });
-        this.parent.element.appendChild(confirmDialog);
-        this.confirmPredecessorDialog.isStringTemplate = true;
-        this.confirmPredecessorDialog.appendTo(confirmDialog);
-    }
-
-    private confirmCloseDialog(): void {
-        this.confirmPredecessorDialog.destroy();
-    }
-
-    private confirmOkDeleteButton(): void {
-        this.parent.predecessorModule.removePredecessor(this.childRecord, this.predecessorIndex);
-        this.confirmPredecessorDialog.destroy();
     }
 }

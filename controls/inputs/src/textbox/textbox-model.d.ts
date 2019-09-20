@@ -49,6 +49,16 @@ export interface TextBoxModel extends ComponentModel{
     placeholder?: string;
 
     /**
+     * Specifies whether the browser is allow to automatically enter or select a value for the textbox.
+     * By default, autocomplete is enabled for textbox.
+     * Possible values are:
+     * `on` - Specifies that autocomplete is enabled.
+     * `off` - Specifies that autocomplete is disabled.
+     * @default 'on'
+     */
+    autocomplete?: string;
+
+    /**
      * You can add the additional html attributes such as disabled, value etc., to the element.
      * If you configured both property and equivalent html attribute then the component considers the property value.
      * @default {}

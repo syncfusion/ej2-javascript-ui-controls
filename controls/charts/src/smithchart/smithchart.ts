@@ -1,39 +1,39 @@
 import { Component, Complex, NotifyPropertyChanges, INotifyPropertyChanged, Property } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, Browser, ModuleDeclaration} from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { createElement, remove, Event, EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { createSvg, RectOption, measureText, TextOption, renderTextElement } from '../smithchart/utils/helper';
 import { removeElement, textTrim } from '../smithchart/utils/helper';
-import { SmithchartRect,  SmithchartSize } from '../smithchart/utils/utils';
-import { SmithchartMarginModel, SmithchartBorderModel, SmithchartFontModel} from '../smithchart/utils/utils-model';
-import { SmithchartMargin, SmithchartBorder, SmithchartFont} from '../smithchart/utils/utils';
-import {TitleModel, SubtitleModel} from '../smithchart/title/title-model';
-import { SmithchartLegendSettingsModel} from '../smithchart/legend/legend-model';
-import {SmithchartAxisModel} from '../smithchart/axis/axis-model';
+import { SmithchartRect, SmithchartSize } from '../smithchart/utils/utils';
+import { SmithchartMarginModel, SmithchartBorderModel, SmithchartFontModel } from '../smithchart/utils/utils-model';
+import { SmithchartMargin, SmithchartBorder, SmithchartFont } from '../smithchart/utils/utils';
+import { TitleModel, SubtitleModel } from '../smithchart/title/title-model';
+import { SmithchartLegendSettingsModel } from '../smithchart/legend/legend-model';
+import { SmithchartAxisModel } from '../smithchart/axis/axis-model';
 import { TooltipRender } from '../smithchart/series/tooltip';
 import { ISmithchartLoadedEventArgs, ISmithchartLoadEventArgs, ISmithchartThemeStyle } from '../smithchart/model/interface';
-import { ISmithchartLegendRenderEventArgs, ITitleRenderEventArgs, ISubTitleRenderEventArgs} from '../smithchart/model/interface';
-import { ISmithchartAxisLabelRenderEventArgs, ISmithchartPrintEventArgs} from '../smithchart/model/interface';
-import { ISmithchartSeriesRenderEventArgs, ISmithchartAnimationCompleteEventArgs} from '../smithchart/model/interface';
-import { ISmithchartTextRenderEventArgs} from '../smithchart/model/interface';
+import { ISmithchartLegendRenderEventArgs, ITitleRenderEventArgs, ISubTitleRenderEventArgs } from '../smithchart/model/interface';
+import { ISmithchartAxisLabelRenderEventArgs, ISmithchartPrintEventArgs } from '../smithchart/model/interface';
+import { ISmithchartSeriesRenderEventArgs, ISmithchartAnimationCompleteEventArgs } from '../smithchart/model/interface';
+import { ISmithchartTextRenderEventArgs } from '../smithchart/model/interface';
 import { getThemeColor } from '../smithchart/model/theme';
-import { SmithchartLegendSettings} from '../smithchart/legend/legend';
-import { SmithchartAxis} from '../smithchart/axis/axis';
-import { Title} from '../smithchart/title/title';
-import { SmithchartSeriesModel} from '../smithchart/series/series-model';
-import { SmithchartSeries} from '../smithchart/series/series';
-import { AreaBounds} from '../smithchart/utils/area';
-import { AxisRender} from '../smithchart/axis/axisrender';
-import { SmithchartLegend} from '../smithchart/legend/legendrender';
-import { SeriesRender} from '../smithchart/series/seriesrender';
+import { SmithchartLegendSettings } from '../smithchart/legend/legend';
+import { SmithchartAxis } from '../smithchart/axis/axis';
+import { Title } from '../smithchart/title/title';
+import { SmithchartSeriesModel } from '../smithchart/series/series-model';
+import { SmithchartSeries } from '../smithchart/series/series';
+import { AreaBounds } from '../smithchart/utils/area';
+import { AxisRender } from '../smithchart/axis/axisrender';
+import { SmithchartLegend } from '../smithchart/legend/legendrender';
+import { SeriesRender } from '../smithchart/series/seriesrender';
 import { Collection } from '@syncfusion/ej2-base';
-import { getSeriesColor} from '../smithchart/model/theme';
-import { SmithchartTheme, RenderType} from '../smithchart/utils/enum';
+import { getSeriesColor } from '../smithchart/model/theme';
+import { SmithchartTheme, RenderType } from '../smithchart/utils/enum';
 import { Tooltip, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { ExportUtils } from '../smithchart/utils/export';
 import { SmithchartExportType } from '../smithchart/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-import { titleRender, subtitleRender} from '../smithchart/model/constant';
-import { SmithchartModel} from '../smithchart/smithchart-model';
+import { titleRender, subtitleRender, load, loaded } from '../smithchart/model/constant';
+import { SmithchartModel } from '../smithchart/smithchart-model';
 /* tslint:disable:no-string-literal */
 /**
  * Represents the Smithchart control.
@@ -48,61 +48,61 @@ import { SmithchartModel} from '../smithchart/smithchart-model';
 @NotifyPropertyChanges
 export class Smithchart extends Component<HTMLElement> implements INotifyPropertyChanged {
 
-/**
- * legend bounds
- */
+    /**
+     * legend bounds
+     */
     public legendBounds: SmithchartRect;
-/**
- * area bounds
- */
+    /**
+     * area bounds
+     */
     public bounds: SmithchartRect;
-/**
- * `smithchartLegendModule` is used to add legend to the smithchart.
- */
+    /**
+     * `smithchartLegendModule` is used to add legend to the smithchart.
+     */
     public smithchartLegendModule: SmithchartLegend;
 
-/**
- * `tooltipRenderModule` is used to add tooltip to the smithchart.
- */
+    /**
+     * `tooltipRenderModule` is used to add tooltip to the smithchart.
+     */
     public tooltipRenderModule: TooltipRender;
 
-/**
- * render type of smithchart.
- * @default Impedance
- */
+    /**
+     * render type of smithchart.
+     * @default Impedance
+     */
 
-@Property('Impedance')
-public renderType: RenderType;
+    @Property('Impedance')
+    public renderType: RenderType;
 
-/**
- * width for smithchart.
- * @default ''
- */
-@Property('')
-public width: string;
+    /**
+     * width for smithchart.
+     * @default ''
+     */
+    @Property('')
+    public width: string;
 
-/**
- * height for smithchart.
- * @default ''
- */
- @Property('')
-public height: string;
+    /**
+     * height for smithchart.
+     * @default ''
+     */
+    @Property('')
+    public height: string;
 
-/**
- * theme for smithchart.
- * @default Material
- */
+    /**
+     * theme for smithchart.
+     * @default Material
+     */
 
-@Property('Material')
-public theme: SmithchartTheme;
+    @Property('Material')
+    public theme: SmithchartTheme;
 
-/** @private */
+    /** @private */
 
     public seriesrender: SeriesRender;
-/** @private */
+    /** @private */
     public themeStyle: ISmithchartThemeStyle;
 
-/** @private */
+    /** @private */
     public availableSize: SmithchartSize;
 
     /**
@@ -111,9 +111,9 @@ public theme: SmithchartTheme;
     @Complex<SmithchartMarginModel>({}, SmithchartMargin)
     public margin: SmithchartMarginModel;
 
-/**
- *  options for customizing margin
- */
+    /**
+     *  options for customizing margin
+     */
     @Complex<SmithchartFontModel>({}, SmithchartFont)
     public font: SmithchartFontModel;
 
@@ -121,34 +121,34 @@ public theme: SmithchartTheme;
      *  options for customizing border
      */
 
-     @Complex<SmithchartBorderModel>({}, SmithchartBorder)
+    @Complex<SmithchartBorderModel>({}, SmithchartBorder)
     public border: SmithchartBorderModel;
 
-   /**
-    *  options for customizing title
-    */
+    /**
+     *  options for customizing title
+     */
 
-@Complex<TitleModel>({}, Title)
+    @Complex<TitleModel>({}, Title)
     public title: TitleModel;
 
     /**
      *  options for customizing series
      */
 
-@Collection<SmithchartSeriesModel>([{}], SmithchartSeries)
+    @Collection<SmithchartSeriesModel>([{}], SmithchartSeries)
     public series: SmithchartSeriesModel[];
 
 
-/**
- *  options for customizing legend
- */
+    /**
+     *  options for customizing legend
+     */
 
-@Complex<SmithchartLegendSettingsModel>({}, SmithchartLegendSettings)
+    @Complex<SmithchartLegendSettingsModel>({}, SmithchartLegendSettings)
     public legendSettings: SmithchartLegendSettingsModel;
 
-/**
- * Options to configure the horizontal axis.
- */
+    /**
+     * Options to configure the horizontal axis.
+     */
 
     @Complex<SmithchartAxisModel>({}, SmithchartAxis)
     public horizontalAxis: SmithchartAxisModel;
@@ -160,23 +160,23 @@ public theme: SmithchartTheme;
     @Complex<SmithchartAxisModel>({}, SmithchartAxis)
     public radialAxis: SmithchartAxisModel;
 
-/**
- * svg renderer object.
- * @private
- */
+    /**
+     * svg renderer object.
+     * @private
+     */
     public renderer: SvgRenderer;
-/** @private */
+    /** @private */
     public svgObject: Element;
-/** @private */
+    /** @private */
     public animateSeries: boolean;
-/** @private */
+    /** @private */
     public seriesColors: string[];
 
     public chartArea: SmithchartRect;
 
-/**
- * Resize the smithchart
- */
+    /**
+     * Resize the smithchart
+     */
     private resizeTo: number;
 
     private isTouch: boolean;
@@ -223,7 +223,6 @@ public theme: SmithchartTheme;
     /**
      * Triggers before smithchart rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'OnLoad'
      */
     @Event()
@@ -239,7 +238,6 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the legend is rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'LegendRendering'
      */
     @Event()
@@ -248,7 +246,6 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the title is rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'TitleRendering'
      */
     @Event()
@@ -257,7 +254,6 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the sub-title is rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'SubtitleRendering'
      */
     @Event()
@@ -266,7 +262,6 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the datalabel text is rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'TextRendering'
      */
     @Event()
@@ -274,7 +269,6 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the axis label is rendered
      * @event
-     * @deprecated
      * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
@@ -283,7 +277,6 @@ public theme: SmithchartTheme;
     /**
      * Triggers before the series is rendered.
      * @event
-     * @deprecated
      */
 
     @Event()
@@ -317,7 +310,7 @@ public theme: SmithchartTheme;
         createSvg(this);
     }
 
-     private renderTitle(title: TitleModel, type: string, groupEle: Element): void {
+    private renderTitle(title: TitleModel, type: string, groupEle: Element): void {
         let font: SmithchartFontModel = title.font ? title.font : title.textStyle;
         let textSize: SmithchartSize = measureText(title.text, font);
         let x: number;
@@ -325,87 +318,110 @@ public theme: SmithchartTheme;
         let textAlignment: string = title.textAlignment;
         let titleText: string = title.text;
         let maxTitleWidth: number = (isNullOrUndefined(title.maximumWidth)) ?
-                                     Math.abs(this.margin.left + this.margin.right - (this.availableSize.width)) :
-                                     title.maximumWidth;
-        let  titleWidthEnable: boolean = textSize.width > maxTitleWidth ? true : false;
+            Math.abs(this.margin.left + this.margin.right - (this.availableSize.width)) :
+            title.maximumWidth;
+        let titleWidthEnable: boolean = textSize.width > maxTitleWidth ? true : false;
         if (textSize.width > this.availableSize.width) {
             x = this.margin.left + this.border.width;
         } else {
-        x = textAlignment === 'Center' ? (this.availableSize.width / 2 - textSize['width'] /  2) :
-            (textAlignment === 'Near' ? (this.margin.left + this.elementSpacing + this.border.width) : (this.availableSize.width
-             - textSize['width'] - (this.margin.right + this.elementSpacing + this.border.width)));
+            x = textAlignment === 'Center' ? (this.availableSize.width / 2 - textSize['width'] / 2) :
+                (textAlignment === 'Near' ? (this.margin.left + this.elementSpacing + this.border.width) : (this.availableSize.width
+                    - textSize['width'] - (this.margin.right + this.elementSpacing + this.border.width)));
         }
         y = this.margin.top + textSize['height'] / 2 + this.elementSpacing;
         if (title.enableTrim && titleWidthEnable) {
-                titleText = textTrim(maxTitleWidth, title.text, font);
-                textSize = measureText(titleText, font);
-            }
-        groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
-        let titleEventArgs: ITitleRenderEventArgs = { text: titleText, x: x, y: y, name: 'titleRender', cancel: false};
-        this.trigger(titleRender, titleEventArgs);
-        let options: TextOption = new TextOption(
-                this.element.id + '_Smithchart_' + type, titleEventArgs.x, titleEventArgs.y, 'start', titleEventArgs.text
-            );
-        font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
-        font.size = this.themeStyle.fontSize || title.textStyle.size;
-        let element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
-        element.setAttribute('aria-label', title.description || title.text);
-        let titleLocation: {x: number, y: number, textSize: SmithchartSize} = {x: x, y: y, textSize: textSize};
-        this.svgObject.appendChild(groupEle);
-        if (title.subtitle.text !== '' &&  title.subtitle.visible) {
-        this.renderSubtitle(title, type, textSize, this.availableSize, titleLocation, groupEle);
+            titleText = textTrim(maxTitleWidth, title.text, font);
+            textSize = measureText(titleText, font);
         }
-     }
-
-     private renderSubtitle(title: TitleModel, type: string, textSize: SmithchartSize, size: SmithchartSize,
-                            titleLocation: {x: number, y: number, textSize: SmithchartSize}, groupEle: Element): void {
-
-     let x: number;
-     let y: number;
-     let font: SmithchartFontModel = title.subtitle.textStyle;
-     let subTitle: SubtitleModel = title.subtitle;
-     let subTitleSize: SmithchartSize = measureText(subTitle.text, font);
-     let textAnchor: string;
-     let subTitleText: string = subTitle.text;
-     let maxSubTitleWidth: number = isNullOrUndefined(subTitle.maximumWidth) ?
-                                    (this.bounds.width * 0.75) : subTitle.maximumWidth;
-     if (subTitle.enableTrim && subTitleSize.width > maxSubTitleWidth) {
-                subTitleText = textTrim(maxSubTitleWidth, subTitle.text, font);
+        groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
+        let titleEventArgs: ITitleRenderEventArgs = {
+            text: titleText,
+            x: x,
+            y: y,
+            name: titleRender,
+            cancel: false
+        };
+        let options: TextOption;
+        let titleRenderSuccess: Function = (args: ITitleRenderEventArgs) => {
+            if (!args.cancel) {
+                options = new TextOption(
+                    this.element.id + '_Smithchart_' + type, args.x, args.y, 'start', args.text
+                );
+                font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
+                font.size = this.themeStyle.fontSize || title.textStyle.size;
+                let element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
+                element.setAttribute('aria-label', title.description || args.text);
+                let titleLocation: { x: number, y: number, textSize: SmithchartSize } = { x: args.x, y: args.y, textSize: textSize };
+                this.svgObject.appendChild(groupEle);
+                if (title.subtitle.text !== '' && title.subtitle.visible) {
+                    this.renderSubtitle(title, type, textSize, this.availableSize, titleLocation, groupEle);
+                }
             }
-     x = title['subtitle'].textAlignment === 'Far' ? (titleLocation.x + (titleLocation.textSize.width)) :
-         (title['subtitle'].textAlignment === 'Near') ? titleLocation.x :
-         (titleLocation.x + (titleLocation.textSize.width / 2));
-     y = titleLocation.y + (2 * this.elementSpacing);
-     textAnchor = title['subtitle'].textAlignment === 'Far' ? 'end' :
-                  (title['subtitle'].textAlignment === 'Near') ? 'start' : 'middle';
-     let subtitleEventArgs: ISubTitleRenderEventArgs = { text: subTitleText, x: x, y: y, name: 'subtitleRender', cancel: false};
-     this.trigger(subtitleRender, subtitleEventArgs);
-     let options: TextOption = new TextOption(
-                this.element.id + '_Smithchart_' + type, subtitleEventArgs.x, subtitleEventArgs.y, textAnchor, subtitleEventArgs.text
-            );
-     let element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
-     element.setAttribute('aria-label', subTitle.description || subTitle.text);
-     groupEle.appendChild(element);
-     }
-     /**
-      * @private
-      * Render the smithchart border
-      */
+        };
+        titleRenderSuccess.bind(this);
+        this.trigger(titleRender, titleEventArgs, titleRenderSuccess);
+    }
+
+    private renderSubtitle(
+        title: TitleModel, type: string, textSize: SmithchartSize, size: SmithchartSize,
+        titleLocation: { x: number, y: number, textSize: SmithchartSize }, groupEle: Element): void {
+        let x: number;
+        let y: number;
+        let font: SmithchartFontModel = title.subtitle.textStyle;
+        let subTitle: SubtitleModel = title.subtitle;
+        let subTitleSize: SmithchartSize = measureText(subTitle.text, font);
+        let textAnchor: string;
+        let subTitleText: string = subTitle.text;
+        let maxSubTitleWidth: number = isNullOrUndefined(subTitle.maximumWidth) ?
+            (this.bounds.width * 0.75) : subTitle.maximumWidth;
+        if (subTitle.enableTrim && subTitleSize.width > maxSubTitleWidth) {
+            subTitleText = textTrim(maxSubTitleWidth, subTitle.text, font);
+        }
+        x = title['subtitle'].textAlignment === 'Far' ? (titleLocation.x + (titleLocation.textSize.width)) :
+            (title['subtitle'].textAlignment === 'Near') ? titleLocation.x :
+                (titleLocation.x + (titleLocation.textSize.width / 2));
+        y = titleLocation.y + (2 * this.elementSpacing);
+        textAnchor = title['subtitle'].textAlignment === 'Far' ? 'end' :
+            (title['subtitle'].textAlignment === 'Near') ? 'start' : 'middle';
+        let subtitleEventArgs: ISubTitleRenderEventArgs = {
+            text: subTitleText,
+            x: x,
+            y: y,
+            name: subtitleRender,
+            cancel: false
+        };
+        let subtitleRenderSuccess: Function = (args: ISubTitleRenderEventArgs) => {
+            if (!args.cancel) {
+                let options: TextOption = new TextOption(
+                    this.element.id + '_Smithchart_' + type, args.x, args.y, textAnchor, args.text
+                );
+                let element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
+                element.setAttribute('aria-label', subTitle.description || args.text);
+                groupEle.appendChild(element);
+            }
+        };
+        subtitleRenderSuccess.bind(this);
+        this.trigger(subtitleRender, subtitleEventArgs, subtitleRenderSuccess);
+    }
+    /**
+     * @private
+     * Render the smithchart border
+     */
     private renderBorder(): void {
         let border: SmithchartBorderModel = this.border;
         let color: string = this.theme.toLowerCase() === 'highcontrast' ? '#000000' : '#FFFFFF';
         this.background = this.background ? this.background : this.themeStyle.background;
-        let borderRect: RectOption = new RectOption(this.element.id + '_SmithchartBorder', this.background, border, 1,
-                                                    new SmithchartRect(
-                                                        border.width / 2, border.width / 2,
-                                                        this.availableSize.width - border.width,
-                                                        this.availableSize.height - border.width));
+        let borderRect: RectOption = new RectOption(
+            this.element.id + '_SmithchartBorder', this.background, border, 1, new SmithchartRect(
+                border.width / 2, border.width / 2,
+                this.availableSize.width - border.width,
+                this.availableSize.height - border.width));
         this.svgObject.appendChild(this.renderer.drawRectangle(borderRect) as SVGRectElement);
     }
-/**
- * Called internally if any of the property value changed.
- * @private
- */
+    /**
+     * Called internally if any of the property value changed.
+     * @private
+     */
     public onPropertyChanged(newProp: SmithchartModel, oldProp: SmithchartModel): void {
         let renderer: boolean = false;
         for (let prop of Object.keys(newProp)) {
@@ -431,7 +447,7 @@ public theme: SmithchartTheme;
         if (renderer) {
             this.render();
         }
-     }
+    }
 
     /**
      * Constructor for creating the Smithchart widget
@@ -447,7 +463,7 @@ public theme: SmithchartTheme;
     protected preRender(): void {
         let blazor: string = 'Blazor';
         this.isBlazor = window[blazor];
-        this.trigger('load', {smithchart: this});
+        this.trigger(load, { smithchart: !this.isBlazor ? this : null });
         this.unWireEVents();
         this.initPrivateVariable();
         this.wireEVents();
@@ -459,7 +475,7 @@ public theme: SmithchartTheme;
      * To Initialize the control rendering.
      */
     private setTheme(): void {
-    /*! Set theme */
+        /*! Set theme */
         this.themeStyle = getThemeColor(this.theme);
         this.seriesColors = getSeriesColor(this.theme);
         // let count: number = colors.length;
@@ -478,20 +494,20 @@ public theme: SmithchartTheme;
         if (this.smithchartLegendModule && this.legendSettings.visible) {
             this.legendBounds = this.smithchartLegendModule.renderLegend(this);
         }
-        this.legendBounds = this.legendBounds ? this.legendBounds : {x: 0, y: 0, width: 0, height: 0};
+        this.legendBounds = this.legendBounds ? this.legendBounds : { x: 0, y: 0, width: 0, height: 0 };
         let areaBounds: AreaBounds = new AreaBounds();
         this.bounds = areaBounds.calculateAreaBounds(this, this.title, this.legendBounds);
         if (this.title.text !== '' && this.title.visible) {
-        this.renderTitle(this.title, 'title', null);
+            this.renderTitle(this.title, 'title', null);
         }
         let axisRender: AxisRender = new AxisRender();
         axisRender.renderArea(this, this.bounds);
         this.seriesrender = new SeriesRender();
         this.seriesrender.draw(this, axisRender, this.bounds);
         this.renderComplete();
-        this.trigger('loaded', { smithchart: this.isBlazor ? null : this });
+        this.trigger(loaded, { smithchart: !this.isBlazor ? this : null });
     }
-     private createSecondaryElement(): void {
+    private createSecondaryElement(): void {
         if (isNullOrUndefined(document.getElementById(this.element.id + '_Secondary_Element'))) {
             let secondaryElement: HTMLElement = createElement('div', {
                 id: this.element.id + '_Secondary_Element',
@@ -501,21 +517,21 @@ public theme: SmithchartTheme;
             let rect: ClientRect = this.element.getBoundingClientRect();
             let svgRect: HTMLElement = document.getElementById(this.element.id + '_svg');
             if (svgRect) {
-              let svgClientRect: ClientRect = svgRect.getBoundingClientRect();
-              secondaryElement.style.left = Math.max(svgClientRect.left - rect.left, 0) + 'px';
-              secondaryElement.style.top = Math.max(svgClientRect.top - rect.top, 0) + 'px';
+                let svgClientRect: ClientRect = svgRect.getBoundingClientRect();
+                secondaryElement.style.left = Math.max(svgClientRect.left - rect.left, 0) + 'px';
+                secondaryElement.style.top = Math.max(svgClientRect.top - rect.top, 0) + 'px';
             }
 
         } else {
             removeElement(this.element.id + '_Secondary_Element');
         }
     }
-/**
- * To destroy the widget
- * @method destroy
- * @return {void}.
- * @member of smithChart
- */
+    /**
+     * To destroy the widget
+     * @method destroy
+     * @return {void}.
+     * @member of smithChart
+     */
 
     public destroy(): void {
         this.unWireEVents();
@@ -544,7 +560,7 @@ public theme: SmithchartTheme;
             this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || this.isTouch;
         }
         if (this.tooltipRenderModule && !this.isTouch) {
-        this.tooltipRenderModule.smithchartMouseMove(this, e);
+            this.tooltipRenderModule.smithchartMouseMove(this, e);
         }
     }
 
@@ -555,48 +571,49 @@ public theme: SmithchartTheme;
             this.isTouch = e.pointerType === 'touch' || e.pointerType === '2';
         }
         if (this.tooltipRenderModule && this.isTouch) {
-        let tooltipElement: Tooltip = this.tooltipRenderModule.smithchartMouseMove(this, e);
-        if (tooltipElement) {
-        this.fadeoutTo = setTimeout(
-                (): void => {
-                    tooltipElement.fadeOut();
-                },
-                2000);
-        }
+            let tooltipElement: Tooltip = this.tooltipRenderModule.smithchartMouseMove(this, e);
+            if (tooltipElement) {
+                this.fadeoutTo = setTimeout(
+                    (): void => {
+                        tooltipElement.fadeOut();
+                    },
+                    2000);
+            }
         }
     }
 
     /**
      * To handle the click event for the smithchart.
      */
-     /* tslint:disable:no-string-literal */
+    /* tslint:disable:no-string-literal */
     public smithchartOnClick(e: PointerEvent): void {
-    let targetEle: Element = <Element>e.target;
-    let targetId: string = targetEle.id;
-    let parentElement: Element = document.getElementById(targetId).parentElement;
-    let grpElement: Element = document.getElementById(parentElement.id).parentElement;
-    if ( grpElement.id === 'containerlegendItem_Group' && this.legendSettings.toggleVisibility) {
-        let childElement: HTMLElement = <HTMLElement>parentElement.childNodes[1];
-        let circleElement: HTMLElement = <HTMLElement>parentElement.childNodes[0];
-        let legendText: string = childElement.textContent;
-        let seriesIndex: number;
-        let fill: string;
-        for (let i: number = 0; i < this.smithchartLegendModule.legendSeries.length; i++) {
-            if (legendText === this.smithchartLegendModule.legendSeries[i]['text']) {
+        let targetEle: Element = <Element>e.target;
+        let targetId: string = targetEle.id;
+        let parentElement: Element = document.getElementById(targetId).parentElement;
+        let grpElement: Element = document.getElementById(parentElement.id).parentElement;
+        if (grpElement.id === 'containerlegendItem_Group' && this.legendSettings.toggleVisibility) {
+            let childElement: HTMLElement = <HTMLElement>parentElement.childNodes[1];
+            let circleElement: HTMLElement = <HTMLElement>parentElement.childNodes[0];
+            let legendText: string = childElement.textContent;
+            let seriesIndex: number;
+            let fill: string;
+            for (let i: number = 0; i < this.smithchartLegendModule.legendSeries.length; i++) {
+                if (legendText === this.smithchartLegendModule.legendSeries[i]['text']) {
                     seriesIndex = this.smithchartLegendModule.legendSeries[i].seriesIndex;
                     fill = this.smithchartLegendModule.legendSeries[i].fill;
+                }
             }
-        }
-        let seriesElement: HTMLElement = <HTMLElement>document.getElementById(this.element.id + '_svg' + '_seriesCollection' + seriesIndex);
-        if (seriesElement.getAttribute('visibility') === 'visible') {
-            circleElement.setAttribute('fill', 'gray');
-            seriesElement.setAttribute('visibility', 'hidden');
-            this.series[seriesIndex].visibility = 'hidden';
-        } else {
-            circleElement.setAttribute('fill', fill);
-            seriesElement.setAttribute('visibility', 'visible');
-            this.series[seriesIndex].visibility = 'visible';
-        }
+            let seriesElement: HTMLElement = <HTMLElement>document.getElementById(
+                this.element.id + '_svg' + '_seriesCollection' + seriesIndex);
+            if (seriesElement.getAttribute('visibility') === 'visible') {
+                circleElement.setAttribute('fill', 'gray');
+                seriesElement.setAttribute('visibility', 'hidden');
+                this.series[seriesIndex].visibility = 'hidden';
+            } else {
+                circleElement.setAttribute('fill', fill);
+                seriesElement.setAttribute('visibility', 'visible');
+                this.series[seriesIndex].visibility = 'visible';
+            }
         }
     }
     /**
@@ -625,9 +642,9 @@ public theme: SmithchartTheme;
         let exportMap: ExportUtils = new ExportUtils(this);
         exportMap.export(type, fileName, orientation);
     }
-/**
- * To handle the window resize event on smithchart.
- */
+    /**
+     * To handle the window resize event on smithchart.
+     */
     public smithchartOnResize(e: Event): boolean {
 
         this.animateSeries = false;
@@ -635,10 +652,10 @@ public theme: SmithchartTheme;
             clearTimeout(this.resizeTo);
         }
         this.resizeTo = setTimeout(
-                (): void => {
-                    this.render();
-                },
-                500);
+            (): void => {
+                this.render();
+            },
+            500);
         return false;
     }
     /**
@@ -655,13 +672,13 @@ public theme: SmithchartTheme;
             });
         }
         for (let i: number = 0; i < this.series.length; i++) {
-        if (this.series[i].tooltip.visible) {
-            modules.push({
-                member: 'TooltipRender',
-                args: [this]
-            });
-            break;
-        }
+            if (this.series[i].tooltip.visible) {
+                modules.push({
+                    member: 'TooltipRender',
+                    args: [this]
+                });
+                break;
+            }
         }
         return modules;
     }
@@ -673,9 +690,9 @@ public theme: SmithchartTheme;
      * @private
      */
     public removeSvg(): void {
-    removeElement(this.element.id + '_Secondary_Element');
-    let removeLength: number = 0;
-    if (this.svgObject) {
+        removeElement(this.element.id + '_Secondary_Element');
+        let removeLength: number = 0;
+        if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
             }

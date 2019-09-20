@@ -71,7 +71,6 @@ describe('OnDemand load Child', () => {
     });
 
     it('Render the data with expaned state', () => {
-        debugger;
             expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(1);
             expect(gridObj.element.querySelectorAll('.e-treegridcollapse').length).toBe(0);
             expect(gridObj.getRows().length).toBe(3);

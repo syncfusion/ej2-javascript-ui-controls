@@ -34,13 +34,14 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
      */
     public render(cell: Cell<Column>, data: Object, attributes?: { [x: string]: Object }): Element {
         let node: Element = this.element.cloneNode() as Element;
+        let uid: string = 'uid';
         node.appendChild(this.unbounDiv.cloneNode());
         (<HTMLElement>node).setAttribute('aria-label', 'is Command column column header ' + cell.column.headerText);
         if (cell.column.commandsTemplate) {
             appendChildren(node.firstElementChild, cell.column.getColumnTemplate()(data));
         } else {
             for (let command of cell.commands) {
-                node = this.renderButton(node, command, <number>attributes.index);
+                node = this.renderButton(node, command, <number>attributes.index, command[uid]);
             }
         }
         this.setAttributes(<HTMLElement>node, cell, attributes);
@@ -54,12 +55,14 @@ export class CommandColumnRenderer extends CellRenderer implements ICellRenderer
         return node;
     }
 
-    private renderButton(node: Element, buttonOption: CommandModel, index: number): Element {
+    private renderButton(node: Element, buttonOption: CommandModel, index: number, uid: string): Element {
         let button: HTMLButtonElement = <HTMLButtonElement>this.buttonElement.cloneNode();
         attributes(button, {
             'id': this.parent.element.id + (buttonOption.type || '') + '_' + index, 'type': 'button',
             title: !isNullOrUndefined(buttonOption.title) ? buttonOption.title :
-                buttonOption.buttonOption.content || this.localizer.getConstant(buttonOption.type) || buttonOption.type
+            buttonOption.buttonOption.content || this.localizer.getConstant(buttonOption.type) || buttonOption.type,
+            'data-uid': uid
+
         });
         button.onclick = buttonOption.buttonOption.click;
         let buttonObj: Button = new Button(buttonOption.buttonOption, button);

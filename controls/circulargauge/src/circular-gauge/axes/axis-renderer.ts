@@ -79,40 +79,96 @@ export class AxisRenderer {
         let max: number = axis.visibleRange.max;
         let labelCollection: VisibleLabels[] = axis.visibleLabels;
         let location: GaugeLocation;
-        let style: Label = <Label>axis.labelStyle;
-        let anchor: string;
-        let angle: number;
-        let label: VisibleLabels;
-        let radius: number = axis.currentRadius;
-        let labelPadding: number = 10;
+        let textWidth: number; let textHeight: number; let labelsVisible: boolean = true;
+        let currentTextWidth: number; let currentTextHeight: number;
+        let previousLocation: GaugeLocation; let currentLocation: GaugeLocation;
+        let lastLabelLocation: GaugeLocation;
+        let lastLabelAngle: number; let lastLabelAnchor: string;
+        let lastTextWidth: number; let lastTextHeight: number;
+        let style: Label = <Label>axis.labelStyle; let anchor: string; let angle: number;
+        let label: VisibleLabels; let radius: number = axis.currentRadius; let labelPadding: number = 10;
         let color: string = style.font.color || this.gauge.themeStyle.labelColor;
         if (style.position === 'Outside') {
-            radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) +
-                (labelPadding / 2);
+            radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) + (labelPadding / 2);
         } else {
-            radius -= (axis.farSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2) +
-                (style.autoAngle ? labelPadding : 0));
+            radius -= (axis.farSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2) + (style.autoAngle ? labelPadding : 0));
         }
-
+        //To get and store lastlabelposition
+        if (axis.hideIntersectingLabel) {
+            lastLabelAngle = Math.round(getAngleFromValue(labelCollection[labelCollection.length - 1].value, max,
+                                                          min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
+            lastLabelLocation =  getLocationFromAngle(lastLabelAngle, radius, gauge.midPoint);
+            lastLabelAnchor = this.findAnchor(lastLabelLocation, style, lastLabelAngle, labelCollection[labelCollection.length - 1]);
+            lastTextWidth = (!axis.showLastLabel && (isCompleteAngle(axis.startAngle, axis.endAngle)) && (style.hiddenLabel !== 'First')) ?
+            labelCollection[0].size.width : labelCollection[labelCollection.length - 1].size.width;
+            lastTextHeight = (!axis.showLastLabel && (isCompleteAngle(axis.startAngle, axis.endAngle)) && (style.hiddenLabel !== 'First')) ?
+            (!style.autoAngle ? labelCollection[0].size.height : labelCollection[0].size.width) :
+            (!style.autoAngle ? labelCollection[labelCollection.length - 1].size.height :
+            labelCollection[labelCollection.length - 1].size.width);
+            lastTextHeight = lastTextHeight - this.offsetAxisLabelsize(lastLabelAngle, lastTextHeight);
+            lastLabelLocation = this.getAxisLabelStartPosition( lastLabelLocation, lastTextWidth, style, lastTextHeight, lastLabelAnchor,
+                                                                lastLabelAngle);
+        }
         for (let i: number = 0, length: number = labelCollection.length; i < length; i++) {
-            if ((i === 0 && style.hiddenLabel === 'First') ||
-                (i === (length - 1) && style.hiddenLabel === 'Last')) {
-                continue;
-            }
             label = labelCollection[i];
             angle = Math.round(getAngleFromValue(label.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
             location = getLocationFromAngle(angle, radius, gauge.midPoint);
             anchor = this.findAnchor(location, style, angle, label);
+            //To get the current label and previous label position for initial stage
+            if (axis.hideIntersectingLabel) {
+                currentLocation = getLocationFromAngle(angle, radius, gauge.midPoint);
+                currentTextWidth = label.size.width;
+                currentTextHeight = !style.autoAngle ? label.size.height : currentTextWidth;
+                currentTextHeight = currentTextHeight - this.offsetAxisLabelsize(angle, currentTextHeight);
+                currentLocation = this.getAxisLabelStartPosition(currentLocation, currentTextWidth, style, currentTextHeight, anchor,
+                                                                 angle);
+                if (i === 0) {
+                    previousLocation = getLocationFromAngle(angle, radius, gauge.midPoint);
+                    textWidth = label.size.width;
+                    textHeight = !style.autoAngle ? label.size.height : textWidth;
+                    textHeight = textHeight - this.offsetAxisLabelsize(angle, textHeight);
+                    previousLocation = this.getAxisLabelStartPosition(previousLocation, textWidth, style, textHeight, anchor, angle);
+                }
+            }
+            if ((i === 0 && style.hiddenLabel === 'First') || (i === (length - 1) && style.hiddenLabel === 'Last')) {
+                continue;
+            }
             style.font.fontFamily = this.gauge.themeStyle.labelFontFamily || style.font.fontFamily;
-            textElement(
-                new TextOption(
-                    gauge.element.id + '_Axis_' + index + '_Label_' + i,
-                    location.x, location.y, anchor, label.text,
-                    style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'),
-                style.font, style.useRangeColor ? getRangeColor(
-                    label.value, <Range[]>axis.ranges, color) : color,
-                labelElement, 'pointer-events:none;'
-            );
+            if ( axis.hideIntersectingLabel && (i !== 0)) {
+                //To remove the labels which is intersecting with last label.
+                let lastlabel: boolean = ((i !== (labelCollection.length - 1)) && ((isCompleteAngle(axis.startAngle, axis.endAngle) ||
+                axis.showLastLabel))) ? this.FindAxisLabelCollision(lastLabelLocation, lastTextWidth, lastTextHeight, currentLocation,
+                                                                    currentTextWidth, currentTextHeight) : true;
+                //Checking wether the axis label is intersecting with previous label or not.
+                labelsVisible = (this.FindAxisLabelCollision(previousLocation, textWidth, textHeight, currentLocation, currentTextWidth,
+                                                             currentTextHeight) && lastlabel );
+            } else {
+                labelsVisible = true;
+            }
+            if (labelsVisible || (i === labelCollection.length - 1)) {
+                //To hide first and last label based on requirement
+                label.text = (!axis.showLastLabel && ((isCompleteAngle(axis.startAngle, axis.endAngle) && style.hiddenLabel !== 'First') ||
+                                                      !labelsVisible )
+                && axis.hideIntersectingLabel && (i === (length - 1))) ? '' : label.text;
+                label.text = (axis.showLastLabel && axis.hideIntersectingLabel && isCompleteAngle(axis.startAngle, axis.endAngle)
+                && (i === 0)) ? '' : label.text;
+                textElement(
+                    new TextOption(
+                        gauge.element.id + '_Axis_' + index + '_Label_' + i,
+                        location.x, location.y, anchor, label.text,
+                        style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'
+                    ),
+                    style.font, style.useRangeColor ? getRangeColor(label.value, <Range[]>axis.ranges, color) : color,
+                    labelElement, 'pointer-events:none;'
+                );
+                if (axis.hideIntersectingLabel) {
+                    textWidth = label.size.width;
+                    textHeight = !style.autoAngle ? label.size.height : textWidth;
+                    textHeight = textHeight - this.offsetAxisLabelsize(angle, textHeight);
+                    previousLocation.x = currentLocation.x;
+                    previousLocation.y = currentLocation.y;
+                }
+            }
         }
         element.appendChild(labelElement);
     }
@@ -134,7 +190,44 @@ export class AxisRenderer {
             ((angle >= 240 && angle <= 300) ? 0 :
                 (angle >= 60 && angle <= 120) ? label.size.height / 2 : label.size.height / 4);
         return anchor;
+    }
 
+    /**
+     * Methode to check whether the labels are intersecting or not.
+     * @private
+     */
+    private FindAxisLabelCollision(previousLocation: GaugeLocation, previousWidth: number, previousHeight: number,
+                                   currentLocation: GaugeLocation, currentWidth: number, currentHeight: number): boolean {
+        let labelVisisble: boolean = ((previousLocation.x > (currentLocation.x + (currentWidth))) ||
+        ((previousLocation.x + (previousWidth)) < (currentLocation.x)) ||
+        ((previousLocation.y + (previousHeight)) < (currentLocation.y)) || ((previousLocation.y) > (currentLocation.y + (currentHeight))));
+        return labelVisisble;
+    }
+
+    /**
+     * Methode to get anchor position of label as start.
+     * @private
+     */
+    private getAxisLabelStartPosition(actualLocation: GaugeLocation, textWidth: number, style: Label,
+                                      textHeight: number, anchorPosition: string, angle: number): GaugeLocation {
+        if ( anchorPosition === 'end') {
+        actualLocation.x = actualLocation.x - textWidth;
+        } else if ( anchorPosition === 'middle') {
+        actualLocation.x = actualLocation.x - (textWidth / 2);
+        } else {
+        actualLocation.x = actualLocation.x;
+        }
+        return actualLocation;
+    }
+
+    /**
+     * Methode to offset label height and width based on angle.
+     * @private
+     */
+    private offsetAxisLabelsize(angle: number, size: number): number {
+        let finalSize: number = ((angle >= 20 && angle <= 60) || (angle >= 120 && angle <= 160) || (angle >= 200 && angle <= 240) ||
+                        (angle >= 300 && angle <= 340)) ? size / 5 : 0 ;
+        return finalSize;
     }
 
     /**
@@ -292,7 +385,7 @@ export class AxisRenderer {
                                 Math.floor(roundedStartAngle), Math.ceil(roundedEndAngle), oldStart, oldEnd,
                                 range.currentRadius, startWidth, endWidth
                             ),
-                            '', 'pointer-events:none;'
+                            '', ''
                         ),
                         rangeElement, gauge
                     );
@@ -306,7 +399,7 @@ export class AxisRenderer {
                                 Math.floor(startAngle), Math.ceil(endAngle),
                                 range.currentRadius, startWidth, endWidth
                             ),
-                            '', 'pointer-events:none;'
+                            '', ''
                         ),
                         rangeElement, gauge
                     );

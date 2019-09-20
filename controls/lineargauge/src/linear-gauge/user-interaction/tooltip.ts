@@ -1,4 +1,4 @@
-import { createElement, Browser, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { createElement, Browser } from '@syncfusion/ej2-base';
 import { LinearGauge } from '../../linear-gauge';
 import { Axis, Pointer } from '../axes/axis';
 import { TooltipSettings } from '../model/base';
@@ -80,15 +80,25 @@ export class GaugeTooltip {
                 });
                 document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
+            if (tooltipEle.childElementCount !== 0 && !this.gauge.pointerDrag) {
+                return null;
+            }
             let location: GaugeLocation = this.getTooltipLocation();
             let args: ITooltipRenderEventArgs = {
-                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location, content: tooltipContent,
-                tooltip: this.tooltip, axis: this.currentAxis, pointer: this.currentPointer
+                name: tooltipRender,
+                cancel: false,
+                gauge: this.gauge,
+                event: e,
+                location: location,
+                content: tooltipContent,
+                tooltip: this.tooltip,
+                axis: this.currentAxis,
+                pointer: this.currentPointer
             };
             let tooltipPos: string = this.getTooltipPosition();
             location.y += (this.tooltip.template && tooltipPos === 'Top') ? 20 : 0;
             location.x += (this.tooltip.template && tooltipPos === 'Right') ? 20 : 0;
-            this.gauge.trigger('tooltipRender', args, (observedArgs: ITooltipRenderEventArgs) => {
+            this.gauge.trigger(tooltipRender, args, (observedArgs: ITooltipRenderEventArgs) => {
                 let template: string = args.tooltip.template;
                 if (template !== null && Object.keys(template).length === 1) {
                     template = template[Object.keys(template)[0]];
@@ -118,21 +128,16 @@ export class GaugeTooltip {
                         ),
                         textStyle: args.tooltip.textStyle,
                         border: args.tooltip.border,
-                        theme: args.gauge.theme as TooltipTheme
+                        theme: args.gauge.theme as TooltipTheme,
+                        blazorTemplate: { name: 'TooltipTemplate', parent: this.gauge.tooltip }
                     });
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);
-                    if (this.gauge.tooltip.template) {
-                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-                    }
                 }
             });
         } else {
             clearTimeout(this.clearTimeout);
             this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
-            if (this.gauge.tooltip.template) {
-                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-            }
         }
     }
 
@@ -185,7 +190,6 @@ export class GaugeTooltip {
         if (document.getElementsByClassName('EJ2-LinearGauge-Tooltip').length > 0) {
             document.getElementsByClassName('EJ2-LinearGauge-Tooltip')[0].remove();
         }
-        resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
     }
 
     public mouseUpHandler(e: PointerEvent): void {

@@ -109,7 +109,7 @@ describe('Heatmap Control', () => {
             expect(heatmap.dataSourceMinValue).toBe(30);
         });
 
-        it('Check cell dataSource with x-axis & y-axis as catagory1', () => {
+        it('Check cell dataSource with x-axis & y-axis as catagory', () => {
 
             adaptorData  = {
                 isJsonData: false,
@@ -130,7 +130,7 @@ describe('Heatmap Control', () => {
             expect(heatmap.dataSourceMinValue).toBe(1);
         });
 
-        it('Check cell dataSource with x-axis & y-axis as catagory2', () => {
+        it('Check cell dataSource with x-axis & y-axis as catagory', () => {
             heatmap.xAxis.minimum = 2;
             heatmap.xAxis.maximum = 8;
             heatmap.dataBind();
@@ -140,7 +140,7 @@ describe('Heatmap Control', () => {
             expect(heatmap.dataSourceMinValue).toBe(1);
         });
 
-        it('Check cell dataSource with x-axis & y-axis as catagory3', () => {
+        it('Check cell dataSource with x-axis & y-axis as catagory', () => {
 
             adaptorData = {
                 isJsonData: false,

@@ -274,6 +274,7 @@ export class ThumbnailView {
             proxy.setSelectionStyle(event.srcElement as HTMLElement);
             proxy.previousElement = event.srcElement as HTMLElement;
         }
+        proxy.pdfViewer.fireThumbnailClick(pageNumber + 1);
         proxy.isThumbnailClicked = true;
         proxy.goToThumbnailPage(pageNumber + 1);
         proxy.pdfViewerBase.focusViewerContainer();

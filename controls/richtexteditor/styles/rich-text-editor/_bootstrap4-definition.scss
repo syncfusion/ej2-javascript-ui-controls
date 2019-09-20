@@ -139,6 +139,10 @@ $rte-big-content-font-size: 16px !default;
 $rte-dropdown-caret-icon-size: 8px !default;
 $rte-big-dropdown-caret-icon-size: 10px !default;
 
+$rte-resize-handler-width: 15px;
+$rte-resize-handler-height: 15px;
+$rte-resize-handler-position: 0;
+
 @include export-module('richtexteditor-bootstrap4') {
   #{&}.e-richtexteditor {
     border-radius: 4px;

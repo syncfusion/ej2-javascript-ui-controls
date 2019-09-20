@@ -174,6 +174,10 @@ export class ColumnWidthService {
             && isNullOrUndefined(column.minWidth) && !this.isWidthUndefined()) {
             column.width = 200;
         }
+        if (this.parent.frozenColumns && isNullOrUndefined(column.width) &&
+            column.index < this.parent.frozenColumns) {
+            column.width = 200;
+        }
         if (!column.width) { return null; }
         let width: number = parseInt(column.width.toString(), 10);
         if (column.minWidth && width < parseInt(column.minWidth.toString(), 10)) {

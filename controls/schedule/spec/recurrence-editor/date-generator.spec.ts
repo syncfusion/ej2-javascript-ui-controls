@@ -727,7 +727,7 @@ describe('Recurrence Date Generator Specs', () => {
                         new Date('Thu Jun 12 2014 ').getTime(), new Date('Fri Jun 13 2014 ').getTime(),
                         new Date('Thu Jul 10 2014 ').getTime(), new Date('Fri Jul 11 2014 ').getTime(),
                         new Date('Mon Jul 14 2014 ').getTime(), new Date('Tue Jul 15 2014 ').getTime()]));
-        });        
+        });
         it('Monthly FREQ with BYMONTHDAY and BYDAY properties', () => {
             expect(
                 JSON.stringify(generate(new Date('Fri Jul 06 2019'),

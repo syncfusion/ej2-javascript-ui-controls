@@ -27,7 +27,10 @@ describe('DropDownList Control', () => {
                 mode: 'Inline',
                 type: 'DropDownList',
                 value: 'test',
-                name: 'DropDownComponent'
+                name: 'DropDownComponent',
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -51,6 +54,9 @@ describe('DropDownList Control', () => {
         it('Clear icon availability testing', () => {
             expect(editorObj.componentObj.showClearButton).toBe(true);
             expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('Clear icon availability testing for false', () => {
             editorObj.componentObj.showClearButton = false;
@@ -429,7 +435,7 @@ describe('DropDownList Control', () => {
             expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -485,7 +491,7 @@ describe('DropDownList Control', () => {
             expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -541,7 +547,7 @@ describe('DropDownList Control', () => {
             expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -597,7 +603,7 @@ describe('DropDownList Control', () => {
             expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -640,7 +646,7 @@ describe('DropDownList Control', () => {
             expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('Badminton');
             editorObj.save();
             expect(editorObj.value).toEqual('game1');
-            expect(serverValue).toEqual('Badminton');
+            expect(serverValue).toEqual('game1');
             expect(valueEle.innerHTML).toEqual('Badminton');
             editorObj.value = '';
             editorObj.dataBind();
@@ -666,7 +672,7 @@ describe('DropDownList Control', () => {
             expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('Basketball');
             editorObj.save();
             expect(editorObj.value).toEqual('game2');
-            expect(serverValue).toEqual('Basketball');
+            expect(serverValue).toEqual('game2');
             expect(valueEle.innerHTML).toEqual('Basketball');
         });
     });

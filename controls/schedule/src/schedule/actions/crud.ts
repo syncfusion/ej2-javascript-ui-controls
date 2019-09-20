@@ -5,7 +5,6 @@ import { ActionEventArgs, EventFieldsMapping, SaveChanges, CrudArgs } from '../b
 import { ReturnType, CurrentAction } from '../base/type';
 import { Schedule } from '../base/schedule';
 import * as events from '../base/constant';
-import { Timezone } from '../timezone/timezone';
 
 /**
  * Schedule CRUD operations
@@ -13,11 +12,9 @@ import { Timezone } from '../timezone/timezone';
 
 export class Crud {
     public parent: Schedule;
-    public timezone: Timezone;
 
     constructor(parent: Schedule) {
         this.parent = parent;
-        this.timezone = new Timezone();
     }
 
     private getQuery(): Query {
@@ -60,6 +57,9 @@ export class Crud {
     }
 
     public addEvent(eventData: Object | Object[]): void {
+        if (!this.parent.eventSettings.allowAdding) {
+            return;
+        }
         if (this.parent.eventBase.isBlockRange(eventData)) {
             let data: Object | Object[] = (eventData instanceof Array) ? [eventData] : eventData;
             this.parent.quickPopup.openValidationError('blockAlert', data);
@@ -96,6 +96,9 @@ export class Crud {
     }
 
     public saveEvent(event: Object | Object[], action?: CurrentAction): void {
+        if (!this.parent.eventSettings.allowEditing) {
+            return;
+        }
         if (this.parent.eventBase.isBlockRange(event)) {
             let data: Object | Object[] = (event instanceof Array) ? [event] : event;
             this.parent.quickPopup.openValidationError('blockAlert', data);
@@ -116,7 +119,8 @@ export class Crud {
             this.processCrudTimezone(data);
             if ((event instanceof Array)) {
                 editParms.changedRecords = event;
-                this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as Promise<Object>;
+                promise = this.parent.dataModule.dataManager.saveChanges(editParms, fields.id, this.getTable(), this.getQuery()) as
+                    Promise<Object>;
             } else {
                 editParms.changedRecords.push(event);
                 promise = this.parent.dataModule.dataManager.update(fields.id, event, this.getTable(), this.getQuery()) as Promise<Object>;
@@ -125,11 +129,14 @@ export class Crud {
             let parentEvent: { [key: string]: Object } = this.getParentEvent(data);
             switch (action) {
                 case 'EditOccurrence':
-                    let edited: { [key: string]: Object }[] = this.getEditedOccurrence(data.Guid as string);
                     args.data = { occurrence: event, parent: parentEvent };
                     this.parent.trigger(events.actionBegin, args);
                     if (args.cancel) {
                         return;
+                    }
+                    let edited: { [key: string]: Object }[] = this.getEditedOccurrence(data.Guid as string);
+                    if (edited.length === 0) {
+                        edited.push(<{ [key: string]: Object; }>event);
                     }
                     let exDate: string = this.excludeDateCheck(edited[0][fields.startTime] as Date, <string>parentEvent
                     [fields.recurrenceException]);
@@ -390,6 +397,9 @@ export class Crud {
     }
 
     public deleteEvent(id: string | number | Object | Object[], action?: CurrentAction): void {
+        if (!this.parent.eventSettings.allowDeleting) {
+            return;
+        }
         let fields: EventFieldsMapping = this.parent.eventFields;
         let editParms: SaveChanges = { addedRecords: [], changedRecords: [], deletedRecords: [] };
         let dataObj: Object[] = [];
@@ -539,17 +549,18 @@ export class Crud {
             let endTimezone: string = <string>events[fields.endTimezone] || <string>events[fields.startTimezone];
             if (this.parent.timezone) {
                 let zone: number & string = <number & string>this.parent.timezone;
-                events[fields.startTime] = this.timezone.convert(<Date>events[fields.startTime], <number & string>startTimezone, zone);
-                events[fields.endTime] = this.timezone.convert(<Date>events[fields.endTime], <number & string>endTimezone, zone);
-                events[fields.startTime] = this.timezone.remove(<Date>events[fields.startTime], zone);
-                events[fields.endTime] = this.timezone.remove(<Date>events[fields.endTime], zone);
+                events[fields.startTime] =
+                    this.parent.tzModule.convert(<Date>events[fields.startTime], <number & string>startTimezone, zone);
+                events[fields.endTime] = this.parent.tzModule.convert(<Date>events[fields.endTime], <number & string>endTimezone, zone);
+                events[fields.startTime] = this.parent.tzModule.remove(<Date>events[fields.startTime], zone);
+                events[fields.endTime] = this.parent.tzModule.remove(<Date>events[fields.endTime], zone);
             } else {
-                events[fields.startTime] = this.timezone.remove(<Date>events[fields.startTime], startTimezone);
-                events[fields.endTime] = this.timezone.remove(<Date>events[fields.endTime], endTimezone);
+                events[fields.startTime] = this.parent.tzModule.remove(<Date>events[fields.startTime], startTimezone);
+                events[fields.endTime] = this.parent.tzModule.remove(<Date>events[fields.endTime], endTimezone);
             }
         } else if (this.parent.timezone) {
-            events[fields.startTime] = this.timezone.remove(<Date>events[fields.startTime], this.parent.timezone);
-            events[fields.endTime] = this.timezone.remove(<Date>events[fields.endTime], this.parent.timezone);
+            events[fields.startTime] = this.parent.tzModule.remove(<Date>events[fields.startTime], this.parent.timezone);
+            events[fields.endTime] = this.parent.tzModule.remove(<Date>events[fields.endTime], this.parent.timezone);
         }
     }
 

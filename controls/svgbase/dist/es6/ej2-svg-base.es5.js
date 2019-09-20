@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, NotifyPropertyChanges, Property, compile, createElement, extend, isNullOrUndefined, merge, remove } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, NotifyPropertyChanges, Property, compile, createElement, extend, isBlazor, isNullOrUndefined, merge, remove, resetBlazorTemplate, updateBlazorTemplate } from '@syncfusion/ej2-base';
 
 /**
  * To import utils
@@ -1399,6 +1399,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     Tooltip.prototype.removeSVG = function () {
         var svgObject = document.getElementById(this.element.id + '_svg');
         var templateObject = document.getElementById(this.element.id + 'parent_template');
+        if (this.blazorTemplate) {
+            resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
+        }
         if (svgObject && svgObject.parentNode) {
             remove(svgObject);
         }
@@ -1685,10 +1688,16 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             remove(firstElement);
         }
         if (!argsData.cancel) {
-            var templateElement = this.templateFn(this.data);
             var elem = createElement('div', { id: this.element.id + 'parent_template' });
+            var templateElement = this.templateFn(this.data, null, null, elem.id + '_blazorTemplate', '');
             while (templateElement && templateElement.length > 0) {
-                elem.appendChild(templateElement[0]);
+                if (isBlazor()) {
+                    elem.appendChild(templateElement[0]);
+                    templateElement = null;
+                }
+                else {
+                    elem.appendChild(templateElement[0]);
+                }
             }
             parent.appendChild(elem);
             var element = this.isCanvas ? elem : this.element;
@@ -1701,6 +1710,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.updateDiv(element, tooltipRect.x, tooltipRect.y);
+            }
+            if (this.blazorTemplate) {
+                updateBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate', this.blazorTemplate.name, this.blazorTemplate.parent);
             }
         }
         else {
@@ -1899,6 +1911,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Tooltip.prototype.onPropertyChanged = function (newProp, oldProp) {
+        if (this.blazorTemplate) {
+            resetBlazorTemplate(this.element.id + 'parent_template' + '_blazorTemplate');
+        }
         this.isFirst = false;
         this.render();
     };
@@ -1986,6 +2001,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(null)
     ], Tooltip.prototype, "availableSize", void 0);
+    __decorate([
+        Property()
+    ], Tooltip.prototype, "blazorTemplate", void 0);
     __decorate([
         Property(false)
     ], Tooltip.prototype, "isCanvas", void 0);

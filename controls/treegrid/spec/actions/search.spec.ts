@@ -2,6 +2,7 @@ import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
 import { sampleData, projectData, newSampledata, employeeData3 } from '../base/datasource.spec';
 import { Filter } from '../../src/treegrid/actions/filter';
+import { Page } from '../../src/treegrid/actions/page';
 import { Sort } from '../../src/treegrid/actions/sort';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
@@ -11,7 +12,7 @@ import { SaveEventArgs, ActionEventArgs } from '@syncfusion/ej2-grids';
 /**
  * Grid base spec 
  */
-TreeGrid.Inject(Filter, Toolbar, Edit, Sort);
+TreeGrid.Inject(Filter, Toolbar, Page, Edit, Sort);
 describe('Search module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -70,7 +71,6 @@ describe('Search module', () => {
     });
 
     it('Check the searched records for child mode', (done: Function) => {
-
         actionComplete = (args?: Object): void => {
            expect(gridObj.getRows().length).toBe(3);
            expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
@@ -82,6 +82,59 @@ describe('Search module', () => {
         gridObj.search("Testing");
     });
 
+
+    it('Check the searched records for child mode in collapsed state without paging', (done: Function) => {
+      gridObj.actionComplete = () => void {}
+      gridObj.search('');
+      actionComplete = (args?: Object): void => {
+         expect(gridObj.getRows().length).toBe(3);
+         expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
+         expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true); 
+         expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true); 
+         done();
+      }
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.collapseAll();
+      gridObj.search("Testing");
+  });
+   
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
+  describe('Hierarchy Search Mode Testing with Paging - Child', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          toolbar: ['Search'],
+          searchSettings: { hierarchyMode: 'Child' },
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+
+    it('Check the searched records for child mode in Collapsed state with paging', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+           expect(gridObj.getRows().length).toBe(3);
+           expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
+           expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true); 
+           expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true); 
+           done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.collapseAll();
+        gridObj.search("Testing"); 
+    });
+   
     afterAll(() => {
       destroy(gridObj);
     });
@@ -475,6 +528,7 @@ describe('EJ2-28175: Duplicate records of search result after sorting', () => {
       {
           dataSource: employeeData3,
           childMapping: "Children",
+          allowSorting: true,
           sortSettings: {columns: [{field: 'Name', direction: 'Ascending'}]},
           toolbar: ['Search'],
           treeColumnIndex: 0,

@@ -41,8 +41,11 @@ export class TwoDimensional {
         this.tempColorArray = [];
         this.heatMap.minColorValue = null;
         this.heatMap.maxColorValue = null;
+        this.heatMap.dataMax = [];
+        this.heatMap.dataMin = [];
 
-        for (let z: number = axis[1].valueType === 'Category' ? axis[1].min : 0; z < yLength; z++) {
+        for (let z: number = axis[1].valueType === 'Category' ? axis[1].min : 0; z < (
+            this.heatMap.paletteSettings.colorGradientMode === 'Column' ? xLength : yLength); z++) {
             let tempIndex: number = axis[0].valueType === 'Category' ? axis[0].min : 0;
             this.completeDataSource.push([]);
             while (tempIndex < xLength) {
@@ -51,10 +54,26 @@ export class TwoDimensional {
                 }
                 tempIndex++;
             }
-            tempVariable = <number[]>extend([], this.completeDataSource[cloneDataIndex], null, true);
+            if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.paletteSettings.type === 'Gradient') {
+                tempVariable = <number[]>extend([], tempCloneData[cloneDataIndex], null, true);
+                for (let i: number = 0; i < tempVariable.length; i++) {
+                    if (typeof (tempVariable[i]) === 'object') {
+                        tempVariable[i] = tempVariable[i][0];
+                    }
+                }
+            } else {
+                tempVariable = <number[]>extend([], this.completeDataSource[cloneDataIndex], null, true);
+
+            }
             let minMaxVal: number[] = this.getMinMaxValue(minVal, maxVal, tempVariable);
-            minVal = minMaxVal[0];
-            maxVal = minMaxVal[1];
+            if ((this.heatMap.paletteSettings.colorGradientMode === 'Column' ||
+                this.heatMap.paletteSettings.colorGradientMode === 'Row') && this.heatMap.paletteSettings.type === 'Gradient') {
+                this.heatMap.dataMax[z] = minMaxVal[1];
+                this.heatMap.dataMin[z] = minMaxVal[0];
+            } else {
+                minVal = minMaxVal[0];
+                maxVal = minMaxVal[1];
+            }
             if (this.heatMap.xAxis.isInversed) {
                 this.completeDataSource[cloneDataIndex] = this.completeDataSource[cloneDataIndex].reverse();
             }
@@ -62,6 +81,16 @@ export class TwoDimensional {
                 minMaxDatasource.push(this.completeDataSource[cloneDataIndex]);
             }
             cloneDataIndex++;
+        }
+        if (this.heatMap.paletteSettings.colorGradientMode === 'Row' && !this.heatMap.yAxis.isInversed &&
+            this.heatMap.paletteSettings.type === 'Gradient') {
+            this.heatMap.dataMax = this.heatMap.dataMax.reverse();
+            this.heatMap.dataMin = this.heatMap.dataMin.reverse();
+        }
+        if (this.heatMap.paletteSettings.colorGradientMode === 'Column' && this.heatMap.xAxis.isInversed &&
+            this.heatMap.paletteSettings.type === 'Gradient') {
+            this.heatMap.dataMax = this.heatMap.dataMax.reverse();
+            this.heatMap.dataMin = this.heatMap.dataMin.reverse();
         }
         if (!this.heatMap.yAxis.isInversed) {
             this.completeDataSource.reverse();
@@ -156,6 +185,9 @@ export class TwoDimensional {
             minVal = this.performSort(tempVariable);
         } else if (this.performSort(tempVariable) < minVal) {
             minVal = this.performSort(tempVariable);
+        } else if ((this.heatMap.paletteSettings.colorGradientMode === 'Row' ||
+            this.heatMap.paletteSettings.colorGradientMode === 'Column') && this.heatMap.paletteSettings.type === 'Gradient') {
+            minVal = this.performSort(tempVariable);
         }
         return !isNullOrUndefined(minVal) ? parseFloat(minVal.toString()) : minVal;
     }
@@ -168,6 +200,9 @@ export class TwoDimensional {
         if (isNullOrUndefined(maxVal) && tempVariable.length > 0) {
             maxVal = Math.max(...tempVariable);
         } else if (Math.max(...tempVariable) > maxVal) {
+            maxVal = Math.max(...tempVariable);
+        } else if ((this.heatMap.paletteSettings.colorGradientMode === 'Row' ||
+            this.heatMap.paletteSettings.colorGradientMode === 'Column') && this.heatMap.paletteSettings.type === 'Gradient') {
             maxVal = Math.max(...tempVariable);
         }
         return !isNullOrUndefined(maxVal) ? parseFloat(maxVal.toString()) : maxVal;

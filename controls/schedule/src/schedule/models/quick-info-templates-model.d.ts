@@ -1,9 +1,15 @@
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';import { TemplateType } from '../base/type';
 
 /**
  * Interface for a class QuickInfoTemplates
  */
 export interface QuickInfoTemplatesModel {
+
+    /**
+     * Template option to customize the header section of quick popup.
+     *  @default 'Both'
+     */
+    templateType?: TemplateType;
 
     /**
      * Template option to customize the header section of quick popup.

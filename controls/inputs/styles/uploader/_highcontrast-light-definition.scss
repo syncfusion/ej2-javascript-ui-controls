@@ -1,5 +1,6 @@
 // uploader definition styles
 $zero-value: 0 !default;
+$upload-root-font-family: $font-family !default;
 $upload-element-opacity: $zero-value !default;
 $upload-element-width: $zero-value !default;
 $select-file-margin: $zero-value !default;
@@ -73,7 +74,7 @@ $ie-abort-icon-position-value: 12px !default;
 
 //default 
 // uploader high contrast theme 
-$upload-font-family: $font-family !default;
+$upload-font-family: inherit !default;
 $drop-area-font-size-smaller: 14px !default;
 $drop-area-font-size: 15px !default;
 $drop-text-color: $content-font !default;
@@ -105,7 +106,7 @@ $remove-icon-top-smaller: 50% !default;
 $remove-icon-right: $zero-value !default;
 $remove-icon-before-left: 8px !default;
 $remove-icon-before-top: 9px !default;
-$file-name-font-family: $font-family !default;
+$file-name-font-family: inherit !default;
 $li-min-height: 90px !default;
 $progress-inner-wrap-height-smaller: 2px !default;
 $progress-inner-wrap-height: 2px !default;

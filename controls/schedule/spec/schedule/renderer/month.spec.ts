@@ -4,10 +4,10 @@
 import { createElement, closest, Browser } from '@syncfusion/ej2-base';
 import {
     Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs,
-    Day, Week, WorkWeek, Month, Agenda, EJ2Instance, SelectEventArgs, PopupOpenEventArgs
+    Day, Week, WorkWeek, Month, Agenda, EJ2Instance, SelectEventArgs, PopupOpenEventArgs, ViewsModel
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/recurrence-editor';
-import { resourceData, testData } from '../base/datasource.spec';
+import { resourceData, testData, defaultData } from '../base/datasource.spec';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { blockData } from '../base/datasource.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
@@ -1306,7 +1306,7 @@ describe('Schedule Month view', () => {
                 let quickDialog: Element = document.querySelector('.e-quick-dialog');
                 let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
                 let deleteButton: HTMLInputElement =
-                    <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
+                    <HTMLInputElement>dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS);
                 deleteButton.click();
                 util.triggerMouseEvent(quickDialog.querySelector('.e-quick-dialog-delete'), 'click');
             });
@@ -1352,6 +1352,107 @@ describe('Schedule Month view', () => {
                 expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
             });
         });    
+    });
+
+    describe('More indicator event rendering based on the provided template', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let mt: string = '<div class="template-wrap" style="background:#007EE3;width:-webkit-fill-available;">' +
+                '<div class="subject" style="background:#007EE3">${Subject}</div></div>';
+            let scriptMonthEvent: HTMLScriptElement = document.createElement('script');
+            scriptMonthEvent.type = 'text/x-template';
+            scriptMonthEvent.id = 'month-event-template';
+            scriptMonthEvent.appendChild(document.createTextNode(mt));
+            document.getElementsByTagName('head')[0].appendChild(scriptMonthEvent);
+            let viewCollection: ViewsModel[] = [{ option: 'Month', eventTemplate: '#month-event-template' }];
+            let schOptions: ScheduleModel = {
+                height: '900px',
+                selectedDate: new Date(2017, 10, 5),
+                currentView: 'Month',
+                views: viewCollection,
+            }
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+            document.getElementById('month-event-template').remove();
+        });
+        it('Checking the template applied to the events or not', () => {
+            let moreIndicator: HTMLElement = document.querySelector('.e-more-indicator');
+            util.triggerMouseEvent(moreIndicator, 'click');
+            let elementList: NodeListOf<Element> = document.querySelectorAll('.e-more-appointment-wrapper');
+            let templateElement: string = elementList[0].children[0].innerHTML;
+            expect(templateElement).toEqual('<div class="template-wrap" style="background:#007EE3;' +
+                'width:-webkit-fill-available;"><div class="subject" style="background:#007EE3">Conference</div></div>');
+            templateElement = elementList[0].children[6].innerHTML;
+            expect(templateElement).toEqual('<div class="template-wrap" style="background:#007EE3;width:-webkit-fill-available;">'
+                + '<div class="subject" style="background:#007EE3">Same Time</div></div>');
+            let closeButton: HTMLElement = document.querySelector('.' + cls.MORE_EVENT_CLOSE_CLASS);
+            util.triggerMouseEvent(closeButton, 'click');
+        });
+    });
+
+    describe('CR Issue EJ2- Getting Week numbers while changing firstdayofWeek', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                selectedDate: new Date(2017, 10, 6),
+                currentView: 'Month',
+                showWeekNumber: true
+            };
+            schObj = util.createSchedule(schOptions, testData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Week number testing for when firstdayofWeek set to Sunday', ()  => {
+            schObj.firstDayOfWeek = 0;
+            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
+        });
+        it('Week number testing for when firstdayofWeek set to Monday', ()  => {
+            schObj.firstDayOfWeek = 1;
+            schObj.dataBind();
+            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('46');
+        });
+        it('Week number testing for when firstdayofWeek set to saturday', ()  => {
+            schObj.firstDayOfWeek = 6;
+            schObj.dataBind();
+            expect(schObj.element.querySelectorAll('.e-week-number')[1].innerHTML).toBe('45');
+        });
+    });
+
+    describe('Testing month view cell header template', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                height: '500px',
+                cellHeaderTemplate: '<span>${date.toLocaleDateString()}</span>',
+                selectedDate: new Date(2017, 10, 1),
+                views: ['Month', 'MonthAgenda'],
+                currentView: 'Month',
+            };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Checking cell header template on month view', () => {
+            let headerElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header'));
+            expect(headerElements[0].innerHTML.toString()).toEqual('<span>10/29/2017</span>');
+            expect(headerElements[6].innerHTML.toString()).toEqual('<span>11/4/2017</span>');
+            expect(headerElements[17].innerHTML.toString()).toEqual('<span>11/15/2017</span>');
+            expect(headerElements[26].innerHTML.toString()).toEqual('<span>11/24/2017</span>');
+        });
+        it('Checking cell header template on month agenda view', () => {
+            schObj.selectedDate = new Date(2017, 10, 1);
+            schObj.currentView = 'MonthAgenda';
+            schObj.dataBind();
+            let headerElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-date-header'));
+            expect(headerElements[0].innerHTML.toString()).toEqual('<span>10/29/2017</span>');
+            expect(headerElements[6].innerHTML.toString()).toEqual('<span>11/4/2017</span>');
+            expect(headerElements[12].innerHTML.toString()).toEqual('<span>11/10/2017</span>');
+            expect(headerElements[24].innerHTML.toString()).toEqual('<span>11/22/2017</span>');
+        });
     });
 
     it('memory leak', () => {

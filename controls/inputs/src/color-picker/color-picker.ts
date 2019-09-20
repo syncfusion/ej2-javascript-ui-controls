@@ -3,6 +3,7 @@ import { Browser, closest, detach, EventHandler, getInstance, select, selectAll,
 import { addClass, attributes, classList, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
 import { remove, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { SplitButton, BeforeOpenCloseMenuEventArgs, getModel, ClickEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
+import { Deferred } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip, TooltipEventArgs, getZindexPartial, Popup } from '@syncfusion/ej2-popups';
 import { Input } from './../input/index';
 import { NumericTextBox, NumericTextBoxModel, ChangeEventArgs } from './../numerictextbox/index';
@@ -206,7 +207,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
      * Triggers before opening the ColorPicker popup.
      * @event
      * @blazorProperty 'OnOpen'
-     * @deprecated
      */
     @Event()
     public beforeOpen: EmitType<BeforeOpenCloseEventArgs>;
@@ -223,7 +223,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
      * Triggers before closing the ColorPicker popup.
      * @event
      * @blazorProperty 'OnClose'
-     * @deprecated
      */
     @Event()
     public beforeClose: EmitType<BeforeOpenCloseEventArgs>;
@@ -342,8 +341,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 disabled: this.disabled,
                 enableRtl: this.enableRtl,
                 open: this.onOpen.bind(this),
-                beforeOpen: this.beforeOpenFn.bind(this),
-                beforeClose: this.beforePopupClose.bind(this),
                 click: (args: ClickEventArgs) => {
                     this.trigger('change', {
                         currentValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
@@ -370,6 +367,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             popupInst.offsetY = 4;
             popupEle.style.zIndex = getZindexPartial(this.splitBtn.element).toString();
         }
+        this.bindCallBackEvent();
     }
 
     private onOpen(args: OpenCloseMenuEventArgs): void {
@@ -380,11 +378,11 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         return getInstance(this.getPopupEle(), Popup) as Popup;
     }
 
-    private beforeOpenFn(args: BeforeOpenCloseMenuEventArgs): void {
-        let beforeOpenArgs: BeforeOpenCloseEventArgs = { element: this.container, event: args.event, cancel: false };
-        this.trigger('beforeOpen', beforeOpenArgs, (observeOpenArgs: BeforeOpenCloseMenuEventArgs) => {
-            args.cancel = observeOpenArgs.cancel;
-            if (!observeOpenArgs.cancel) {
+    private bindCallBackEvent() : void {
+        this.splitBtn.beforeOpen = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
+            let callBackPromise: Deferred = new Deferred();
+            this.trigger('beforeOpen', args, (observeOpenArgs: BeforeOpenCloseMenuEventArgs) => {
+              if (!observeOpenArgs.cancel) {
                 let popupEle: HTMLElement = this.getPopupEle();
                 popupEle.style.top = formatUnit(0 + pageYOffset);
                 popupEle.style.left = formatUnit(0 + pageXOffset);
@@ -400,23 +398,31 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                     this.modal.style.display = 'block';
                     this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
                 }
-            }
-        });
-    }
-
-    private beforePopupClose(args: BeforeOpenCloseMenuEventArgs): void {
-        if (!isNullOrUndefined(args.event)) {
-            let beforeCloseArgs: BeforeOpenCloseEventArgs = { element: this.container, event: args.event, cancel: false };
-            this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
-                if (Browser.isDevice && args.event.target === this.modal) {
-                    observedCloseArgs.cancel = true;
-                }
-                args.cancel = observedCloseArgs.cancel;
-                if (!observedCloseArgs.cancel) {
-                    this.onPopupClose();
-                }
+              }
+              args.cancel = observeOpenArgs.cancel;
+              callBackPromise.resolve(observeOpenArgs);
             });
-        }
+            return callBackPromise;
+        };
+        this.splitBtn.beforeClose = (args: BeforeOpenCloseMenuEventArgs): Deferred | void => {
+            let callBackPromise: Deferred = new Deferred();
+            if (!isNullOrUndefined(args.event)) {
+                let beforeCloseArgs: BeforeOpenCloseEventArgs = { element: this.container, event: args.event, cancel: false };
+                this.trigger('beforeClose', beforeCloseArgs, (observedCloseArgs: BeforeOpenCloseMenuEventArgs) => {
+                    if (Browser.isDevice && args.event.target === this.modal) {
+                        observedCloseArgs.cancel = true;
+                    }
+                    if (!observedCloseArgs.cancel) {
+                        this.onPopupClose();
+                    }
+                    args.cancel = observedCloseArgs.cancel;
+                    callBackPromise.resolve(observedCloseArgs);
+                });
+            } else {
+                callBackPromise.resolve(args);
+            }
+            return callBackPromise;
+        };
     }
 
     private onPopupClose(): void {

@@ -1,6 +1,152 @@
 import { Collection, Property, ChildProperty } from '@syncfusion/ej2-base';
-import { ICustomOptr, FilterBarMode, FilterType, PredicateModel, Predicate } from '@syncfusion/ej2-grids';
+import { ICustomOptr, FilterBarMode, FilterType, PredicateModel } from '@syncfusion/ej2-grids';
 import { FilterHierarchyMode } from '../enum';
+
+
+/**  
+ * Represents the predicate for the filter column.  
+ */
+export class Predicate extends ChildProperty<Predicate> {
+  /**  
+   * Defines the field name of the filter column.
+   * @default ''
+   */
+  @Property()
+  public field: string;
+
+  /**   
+   * Defines the operator to filter records. The available operators and its supported data types are:
+   * <table> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * Operator<br/></td><td colspan=1 rowspan=1> 
+   * Description<br/></td><td colspan=1 rowspan=1> 
+   * Supported Types<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * startswith<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value begins with the specified value.<br/></td><td colspan=1 rowspan=1> 
+   * String<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * endswith<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value ends with the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * <br/>String<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * contains<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value contains the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * <br/>String<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * equal<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value is equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * <br/>String | Number | Boolean | Date<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * notequal<br/></td><td colspan=1 rowspan=1> 
+   * Checks for values that are not equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * <br/>String | Number | Boolean | Date<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * greaterthan<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value is greater than the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * Number | Date<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * greaterthanorequal<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value is greater than or equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * <br/>Number | Date<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * lessthan<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value is less than the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * <br/>Number | Date<br/></td></tr> 
+   * <tr> 
+   * <td colspan=1 rowspan=1> 
+   * lessthanorequal<br/></td><td colspan=1 rowspan=1> 
+   * Checks whether the value is less than or equal to the specified value.<br/><br/></td><td colspan=1 rowspan=1> 
+   * <br/>Number | Date<br/></td></tr> 
+   * </table> 
+   * @default null
+   * @blazorType Syncfusion.EJ2.Blazor.Operator
+   * @blazorDefaultValue Syncfusion.EJ2.Blazor.Operator.None
+   */
+  @Property()
+  public operator: string;
+
+  /**  
+   * Defines the value used to filter records. 
+   * @default ''
+   */
+  @Property()
+  public value: string | number | Date | boolean;
+
+  /**  
+   * If match case set to true, then filter records with exact match or else  
+   * filter records with case insensitive(uppercase and lowercase letters treated as same).  
+   * @default null
+   */
+  @Property()
+  public matchCase: boolean;
+
+  /**
+   * If ignoreAccent is set to true, then filter ignores the diacritic characters or accents while filtering.
+   * @default false
+   */
+  @Property()
+  public ignoreAccent: boolean;
+
+  /**   
+   * Defines the relationship between one filter query and another by using AND or OR predicate.   
+   * @default null
+   */
+  @Property()
+  public predicate: string;
+
+  /**  
+   * @hidden 
+   * Defines the actual filter value for the filter column.  
+   */
+  @Property({})
+  public actualFilterValue: Object;
+
+  /**  
+   * @hidden 
+   * Defines the actual filter operator for the filter column.  
+   */
+  @Property({})
+  public actualOperator: Object;
+
+  /**
+   * @hidden 
+   * Defines the type of the filter column.  
+   */
+  @Property()
+  public type: string;
+
+  /**  
+   * @hidden 
+   * Defines the predicate of filter column.  
+   */
+  @Property()
+  public ejpredicate: Object;
+
+  /**  
+   * @hidden 
+   * Defines the UID of filter column.  
+   */
+  @Property()
+  public uid: string;
+
+  /**  
+   * @hidden 
+   * Defines the foreignKey availability in filtered columns.
+   */
+  @Property()
+  public isForeignKey: boolean;
+
+}
 
 /**
  * Configures the filtering behavior of the TreeGrid.

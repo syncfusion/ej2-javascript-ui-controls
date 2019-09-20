@@ -346,3 +346,32 @@ describe('Treegrid Row Reorder', () => {
       destroy(TreeGridObj);
     });
   });
+
+  describe('EJ2-31359-Issue in Row Drag and Drop of TreeGrid with self reference data', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: projectData2,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: "TaskID", headerText: "Task Id", width: 90 },
+            { field: 'TaskName', headerText: 'TaskName', width: 60 },
+            { field: 'Progress', headerText: 'Progress', textAlign: 'Right', width: 90 },
+          ],
+        },done); 
+      });
+
+    it('Self Reference Data', () => {
+      expect((TreeGridObj.grid.dataSource as ITreeData[]).length).toBe(15);
+      TreeGridObj.rowDragAndDropModule.reorderRows([1], 6, 'above');
+      expect((TreeGridObj.grid.dataSource as ITreeData[]).length).toBe(15);
+      TreeGridObj.rowDragAndDropModule.destroy();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });

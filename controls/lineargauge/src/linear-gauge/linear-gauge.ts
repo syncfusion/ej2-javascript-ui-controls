@@ -183,7 +183,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before gauge load.
      * @event
-     * @deprecated
      * @blazorProperty 'OnLoad'
      */
     @Event()
@@ -209,7 +208,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each annotation gets rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'AnnotationRendering'
      */
     @Event()
@@ -228,7 +226,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse move on gauge area.
      * @event
-     * @deprecated
      * @blazorProperty 'OnGaugeMouseMove'
      */
 
@@ -248,7 +245,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers when mouse down on gauge area.
      * @event
-     * @deprecated
      * @blazorProperty 'OnGaugeMouseDown'
      */
 
@@ -267,6 +263,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers while drag the pointer.
      * @event
+     * @deprecated
      * @blazorProperty 'ValueChange'
      */
 
@@ -361,7 +358,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let blazor: string = 'Blazor';
         this.isBlazor = window[blazor];
         this.unWireEvents();
-        this.trigger(load, { gauge: this });
+        this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
@@ -438,7 +435,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.calculateBounds();
         this.renderAxisElements();
         this.renderComplete();
-        this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
+        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
     }
 
     /**
@@ -593,7 +590,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     public gaugeResize(e: Event): boolean {
         let args: IResizeEventArgs = {
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             previousSize: new Size(
                 this.availableSize.width,
                 this.availableSize.height
@@ -612,7 +609,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     this.calculateBounds();
                     this.renderAxisElements();
                     args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
-                    this.trigger(resized, this.isBlazor ? {} : args);
+                    this.trigger(resized, args);
                     this.render();
                 },
                 500);
@@ -702,7 +699,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let pointerElement: Element; let svgPath: SVGPathElement;
         let dragProcess: boolean = false;
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger('gaugeMouseDown', args, (mouseArgs: IMouseEventArgs) => {
+        this.trigger(gaugeMouseDown, args, (mouseArgs: IMouseEventArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
             if (args.target) {
@@ -727,7 +724,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let current: IMoveCursor;
         let element: Element;
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger('gaugeMouseMove', args, (mouseArgs: IMouseEventArgs) => {
+        this.trigger(gaugeMouseMove, args, (mouseArgs: IMouseEventArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
             if (args.target && !args.cancel) {
@@ -848,10 +845,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let tooltipInterval: number;
         let isTouch: boolean = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         let args: IMouseEventArgs = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        let blazorArgs: IMouseEventArgs = {
-            cancel: args.cancel, name: args.name, target: args.target, x: args.x, y: args.y
-        };
-        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
+        this.trigger(gaugeMouseUp, args);
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = <HTMLElement>this.element;
             parentNode.style.cursor = '';
@@ -875,7 +869,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         location.y += isTouch ? (<TouchEvent & PointerEvent>e).changedTouches[0].clientY : e.clientY;
         return {
             cancel: false, name: name,
-            model: this,
+            model: !this.isBlazor ? this : null,
             x: location.x, y: location.y,
             target: isTouch ? <Element>(<TouchEvent & PointerEvent>e).target : <Element>e.target
         };
@@ -982,7 +976,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             this.element, this.mouseElement, this.orientation, active.axis, 'tooltip', null);
         let dragArgs: IValueChangeEventArgs = {
             name: 'valueChange',
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             element: this.mouseElement,
             axisIndex: active.axisIndex,
             axis: active.axis,
@@ -990,14 +984,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             pointer: active.pointer,
             value: value
         };
-        let dragBlazorArgs: IValueChangeEventArgs = {
-            name: 'valueChange',
-            element: this.mouseElement,
-            axisIndex: active.axisIndex,
-            pointerIndex: active.pointerIndex,
-            value: value
-        };
-        this.trigger(valueChange, this.isBlazor ? dragBlazorArgs : dragArgs);
+        this.trigger(valueChange, dragArgs);
     }
 
     /**

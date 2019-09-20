@@ -353,7 +353,7 @@ export class AgendaBase {
         let tr: Element = createElement('tr', { attrs: { 'role': 'row', 'aria-rowindex': daysCount.toString() } });
         let td: Element = createElement('td', {
             attrs: {
-                'class': (type === 'monthHeader') ? cls.AGENDA_MONTH_HEADER_CLASS : cls.AGENDA_CELLS_CLASS,
+                'class': (type === 'monthHeader') ? cls.MONTH_HEADER_CLASS : cls.AGENDA_CELLS_CLASS,
                 'role': 'gridcell',
                 'aria-selected': 'false',
                 'aria-colindex': daysCount.toString(),

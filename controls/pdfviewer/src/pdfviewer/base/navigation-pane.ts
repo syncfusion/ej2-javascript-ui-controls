@@ -720,7 +720,11 @@ export class NavigationPane {
     private resizePanelMouseMove = (event: MouseEvent): void => {
         let proxy: NavigationPane = this;
         if (!this.pdfViewerBase.getPopupNoteVisibleStatus()) {
-            event.preventDefault();
+            let target: HTMLElement = event.target as HTMLElement;
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewerBase.skipPreventDefault(target)) {
+                event.preventDefault();
+            }
             if (proxy.isDown && this.sideBarContentContainer) {
                 // prevent the sidebar from becoming too narrow, or from occupying more
                 // than half of the available viewer width.
@@ -1028,7 +1032,9 @@ export class NavigationPane {
      * @private
      */
     public destroy(): void {
-        this.annotationMenuObj.destroy();
+        if (this.annotationMenuObj) {
+            this.annotationMenuObj.destroy();
+        }
     }
 
     public getModuleName(): string {

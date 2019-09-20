@@ -32,7 +32,8 @@ export interface ITemplateEngine {
 export function compile(templateString: string, helper?: Object): (data: Object | JSON, component?: any, propName?: any) => NodeList {
     let compiler: Function = engineObj.compile(templateString, helper);
     //tslint:disable-next-line
-    return (data: Object, component?: any, propName?: any, templateId?: any, isStringTemplate?: boolean, index?: number): NodeList => {
+    return (data: Object, component?: any, propName?: any, templateId?: any,
+        isStringTemplate?: boolean, index?: number, isSvg?: boolean): NodeList => {
         let result: object = compiler(data, component, propName);
         let blazor: string = 'Blazor'; let blazorTemplateId: string = 'BlazorTemplateId';
         if (window && window[blazor] && !isStringTemplate) {
@@ -56,9 +57,12 @@ export function compile(templateString: string, helper?: Object): (data: Object 
                 blazorTemplates[templateId].push(data);
             }
             // tslint:disable-next-line:no-any
-            return propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
+            return isSvg ? [createElement('g', { id: blazorId, className: 'e-blazor-template' })] as any :
                 // tslint:disable-next-line:no-any
-                [createElement('div', { id: blazorId, className: 'e-blazor-template' })] as any;
+                propName === 'rowTemplate' ? [createElement('tr', { id: blazorId, className: 'e-blazor-template' })] as any :
+                    // tslint:disable-next-line:no-any
+                    [createElement('div', { id: blazorId, className: 'e-blazor-template' })] as any;
+
 
         }
         if (typeof result === 'string') {

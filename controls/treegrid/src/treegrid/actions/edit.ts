@@ -1,12 +1,12 @@
 import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid, getObject,
-  NotifyArgs, Row} from '@syncfusion/ej2-grids';
+  NotifyArgs, Row, ActionEventArgs} from '@syncfusion/ej2-grids';
 import { BatchCancelArgs, Column, RecordDoubleClickEventArgs, RowInfo } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
-import { DataManager, Deferred } from '@syncfusion/ej2-data';
-import { findChildrenRecords, getParentData } from '../utils';
+import { DataManager, Deferred, RemoteSaveAdaptor, AdaptorOptions } from '@syncfusion/ej2-data';
+import { findChildrenRecords, getParentData, isRemoteData } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
 import { RowPosition } from '../enum';
 
@@ -70,6 +70,8 @@ export class Edit {
         this.parent.grid.on(events.keyPressed, this.keyPressed, this);
         this.parent.grid.on('content-ready', this.contentready, this);
         this.parent.on(events.cellEdit, this.cellEdit, this);
+        this.parent.on('actionBegin', this.editActionEvents, this);
+        this.parent.on('actionComplete', this.editActionEvents, this);
         this.parent.grid.on(events.doubleTap, this.recordDoubleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
         // this.parent.on(events.beforeDataBound, this.beforeDataBound, this);
@@ -106,6 +108,8 @@ export class Edit {
         this.parent.grid.off(events.keyPressed, this.keyPressed);
         this.parent.grid.off('content-ready', this.contentready);
         this.parent.off(events.cellEdit, this.cellEdit);
+        this.parent.off('actionBegin', this.editActionEvents);
+        this.parent.off('actionComplete', this.editActionEvents);
         this.parent.grid.off(events.doubleTap, this.recordDoubleClick);
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
         this.parent.grid.off(events.beforeStartEdit, this.beforeStartEdit);
@@ -126,6 +130,30 @@ export class Edit {
      */
     public applyFormValidation(cols?: Column[]): void {
       this.parent.grid.editModule.applyFormValidation(cols);
+    }
+    private editActionEvents(args: Object): void {
+      let eventArgs: ActionEventArgs | CellSaveEventArgs = getObject('editAction', args);
+      let eventName: string = getObject('name', eventArgs);
+      let treeObj: TreeGrid = this.parent;
+      let adaptor: AdaptorOptions = (treeObj.dataSource as DataManager).adaptor;
+      if ((isRemoteData(treeObj) || adaptor instanceof RemoteSaveAdaptor) && treeObj.getSelectedRowIndexes().length &&
+          (eventArgs.requestType === 'save' && eventArgs.action === 'add') &&
+          (treeObj.editSettings.newRowPosition === 'Child' || treeObj.editSettings.newRowPosition === 'Below'
+          || treeObj.editSettings.newRowPosition === 'Above')) {
+        if (eventName === 'actionBegin') {
+          let rowIndex: number = isNullOrUndefined(eventArgs.row) ? treeObj.getSelectedRowIndexes()[0] :
+                (<HTMLTableRowElement>eventArgs.row).rowIndex - 1;
+          let keyData: string = treeObj.getCurrentViewRecords()[rowIndex][treeObj.getPrimaryKeyFieldNames()[0]];
+          treeObj.grid.query.addParams('relationalKey', keyData);
+        } else if (eventName === 'actionComplete') {
+          let paramsLength: number = treeObj.grid.query.params.length;
+          for (let i: number = 0; i < paramsLength; i++) {
+            if (treeObj.grid.query.params[i].key === 'relationalKey') {
+              treeObj.grid.query.params.splice(i);
+            }
+          }
+        }
+      }
     }
     private recordDoubleClick(args: RecordDoubleClickEventArgs): void {
       let target: HTMLElement = <HTMLElement>args.target;
@@ -355,6 +383,10 @@ export class Edit {
       let index: number = this.addRowIndex;
       let records: Object[] = this.parent.grid.getCurrentViewRecords();
       let rows: Element[] = this.parent.grid.getDataRows();
+      let movableRows: Object[];
+      if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
+        movableRows = this.parent.getMovableDataRows();
+      }
       if (this.parent.editSettings.mode !== 'Dialog') {
         if (this.parent.editSettings.newRowPosition === 'Child' && !((<ITreeData>records[index]).expanded) &&
         (<ITreeData>records[index][this.parent.childMapping]) && (<ITreeData>records[index][this.parent.childMapping].length)) {
@@ -375,6 +407,9 @@ export class Edit {
           }
           let focussedElement: HTMLInputElement = <HTMLInputElement>document.activeElement;
           rows[index + 1][position](rows[0]);
+          if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
+            movableRows[index + 1][position](movableRows[0]);
+          }
           if (this.parent.editSettings.mode === 'Row' || this.parent.editSettings.mode === 'Cell') {
             let errors: NodeListOf<Element> = this.parent.grid.getContentTable().querySelectorAll('.e-griderror');
             for (let i: number = 0; i < errors.length; i++) {
@@ -588,6 +623,9 @@ export class Edit {
     if (!isNullOrUndefined(e.args.requestType)
     && (e.args.requestType.toString() === 'delete' || e.args.requestType.toString() === 'save')) {
       this.updateIndex(this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
+      if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
+        this.updateIndex(this.parent.grid.dataSource, this.parent.getMovableDataRows(), this.parent.getCurrentViewRecords());
+      }
     }
   }
 

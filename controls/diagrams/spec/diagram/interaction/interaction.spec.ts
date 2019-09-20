@@ -269,7 +269,7 @@ describe('Diagram Control', () => {
             let innerHtmlTextElement = document.getElementById('text_content_text');
             console.log(innerHtmlTextElement.innerHTML);
             expect(innerHtmlTextElement.innerHTML === '<tspan x="12.765625" y="53.6">Text Element</tspan>' ||
-            innerHtmlTextElement.innerHTML === '<tspan x="14.9921875" y="53.6">Text Element</tspan>' || innerHtmlTextElement.innerHTML === '<tspan x="14.984375" y="53.6">Text Element</tspan>').toBe(true);
+                innerHtmlTextElement.innerHTML === '<tspan x="14.9921875" y="53.6">Text Element</tspan>' || innerHtmlTextElement.innerHTML === '<tspan x="13.6484375" y="53.6">Text Element</tspan>' || innerHtmlTextElement.innerHTML === '<tspan x="14.984375" y="53.6">Text Element</tspan>').toBe(true);
             done();
         });
 

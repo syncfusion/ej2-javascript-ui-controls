@@ -42,6 +42,7 @@ export class Data implements IDataProcessor {
         this.parent.on(events.updateData, this.crudActions, this);
         this.parent.on(events.addDeleteAction, this.getData, this);
         this.parent.on(events.autoCol, this.refreshFilteredCols, this);
+        this.parent.on(events.columnsPrepared, this.refreshFilteredCols, this);
     }
 
     private reorderRows(e: { fromIndex: number, toIndex: number }): void {
@@ -483,6 +484,7 @@ export class Data implements IDataProcessor {
         this.parent.off(events.updateData, this.crudActions);
         this.parent.off(events.addDeleteAction, this.getData);
         this.parent.off(events.autoCol, this.refreshFilteredCols);
+        this.parent.off(events.columnsPrepared, this.refreshFilteredCols);
     }
     public getState(): PendingState {
         return this.dataState;

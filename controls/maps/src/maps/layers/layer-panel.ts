@@ -109,11 +109,7 @@ export class LayerPanel {
             cancel: false, name: layerRendering, index: layerIndex,
             layer: layer, maps: this.mapObject
         };
-        if (this.mapObject.isBlazor) {
-            const {cancel, name, index} : ILayerRenderingEventArgs = eventArgs;
-            eventArgs = {cancel, name, index};
-        }
-        this.mapObject.trigger('layerRendering', eventArgs, () => {
+        this.mapObject.trigger('layerRendering', eventArgs, (observedArgs: ILayerRenderingEventArgs) => {
             if (!eventArgs.cancel) {
                 if (layer.layerType !== 'Geometry') {
                     if (layer.layerType !== 'Bing' || this.bing) {
@@ -145,9 +141,6 @@ export class LayerPanel {
                         };
                         ajax.send();
                     }
-                    if (this.tileSvgObject) {
-                        this.tileSvgObject.appendChild(this.layerGroup);
-                    }
                 } else {
                     if (!isNullOrUndefined(layer.shapeData) && (!isNullOrUndefined(layer.shapeData['geometries']) ||
                         !isNullOrUndefined(layer.shapeData['features']))) {
@@ -175,15 +168,16 @@ export class LayerPanel {
                             //     this.mapObject.baseSize = new Size(Math.abs(minSize.x - maxSize.x), Math.abs(minSize.y - maxSize.y));
                             // }
                         }
-                        this.calculatePathCollection(layerIndex, featureData, () => {
-                            this.mapObject.svgObject.appendChild(this.layerGroup);
-                        });
-                    } else {
-                        this.mapObject.svgObject.appendChild(this.layerGroup);
+                        this.calculatePathCollection(layerIndex, featureData);
                     }
                 }
             }
         });
+        if (!this.mapObject.isTileMap) {
+            this.mapObject.svgObject.appendChild(this.layerGroup);
+        } else if (this.tileSvgObject) {
+            this.tileSvgObject.appendChild(this.layerGroup);
+        }
     }
 
     //tslint:disable:max-func-body-length
@@ -204,7 +198,7 @@ export class LayerPanel {
         }
     }
     // tslint:disable-next-line:max-func-body-length
-    public calculatePathCollection(layerIndex: number, renderData: Object[], appendLayerGroup : Function): void {
+    public calculatePathCollection(layerIndex: number, renderData: Object[]): void {
         this.groupElements = [];
         if ((!isCustomPath(renderData))) {
             this.currentFactor = this.calculateFactor(this.currentLayer);
@@ -265,17 +259,15 @@ export class LayerPanel {
                 && !isNullOrUndefined(getShapeColor['opacity'])) ? getShapeColor['opacity'] : shapeSettings.opacity;
             let eventArgs: IShapeRenderingEventArgs = {
                 cancel: false, name: shapeRendering, index: i,
-                data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null, maps: this.mapObject,
+                data: this.currentLayer.dataSource ? this.currentLayer.dataSource[k] : null,
+                maps: !this.mapObject.isBlazor ? this.mapObject : null,
                 shape: shapeSettings, fill: fill, border: { width: shapeSettings.border.width, color: shapeSettings.border.color }
             };
-            if (this.mapObject.isBlazor) {
-                const { data, maps, ...blazorEventArgs } : IShapeRenderingEventArgs = eventArgs;
-                eventArgs = blazorEventArgs;
-            }
              // tslint:disable-next-line:max-func-body-length
-            this.mapObject.trigger('shapeRendering', eventArgs, () => {
-                let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon']) ?
-                'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+            this.mapObject.trigger('shapeRendering', eventArgs, (shapeArgs: IShapeRenderingEventArgs) => {
+                let drawingType: string = !isNullOrUndefined(currentShapeData['_isMultiPolygon'])
+                ? 'MultiPolygon' : isNullOrUndefined(currentShapeData['type']) ? currentShapeData[0]['type'] : currentShapeData['type'];
+
                 drawingType = (drawingType === 'Polygon' || drawingType === 'MultiPolygon') ? 'Polygon' : drawingType;
                 if (this.groupElements.length < 1) {
                     groupElement = this.mapObject.renderer.createGroup({
@@ -356,15 +348,8 @@ export class LayerPanel {
                     pathEle.setAttribute('tabindex', (this.mapObject.tabIndex + i + 2).toString());
                     groupElement.appendChild(pathEle);
                 }
-                if (i === this.currentLayer.layerData.length - 1) {
-                    this.addItemsInLayer(layerIndex, colors, renderData, labelTemplateEle);
-                }
-                appendLayerGroup();
             });
         }
-    }
-
-    private addItemsInLayer(layerIndex: number, colors: string[], renderData: Object[], labelTemplateEle: HTMLElement) : void {
         let bubbleG: Element;
         if (this.currentLayer.bubbleSettings.length && this.mapObject.bubbleModule) {
             let length: number = this.currentLayer.bubbleSettings.length;
@@ -450,7 +435,7 @@ export class LayerPanel {
         this.mapObject.bubbleModule.id = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_BubbleIndex_' +
             bubbleIndex + '_dataIndex_' + dataIndex;
         this.mapObject.bubbleModule.renderBubble(
-            bubbleSettings, bubbleData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group);
+            bubbleSettings, bubbleData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group, this.mapObject.bubbleModule.id);
     }
     /**
      * To get the shape color from color mapping module

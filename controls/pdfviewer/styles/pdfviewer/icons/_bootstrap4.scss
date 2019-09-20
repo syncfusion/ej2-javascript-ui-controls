@@ -345,4 +345,74 @@
     color: $pv-stamp-icon-color;
     font-size: 8px;
   }
+
+  .e-pv-freetext-icon::before {
+    content: '\e764';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-textalign-icon::before {
+    content: '\e76f';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-textprop-icon::before {
+    content: '\e71b';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-annotation-textcolor-icon::before {
+    content: '\e80e';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-left-align-icon::before {
+    content: '\e76f';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-right-align-icon::before {
+    content: '\e746';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-center-align-icon::before {
+    content: '\e732';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-justfiy-align-icon::before {
+    content: '\e79b';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-bold-icon::before {
+    content: '\e78b';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-italic-icon::before {
+    content: '\e78e';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-strikeout-icon::before {
+    content: '\e786';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-underlinetext-icon::before {
+    content: '\e792';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-superscript-icon::before {
+    content: '\e352';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-subscript-icon::before {
+    content: '\e357';
+    font-family: 'e-icons';
+  }
 }

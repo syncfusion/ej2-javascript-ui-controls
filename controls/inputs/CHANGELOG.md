@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 17.3.9-beta (2019-09-20)
+
+### Slider
+
+#### New Features
+
+- `#234797` - Provided the color customization for each range of the slider track.
+
+### MaskedTextBox
+
+#### Bug Fixes
+
+- Now, e-disabled class is removed from wrapper when dynamically enable the masked textbox from disabled state.
+
+## 17.2.49 (2019-09-04)
+
+### ColorPicker
+
+#### Bug Fixes
+
+- `#243637` - Opacity value is not working Edge browser.
+
 ## 17.2.47 (2019-08-27)
 
 ### NumericTextBox

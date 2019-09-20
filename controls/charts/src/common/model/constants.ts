@@ -51,6 +51,8 @@ export const zoomComplete: string = 'zoomComplete';
 /** @private */
 export const dragComplete: string = 'dragComplete';
 /** @private */
+export const selectionComplete: string = 'selectionComplete';
+/** @private */
 export const resized : string = 'resized';
 /** @private */
 export const beforePrint : string = 'beforePrint';

@@ -61,6 +61,8 @@ export class Marker extends MarkerExplode {
         let previousPath: string;
         let circlePath: string;
         let shapeOption: PathOption;
+        location.x = location.x + marker.offset.x;
+        location.y = location.y - marker.offset.y;
         let isBoxPlot: boolean = series.type === 'BoxAndWhisker';
         let fill: string = marker.fill || (isBoxPlot ? point.interior || series.interior : '#ffffff');
         let argsData: IPointRenderEventArgs;

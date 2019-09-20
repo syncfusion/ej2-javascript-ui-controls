@@ -1,5 +1,5 @@
-import { MouseEventArgs, Draggable, Droppable, L10n, DropEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { createElement, closest, remove, classList, addClass, removeClass } from '@syncfusion/ej2-base';
+import { MouseEventArgs, Draggable, Droppable, L10n, DropEventArgs, KeyboardEventArgs, isBlazor } from '@syncfusion/ej2-base';
+import { createElement, closest, remove, classList, addClass, removeClass, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { GroupSettingsModel, SortDescriptorModel } from '../base/grid-model';
@@ -50,8 +50,11 @@ export class Group implements IAction {
         gObj.element.appendChild(this.visualElement);
         return this.visualElement;
     }
-    private dragStart: Function = (): void => {
+    private dragStart: Function = (e: BlazorDragEventArgs): void => {
         this.parent.element.classList.add('e-ungroupdrag');
+        if (isBlazor()) {
+            e.bindEvents(e.dragElement);
+        }
     }
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }): void => {
         let target: Element = e.target;

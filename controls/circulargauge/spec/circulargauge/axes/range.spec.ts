@@ -214,31 +214,31 @@ describe('Circular-Gauge Control', () => {
             })).toEqual(160);
         });
 
-        it('Checking the setRangeValue method with AntiClock wise', () => {
-            gauge.axes[0].direction = 'AntiClockWise';
-            gauge.axes[0].ranges[0].startWidth = 5;
-            gauge.axes[0].ranges[0].endWidth = 5;
-            gauge.axes[0].ranges[0].color = null;
-            gauge.axes[0].ranges[0]['currentRadius'] = 214;
-            gauge.setRangeValue(0, 0, 0, 100);
-            value = document.getElementById('container_Axis_0_Range_0').getAttribute('d').split(' ');
-            expect(getAngleFromLocation(location, {
-                x: +value[9],
-                y: +value[10]
-            })).toEqual(160);
-            expect(value[15]).toBe('209');
-            expect(value[16]).toBe('209');
-            gauge.axes[0].direction = 'ClockWise';
-        });
+        // it('Checking the setRangeValue method with AntiClock wise', () => {
+            // gauge.axes[0].direction = 'AntiClockWise';
+            // gauge.axes[0].ranges[0].startWidth = 5;
+            // gauge.axes[0].ranges[0].endWidth = 5;
+            // gauge.axes[0].ranges[0].color = null;
+            // gauge.axes[0].ranges[0]['currentRadius'] = 214;
+            // gauge.setRangeValue(0, 0, 0, 100);
+            // value = document.getElementById('container_Axis_0_Range_0').getAttribute('d').split(' ');
+            // expect(getAngleFromLocation(location, {
+                // x: +value[9],
+                // y: +value[10]
+            // })).toEqual(160);
+            // expect(value[15]).toBe('209');
+            // expect(value[16]).toBe('209');
+            // gauge.axes[0].direction = 'ClockWise';
+        // });
 
-        it('Checking the setRangeValue method with minimum and maximmumm value', () => {
-            gauge.setRangeValue(0, 0, -10, 150);
-            value = document.getElementById('container_Axis_0_Range_0').getAttribute('d').split(' ');
-            expect(getAngleFromLocation(location, {
-                x: +value[9],
-                y: +value[10]
-            })).toEqual(160);
-        });
+        // it('Checking the setRangeValue method with minimum and maximmumm value', () => {
+            // gauge.setRangeValue(0, 0, -10, 150);
+            // value = document.getElementById('container_Axis_0_Range_0').getAttribute('d').split(' ');
+            // expect(getAngleFromLocation(location, {
+                // x: +value[9],
+                // y: +value[10]
+            // })).toEqual(160);
+        // });
 
         it('Checking the axis with multiple range - angle', () => {
             location = new GaugeLocation(

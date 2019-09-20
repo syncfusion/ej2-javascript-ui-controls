@@ -31,6 +31,7 @@ import { KeyboardEvents } from '../actions/keyboard';
 import { ViewSource } from '../renderer/view-source';
 import { PasteCleanup } from '../actions/paste-clean-up';
 import { Popup } from '@syncfusion/ej2-popups';
+import { Resize } from '../actions/resize';
 /**
  * Specifies RichTextEditor interfaces.
  * @hidden
@@ -96,6 +97,8 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     sourceCodeModule?: ViewSource;
     getToolbarElement?(): Element;
     fullScreenModule?: FullScreen;
+    resizeModule?: Resize;
+    refreshUI?(): void;
     pasteCleanupModule?: PasteCleanup;
     undoRedoModule?: UndoRedoManager;
     quickToolbarModule?: QuickToolbar;
@@ -288,6 +291,10 @@ export interface IImageCommandsArgs {
     selectParent?: Node[];
     cssClass?: string;
     selectNode?: Node[];
+}
+export interface ImageDragEvent extends DragEvent {
+    rangeParent?: Element;
+    rangeOffset?: number;
 }
 
 export interface ILinkCommandsArgs {
@@ -500,6 +507,22 @@ export interface BeforeQuickToolbarOpenArgs {
     cancel: boolean;
     /** Defines the target element of the quick toolbar */
     targetElement: Element;
+}
+
+export interface QuickToolbarArgs {
+    /**
+     * Defines the instance of the current popup element
+     * @deprecated
+     */
+    popup?: Popup;
+    /**
+     * Returns the element of the dialog.
+     */
+    element: HTMLElement;
+    /**
+     * Specify the name of the event.
+     */
+    name?: string;
 }
 
 export interface IAdapterProcess {

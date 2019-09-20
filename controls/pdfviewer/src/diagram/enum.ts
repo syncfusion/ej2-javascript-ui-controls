@@ -45,11 +45,15 @@ export type PdfAnnotationType =
     /**
      * Polygon - Represents the annotation type as Polygon.
      */
-    'Polygon'|
+    'Polygon' |
     /**
      * Sticky - Represents the annotation type as StickyNotes.
      */
-    'StickyNotes';
+    'StickyNotes' |
+    /**
+     * FreeText - Represents the annotation type as Free Text Box.
+     */
+    'FreeText';
 
 
 

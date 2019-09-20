@@ -49,8 +49,12 @@ describe('Month Event Render Module', () => {
 
         beforeAll((done: Function) => {
             Browser.userAgent = androidUserAgent;
-            let model: ScheduleModel = { views: [{ option: 'Day', readonly: true }, { option: 'Week' }, { option: 'WorkWeek', readonly: true }, { option: 'Month' }], currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6) };
+            let model: ScheduleModel = {
+                views: [{ option: 'Day', readonly: true }, { option: 'Week' }, { option: 'WorkWeek', readonly: true }, { option: 'Month' }],
+                currentView: 'Month', height: '550px', width: '500px', selectedDate: new Date(2017, 10, 6)
+            };
             schObj = util.createSchedule(model, testData, done);
+            schObj.isMorePopup = false;
         });
         afterAll(() => {
             util.destroy(schObj);

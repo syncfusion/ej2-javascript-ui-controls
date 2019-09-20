@@ -81,7 +81,7 @@ import { RsiIndicator } from './technical-indicators/rsi-indicator';
 import { TechnicalIndicatorModel } from './technical-indicators/technical-indicator-model';
 import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../chart/model/chart-interface';
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
-import { IPointRenderEventArgs, ISeriesRenderEventArgs } from '../chart/model/chart-interface';
+import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
 import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
@@ -698,6 +698,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * * dragXY: selects points by dragging with respect to both horizontal and vertical axes
      * * dragX: selects points by dragging with respect to horizontal axis.
      * * dragY: selects points by dragging with respect to vertical axis.
+     * * lasso: selects points by dragging with respect to free form.
      * @default None
      */
     @Property('None')
@@ -709,6 +710,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     @Property(false)
     public isMultiSelect: boolean;
+
+    /**
+     * If set true, enables the multi drag selection in chart. It requires `selectionMode` to be `Dragx` | `DragY` | or `DragXY`.
+     * @default false
+     */
+    @Property(false)
+    public allowMultiSelection: boolean;
 
     /**
      * To enable export feature in chart.
@@ -991,6 +999,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Event()
     public dragComplete: EmitType<IDragCompleteEventArgs>;
+
+    /**
+     * Triggers after the selection is completed.
+     * @event
+     * @blazorProperty 'OnSelectionComplete'
+     */
+
+    @Event()
+    public selectionComplete: EmitType<ISelectionCompleteEventArgs>;
 
     /**
      * Triggers after the zoom selection is completed.
@@ -1339,6 +1356,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         this.renderElements();
 
         removeElement('chartmeasuretext');
+        this.removeSelection();
     }
     /**
      * To calcualte the stack values
@@ -1354,6 +1372,28 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 series.calculateStackedValue(series.type.indexOf('100') > -1, this);
                 isCalculateStacking = true;
             }
+        }
+    }
+    private removeSelection(): void {
+        for (let series of this.visibleSeries) {
+            if (series.visible) {
+                for (let point of series.points) {
+                    point.isSelect = false;
+                }
+            }
+        }
+        if (getElement(this.element.id + '_ej2_drag_multi_group')) {
+            if (this.selectionMode.indexOf('Drag') > -1) {
+                this.selectionModule.filterArray = [];
+            }
+            removeElement(this.element.id + '_ej2_drag_multi_group');
+            this.selectionModule.calculateDragSelectedElements(this, new Rect(0, 0, 0, 0), true);
+        } else if (getElement(this.element.id + '_ej2_drag_group')) {
+            if (this.selectionMode !== 'Lasso') {
+                this.selectionModule.filterArray = [];
+            }
+            removeElement(this.element.id + '_ej2_drag_group');
+            this.selectionModule.calculateDragSelectedElements(this, new Rect(0, 0, 0, 0), true);
         }
     }
 

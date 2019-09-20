@@ -691,6 +691,55 @@ export let sampleBlankData: Object[] = [
         'parentID': 3
     },
     ];
+
+
+    export let stateChangeData: Object[] = [{
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '40',
+        'isParent': true,
+        'parentID': null
+    },
+   
+    {
+        'TaskID': 6,
+        'TaskName': 'Parent Task 2',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '30',
+        'isParent': true,
+        'parentID': null
+    },
+    
+    ];
+
+
+    export let childdata1: Object[] = [
+        { 'TaskID': 2, 'TaskName': 'Child Task 1', 'StartDate': new Date('03/9/2017'), 'Duration': 0, 'Priority' : 'Low',
+        'EndDate': new Date('03/13/2017'), 'Progress': '40', 'parentID': 1 },
+        { 'TaskID': 3, 'TaskName': 'Child Task 2', 'StartDate': new Date('03/9/2017'), 'Duration': 10, 'Priority' : 'Breaker',
+        'EndDate': new Date('03/13/2017'), 'Progress': '40', 'parentID': 1 },
+        { 'TaskID': 4, 'TaskName': 'Child Task 3', 'StartDate': new Date('03/9/2017'), 'Duration': 11, 'Priority' : 'Normal',
+        'EndDate': new Date('03/13/2017'), 'Progress': '40', 'parentID': 1 },
+        { 'TaskID': 5, 'TaskName': 'Child Task 4', 'StartDate': new Date('03/9/2017'), 'Duration': 1, 'Priority' : 'Normal',
+        'EndDate': new Date('03/13/2017'), 'Progress': '40', 'parentID': 1 },
+        
+    ]
+
+    export let childdata2: Object[] = [
+        { 'TaskID': 7, 'TaskName': 'Second Child Task 1', 'StartDate': new Date('03/02/2017'), 'Duration': 11, 'Priority' : 'High',
+        'EndDate': new Date('03/06/2017'), 'Progress': '40', 'parentID': 6 },
+        { 'TaskID': 8, 'TaskName': 'Second Child Task 2', 'StartDate': new Date('03/02/2017'), 'Duration': 7, 'Priority' : 'Critical',
+        'EndDate': new Date('03/06/2017'), 'Progress': '40', 'parentID': 6 },   
+        { 'TaskID': 9, 'TaskName': 'Second Child Task 3', 'StartDate': new Date('03/02/2017'), 'Duration': 10, 'Priority' : 'Breaker',
+        'EndDate': new Date('03/06/2017'), 'Progress': '40', 'parentID': 6 },
+        { 'TaskID': 10, 'TaskName': 'Second Child Task 4', 'StartDate': new Date('03/02/2017'), 'Duration': 15, 'Priority' : 'High',
+        'EndDate': new Date('03/06/2017'), 'Progress': '40', 'parentID': 6},
+    ]
+
+
     export let treeMappedData: Object[] = [
         {
             'taskID': 1,

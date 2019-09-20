@@ -1193,12 +1193,14 @@ describe('Chart Control', () => {
                 expect(series1.getAttribute('opacity') == '0.1').toBe(true);
                 expect(series1.getAttribute('stroke') == 'red').toBe(true);
                 expect(series1.getAttribute('stroke-width') == '4').toBe(true);
+                expect(series1.getAttribute('cy') == '229.70727999046034').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
             chartObj.series[0].marker.shape = 'Circle';
             chartObj.series[0].marker.fill = 'green';
             chartObj.series[0].marker.opacity = 0.1;
+            chartObj.series[0].marker.offset.y = -20;
             chartObj.series[0].marker.border = {
                 width: 4,
                 color: 'red'
@@ -1215,6 +1217,7 @@ describe('Chart Control', () => {
             chartObj.loaded = loaded;
             chartObj.series[0].marker.dataLabel.visible = true;
             chartObj.series[0].marker.dataLabel.position = 'Outer';
+            chartObj.series[0].marker.offset.y = 0;
             chartObj.refresh();
         });
     });

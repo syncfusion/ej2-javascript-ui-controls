@@ -4742,4 +4742,46 @@ describe('DDList', () => {
             expect(listObj.liCollections.length >=1).toBe(true);
         });
     });
+    describe('filtering', () => {
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74,
+            metaKey: false
+        };
+        let keyEvent: any = { preventDefault: (): void => { /** NO Code */ }, action: 'down' };
+        let listObj: any;
+        let element: HTMLInputElement;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: datasource,
+                fields: { text: "text", value: "id" },
+                popupHeight: "200px",
+                allowFiltering: true,
+                filtering: function (e: FilteringEventArgs) {
+                    let query = new Query();
+                    query = (e.text != "") ? query.where("text", "startswith", e.text, true) : query;
+                    listObj.filter(datasource2, query);
+                }
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+        });
+
+        it('using filter method', (done) => {
+            setTimeout(() => {
+                listObj.filterInput.value = "p";
+                listObj.onInput()
+                listObj.onFilterUp(keyEventArgs);
+                listObj.keyActionHandler(keyEvent);
+                listObj.keyActionHandler(keyEvent);
+                listObj.hidePopup();
+                setTimeout(() => {
+                    expect(listObj.text === 'PERL').toBe(true);
+                    done();
+                }, 250)
+            }, 500)
+        });
+    });
 });

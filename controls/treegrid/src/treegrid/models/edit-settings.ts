@@ -1,5 +1,6 @@
 import { ChildProperty, Property } from '@syncfusion/ej2-base';
 import { EditMode, RowPosition } from '../enum';
+import { IDialogUI } from '@syncfusion/ej2-grids';
 
 /**   
  * Configures the edit behavior of the TreeGrid.    
@@ -75,4 +76,11 @@ export class EditSettings extends ChildProperty<EditSettings> {
      */
     @Property('')
     public template: string;
+
+    /**   
+     * Defines the dialog params to edit.
+     * @default {}
+     */
+    @Property({})
+    public dialog: IDialogUI;
 }

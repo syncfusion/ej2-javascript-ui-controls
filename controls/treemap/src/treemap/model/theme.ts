@@ -41,11 +41,15 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 backgroundColor: color,
                 titleFontColor: '#FFFFFF',
                 subTitleFontColor: '#FFFFFF',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#ffffff',
+                tooltipFillOpacity: 0.75,
                 legendTitleColor: '#DADADA',
                 legendTextColor: '#DADADA',
-                fontFamily: 'Roboto, Noto, Sans-serif'
+                fontFamily: 'Roboto, Noto, Sans-serif',
+                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
         case 'highcontrast':
@@ -53,11 +57,15 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 backgroundColor: '#000000',
                 titleFontColor: '#FFFFFF',
                 subTitleFontColor: '#FFFFFF',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#ffffff',
+                tooltipFillOpacity: 0.75,
                 legendTitleColor: '#FFFFFF',
                 legendTextColor: '#FFFFFF',
-                fontFamily: 'Roboto, Noto, Sans-serif'
+                fontFamily: 'Roboto, Noto, Sans-serif',
+                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
         case 'bootstrap4':
@@ -65,7 +73,7 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 subTitleFontColor: '#212529',
-                tooltipFillColor: '#000000',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#FFFFFF',
                 tooltipFillOpacity: 1,
                 tooltipTextOpacity: 0.9,
@@ -74,7 +82,9 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 fontFamily: 'HelveticaNeue-Medium',
                 fontSize: '16px',
                 legendFontSize: '14px',
-                labelFontFamily: 'HelveticaNeue'
+                labelFontFamily: 'HelveticaNeue',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
         default:
@@ -82,11 +92,14 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#424242',
                 subTitleFontColor: '#424242',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: 'rgba(0, 8, 22, 0.75)',
                 tooltipFontColor: '#ffffff',
                 legendTitleColor: '#353535',
                 legendTextColor: '#353535',
-                fontFamily: 'Roboto, Noto, Sans-serif'
+                fontFamily: 'Roboto, Noto, Sans-serif',
+                labelFontFamily: 'Roboto, Segoe UI, Noto, Sans-serif',
+                borderWidth: 0.5,
+                borderColor: '#cccccc'
             };
             break;
     }

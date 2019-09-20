@@ -1326,7 +1326,7 @@ class Animations {
                 markerElement.setAttribute('d', currentPath);
                 pointer.startValue = pointer.currentValue;
                 pointer.animationComplete = true;
-                this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete, { axis: !this.gauge.isBlazor ? axis : null, pointer: pointer });
             }
         });
     }
@@ -1444,7 +1444,7 @@ class Animations {
                     }
                 }
                 pointer.startValue = pointer.currentValue;
-                this.gauge.trigger(animationComplete, this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
+                this.gauge.trigger(animationComplete, { axis: !this.gauge.isBlazor ? axis : null, pointer: pointer });
             }
         });
     }
@@ -1770,6 +1770,10 @@ class Annotations {
             annotation: annotation, textStyle: annotation.font
         };
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
+        if (this.gauge.isBlazor) {
+            let { cancel, name, content, annotation, textStyle } = argsData;
+            argsData = { cancel, name, content, annotation, textStyle };
+        }
         this.gauge.trigger(annotationRender, argsData, (observerArgs) => {
             if (!argsData.cancel) {
                 let blazor = 'Blazor';
@@ -1923,15 +1927,25 @@ class GaugeTooltip {
                 });
                 document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
+            if (tooltipEle.childElementCount !== 0 && !this.gauge.pointerDrag) {
+                return null;
+            }
             let location = this.getTooltipLocation();
             let args = {
-                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location, content: tooltipContent,
-                tooltip: this.tooltip, axis: this.currentAxis, pointer: this.currentPointer
+                name: tooltipRender,
+                cancel: false,
+                gauge: this.gauge,
+                event: e,
+                location: location,
+                content: tooltipContent,
+                tooltip: this.tooltip,
+                axis: this.currentAxis,
+                pointer: this.currentPointer
             };
             let tooltipPos = this.getTooltipPosition();
             location.y += (this.tooltip.template && tooltipPos === 'Top') ? 20 : 0;
             location.x += (this.tooltip.template && tooltipPos === 'Right') ? 20 : 0;
-            this.gauge.trigger('tooltipRender', args, (observedArgs) => {
+            this.gauge.trigger(tooltipRender, args, (observedArgs) => {
                 let template = args.tooltip.template;
                 if (template !== null && Object.keys(template).length === 1) {
                     template = template[Object.keys(template)[0]];
@@ -1956,22 +1970,17 @@ class GaugeTooltip {
                         areaBounds: new Rect(areaRect.left, tooltipPos === 'Bottom' ? location.y : areaRect.top, tooltipPos === 'Right' ? Math.abs(areaRect.left - location.x) : areaRect.width, areaRect.height),
                         textStyle: args.tooltip.textStyle,
                         border: args.tooltip.border,
-                        theme: args.gauge.theme
+                        theme: args.gauge.theme,
+                        blazorTemplate: { name: 'TooltipTemplate', parent: this.gauge.tooltip }
                     });
                     this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);
-                    if (this.gauge.tooltip.template) {
-                        updateBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-                    }
                 }
             });
         }
         else {
             clearTimeout(this.clearTimeout);
             this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
-            if (this.gauge.tooltip.template) {
-                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-            }
         }
     }
     getTooltipPosition() {
@@ -2028,7 +2037,6 @@ class GaugeTooltip {
         if (document.getElementsByClassName('EJ2-LinearGauge-Tooltip').length > 0) {
             document.getElementsByClassName('EJ2-LinearGauge-Tooltip')[0].remove();
         }
-        resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
     }
     mouseUpHandler(e) {
         this.renderTooltip(e);
@@ -2181,7 +2189,7 @@ let LinearGauge = class LinearGauge extends Component {
         let blazor = 'Blazor';
         this.isBlazor = window[blazor];
         this.unWireEvents();
-        this.trigger(load, { gauge: this });
+        this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
@@ -2248,7 +2256,7 @@ let LinearGauge = class LinearGauge extends Component {
         this.calculateBounds();
         this.renderAxisElements();
         this.renderComplete();
-        this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
+        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
     }
     /**
      * @private
@@ -2369,7 +2377,7 @@ let LinearGauge = class LinearGauge extends Component {
      */
     gaugeResize(e) {
         let args = {
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
             name: resized,
             currentSize: new Size(0, 0)
@@ -2384,7 +2392,7 @@ let LinearGauge = class LinearGauge extends Component {
                 this.calculateBounds();
                 this.renderAxisElements();
                 args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
-                this.trigger(resized, this.isBlazor ? {} : args);
+                this.trigger(resized, args);
                 this.render();
             }, 500);
         }
@@ -2462,7 +2470,7 @@ let LinearGauge = class LinearGauge extends Component {
         let clientRect = this.element.getBoundingClientRect();
         let current;
         let args = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger('gaugeMouseDown', args, (mouseArgs) => {
+        this.trigger(gaugeMouseDown, args, (mouseArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
             if (args.target) {
@@ -2485,7 +2493,7 @@ let LinearGauge = class LinearGauge extends Component {
     mouseMove(e) {
         let current;
         let args = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger('gaugeMouseMove', args, (mouseArgs) => {
+        this.trigger(gaugeMouseMove, args, (mouseArgs) => {
             this.mouseX = args.x;
             this.mouseY = args.y;
             if (args.target && !args.cancel) {
@@ -2603,10 +2611,7 @@ let LinearGauge = class LinearGauge extends Component {
         let parentNode;
         let isTouch = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         let args = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        let blazorArgs = {
-            cancel: args.cancel, name: args.name, target: args.target, x: args.x, y: args.y
-        };
-        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
+        this.trigger(gaugeMouseUp, args);
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = this.element;
             parentNode.style.cursor = '';
@@ -2629,7 +2634,7 @@ let LinearGauge = class LinearGauge extends Component {
         location.y += isTouch ? e.changedTouches[0].clientY : e.clientY;
         return {
             cancel: false, name: name,
-            model: this,
+            model: !this.isBlazor ? this : null,
             x: location.x, y: location.y,
             target: isTouch ? e.target : e.target
         };
@@ -2728,7 +2733,7 @@ let LinearGauge = class LinearGauge extends Component {
         let value = convertPixelToValue(this.element, this.mouseElement, this.orientation, active.axis, 'tooltip', null);
         let dragArgs = {
             name: 'valueChange',
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             element: this.mouseElement,
             axisIndex: active.axisIndex,
             axis: active.axis,
@@ -2736,14 +2741,7 @@ let LinearGauge = class LinearGauge extends Component {
             pointer: active.pointer,
             value: value
         };
-        let dragBlazorArgs = {
-            name: 'valueChange',
-            element: this.mouseElement,
-            axisIndex: active.axisIndex,
-            pointerIndex: active.pointerIndex,
-            value: value
-        };
-        this.trigger(valueChange, this.isBlazor ? dragBlazorArgs : dragArgs);
+        this.trigger(valueChange, dragArgs);
     }
     /**
      * To set the pointer value using this method

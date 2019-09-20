@@ -7,7 +7,7 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8, checkData } from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8, localData9, checkData } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
@@ -2284,6 +2284,16 @@ describe('TreeView control', () => {
                     fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child:"nodeChild" },
                     dataBound: clickFn
                 },'#tree1');
+                expect(i).toEqual(1);
+            });
+            it('dataBound event should not triggered while setting expanded nodes dynamically', () => {
+                treeObj = new TreeView({
+                    fields: { dataSource: localData1, id: 'nodeId', text: 'nodeText', parentID: 'nodePid', hasChildren: 'hasChild' },
+                    dataBound: clickFn
+                },'#tree1');
+                expect(i).toEqual(1);
+                treeObj.expandedNodes = ['02'];
+                treeObj.dataBind();
                 expect(i).toEqual(1);
             });
             it('nodeExpanding event is triggered', () => {
@@ -4600,6 +4610,43 @@ describe('TreeView control', () => {
                     treeObj.dataBind();
                     expect(treeObj.checkedNodes.length).toBe(0);
                     expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('GetAllCheckedNodes value testing with nested data', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData9 ,  id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChildren', isChecked: 'isSelected'},
+                    showCheckBox: true,
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.getTreeData().length).toBe(32);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(30);
+                    treeObj.checkAll(['1'])
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(32);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(32)
+                    done();
+                }, 100);
+            });
+             it('GetAllCheckedNodes value testing with nested data', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData9 ,  id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChildren', isChecked: 'isSelected'},
+                    showCheckBox: true,
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.getTreeData().length).toBe(32);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(30);
+                    treeObj.checkAll(['1'])
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(32);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(32);
+                    treeObj.checkedNodes = ['21'];
+                    treeObj.dataBind();
+                    expect(treeObj.getAllCheckedNodes().length).toBe(5);
                     done();
                 }, 100);
             });

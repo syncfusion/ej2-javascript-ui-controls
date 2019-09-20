@@ -535,7 +535,6 @@ export function markerAnimate(
         },
         end: (model: AnimationOptions) => {
             (<HTMLElement>element).style.visibility = '';
-            element.removeAttribute('transform');
             if ((series.type === 'Scatter' || series.type === 'Bubble') && !isLabel && (pointIndex === series.points.length - 1)) {
                 series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
             }
@@ -1547,6 +1546,7 @@ export function blazorTemplatesReset(control: Chart | AccumulationChart ) : void
     for (let i: number = 0; i < control.annotations.length; i++) {
         resetBlazorTemplate((control.element.id + '_Annotation_' + i).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate');
     }
+    resetBlazorTemplate(control.element.id + '_tooltipparent_template' + '_blazorTemplate', 'Template');
 }
 
 /** @private */

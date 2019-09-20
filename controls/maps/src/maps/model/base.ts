@@ -8,7 +8,7 @@ import { SmartLabelMode, IntersectAction } from '../../index';
 import { BorderModel, ColorMappingSettingsModel, FontModel, CommonTitleSettingsModel, NavigationLineSettingsModel } from './base-model';
 import { MarkerSettingsModel, MarkerClusterSettingsModel, ShapeSettingsModel, BubbleSettingsModel, ArrowModel } from './base-model';
 import { DataLabelSettingsModel, TooltipSettingsModel, SubTitleSettingsModel, SelectionSettingsModel } from './base-model';
-import { HighlightSettingsModel } from './base-model';
+import { HighlightSettingsModel, ToggleLegendSettingsModel } from './base-model';
 import { Theme } from './theme';
 import { Point, GeoLocation } from '../utils/helper';
 import { BingMapType, LegendArrangement, LegendShape, BubbleType } from '../utils/enum';
@@ -516,6 +516,7 @@ export class BubbleSettings extends ChildProperty<BubbleSettings> {
     /**
      * Specifies the data source for bubble.
      * @isdatamanager false
+     * @isObservable true
      * @default []
      */
     @Property([])
@@ -754,6 +755,40 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public minZoom: number;
 }
 /**
+ * To configure the toggle legend settings in the maps
+ */
+export class ToggleLegendSettings extends ChildProperty<ToggleLegendSettings> {
+    /**
+     * To toggle the legend
+     * @default false
+     */
+    @Property(false)
+    public enable: boolean;
+    /**
+     * To apply the shape settings
+     * @default true
+     */
+    @Property(true)
+    public applyShapeSettings: boolean;
+    /**
+     * To specify the opacity of the shape
+     * @default 1
+     */
+    @Property(1)
+    public opacity: number;
+    /**
+     * To fill the color for shape
+     * @default ''
+     */
+    @Property('')
+    public fill: string;
+    /**
+     * To apply border for the shapes
+     */
+    @Complex<BorderModel>({ color: '', width: 0 }, Border)
+    public border: BorderModel;
+}
+/**
  * Configures the legend settings.
  */
 export class LegendSettings extends ChildProperty<LegendSettings> {
@@ -943,6 +978,11 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     @Property(false)
     public removeDuplicateLegend: boolean;
 
+    /**
+     * Options for customizing the color and width of the selection.
+     */
+    @Complex<ToggleLegendSettingsModel>({}, ToggleLegendSettings)
+    public toggleLegendSettings: ToggleLegendSettingsModel;
 }
 /**
  * Customization for Data label settings.
@@ -1236,6 +1276,7 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
      * Specifies the data source for the layer.
      * @isdatamanager false
+     * @isObservable true
      * @default []
      */
     @Property([])
@@ -1341,6 +1382,12 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
+    /**
+     * To configure the legend toggle settings.
+     */
+    @Complex<ToggleLegendSettingsModel>({}, ToggleLegendSettings)
+    public toggleLegendSettings: ToggleLegendSettingsModel;
+
 
     /** @private */
     public layerData: Object[];

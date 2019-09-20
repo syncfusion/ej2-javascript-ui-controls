@@ -327,7 +327,6 @@ describe('Switch', () => {
             specSwitch = new Switch({}, '#ngswitch');
             expect(specSwitch.element.parentElement.tagName).toEqual('EJS-SWITCH');
             expect(specSwitch.element.parentElement.children[0].tagName).toEqual('INPUT');
-            specSwitch.element.click();
             specSwitch.destroy();
             expect((document.getElementById('ngswitch')).tagName).toBe('EJS-SWITCH');
             specSwitch = new Switch({}, document.body.appendChild(createElement('input')) as HTMLInputElement);

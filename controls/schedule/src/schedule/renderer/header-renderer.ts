@@ -110,11 +110,13 @@ export class HeaderRenderer {
         }
     }
     public getCalendarView(): CalendarView {
-        if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' ||
-            this.parent.currentView === 'TimelineMonth') {
+        if (['Month', 'MonthAgenda', 'TimelineMonth'].indexOf(this.parent.currentView) > -1) {
             return 'Year';
+        } else if (['Year', 'TimelineYear'].indexOf(this.parent.currentView) > -1) {
+            return 'Decade';
+        } else {
+            return 'Month';
         }
-        return 'Month';
     }
     public setCalendarView(): void {
         if (this.headerCalendar) {
@@ -213,6 +215,12 @@ export class HeaderRenderer {
                     text: displayName || this.l10n.getConstant('month'), cssClass: 'e-views e-month'
                 };
                 break;
+            case 'year':
+                view = {
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-year',
+                    text: displayName || this.l10n.getConstant('year'), cssClass: 'e-views e-year'
+                };
+                break;
             case 'agenda':
                 view = {
                     align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-agenda', text: this.l10n.getConstant('agenda'),
@@ -249,6 +257,12 @@ export class HeaderRenderer {
                     text: displayName || this.l10n.getConstant('timelineMonth'), cssClass: 'e-views e-timeline-month'
                 };
                 break;
+            case 'timelineyear':
+                view = {
+                    align: 'Right', showAlwaysInPopup: showInPopup, prefixIcon: 'e-icon-timeline-year',
+                    text: displayName || this.l10n.getConstant('timelineYear'), cssClass: 'e-views e-timeline-year'
+                };
+                break;
         }
         return view;
     }
@@ -268,7 +282,7 @@ export class HeaderRenderer {
         let calendarView: CalendarView = this.getCalendarView();
         this.headerCalendar = new Calendar({
             value: this.parent.selectedDate,
-            firstDayOfWeek: this.parent.firstDayOfWeek,
+            firstDayOfWeek: this.parent.activeViewOptions.firstDayOfWeek,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             depth: calendarView,
@@ -319,15 +333,12 @@ export class HeaderRenderer {
             case 'e-month':
                 this.parent.changeView('Month', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
+            case 'e-year':
+                // this.parent.changeView('Year', args.originalEvent, undefined, this.calculateViewIndex(args));
+                break;
             case 'e-agenda':
                 this.parent.changeView('Agenda', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
-            // case 'e-week-agenda':
-            //     this.parent.changeView('weekAgenda', args.originalEvent);
-            //     break;
-            // case 'e-work-week-agenda':
-            //     this.parent.changeView('workWeekAgenda', args.originalEvent);
-            //     break;
             case 'e-month-agenda':
                 this.parent.changeView('MonthAgenda', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
@@ -342,6 +353,9 @@ export class HeaderRenderer {
                 break;
             case 'e-timeline-month':
                 this.parent.changeView('TimelineMonth', args.originalEvent, undefined, this.calculateViewIndex(args));
+                break;
+            case 'e-timeline-year':
+                this.parent.changeView('TimelineYear', args.originalEvent, undefined, this.calculateViewIndex(args));
                 break;
             case 'e-today':
                 if (!this.parent.isSelectedDate(util.resetTime(this.parent.getCurrentTime()))) {

@@ -15,7 +15,7 @@ import { Margin, Title, ColorCollection, LegendColorCollection } from './model/b
 import { Theme, getThemeColor } from './model/theme';
 import { IThemeStyle, ILoadedEventArgs, ICellClickEventArgs, ITooltipEventArgs, IResizeEventArgs } from './model/interface';
 import { ICellEventArgs, ISelectedEventArgs } from './model/interface';
-import { DrawType, HeatMapTheme } from './utils/enum';
+import { DrawType, HeatMapTheme, ColorGradientMode } from './utils/enum';
 import { Axis } from './axis/axis';
 import { AxisModel } from './axis/axis-model';
 import { AxisHelper } from './axis/axis-helpers';
@@ -233,6 +233,8 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public enableCanvasRendering: boolean = false;
     /** @private */
+    public colorGradientMode: ColorGradientMode;
+    /** @private */
     public renderer: SvgRenderer;
     /** @private */
     public canvasRenderer: CanvasRenderer;
@@ -290,6 +292,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public currentRect : CurrentRect;
         /** @private */
     public dataSourceMinValue: number;
+    /** @private */
+    public dataMin: number [];
+    /** @private */
+    public dataMax: number [];
     /** @private */
     public dataSourceMaxValue: number;
     /** @private */
@@ -548,11 +554,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     public onPropertyChanged(newProp: HeatMapModel, oldProp: HeatMapModel): void {
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
+        let isUpdateSelection: boolean = true;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'renderingMode':
                     this.rendering = false;
-                    renderer = true;
+                    isUpdateSelection = false; renderer = true;
                     break;
                 case 'cellSettings':
                     this.updateBubbleHelperProperty();
@@ -560,6 +567,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         oldProp.cellSettings.tileType) || (newProp.cellSettings.bubbleType !== oldProp.cellSettings.bubbleType))) {
                         this.legendOnLoad = true;
                         this.legendModule.updateLegendRangeCollections();
+                    }
+                    if (this.cellSettings.tileType === 'Bubble') {
+                        isUpdateSelection = false;
                     }
                     this.reRenderDatasource();
                     refreshBounds = true;
@@ -570,13 +580,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                 case 'dataSource':
                 case 'dataSourceSettings':
                     this.isCellData = false;
-                    this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    }
+                    this.paletteCellSelectionUpdation();
                     this.reRenderDatasource();
-                    renderer = true;
+                    isUpdateSelection = false; renderer = true;
                     break;
                 case 'titleSettings':
                 case 'width':
@@ -597,20 +603,14 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                     break;
                 case 'yAxis':
                 case 'xAxis':
-                    this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    }
+                    this.paletteCellSelectionUpdation();
                     this.reRenderDatasource();
+                    isUpdateSelection = false;
                     refreshBounds = true;
                     break;
                 case 'paletteSettings':
-                    this.updateBubbleHelperProperty();
-                    if (this.legendVisibilityByCellType) {
-                        this.legendOnLoad = true;
-                        this.legendModule.updateLegendRangeCollections();
-                    }
+                    this.paletteCellSelectionUpdation();
+                    this.twoDimensional.processDataSource(this.completeAdaptDataSource);
                     this.cellColor.getColorCollection();
                     this.calculateBounds();
                     renderer = true;
@@ -635,7 +635,9 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.renderElements();
             this.appendSvgObject();
             this.trigger('created');
+            if (!isUpdateSelection) {
             this.clearSelection();
+            }
         } else if (refreshBounds) {
             this.createSvg();
             this.refreshBound();
@@ -643,11 +645,21 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.trigger('created');
         }
         if (this.allowSelection && this.rectSelected) {
+            if (isUpdateSelection) {
+                this.updateCellSelection();
+           } else {
             this.clearSelection();
+           }
     }
         this.rendering = true;
     }
-
+    private paletteCellSelectionUpdation(): void {
+        this.updateBubbleHelperProperty();
+        if (this.legendVisibilityByCellType) {
+            this.legendOnLoad = true;
+            this.legendModule.updateLegendRangeCollections();
+        }
+    }
     /**
      * create svg or canvas element
      * @private
@@ -884,6 +896,21 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             && this.legendVisibilityByCellType) || this.titleSettings.textStyle.size === '0px' ? 0 : 16; // title padding
         let left: number = margin.left;
         let width: number = this.availableSize.width - left - margin.right;
+        if ((this.paletteSettings.colorGradientMode === 'Column' || this.paletteSettings.colorGradientMode === 'Row') &&
+            this.paletteSettings.type === 'Gradient') {
+            if (this.paletteSettings.palette.length === 0) {
+                this.legendVisibilityByCellType = false;
+            } else {
+                for (let i: number = 0; i < this.paletteSettings.palette.length; i++) {
+                    if (this.paletteSettings.palette[i].value !== null || '') {
+                        this.legendVisibilityByCellType = true;
+                    } else if (this.paletteSettings.palette[i].value === null || '') {
+                        this.legendVisibilityByCellType = false;
+                        break;
+                    }
+                }
+            }
+        }
         if (this.titleSettings.text) {
             this.titleCollection = getTitle(this.titleSettings.text, this.titleSettings.textStyle, width);
             titleHeight = (measureText(this.titleSettings.text, this.titleSettings.textStyle).height * this.titleCollection.length) +

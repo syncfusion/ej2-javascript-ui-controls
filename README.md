@@ -18,7 +18,7 @@
 ### Modular architecture
  All components have been built as modules to enable selective referencing, so only the components and features you need are included in your application.
 ### Built for performance
- Performance is critical for delivering a good user experience. We ensure that all our JS components are designed and built to achieve the best performance possible.
+ Performance is critical for delivering a good user experience. We ensure that all our components are designed and built to achieve the best performance possible.
 ### Responsive and touch friendly
  All Essential JS 2 controls are touch friendly and render adaptively based on the device they are on to provide optimal usage experience on phones, tablets and desktops.
 ### Stunning built-in themes
@@ -106,7 +106,7 @@
 * Viewer
     * [PDF Viewer](https://www.syncfusion.com/javascript-ui-controls/js-pdf-viewer?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm) - [*Live demo*](https://ej2.syncfusion.com/demos/#/material/pdfviewer/default.html)
  
-## Supported JavaScript UI Frameworks
+## Supported Frameworks
 * [Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [Vue.js](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)

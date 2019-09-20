@@ -300,3 +300,11 @@ export interface TreeMapModel extends ComponentModel{
     legendRendering?: EmitType<ILegendRenderingEventArgs>;
 
 }
+
+/**
+ * Interface for a class LevelsData
+ * @private
+ */
+export interface LevelsDataModel {
+
+}

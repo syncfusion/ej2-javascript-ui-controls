@@ -1,6 +1,6 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, closest } from '@syncfusion/ej2-base';
 import { EmitType, Event, EventHandler, MouseEventArgs } from '@syncfusion/ej2-base';
-import { addClass, isRippleEnabled, removeClass, rippleEffect, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { addClass, isRippleEnabled, removeClass, rippleEffect, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { SwitchModel } from './switch-model';
 import { rippleMouseHandler, destroy, preRender, ChangeEventArgs, setHiddenInput } from './../common/common';
 
@@ -356,13 +356,9 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         }
     }
 
-    private changeHandler(e: MouseEvent): void {
-        e.stopPropagation();
-    }
-
     private formResetHandler(): void {
         this.checked = this.initialSwitchCheckedValue;
-        attributes(this.element, { 'checked': this.initialSwitchCheckedValue.toString() });
+        this.element.checked = this.initialSwitchCheckedValue;
     }
     /**
      * Toggle the Switch component state into checked/unchecked.
@@ -386,10 +382,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (this.formElement) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
-        if (this.tagName === 'EJS-SWITCH') {
-            EventHandler.add(this.element, 'change', this.changeHandler, this);
-        }
-
     }
     private unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
@@ -404,10 +396,6 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
-        if (this.tagName === 'EJS-SWITCH') {
-            EventHandler.remove(this.element, 'change', this.changeHandler);
-        }
-
     }
 
     /**

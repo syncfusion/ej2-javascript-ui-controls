@@ -370,7 +370,7 @@ export class Resize implements IAction {
                     column: this.column
                 };
                 this.parent.trigger(events.resizeStart, args);
-                if (args.cancel) {
+                if (args.cancel || this.parent.isEdit) {
                     this.cancelResizeAction();
                     return;
                 }

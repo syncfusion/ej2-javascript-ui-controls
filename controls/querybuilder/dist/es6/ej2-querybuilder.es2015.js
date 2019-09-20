@@ -1,7 +1,7 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
+import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -12,6 +12,14 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
 };
 /**
  * Query Builder Source
@@ -740,16 +748,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
         let element = closest(ddlArgs.element, '.e-group-container');
         let groupID = element.id.replace(this.element.id + '_', '');
-        let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
         this.changeFilter(filterElem, ddlObj, groupID, rule, tempRule, ddlArgs);
-        if (!this.isOperatorRendered) {
-            this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
-        }
-        if (!this.isValueRendered) {
-            this.changeRuleValues(filterElem, rule, tempRule, ddlArgs);
-        }
-        this.isValueRendered = false;
-        this.isOperatorRendered = false;
     }
     changeFilter(flt, dl, grID, rl, tmpRl, dArg) {
         if (flt) {
@@ -766,6 +765,10 @@ let QueryBuilder = class QueryBuilder extends Component {
             else {
                 this.fieldChangeSuccess(eventsArgs, tmpRl, flt, rl, dArg);
             }
+        }
+        else {
+            let operatorElem = closest(dArg.element, '.e-rule-operator');
+            this.changeOperator(flt, operatorElem, dl, grID, rl, tmpRl, dArg);
         }
     }
     changeOperator(flt, opr, dl, grID, rl, tmpRl, dArg) {
@@ -785,25 +788,26 @@ let QueryBuilder = class QueryBuilder extends Component {
                 this.operatorChangeSuccess(eventsArgs, flt, tmpRl, rl, dArg);
             }
         }
+        else {
+            this.changeRuleValues(flt, rl, tmpRl, dArg);
+        }
     }
     fieldChangeSuccess(args, tempRule, filterElem, rule, ddlArgs) {
         let ruleElem = closest(filterElem, '.e-rule-container');
+        let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
+        let element = closest(ddlArgs.element, '.e-group-container');
+        let groupID = element.id.replace(this.element.id + '_', '');
+        let ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
         if (!args.cancel) {
             tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
-            let element = closest(ddlArgs.element, '.e-group-container');
-            let operatorElem = closest(ddlArgs.element, '.e-rule-operator');
-            let groupID = element.id.replace(this.element.id + '_', '');
-            let ddlObj = getComponent(ddlArgs.element, 'dropdownlist');
             this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         }
         else {
-            this.isOperatorRendered = true;
-            this.isValueRendered = true;
+            this.changeOperator(filterElem, operatorElem, ddlObj, groupID, rule, tempRule, ddlArgs);
         }
-        this.isOperatorRendered = true;
     }
     operatorChangeSuccess(eventsArgs, filterElem, tempRule, rule, ddlArgs) {
         if (!eventsArgs.cancel) {
@@ -1016,29 +1020,45 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             if (!isFetched) {
                 args.cancel = true;
-                let multiselectObj = getComponent(element, 'multiselect');
-                multiselectObj.hideSpinner();
-                let data = this.dataManager.executeQuery(new Query().select(value));
-                let deferred = new Deferred();
-                let dummyData;
-                this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
-                showSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
-                data.then((e) => {
-                    if (e.actual && e.actual.result) {
-                        dummyData = e.actual.result;
-                    }
-                    else {
-                        dummyData = e.result;
-                    }
-                    this.dataColl = extend(this.dataColl, dummyData, [], true);
-                    let ds = this.getDistinctValues(this.dataColl, value);
-                    multiselectObj.dataSource = ds;
-                    hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
-                }).catch((e) => {
-                    deferred.reject(e);
-                });
+                if (isBlazor()) {
+                    this.bindBlazorMultiSelectData(element, value);
+                }
+                else {
+                    this.bindMultiSelectData(element, value);
+                }
             }
         }
+    }
+    bindBlazorMultiSelectData(element, value) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.getMultiSelectData(element, value);
+            return;
+        });
+    }
+    bindMultiSelectData(element, value) {
+        this.getMultiSelectData(element, value);
+    }
+    getMultiSelectData(element, value) {
+        let dummyData;
+        let deferred = new Deferred();
+        let data = this.dataManager.executeQuery(new Query().select(value));
+        let multiselectObj = getComponent(element, 'multiselect');
+        multiselectObj.hideSpinner();
+        this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+        showSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+        data.then((e) => {
+            if (e.actual && e.actual.result) {
+                dummyData = e.actual.result;
+            }
+            else {
+                dummyData = e.result;
+            }
+            this.dataColl = extend(this.dataColl, dummyData, [], true);
+            multiselectObj.dataSource = this.getDistinctValues(this.dataColl, value);
+            hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+        }).catch((e) => {
+            deferred.reject(e);
+        });
     }
     createSpinner(element) {
         let spinnerElem = this.createElement('span', { attrs: { class: 'e-qb-spinner' } });
@@ -2007,6 +2027,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             this.dataColl = this.dataManager.executeLocal(new Query());
             this.initControl();
         }
+        this.renderComplete();
     }
     executeDataManager(query) {
         let data = this.dataManager.executeQuery(query);
@@ -2279,11 +2300,21 @@ let QueryBuilder = class QueryBuilder extends Component {
     /**
      * return the Query from current rules collection.
      * @returns Promise.
+     * @blazorType object
      */
     getFilteredRecords() {
         let predicate = this.getPredicate(this.getValidRules(this.rule));
         let dataManagerQuery = new Query().where(predicate);
-        return this.dataManager.executeQuery(dataManagerQuery);
+        if (this.isBlazor()) {
+            let adaptr = new UrlAdaptor();
+            let dm = new DataManager({ url: '', adaptor: new UrlAdaptor });
+            let state = adaptr.processQuery(dm, dataManagerQuery);
+            let data = JSON.parse(state.data);
+            return data;
+        }
+        else {
+            return this.dataManager.executeQuery(dataManagerQuery);
+        }
     }
     /**
      * Deletes the rule or rules based on the rule ID.
@@ -2904,6 +2935,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         return rules;
+    }
+    isBlazor() {
+        return ((Object.keys(window).indexOf('ejsInterop') === -1) ? false : true);
     }
 };
 __decorate([

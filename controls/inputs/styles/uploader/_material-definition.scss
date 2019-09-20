@@ -1,5 +1,6 @@
 // uploader with material theme
 $zero-value: 0 !default;
+$upload-root-font-family: $font-family !default;
 $upload-element-opacity: $zero-value !default;
 $upload-element-width: $zero-value !default;
 $select-file-margin: $zero-value !default;
@@ -61,7 +62,7 @@ $file-container-left: 60px !default;
 $ie-icons-position-value: 10px !default;
 $ie-abort-icon-position-value: 12px !default;
 
-$upload-font-family: $font-family !default;
+$upload-font-family: inherit !default;
 $drop-area-padding-left: 16px !default;
 $drop-area-font-size: 15px !default;
 $file-name-font-size: 15px !default;
@@ -107,7 +108,7 @@ $delete-icon-padding: 20px !default;
 $delete-icon-padding-smaller: 18px !default;
 $remove-icon-before-left-bigger: 10px !default;
 $remove-icon-before-top-bigger: 10px !default;
-$file-name-font-family: $upload-font-family !default;
+$file-name-font-family: inherit !default;
 $file-container-top: 3px !default;
 $remove-icon-top: 50% !default;
 $clear-icon-focus-color: rgba($grey-black, .12) !default;

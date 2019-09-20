@@ -208,7 +208,7 @@ export class Pointer extends ChildProperty<Pointer> {
 
     /**
      * Specifies value of the pointer.
-     * @aspDefaultValueIgnore
+     * @blazorDefaultValue 0
      * @default null
      */
 

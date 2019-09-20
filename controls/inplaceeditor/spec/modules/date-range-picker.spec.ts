@@ -30,7 +30,10 @@ describe('DateRangePicker module', () => {
             editorObj = renderEditor({
                 mode: 'Inline',
                 type: 'DateRange',
-                value: [new Date('11/12/2018'), new Date('11/15/2018')]
+                value: [new Date('11/12/2018'), new Date('11/15/2018')],
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -51,6 +54,9 @@ describe('DateRangePicker module', () => {
         it('Clear icon availability testing', () => {
             expect(editorObj.dateRangeModule.compObj.showClearButton).toBe(true);
             expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('Clear icon availability testing for false', () => {
             editorObj.dateRangeModule.compObj.showClearButton = false;

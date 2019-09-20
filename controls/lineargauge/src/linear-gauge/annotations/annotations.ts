@@ -57,6 +57,10 @@ export class Annotations {
             annotation: annotation, textStyle: annotation.font
         };
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
+        if (this.gauge.isBlazor) {
+            let {cancel, name, content, annotation, textStyle} : IAnnotationRenderEventArgs = argsData;
+            argsData = {cancel, name, content, annotation, textStyle};
+        }
         this.gauge.trigger(annotationRender, argsData, (observerArgs: IAnnotationRenderEventArgs) => {
             if (!argsData.cancel) {
                 let blazor: string = 'Blazor';

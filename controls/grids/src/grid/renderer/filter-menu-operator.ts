@@ -50,6 +50,7 @@ export class FlMenuOptrUI {
             dataSource: dropDatasource,
             fields: { text: 'text', value: 'value' },
             open: this.dropDownOpen.bind(this),
+            cssClass: 'e-popup-flmenu',
             text: selectedValue
         });
         this.dropOptr.appendTo('#' + column.uid + '-floptr');

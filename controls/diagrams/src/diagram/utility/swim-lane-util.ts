@@ -3,7 +3,7 @@ import { NodeModel, LaneModel, PhaseModel, SwimLaneModel } from '../objects/node
 import { Node, Shape, SwimLane } from '../objects/node';
 import { GridPanel, GridCell, GridRow, RowDefinition, ColumnDefinition } from '../core/containers/grid';
 import { Lane, Phase } from '../objects/node';
-import { DiagramAction, NodeConstraints } from '../enum/enum';
+import { DiagramAction, NodeConstraints, DiagramConstraints } from '../enum/enum';
 import { cloneObject, randomId } from './../utility/base-util';
 import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
@@ -574,11 +574,18 @@ export function checkPhaseOffset(obj: NodeModel, diagram: Diagram): void {
 export function updateConnectorsProperties(connectors: string[], diagram: Diagram): void {
     if (connectors && connectors.length > 0) {
         let edges: Connector;
+        if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+            diagram.lineRoutingModule.renderVirtualRegion(diagram, true);
+        }
         for (let i: number = 0; i < connectors.length; i++) {
             edges = diagram.getObject(connectors[i]) as Connector;
-            diagram.connectorPropertyChange(edges, {} as Connector, {
-                sourceID: edges.sourceID, targetID: edges.targetID
-            } as Connector);
+            if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+                diagram.lineRoutingModule.refreshConnectorSegments(diagram, edges, true);
+            } else {
+                diagram.connectorPropertyChange(edges, {} as Connector, {
+                    sourceID: edges.sourceID, targetID: edges.targetID
+                } as Connector);
+            }
         }
     }
 }

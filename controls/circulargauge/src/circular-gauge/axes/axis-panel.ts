@@ -135,11 +135,15 @@ export class AxisLayoutPanel {
                 cancel: false, name: radiusCalculate, currentRadius: axis.currentRadius, gauge: this.gauge,
                 midPoint: this.gauge.midPoint, axis: axis
             };
-            this.gauge.trigger('radiusCalculate', args, (observedArgs: IRadiusCalculateEventArgs) => {
+            if (this.gauge.isBlazor) {
+                const { cancel, name, currentRadius, midPoint } : IRadiusCalculateEventArgs = args;
+                args = { cancel, name, currentRadius, midPoint };
+            }
+            this.gauge.trigger('radiusCalculate', args, () => {
                 axis.currentRadius = args.currentRadius;
                 this.gauge.midPoint = args.midPoint;
+                this.calculateVisibleLabels(axis);
             });
-            this.calculateVisibleLabels(axis);
         }
     }
 
@@ -262,13 +266,18 @@ export class AxisLayoutPanel {
                     format(roundValue),
                 value: roundValue
             };
-            this.gauge.trigger('axisLabelRender', argsData, (observedArgs: IAxisLabelRenderEventArgs) => {
-                if (!argsData.cancel) {
+            if (this.gauge.isBlazor) {
+                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+            }
+            this.gauge.trigger('axisLabelRender', argsData);
+            if (!argsData.cancel) {
+                const labelAvailable : VisibleLabels[] = axis.visibleLabels.filter((label : VisibleLabels) => label.text === argsData.text);
+                if (!labelAvailable.length) {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, i
                     ));
                 }
-            });
+            }
         }
         let lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal: number = axis.visibleRange.max;
@@ -279,16 +288,33 @@ export class AxisLayoutPanel {
                     format(maxVal),
                 value: maxVal
             };
-            this.gauge.trigger('axisLabelRender', argsData, (observedArgs: IAxisLabelRenderEventArgs) => {
-                if (!argsData.cancel) {
+            if (this.gauge.isBlazor) {
+                argsData = this.getBlazorAxisLabelEventArgs(argsData);
+            }
+            this.gauge.trigger('axisLabelRender', argsData);
+            if (!argsData.cancel) {
+                const labelExist : VisibleLabels[] = axis.visibleLabels.filter((label : VisibleLabels) => label.text === argsData.text);
+                if (!labelExist.length) {
                     axis.visibleLabels.push(new VisibleLabels(
-                    argsData.text, maxVal
+                        argsData.text, maxVal
                     ));
                 }
-            });
+            }
         }
         this.getMaxLabelWidth(this.gauge, axis);
     }
+
+    /**
+     * To get axis label event arguments for Blazor
+     * @return {IAxisLabelRenderEventArgs}
+     * @private
+     */
+
+     private getBlazorAxisLabelEventArgs(args : IAxisLabelRenderEventArgs) : IAxisLabelRenderEventArgs {
+        const {cancel, name, text, value } : IAxisLabelRenderEventArgs = args;
+        args = {cancel, name, text, value};
+        return args;
+     }
 
     /**
      * Measure the axes available size.

@@ -2,7 +2,7 @@ import { Grid, getObject, Row, DetailDataBoundEventArgs, Cell } from '@syncfusio
 import { DetailRow as detailrow } from '@syncfusion/ej2-grids';
 import { TreeGrid, ITreeData, CellSaveEventArgs } from '../base';
 import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
-import { getExpandStatus } from '../utils';
+import { getExpandStatus, isRemoteData  } from '../utils';
 import { FocusStrategy } from '@syncfusion/ej2-grids/src/grid/services/focus-strategy';
 
 /**
@@ -66,6 +66,9 @@ export class DetailRow {
   }
 
   private rowExpandCollapse(args: { detailrows: HTMLTableRowElement[], action: string }): void {
+    if (isRemoteData(this.parent)) {
+      return;
+    }
     for (let i: number = 0; i < args.detailrows.length; i++) {
       args.detailrows[i].style.display = args.action;
     }

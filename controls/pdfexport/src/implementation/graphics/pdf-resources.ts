@@ -274,53 +274,22 @@ export class PdfResources extends PdfDictionary {
         }
     }
 }
+/* tslint:disable */
 /**
  * Used to create new guid for resources.
  * @private
  */
 export class Guid {
     /**
-     * `String value of GUID`.
-     * @private
-     */
-    private stringValue : string;
-    /**
-     * static field to store `endding value of current GUID`.
-     * @private
-     */
-    private static guid : number = 0;
-    /**
-     * Generate `Random number` for GUID.
-     * @private
-     */
-    private static get randomNumber() : number {
-        Guid.guid = Guid.guid + 1;
-        Guid.guid = Guid.guid > 999999999999 ? 0 : Guid.guid;
-        return Guid.guid;
-    }
-    /**
-     * Initialize an `instance of GUID` class.
-     * @private
-     */
-    constructor(stringValue ?: string) {
-        this.stringValue = stringValue || Guid.getNewGuidString();
-    }
-    /**
-     * Return the value of `GUID as string`.
-     * @private
-     */
-    public toString() : string {
-        return this.stringValue;
-    }
-    /**
      * Generate `new GUID`.
      * @private
      */
     public static getNewGuidString() : string {
-        let guid : string = 'abc7def4-ghi9-jkl2-m6n3-';
-        let temproaryString : string = 'opqrstuvwxyz';
-        let randomString : string = Guid.randomNumber.toString();
-        randomString = guid + temproaryString.substr(0, (12 - randomString.length)) + randomString;
-        return randomString;
+        return 'aaaaaaaa-aaaa-4aaa-baaa-aaaaaaaaaaaa'.replace(/[ab]/g, (c : string) => {
+            let random : number = Math.random() * 16 | 0;
+            let result : number = c === 'a' ? random : (random & 0x3 | 0x8);
+            return result.toString(16);
+          });
     }
 }
+/* tslint:enable */

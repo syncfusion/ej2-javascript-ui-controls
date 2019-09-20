@@ -3,8 +3,96 @@
  */
 import { Accordion, AccordionClickArgs, ExpandEventArgs } from "../src/accordion/index";
 import { isNullOrUndefined as isNOU } from "@syncfusion/ej2-base";
-import { isVisible, classList } from "@syncfusion/ej2-base";
+import { isVisible, classList, createElement } from "@syncfusion/ej2-base";
 import { profile, inMB, getMemoryProfile } from './common.spec';
+
+let accordionItems: Object[] = [{
+    "ID": 1,
+    "CompanyName": "Super Mart of the West",
+    "Address": "702 SW 8th Street",
+    "City": "Bentonville",
+    "State": "Arkansas",
+    "Zipcode": 72716,
+    "Phone": "(800) 555-2797",
+    "Fax": "(800) 555-2171",
+    "Website": "http://www.nowebsitesupermart.com"
+}, {
+    "ID": 2,
+    "CompanyName": "Electronics Depot",
+    "Address": "2455 Paces Ferry Road NW",
+    "City": "Atlanta",
+    "State": "Georgia",
+    "Zipcode": 30339,
+    "Phone": "(800) 595-3232",
+    "Fax": "(800) 595-3231",
+    "Website": "http://www.nowebsitedepot.com"
+}, {
+    "ID": 3,
+    "CompanyName": "K&S Music",
+    "Address": "1000 Nicllet Mall",
+    "City": "Minneapolis",
+    "State": "Minnesota",
+    "Zipcode": 55403,
+    "Phone": "(612) 304-6073",
+    "Fax": "(612) 304-6074",
+    "Website": "http://www.nowebsitemusic.com"
+}, {
+    "ID": 4,
+    "CompanyName": "Tom's Club",
+    "Address": "999 Lake Drive",
+    "City": "Issaquah",
+    "State": "Washington",
+    "Zipcode": 98027,
+    "Phone": "(800) 955-2292",
+    "Fax": "(800) 955-2293",
+    "Website": "http://www.nowebsitetomsclub.com"
+}];
+
+let nestedAccordionItems: Object[] = [{
+    "ID": 1,
+    "CompanyName": "Video",
+    "Link": "<div id='nested_video'></div>",
+    "Address": "702 SW 8th Street",
+    "City": "Bentonville",
+    "State": "Arkansas",
+    "Zipcode": 72716,
+    "Phone": "(800) 555-2797",
+    "Fax": "(800) 555-2171",
+    "Website": "http://www.nowebsitesupermart.com"
+}, {
+    "ID": 2,
+    "CompanyName": "Music",
+    "Link": "<div id='nested_music'></div>",
+    "Address": "2455 Paces Ferry Road NW",
+    "City": "Atlanta",
+    "State": "Georgia",
+    "Zipcode": 30339,
+    "Phone": "(800) 595-3232",
+    "Fax": "(800) 595-3231",
+    "Website": "http://www.nowebsitedepot.com"
+}, {
+    "ID": 3,
+    "CompanyName": "Images",
+    "Link": "<div id='nested_images'></div>",
+    "Address": "1000 Nicllet Mall",
+    "City": "Minneapolis",
+    "State": "Minnesota",
+    "Zipcode": 55403,
+    "Phone": "(612) 304-6073",
+    "Fax": "(612) 304-6074",
+    "Website": "http://www.nowebsitemusic.com"
+}, {
+    "ID": 4,
+    "CompanyName": "Music New",
+    "Link": "<div id='nested_musicNew'></div>",
+    "Address": "999 Lake Drive",
+    "City": "Issaquah",
+    "State": "Washington",
+    "Zipcode": 98027,
+    "Phone": "(800) 955-2292",
+    "Fax": "(800) 955-2293",
+    "Website": "http://www.nowebsitetomsclub.com"
+}];
 
 type Str = string;
 
@@ -300,6 +388,15 @@ describe("Accordion Testing", () => {
             accordion = new Accordion({ items: [{ cssClass: 'CustomClass' }] }, ele);
             let innerItem: Element = ele.children[0];
             expect(innerItem.classList.contains('CustomClass')).toBe(true);
+        });
+        it("AccordionItem multiple CssClass testing", () => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            accordion = new Accordion({ items: [
+                {header: 'item1', content: 'content1', cssClass: 'CustomClass1 CustomClass2'}
+            ]}, ele);
+            let innerItem: Element = ele.children[0];
+            expect(innerItem.classList.contains('CustomClass1')).toBe(true);
+            expect(innerItem.classList.contains('CustomClass2')).toBe(true);
         });
     });
     describe("Accordion Item expanded Property testing", () => {
@@ -3500,7 +3597,73 @@ describe("Accordion Testing", () => {
             (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[0]).click();
             expect(undefinedCount === 0).toBe(true);
         });
-    });    
+    });
+    
+    describe("Accordion dataSource testing", () => {
+        let accordion: Accordion;
+        let ele: HTMLElement = createElement('div', { id: 'accordion' });
+        beforeAll((): void => {
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    dataSource: accordionItems,
+                    headerTemplate: "${CompanyName}",
+                    itemTemplate: "${City}"
+                });
+            accordion.appendTo(ele);
+        });
+        it("Accordion dataSource rendering testing", () => {
+            expect(ele.children.length === accordion.dataSource.length).toBe(true);
+            expect(ele.querySelectorAll("." + CLS_ITEM).length === accordion.dataSource.length).toBe(true);
+        });
+        it("Accordion dataSource headerTemplate rendering testing", () => {
+            let headerEle: HTMLElement = <HTMLElement>ele.children[0].children[0];
+            expect(headerEle.childElementCount).toBe(2);
+            expect(headerEle.firstChild.textContent === "Super Mart of the West").toBe(true);
+        });
+        it("Accordion dataSource itemTemplate rendering testing", (done: Function) => {
+            let headerEle: HTMLElement = <HTMLElement>ele.children[0].children[0];
+            (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[0]).click();
+            setTimeout(() => { done(); }, TIME_DELAY);
+            expect(headerEle.children[1] === ele.querySelector("." + CLS_TOOGLEICN)).toBe(true);
+            expect(headerEle.firstChild.textContent === "Super Mart of the West").toBe(true);
+            expect(headerEle.nextElementSibling === ele.querySelector("." + CLS_CONTENT)).toBe(true);
+            expect(headerEle.nextElementSibling.firstChild.textContent === "Bentonville").toBe(true);
+        });
+        afterAll((): void => {
+            ele.remove();
+        });
+    });
+
+    describe("Accordion dataSource Public Method with addItem Expand Testing ", () => {
+        let accordion: Accordion;
+        let ele: HTMLElement = createElement('div', { id: 'accordion' });
+        beforeAll((done: Function): void => {
+            document.body.appendChild(ele);
+            accordion = new Accordion(
+                {
+                    dataSource: accordionItems,
+                    headerTemplate: "${CompanyName}",
+                    itemTemplate: "${City}"
+                });
+            accordion.appendTo(ele);
+            expect(ele.childElementCount).toBe(4);
+            let data: Object = {
+                "CompanyName": "Amazon",
+                "City": "Cape Town"
+            };
+            accordion.addItem(data, 1);
+            (<HTMLElement>ele.querySelectorAll("." + CLS_HEADER)[1]).click();
+            setTimeout(() => { done(); }, TIME_DELAY);
+        });
+        it("Accordion dataSource Public Method addItem Testing", () => {
+            let newItem: Element = ele.children[1];
+            expect(isVisible(newItem.children[1])).toBe(true);
+        });
+        afterAll((): void => {
+            ele.remove();
+        });
+    });
 
     it('memory leak', () => {
         profile.sample();

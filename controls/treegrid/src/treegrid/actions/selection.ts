@@ -67,7 +67,7 @@ export class Selection {
     if (checkWrap && checkWrap.querySelectorAll('.e-treecheckselect').length > 0) {
       checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
       let rowIndex: number[]; rowIndex = [];
-      rowIndex.push(target.closest('tr').rowIndex);
+      rowIndex.push(+target.closest('tr').getAttribute('aria-rowindex'));
       this.selectCheckboxes(rowIndex);
       this.triggerChkChangeEvent(checkBox, checkBox.nextElementSibling.classList.contains('e-check'), target.closest('tr'));
     } else if (checkWrap && checkWrap.querySelectorAll('.e-treeselectall').length > 0 && this.parent.autoCheckHierarchy) {
@@ -96,9 +96,9 @@ export class Selection {
         mappingUid = (<ColumnModel>this.parent.columns[col]).uid;
       }
     }
-    let headerCelllength: number = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv').length;
+    let headerCelllength: number = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv').length;
     for (let j: number = 0; j < headerCelllength; j++) {
-      let headercell: Element = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv')[j];
+      let headercell: Element = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv')[j];
       if (headercell.getAttribute('e-mappinguid') === mappingUid) {
         columnIndex = j;
       }
@@ -108,8 +108,8 @@ export class Selection {
 
     private headerCheckbox(): void {
       this.columnIndex = this.getCheckboxcolumnIndex();
-      if (this.columnIndex > -1 && this.parent.getHeaderTable().querySelectorAll('.e-treeselectall').length === 0) {
-        let headerElement: Element = this.parent.getHeaderTable().querySelectorAll('.e-headercelldiv')[this.columnIndex];
+      if (this.columnIndex > -1 && this.parent.getHeaderContent().querySelectorAll('.e-treeselectall').length === 0) {
+        let headerElement: Element = this.parent.getHeaderContent().querySelectorAll('.e-headercelldiv')[this.columnIndex];
         let checkWrap: Element;
         let value: boolean = false;
         let rowChkBox: Element = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox'}});
@@ -266,7 +266,7 @@ export class Selection {
         }
       }
       length = this.selectedItems.length;
-      let checkbox: HTMLElement = <HTMLElement>this.parent.getHeaderTable().querySelectorAll('.e-frame')[0];
+      let checkbox: HTMLElement = <HTMLElement>this.parent.getHeaderContent().querySelectorAll('.e-frame')[0];
       if (length > 0 && data.length > 0) {
         if (length !== data.length) {
           removeClass([checkbox], ['e-check']);
@@ -288,7 +288,12 @@ export class Selection {
       let checkbox: HTMLElement;
       if (recordIndex > -1) {
         let tr: HTMLElement = this.parent.getRows()[recordIndex];
-        checkbox = <HTMLElement>tr.querySelectorAll('.e-frame')[0];
+        let movableTr: Element;
+        if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
+          movableTr = this.parent.getMovableDataRows()[recordIndex];
+        }
+        checkbox = <HTMLElement>tr.querySelectorAll('.e-frame')[0] ? <HTMLElement>tr.querySelectorAll('.e-frame')[0]
+          : <HTMLElement>movableTr.querySelectorAll('.e-frame')[0];
         if (!isNullOrUndefined(checkbox)) {
           removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
         }
@@ -357,10 +362,10 @@ export class Selection {
           }
         } else if (args.requestType === 'add' && this.parent.autoCheckHierarchy) {
           (<ITreeData>args.data).checkboxState = 'uncheck';
-        } else if (requestType === 'filtering' || requestType === 'searching') {
+        } else if (requestType === 'filtering' || requestType === 'searching' || requestType === 'refresh') {
           this.selectedItems = []; this.selectedIndexes = [];
-          childData = (this.parent.filterModule.filteredResult.length > 0) ? this.parent.getCurrentViewRecords() :
-              this.parent.flatData;
+          childData = (!isNullOrUndefined(this.parent.filterModule) && this.parent.filterModule.filteredResult.length > 0) ?
+            this.parent.getCurrentViewRecords() : this.parent.flatData;
           childData.forEach((record: ITreeData) => {
             if (record.hasChildRecords) {
               this.updateParentSelection(record);

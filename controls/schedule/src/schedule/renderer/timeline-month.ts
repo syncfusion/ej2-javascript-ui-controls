@@ -4,6 +4,7 @@ import { Schedule } from '../base/schedule';
 import { Month } from './month';
 import { TimelineEvent } from '../event-renderer/timeline-view';
 import * as util from '../base/util';
+import * as event from '../base/constant';
 import * as cls from '../base/css-constant';
 import { TimelineHeaderRow } from './timeline-header-row';
 
@@ -30,7 +31,7 @@ export class TimelineMonth extends Month {
     public onDataReady(args: NotifyEventArgs): void {
         let appointment: TimelineEvent = new TimelineEvent(this.parent, 'day');
         appointment.renderAppointments();
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(event.eventsLoaded, {});
     }
 
     public getLeftPanelElement(): HTMLElement {

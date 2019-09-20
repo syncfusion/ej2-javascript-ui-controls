@@ -42,24 +42,28 @@ export class FieldList implements IAction {
         this.element = createElement('div', {
             id: this.parent.element.id + '_PivotFieldList',
             styles: 'position:' + (this.parent.enableRtl ? 'static' : 'absolute') + ';height:0;width:' + this.parent.element.style.width +
-            ';display:none'
+                ';display:none'
         });
         this.parent.element.parentElement.setAttribute('id', 'ContainerWrapper');
         this.parent.element.parentElement.appendChild(this.element);
         this.parent.element.parentElement.appendChild(this.parent.element);
         this.parent.pivotFieldListModule = new PivotFieldList({
             dataSourceSettings: {
+                providerType: this.parent.dataSourceSettings.providerType,
                 rows: [],
                 columns: [],
                 values: [],
                 filters: []
             },
+            spinnerTemplate: this.parent.spinnerTemplate,
             allowDeferLayoutUpdate: this.parent.allowDeferLayoutUpdate,
             renderMode: 'Popup',
             allowCalculatedField: this.parent.allowCalculatedField,
+            showValuesButton: this.parent.showValuesButton,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
             target: this.parent.element.parentElement,
+            maxNodeLimitInMemberEditor: this.parent.maxNodeLimitInMemberEditor,
             aggregateCellInfo: this.parent.bindTriggerEvents.bind(this.parent)
         });
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);

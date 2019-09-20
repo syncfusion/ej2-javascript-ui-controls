@@ -1,4 +1,4 @@
-import { Property, ChildProperty} from '@syncfusion/ej2-base';
+import { Property, ChildProperty } from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class SmithchartFont
@@ -6,14 +6,14 @@ import { Property, ChildProperty} from '@syncfusion/ej2-base';
 export interface SmithchartFontModel {
 
     /**
- * font family for text.
- */
+     * font family for text.
+     */
     fontFamily?: string;
 
     /**
- * font style for text.
- * @default 'Normal'
- */
+     * font style for text.
+     * @default 'Normal'
+     */
     fontStyle?: string;
 
     /**
@@ -23,21 +23,21 @@ export interface SmithchartFontModel {
     fontWeight?: string;
 
     /**
-    * Color for the text.
-    * @default ''
-    */
+     * Color for the text.
+     * @default ''
+     */
     color?: string;
 
     /**
- * font size for text.
- * @default '12px'
- */
+     * font size for text.
+     * @default '12px'
+     */
     size?: string;
 
     /**
- * font opacity for text.
- * @default 1
- */
+     * font opacity for text.
+     * @default 1
+     */
     opacity?: number;
 
 }
@@ -48,21 +48,21 @@ export interface SmithchartFontModel {
 export interface SmithchartMarginModel {
 
     /**
- * top margin of chartArea.
- * @default 10
- */
+     * top margin of chartArea.
+     * @default 10
+     */
     top?: number;
 
     /**
- * bottom margin of chartArea.
- * @default 10
- */
+     * bottom margin of chartArea.
+     * @default 10
+     */
     bottom?: number;
 
     /**
-  * right margin of chartArea.
-  * @default 10
-  */
+     * right margin of chartArea.
+     * @default 10
+     */
 
     right?: number;
 
@@ -81,22 +81,22 @@ export interface SmithchartMarginModel {
 export interface SmithchartBorderModel {
 
     /**
- * width for smithchart border.
- * @default 0
- */
+     * width for smithchart border.
+     * @default 0
+     */
 
     width?: number;
 
     /**
- * opacity for smithchart border.
- * @default 1
- */
+     * opacity for smithchart border.
+     * @default 1
+     */
     opacity?: number;
 
     /**
- * color for smithchart border .
- * @default 'transparent'
- */
+     * color for smithchart border .
+     * @default 'transparent'
+     */
 
     color?: string;
 

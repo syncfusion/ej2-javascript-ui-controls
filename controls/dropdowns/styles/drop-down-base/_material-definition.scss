@@ -1,7 +1,7 @@
 $ddl-list-line-height: 36px !default;
 $ddl-header-font-weight: 600 !default;
 $ddl-last-child-bottom-border: 0 !default;
-$ddl-default-font-family: $font-family !default;
+$ddl-default-font-family: inherit !default;
 $ddl-list-border-size: 0 !default;
 $ddl-list-bottom-border: $ddl-list-border-size !default;
 
@@ -21,7 +21,7 @@ $ddl-list-hover-font-color: rgba($grey-light-font, .87) !default;
 $ddl-list-header-font-color: rgba($grey-light-font, .54) !default;
 $ddl-list-font-size: 13px !default;
 $ddl-group-list-font-size: 13px !default;
-$ddl-list-font-family: $font-family !default;
+$ddl-list-font-family: inherit !default;
 $ddl-default-header-font-color: rgba($grey-light-font, .54) !default;
 $ddl-list-focus-color: $grey-50 !default;
 $ddl-list-focus-border: 1px solid $grey-400 !default;

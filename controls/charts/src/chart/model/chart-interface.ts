@@ -242,6 +242,11 @@ export interface IDragCompleteEventArgs extends IChartEventArgs {
     selectedDataValues: { x: string | number | Date, y: number }[][];
 }
 
+export interface ISelectionCompleteEventArgs extends IChartEventArgs {
+    /** Defines current selected Data X, Y values */
+    selectedDataValues: { x ?: string | number | Date, y ?: number, seriesIndex ?: number, pointIndex ?: number }[];
+}
+
 export interface ILoadedEventArgs extends IChartEventArgs {
     /** Defines the current chart instance */
     chart: Chart;
@@ -355,4 +360,23 @@ export interface IDataEditingEventArgs {
      * current point
      */
     point: Points;
+}
+
+export interface IChartTooltipTemplate {
+    /** point x */
+    x ?: object;
+    /** point y */
+    y ?: number;
+    /** point text */
+    text ?: string;
+    /** point open value */
+    open ?: number;
+    /** point close value */
+    close?: number;
+    /** point high value */
+    high?: number;
+    /** point low value */
+    low?: number;
+    /** point volume value */
+    volume ?: number;
 }

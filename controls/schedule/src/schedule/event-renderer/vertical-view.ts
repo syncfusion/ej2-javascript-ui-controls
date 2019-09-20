@@ -234,7 +234,7 @@ export class VerticalEvent extends EventBase {
         let appointmentDetails: HTMLElement = createElement('div', { className: cls.APPOINTMENT_DETAILS });
         appointmentWrapper.appendChild(appointmentDetails);
         if (this.parent.activeViewOptions.group.resources.length > 0) {
-            let resourceIndex: number = this.parent.isAdaptive ? this.parent.uiStateValues.groupIndex : resource;
+            let resourceIndex: number = this.parent.uiStateValues.isGroupAdaptive ? this.parent.uiStateValues.groupIndex : resource;
             appointmentWrapper.setAttribute('data-group-index', resourceIndex.toString());
         }
         let templateElement: HTMLElement[];

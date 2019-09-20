@@ -173,7 +173,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the unique primary key of editable field which can be used for saving data in data-base.
      * @default ''
-     * @blazorType string
      */
     @Property('')
     public primaryKey: string | number;
@@ -528,7 +527,14 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private renderComponent(ele: HTMLElement | HTMLInputElement): void {
         this.isExtModule = (Array.prototype.indexOf.call(this.moduleList, this.type) > -1) ? true : false;
-        extend(this.model, this.model, { cssClass: classes.ELEMENTS });
+        let classProp: string;
+        if (!isNOU(this.model.cssClass)) {
+            classProp = this.model.cssClass.indexOf(classes.ELEMENTS) < 0 ? this.model.cssClass + ' ' + classes.ELEMENTS :
+            this.model.cssClass;
+        } else {
+            classProp = classes.ELEMENTS;
+        }
+        extend(this.model, this.model, { cssClass: classProp });
         if (!isNOU(this.value)) { this.updateModelValue(); }
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
@@ -636,20 +642,22 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.extendModelValue(this.componentObj.value);
         }
     }
-    private getDropDownsValue(): string {
+    private getDropDownsValue(display: boolean): string {
         let value: string;
         if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1 && this.type !== 'MultiSelect') {
-            value = (select('.e-' + this.type.toLocaleLowerCase(), this.containerEle) as HTMLInputElement).value;
+            value = display ? (select('.e-' + this.type.toLocaleLowerCase(), this.containerEle) as HTMLInputElement).value :
+            this.value.toString();
         } else if (this.type === 'MultiSelect') {
             this.notify(events.accessValue, { type: this.type });
-            value = this.printValue;
+            value = display ? this.printValue : (this.value as string[] | number[]).join();
         }
         return value;
     }
+
     private getSendValue(): string {
         if (this.isEmpty(this.value as string)) { return ''; }
         if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
-            return this.getDropDownsValue();
+            return this.getDropDownsValue(false);
         } else if (Array.prototype.indexOf.call(this.dateType, this.type) > -1) {
             return (<Date>this.value).toISOString();
         } else if (this.type === 'DateRange') {
@@ -664,7 +672,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         } else if (Array.prototype.indexOf.call(this.inputDataEle, this.type) > -1) {
             return (this.componentRoot as HTMLInputElement).value;
         } else if (Array.prototype.indexOf.call(this.dropDownEle, this.type) > -1) {
-            return this.getDropDownsValue();
+            return this.getDropDownsValue(true);
         } else {
             return parseValue(this.type, this.value, this.model);
         }

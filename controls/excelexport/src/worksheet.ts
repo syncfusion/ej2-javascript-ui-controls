@@ -1,6 +1,7 @@
 import { Column } from './column';
 import { Rows } from './row';
 import { HyperLinkType } from './enum';
+import { Image } from './image';
 /**
  * Worksheet class
  * @private
@@ -15,6 +16,7 @@ export class Worksheet {
     public showGridLines: boolean = true;
     public mergeCells: MergeCells;
     public hyperLinks: HyperLink[];
+    public images: Image[];
 }
 /**
  * Hyperlink class

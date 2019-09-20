@@ -1,5 +1,5 @@
-import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { addClass, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
+import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
+import { addClass, remove, removeClass, setStyleAttribute, isBlazor, getElement } from '@syncfusion/ej2-base';
 import { DragEventArgs, TdData } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import * as events from '../base/constant';
@@ -116,7 +116,7 @@ export class DragAndDrop extends ActionBase {
         this.actionObj.cellHeight = workCell.offsetHeight;
     }
 
-    private dragStart(e: MouseEvent & TouchEvent): void {
+    private dragStart(e: MouseEvent & TouchEvent & BlazorDragEventArgs): void {
         let eventGuid: string = this.actionObj.element.getAttribute('data-guid');
         this.actionObj.event = this.parent.eventBase.getEventByGuid(eventGuid) as { [key: string]: Object };
         let eventObj: { [key: string]: Object } = extend({}, this.actionObj.event, null, true) as { [key: string]: Object };
@@ -130,53 +130,64 @@ export class DragAndDrop extends ActionBase {
             navigation: { enable: false, timeDelay: 2000 },
             scroll: { enable: true, scrollBy: 30, timeDelay: 100 }
         };
-        this.parent.trigger(events.dragStart, dragArgs);
-        if (dragArgs.cancel || (!isNullOrUndefined(this.actionObj.element) && isNullOrUndefined(this.actionObj.element.parentElement))) {
-            this.actionObj.action = '';
-            this.removeCloneElementClasses();
-            this.removeCloneElement();
-            return;
-        }
-        this.actionClass('addClass');
-        this.parent.uiStateValues.action = true;
-        this.actionObj.start = eventObj[this.parent.eventFields.startTime] as Date;
-        this.actionObj.end = eventObj[this.parent.eventFields.endTime] as Date;
-        this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
-        this.actionObj.interval = dragArgs.interval;
-        this.actionObj.navigation = dragArgs.navigation;
-        this.actionObj.scroll = dragArgs.scroll;
-        this.actionObj.excludeSelectors = dragArgs.excludeSelectors;
-        let viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-        this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
-        this.widthPerMinute = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
-        this.widthUptoCursorPoint = 0;
-        this.cursorPointIndex = -1;
-        this.isHeaderRows = false;
-        this.isTimelineDayProcess = false;
-        this.minDiff = 0;
-        this.isMorePopupOpened = false;
-        this.daysVariation = -1;
-        if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable)) {
-            if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
-                this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
-                this.isMorePopupOpened = true;
+        this.parent.trigger(events.dragStart, dragArgs, (dragEventArgs: DragEventArgs) => {
+            if (dragEventArgs.cancel || (!isNullOrUndefined(this.actionObj.element) &&
+                isNullOrUndefined(this.actionObj.element.parentElement))) {
+                this.actionObj.action = '';
+                this.removeCloneElementClasses();
+                this.removeCloneElement();
+                return;
+            } else if (isBlazor()) {
+                e.bindEvents(e.dragElement);
+                if (dragEventArgs.element) {
+                    dragEventArgs.element = getElement(dragEventArgs.element);
+                }
+                (dragEventArgs.data[this.parent.eventFields.startTime] as Date) = this.parent.getDateTime(
+                    (dragEventArgs.data[this.parent.eventFields.startTime] as Date));
+                (dragEventArgs.data[this.parent.eventFields.endTime] as Date) = this.parent.getDateTime(
+                    (dragEventArgs.data[this.parent.eventFields.endTime] as Date));
             }
-            let rows: HeaderRowsModel[] = this.parent.activeViewOptions.headerRows;
-            this.isHeaderRows = rows.length > 0 && rows[rows.length - 1].option !== 'Hour' &&
-                rows[rows.length - 1].option !== 'Date';
-            this.isTimelineDayProcess = !this.parent.activeViewOptions.timeScale.enable || this.isHeaderRows ||
-                this.parent.currentView === 'TimelineMonth' || (rows.length > 0 && rows[rows.length - 1].option === 'Date');
-            this.isStepDragging = !this.isTimelineDayProcess && (this.actionObj.slotInterval !== this.actionObj.interval);
-            if (this.isTimelineDayProcess) {
-                this.timelineEventModule = new TimelineEvent(this.parent, 'day');
-            } else {
-                this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
+            this.actionClass('addClass');
+            this.parent.uiStateValues.action = true;
+            this.actionObj.start = eventObj[this.parent.eventFields.startTime] as Date;
+            this.actionObj.end = eventObj[this.parent.eventFields.endTime] as Date;
+            this.actionObj.groupIndex = parseInt(this.actionObj.element.getAttribute('data-group-index') || '0', 10);
+            this.actionObj.interval = dragEventArgs.interval;
+            this.actionObj.navigation = dragEventArgs.navigation;
+            this.actionObj.scroll = dragEventArgs.scroll;
+            this.actionObj.excludeSelectors = dragEventArgs.excludeSelectors;
+            let viewElement: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
+            this.scrollArgs = { element: viewElement, width: viewElement.scrollWidth, height: viewElement.scrollHeight };
+            this.widthPerMinute = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
+            this.widthUptoCursorPoint = 0;
+            this.cursorPointIndex = -1;
+            this.isHeaderRows = false;
+            this.isTimelineDayProcess = false;
+            this.minDiff = 0;
+            this.isMorePopupOpened = false;
+            this.daysVariation = -1;
+            if ((this.parent.activeView.isTimelineView() || !this.parent.timeScale.enable)) {
+                if (!isNullOrUndefined(this.actionObj.clone.offsetParent) &&
+                    this.actionObj.clone.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS)) {
+                    this.isMorePopupOpened = true;
+                }
+                let rows: HeaderRowsModel[] = this.parent.activeViewOptions.headerRows;
+                this.isHeaderRows = rows.length > 0 && rows[rows.length - 1].option !== 'Hour' &&
+                    rows[rows.length - 1].option !== 'Date';
+                this.isTimelineDayProcess = !this.parent.activeViewOptions.timeScale.enable || this.isHeaderRows ||
+                    this.parent.currentView === 'TimelineMonth' || (rows.length > 0 && rows[rows.length - 1].option === 'Date');
+                this.isStepDragging = !this.isTimelineDayProcess && (this.actionObj.slotInterval !== this.actionObj.interval);
+                if (this.isTimelineDayProcess) {
+                    this.timelineEventModule = new TimelineEvent(this.parent, 'day');
+                } else {
+                    this.timelineEventModule = new TimelineEvent(this.parent, 'hour');
+                }
             }
-        }
-        if (this.parent.currentView === 'Month') {
-            this.updateOriginalElement(this.actionObj.clone);
-            this.monthEvent = new MonthEvent(this.parent);
-        }
+            if (this.parent.currentView === 'Month') {
+                this.updateOriginalElement(this.actionObj.clone);
+                this.monthEvent = new MonthEvent(this.parent);
+            }
+        });
     }
 
     private drag(e: MouseEvent & TouchEvent): void {

@@ -274,9 +274,9 @@ export class Link {
             this.dialogObj.element.querySelector('.e-insertLink').textContent = inputDetails.btnText;
         }
         this.checkUrl(false);
-        if ((this.parent.editorMode === 'HTML' && ((!isNullOrUndefined(selectText) && selectText !== '') &&
-            (e.selection.range.startOffset === 0) || e.selection.range.startOffset !== e.selection.range.endOffset))
-            || e.module === 'Markdown') { linkText.value = selectText; }
+        if ((this.parent.editorMode === 'HTML' && isNullOrUndefined(inputDetails) && ((!isNullOrUndefined(selectText)
+            && selectText !== '') && (e.selection.range.startOffset === 0) || e.selection.range.startOffset !==
+            e.selection.range.endOffset)) || e.module === 'Markdown') { linkText.value = selectText; }
         EventHandler.add(document, 'mousedown', this.onDocumentClick, this);
         if (this.quickToolObj) {
             this.hideLinkQuickToolbar();
@@ -413,7 +413,8 @@ export class Link {
             !closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (((this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node)) ||
-            this.parent.inlineMode.enable) && !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
+            this.parent.inlineMode.enable && !closest(target, '#' + this.parent.getID() + '_rtelink')) &&
+             !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))
         ) {
             this.dialogObj.hide({ returnValue: true } as Event);

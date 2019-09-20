@@ -276,10 +276,12 @@ export class QuickToolbar {
         this.parent.on(events.initialEnd, this.initializeQuickToolbars, this);
         this.parent.on(events.mouseDown, this.renderQuickToolbars, this);
         this.parent.on(events.toolbarUpdated, this.toolbarUpdated, this);
+        this.parent.on(events.drop, this.renderQuickToolbars, this);
         this.wireInlineQTBarEvents();
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.on(events.scroll, this.hideQuickToolbars, this);
+            this.parent.on(events.contentscroll, this.hideQuickToolbars, this);
         }
         this.parent.on(events.focusChange, this.hideQuickToolbars, this);
         this.parent.on(events.iframeMouseDown, this.onIframeMouseDown, this);
@@ -319,6 +321,7 @@ export class QuickToolbar {
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         if (this.parent.quickToolbarSettings.actionOnScroll === 'hide') {
             this.parent.off(events.scroll, this.hideQuickToolbars);
+            this.parent.off(events.contentscroll, this.hideQuickToolbars);
         }
         this.parent.off(events.focusChange, this.hideQuickToolbars);
         this.parent.off(events.destroy, this.destroy);
@@ -338,8 +341,10 @@ export class QuickToolbar {
                     case 'actionOnScroll':
                         if (e.newProp.quickToolbarSettings.actionOnScroll === 'none') {
                             this.parent.off(events.scroll, this.hideQuickToolbars);
+                            this.parent.off(events.contentscroll, this.hideQuickToolbars);
                         } else {
                             this.parent.on(events.scroll, this.hideQuickToolbars, this);
+                            this.parent.on(events.contentscroll, this.hideQuickToolbars, this);
                         }
                         break;
                 }

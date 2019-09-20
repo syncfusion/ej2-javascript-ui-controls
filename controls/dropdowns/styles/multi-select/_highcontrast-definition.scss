@@ -47,7 +47,7 @@ $ddl-delimviewheight-bigger: 36px !default;
 $ddl-closer-hooker-font: 10px !default;
 $ddl-closer-margin-top: -3.2em !default;
 $ddl-closer-margin-top-bigger: -3.5em !default;
-$ddl-chip-font-family: 'Segoe UI' !default;
+$ddl-chip-font-family: inherit !default;
 $ddl-chip-mobile-radius: 0 !default;
 $ddl-chip-sel-mobile-height: 38px !default;
 $ddl-chip-selected-padding: 9px 0 !default;
@@ -155,22 +155,22 @@ $ddl-closer-margin-top-bigger-small: -3.2em !default;
         // sass-lint:disable no-vendor-prefixes
         &.e-dropdownbase:-moz-placeholder {
           color: $content-font-alt;
-          font-family: 'Segoe UI';
+          font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }&.e-dropdownbase::-moz-placeholder {
           color: $content-font-alt;
-          font-family: 'Segoe UI';
+          font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }&.e-dropdownbase:-ms-input-placeholder {
           color: $content-font-alt;
-          font-family: 'Segoe UI';
+          font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }&.e-dropdownbase::-webkit-input-placeholder {
           color: $content-font-alt;
-          font-family: 'Segoe UI';
+          font-family: inherit;
           font-size: 14px;
           font-style: italic;
         }

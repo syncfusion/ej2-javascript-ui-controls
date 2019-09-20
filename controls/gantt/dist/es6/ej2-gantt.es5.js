@@ -2,14 +2,14 @@ import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHan
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Edit, Filter, ForeignKey, Grid, Page, Predicate, Selection, Toolbar, click, filterAfterOpen, getActualProperties, getFilterMenuPostion, getUid, parentsUntil, setCssInGridPopUp } from '@syncfusion/ej2-grids';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, ODataAdaptor, Query, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
-import { ContextMenu, Edit as Edit$1, Filter as Filter$1, Reorder, Resize, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
-import { MaskedTextBox, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
-import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
-import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
+import { ContextMenu, Edit as Edit$1, ExcelExport, Filter as Filter$1, Reorder, Resize, Sort, TreeGrid } from '@syncfusion/ej2-treegrid';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { ContextMenu as ContextMenu$1, Tab, Toolbar as Toolbar$1 } from '@syncfusion/ej2-navigations';
 import { Count, HtmlEditor, Link, QuickToolbar, RichTextEditor, Toolbar as Toolbar$2 } from '@syncfusion/ej2-richtexteditor';
+import { MaskedTextBox, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
+import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
+import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 
 /**
  * Common methods used in Gantt
@@ -981,7 +981,7 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
         }
         else {
             var dateObject = this.parent.globalize.parseDate(date, { format: this.parent.dateFormat, type: 'dateTime' });
-            return isNullOrUndefined(dateObject) ? new Date(date) : dateObject;
+            return isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
         }
     };
     /**
@@ -4479,18 +4479,16 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         else if (taskSettings.startDate === column.field) {
             /** Name column */
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('startDate');
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.width = column.width ? column.width : 150;
-            this.initiateFiltering(column);
         }
         else if (taskSettings.endDate === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('endDate');
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            this.initiateFiltering(column);
             column.width = column.width ? column.width : 150;
         }
         else if (taskSettings.duration === column.field) {
@@ -4499,7 +4497,6 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
             column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.durationValueAccessor.bind(this);
             column.editType = column.editType ? column.editType : 'stringedit';
             column.type = 'string';
-            this.initiateFiltering(column);
         }
         else if (taskSettings.progress === column.field) {
             this.composeProgressColumn(column);
@@ -4534,7 +4531,6 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            this.initiateFiltering(column);
         }
         else if (taskSettings.baselineEndDate === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineEndDate');
@@ -4542,7 +4538,6 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
             column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
             column.editType = column.editType ? column.editType :
                 this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            this.initiateFiltering(column);
         }
         this.bindTreeGridColumnProperties(column, isDefined);
     };
@@ -4555,56 +4550,14 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         column.width = column.width ? column.width : 150;
         column.type = 'string';
         column.valueAccessor = column.valueAccessor ? column.valueAccessor : this.resourceValueAccessor.bind(this);
-        if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
-            column.editType = 'dropdownedit';
-            column.edit = this.getResourceEditor();
-        }
         column.allowFiltering = column.allowFiltering === false ? false : true;
     };
+    /**
+     *
+     * @private
+     */
     GanttTreeGrid.prototype.getResourceIds = function (data) {
         return getValue(this.parent.taskFields.resourceInfo, data.taskData);
-    };
-    GanttTreeGrid.prototype.getResourceEditor = function () {
-        var _this = this;
-        var editObject = {};
-        var editor;
-        MultiSelect.Inject(CheckBoxSelection);
-        editObject.write = function (args) {
-            _this.currentEditRow = {};
-            editor = new MultiSelect({
-                dataSource: new DataManager(_this.parent.resources),
-                fields: { text: _this.parent.resourceNameMapping, value: _this.parent.resourceIDMapping },
-                mode: 'CheckBox',
-                showDropDownIcon: true,
-                popupHeight: '350px',
-                delimiterChar: ',',
-                value: _this.getResourceIds(args.rowData)
-            });
-            editor.appendTo(args.element);
-        };
-        editObject.read = function (element) {
-            var value = element.ej2_instances[0].value;
-            var resourcesName = [];
-            if (isNullOrUndefined(value)) {
-                value = [];
-            }
-            for (var i = 0; i < value.length; i++) {
-                for (var j = 0; j < _this.parent.resources.length; j++) {
-                    if (_this.parent.resources[j][_this.parent.resourceIDMapping] === value[i]) {
-                        resourcesName.push(_this.parent.resources[j][_this.parent.resourceNameMapping]);
-                        break;
-                    }
-                }
-            }
-            _this.currentEditRow[_this.parent.taskFields.resourceInfo] = value;
-            return resourcesName.join(',');
-        };
-        editObject.destroy = function () {
-            if (editor) {
-                editor.destroy();
-            }
-        };
-        return editObject;
     };
     /**
      * Create Id column
@@ -4616,21 +4569,6 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         column.width = column.width ? column.width : 100;
         column.allowEditing = false;
         column.editType = column.editType ? column.editType : 'numericedit';
-        var editParam = {
-            min: 0,
-            decimals: 0,
-            validateDecimalOnType: true,
-            format: 'n0',
-            showSpinButton: false
-        };
-        if (isNullOrUndefined(column.edit)) {
-            column.edit = {};
-            column.edit.params = {};
-        }
-        else if (isNullOrUndefined(column.edit.params)) {
-            column.edit.params = {};
-        }
-        extend(column.edit.params, editParam);
     };
     /**
      * Create progress column
@@ -4640,135 +4578,6 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('progress');
         column.width = column.width ? column.width : 150;
         column.editType = column.editType ? column.editType : 'numericedit';
-        var editParam = {
-            min: 0,
-            max: 100,
-            decimals: 0,
-            validateDecimalOnType: true,
-            format: 'n0'
-        };
-        if (isNullOrUndefined(column.edit)) {
-            column.edit = {};
-            column.edit.params = {};
-        }
-        else if (isNullOrUndefined(column.edit.params)) {
-            column.edit.params = {};
-        }
-        extend(column.edit.params, editParam);
-    };
-    GanttTreeGrid.prototype.initiateFiltering = function (column) {
-        column.allowFiltering = column.allowFiltering === false ? false : true;
-        if (column.allowFiltering && this.parent.filterSettings.type === 'Menu' && !column.filter) {
-            column.filter = { ui: this.getCustomFilterUi(column) };
-        }
-    };
-    /**
-     * To get filter menu UI
-     * @param column
-     */
-    GanttTreeGrid.prototype.getCustomFilterUi = function (column) {
-        var settings = this.parent.taskFields;
-        var filterUI = {};
-        if (column.editType === 'datepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
-            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
-            filterUI = this.getDatePickerFilter(column.field);
-        }
-        else if (column.editType === 'datetimepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
-            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
-            filterUI = this.getDateTimePickerFilter();
-        }
-        else if (column.field === settings.duration && column.editType === 'stringedit') {
-            filterUI = this.getDurationFilter();
-        }
-        return filterUI;
-    };
-    GanttTreeGrid.prototype.getDatePickerFilter = function (columnName) {
-        var _this = this;
-        var parent = this.parent;
-        var timeValue = (columnName === parent.taskFields.startDate) || (columnName === parent.taskFields.baselineStartDate)
-            ? parent.defaultStartTime : parent.defaultEndTime;
-        var dropDateInstance;
-        var filterDateUI = {
-            create: function (args) {
-                var flValInput = createElement('input', { className: 'flm-input' });
-                args.target.appendChild(flValInput);
-                dropDateInstance = new DatePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
-                dropDateInstance.appendTo(flValInput);
-            },
-            write: function (args) {
-                dropDateInstance.value = args.filteredValue;
-            },
-            read: function (args) {
-                if (dropDateInstance.value) {
-                    dropDateInstance.value.setSeconds(timeValue);
-                }
-                args.fltrObj.filterByColumn(args.column.field, args.operator, dropDateInstance.value);
-            }
-        };
-        return filterDateUI;
-    };
-    GanttTreeGrid.prototype.getDateTimePickerFilter = function () {
-        var _this = this;
-        var dropInstance;
-        var filterDateTimeUI = {
-            create: function (args) {
-                var flValInput = createElement('input', { className: 'flm-input' });
-                args.target.appendChild(flValInput);
-                dropInstance = new DateTimePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
-                dropInstance.appendTo(flValInput);
-            },
-            write: function (args) {
-                dropInstance.value = args.filteredValue;
-            },
-            read: function (args) {
-                args.fltrObj.filterByColumn(args.column.field, args.operator, dropInstance.value);
-            }
-        };
-        return filterDateTimeUI;
-    };
-    GanttTreeGrid.prototype.getDurationFilter = function () {
-        var _this = this;
-        var parent = this.parent;
-        var textBoxInstance;
-        var textValue = '';
-        var filterDurationUI = {
-            create: function (args) {
-                var flValInput = createElement('input', { className: 'e-input' });
-                flValInput.setAttribute('placeholder', _this.parent.localeObj.getConstant('enterValue'));
-                args.target.appendChild(flValInput);
-                textBoxInstance = new TextBox();
-                textBoxInstance.appendTo(flValInput);
-            },
-            write: function (args) {
-                textBoxInstance.value = args.filteredValue ? textValue : '';
-            },
-            read: function (args) {
-                var durationObj = _this.parent.dataOperation.getDurationValue(textBoxInstance.value);
-                var intVal = getValue('duration', durationObj);
-                var unit = getValue('durationUnit', durationObj);
-                if (intVal >= 0) {
-                    var dayVal = void 0;
-                    if (unit === 'minute') {
-                        dayVal = (intVal * 60) / parent.secondsPerDay;
-                    }
-                    else if (unit === 'hour') {
-                        dayVal = (intVal * 60 * 60) / parent.secondsPerDay;
-                    }
-                    else {
-                        //Consider it as day unit
-                        dayVal = intVal;
-                        unit = 'day';
-                    }
-                    args.fltrObj.filterByColumn(args.column.field, args.operator, dayVal);
-                    textValue = _this.parent.dataOperation.getDurationString(intVal, unit);
-                }
-                else {
-                    args.fltrObj.filterByColumn(args.column.field, args.operator, null);
-                    textValue = null;
-                }
-            }
-        };
-        return filterDurationUI;
     };
     /**
      *
@@ -6567,13 +6376,6 @@ var ChartRows = /** @__PURE__ @class */ (function () {
 
 var Dependency = /** @__PURE__ @class */ (function () {
     function Dependency(gantt) {
-        this.validationPredecessor = null;
-        /** @private */
-        this.confirmPredecessorDialog = null;
-        /** @private */
-        this.predecessorIndex = null;
-        /** @private */
-        this.childRecord = null;
         this.parent = gantt;
         this.dateValidateModule = this.parent.dateValidationModule;
     }
@@ -6927,6 +6729,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
      *
      * @param ganttRecord
      * @param predecessorsCollection
+     * @private
      */
     Dependency.prototype.getPredecessorDate = function (ganttRecord, predecessorsCollection) {
         var maxStartDate;
@@ -7073,10 +6876,37 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 childGanttRecord = this.parent.getRecordByID(predecessor[to]);
                 if (this.parent.currentViewData && this.parent.currentViewData.indexOf(parentGanttRecord) !== -1 &&
                     this.parent.currentViewData.indexOf(childGanttRecord) !== -1) {
-                    this.parent.connectorLineEditModule.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
+                    this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
                 }
             }
         }
+    };
+    /**
+     * To refresh connector line object collections
+     * @param parentGanttRecord
+     * @param childGanttRecord
+     * @param predecessor
+     * @private
+     */
+    Dependency.prototype.updateConnectorLineObject = function (parentGanttRecord, childGanttRecord, predecessor) {
+        var connectorObj;
+        connectorObj = this.parent.connectorLineModule.createConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
+        if (connectorObj) {
+            if (this.parent.connectorLineIds.length > 0 && this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) === -1) {
+                this.parent.updatedConnectorLineCollection.push(connectorObj);
+                this.parent.connectorLineIds.push(connectorObj.connectorLineId);
+            }
+            else if (this.parent.connectorLineIds.length === 0) {
+                this.parent.updatedConnectorLineCollection.push(connectorObj);
+                this.parent.connectorLineIds.push(connectorObj.connectorLineId);
+            }
+            else if (this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) !== -1) {
+                var index = this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId);
+                this.parent.updatedConnectorLineCollection[index] = connectorObj;
+            }
+            predecessor.isDrawn = true;
+        }
+        return connectorObj;
     };
     /**
      *
@@ -7153,241 +6983,6 @@ var Dependency = /** @__PURE__ @class */ (function () {
         }
     };
     /**
-     * Predecessor link validation dialog template
-     * @param args
-     * @private
-     */
-    Dependency.prototype.validationDialogTemplate = function (args) {
-        var ganttId = this.parent.element.id;
-        var contentdiv = createElement('div', {
-            className: 'e-ValidationContent'
-        });
-        var taskData = getValue('task', args);
-        var parenttaskData = getValue('parentTask', args);
-        var violationType = getValue('violationType', args);
-        var recordName = taskData.ganttProperties.taskName;
-        var recordNewStartDate = this.parent.getFormatedDate(taskData.ganttProperties.startDate, 'MM/dd/yyyy');
-        var parentName = parenttaskData.ganttProperties.taskName;
-        var recordArgs = [recordName, parentName];
-        var topContent;
-        var topContentText;
-        if (violationType === 'taskBeforePredecessor_FS') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FS');
-        }
-        else if (violationType === 'taskAfterPredecessor_FS') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FS');
-        }
-        else if (violationType === 'taskBeforePredecessor_SS') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SS');
-        }
-        else if (violationType === 'taskAfterPredecessor_SS') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SS');
-        }
-        else if (violationType === 'taskBeforePredecessor_FF') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FF');
-        }
-        else if (violationType === 'taskAfterPredecessor_FF') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FF');
-        }
-        else if (violationType === 'taskBeforePredecessor_SF') {
-            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SF');
-        }
-        else if (violationType === 'taskAfterPredecessor_SF') {
-            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SF');
-        }
-        topContentText = formatString(topContentText, recordArgs);
-        topContent = '<div id="' + ganttId + '_ValidationText">' + topContentText + '<div>';
-        var innerTable = '<table>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationCancel" name="ValidationRule" checked/><label for="'
-            + ganttId + '_ValidationCancel" id= "' + ganttId + '_cancelLink">Cancel, keep the existing link</label></td></tr>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationRemoveline" name="ValidationRule"/><label for="'
-            + ganttId + '_ValidationRemoveline" id="' + ganttId + '_removeLink">Remove the link and move <b>'
-            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b>.</label></td></tr>' +
-            '<tr><td><input type="radio" id="' + ganttId + '_ValidationAddlineOffset" name="ValidationRule"/><label for="'
-            + ganttId + '_ValidationAddlineOffset" id="' + ganttId + '_preserveLink">Move the <b>'
-            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b> and keep the link.</label></td></tr></table>';
-        contentdiv.innerHTML = topContent + innerTable;
-        return contentdiv;
-    };
-    /**
-     * To render validation dialog
-     * @return {void}
-     * @private
-     */
-    Dependency.prototype.renderValidationDialog = function () {
-        var validationDialog = new Dialog({
-            header: 'Validate Editing',
-            isModal: true,
-            visible: false,
-            width: '50%',
-            showCloseIcon: true,
-            close: this.validationDialogClose.bind(this),
-            content: '',
-            buttons: [
-                {
-                    click: this.validationDialogOkButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
-                },
-                {
-                    click: this.validationDialogCancelButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
-                }
-            ],
-            target: this.parent.element,
-            animationSettings: { effect: 'None' },
-        });
-        document.getElementById(this.parent.element.id + '_dialogValidationRule').innerHTML = '';
-        validationDialog.isStringTemplate = true;
-        validationDialog.appendTo('#' + this.parent.element.id + '_dialogValidationRule');
-        this.parent.validationDialogElement = validationDialog;
-    };
-    Dependency.prototype.validationDialogOkButton = function () {
-        var currentArgs = this.parent.currentEditedArgs;
-        currentArgs.validateMode.preserveLinkWithEditing =
-            document.getElementById(this.parent.element.id + '_ValidationAddlineOffset').checked;
-        currentArgs.validateMode.removeLink =
-            document.getElementById(this.parent.element.id + '_ValidationRemoveline').checked;
-        currentArgs.validateMode.respectLink =
-            document.getElementById(this.parent.element.id + '_ValidationCancel').checked;
-        this.applyPredecessorOption();
-        this.parent.validationDialogElement.hide();
-    };
-    Dependency.prototype.validationDialogCancelButton = function () {
-        this.parent.currentEditedArgs.validateMode.respectLink = true;
-        this.applyPredecessorOption();
-        this.parent.validationDialogElement.hide();
-    };
-    Dependency.prototype.validationDialogClose = function (e) {
-        if (getValue('isInteraction', e)) {
-            this.parent.currentEditedArgs.validateMode.respectLink = true;
-            this.applyPredecessorOption();
-        }
-    };
-    /**
-     * Validate and apply the predecessor option from validation dialog
-     * @param buttonType
-     * @return {void}
-     * @private
-     */
-    Dependency.prototype.applyPredecessorOption = function () {
-        var args = this.parent.currentEditedArgs;
-        var ganttRecord = args.data;
-        if (args.validateMode.respectLink) {
-            this.parent.editModule.reUpdatePreviousRecords();
-            this.parent.chartRowsModule.refreshRecords([args.data]);
-        }
-        else if (args.validateMode.removeLink) {
-            this.removePredecessors(ganttRecord, this.validationPredecessor);
-            this.parent.editModule.updateEditedTask(args.editEventArgs);
-        }
-        else if (args.validateMode.preserveLinkWithEditing) {
-            this.calculateOffset(ganttRecord);
-            this.parent.editModule.updateEditedTask(args.editEventArgs);
-        }
-    };
-    Dependency.prototype.calculateOffset = function (record) {
-        var prevPredecessor = extend([], record.ganttProperties.predecessor, [], true);
-        var validPredecessor = this.getValidPredecessor(record);
-        for (var i = 0; i < validPredecessor.length; i++) {
-            var predecessor = validPredecessor[i];
-            var parentTask = this.parent.getRecordByID(predecessor.from);
-            var offset = void 0;
-            if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
-                var tempStartDate = void 0;
-                var tempEndDate = void 0;
-                var tempDuration = void 0;
-                var isNegativeOffset = void 0;
-                switch (predecessor.type) {
-                    case 'FS':
-                        tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.startDate.getTime());
-                        break;
-                    case 'SS':
-                        tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.startDate.getTime());
-                        break;
-                    case 'SF':
-                        tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.endDate.getTime());
-                        break;
-                    case 'FF':
-                        tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
-                        tempEndDate = new Date(record.ganttProperties.endDate.getTime());
-                        break;
-                }
-                if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                    tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate);
-                    tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, null);
-                    isNegativeOffset = false;
-                }
-                else {
-                    var tempDate = new Date(tempStartDate.getTime());
-                    tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate);
-                    tempEndDate = this.dateValidateModule.checkEndDate(tempDate, null);
-                    isNegativeOffset = true;
-                }
-                if (tempStartDate.getTime() < tempEndDate.getTime()) {
-                    tempDuration = this.dateValidateModule.getDuration(tempStartDate, tempEndDate, predecessor.offsetUnit, true, true);
-                    offset = isNegativeOffset ? (tempDuration * -1) : tempDuration;
-                }
-                else {
-                    offset = 0;
-                }
-            }
-            else {
-                offset = 0;
-            }
-            var preIndex = getIndex(predecessor, 'from', prevPredecessor, 'to');
-            prevPredecessor[preIndex].offset = offset;
-            // Update predecessor in predecessor task
-            var parentPredecessors = extend([], parentTask.ganttProperties.predecessor, [], true);
-            var parentPreIndex = getIndex(predecessor, 'from', parentPredecessors, 'to');
-            parentPredecessors[parentPreIndex].offset = offset;
-            this.parent.setRecordValue('predecessor', parentPredecessors, parentTask.ganttProperties, true);
-        }
-        this.parent.setRecordValue('predecessor', prevPredecessor, record.ganttProperties, true);
-        var predecessorString = this.getPredecessorStringValue(record);
-        this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
-        this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
-        this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
-    };
-    /**
-     * Update predecessor value with user selection option in predecessor validation dialog
-     * @param args
-     * @return {void}
-     */
-    Dependency.prototype.removePredecessors = function (ganttRecord, predecessor) {
-        var prevPredecessor = extend([], [], ganttRecord.ganttProperties.predecessor, true);
-        var preLength = predecessor.length;
-        for (var i = 0; i < preLength; i++) {
-            var parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
-            var parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
-            var index = getIndex(predecessor[i], 'from', prevPredecessor, 'to');
-            prevPredecessor.splice(index, 1);
-            var parentIndex = getIndex(predecessor[i], 'from', parentPredecessor, 'to');
-            parentPredecessor.splice(parentIndex, 1);
-            this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
-        }
-        if (prevPredecessor.length !== ganttRecord.ganttProperties.predecessor.length) {
-            this.parent.setRecordValue('predecessor', prevPredecessor, ganttRecord.ganttProperties, true);
-            var predecessorString = this.getPredecessorStringValue(ganttRecord);
-            this.parent.setRecordValue('predecessorsName', predecessorString, ganttRecord.ganttProperties, true);
-            this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, ganttRecord);
-            this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, ganttRecord);
-        }
-    };
-    /**
-     * To open predecessor validation dialog
-     * @param args
-     * @return {void}
-     * @private
-     */
-    Dependency.prototype.openValidationDialog = function (args) {
-        var contentTemplate = this.validationDialogTemplate(args);
-        this.parent.validationDialogElement.setProperties({ content: contentTemplate });
-        this.parent.validationDialogElement.show();
-    };
-    /**
      * Method to get validate able predecessor alone from record
      * @param record
      * @private
@@ -7401,166 +6996,6 @@ var Dependency = /** @__PURE__ @class */ (function () {
             });
         }
         return validPredecessor;
-    };
-    /**
-     * To validate the types while editing the taskbar
-     * @param args
-     * @return {boolean}
-     * @private
-     */
-    Dependency.prototype.validateTypes = function (ganttRecord) {
-        var predecessor = this.getValidPredecessor(ganttRecord);
-        var parentGanttRecord;
-        this.validationPredecessor = [];
-        var violatedParent;
-        var violateType;
-        var startDate = this.getPredecessorDate(ganttRecord, predecessor);
-        var ganttTaskData = ganttRecord.ganttProperties;
-        var endDate = this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);
-        for (var i = 0; i < predecessor.length; i++) {
-            parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
-            var violationType = null;
-            if (predecessor[i].type === 'FS') {
-                if (ganttTaskData.startDate < startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_FS';
-                }
-                else if (ganttTaskData.startDate > startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_FS';
-                }
-            }
-            else if (predecessor[i].type === 'SS') {
-                if (ganttTaskData.startDate < startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_SS';
-                }
-                else if (ganttTaskData.startDate > startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_SS';
-                }
-            }
-            else if (predecessor[i].type === 'FF') {
-                if (endDate < parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_FF';
-                }
-                else if (endDate > parentGanttRecord.ganttProperties.endDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_FF';
-                }
-            }
-            else if (predecessor[i].type === 'SF') {
-                if (endDate < parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskBeforePredecessor_SF';
-                }
-                else if (endDate > parentGanttRecord.ganttProperties.startDate) {
-                    this.validationPredecessor.push(predecessor[i]);
-                    violationType = 'taskAfterPredecessor_SF';
-                }
-            }
-            if (!isNullOrUndefined(violationType) && isNullOrUndefined(violateType)) {
-                violatedParent = parentGanttRecord;
-                violateType = violationType;
-            }
-        }
-        var validateArgs = {
-            parentTask: violatedParent,
-            task: ganttRecord,
-            violationType: violateType
-        };
-        return validateArgs;
-    };
-    /**
-     * Method to remove and update new predecessor collection in successor record
-     * @param data
-     * @private
-     */
-    Dependency.prototype.addRemovePredecessor = function (data) {
-        var prevData = this.parent.previousRecords[data.uniqueID];
-        var newPredecessor = data.ganttProperties.predecessor.slice();
-        if (prevData && prevData.ganttProperties && prevData.ganttProperties.hasOwnProperty('predecessor')) {
-            var prevPredecessor = prevData.ganttProperties.predecessor;
-            if (!isNullOrUndefined(prevPredecessor)) {
-                for (var p = 0; p < prevPredecessor.length; p++) {
-                    var parentGanttRecord = this.parent.getRecordByID(prevPredecessor[p].from);
-                    if (parentGanttRecord === data) {
-                        data.ganttProperties.predecessor.push(prevPredecessor[p]);
-                    }
-                    else {
-                        var parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
-                        var parentIndex = getIndex(prevPredecessor[p], 'from', parentPredecessor, 'to');
-                        if (parentIndex !== -1) {
-                            parentPredecessor.splice(parentIndex, 1);
-                            this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
-                        }
-                    }
-                }
-            }
-            if (!isNullOrUndefined(newPredecessor)) {
-                for (var n = 0; n < newPredecessor.length; n++) {
-                    var parentGanttRecord = this.parent.getRecordByID(newPredecessor[n].from);
-                    var parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
-                    parentPredecessor.push(newPredecessor[n]);
-                    this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
-                }
-            }
-        }
-    };
-    /**
-     * Method to remove a predecessor from a record.
-     * @param childRecord
-     * @param index
-     * @private
-     */
-    Dependency.prototype.removePredecessor = function (childRecord, index) {
-        var childPredecessor = childRecord.ganttProperties.predecessor;
-        var predecessor = childPredecessor.splice(index, 1);
-        var parentRecord = this.parent.getRecordByID(predecessor[0].from);
-        var parentPredecessor = parentRecord.ganttProperties.predecessor;
-        var parentIndex = getIndex(predecessor[0], 'from', parentPredecessor, 'to');
-        parentPredecessor.splice(parentIndex, 1);
-        var predecessorString = this.parent.predecessorModule.getPredecessorStringValue(childRecord);
-        childPredecessor.push(predecessor[0]);
-        this.parent.connectorLineEditModule.updatePredecessor(childRecord, predecessorString);
-    };
-    /**
-     * To render predecessor delete confirmation dialog
-     * @return {void}
-     * @private
-     */
-    Dependency.prototype.renderPredecessorDeleteConfirmDialog = function () {
-        this.confirmPredecessorDialog = new Dialog({
-            width: '320px',
-            isModal: true,
-            content: this.parent.localeObj.getConstant('confirmPredecessorDelete'),
-            buttons: [
-                {
-                    click: this.confirmOkDeleteButton.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
-                },
-                {
-                    click: this.confirmCloseDialog.bind(this),
-                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
-                }
-            ],
-            target: this.parent.element,
-            animationSettings: { effect: 'None' },
-        });
-        var confirmDialog = createElement('div', {
-            id: this.parent.element.id + '_deletePredecessorConfirmDialog',
-        });
-        this.parent.element.appendChild(confirmDialog);
-        this.confirmPredecessorDialog.isStringTemplate = true;
-        this.confirmPredecessorDialog.appendTo(confirmDialog);
-    };
-    Dependency.prototype.confirmCloseDialog = function () {
-        this.confirmPredecessorDialog.destroy();
-    };
-    Dependency.prototype.confirmOkDeleteButton = function () {
-        this.parent.predecessorModule.removePredecessor(this.childRecord, this.predecessorIndex);
-        this.confirmPredecessorDialog.destroy();
     };
     return Dependency;
 }());
@@ -8343,453 +7778,6 @@ var ConnectorLine = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * File for handling connector line edit operation in Gantt.
- */
-var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
-    function ConnectorLineEdit(ganttObj) {
-        this.parent = ganttObj;
-    }
-    /**
-     * To update connector line edit element.
-     * @return {void}
-     * @private
-     */
-    ConnectorLineEdit.prototype.updateConnectorLineEditElement = function (e) {
-        var element = this.getConnectorLineHoverElement(e.target);
-        if (!getValue('editModule.taskbarEditModule.taskBarEditAction', this.parent)) {
-            this.highlightConnectorLineElements(element);
-        }
-    };
-    /**
-     * To get hovered connector line element.
-     * @return {void}
-     * @private
-     */
-    ConnectorLineEdit.prototype.getConnectorLineHoverElement = function (target) {
-        var isOnLine = parentsUntil$1(target, connectorLine);
-        var isOnRightArrow = parentsUntil$1(target, connectorLineRightArrow);
-        var isOnLeftArrow = parentsUntil$1(target, connectorLineLeftArrow);
-        if (isOnLine || isOnRightArrow || isOnLeftArrow) {
-            return parentsUntil$1(target, connectorLineContainer);
-        }
-        else {
-            return null;
-        }
-    };
-    /**
-     * To highlight connector line while hover.
-     * @return {void}
-     * @private
-     */
-    ConnectorLineEdit.prototype.highlightConnectorLineElements = function (element) {
-        if (element) {
-            if (element !== this.connectorLineElement) {
-                this.removeHighlight();
-                this.addHighlight(element);
-            }
-        }
-        else {
-            this.removeHighlight();
-        }
-    };
-    /**
-     * To add connector line highlight class.
-     * @return {void}
-     * @private
-     */
-    ConnectorLineEdit.prototype.addHighlight = function (element) {
-        this.connectorLineElement = element;
-        addClass([element], [connectorLineHoverZIndex]);
-        addClass(element.querySelectorAll('.' + connectorLine), [connectorLineHover]);
-        addClass(element.querySelectorAll('.' + connectorLineRightArrow), [connectorLineRightArrowHover]);
-        addClass(element.querySelectorAll('.' + connectorLineLeftArrow), [connectorLineLeftArrowHover]);
-    };
-    /**
-     * To remove connector line highlight class.
-     * @return {void}
-     * @private
-     */
-    ConnectorLineEdit.prototype.removeHighlight = function () {
-        if (!isNullOrUndefined(this.connectorLineElement)) {
-            removeClass([this.connectorLineElement], [connectorLineHoverZIndex]);
-            removeClass(this.connectorLineElement.querySelectorAll('.' + connectorLine), [connectorLineHover]);
-            removeClass(this.connectorLineElement.querySelectorAll('.' + connectorLineRightArrow), [connectorLineRightArrowHover]);
-            removeClass(this.connectorLineElement.querySelectorAll('.' + connectorLineLeftArrow), [connectorLineLeftArrowHover]);
-            this.connectorLineElement = null;
-        }
-    };
-    /**
-     * To remove connector line highlight class.
-     * @return {void}
-     * @private
-     */
-    ConnectorLineEdit.prototype.getEditedConnectorLineString = function (records) {
-        var ganttRecord;
-        var predecessorsCollection;
-        var predecessor;
-        var parentGanttRecord;
-        var childGanttRecord;
-        var connectorObj;
-        var idArray = [];
-        var lineArray = [];
-        var editedConnectorLineString = '';
-        for (var count = 0; count < records.length; count++) {
-            ganttRecord = records[count];
-            predecessorsCollection = ganttRecord.ganttProperties.predecessor;
-            if (predecessorsCollection) {
-                for (var predecessorCount = 0; predecessorCount < predecessorsCollection.length; predecessorCount++) {
-                    predecessor = predecessorsCollection[predecessorCount];
-                    var from = 'from';
-                    var to = 'to';
-                    this.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
-                    parentGanttRecord = this.parent.getRecordByID(predecessor[from]);
-                    childGanttRecord = this.parent.getRecordByID(predecessor[to]);
-                    if ((parentGanttRecord && parentGanttRecord.expanded === true) ||
-                        (childGanttRecord && childGanttRecord.expanded === true)) {
-                        connectorObj = this.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
-                        if (!isNullOrUndefined(connectorObj)) {
-                            var lineIndex = idArray.indexOf(connectorObj.connectorLineId);
-                            var lineString = this.parent.connectorLineModule.getConnectorLineTemplate(connectorObj);
-                            if (lineIndex !== -1) {
-                                lineArray[lineIndex] = lineString;
-                            }
-                            else {
-                                idArray.push(connectorObj.connectorLineId);
-                                lineArray.push(lineString);
-                            }
-                        }
-                    }
-                }
-                editedConnectorLineString = lineArray.join('');
-            }
-        }
-        return editedConnectorLineString;
-    };
-    /**
-     * To refresh connector line object collections
-     * @param parentGanttRecord
-     * @param childGanttRecord
-     * @param predecessor
-     * @private
-     */
-    ConnectorLineEdit.prototype.updateConnectorLineObject = function (parentGanttRecord, childGanttRecord, predecessor) {
-        var connectorObj;
-        connectorObj = this.parent.connectorLineModule.createConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
-        if (connectorObj) {
-            if (this.parent.connectorLineIds.length > 0 && this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) === -1) {
-                this.parent.updatedConnectorLineCollection.push(connectorObj);
-                this.parent.connectorLineIds.push(connectorObj.connectorLineId);
-            }
-            else if (this.parent.connectorLineIds.length === 0) {
-                this.parent.updatedConnectorLineCollection.push(connectorObj);
-                this.parent.connectorLineIds.push(connectorObj.connectorLineId);
-            }
-            else if (this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId) !== -1) {
-                var index = this.parent.connectorLineIds.indexOf(connectorObj.connectorLineId);
-                this.parent.updatedConnectorLineCollection[index] = connectorObj;
-            }
-            predecessor.isDrawn = true;
-        }
-        return connectorObj;
-    };
-    /**
-     * Tp refresh connector lines of edited records
-     * @param editedRecord
-     * @private
-     */
-    ConnectorLineEdit.prototype.refreshEditedRecordConnectorLine = function (editedRecord) {
-        this.removePreviousConnectorLines(this.parent.previousRecords);
-        var editedConnectorLineString;
-        editedConnectorLineString = this.getEditedConnectorLineString(editedRecord);
-        this.parent.connectorLineModule.dependencyViewContainer.innerHTML =
-            this.parent.connectorLineModule.dependencyViewContainer.innerHTML + editedConnectorLineString;
-    };
-    /**
-     * Method to remove connector line from DOM
-     * @param records
-     * @private
-     */
-    ConnectorLineEdit.prototype.removePreviousConnectorLines = function (records) {
-        var isObjectType;
-        if (isObject(records) === true) {
-            isObjectType = true;
-        }
-        else {
-            isObjectType = false;
-        }
-        var length = isObjectType ? Object.keys(records).length : records.length;
-        var keys = Object.keys(records);
-        for (var i = 0; i < length; i++) {
-            var data = void 0;
-            var predecessors = void 0;
-            if (isObjectType) {
-                var uniqueId = keys[i];
-                data = records[uniqueId];
-            }
-            else {
-                data = records[i];
-            }
-            predecessors = data.ganttProperties && data.ganttProperties.predecessor;
-            if (predecessors && predecessors.length > 0) {
-                for (var pre = 0; pre < predecessors.length; pre++) {
-                    var lineId = 'parent' + predecessors[pre].from + 'child' + predecessors[pre].to;
-                    this.removeConnectorLineById(lineId);
-                }
-            }
-        }
-    };
-    ConnectorLineEdit.prototype.removeConnectorLineById = function (id) {
-        var element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
-        if (!isNullOrUndefined(element)) {
-            remove(element);
-        }
-    };
-    ConnectorLineEdit.prototype.idFromPredecessor = function (pre) {
-        var preArray = pre.split(',');
-        var preIdArray = [];
-        for (var j = 0; j < preArray.length; j++) {
-            var strArray = [];
-            for (var i = 0; i < preArray[j].length; i++) {
-                if (!isNullOrUndefined(preArray[j].charAt(i)) && parseInt(preArray[j].charAt(i), 10).toString() !== 'NaN') {
-                    strArray.push(preArray[j].charAt(i));
-                }
-                else {
-                    break;
-                }
-            }
-            preIdArray.push((strArray.join('')));
-        }
-        return preIdArray;
-    };
-    ConnectorLineEdit.prototype.predecessorValidation = function (predecessor, record) {
-        var recordId = record.taskId;
-        var currentId;
-        var currentRecord;
-        for (var count = 0; count < predecessor.length; count++) {
-            currentId = predecessor[count];
-            var visitedIdArray = [];
-            var predecessorCollection = predecessor.slice(0);
-            predecessorCollection.splice(count, 1);
-            var _loop_1 = function () {
-                var currentIdArray = [];
-                if (visitedIdArray.indexOf(currentId) === -1) {
-                    //Predecessor id not in records collection
-                    if (isNullOrUndefined(this_1.parent.getRecordByID(currentId))) {
-                        return { value: false };
-                    }
-                    currentRecord = this_1.parent.getRecordByID(currentId).ganttProperties;
-                    if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
-                        currentRecord.predecessor.forEach(function (value) {
-                            if (currentRecord.taskId.toString() !== value.from) {
-                                currentIdArray.push(value.from.toString());
-                            }
-                        });
-                    }
-                    if (recordId.toString() === currentRecord.taskId.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
-                        return { value: false };
-                    }
-                    visitedIdArray.push(currentId);
-                    if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
-                        currentId = currentRecord.predecessor[0].from;
-                    }
-                    else {
-                        return "break";
-                    }
-                }
-                else {
-                    return "break";
-                }
-            };
-            var this_1 = this;
-            while (currentId !== null) {
-                var state_1 = _loop_1();
-                if (typeof state_1 === "object")
-                    return state_1.value;
-                if (state_1 === "break")
-                    break;
-            }
-        }
-        return true;
-    };
-    /**
-     * To validate predecessor relations
-     * @param ganttRecord
-     * @param predecessorString
-     * @private
-     */
-    ConnectorLineEdit.prototype.validatePredecessorRelation = function (ganttRecord, predecessorString) {
-        var flag = true;
-        var recordId = ganttRecord.ganttProperties.taskId;
-        var predecessorIdArray;
-        var currentId;
-        if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
-            predecessorIdArray = this.idFromPredecessor(predecessorString);
-            var _loop_2 = function (count) {
-                //Check edited item has parent item in predecessor collection
-                var checkParent = this_2.checkParentRelation(ganttRecord, predecessorIdArray);
-                if (!checkParent) {
-                    return { value: false };
-                }
-                // Check if predecessor exist more then one 
-                var tempIdArray = predecessorIdArray.slice(0);
-                var checkArray = [];
-                var countFlag = true;
-                tempIdArray.forEach(function (value) {
-                    if (checkArray.indexOf(value) === -1) {
-                        checkArray.push(value);
-                    }
-                    else {
-                        countFlag = false;
-                    }
-                });
-                if (!countFlag) {
-                    return { value: false };
-                }
-                //Cyclick check  
-                currentId = predecessorIdArray[count];
-                var visitedIdArray = [];
-                var predecessorCollection = predecessorIdArray.slice(0);
-                predecessorCollection.splice(count, 1);
-                var _loop_3 = function () {
-                    var currentIdArray = [];
-                    var currentIdIndex;
-                    var currentRecord;
-                    if (visitedIdArray.indexOf(currentId) === -1) {
-                        //Predecessor id not in records collection
-                        if (isNullOrUndefined(this_2.parent.getRecordByID(currentId.toString()))) {
-                            return { value: false };
-                        }
-                        currentRecord = this_2.parent.getRecordByID(currentId.toString()).ganttProperties;
-                        //  let currentPredecessor='';
-                        if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
-                            currentRecord.predecessor.forEach(function (value, index) {
-                                if (currentRecord.taskId.toString() !== value.from) {
-                                    currentIdArray.push(value.from.toString());
-                                    currentIdIndex = index;
-                                }
-                            });
-                            //    currentPredecessor=currentRecord.predecessor[0].from
-                        }
-                        if (recordId.toString() === currentRecord.taskId.toString() ||
-                            currentIdArray.indexOf(recordId.toString()) !== -1) {
-                            return { value: false };
-                        }
-                        visitedIdArray.push(currentId);
-                        if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
-                            var result = void 0;
-                            if (currentIdArray.length > 1) {
-                                result = this_2.predecessorValidation(currentIdArray, ganttRecord.ganttProperties);
-                            }
-                            else if (currentIdArray.length === 1) {
-                                currentId = currentRecord.predecessor[currentIdIndex].from;
-                            }
-                            if (result === false) {
-                                return { value: false };
-                            }
-                        }
-                        else {
-                            return "break";
-                        }
-                    }
-                    else {
-                        return "break";
-                    }
-                };
-                while (currentId !== null) {
-                    var state_3 = _loop_3();
-                    if (typeof state_3 === "object")
-                        return state_3;
-                    if (state_3 === "break")
-                        break;
-                }
-            };
-            var this_2 = this;
-            for (var count = 0; count < predecessorIdArray.length; count++) {
-                var state_2 = _loop_2(count);
-                if (typeof state_2 === "object")
-                    return state_2.value;
-            }
-        }
-        return flag;
-    };
-    /**
-     * To add dependency for Task
-     * @param ganttRecord
-     * @param predecessorString
-     * @private
-     */
-    ConnectorLineEdit.prototype.addPredecessor = function (ganttRecord, predecessorString) {
-        var tempPredecessorString = isNullOrUndefined(ganttRecord.ganttProperties.predecessorsName) ||
-            ganttRecord.ganttProperties.predecessorsName === '' ?
-            predecessorString : (ganttRecord.ganttProperties.predecessorsName + ',' + predecessorString);
-        this.updatePredecessorHelper(ganttRecord, tempPredecessorString);
-    };
-    /**
-     * To remove dependency from task
-     * @param ganttRecord
-     * @private
-     */
-    ConnectorLineEdit.prototype.removePredecessor = function (ganttRecord) {
-        this.updatePredecessorHelper(ganttRecord, null);
-    };
-    /**
-     * To modify current dependency values of Task
-     * @param ganttRecord
-     * @param predecessorString
-     * @private
-     */
-    ConnectorLineEdit.prototype.updatePredecessor = function (ganttRecord, predecessorString) {
-        return this.updatePredecessorHelper(ganttRecord, predecessorString);
-    };
-    ConnectorLineEdit.prototype.updatePredecessorHelper = function (ganttRecord, predecessorString) {
-        if (isUndefined(predecessorString) || this.validatePredecessorRelation(ganttRecord, predecessorString)) {
-            this.parent.isOnEdit = true;
-            var predecessorCollection = [];
-            if (!isNullOrUndefined(predecessorString) && predecessorString !== '') {
-                predecessorCollection = this.parent.predecessorModule.calculatePredecessor(predecessorString, ganttRecord);
-            }
-            this.parent.setRecordValue('predecessor', predecessorCollection, ganttRecord.ganttProperties, true);
-            var stringValue = this.parent.predecessorModule.getPredecessorStringValue(ganttRecord);
-            this.parent.setRecordValue('predecessorsName', stringValue, ganttRecord.ganttProperties, true);
-            this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, stringValue, ganttRecord);
-            this.parent.setRecordValue(this.parent.taskFields.dependency, stringValue, ganttRecord);
-            var args = {};
-            args.data = ganttRecord;
-            this.parent.editModule.initiateUpdateAction(args);
-            return true;
-        }
-        else {
-            return false;
-        }
-    };
-    ConnectorLineEdit.prototype.checkParentRelation = function (ganttRecord, predecessorIdArray) {
-        var editingData = ganttRecord;
-        var checkParent = true;
-        if (editingData && editingData.parentItem) {
-            if (predecessorIdArray.indexOf(editingData.parentItem.taskId.toString()) !== -1) {
-                return false;
-            }
-        }
-        var _loop_4 = function (p) {
-            var record = this_3.parent.currentViewData.filter(function (item) {
-                return item && item.ganttProperties.taskId.toString() === predecessorIdArray[p].toString();
-            });
-            if (record[0] && record[0].hasChildRecords) {
-                return { value: false };
-            }
-        };
-        var this_3 = this;
-        for (var p = 0; p < predecessorIdArray.length; p++) {
-            var state_4 = _loop_4(p);
-            if (typeof state_4 === "object")
-                return state_4.value;
-        }
-        return checkParent;
-    };
-    return ConnectorLineEdit;
-}());
-
-/**
  * Splitter module is used to define the splitter position in Gantt layout.
  */
 var Splitter$1 = /** @__PURE__ @class */ (function () {
@@ -8813,7 +7801,7 @@ var Splitter$1 = /** @__PURE__ @class */ (function () {
         this.parent.splitterElement.appendChild(this.parent.treeGridPane);
         this.parent.splitterElement.appendChild(this.parent.chartPane);
         this.splitterObject = new Splitter({
-            height: (this.parent.ganttHeight - toolbarHeight).toString(),
+            height: null,
             width: this.parent.ganttWidth.toString(),
             separatorSize: this.parent.splitterSettings.separatorSize,
             paneSettings: [
@@ -9580,7 +8568,6 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         this.dateValidationModule = new DateProcessor(this);
         this.predecessorModule = new Dependency(this);
         this.connectorLineModule = new ConnectorLine(this);
-        this.connectorLineEditModule = new ConnectorLineEdit(this);
         this.splitterModule = new Splitter$1(this);
         this.tooltipModule = new Tooltip$1(this);
         this.keyConfig = {
@@ -9714,13 +8701,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             }
             this.renderTreeGrid();
             this.wireEvents();
-            if (this.taskFields.dependency && this.isInPredecessorValidation) {
-                var dialogElement = createElement('div', {
-                    id: this.element.id + '_dialogValidationRule',
-                });
-                this.element.appendChild(dialogElement);
-                this.predecessorModule.renderValidationDialog();
-            }
+            this.notify('initPredessorDialog', {});
         }
         this.splitterModule.updateSplitterPosition();
         if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
@@ -10042,6 +9023,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             this.notify('tree-grid-created', {});
             this.createGanttPopUpElement();
             this.hideSpinner();
+            setValue('isGanttCreated', true, args);
             this.renderComplete();
         }
         if (this.taskFields.dependency) {
@@ -10319,6 +9301,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                 args: [this]
             });
         }
+        if (this.allowExcelExport) {
+            modules.push({
+                member: 'excelExport',
+                args: [this]
+            });
+        }
         if (this.allowResizing) {
             modules.push({
                 member: 'resize',
@@ -10549,6 +9537,8 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             zoomIn: 'Zoom in',
             zoomOut: 'Zoom out',
             zoomToFit: 'Zoom to fit',
+            excelExport: 'Excel export',
+            csvExport: 'CSV export',
             expandAll: 'Expand all',
             collapseAll: 'Collapse all',
             nextTimeSpan: 'Next timespan',
@@ -10685,6 +9675,32 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
      */
     Gantt.prototype.filterByColumn = function (fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent) {
         this.treeGrid.filterByColumn(fieldName, filterOperator, filterValue, predicate, matchCase, ignoreAccent);
+    };
+    /**
+     * Export Gantt data to Excel file(.xlsx).
+     * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the Gantt.
+     * @param  {boolean} isMultipleExport - Define to enable multiple export.
+     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
+     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
+     * @return {Promise<any>}
+     */
+    Gantt.prototype.excelExport = function (excelExportProperties, isMultipleExport, 
+    /* tslint:disable-next-line:no-any */
+    workbook, isBlob) {
+        return this.excelExportModule ? this.treeGrid.excelExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
+    };
+    /**
+     * Export Gantt data to CSV file.
+     * @param  {ExcelExportProperties} excelExportProperties - Defines the export properties of the Gantt.
+     * @param  {boolean} isMultipleExport - Define to enable multiple export.
+     * @param  {workbook} workbook - Defines the Workbook if multiple export is enabled.
+     * @param  {boolean} isBlob - If 'isBlob' set to true, then it will be returned as blob data.
+     * @return {Promise<any>}
+     */
+    Gantt.prototype.csvExport = function (excelExportProperties, 
+    /* tslint:disable-next-line:no-any */
+    isMultipleExport, workbook, isBlob) {
+        return this.excelExportModule ? this.treeGrid.csvExport(excelExportProperties, isMultipleExport, workbook, isBlob) : null;
     };
     /**
      * Clears all the filtered columns in Gantt.
@@ -11248,6 +10264,18 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         return this.treeGrid.getColumns();
     };
     /**
+     * Method to column from given column collection based on field value
+     * @param field
+     * @param columns
+     * @private
+     */
+    Gantt.prototype.getColumnByField = function (field, columns) {
+        var column = columns.filter(function (value) {
+            return value.field === field;
+        });
+        return column.length > 0 ? column[0] : null;
+    };
+    /**
      * Gets the Gantt columns.
      * @return {ColumnModel[]}
      * @public
@@ -11522,6 +10550,9 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     ], Gantt.prototype, "allowFiltering", void 0);
     __decorate([
         Property(false)
+    ], Gantt.prototype, "allowExcelExport", void 0);
+    __decorate([
+        Property(false)
     ], Gantt.prototype, "allowReordering", void 0);
     __decorate([
         Property(false)
@@ -11544,6 +10575,18 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Gantt.prototype, "queryTaskbarInfo", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "beforeExcelExport", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "excelExportComplete", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "excelQueryCellInfo", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "excelHeaderQueryCellInfo", void 0);
     __decorate([
         Event()
     ], Gantt.prototype, "collapsing", void 0);
@@ -11577,6 +10620,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Gantt.prototype, "load", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "created", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "destroyed", void 0);
     __decorate([
         Event()
     ], Gantt.prototype, "taskbarEditing", void 0);
@@ -12365,17 +11414,17 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
                 var predecessor = childRecord.predecessor[i];
                 if (predecessor.from === parentRecord.taskId.toString() &&
                     predecessor.to === childRecord.taskId.toString()) {
-                    this.parent.predecessorModule.childRecord = this.connectorSecondRecord;
-                    this.parent.predecessorModule.predecessorIndex = i;
-                    this.parent.predecessorModule.renderPredecessorDeleteConfirmDialog();
+                    this.parent.connectorLineEditModule.childRecord = this.connectorSecondRecord;
+                    this.parent.connectorLineEditModule.predecessorIndex = i;
+                    this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
                 }
                 else if (predecessor.from === childRecord.taskId.toString() &&
                     predecessor.to === parentRecord.taskId.toString()) {
-                    this.parent.predecessorModule.childRecord = this.taskBarEditRecord;
-                    this.parent.predecessorModule.predecessorIndex = i;
-                    this.parent.predecessorModule.renderPredecessorDeleteConfirmDialog();
+                    this.parent.connectorLineEditModule.childRecord = this.taskBarEditRecord;
+                    this.parent.connectorLineEditModule.predecessorIndex = i;
+                    this.parent.connectorLineEditModule.renderPredecessorDeleteConfirmDialog();
                     isValid = false;
                     break;
                 }
@@ -14848,6 +13897,843 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
     return DialogEdit;
 }());
 
+/**
+ * File for handling connector line edit operation in Gantt.
+ */
+var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
+    function ConnectorLineEdit(ganttObj) {
+        /**
+         * @private
+         */
+        this.validationPredecessor = null;
+        /** @private */
+        this.confirmPredecessorDialog = null;
+        /** @private */
+        this.predecessorIndex = null;
+        /** @private */
+        this.childRecord = null;
+        this.parent = ganttObj;
+        this.dateValidateModule = this.parent.dateValidationModule;
+        this.parent.on('initPredessorDialog', this.initPredecessorValidationDialog, this);
+    }
+    /**
+     * To update connector line edit element.
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.updateConnectorLineEditElement = function (e) {
+        var element = this.getConnectorLineHoverElement(e.target);
+        if (!getValue('editModule.taskbarEditModule.taskBarEditAction', this.parent)) {
+            this.highlightConnectorLineElements(element);
+        }
+    };
+    /**
+     * To get hovered connector line element.
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.getConnectorLineHoverElement = function (target) {
+        var isOnLine = parentsUntil$1(target, connectorLine);
+        var isOnRightArrow = parentsUntil$1(target, connectorLineRightArrow);
+        var isOnLeftArrow = parentsUntil$1(target, connectorLineLeftArrow);
+        if (isOnLine || isOnRightArrow || isOnLeftArrow) {
+            return parentsUntil$1(target, connectorLineContainer);
+        }
+        else {
+            return null;
+        }
+    };
+    /**
+     * To highlight connector line while hover.
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.highlightConnectorLineElements = function (element) {
+        if (element) {
+            if (element !== this.connectorLineElement) {
+                this.removeHighlight();
+                this.addHighlight(element);
+            }
+        }
+        else {
+            this.removeHighlight();
+        }
+    };
+    /**
+     * To add connector line highlight class.
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.addHighlight = function (element) {
+        this.connectorLineElement = element;
+        addClass([element], [connectorLineHoverZIndex]);
+        addClass(element.querySelectorAll('.' + connectorLine), [connectorLineHover]);
+        addClass(element.querySelectorAll('.' + connectorLineRightArrow), [connectorLineRightArrowHover]);
+        addClass(element.querySelectorAll('.' + connectorLineLeftArrow), [connectorLineLeftArrowHover]);
+    };
+    /**
+     * To remove connector line highlight class.
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.removeHighlight = function () {
+        if (!isNullOrUndefined(this.connectorLineElement)) {
+            removeClass([this.connectorLineElement], [connectorLineHoverZIndex]);
+            removeClass(this.connectorLineElement.querySelectorAll('.' + connectorLine), [connectorLineHover]);
+            removeClass(this.connectorLineElement.querySelectorAll('.' + connectorLineRightArrow), [connectorLineRightArrowHover]);
+            removeClass(this.connectorLineElement.querySelectorAll('.' + connectorLineLeftArrow), [connectorLineLeftArrowHover]);
+            this.connectorLineElement = null;
+        }
+    };
+    /**
+     * To remove connector line highlight class.
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.getEditedConnectorLineString = function (records) {
+        var ganttRecord;
+        var predecessorsCollection;
+        var predecessor;
+        var parentGanttRecord;
+        var childGanttRecord;
+        var connectorObj;
+        var idArray = [];
+        var lineArray = [];
+        var editedConnectorLineString = '';
+        for (var count = 0; count < records.length; count++) {
+            ganttRecord = records[count];
+            predecessorsCollection = ganttRecord.ganttProperties.predecessor;
+            if (predecessorsCollection) {
+                for (var predecessorCount = 0; predecessorCount < predecessorsCollection.length; predecessorCount++) {
+                    predecessor = predecessorsCollection[predecessorCount];
+                    var from = 'from';
+                    var to = 'to';
+                    this.removeConnectorLineById('parent' + predecessor[from] + 'child' + predecessor[to]);
+                    parentGanttRecord = this.parent.getRecordByID(predecessor[from]);
+                    childGanttRecord = this.parent.getRecordByID(predecessor[to]);
+                    if ((parentGanttRecord && parentGanttRecord.expanded === true) ||
+                        (childGanttRecord && childGanttRecord.expanded === true)) {
+                        connectorObj =
+                            this.parent.predecessorModule.updateConnectorLineObject(parentGanttRecord, childGanttRecord, predecessor);
+                        if (!isNullOrUndefined(connectorObj)) {
+                            var lineIndex = idArray.indexOf(connectorObj.connectorLineId);
+                            var lineString = this.parent.connectorLineModule.getConnectorLineTemplate(connectorObj);
+                            if (lineIndex !== -1) {
+                                lineArray[lineIndex] = lineString;
+                            }
+                            else {
+                                idArray.push(connectorObj.connectorLineId);
+                                lineArray.push(lineString);
+                            }
+                        }
+                    }
+                }
+                editedConnectorLineString = lineArray.join('');
+            }
+        }
+        return editedConnectorLineString;
+    };
+    /**
+     * Tp refresh connector lines of edited records
+     * @param editedRecord
+     * @private
+     */
+    ConnectorLineEdit.prototype.refreshEditedRecordConnectorLine = function (editedRecord) {
+        this.removePreviousConnectorLines(this.parent.previousRecords);
+        var editedConnectorLineString;
+        editedConnectorLineString = this.getEditedConnectorLineString(editedRecord);
+        this.parent.connectorLineModule.dependencyViewContainer.innerHTML =
+            this.parent.connectorLineModule.dependencyViewContainer.innerHTML + editedConnectorLineString;
+    };
+    /**
+     * Method to remove connector line from DOM
+     * @param records
+     * @private
+     */
+    ConnectorLineEdit.prototype.removePreviousConnectorLines = function (records) {
+        var isObjectType;
+        if (isObject(records) === true) {
+            isObjectType = true;
+        }
+        else {
+            isObjectType = false;
+        }
+        var length = isObjectType ? Object.keys(records).length : records.length;
+        var keys = Object.keys(records);
+        for (var i = 0; i < length; i++) {
+            var data = void 0;
+            var predecessors = void 0;
+            if (isObjectType) {
+                var uniqueId = keys[i];
+                data = records[uniqueId];
+            }
+            else {
+                data = records[i];
+            }
+            predecessors = data.ganttProperties && data.ganttProperties.predecessor;
+            if (predecessors && predecessors.length > 0) {
+                for (var pre = 0; pre < predecessors.length; pre++) {
+                    var lineId = 'parent' + predecessors[pre].from + 'child' + predecessors[pre].to;
+                    this.removeConnectorLineById(lineId);
+                }
+            }
+        }
+    };
+    ConnectorLineEdit.prototype.removeConnectorLineById = function (id) {
+        var element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
+        if (!isNullOrUndefined(element)) {
+            remove(element);
+        }
+    };
+    ConnectorLineEdit.prototype.idFromPredecessor = function (pre) {
+        var preArray = pre.split(',');
+        var preIdArray = [];
+        for (var j = 0; j < preArray.length; j++) {
+            var strArray = [];
+            for (var i = 0; i < preArray[j].length; i++) {
+                if (!isNullOrUndefined(preArray[j].charAt(i)) && parseInt(preArray[j].charAt(i), 10).toString() !== 'NaN') {
+                    strArray.push(preArray[j].charAt(i));
+                }
+                else {
+                    break;
+                }
+            }
+            preIdArray.push((strArray.join('')));
+        }
+        return preIdArray;
+    };
+    ConnectorLineEdit.prototype.predecessorValidation = function (predecessor, record) {
+        var recordId = record.taskId;
+        var currentId;
+        var currentRecord;
+        for (var count = 0; count < predecessor.length; count++) {
+            currentId = predecessor[count];
+            var visitedIdArray = [];
+            var predecessorCollection = predecessor.slice(0);
+            predecessorCollection.splice(count, 1);
+            var _loop_1 = function () {
+                var currentIdArray = [];
+                if (visitedIdArray.indexOf(currentId) === -1) {
+                    //Predecessor id not in records collection
+                    if (isNullOrUndefined(this_1.parent.getRecordByID(currentId))) {
+                        return { value: false };
+                    }
+                    currentRecord = this_1.parent.getRecordByID(currentId).ganttProperties;
+                    if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
+                        currentRecord.predecessor.forEach(function (value) {
+                            if (currentRecord.taskId.toString() !== value.from) {
+                                currentIdArray.push(value.from.toString());
+                            }
+                        });
+                    }
+                    if (recordId.toString() === currentRecord.taskId.toString() || currentIdArray.indexOf(recordId.toString()) !== -1) {
+                        return { value: false };
+                    }
+                    visitedIdArray.push(currentId);
+                    if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
+                        currentId = currentRecord.predecessor[0].from;
+                    }
+                    else {
+                        return "break";
+                    }
+                }
+                else {
+                    return "break";
+                }
+            };
+            var this_1 = this;
+            while (currentId !== null) {
+                var state_1 = _loop_1();
+                if (typeof state_1 === "object")
+                    return state_1.value;
+                if (state_1 === "break")
+                    break;
+            }
+        }
+        return true;
+    };
+    /**
+     * To validate predecessor relations
+     * @param ganttRecord
+     * @param predecessorString
+     * @private
+     */
+    ConnectorLineEdit.prototype.validatePredecessorRelation = function (ganttRecord, predecessorString) {
+        var flag = true;
+        var recordId = ganttRecord.ganttProperties.taskId;
+        var predecessorIdArray;
+        var currentId;
+        if (!isNullOrUndefined(predecessorString) && predecessorString.length > 0) {
+            predecessorIdArray = this.idFromPredecessor(predecessorString);
+            var _loop_2 = function (count) {
+                //Check edited item has parent item in predecessor collection
+                var checkParent = this_2.checkParentRelation(ganttRecord, predecessorIdArray);
+                if (!checkParent) {
+                    return { value: false };
+                }
+                // Check if predecessor exist more then one 
+                var tempIdArray = predecessorIdArray.slice(0);
+                var checkArray = [];
+                var countFlag = true;
+                tempIdArray.forEach(function (value) {
+                    if (checkArray.indexOf(value) === -1) {
+                        checkArray.push(value);
+                    }
+                    else {
+                        countFlag = false;
+                    }
+                });
+                if (!countFlag) {
+                    return { value: false };
+                }
+                //Cyclick check  
+                currentId = predecessorIdArray[count];
+                var visitedIdArray = [];
+                var predecessorCollection = predecessorIdArray.slice(0);
+                predecessorCollection.splice(count, 1);
+                var _loop_3 = function () {
+                    var currentIdArray = [];
+                    var currentIdIndex;
+                    var currentRecord;
+                    if (visitedIdArray.indexOf(currentId) === -1) {
+                        //Predecessor id not in records collection
+                        if (isNullOrUndefined(this_2.parent.getRecordByID(currentId.toString()))) {
+                            return { value: false };
+                        }
+                        currentRecord = this_2.parent.getRecordByID(currentId.toString()).ganttProperties;
+                        //  let currentPredecessor='';
+                        if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
+                            currentRecord.predecessor.forEach(function (value, index) {
+                                if (currentRecord.taskId.toString() !== value.from) {
+                                    currentIdArray.push(value.from.toString());
+                                    currentIdIndex = index;
+                                }
+                            });
+                            //    currentPredecessor=currentRecord.predecessor[0].from
+                        }
+                        if (recordId.toString() === currentRecord.taskId.toString() ||
+                            currentIdArray.indexOf(recordId.toString()) !== -1) {
+                            return { value: false };
+                        }
+                        visitedIdArray.push(currentId);
+                        if (!isNullOrUndefined(currentRecord.predecessor) && currentRecord.predecessor.length > 0) {
+                            var result = void 0;
+                            if (currentIdArray.length > 1) {
+                                result = this_2.predecessorValidation(currentIdArray, ganttRecord.ganttProperties);
+                            }
+                            else if (currentIdArray.length === 1) {
+                                currentId = currentRecord.predecessor[currentIdIndex].from;
+                            }
+                            if (result === false) {
+                                return { value: false };
+                            }
+                        }
+                        else {
+                            return "break";
+                        }
+                    }
+                    else {
+                        return "break";
+                    }
+                };
+                while (currentId !== null) {
+                    var state_3 = _loop_3();
+                    if (typeof state_3 === "object")
+                        return state_3;
+                    if (state_3 === "break")
+                        break;
+                }
+            };
+            var this_2 = this;
+            for (var count = 0; count < predecessorIdArray.length; count++) {
+                var state_2 = _loop_2(count);
+                if (typeof state_2 === "object")
+                    return state_2.value;
+            }
+        }
+        return flag;
+    };
+    /**
+     * To add dependency for Task
+     * @param ganttRecord
+     * @param predecessorString
+     * @private
+     */
+    ConnectorLineEdit.prototype.addPredecessor = function (ganttRecord, predecessorString) {
+        var tempPredecessorString = isNullOrUndefined(ganttRecord.ganttProperties.predecessorsName) ||
+            ganttRecord.ganttProperties.predecessorsName === '' ?
+            predecessorString : (ganttRecord.ganttProperties.predecessorsName + ',' + predecessorString);
+        this.updatePredecessorHelper(ganttRecord, tempPredecessorString);
+    };
+    /**
+     * To remove dependency from task
+     * @param ganttRecord
+     * @private
+     */
+    ConnectorLineEdit.prototype.removePredecessor = function (ganttRecord) {
+        this.updatePredecessorHelper(ganttRecord, null);
+    };
+    /**
+     * To modify current dependency values of Task
+     * @param ganttRecord
+     * @param predecessorString
+     * @private
+     */
+    ConnectorLineEdit.prototype.updatePredecessor = function (ganttRecord, predecessorString) {
+        return this.updatePredecessorHelper(ganttRecord, predecessorString);
+    };
+    ConnectorLineEdit.prototype.updatePredecessorHelper = function (ganttRecord, predecessorString) {
+        if (isUndefined(predecessorString) || this.validatePredecessorRelation(ganttRecord, predecessorString)) {
+            this.parent.isOnEdit = true;
+            var predecessorCollection = [];
+            if (!isNullOrUndefined(predecessorString) && predecessorString !== '') {
+                predecessorCollection = this.parent.predecessorModule.calculatePredecessor(predecessorString, ganttRecord);
+            }
+            this.parent.setRecordValue('predecessor', predecessorCollection, ganttRecord.ganttProperties, true);
+            var stringValue = this.parent.predecessorModule.getPredecessorStringValue(ganttRecord);
+            this.parent.setRecordValue('predecessorsName', stringValue, ganttRecord.ganttProperties, true);
+            this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, stringValue, ganttRecord);
+            this.parent.setRecordValue(this.parent.taskFields.dependency, stringValue, ganttRecord);
+            var args = {};
+            args.data = ganttRecord;
+            this.parent.editModule.initiateUpdateAction(args);
+            return true;
+        }
+        else {
+            return false;
+        }
+    };
+    ConnectorLineEdit.prototype.checkParentRelation = function (ganttRecord, predecessorIdArray) {
+        var editingData = ganttRecord;
+        var checkParent = true;
+        if (editingData && editingData.parentItem) {
+            if (predecessorIdArray.indexOf(editingData.parentItem.taskId.toString()) !== -1) {
+                return false;
+            }
+        }
+        var _loop_4 = function (p) {
+            var record = this_3.parent.currentViewData.filter(function (item) {
+                return item && item.ganttProperties.taskId.toString() === predecessorIdArray[p].toString();
+            });
+            if (record[0] && record[0].hasChildRecords) {
+                return { value: false };
+            }
+        };
+        var this_3 = this;
+        for (var p = 0; p < predecessorIdArray.length; p++) {
+            var state_4 = _loop_4(p);
+            if (typeof state_4 === "object")
+                return state_4.value;
+        }
+        return checkParent;
+    };
+    ConnectorLineEdit.prototype.initPredecessorValidationDialog = function () {
+        if (this.parent.taskFields.dependency && this.parent.isInPredecessorValidation) {
+            var dialogElement = createElement('div', {
+                id: this.parent.element.id + '_dialogValidationRule',
+            });
+            this.parent.element.appendChild(dialogElement);
+            this.renderValidationDialog();
+        }
+    };
+    /**
+     * To render validation dialog
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.renderValidationDialog = function () {
+        var validationDialog = new Dialog({
+            header: 'Validate Editing',
+            isModal: true,
+            visible: false,
+            width: '50%',
+            showCloseIcon: true,
+            close: this.validationDialogClose.bind(this),
+            content: '',
+            buttons: [
+                {
+                    click: this.validationDialogOkButton.bind(this),
+                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
+                },
+                {
+                    click: this.validationDialogCancelButton.bind(this),
+                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
+                }
+            ],
+            target: this.parent.element,
+            animationSettings: { effect: 'None' },
+        });
+        document.getElementById(this.parent.element.id + '_dialogValidationRule').innerHTML = '';
+        validationDialog.isStringTemplate = true;
+        validationDialog.appendTo('#' + this.parent.element.id + '_dialogValidationRule');
+        this.parent.validationDialogElement = validationDialog;
+    };
+    ConnectorLineEdit.prototype.validationDialogOkButton = function () {
+        var currentArgs = this.parent.currentEditedArgs;
+        currentArgs.validateMode.preserveLinkWithEditing =
+            document.getElementById(this.parent.element.id + '_ValidationAddlineOffset').checked;
+        currentArgs.validateMode.removeLink =
+            document.getElementById(this.parent.element.id + '_ValidationRemoveline').checked;
+        currentArgs.validateMode.respectLink =
+            document.getElementById(this.parent.element.id + '_ValidationCancel').checked;
+        this.applyPredecessorOption();
+        this.parent.validationDialogElement.hide();
+    };
+    ConnectorLineEdit.prototype.validationDialogCancelButton = function () {
+        this.parent.currentEditedArgs.validateMode.respectLink = true;
+        this.applyPredecessorOption();
+        this.parent.validationDialogElement.hide();
+    };
+    ConnectorLineEdit.prototype.validationDialogClose = function (e) {
+        if (getValue('isInteraction', e)) {
+            this.parent.currentEditedArgs.validateMode.respectLink = true;
+            this.applyPredecessorOption();
+        }
+    };
+    /**
+     * Validate and apply the predecessor option from validation dialog
+     * @param buttonType
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.applyPredecessorOption = function () {
+        var args = this.parent.currentEditedArgs;
+        var ganttRecord = args.data;
+        if (args.validateMode.respectLink) {
+            this.parent.editModule.reUpdatePreviousRecords();
+            this.parent.chartRowsModule.refreshRecords([args.data]);
+        }
+        else if (args.validateMode.removeLink) {
+            this.removePredecessors(ganttRecord, this.validationPredecessor);
+            this.parent.editModule.updateEditedTask(args.editEventArgs);
+        }
+        else if (args.validateMode.preserveLinkWithEditing) {
+            this.calculateOffset(ganttRecord);
+            this.parent.editModule.updateEditedTask(args.editEventArgs);
+        }
+    };
+    ConnectorLineEdit.prototype.calculateOffset = function (record) {
+        var prevPredecessor = extend([], record.ganttProperties.predecessor, [], true);
+        var validPredecessor = this.parent.predecessorModule.getValidPredecessor(record);
+        for (var i = 0; i < validPredecessor.length; i++) {
+            var predecessor = validPredecessor[i];
+            var parentTask = this.parent.getRecordByID(predecessor.from);
+            var offset = void 0;
+            if (isScheduledTask(parentTask.ganttProperties) && isScheduledTask(record.ganttProperties)) {
+                var tempStartDate = void 0;
+                var tempEndDate = void 0;
+                var tempDuration = void 0;
+                var isNegativeOffset = void 0;
+                switch (predecessor.type) {
+                    case 'FS':
+                        tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
+                        tempEndDate = new Date(record.ganttProperties.startDate.getTime());
+                        break;
+                    case 'SS':
+                        tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
+                        tempEndDate = new Date(record.ganttProperties.startDate.getTime());
+                        break;
+                    case 'SF':
+                        tempStartDate = new Date(parentTask.ganttProperties.startDate.getTime());
+                        tempEndDate = new Date(record.ganttProperties.endDate.getTime());
+                        break;
+                    case 'FF':
+                        tempStartDate = new Date(parentTask.ganttProperties.endDate.getTime());
+                        tempEndDate = new Date(record.ganttProperties.endDate.getTime());
+                        break;
+                }
+                if (tempStartDate.getTime() < tempEndDate.getTime()) {
+                    tempStartDate = this.dateValidateModule.checkStartDate(tempStartDate);
+                    tempEndDate = this.dateValidateModule.checkEndDate(tempEndDate, null);
+                    isNegativeOffset = false;
+                }
+                else {
+                    var tempDate = new Date(tempStartDate.getTime());
+                    tempStartDate = this.dateValidateModule.checkStartDate(tempEndDate);
+                    tempEndDate = this.dateValidateModule.checkEndDate(tempDate, null);
+                    isNegativeOffset = true;
+                }
+                if (tempStartDate.getTime() < tempEndDate.getTime()) {
+                    tempDuration = this.dateValidateModule.getDuration(tempStartDate, tempEndDate, predecessor.offsetUnit, true, true);
+                    offset = isNegativeOffset ? (tempDuration * -1) : tempDuration;
+                }
+                else {
+                    offset = 0;
+                }
+            }
+            else {
+                offset = 0;
+            }
+            var preIndex = getIndex(predecessor, 'from', prevPredecessor, 'to');
+            prevPredecessor[preIndex].offset = offset;
+            // Update predecessor in predecessor task
+            var parentPredecessors = extend([], parentTask.ganttProperties.predecessor, [], true);
+            var parentPreIndex = getIndex(predecessor, 'from', parentPredecessors, 'to');
+            parentPredecessors[parentPreIndex].offset = offset;
+            this.parent.setRecordValue('predecessor', parentPredecessors, parentTask.ganttProperties, true);
+        }
+        this.parent.setRecordValue('predecessor', prevPredecessor, record.ganttProperties, true);
+        var predecessorString = this.parent.predecessorModule.getPredecessorStringValue(record);
+        this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
+        this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
+        this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
+    };
+    /**
+     * Update predecessor value with user selection option in predecessor validation dialog
+     * @param args
+     * @return {void}
+     */
+    ConnectorLineEdit.prototype.removePredecessors = function (ganttRecord, predecessor) {
+        var prevPredecessor = extend([], [], ganttRecord.ganttProperties.predecessor, true);
+        var preLength = predecessor.length;
+        for (var i = 0; i < preLength; i++) {
+            var parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
+            var parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
+            var index = getIndex(predecessor[i], 'from', prevPredecessor, 'to');
+            prevPredecessor.splice(index, 1);
+            var parentIndex = getIndex(predecessor[i], 'from', parentPredecessor, 'to');
+            parentPredecessor.splice(parentIndex, 1);
+            this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
+        }
+        if (prevPredecessor.length !== ganttRecord.ganttProperties.predecessor.length) {
+            this.parent.setRecordValue('predecessor', prevPredecessor, ganttRecord.ganttProperties, true);
+            var predecessorString = this.parent.predecessorModule.getPredecessorStringValue(ganttRecord);
+            this.parent.setRecordValue('predecessorsName', predecessorString, ganttRecord.ganttProperties, true);
+            this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, ganttRecord);
+            this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, ganttRecord);
+        }
+    };
+    /**
+     * To open predecessor validation dialog
+     * @param args
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.openValidationDialog = function (args) {
+        var contentTemplate = this.validationDialogTemplate(args);
+        this.parent.validationDialogElement.setProperties({ content: contentTemplate });
+        this.parent.validationDialogElement.show();
+    };
+    /**
+     * Predecessor link validation dialog template
+     * @param args
+     * @private
+     */
+    ConnectorLineEdit.prototype.validationDialogTemplate = function (args) {
+        var ganttId = this.parent.element.id;
+        var contentdiv = createElement('div', {
+            className: 'e-ValidationContent'
+        });
+        var taskData = getValue('task', args);
+        var parenttaskData = getValue('parentTask', args);
+        var violationType = getValue('violationType', args);
+        var recordName = taskData.ganttProperties.taskName;
+        var recordNewStartDate = this.parent.getFormatedDate(taskData.ganttProperties.startDate, 'MM/dd/yyyy');
+        var parentName = parenttaskData.ganttProperties.taskName;
+        var recordArgs = [recordName, parentName];
+        var topContent;
+        var topContentText;
+        if (violationType === 'taskBeforePredecessor_FS') {
+            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FS');
+        }
+        else if (violationType === 'taskAfterPredecessor_FS') {
+            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FS');
+        }
+        else if (violationType === 'taskBeforePredecessor_SS') {
+            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SS');
+        }
+        else if (violationType === 'taskAfterPredecessor_SS') {
+            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SS');
+        }
+        else if (violationType === 'taskBeforePredecessor_FF') {
+            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_FF');
+        }
+        else if (violationType === 'taskAfterPredecessor_FF') {
+            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_FF');
+        }
+        else if (violationType === 'taskBeforePredecessor_SF') {
+            topContentText = this.parent.localeObj.getConstant('taskBeforePredecessor_SF');
+        }
+        else if (violationType === 'taskAfterPredecessor_SF') {
+            topContentText = this.parent.localeObj.getConstant('taskAfterPredecessor_SF');
+        }
+        topContentText = formatString(topContentText, recordArgs);
+        topContent = '<div id="' + ganttId + '_ValidationText">' + topContentText + '<div>';
+        var innerTable = '<table>' +
+            '<tr><td><input type="radio" id="' + ganttId + '_ValidationCancel" name="ValidationRule" checked/><label for="'
+            + ganttId + '_ValidationCancel" id= "' + ganttId + '_cancelLink">Cancel, keep the existing link</label></td></tr>' +
+            '<tr><td><input type="radio" id="' + ganttId + '_ValidationRemoveline" name="ValidationRule"/><label for="'
+            + ganttId + '_ValidationRemoveline" id="' + ganttId + '_removeLink">Remove the link and move <b>'
+            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b>.</label></td></tr>' +
+            '<tr><td><input type="radio" id="' + ganttId + '_ValidationAddlineOffset" name="ValidationRule"/><label for="'
+            + ganttId + '_ValidationAddlineOffset" id="' + ganttId + '_preserveLink">Move the <b>'
+            + recordName + '</b> to start on <b>' + recordNewStartDate + '</b> and keep the link.</label></td></tr></table>';
+        contentdiv.innerHTML = topContent + innerTable;
+        return contentdiv;
+    };
+    /**
+     * To validate the types while editing the taskbar
+     * @param args
+     * @return {boolean}
+     * @private
+     */
+    ConnectorLineEdit.prototype.validateTypes = function (ganttRecord) {
+        var predecessor = this.parent.predecessorModule.getValidPredecessor(ganttRecord);
+        var parentGanttRecord;
+        this.validationPredecessor = [];
+        var violatedParent;
+        var violateType;
+        var startDate = this.parent.predecessorModule.getPredecessorDate(ganttRecord, predecessor);
+        var ganttTaskData = ganttRecord.ganttProperties;
+        var endDate = this.dateValidateModule.getEndDate(startDate, ganttTaskData.duration, ganttTaskData.durationUnit, ganttTaskData, false);
+        for (var i = 0; i < predecessor.length; i++) {
+            parentGanttRecord = this.parent.getRecordByID(predecessor[i].from);
+            var violationType = null;
+            if (predecessor[i].type === 'FS') {
+                if (ganttTaskData.startDate < startDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskBeforePredecessor_FS';
+                }
+                else if (ganttTaskData.startDate > startDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskAfterPredecessor_FS';
+                }
+            }
+            else if (predecessor[i].type === 'SS') {
+                if (ganttTaskData.startDate < startDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskBeforePredecessor_SS';
+                }
+                else if (ganttTaskData.startDate > startDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskAfterPredecessor_SS';
+                }
+            }
+            else if (predecessor[i].type === 'FF') {
+                if (endDate < parentGanttRecord.ganttProperties.endDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskBeforePredecessor_FF';
+                }
+                else if (endDate > parentGanttRecord.ganttProperties.endDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskAfterPredecessor_FF';
+                }
+            }
+            else if (predecessor[i].type === 'SF') {
+                if (endDate < parentGanttRecord.ganttProperties.startDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskBeforePredecessor_SF';
+                }
+                else if (endDate > parentGanttRecord.ganttProperties.startDate) {
+                    this.validationPredecessor.push(predecessor[i]);
+                    violationType = 'taskAfterPredecessor_SF';
+                }
+            }
+            if (!isNullOrUndefined(violationType) && isNullOrUndefined(violateType)) {
+                violatedParent = parentGanttRecord;
+                violateType = violationType;
+            }
+        }
+        var validateArgs = {
+            parentTask: violatedParent,
+            task: ganttRecord,
+            violationType: violateType
+        };
+        return validateArgs;
+    };
+    /**
+     * Method to remove and update new predecessor collection in successor record
+     * @param data
+     * @private
+     */
+    ConnectorLineEdit.prototype.addRemovePredecessor = function (data) {
+        var prevData = this.parent.previousRecords[data.uniqueID];
+        var newPredecessor = data.ganttProperties.predecessor.slice();
+        if (prevData && prevData.ganttProperties && prevData.ganttProperties.hasOwnProperty('predecessor')) {
+            var prevPredecessor = prevData.ganttProperties.predecessor;
+            if (!isNullOrUndefined(prevPredecessor)) {
+                for (var p = 0; p < prevPredecessor.length; p++) {
+                    var parentGanttRecord = this.parent.getRecordByID(prevPredecessor[p].from);
+                    if (parentGanttRecord === data) {
+                        data.ganttProperties.predecessor.push(prevPredecessor[p]);
+                    }
+                    else {
+                        var parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
+                        var parentIndex = getIndex(prevPredecessor[p], 'from', parentPredecessor, 'to');
+                        if (parentIndex !== -1) {
+                            parentPredecessor.splice(parentIndex, 1);
+                            this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
+                        }
+                    }
+                }
+            }
+            if (!isNullOrUndefined(newPredecessor)) {
+                for (var n = 0; n < newPredecessor.length; n++) {
+                    var parentGanttRecord = this.parent.getRecordByID(newPredecessor[n].from);
+                    var parentPredecessor = extend([], [], parentGanttRecord.ganttProperties.predecessor, true);
+                    parentPredecessor.push(newPredecessor[n]);
+                    this.parent.setRecordValue('predecessor', parentPredecessor, parentGanttRecord.ganttProperties, true);
+                }
+            }
+        }
+    };
+    /**
+     * Method to remove a predecessor from a record.
+     * @param childRecord
+     * @param index
+     * @private
+     */
+    ConnectorLineEdit.prototype.removePredecessorByIndex = function (childRecord, index) {
+        var childPredecessor = childRecord.ganttProperties.predecessor;
+        var predecessor = childPredecessor.splice(index, 1);
+        var parentRecord = this.parent.getRecordByID(predecessor[0].from);
+        var parentPredecessor = parentRecord.ganttProperties.predecessor;
+        var parentIndex = getIndex(predecessor[0], 'from', parentPredecessor, 'to');
+        parentPredecessor.splice(parentIndex, 1);
+        var predecessorString = this.parent.predecessorModule.getPredecessorStringValue(childRecord);
+        childPredecessor.push(predecessor[0]);
+        this.parent.connectorLineEditModule.updatePredecessor(childRecord, predecessorString);
+    };
+    /**
+     * To render predecessor delete confirmation dialog
+     * @return {void}
+     * @private
+     */
+    ConnectorLineEdit.prototype.renderPredecessorDeleteConfirmDialog = function () {
+        this.confirmPredecessorDialog = new Dialog({
+            width: '320px',
+            isModal: true,
+            content: this.parent.localeObj.getConstant('confirmPredecessorDelete'),
+            buttons: [
+                {
+                    click: this.confirmOkDeleteButton.bind(this),
+                    buttonModel: { content: this.parent.localeObj.getConstant('okText'), isPrimary: true }
+                },
+                {
+                    click: this.confirmCloseDialog.bind(this),
+                    buttonModel: { content: this.parent.localeObj.getConstant('cancel') }
+                }
+            ],
+            target: this.parent.element,
+            animationSettings: { effect: 'None' },
+        });
+        var confirmDialog = createElement('div', {
+            id: this.parent.element.id + '_deletePredecessorConfirmDialog',
+        });
+        this.parent.element.appendChild(confirmDialog);
+        this.confirmPredecessorDialog.isStringTemplate = true;
+        this.confirmPredecessorDialog.appendTo(confirmDialog);
+    };
+    ConnectorLineEdit.prototype.confirmCloseDialog = function () {
+        this.confirmPredecessorDialog.destroy();
+    };
+    ConnectorLineEdit.prototype.confirmOkDeleteButton = function () {
+        this.removePredecessorByIndex(this.childRecord, this.predecessorIndex);
+        this.confirmPredecessorDialog.destroy();
+    };
+    return ConnectorLineEdit;
+}());
+
 var __assign$1 = (undefined && undefined.__assign) || function () {
     __assign$1 = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -14882,6 +14768,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         if (this.parent.editSettings.allowEditing && this.parent.editSettings.mode === 'Auto') {
             this.cellEditModule = new CellEdit(this.parent);
         }
+        if (this.parent.taskFields.dependency) {
+            this.parent.connectorLineEditModule = new ConnectorLineEdit(this.parent);
+        }
         if (this.parent.editSettings.allowAdding || (this.parent.editSettings.allowEditing &&
             (this.parent.editSettings.mode === 'Dialog' || this.parent.editSettings.mode === 'Auto'))) {
             this.dialogModule = new DialogEdit(this.parent);
@@ -14902,9 +14791,130 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         this.parent.treeGrid.editSettings.allowAdding = this.parent.editSettings.allowAdding;
         this.parent.treeGrid.editSettings.allowDeleting = this.parent.editSettings.allowDeleting;
         this.parent.treeGrid.editSettings.showDeleteConfirmDialog = this.parent.editSettings.showDeleteConfirmDialog;
+        this.updateDefaultColumnEditors();
     }
     Edit$$1.prototype.getModuleName = function () {
         return 'edit';
+    };
+    /**
+     * Method to update default edit params and editors for Gantt
+     */
+    Edit$$1.prototype.updateDefaultColumnEditors = function () {
+        var customEditorColumns = [this.parent.taskFields.id, this.parent.taskFields.progress, this.parent.taskFields.resourceInfo];
+        for (var i = 0; i < customEditorColumns.length; i++) {
+            if (!isNullOrUndefined(customEditorColumns[i]) && customEditorColumns[i].length > 0) {
+                var column = this.parent.getColumnByField(customEditorColumns[i], this.parent.treeGridModule.treeGridColumns);
+                if (column) {
+                    if (column.field === this.parent.taskFields.id) {
+                        this.updateIDColumnEditParams(column);
+                    }
+                    else if (column.field === this.parent.taskFields.progress) {
+                        this.updateProgessColumnEditParams(column);
+                    }
+                    else if (column.field === this.parent.taskFields.resourceInfo) {
+                        this.updateResourceColumnEditor(column);
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * Method to update editors for id column in Gantt
+     */
+    Edit$$1.prototype.updateIDColumnEditParams = function (column) {
+        var editParam = {
+            min: 0,
+            decimals: 0,
+            validateDecimalOnType: true,
+            format: 'n0',
+            showSpinButton: false
+        };
+        this.updateEditParams(column, editParam);
+    };
+    /**
+     * Method to update edit params of default progress column
+     */
+    Edit$$1.prototype.updateProgessColumnEditParams = function (column) {
+        var editParam = {
+            min: 0,
+            decimals: 0,
+            validateDecimalOnType: true,
+            max: 100,
+            format: 'n0'
+        };
+        this.updateEditParams(column, editParam);
+    };
+    /**
+     * Assign edit params for id and progress columns
+     */
+    Edit$$1.prototype.updateEditParams = function (column, editParam) {
+        if (isNullOrUndefined(column.edit)) {
+            column.edit = {};
+            column.edit.params = {};
+        }
+        else if (isNullOrUndefined(column.edit.params)) {
+            column.edit.params = {};
+        }
+        extend(column.edit.params, editParam);
+        var ganttColumn = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
+        ganttColumn.edit = column.edit;
+    };
+    /**
+     * Method to update resource column editor for default resource column
+     */
+    Edit$$1.prototype.updateResourceColumnEditor = function (column) {
+        if (this.parent.editSettings.allowEditing && isNullOrUndefined(column.edit) && this.parent.editSettings.mode === 'Auto') {
+            column.editType = 'dropdownedit';
+            column.edit = this.getResourceEditor();
+            var ganttColumn = this.parent.getColumnByField(column.field, this.parent.ganttColumns);
+            ganttColumn.editType = 'dropdownedit';
+            ganttColumn.edit = column.edit;
+        }
+    };
+    /**
+     * Method to create resource custom editor
+     */
+    Edit$$1.prototype.getResourceEditor = function () {
+        var _this = this;
+        var editObject = {};
+        var editor;
+        MultiSelect.Inject(CheckBoxSelection);
+        editObject.write = function (args) {
+            _this.parent.treeGridModule.currentEditRow = {};
+            editor = new MultiSelect({
+                dataSource: new DataManager(_this.parent.resources),
+                fields: { text: _this.parent.resourceNameMapping, value: _this.parent.resourceIDMapping },
+                mode: 'CheckBox',
+                showDropDownIcon: true,
+                popupHeight: '350px',
+                delimiterChar: ',',
+                value: _this.parent.treeGridModule.getResourceIds(args.rowData)
+            });
+            editor.appendTo(args.element);
+        };
+        editObject.read = function (element) {
+            var value = element.ej2_instances[0].value;
+            var resourcesName = [];
+            if (isNullOrUndefined(value)) {
+                value = [];
+            }
+            for (var i = 0; i < value.length; i++) {
+                for (var j = 0; j < _this.parent.resources.length; j++) {
+                    if (_this.parent.resources[j][_this.parent.resourceIDMapping] === value[i]) {
+                        resourcesName.push(_this.parent.resources[j][_this.parent.resourceNameMapping]);
+                        break;
+                    }
+                }
+            }
+            _this.parent.treeGridModule.currentEditRow[_this.parent.taskFields.resourceInfo] = value;
+            return resourcesName.join(',');
+        };
+        editObject.destroy = function () {
+            if (editor) {
+                editor.destroy();
+            }
+        };
+        return editObject;
     };
     /**
      * @private
@@ -15217,21 +15227,21 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         this.predecessorUpdated = this.isPredecessorUpdated(args.data);
         if (this.predecessorUpdated) {
             this.parent.isConnectorLineUpdate = true;
-            this.parent.predecessorModule.addRemovePredecessor(args.data);
+            this.parent.connectorLineEditModule.addRemovePredecessor(args.data);
         }
         var validateObject = {};
         if (isValidatePredecessor) {
-            validateObject = this.parent.predecessorModule.validateTypes(args.data);
+            validateObject = this.parent.connectorLineEditModule.validateTypes(args.data);
             this.parent.isConnectorLineUpdate = true;
             if (!isNullOrUndefined(getValue('violationType', validateObject))) {
                 var newArgs = this.validateTaskEvent(args);
                 if (newArgs.validateMode.preserveLinkWithEditing === false &&
                     newArgs.validateMode.removeLink === false &&
                     newArgs.validateMode.respectLink === false) {
-                    this.parent.predecessorModule.openValidationDialog(validateObject);
+                    this.parent.connectorLineEditModule.openValidationDialog(validateObject);
                 }
                 else {
-                    this.parent.predecessorModule.applyPredecessorOption();
+                    this.parent.connectorLineEditModule.applyPredecessorOption();
                 }
             }
             else {
@@ -15251,6 +15261,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      */
     Edit$$1.prototype.validateTaskEvent = function (editedEventArgs) {
         var newArgs = {};
+        var blazorArgs = {};
         this.resetValidateArgs();
         this.parent.currentEditedArgs = newArgs;
         newArgs.cancel = false;
@@ -15258,8 +15269,13 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         newArgs.requestType = 'validateLinkedTask';
         newArgs.validateMode = this.parent.dialogValidateMode;
         newArgs.editEventArgs = editedEventArgs;
+        if (isBlazor()) {
+            blazorArgs = __assign$1({}, newArgs);
+            this.parent.updateDataArgs(newArgs);
+            this.parent.currentEditedArgs = blazorArgs;
+        }
         this.parent.actionBeginTask(newArgs);
-        return newArgs;
+        return isBlazor() ? blazorArgs : newArgs;
     };
     Edit$$1.prototype.resetValidateArgs = function () {
         this.parent.dialogValidateMode.preserveLinkWithEditing = true;
@@ -15590,7 +15606,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         eventArgs.data = args.data;
         eventArgs.modifiedRecords = this.parent.editedRecords;
         eventArgs.modifiedTaskData = getTaskData(this.parent.editedRecords);
-        setValue('action', args.action, eventArgs);
+        if (!isNullOrUndefined(args.action)) {
+            setValue('action', args.action, eventArgs);
+        }
         this.endEditAction(args);
         if (isBlazor()) {
             this.parent.updateDataArgs(eventArgs);
@@ -15977,6 +15995,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
+            this.updateTreeGridUniqueID(deleteRecord, 'delete');
         }
         if (deleteRecordIDs.length > 0) {
             this.removeFromDataSource(deleteRecordIDs);
@@ -16484,7 +16503,8 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         if (cAddedRecord.level === 0) {
                             _this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                         }
-                        _this.RefreshNewlyAddedRecord(args, cAddedRecord);
+                        _this.updateTreeGridUniqueID(cAddedRecord, 'add');
+                        _this.refreshNewlyAddedRecord(args, cAddedRecord);
                     }).catch(function (e) {
                         _this.removeAddedRecord();
                         _this.dmFailure(e, args);
@@ -16495,7 +16515,8 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     if (cAddedRecord.level === 0) {
                         _this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
                     }
-                    _this.RefreshNewlyAddedRecord(args, cAddedRecord);
+                    _this.updateTreeGridUniqueID(cAddedRecord, 'add');
+                    _this.refreshNewlyAddedRecord(args, cAddedRecord);
                 }
             }
             else {
@@ -16516,7 +16537,18 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             _this.parent.initiateEditAction(false);
         });
     };
-    Edit$$1.prototype.RefreshNewlyAddedRecord = function (args, cAddedRecord) {
+    /**
+     * Method to update unique id collection in TreeGrid
+     */
+    Edit$$1.prototype.updateTreeGridUniqueID = function (data, action) {
+        if (action === 'add') {
+            setValue('uniqueIDCollection.' + data.uniqueID, data, this.parent.treeGrid);
+        }
+        else if (action === 'delete') {
+            deleteObject(getValue('uniqueIDCollection', this.parent.treeGrid), data.uniqueID);
+        }
+    };
+    Edit$$1.prototype.refreshNewlyAddedRecord = function (args, cAddedRecord) {
         if (this.parent.selectionModule && this.parent.allowSelection &&
             (this.parent.selectionSettings.mode === 'Row' || this.parent.selectionSettings.mode === 'Both')) {
             this.parent.staticSelectedRowIndex = this.parent.currentViewData.indexOf(args.data);
@@ -16665,11 +16697,27 @@ var Filter$2 = /** @__PURE__ @class */ (function () {
         TreeGrid.Inject(Filter$1);
         this.parent.treeGrid.allowFiltering = this.parent.allowFiltering ||
             (this.parent.toolbar.indexOf('Search') !== -1 ? true : false);
+        this.updateCustomFilters();
         this.parent.treeGrid.filterSettings = getActualProperties(this.parent.filterSettings);
         this.addEventListener();
     }
     Filter$$1.prototype.getModuleName = function () {
         return 'filter';
+    };
+    /**
+     * Update custom filter for default Gantt columns
+     */
+    Filter$$1.prototype.updateCustomFilters = function () {
+        var settings = this.parent.taskFields;
+        for (var i = 0; i < this.parent.ganttColumns.length; i++) {
+            var column = this.parent.ganttColumns[i];
+            if (((column.editType === 'datepickeredit' || column.editType === 'datetimepickeredit') &&
+                (column.field === settings.startDate || column.field === settings.endDate
+                    || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) ||
+                (column.field === settings.duration && column.editType === 'stringedit')) {
+                this.initiateFiltering(this.parent.ganttColumns[i]);
+            }
+        }
     };
     Filter$$1.prototype.updateModel = function () {
         this.parent.filterSettings = this.parent.treeGrid.filterSettings;
@@ -16679,6 +16727,125 @@ var Filter$2 = /** @__PURE__ @class */ (function () {
         this.parent.on('actionBegin', this.actionBegin, this);
         this.parent.on('actionComplete', this.actionComplete, this);
         this.parent.on('columnMenuOpen', this.columnMenuOpen, this);
+    };
+    Filter$$1.prototype.initiateFiltering = function (column) {
+        var treeColumn = this.parent.getColumnByField(column.field, this.parent.treeGridModule.treeGridColumns);
+        column.allowFiltering = column.allowFiltering === false ? false : true;
+        if (column.allowFiltering && this.parent.filterSettings.type === 'Menu' && !column.filter) {
+            column.filter = { ui: this.getCustomFilterUi(column) };
+        }
+        if (treeColumn) {
+            treeColumn.allowFiltering = column.allowFiltering;
+            treeColumn.filter = column.filter;
+        }
+    };
+    /**
+     * To get filter menu UI
+     * @param column
+     */
+    Filter$$1.prototype.getCustomFilterUi = function (column) {
+        var settings = this.parent.taskFields;
+        var filterUI = {};
+        if (column.editType === 'datepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
+            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
+            filterUI = this.getDatePickerFilter(column.field);
+        }
+        else if (column.editType === 'datetimepickeredit' && (column.field === settings.startDate || column.field === settings.endDate
+            || column.field === settings.baselineStartDate || column.field === settings.baselineEndDate)) {
+            filterUI = this.getDateTimePickerFilter();
+        }
+        else if (column.field === settings.duration && column.editType === 'stringedit') {
+            filterUI = this.getDurationFilter();
+        }
+        return filterUI;
+    };
+    Filter$$1.prototype.getDatePickerFilter = function (columnName) {
+        var _this = this;
+        var parent = this.parent;
+        var timeValue = (columnName === parent.taskFields.startDate) || (columnName === parent.taskFields.baselineStartDate)
+            ? parent.defaultStartTime : parent.defaultEndTime;
+        var dropDateInstance;
+        var filterDateUI = {
+            create: function (args) {
+                var flValInput = createElement('input', { className: 'flm-input' });
+                args.target.appendChild(flValInput);
+                dropDateInstance = new DatePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
+                dropDateInstance.appendTo(flValInput);
+            },
+            write: function (args) {
+                dropDateInstance.value = args.filteredValue;
+            },
+            read: function (args) {
+                if (dropDateInstance.value) {
+                    dropDateInstance.value.setSeconds(timeValue);
+                }
+                args.fltrObj.filterByColumn(args.column.field, args.operator, dropDateInstance.value);
+            }
+        };
+        return filterDateUI;
+    };
+    Filter$$1.prototype.getDateTimePickerFilter = function () {
+        var _this = this;
+        var dropInstance;
+        var filterDateTimeUI = {
+            create: function (args) {
+                var flValInput = createElement('input', { className: 'flm-input' });
+                args.target.appendChild(flValInput);
+                dropInstance = new DateTimePicker({ placeholder: _this.parent.localeObj.getConstant('enterValue') });
+                dropInstance.appendTo(flValInput);
+            },
+            write: function (args) {
+                dropInstance.value = args.filteredValue;
+            },
+            read: function (args) {
+                args.fltrObj.filterByColumn(args.column.field, args.operator, dropInstance.value);
+            }
+        };
+        return filterDateTimeUI;
+    };
+    Filter$$1.prototype.getDurationFilter = function () {
+        var _this = this;
+        var parent = this.parent;
+        var textBoxInstance;
+        var textValue = '';
+        var filterDurationUI = {
+            create: function (args) {
+                var flValInput = createElement('input', { className: 'e-input' });
+                flValInput.setAttribute('placeholder', _this.parent.localeObj.getConstant('enterValue'));
+                args.target.appendChild(flValInput);
+                textBoxInstance = new TextBox();
+                textBoxInstance.appendTo(flValInput);
+            },
+            write: function (args) {
+                textBoxInstance.value = args.filteredValue ? textValue : '';
+            },
+            read: function (args) {
+                var durationObj = _this.parent.dataOperation.getDurationValue(textBoxInstance.value);
+                var intVal = getValue('duration', durationObj);
+                var unit = getValue('durationUnit', durationObj);
+                if (intVal >= 0) {
+                    var dayVal = void 0;
+                    if (unit === 'minute') {
+                        dayVal = (intVal * 60) / parent.secondsPerDay;
+                    }
+                    else if (unit === 'hour') {
+                        dayVal = (intVal * 60 * 60) / parent.secondsPerDay;
+                    }
+                    else {
+                        //Consider it as day unit
+                        dayVal = intVal;
+                        unit = 'day';
+                    }
+                    args.fltrObj.filterByColumn(args.column.field, args.operator, dayVal);
+                    textValue = _this.parent.dataOperation.getDurationString(intVal, unit);
+                }
+                else {
+                    args.fltrObj.filterByColumn(args.column.field, args.operator, null);
+                    textValue = null;
+                }
+            }
+        };
+        return filterDurationUI;
     };
     /**
      * Remove filter menu while opening column chooser menu
@@ -17259,7 +17426,7 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
     function Toolbar$$1(parent) {
         this.predefinedItems = {};
         this.items = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit'];
+            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
         this.parent = parent;
         this.id = this.parent.element.id;
         this.parent.on('ui-toolbarupdate', this.propertyChanged, this);
@@ -17281,7 +17448,7 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
                 this.parent.element.appendChild(this.element);
             }
             var preItems = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
-                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit'];
+                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport'];
             for (var _i = 0, preItems_1 = preItems; _i < preItems_1.length; _i++) {
                 var item = preItems_1[_i];
                 var itemStr = item.toLowerCase();
@@ -18136,7 +18303,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                 this.parent.treeGrid.endEdit();
                 break;
             case 'Dependency' + index:
-                this.parent.predecessorModule.removePredecessor(this.rowData, index);
+                this.parent.connectorLineEditModule.removePredecessorByIndex(this.rowData, index);
                 break;
         }
         args.type = 'Content';
@@ -18488,6 +18655,57 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * Gantt Excel Export module
+ * @hidden
+ */
+var ExcelExport$1 = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for Excel Export module
+     */
+    function ExcelExport$$1(gantt) {
+        this.parent = gantt;
+        TreeGrid.Inject(ExcelExport);
+        this.parent.treeGrid.allowExcelExport = this.parent.allowExcelExport;
+        this.bindEvents();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    ExcelExport$$1.prototype.getModuleName = function () {
+        return 'excelExport';
+    };
+    /**
+     * To destroy excel export module.
+     * @private
+     */
+    ExcelExport$$1.prototype.destroy = function () {
+        // Destroy Method
+    };
+    /**
+     * To bind excel exporting events.
+     * @return {void}
+     * @private
+     */
+    ExcelExport$$1.prototype.bindEvents = function () {
+        var _this = this;
+        this.parent.treeGrid.beforeExcelExport = function (args) {
+            _this.parent.trigger('beforeExcelExport', args);
+        };
+        this.parent.treeGrid.excelQueryCellInfo = function (args) {
+            _this.parent.trigger('excelQueryCellInfo', args);
+        };
+        this.parent.treeGrid.excelHeaderQueryCellInfo = function (args) {
+            _this.parent.trigger('excelHeaderQueryCellInfo', args);
+        };
+        this.parent.treeGrid.excelExportComplete = function (args) {
+            _this.parent.trigger('excelExportComplete', args);
+        };
+    };
+    return ExcelExport$$1;
+}());
+
+/**
  * Gantt Action Modules
  */
 
@@ -18499,5 +18717,5 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
  * Gantt index file
  */
 
-export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
+export { Gantt, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$2 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, ExcelExport$1 as ExcelExport, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings };
 //# sourceMappingURL=ej2-gantt.es5.js.map

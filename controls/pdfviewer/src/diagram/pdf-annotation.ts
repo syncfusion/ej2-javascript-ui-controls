@@ -2,7 +2,7 @@ import { ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { PointModel, DecoratorShapes } from '@syncfusion/ej2-drawings';
 import { Point } from '@syncfusion/ej2-drawings';
 import { Size } from '@syncfusion/ej2-drawings';
-import { PdfBoundsModel, PdfAnnotationBaseModel } from './pdf-annotation-model';
+import { PdfBoundsModel, PdfAnnotationBaseModel, PdfFontModel } from './pdf-annotation-model';
 import { Container } from '@syncfusion/ej2-drawings';
 import { PdfAnnotationType } from './enum';
 import { ICommentsCollection, IReviewCollection } from '../pdfviewer';
@@ -81,6 +81,41 @@ export abstract class PdfBounds extends ChildProperty<PdfBounds> {
      */
     @Complex<Size>(new Size(0, 0), Size)
     public size: Size;
+}
+
+/**
+ * The `PdfFont` is base for annotation Text styles.
+ * @hidden
+ */
+export abstract class PdfFont extends ChildProperty<PdfFont> {
+
+    /**
+     * Represents the the font Bold style of annotation text content.
+     * @default 'false'
+     */
+    @Property(false)
+    public isBold: boolean;
+
+    /**
+     * Represents the the font Italic style of annotation text content.
+     * @default 'false'
+     */
+    @Property(false)
+    public isItalic: boolean;
+
+    /**
+     * Represents the the font Underline style of annotation text content.
+     * @default 'false'
+     */
+    @Property(false)
+    public isUnderline: boolean;
+
+    /**
+     * Represents the the font Strikeout style of annotation text content.
+     * @default 'false'
+     */
+    @Property(false)
+    public isStrikeout: boolean;
 }
 
 /**
@@ -347,6 +382,89 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property([])
     public comments: ICommentsCollection[];
+
+    /**
+     * Represents the comments collection of the annotation 
+     * @default '#000'
+     */
+    @Property('#000')
+    public fontColor: string;
+
+    /**
+     * Represents the font size of the annotation content
+     * @default '16'
+     */
+    @Property(16)
+    public fontSize: number;
+
+    /**
+     * Represents the font family of the annotation content
+     * @default 'Helvetica'
+     */
+    @Property('Helvetica')
+    public fontFamily: string;
+
+    /**
+     * Represents the shape annotation label add flag
+     * @default 'false'
+     */
+    @Property(false)
+    public enableShapeLabel: boolean;
+
+    /**
+     * Represents the shape annotation label content
+     * @default 'label'
+     */
+    @Property('label')
+    public labelContent: string;
+
+    /**
+     * Represents the shape annotation label content fill color
+     * @default '#ffffff00'
+     */
+    @Property('#ffffff00')
+    public labelFillColor: string;
+    /**
+     * Represents the shape annotation label content max-length
+     * @default '15'
+     */
+    @Property(15)
+    public labelMaxLength: number;
+
+    /**
+     * Represents the opecity value of the annotation 
+     * @default 1
+     */
+    @Property(1)
+    public labelOpacity: number;
+
+    /**
+     * Represents the shape annotation label content border color
+     * @default '#ffffff00'
+     */
+    @Property('#ffffff00')
+    public labelBorderColor: string;
+
+    /**
+     * Represents the text anlignment style of annotation
+     * @default 'left'
+     */
+    @Property('left')
+    public textAlign: string;
+
+    /**
+     * Represents the text style of annotation
+     * @default ''
+     */
+    @Complex<PdfFontModel>({ isBold: false, isItalic: false, isStrikeout: false, isUnderline: false }, PdfFont)
+    public font: PdfFontModel;
+
+    /**
+     * Represents the shape annotation label content bounds
+     * @default ''
+     */
+    @Complex<PdfBoundsModel>({ x: 0, y: 0 }, PdfBounds)
+    public labelBounds: PdfBoundsModel;
 
     // tslint:disable-next-line:no-any
     constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {

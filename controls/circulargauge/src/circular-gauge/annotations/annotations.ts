@@ -61,16 +61,23 @@ export class Annotations {
             cancel: false, name: annotationRender, content: annotation.content,
             axis: axis, annotation: annotation, textStyle: annotation.textStyle
         };
+        if (this.gauge.isBlazor) {
+            let {cancel, name, content, textStyle} : IAnnotationRenderEventArgs = argsData;
+            argsData = {cancel, name, content, annotation, textStyle};
+        }
         this.gauge.trigger('annotationRender', argsData, (observedArgs: IAnnotationRenderEventArgs) => {
             let templateFn: Function;
             let templateElement: HTMLCollection;
             let blazor: string = 'Blazor';
             if (!argsData.cancel) {
-                templateFn = getTemplateFunction(argsData.content);                
+                templateFn = getTemplateFunction(argsData.content);
                 if (templateFn && (!window[blazor] ? templateFn(axis, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex).length : {})) {
                     templateElement = Array.prototype.slice.call(templateFn(!window[blazor] ? axis : {}, null, null, this.gauge.element.id + '_Axis' + axisIndex + '_ContentTemplate' + annotationIndex));
                     let length: number = templateElement.length;
                     for (let i: number = 0; i < length; i++) {
+                        if (window[blazor] && templateElement[i].innerHTML && argsData.content.indexOf('ContentTemplate') === -1) {
+                            templateElement[i].innerHTML = argsData.content;
+                        }
                         childElement.appendChild(templateElement[i]);
                     }
                 } else {

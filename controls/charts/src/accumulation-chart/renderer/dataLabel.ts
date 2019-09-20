@@ -593,6 +593,7 @@ export class AccumulationDataLabel extends AccumulationBase {
             text: point.label, border: border, color: dataLabel.fill, template: dataLabel.template, font: argsFont
         };
         this.accumulation.trigger(textRender, argsData);
+        let angle: number; let degree: number;
         let isTemplate: boolean = argsData.template !== null;
         point.labelVisible = !argsData.cancel; point.text = point.label = argsData.text;
         if (Number(point.label)) {
@@ -614,6 +615,7 @@ export class AccumulationDataLabel extends AccumulationBase {
         let dataLabelElement: Element; let location: ChartLocation;
         let element: Element;
         if (point.labelVisible) {
+            angle = degree = dataLabel.angle;
             this.correctLabelRegion(point.labelRegion, textSize);
             if (isTemplate) {
                 this.setTemplateStyle(
@@ -629,11 +631,30 @@ export class AccumulationDataLabel extends AccumulationBase {
                     id + 'shape_' + point.index, argsData.color, argsData.border, 1, point.labelRegion, dataLabel.rx, dataLabel.ry));
                 appendChildElement(false, datalabelGroup, dataLabelElement, redraw, true, 'x', 'y', startLocation, null,
                                    false, false, null, this.accumulation.duration);
+                let textWidth: number = textSize.width;
+                let textHeight: number = textSize.height;
+                let rotate: string;
+                if (angle !== 0 && dataLabel.enableRotation) {
+                    if (point.labelPosition === 'Outside') {
+                        degree = 0;
+                    } else {
+                        if (point.midAngle >= 90 && point.midAngle <= 270) {
+                            degree = point.midAngle + 180;
+                        } else { degree = point.midAngle; }
+                    }
+                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y - (textHeight / 4)) + ')';
+                } else {
+                    if (angle) {
+                        degree = (angle > 360) ? angle - 360 : (angle < -360) ? angle + 360 : angle;
+                    } else { degree = 0; }
+                    rotate = 'rotate(' + degree + ',' + (location.x + (textWidth / 2)) + ',' + (location.y) + ')';
+                }
+                point.transform = rotate;
                 textElement(
                     this.accumulation.renderer,
                     new TextOption(
                         id + 'text_' + point.index, location.x, location.y,
-                        'start', point.label, '', 'auto'
+                        'start', point.label, rotate, 'auto', degree
                     ),
                     argsData.font, argsData.font.color || this.getSaturatedColor(point, argsData.color), datalabelGroup,
                     false, redraw, true, false, this.accumulation.duration

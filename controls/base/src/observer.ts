@@ -1,4 +1,3 @@
-
 import { isNullOrUndefined, getValue, extend } from './util';
 /**
  * Observer is used to perform event handling based the object.

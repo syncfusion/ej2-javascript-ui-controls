@@ -8,6 +8,7 @@ import { SelectorModel } from '../../objects/node-model';
 import { DiagramModel } from '../../diagram-model';
 import { Connector } from '../../objects/connector';
 import { OrthogonalSegmentModel, StraightSegmentModel, BezierSegmentModel} from '../../objects/connector-model';
+import { UserHandleModel } from '../../interaction/selector-model';
 import { ShapeAnnotation, PathAnnotation } from '../../objects/annotation';
 import { PointPortModel } from '../../objects/port-model';
 import { KeyGestureModel } from '../../diagram/keyboard-commands-model';
@@ -179,6 +180,11 @@ export interface IBlazorSegmentCollectionChangeEventArgs {
     type: ChangeType;
     /** returns whether to cancel the change or not */
     cancel: boolean;
+}
+
+export interface UserHandleEventsArgs {
+    /** returns the user handle object */
+    element: UserHandleModel;
 }
 
 /**

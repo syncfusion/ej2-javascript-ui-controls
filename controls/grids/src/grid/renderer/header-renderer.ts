@@ -1,5 +1,5 @@
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setStyleAttribute, closest as getClosest, remove } from '@syncfusion/ej2-base';
+import { setStyleAttribute, closest as getClosest, remove, BlazorDragEventArgs, isBlazor } from '@syncfusion/ej2-base';
 import { classList } from '@syncfusion/ej2-base';
 import { CellType } from '../base/enum';
 import { IRenderer, IGrid, ICell } from '../base/interface';
@@ -77,10 +77,13 @@ export class HeaderRender implements IRenderer {
         gObj.element.appendChild(visualElement);
         return visualElement;
     }
-    private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs }) => {
+    private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         let gObj: IGrid = this.parent;
         (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
         gObj.notify(events.columnDragStart, { target: e.target, column: this.column, event: e.event });
+        if (isBlazor()) {
+            e.bindEvents(e.dragElement);
+        }
     }
     private drag: Function = (e: { target: HTMLElement, event: MouseEventArgs }): void => {
         let gObj: IGrid = this.parent;

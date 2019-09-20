@@ -2820,23 +2820,27 @@ export class WordExport {
         }
         writer.writeEndElement(); //end of table cell 'tc'        
         if (this.mVerticalMerge.containsKey((cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1)
-            && (this.row.cells.indexOf(cell) === cell.columnIndex) && cell.nextNode === undefined) {
+            && (((this.row.cells.indexOf(cell) === this.row.cells.length - 1) || this.row.cells.indexOf(cell) === cell.columnIndex))
+            && cell.nextNode === undefined) {
             let collKey: number = (cell.columnIndex + cell.cellFormat.columnSpan - 1) + 1;
             writer.writeStartElement(undefined, 'tc', this.wNamespace);
+            let endProperties: boolean = true;
             if (!isNullOrUndefined(this.spanCellFormat)) {
-                this.serializeCellFormat(writer, this.spanCellFormat, false, false);
+                endProperties = false;
+                this.serializeCellFormat(writer, this.spanCellFormat, false, endProperties);
             }
             this.serializeColumnSpan(collKey, writer);
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
             writer.writeAttributeString('w', 'val', this.wNamespace, 'continue');
             writer.writeEndElement();
-            writer.writeEndElement();
+            if (!endProperties) {
+                writer.writeEndElement();
+            }
             this.checkMergeCell(collKey);
             writer.writeStartElement('w', 'p', this.wNamespace);
             writer.writeEndElement(); //end of P
             writer.writeEndElement(); //end of table cell 'tc'  
         }
-
         this.blockOwner = owner;
     }
     // Serialize the cell formatting

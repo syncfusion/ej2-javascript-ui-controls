@@ -741,9 +741,9 @@ describe('Diagram Control', () => {
             console.log('decorator isse')
             console.log(pathelement.children[2].children[1].children[0].getAttribute('d'))
             console.log(pathelement.children[2].children[3].children[0].getAttribute('d'))
-            expect((pathelement.children[2].children[1].children[0].getAttribute('d')=== "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,20.6 " ||
-            pathelement.children[2].children[1].children[0].getAttribute('d')=== "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,20.6 ")&&
-            (pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z " || pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z ")).toBe(true)
+            expect((pathelement.children[2].children[1].children[0].getAttribute('d') === "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,20.6 " ||
+                pathelement.children[2].children[1].children[0].getAttribute('d') === "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,20.6 " || pathelement.children[2].children[1].children[0].getAttribute('d') === "M94.69,40 L94.69,59.4 Q94.69,64.4,89.69,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L39.69,0 Q44.69,0,44.69,5 L44.69,20.6 ") &&
+                (pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z " || pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z " || pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z ")).toBe(true);
             done();
         });
         it('memory leak', () => {

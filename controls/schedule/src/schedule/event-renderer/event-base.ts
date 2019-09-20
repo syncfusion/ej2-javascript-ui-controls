@@ -2,7 +2,6 @@ import { isNullOrUndefined, closest, extend, EventHandler, uniqueID, isBlazor } 
 import { createElement, prepend, append, addClass, removeClass, getElement } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
 import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs } from '../base/interface';
-import { Timezone } from '../timezone/timezone';
 import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/resources-model';
 import { generate } from '../../recurrence-editor/date-generator';
@@ -15,7 +14,6 @@ import * as event from '../base/constant';
  */
 export class EventBase {
     public parent: Schedule;
-    public timezone: Timezone;
     public slots: Object[] = [];
     public cssClass: string;
     public groupOrder: string[];
@@ -25,7 +23,6 @@ export class EventBase {
      */
     constructor(parent: Schedule) {
         this.parent = parent;
-        this.timezone = new Timezone();
     }
 
     public processData(events: { [key: string]: Object }[], timeZonePropChanged?: boolean, oldTimezone?: string): Object[] {
@@ -104,25 +101,28 @@ export class EventBase {
             let startTz: string & number = <string & number>eventData[fields.startTimezone];
             let endTz: string & number = <string & number>eventData[fields.endTimezone];
             eventData[fields.startTime] =
-                this.timezone.convert(<Date>eventData[fields.startTime], <string & number>this.parent.timezone, startTz);
+                this.parent.tzModule.convert(<Date>eventData[fields.startTime], <string & number>this.parent.timezone, startTz);
             eventData[fields.endTime] =
-                this.timezone.convert(<Date>eventData[fields.endTime], <string & number>this.parent.timezone, endTz);
+                this.parent.tzModule.convert(<Date>eventData[fields.endTime], <string & number>this.parent.timezone, endTz);
         }
     }
 
     private processTimezoneChange(event: { [key: string]: Object }, oldTimezone: string): void {
         let fields: EventFieldsMapping = this.parent.eventFields;
+        if (event[fields.isAllDay]) {
+            return;
+        }
         if (oldTimezone && this.parent.timezone) {
-            event[fields.startTime] = this.timezone.convert(
+            event[fields.startTime] = this.parent.tzModule.convert(
                 <Date>event[fields.startTime], <number & string>oldTimezone, <number & string>this.parent.timezone);
-            event[fields.endTime] = this.timezone.convert(
+            event[fields.endTime] = this.parent.tzModule.convert(
                 <Date>event[fields.endTime], <number & string>oldTimezone, <number & string>this.parent.timezone);
         } else if (!oldTimezone && this.parent.timezone) {
-            event[fields.startTime] = this.timezone.add(<Date>event[fields.startTime], this.parent.timezone);
-            event[fields.endTime] = this.timezone.add(<Date>event[fields.endTime], this.parent.timezone);
+            event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], this.parent.timezone);
+            event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], this.parent.timezone);
         } else if (oldTimezone && !this.parent.timezone) {
-            event[fields.startTime] = this.timezone.remove(<Date>event[fields.startTime], oldTimezone);
-            event[fields.endTime] = this.timezone.remove(<Date>event[fields.endTime], oldTimezone);
+            event[fields.startTime] = this.parent.tzModule.remove(<Date>event[fields.startTime], oldTimezone);
+            event[fields.endTime] = this.parent.tzModule.remove(<Date>event[fields.endTime], oldTimezone);
         }
     }
 
@@ -131,16 +131,16 @@ export class EventBase {
         if (event[fields.startTimezone] || event[fields.endTimezone]) {
             let startTimezone: string = <string>event[fields.startTimezone] || <string>event[fields.endTimezone];
             let endTimezone: string = <string>event[fields.endTimezone] || <string>event[fields.startTimezone];
-            event[fields.startTime] = this.timezone.add(<Date>event[fields.startTime], startTimezone);
-            event[fields.endTime] = this.timezone.add(<Date>event[fields.endTime], endTimezone);
+            event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], startTimezone);
+            event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], endTimezone);
             if (this.parent.timezone) {
                 let zone: number & string = <number & string>this.parent.timezone;
-                event[fields.startTime] = this.timezone.convert(<Date>event[fields.startTime], <number & string>startTimezone, zone);
-                event[fields.endTime] = this.timezone.convert(<Date>event[fields.endTime], <number & string>endTimezone, zone);
+                event[fields.startTime] = this.parent.tzModule.convert(<Date>event[fields.startTime], <number & string>startTimezone, zone);
+                event[fields.endTime] = this.parent.tzModule.convert(<Date>event[fields.endTime], <number & string>endTimezone, zone);
             }
         } else if (this.parent.timezone) {
-            event[fields.startTime] = this.timezone.add(<Date>event[fields.startTime], this.parent.timezone);
-            event[fields.endTime] = this.timezone.add(<Date>event[fields.endTime], this.parent.timezone);
+            event[fields.startTime] = this.parent.tzModule.add(<Date>event[fields.startTime], this.parent.timezone);
+            event[fields.endTime] = this.parent.tzModule.add(<Date>event[fields.endTime], this.parent.timezone);
         }
     }
 
@@ -519,13 +519,18 @@ export class EventBase {
         }
     }
 
-    public wireAppointmentEvents(element: HTMLElement, isAllDay: boolean = false, event?: { [key: string]: Object }): void {
+    public wireAppointmentEvents(
+        element: HTMLElement,
+        isAllDay: boolean = false,
+        event?: { [key: string]: Object },
+        isPreventDragAndResize: boolean = false): void {
         let isReadOnly: boolean = (!isNullOrUndefined(event)) ? event[this.parent.eventFields.isReadonly] as boolean : false;
         EventHandler.add(element, 'click', this.eventClick, this);
         if (!this.parent.isAdaptive && !this.parent.activeViewOptions.readonly && !isReadOnly) {
             EventHandler.add(element, 'dblclick', this.eventDoubleClick, this);
         }
-        if (!this.parent.activeViewOptions.readonly && !isReadOnly && ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1) {
+        if (!this.parent.activeViewOptions.readonly && !isReadOnly &&
+            ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) === -1 && !isPreventDragAndResize) {
             if (this.parent.resizeModule) {
                 this.parent.resizeModule.wireResizeEvent(element);
             }
@@ -607,8 +612,8 @@ export class EventBase {
                 if (isBlazor()) {
                     let eventFields: EventFieldsMapping = this.parent.eventFields;
                     let eventObj: { [key: string]: Object } = eventClickArgs.event as { [key: string]: Object };
-                    eventObj.startTime = this.parent.getDateTime(eventObj[eventFields.startTime] as Date);
-                    eventObj.endTime = this.parent.getDateTime(eventObj[eventFields.endTime] as Date);
+                    (eventObj[eventFields.startTime] as Date) = this.parent.getDateTime(eventObj[eventFields.startTime] as Date);
+                    (eventObj[eventFields.endTime] as Date) = this.parent.getDateTime(eventObj[eventFields.endTime] as Date);
                     if (eventClickArgs.element) {
                         eventClickArgs.element = getElement(eventClickArgs.element);
                     }
@@ -712,8 +717,8 @@ export class EventBase {
         if (this.parent.currentView !== 'Agenda') {
             maxCount = util.getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
         }
-        let newTimezone: string = this.parent.timezone || this.timezone.getLocalTimezoneName();
-        let firstDay: number = this.parent.firstDayOfWeek;
+        let newTimezone: string = this.parent.timezone || this.parent.tzModule.getLocalTimezoneName();
+        let firstDay: number = this.parent.activeViewOptions.firstDayOfWeek;
         let calendarMode: CalendarType = this.parent.calendarMode;
         let dates: number[] =
             generate(startDate, eventRule, exception, firstDay, maxCount, viewDate, calendarMode, oldTimezone, newTimezone);

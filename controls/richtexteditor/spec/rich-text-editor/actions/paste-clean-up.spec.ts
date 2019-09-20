@@ -12,7 +12,6 @@ import {
 import {
   CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL
 } from "../../../src/rich-text-editor/base/classes";
-import { ServiceLocator } from "../../../src";
 RichTextEditor.Inject(PasteCleanup);
 
 describe("paste cleanup testing", () => {
@@ -369,9 +368,42 @@ describe("paste cleanup testing", () => {
     setTimeout(() => {
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
+      let expectedElem: string = `<span>One Node-1</span><p>Two Node-1</p><p>Three Node-1</p>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("Plain paste without prompt with first tag as block node", (done) => {
+    let localElem: string = `
+
+    <!--StartFragment--><div class="r" style="font-weight: 400; margin: 0px; font-size: small; line-height: 1.57; color: rgb(34, 34, 34); font-family: arial, sans-serif; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;"><a href="https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty" ping="/url?sa=t&amp;source=web&amp;rct=j&amp;url=https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty&amp;ved=2ahUKEwi0uumy88rkAhWHq48KHcruAHYQFjAAegQIAhAB" style="color: rgb(102, 0, 153); cursor: pointer; text-decoration: none;"><h3 class="LC20lb" style="font-size: 20px; font-weight: normal; margin: 0px; padding: 0px; display: inline-flex; max-width: 100%; line-height: 1.3;"><div class="ellip" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">How to check if div element is empty - Stack Overflow</div></h3><br><div class="TbwUpd" style="display: inline-block; line-height: 1.57; padding-bottom: 0px; padding-top: 1px;"><cite class="iUh30 bc" style="color: rgb(0, 102, 33); font-style: normal; font-size: 16px; padding-top: 1px; line-height: 1.5;">https://stackoverflow.com › questions › how-to-check-if-div-element-is-em...</cite></div></a><span><div class="action-menu ab_ctl" style="display: inline; position: relative; margin: 1px 3px 0px; user-select: none; vertical-align: middle;"><a class="GHDvEf ab_button" href="https://www.google.com/search?safe=off&amp;rlz=1C1GCEU_enIN858IN858&amp;sxsrf=ACYBGNQNtqskvF9E5O-LhbCduyrOpuksiw%3A1568278143880&amp;ei=fwZ6Xaq0NZOkwgPnyI7QDw&amp;q=how+to+check+if+the+element+is+empty+using+javascript&amp;oq=how+to+check+if+the+element+is+empty+using+javascript&amp;gs_l=psy-ab.3..0i22i30l4.3422.10049..10226...1.2..5.1044.7383.2j5j8j1j1j3j1j1......0....1..gws-wiz.......0i71.1WBHgC0t-pY&amp;ved=0ahUKEwjq77Kt88rkAhUTknAKHWekA_oQ4dUDCAs&amp;uact=5#" id="am-b0" aria-label="Result options" aria-expanded="false" aria-haspopup="true" role="button" jsaction="m.tdd;keydown:m.hbke;keypress:m.mskpe" data-ved="2ahUKEwi0uumy88rkAhWHq48KHcruAHYQ7B0wAHoECAIQAw" style="border-radius: 0px; cursor: default; font-family: arial, sans-serif; font-size: 11px; font-weight: bold; height: 12px; line-height: 27px; margin: 1px 0px 2px; min-width: 0px; padding: 0px; text-align: center; transition: none 0s ease 0s; user-select: none; background-color: white; background-image: none; border: 0px; color: rgb(68, 68, 68); box-shadow: 0px 0px 0px 0px; filter: none; width: 13px; text-decoration: none; display: inline-block;"><span class="mn-dwn-arw" style="border-color: rgb(0, 102, 33) transparent; border-style: solid; border-width: 5px 4px 0px; width: 0px; height: 0px; margin-left: 3px; top: 7.33333px; margin-top: -4px; position: absolute; left: 0px;"></span></a><div class="action-menu-panel ab_dropdown" role="menu" tabindex="-1" jsaction="keydown:m.hdke;mouseover:m.hdhne;mouseout:m.hdhue" data-ved="2ahUKEwi0uumy88rkAhWHq48KHcruAHYQqR8wAHoECAIQBA" style="background: rgb(255, 255, 255); border: 1px solid rgba(0, 0, 0, 0.2); font-size: 13px; padding: 0px; position: absolute; right: auto; top: 12px; white-space: nowrap; z-index: 3; transition: opacity 0.218s ease 0s; box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 4px; left: 0px; visibility: hidden;"><ol style="margin: 0px; padding: 0px; border: 0px;"><li class="action-menu-item ab_dropdownitem" role="menuitem" style="margin: 0px; padding: 0px; border: 0px; list-style: none; user-select: none; cursor: pointer;"><a class="fl" href="https://webcache.googleusercontent.com/search?q=cache:Q6gxbyHFlx8J:https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty+&amp;cd=1&amp;hl=en&amp;ct=clnk&amp;gl=in" ping="/url?sa=t&amp;source=web&amp;rct=j&amp;url=https://webcache.googleusercontent.com/search%3Fq%3Dcache:Q6gxbyHFlx8J:https://stackoverflow.com/questions/14535733/how-to-check-if-div-element-is-empty%2B%26cd%3D1%26hl%3Den%26ct%3Dclnk%26gl%3Din&amp;ved=2ahUKEwi0uumy88rkAhWHq48KHcruAHYQIDAAegQIAhAF" style="text-decoration: none; color: rgb(51, 51, 51); cursor: pointer; font-size: 16px; display: block; padding: 7px 18px; outline: 0px;"></a></li></ol></div></div></span></div><div class="s" style="max-width: 48em; color: rgb(84, 84, 84); line-height: 1.57; font-family: arial, sans-serif; font-size: 14px; font-style: normal; font-variant-ligatures: normal; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; white-space: normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; background-color: rgb(255, 255, 255); text-decoration-style: initial; text-decoration-color: initial;"><div><br class="Apple-interchange-newline"><!--EndFragment-->
+    
+    </div></div>`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = false;
+    rteObj.pasteCleanupSettings.plainText = true;
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      let expected: boolean = false;
+      let expectedElem: string = `<!--StartFragment--><span>How to check if div element is empty - Stack Overflow</span><div>https://stackoverflow.com › questions › how-to-check-if-div-element-is-em...</div><div><br><!--EndFragment--></div>`;
+      if (allElem.innerHTML.trim() === expectedElem) {
+        expected = true;
       }
       expect(expected).toBe(true);
       done();
@@ -398,7 +430,7 @@ describe("paste cleanup testing", () => {
     setTimeout(() => {
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
+      let expectedElem: string = `<span>One Node-1</span><div>Two Node-1</div><div>Three Node-1</div>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
       }
@@ -432,7 +464,7 @@ describe("paste cleanup testing", () => {
       }
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
+      let expectedElem: string = `<span>One Node-1</span><p>Two Node-1</p><p>Three Node-1</p>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
       }
@@ -466,7 +498,7 @@ describe("paste cleanup testing", () => {
       }
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `<p>First para start 65. Syncfusionlinkis here</p><p>Second para inside blockquote</p>`;
+      let expectedElem: string = `<span>First para start 65. Syncfusionlinkis here</span><p>Second para inside blockquote</p>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
       }
@@ -499,10 +531,10 @@ describe("paste cleanup testing", () => {
         pasteOK[0].click();
       }
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
-      let expected: boolean = true;
-      let expectedElem: string = `<p>To break lines</p><p>in a text,</p><p>use the br element.</p>`;
-      if (allElem.innerHTML !== expectedElem) {
-        expected = false;
+      let expected: boolean = false;
+      let expectedElem: string = `<span>To break lines</span><p><br>in a text,<br>use the br element.</p>`;
+      if (allElem.innerHTML === expectedElem) {
+        expected = true;
       }
       expect(expected).toBe(true);
       done();
@@ -534,7 +566,7 @@ describe("paste cleanup testing", () => {
       }
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `<p>is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><p>For more information on what F.A.S.T. Complex/The Zone has to offer please go to our website at www.clickitonceabcd.com"</p>`;
+      let expectedElem: string = `<span>"Lorem Ipsum&nbsp;is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</span><p>For more information on what F.A.S.T. Complex/The Zone has to offer please go to our website at www.clickitonceabcd.com"</p>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
       }
@@ -735,31 +767,6 @@ third line`;
     }, 100);
   });
 
-  it("Paste image 'keepFormat'", (done) => {
-    rteObj.pasteCleanupSettings.prompt = false;
-    rteObj.pasteCleanupSettings.plainText = false;
-    rteObj.pasteCleanupSettings.keepFormat = true;
-    rteObj.dataBind();
-    (rteObj as any).inputElement.focus();
-    setCursorPoint((rteObj as any).inputElement, 0);
-    let pasteCleanupObj: PasteCleanup = new PasteCleanup(rteObj, rteObj.serviceLocator);
-    let elem: HTMLElement = createElement('span', {
-      id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
-    });
-    pasteCleanupObj.imageFormatting({elements: [elem.firstElementChild] });
-    setTimeout(() => {
-      let allElem: any = (rteObj as any).inputElement.firstElementChild;
-      expect(allElem.children[0].tagName.toLowerCase() === 'img').toBe(true);
-      let expected: boolean = false;
-      let expectedElem: string = `<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">`;
-      if (allElem.innerHTML === expectedElem) {
-        expected = true;
-      }
-      expect(expected).toBe(true);
-      done();
-    }, 100);
-  });
-
   it("Paste image 'PlainText'", (done) => {
     rteObj.pasteCleanupSettings.prompt = false;
     rteObj.pasteCleanupSettings.plainText = true;
@@ -770,12 +777,12 @@ third line`;
     let elem: HTMLElement = createElement('span', {
       id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
     });
-    pasteCleanupObj.imageFormatting({elements: [elem.firstElementChild] });
+    (pasteCleanupObj as any).imageFormatting(keyBoardEvent, {elements: [elem.firstElementChild]});
     setTimeout(() => {
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
-      let expected: boolean = false;
-      let expectedElem: string = ``;
-      if (allElem.innerHTML === expectedElem) {
+      let expected: boolean = true;
+      let expectedElem: string = `<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">`;
+      if (allElem.innerHTML !== expectedElem) {
         expected = true;
       }
       expect(expected).toBe(true);
@@ -792,7 +799,7 @@ third line`;
     let elem: HTMLElement = createElement('span', {
       id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
     });
-    pasteCleanupObj.imageFormatting({elements: [elem.firstElementChild] });
+    (pasteCleanupObj as any).imageFormatting(keyBoardEvent, {elements: [elem.firstElementChild]});
     setTimeout(() => {
       if (rteObj.pasteCleanupSettings.prompt) {
         let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
@@ -802,7 +809,32 @@ third line`;
       }
       let allElem: any = (rteObj as any).inputElement.firstElementChild;
       let expected: boolean = false;
-      let expectedElem: string = ``;
+      let expectedElem: string = `<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">`;
+      if (allElem.innerHTML !== expectedElem) {
+        expected = true;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("Paste image 'keepFormat'", (done) => {
+    rteObj.pasteCleanupSettings.prompt = false;
+    rteObj.pasteCleanupSettings.plainText = false;
+    rteObj.pasteCleanupSettings.keepFormat = true;
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    let pasteCleanupObj: PasteCleanup = new PasteCleanup(rteObj, rteObj.serviceLocator);
+    let elem: HTMLElement = createElement('span', {
+      id: 'imagePaste', innerHTML: '<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">'
+    });
+    (pasteCleanupObj as any).imageFormatting(keyBoardEvent, {elements: [elem.firstElementChild]});
+    setTimeout(() => {
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      expect(allElem.children[0].tagName.toLowerCase() === 'img').toBe(true);
+      let expected: boolean = false;
+      let expectedElem: string = `<img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">`;
       if (allElem.innerHTML === expectedElem) {
         expected = true;
       }
@@ -869,80 +901,6 @@ third line`;
   });
   afterAll(() => {
     rteObj.destroy();
-  });
-});
-describe('EJ2-23795: Console error occurs when pasting the copied content using enter key', () => {
-  let rteObj: RichTextEditor;
-  let elem: HTMLElement;
-  let editNode: HTMLTextAreaElement;
-  let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
-  let innerHTML: string = `<p>Lists are a piece of cake
-      They even auto continue as you type
-      A double enter will end them
-      Tabs and shift-tabs work too</p>`;
-  let controlId: string;
-  beforeAll(() => {
-    rteObj = renderRTE({
-      editorMode: 'HTML', value: innerHTML, toolbarSettings: {
-        items: ['Formats', 'UnorderedList', 'ClearFormat']
-      },
-      pasteCleanupSettings: {
-        prompt: true
-      }
-    });
-    elem = rteObj.element;
-    controlId = elem.id;
-    editNode = rteObj.contentModule.getEditPanel() as HTMLTextAreaElement;
-  });
-
-  it(' Paste the content second time by enter key action in prompt', (done) => {
-    let localElem: string = `<ol level="1" style="list-style: decimal"><li><p>One Node-1</p></li><li><p>Two Node-1</p></li><li><p>Three Node-1</p></li></ol>`;
-    keyBoardEvent.clipboardData = {
-      getData: () => {
-        return localElem;
-      },
-      items: []
-    };
-    (rteObj as any).inputElement.focus();
-    rteObj.onPaste(keyBoardEvent);
-    if (rteObj.pasteCleanupSettings.prompt) {
-      let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
-      keepFormat[0].click();
-      keepFormat[0].focus();
-      let eventArgs = { keyCode: 13, altKey: false, ctrlKey: false, shiftKey: false };
-      (document.getElementById(rteObj.getID() + "_pasteCleanupDialog") as any).ej2_instances[0].keyDown(eventArgs);
-      setTimeout(() => {
-        let allElem: any = (rteObj as any).inputElement.firstElementChild.firstElementChild;
-        let expected: boolean = true;
-        let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
-        if (allElem.innerHTML !== expectedElem) {
-          expected = false;
-        }
-        expect(expected).toBe(true);
-        (rteObj as any).inputElement.focus();
-        rteObj.onPaste(keyBoardEvent);
-        setTimeout(() => {
-          let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
-          keepFormat[0].click();
-          keepFormat[0].focus();
-          let eventArgs = { keyCode: 13, altKey: false, ctrlKey: false, shiftKey: false };
-          (document.getElementById(rteObj.getID() + "_pasteCleanupDialog") as any).ej2_instances[0].keyDown(eventArgs);
-          setTimeout(() => {
-            let allElem: any = (rteObj as any).inputElement.firstElementChild.firstElementChild;
-            let expected: boolean = true;
-            let expectedElem: string = `<p>One Node-1</p><div class="pasteContent" style="display:inline;"><p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p></div><p>Two Node-1</p><p>Three Node-1</p>`;
-            if (allElem.innerHTML !== expectedElem) {
-              expected = false;
-            }
-            expect(expected).toBe(true);
-            done();
-          }, 50);
-        }, 100);
-      }, 50)
-    }
-  });
-  afterAll(() => {
-    destroy(rteObj);
   });
 });
 

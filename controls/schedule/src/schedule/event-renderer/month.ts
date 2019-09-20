@@ -110,7 +110,7 @@ export class MonthEvent extends EventBase {
             let splittedEvents: { [key: string]: Object }[] = this.splitEvent(event, this.dateRender);
             for (let event of splittedEvents) {
                 this.updateIndicatorIcon(<{ [key: string]: Object }>event);
-                this.renderEvents(<{ [key: string]: Object }>event, resIndex);
+                this.renderEvents(<{ [key: string]: Object }>event, resIndex, eventsList);
             }
         }
         this.cssClass = null;
@@ -366,7 +366,7 @@ export class MonthEvent extends EventBase {
         }
     }
 
-    public renderEvents(event: { [key: string]: Object }, resIndex: number): void {
+    public renderEvents(event: { [key: string]: Object }, resIndex: number, eventsList?: { [key: string]: Object }[]): void {
         let startTime: Date = event[this.fields.startTime] as Date;
         let endTime: Date = event[this.fields.endTime] as Date;
         let day: number = this.parent.getIndexOfDate(this.dateRender, util.resetTime(startTime));
@@ -438,13 +438,13 @@ export class MonthEvent extends EventBase {
         }
     }
 
-    public getFilteredEvents(startDate: Date, endDate: Date, groupIndex: string): Object[] {
+    public getFilteredEvents(startDate: Date, endDate: Date, groupIndex: string, eventsList?: { [key: string]: Object }[]): Object[] {
         let filteredEvents: Object[];
         if (isNullOrUndefined(groupIndex)) {
             filteredEvents = this.filterEvents(startDate, endDate);
         } else {
             let data: TdData = this.parent.resourceBase.lastResourceLevel[parseInt(groupIndex, 10)];
-            filteredEvents = this.filterEvents(startDate, endDate, undefined, data);
+            filteredEvents = this.filterEvents(startDate, endDate, isNullOrUndefined(eventsList) ? undefined : eventsList, data);
         }
         return filteredEvents;
     }
@@ -474,7 +474,7 @@ export class MonthEvent extends EventBase {
     public moreIndicatorClick(event: Event): void {
         let target: Element = closest((event.target as Element), '.' + cls.MORE_INDICATOR_CLASS);
         let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
-        if (!isNullOrUndefined(startDate) && this.parent.isAdaptive) {
+        if (!isNullOrUndefined(startDate) && !this.parent.isMorePopup) {
             this.parent.setProperties({ selectedDate: startDate }, true);
             this.parent.changeView(this.parent.getNavigateView(), event);
         } else {

@@ -6,7 +6,7 @@ import * as cls from '../base/css-constant';
  * Appointment window field validation
  */
 export class FieldValidator {
-    private formObj: FormValidator;
+    public formObj: FormValidator;
     private element: HTMLElement;
 
     public renderFormValidator(form: HTMLFormElement, rules: { [key: string]: Object }, element: HTMLElement): void {
@@ -82,7 +82,7 @@ export class FieldValidator {
      * @hidden
      */
     public destroy(): void {
-        if (this.formObj && !this.formObj.isDestroyed) {
+        if (this.formObj && this.formObj.element && !this.formObj.isDestroyed) {
             this.formObj.destroy();
         }
     }

@@ -1,4 +1,4 @@
-import { TreeMap } from '../treemap';
+import { TreeMap, LevelsData } from '../treemap';
 import { LegendSettingsModel, ColorMappingModel, LevelSettingsModel } from '../model/base-model';
 import { LeafItemSettingsModel, FontModel, BorderModel } from '../model/base-model';
 import {
@@ -84,10 +84,10 @@ export class TreeMapLegend {
     public calculateLegendBounds(): void {
         let treemap: TreeMap = this.treemap;
         let legend: LegendSettingsModel = treemap.legendSettings;
-        this.findColorMappingLegendItems(treemap.levelsOfData[0]);
+        this.findColorMappingLegendItems(LevelsData.levelsData[0]);
         if ((this.treemap.palette.length > 0 || !isNullOrUndefined(this.treemap.colorValuePath))
             && this.legendCollections.length === 0) {
-            this.findPaletteLegendItems(this.treemap.levelsOfData[0], 'Parent');
+            this.findPaletteLegendItems(LevelsData.levelsData[0], 'Parent');
         }
         if (this.legendCollections.length > 0) {
             let defaultSize: number = 25; let textPadding: number = 10; let position: LegendPosition = legend.position;

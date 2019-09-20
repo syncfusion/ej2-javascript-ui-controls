@@ -157,6 +157,7 @@ export class BaseTooltip extends ChartData {
                 arrowPadding : this.text.length > 1 || this.chart.stockChart ? 0 : 12,
                 availableSize: chart.availableSize,
                 isCanvas: this.chart.enableCanvas,
+                blazorTemplate: { name: 'Template', parent: this.chart.tooltip },
                 tooltipRender: () => {
                     module.removeHighlight(module.control);
                     module.highlightPoints();

@@ -6196,6 +6196,10 @@ export class WTableHolder {
             // If yes, then set total minimum word width as container width. Else, set the container width to container width.
             if (!isAuto) {
                 let totalMinimumWordWidth: number = this.getTotalWidth(1);
+                if (preferredTableWidth > totalMinimumWordWidth && totalMinimumWordWidth < containerWidth) {
+                    this.fitColumns(containerWidth, preferredTableWidth, isAuto);
+                    return;
+                }
                 // tslint:disable-next-line:max-line-length
                 containerWidth = preferredTableWidth < totalMinimumWordWidth ? totalMinimumWordWidth < containerWidth ? totalMinimumWordWidth : containerWidth : preferredTableWidth;
             }

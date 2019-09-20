@@ -1,6 +1,6 @@
 import { Property, extend, ChildProperty, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { HeatMap } from '../heatmap';
-import { PaletteType } from '../utils/enum';
+import { PaletteType, ColorGradientMode} from '../utils/enum';
 import { ColorCollection, LegendColorCollection, PaletteCollection } from '../model/base';
 import { PaletteCollectionModel } from '../model/base-model';
 import { PaletterColor, LegendRange } from './helper';
@@ -32,6 +32,12 @@ export class PaletteSettings extends ChildProperty<PaletteSettings> {
      */
     @Property('')
     public emptyPointColor: string;
+    /**
+     * Specifies the colorGradientMode in Heatmap.
+     * @default 'Table'
+     */
+    @Property('Table')
+    public colorGradientMode: ColorGradientMode;
 }
 /**
  * Helper class for colormapping
@@ -282,6 +288,9 @@ export class CellColor {
                     }
                 }
             } else {
+                if (this.heatMap.paletteSettings.colorGradientMode !== 'Table') {
+                    this.getColorCollection();
+                }
                 if (text < this.heatMap.colorCollection[0].value) {
                     color = this.heatMap.colorCollection[0].color;
                 } else if (text > this.heatMap.colorCollection[this.heatMap.colorCollection.length - 1].value) {

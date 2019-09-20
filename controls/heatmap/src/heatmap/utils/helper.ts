@@ -54,9 +54,9 @@ export class TextElement {
 
     constructor(fontModel: FontModel, fontColor?: string) {
         this['font-size'] = fontModel.size;
-        this['font-style'] = fontModel.fontStyle;
+        this['font-style'] = fontModel.fontStyle.toLowerCase();
         this['font-family'] = fontModel.fontFamily;
-        this['font-weight'] = fontModel.fontWeight;
+        this['font-weight'] = fontModel.fontWeight.toLowerCase();
         this.fill = fontColor ? fontColor : '';
     }
 }
@@ -329,11 +329,11 @@ export class TextBasic {
         labelRotation?: number, transform?: string, baseLine?: string, dy?: string) {
         this.x = x ? x : 0;
         this.y = y ? y : 0;
-        this['text-anchor'] = anchor ? anchor : '';
+        this['text-anchor'] = anchor ? anchor : 'start';
         this.text = text ? text : '';
         this.transform = transform ? transform : '';
         this.labelRotation = labelRotation;
-        this['dominant-baseline'] = baseLine ? baseLine : '';
+        this['dominant-baseline'] = baseLine ? baseLine : 'auto';
         this.baseline = baseLine ? baseLine : '';
         this.dy = dy ? dy : '';
     }
@@ -464,9 +464,9 @@ export function rotateTextSize(font: FontModel, text: string, angle: number): Si
     let htmlObject: HTMLElement;
     options = {
         'font-size': font.size,
-        'font-style': font.fontStyle,
+        'font-style': font.fontStyle.toLowerCase(),
         'font-family': font.fontFamily,
-        'font-weight': font.fontWeight,
+        'font-weight': font.fontWeight.toLowerCase(),
         'transform': 'rotate(' + angle + ', 0, 0)',
         'text-anchor': 'middle'
     };
@@ -490,6 +490,7 @@ export class DrawSvgCanvas {
     //Svg & Canvas Rectangle Part
     public drawRectangle(properties: RectOption, parentElement: Element, isFromSeries?: Boolean): void {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.d;
             parentElement.appendChild(this.heatMap.renderer.drawRectangle(properties));
         } else {
             this.drawCanvasRectangle(this.heatMap.canvasRenderer, properties, isFromSeries);
@@ -499,6 +500,7 @@ export class DrawSvgCanvas {
     //Svg & Canvas Bubble Part
     public drawCircle(properties: CircleOption, parentElement: Element): void {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.d;
             parentElement.appendChild(this.heatMap.renderer.drawCircle(properties));
         } else {
             this.drawCanvasCircle(this.heatMap.canvasRenderer, properties);
@@ -508,6 +510,8 @@ export class DrawSvgCanvas {
     //Svg & Canvas Pie Part
     public drawPath(properties: PathAttributes, options: Path, parentElement: Element): void {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.x;
+            delete properties.y;
             parentElement.appendChild(this.heatMap.renderer.drawPath(properties));
         } else {
             this.drawCanvasPath(this.heatMap.canvasRenderer, properties, options);
@@ -517,7 +521,11 @@ export class DrawSvgCanvas {
     //Svg & Canvas Text Part
     public createText(properties: TextOption, parentElement: Element, text: string | string[]): void {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.labelRotation;
+            delete properties.baseline;
+            delete properties.text;
             parentElement.appendChild(this.heatMap.renderer.createText(properties, <string>text));
+            properties.text = text;
         } else {
             this.canvasDrawText(properties, <string>text);
         }
@@ -538,7 +546,7 @@ export class DrawSvgCanvas {
             'font-size': font.size,
             'font-style': font.fontStyle,
             'font-family': font.fontFamily,
-            'font-weight': font.fontWeight,
+            'font-weight': font.fontWeight.toLowerCase(),
             'text-anchor': options['text-anchor'],
             'transform': options.transform,
             'dominant-baseline': options['dominant-baseline']
@@ -575,6 +583,7 @@ export class DrawSvgCanvas {
 
     public drawLine(properties: LineOption, parentElement: Element): void {
         if (!this.heatMap.enableCanvasRendering) {
+            delete properties.d;
             parentElement.appendChild(this.heatMap.renderer.drawLine(properties) as HTMLElement);
         } else {
             this.heatMap.canvasRenderer.drawLine(properties);

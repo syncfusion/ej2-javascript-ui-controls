@@ -1,16 +1,16 @@
 import { Maps } from '../../index';
 import {
     LayerSettings, ColorMappingSettings, BorderModel, LegendPosition, FontModel, LegendSettingsModel,
-    click, IShapeSelectedEventArgs, shapeSelected, ILegendRenderingEventArgs, legendRendering,
+    click, ILegendRenderingEventArgs, legendRendering,
     MarkerSettingsModel, MarkerSettings, LegendShape, LabelPosition, LabelIntersectAction
 } from '../index';
 import { LegendArrangement, LegendMode } from '../index';
 import {
     Rect, measureText, CircleOption, PathOption, textTrim,
-    removeClass, createStyle, querySelector, getTemplateFunction
+    removeClass, querySelector, getTemplateFunction
 } from '../utils/helper';
 import { RectOption, Size, TextOption, Point, renderTextElement, drawSymbol, checkPropertyPath } from '../utils/helper';
-import { isNullOrUndefined, Browser, EventHandler, remove } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, Browser, EventHandler, remove, extend } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { LayerSettingsModel, HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
 import { ShapeSettings } from '../model/base';
@@ -37,6 +37,7 @@ export class Legend {
     public legendHighlightCollection: object[] = [];
     public legendSelectionCollection: object[] = [];
     private legendLinearGradient: Element;
+    private currentLayer: LayerSettings;
     private defsElement: Element;
     public legendElement: Element = null;
     private shapeElement: Element = null;
@@ -177,11 +178,16 @@ export class Legend {
                         textWidth: itemTextSize.width, textHeight: itemTextSize.height
                     });
                 }
+                if (this.legendCollection.length === 1) {
+                    legendHeight = rectHeight;
+                    legendWidth = rectWidth;
+                }
                 this.legendItemRect = { x: itemStartX, y: itemStartY, width: legendWidth, height: legendHeight };
             } else {
                 legendWidth = (isNullOrUndefined(legendWidth)) ? map.mapAreaRect.width : legendWidth;
                 legendHeight = (isNullOrUndefined(legendHeight)) ? map.mapAreaRect.height : legendHeight;
                 let j: number = 0;
+                this.page = 0;
                 for (let i: number = 0; i < this.legendCollection.length; i++) {
                     let legendItem: Object = this.legendCollection[i];
                     if (isNullOrUndefined(this.totalPages[this.page])) {
@@ -282,7 +288,7 @@ export class Legend {
         }
     }
     /**
-     *
+     * 
      */
     private getLegends(
         layerIndex: number, layerData: object[], colorMapping: ColorMappingSettings[], dataSource: object[],
@@ -794,8 +800,7 @@ export class Legend {
             map.element.id + '_Legend_Border', legend.background, legend.border, 1, this.legendBorderRect, null, null, '', ''
         );
         this.legendGroup.appendChild(map.renderer.drawRectangle(renderOptions));
-        this.translate = (legend.position !== 'Float') ?
-            this.getLegendAlignment(map, this.legendBorderRect.width, this.legendBorderRect.height, legend) : legend.location;
+        this.getLegendAlignment(map, this.legendBorderRect.width, this.legendBorderRect.height, legend);
         this.legendGroup.setAttribute('transform', 'translate( ' + (this.translate.x + (-(this.legendBorderRect.x))) + ' ' +
             (this.translate.y + (-(this.legendBorderRect.y))) + ' )');
         map.svgObject.appendChild(this.legendGroup);
@@ -811,44 +816,54 @@ export class Legend {
         }
     }
 
-    private getLegendAlignment(map: Maps, width: number, height: number, legend: LegendSettingsModel): Point {
+    private getLegendAlignment(map: Maps, width: number, height: number, legend: LegendSettingsModel): void {
         let x: number; let y: number;
-        let spacing: number = 10;
+        let spacing: number = 20;let totalRect: Rect;
+        totalRect = extend({}, map.mapAreaRect, totalRect, true) as Rect;
+        let areaX: number = totalRect.x;
+        let areaY: number = totalRect.y;
+        let areaHeight: number = totalRect.height;
+        let areaWidth: number = totalRect.width;
         let totalWidth: number = map.availableSize.width;
         let totalHeight: number = map.availableSize.height;
-        switch (legend.position) {
-            case 'Top':
-            case 'Bottom':
-                map.mapAreaRect.height = (map.mapAreaRect.height - height);
-                x = (totalWidth / 2) - (width / 2);
-                y = (legend.position === 'Top') ? map.mapAreaRect.y : (map.mapAreaRect.y + map.mapAreaRect.height);
-                map.mapAreaRect.y = (legend.position === 'Top') ? map.mapAreaRect.y + height + spacing : map.mapAreaRect.y;
-                break;
-            case 'Left':
-            case 'Right':
-                map.mapAreaRect.width = (map.mapAreaRect.width - width);
-                x = (legend.position === 'Left') ? map.mapAreaRect.x : map.mapAreaRect.x + map.mapAreaRect.width;
-                y = (totalHeight / 2) - (height / 2);
-                map.mapAreaRect.x = (legend.position === 'Left') ? map.mapAreaRect.x + width : map.mapAreaRect.x;
-                break;
+        if (legend.position === 'Float') {
+            this.translate = legend.location;
+        } else {
+            switch (legend.position) {
+                case 'Top':
+                case 'Bottom':
+                    totalRect.height = (areaHeight - height);
+                    x = (totalWidth / 2) - (width / 2);
+                    y = (legend.position === 'Top') ? areaY : (areaY + totalRect.height) - spacing;
+                    totalRect.y = (legend.position === 'Top') ? areaY + height + spacing : areaY;
+                    break;
+                case 'Left':
+                case 'Right':
+                    totalRect.width = (areaWidth - width);
+                    x = (legend.position === 'Left') ? areaX : (areaX + totalRect.width) - spacing;
+                    y = (totalHeight / 2) - (height / 2);
+                    totalRect.x = (legend.position === 'Left') ? areaX + width : areaX;
+                    break;
+            }
+            switch (legend.alignment) {
+                case 'Near':
+                    if (legend.position === 'Top' || legend.position === 'Bottom') {
+                        x = totalRect.x;
+                    } else {
+                        y = totalRect.y;
+                    }
+                    break;
+                case 'Far':
+                    if (legend.position === 'Top' || legend.position === 'Bottom') {
+                        x = (totalWidth - width) - spacing;
+                    } else {
+                        y = totalHeight - height;
+                    }
+                    break;
+            }
+            map.totalRect = totalRect;
+            this.translate = new Point(x, y);
         }
-        switch (legend.alignment) {
-            case 'Near':
-                if (legend.position === 'Top' || legend.position === 'Bottom') {
-                    x = map.mapAreaRect.x;
-                } else {
-                    y = map.mapAreaRect.y;
-                }
-                break;
-            case 'Far':
-                if (legend.position === 'Top' || legend.position === 'Bottom') {
-                    x = totalWidth - width;
-                } else {
-                    y = totalHeight - height;
-                }
-                break;
-        }
-        return new Point(x, y);
     }
 
     private getMarkersLegendCollections(layerIndex: number, markers: MarkerSettingsModel[]): void {
@@ -1060,6 +1075,7 @@ export class Legend {
                 }
                 this.getOverallLegendItemsCollection(legendText, legendFill, newData, showLegend);
             });
+
         }
     }
 
@@ -1160,104 +1176,211 @@ export class Legend {
         }
         this.maps.on(Browser.touchMoveEvent, this.interactiveHandler, this);
         this.maps.on(Browser.touchEndEvent, this.interactiveHandler, this);
-        // this.maps.on(click, this.legendClick, this);
+        this.maps.on(click, this.legendClick, this);
     }
 
-
-
-    // private legendClick(targetEle: Element): void {
-    //     if (targetEle.parentElement.id.indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
-    //         let mapElement: Element;
-    //         let data: object;
-    //         let legendIndex: number = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
-    //         let selectedItem: object[] = this.legendCollection[legendIndex]['data'];
-    //         let childElement: Element;
-    //         let isVisible: boolean = selectedItem['_isVisible'];
-    //         if (this.maps.legendSettings.toggleVisibility) {
-    //             for (let i: number = 0; i < selectedItem.length; i++) {
-    //                 data = this.legendCollection[legendIndex]['data'][i];
-    //                 mapElement = querySelector(
-    //                     this.maps.element.id + '_LayerIndex_' + data['layerIndex'] +
-    //                     '_ShapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex'],
-    //                     this.maps.element.id);
-    //                 if (isVisible) {
-    //                     mapElement.setAttribute('opacity', '0');
-    //                 } else {
-    //                     mapElement.setAttribute('opacity', '1');
-    //                 }
-    //             }
-    //             selectedItem['_isVisible'] = isVisible ? false : true;
-    //         } else if (this.maps.legendSettings.legendSelection && this.maps.selectionSettings.enable) {
-    //             this.selectShapes(targetEle, legendIndex);
-    //         }
-    //     }
-    // }
-    // private selectShapes(targetEle: Element, legendIndex: number): void {
-    //     let mapElement: Element;
-    //     let selectedElements: NodeListOf<Element>;
-    //     let selectedLength: number;
-    //     let childElement: HTMLElement = targetEle.parentElement.childNodes[0] as HTMLElement;
-    //     let legendSelected: boolean = targetEle.parentElement.id.indexOf('_Legend_Index_') &&
-    //         childElement.getAttribute('class') ? true : false;
-    //     if (!this.maps.selectionSettings.enableMultiSelect) {
-    //         selectedElements = querySelectorAll('selectionMapStyle', document.body);
-    //         selectedLength = selectedElements.length;
-    //         for (let i: number = 0; i < selectedLength; i++) {
-    //             removeClass(selectedElements[selectedElements.length - 1]);
-    //         }
-    //         if (!legendSelected) {
-    //             this.select(legendIndex, targetEle);
-    //         }
-    //     } else {
-    //         if (legendSelected) {
-    //             for (let data of this.legendCollection[legendIndex]['data']) {
-    //                 mapElement = querySelector(
-    //                     this.maps.element.id + '_LayerIndex_' + data['layerIndex'] +
-    //                     '_ShapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex'],
-    //                     this.maps.element.id);
-    //                 removeClass(mapElement);
-    //             }
-    //             removeClass(childElement);
-    //         } else {
-    //             this.select(legendIndex, targetEle);
-    //         }
-    //     }
-    // }
-    // private select(legendIndex: number, targetEle: Element): void {
-    //     let mapElement: Element;
-    //     let childElement: HTMLElement = targetEle.parentElement.childNodes[0] as HTMLElement;
-    //     for (let i: number = 0; i < this.legendCollection.length; i++) {
-    //         if (i === legendIndex && !childElement.getAttribute('class')) {
-    //             for (let data of this.legendCollection[i]['data']) {
-    //                 mapElement = querySelector(
-    //                     this.maps.element.id + '_LayerIndex_' + data['layerIndex'] +
-    //                     '_ShapeIndex_' + data['shapeIndex'] + '_dataIndex_' + data['dataIndex'],
-    //                     this.maps.element.id);
-    //                 let eventArgs: IShapeSelectedEventArgs = {
-    //                     cancel: false,
-    //                     name: shapeSelected,
-    //                     fill: this.maps.selectionSettings.fill,
-    //                     opacity: this.maps.selectionSettings.opacity,
-    //                     border: this.maps.selectionSettings.border
-    //                 };
-    //                 if (!document.getElementById('selectionMap')) {
-    //                     document.body.appendChild(createStyle('selectionMap', 'selectionMapStyle', eventArgs));
-    //                 }
-    //                 mapElement.setAttribute('class', 'selectionMapStyle');
-    //             }
-    //             childElement.setAttribute('class', 'selectionMapStyle');
-    //         }
-    //     }
-    // }
-
-
+    private legendClick(targetEle: Element): void {
+        let legendShapeId: Element;
+        let legendTextId: Element;
+        let legendTextColor: string;
+        let legendToggleFill: string = this.maps.legendSettings.toggleLegendSettings.fill;
+        let legendToggleOpacity: number = this.maps.legendSettings.toggleLegendSettings.opacity;
+        let legendToggleBorderColor: string = this.maps.legendSettings.toggleLegendSettings.border.color;
+        let legendToggleBorderWidth: number = this.maps.legendSettings.toggleLegendSettings.border.width; 
+        if (targetEle.parentElement.id.indexOf(this.maps.element.id + '_Legend_Index_') > -1) {
+            let mapElement: Element;
+            let legendIndex: number = parseFloat(targetEle.parentElement.id.substr((this.maps.element.id + '_Legend_Index_').length));
+            let selectedItem: object[] = this.legendCollection[legendIndex]['data'];
+            let isVisible: boolean = selectedItem['_isVisible'];
+            let shape: object;            
+            if ( this.maps.legendSettings.toggleLegendSettings.enable && this.maps.legendSettings.type === "Bubbles") {
+                for (let k: number = 0; k < this.maps.layers.length; k++) {
+                    for (let j: number = 0; j < this.maps.layers[k].bubbleSettings.length; j++) {
+                        for (let i: number = 0; i < selectedItem.length; i++) {
+                            shape = this.legendCollection[legendIndex]['data'][i];                     
+                            mapElement = querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
+                            '_BubbleIndex_' + j + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
+                            if (isVisible && mapElement !== null) {
+                                if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
+                                    mapElement.setAttribute('fill', this.maps.layers[k].shapeSettings.fill);
+                                    mapElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
+                                    mapElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
+                                    mapElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                } else {
+                                    mapElement.setAttribute("fill", legendToggleFill);
+                                    mapElement.setAttribute("opacity", (legendToggleOpacity).toString());
+                                    mapElement.setAttribute('stroke', legendToggleBorderColor);
+                                    mapElement.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
+                                }
+                                if (targetEle !== null) {
+                                    legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
+                                    legendShapeId.setAttribute("fill", "#E5E5E5");
+                                    legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
+                                    legendTextId.setAttribute("fill", "#E5E5E5");
+                                }                                      
+                            } else {
+                                mapElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
+                                mapElement.setAttribute('stroke', this.maps.layers[k].bubbleSettings[j].border.color);
+                                mapElement.setAttribute('opacity', (this.maps.layers[k].bubbleSettings[j].opacity).toString());
+                                mapElement.setAttribute('stroke-width', (this.maps.layers[k].bubbleSettings[j].border.width).toString());
+                                if (targetEle !== null) {
+                                    legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
+                                    legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                    legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
+                                    legendTextId.setAttribute("fill", "#757575");
+                                }
+                                
+                            }
+                        }
+                        selectedItem['_isVisible'] = isVisible ? false : true;
+                    }
+                }                
+            }                       
+             if ( this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
+                let layerElement: Element;
+                for (let k: number = 0; k < this.maps.layers.length; k++) {
+                    for (let i: number = 0; i < selectedItem.length; i++) {
+                        shape = this.legendCollection[legendIndex]['data'][i];                     
+                        layerElement = querySelector(this.maps.element.id + '_LayerIndex_' + shape['layerIndex'] +
+                        '_shapeIndex_' + shape['shapeIndex'] + '_dataIndex_' + shape['dataIndex'], this.maps.element.id);
+                        if(layerElement !== null) {
+                            if (isVisible) {
+                                if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
+                                        layerElement.setAttribute('fill', this.maps.layers[k].shapeSettings.fill);
+                                        layerElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
+                                        layerElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
+                                        layerElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                       } else {
+                                        layerElement.setAttribute("fill", legendToggleFill);
+                                        layerElement.setAttribute("opacity", (legendToggleOpacity).toString());
+                                        layerElement.setAttribute('stroke', legendToggleBorderColor);
+                                        layerElement.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
+                                       }                                                  
+                                if (targetEle !== null) {
+                                    legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
+                                    legendTextId.setAttribute("fill", "#E5E5E5");
+                                    legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
+                                    legendShapeId.setAttribute("fill", "#E5E5E5");
+                                }                         
+                           } else {
+                                layerElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
+                                layerElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
+                                layerElement.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
+                                layerElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());                         
+                                if (targetEle !== null) {
+                                    legendTextId = querySelector(this.maps.element.id + '_Legend_Text_Index_' + legendIndex, this.maps.element.id);
+                                    legendTextId.setAttribute("fill", "#757575");
+                                    legendShapeId = querySelector(this.maps.element.id + '_Legend_Shape_Index_' + legendIndex, this.maps.element.id);
+                                    legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                }
+                           } 
+                        }
+                    }
+                }                 
+                selectedItem['_isVisible'] = isVisible ? false : true;
+             }
+             } else if (!isNullOrUndefined(targetEle.id) && (targetEle.id.indexOf(this.maps.element.id + '_Legend_Shape_Index') > -1 ||
+                targetEle.id.indexOf(this.maps.element.id + '_Legend_Index') !== -1) && this.maps.legendSettings.visible &&
+                targetEle.id.indexOf('_Text') === -1) {
+                    let LegendInteractive: Element;
+                    let legendIndex: number = parseFloat(targetEle.id.substr((this.maps.element.id + '_Legend_Index_').length));
+                    let mapdata: object;
+                    let selectedItem: object[] = this.legendCollection[legendIndex]['data'];           
+                    let isVisible: boolean = selectedItem['_isVisible'];
+                    if (this.maps.legendSettings.type === "Bubbles" && this.maps.legendSettings.toggleLegendSettings.enable) {
+                        for (let k: number = 0; k < this.maps.layers.length; k++) {
+                            for (let j: number = 0; j < this.maps.layers[k].bubbleSettings.length; j++) {
+                                for (let i: number = 0; i < selectedItem.length; i++) {
+                                    mapdata = this.legendCollection[legendIndex]['data'][i];                     
+                                    LegendInteractive = querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
+                                    '_BubbleIndex_' + j + '_dataIndex_' + mapdata['dataIndex'], this.maps.element.id);
+                                    if (isVisible && LegendInteractive !== null) {
+                                        if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
+                                            LegendInteractive.setAttribute('fill', this.maps.layers[k].shapeSettings.fill);
+                                            LegendInteractive.setAttribute('stroke', this.maps.layers[k].shapeSettings.border.color);
+                                            LegendInteractive.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                            LegendInteractive.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
+                                        } else {
+                                            LegendInteractive.setAttribute("fill", legendToggleFill);
+                                            LegendInteractive.setAttribute("opacity", (legendToggleOpacity).toString());
+                                            LegendInteractive.setAttribute('stroke', legendToggleBorderColor);
+                                            LegendInteractive.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
+                                        }
+                                        if (targetEle !== null) {
+                                            legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
+                                            legendTextId.setAttribute("fill", "#E5E5E5");
+                                            legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
+                                            legendShapeId.setAttribute("fill", "#E5E5E5");
+                                        }                                  
+                                    } else {
+                                        LegendInteractive.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
+                                        LegendInteractive.setAttribute('stroke', this.maps.layers[k].bubbleSettings[j].border.color);
+                                        LegendInteractive.setAttribute('stroke-width', (this.maps.layers[k].bubbleSettings[j].border.width).toString());
+                                        LegendInteractive.setAttribute('opacity', (this.maps.layers[k].bubbleSettings[j].opacity).toString());
+                                        if (targetEle !== null) {
+                                            legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
+                                            legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                            legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
+                                            legendTextId.setAttribute("fill", "#757575");
+                                        }
+                                    }  
+                                }
+                                selectedItem['_isVisible'] = isVisible ? false : true;
+                            }
+                        }                
+                    }                       
+                    if ( this.maps.legendSettings.type === "Layers" && this.maps.legendSettings.toggleLegendSettings.enable) {
+                        let mapLegendElement: Element;
+                        for (let k: number = 0; k < this.maps.layers.length; k++) {
+                            for (let i: number = 0; i < selectedItem.length; i++) {
+                                mapdata = this.legendCollection[legendIndex]['data'][i];                     
+                                mapLegendElement = querySelector(this.maps.element.id + '_LayerIndex_' + mapdata['layerIndex'] +
+                                '_shapeIndex_' + mapdata['shapeIndex'] + '_dataIndex_' + mapdata['dataIndex'], this.maps.element.id);
+                                if(mapLegendElement !== null) {
+                                    if (isVisible) {                                    
+                                        if (this.maps.legendSettings.toggleLegendSettings.applyShapeSettings) {
+                                            mapLegendElement.setAttribute('fill', this.maps.layers[0].shapeSettings.fill);
+                                            mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
+                                            mapLegendElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
+                                            mapLegendElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());
+                                        } else {
+                                            mapLegendElement.setAttribute("fill", legendToggleFill);
+                                            mapLegendElement.setAttribute("opacity", (legendToggleOpacity).toString());
+                                            mapLegendElement.setAttribute('stroke', legendToggleBorderColor);
+                                            mapLegendElement.setAttribute('stroke-width', (legendToggleBorderWidth).toString());
+                                        }
+                                        if (targetEle !== null) {
+                                            legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
+                                            legendShapeId.setAttribute("fill", "#E5E5E5");
+                                            legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
+                                            legendTextId.setAttribute("fill", "#E5E5E5");                            
+                                        }                             
+                                    } else {
+                                        mapLegendElement.setAttribute('fill', this.legendCollection[legendIndex]['fill']);
+                                        mapLegendElement.setAttribute('stroke', this.maps.layers[0].shapeSettings.border.color);
+                                        mapLegendElement.setAttribute('opacity', (this.maps.layers[k].shapeSettings.opacity).toString());
+                                        mapLegendElement.setAttribute('stroke-width', (this.maps.layers[k].shapeSettings.border.width).toString());                                 
+                                        if (targetEle !== null) {
+                                            legendTextId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex + '_Text', this.maps.element.id);
+                                            legendTextId.setAttribute("fill", "#757575");
+                                            legendShapeId = querySelector(this.maps.element.id + '_Legend_Index_' + legendIndex, this.maps.element.id);
+                                            legendShapeId.setAttribute("fill", this.legendCollection[legendIndex]['fill']);
+                                        }     
+                                    }  
+                                }    
+                            }
+                        }                 
+                        selectedItem['_isVisible'] = isVisible ? false : true;
+                    }
+                }
+            }
     public removeEventListener(): void {
         if (this.maps.isDestroyed) {
             return;
         }
         this.maps.off(Browser.touchMoveEvent, this.interactiveHandler);
         this.maps.off(Browser.touchEndEvent, this.interactiveHandler);
-        // this.maps.off(click, this.legendClick);
+        this.maps.off(click, this.legendClick);
     }
 
     private getLegendData(

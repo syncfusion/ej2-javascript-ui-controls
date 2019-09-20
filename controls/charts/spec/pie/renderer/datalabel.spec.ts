@@ -165,6 +165,24 @@ describe('Data Label checking for the pie doughnut series', () => {
         accumulation.series[0].dataLabel.connectorStyle.dashArray = '5,3';
         accumulation.refresh();
     });
+    it('Datalabel angle checking', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            datalabel = document.getElementById(labelId + 2);
+            expect(datalabel.getAttribute('labelRotation') === '45').toBe(true);
+            done();
+        };
+        accumulation.series[0].dataLabel.angle = 45;
+        accumulation.refresh();
+    });
+    it('Datalabel angle checking with enable rotation', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            datalabel = document.getElementById(labelId + 2);
+            expect(datalabel.getAttribute('labelRotation') !== null).toBe(true);
+            done();
+        };
+        accumulation.series[0].dataLabel.enableRotation = true;
+        accumulation.refresh();
+    });
     it('Datalabel checking for click on a legend point', (done: Function) => {
         accumulation.loaded = (args: IAccLoadedEventArgs) => {
           points = accumulation.visibleSeries[0].points;

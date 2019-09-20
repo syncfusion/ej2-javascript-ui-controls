@@ -2,10 +2,11 @@
  * interface doc
  */
 import { CircularGauge } from '../circular-gauge';
-import { Axis, Pointer, Annotation } from '../axes/axis';
+import { Axis, Pointer, Annotation, Range } from '../axes/axis';
 import { FontModel } from '../model/base-model';
-import { Size, GaugeLocation } from '../utils/helper';
+import { Size, GaugeLocation, Rect } from '../utils/helper';
 import { TooltipSettings } from './base';
+import { GaugeShape } from '../utils/enum';
 
 /**
  * Specifies Circular-Gauge Events
@@ -53,7 +54,7 @@ export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
     /**
      * axis event argument 
      */
-    axis: Axis;
+    axis?: Axis;
     /**
      * text event argument 
      */
@@ -72,7 +73,7 @@ export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
     /**
      * Instance of Circular gauge component
      */
-    gauge: CircularGauge;
+    gauge?: CircularGauge;
     /**
      * current radius event argument
      */
@@ -80,7 +81,7 @@ export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
     /**
      * axis event argument
      */
-    axis: Axis;
+    axis?: Axis;
     /**
      * midpoint event argument
      */
@@ -95,7 +96,7 @@ export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
     /**
      * Instance of linear gauge component.
      */
-    gauge: CircularGauge;
+    gauge?: CircularGauge;
     /**
      * Tooltip event
      */
@@ -115,11 +116,19 @@ export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
     /**
      * event argument axis
      */
-    axis: Axis;
+    axis?: Axis;
     /**
      * event argument pointer
      */
-    pointer: Pointer;
+    pointer?: Pointer;
+    /**
+     * event argument annotation
+     */
+    annotation?: Annotation;
+    /**
+     * event argument range
+     */
+    range?: Range;
     /**
      * event tooltip argument as append to body
      */
@@ -143,7 +152,7 @@ export interface IAnnotationRenderEventArgs extends ICircularGaugeEventArgs {
     /**
      * axis event argument 
      */
-    axis: Axis;
+    axis?: Axis;
     /**
      * annotation event argument 
      */
@@ -203,7 +212,7 @@ export interface IResizeEventArgs {
     /**
      * gauge event argument 
      */
-    gauge: CircularGauge;
+    gauge?: CircularGauge;
 }
 
 /**
@@ -302,4 +311,18 @@ export interface IThemeStyle {
 
     tooltipTextOpacity?: number;
 
+}
+
+export interface ILegendRenderEventArgs extends ICircularGaugeEventArgs {
+    /** Defines the current legend shape */
+    shape: GaugeShape;
+    /** Defines the current legend fill color */
+    fill: string;
+    /** Defines the current legend text */
+    text: string;
+}
+
+export interface ILegendRegions {
+    rect: Rect;
+    index: number;
 }

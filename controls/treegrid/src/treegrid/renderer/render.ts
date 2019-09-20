@@ -3,7 +3,7 @@ import { QueryCellInfoEventArgs, IGrid, RowDataBoundEventArgs, getObject, append
 import { addClass, createElement, isNullOrUndefined, getValue } from '@syncfusion/ej2-base';
 import { ITreeData } from '../base/interface';
 import * as events from '../base/constant';
-import { isRemoteData, isOffline, getExpandStatus } from '../utils';
+import { isRemoteData, isOffline, getExpandStatus, isFilterChildHierarchy } from '../utils';
 import { Column } from '../models';
 
 /**
@@ -32,7 +32,7 @@ export class Render {
         let data: ITreeData = <ITreeData>args.data;
         let parentData: ITreeData = <ITreeData>data.parentItem;
         let index: number;
-        if (!isNullOrUndefined(data.parentItem) &&
+        if (!isNullOrUndefined(data.parentItem) && !isFilterChildHierarchy(this.parent) &&
             (!(this.parent.allowPaging && !(this.parent.pageSettings.pageSizeMode === 'Root')) ||
                 (isRemoteData(this.parent) && !isOffline(this.parent))))  {
             index = data.parentItem.index;

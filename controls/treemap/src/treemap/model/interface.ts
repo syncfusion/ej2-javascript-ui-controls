@@ -353,4 +353,6 @@ export interface IThemeStyle {
     fontSize?: string;
     legendFontSize?: string;
     labelFontFamily?: string;
+    borderWidth: number;
+    borderColor: string;
 }

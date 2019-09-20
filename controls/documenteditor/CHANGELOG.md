@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.3.9-beta (2019-09-20)
+
+### Document Editor
+
+#### Bug Fixes
+
+- `#245457`, `#245459` - Table is now layout properly.
+- `#246127`, `#246597`, `#247364` - Page number field is now exported properly in Sfdt export.
+
 ## 17.2.49 (2019-09-04)
 
 ### Document Editor

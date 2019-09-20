@@ -1,13 +1,13 @@
 /**
  * QuickPopups spec
  */
-import { remove, isVisible, Browser, closest } from '@syncfusion/ej2-base';
+import { remove, isVisible, Browser, closest, createElement, append } from '@syncfusion/ej2-base';
 import {
     Schedule, Day, Week, WorkWeek, Month, Agenda, TimelineViews, EJ2Instance,
     EventRenderedArgs, ScheduleModel, CellClickEventArgs, Timezone
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/index';
-import { defaultData, resourceData } from '../base/datasource.spec';
+import { defaultData, resourceData, timelineData } from '../base/datasource.spec';
 import { PopupOpenEventArgs, EventClickArgs } from '../../../src/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import * as util from '../util.spec';
@@ -388,28 +388,30 @@ describe('Quick Popups', () => {
     describe('checking quickInfoTemplate for cellClick', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let hT: string = '<div>${if (elementType === "cell")}<div class="e-cell-header"><div class="e-header-icon-wrapper">' +
-                '<button class="e-close" title="Close"></button></div></div>${/if}</div>';
-            let scriptEleHeader: HTMLScriptElement = document.createElement('script');
-            scriptEleHeader.type = 'text/x-template';
-            scriptEleHeader.id = 'headerTemplate';
-            scriptEleHeader.appendChild(document.createTextNode(hT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleHeader);
-            let cT: string = '<div>${if (elementType === "cell")}<div class="e-cell-content"><form class="e-schedule-form"><div>' +
-                '<input class="subject e-field" type="text" name="Subject" placeholder="Title"></div><div>' +
-                '<input class="location e-field" type="text" name="Location" placeholder="Location"></div></form></div>${/if}</div>';
-            let scriptEleContent: HTMLScriptElement = document.createElement('script');
-            scriptEleContent.type = 'text/x-template';
-            scriptEleContent.id = 'contentTemplate';
-            scriptEleContent.appendChild(document.createTextNode(cT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleContent);
-            let fT: string = '<div>${if (elementType === "cell")}<div class="e-cell-footer"><button class="e-event-details"' +
-                'title="Extra Details">Extra Details</button><button class="e-event-create" title="Add">Add</button></div>${/if}</div>';
-            let scriptEleFooter: HTMLScriptElement = document.createElement('script');
-            scriptEleFooter.type = 'text/x-template';
-            scriptEleFooter.id = 'footerTemplate';
-            scriptEleFooter.appendChild(document.createTextNode(fT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
+            let headerScript: HTMLElement = createElement('script', {
+                id: 'headerTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="header-template">${if(elementType === "cell")}<div class="e-cell-header">' +
+                    '<div class="e-header-icon-wrapper"><button class="e-close" title = "Close"></button></div></div>${else}' +
+                    '<div class="e-event-header"><div class="e-header-icon-wrapper"><button class="e-close" title="CLOSE"></button></div>' +
+                    '</div>${/if}</div>'
+            });
+            let contentScript: HTMLElement = createElement('script', {
+                id: 'contentTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="content-template">${if (elementType === "cell")}<div class="e-cell-content"><form class=' +
+                    '"e-schedule-form"><div><input class="e-subject e-field" type="text" name="Subject" placeholder="Title"></div><div>' +
+                    '<input class="e-location e-field" type="text" name="Location" placeholder="Location"></div></form></div>${else}' +
+                    '<div class="e-event-content"><div class="e-subject-wrap">${if (Subject)}' +
+                    '<div class="subject">${Subject}</div>${/if} ${if (Location)}<div class="location">${Location}</div>${/if} ' +
+                    '${if (Description)}<div class="description">${Description}</div>${/if}</div></div>${/if}</div>'
+            });
+            let footerScript: HTMLElement = createElement('script', {
+                id: 'footerTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="footer-template">${if (elementType === "cell")}<div class="e-cell-footer"><button class=' +
+                    '"e-event-details" title="Extra Details">Extra Details</button><button class="e-event-create" title="Add">Add' +
+                    '</button></div>${else}<div class="e-event-footer"><button class="e-event-edit" title="Edit">Edit</button>' +
+                    '<button class="e-event-delete" title="Delete">Delete</button></div>${/if}</div>'
+            });
+            append([headerScript, contentScript, footerScript], document.getElementsByTagName('head')[0]);
             let model: ScheduleModel = { height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1) };
             schObj = util.createSchedule(model, [], done);
         });
@@ -422,6 +424,7 @@ describe('Quick Popups', () => {
 
         it('checking header, content and footer area for cell-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Cell',
                 header: '#headerTemplate',
                 content: '#contentTemplate',
                 footer: '#footerTemplate'
@@ -431,17 +434,14 @@ describe('Quick Popups', () => {
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-cell-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
             let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-field'));
             expect(contentFieldEle.length).toEqual(2);
-            expect(contentFieldEle[0].classList).toContain('subject');
-            expect(contentFieldEle[1].classList).toContain('location');
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-cell-footer') as HTMLElement;
+            expect(contentFieldEle[0].classList.contains('e-subject')).toEqual(true);
+            expect(contentFieldEle[1].classList.contains('e-location')).toEqual(true);
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-cell-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-details');
             expect(footerEle.lastElementChild.classList).toContain('e-event-create');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
@@ -449,52 +449,49 @@ describe('Quick Popups', () => {
 
         it('checking header area of cell-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Cell',
                 header: '#headerTemplate',
-                content: '',
-                footer: ''
+                content: null,
+                footer: null
             };
             schObj.dataBind();
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-cell-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeNull();
+            expect(schObj.element.querySelector('.header-template')).toBeTruthy();
+            expect(schObj.element.querySelector('.content-template')).toBeNull();
+            expect(schObj.element.querySelector('.footer-template')).toBeNull();
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
         });
 
         it('checking content area of cell-quick popup', () => {
             schObj.quickInfoTemplates = {
-                header: '',
+                templateType: 'Cell',
+                header: null,
                 content: '#contentTemplate',
-                footer: ''
+                footer: null
             };
             schObj.dataBind();
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-cell-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
             let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-field'));
             expect(contentFieldEle.length).toEqual(2);
-            expect(contentFieldEle[0].classList).toContain('subject');
-            expect(contentFieldEle[1].classList).toContain('location');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeNull();
+            expect(contentFieldEle[0].classList.contains('e-subject')).toEqual(true);
+            expect(contentFieldEle[1].classList.contains('e-location')).toEqual(true);
+            expect(cellPopup.querySelector('.header-template')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeNull();
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
         });
 
         it('checking footer area of cell-quick popup', () => {
             schObj.quickInfoTemplates = {
-                header: '',
-                content: '',
+                templateType: 'Cell',
+                header: null,
+                content: null,
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
@@ -502,13 +499,10 @@ describe('Quick Popups', () => {
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-cell-footer') as HTMLElement;
+            expect(cellPopup.querySelector('.header-template')).toBeNull();
+            expect(cellPopup.querySelector('.content-template')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-cell-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-details');
             expect(footerEle.lastElementChild.classList).toContain('e-event-create');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
@@ -516,31 +510,30 @@ describe('Quick Popups', () => {
 
         it('checking header and content for cell-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Cell',
                 header: '#headerTemplate',
                 content: '#contentTemplate',
-                footer: ''
+                footer: null
             };
             schObj.dataBind();
             let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-cell-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
             let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-field'));
             expect(contentFieldEle.length).toEqual(2);
-            expect(contentFieldEle[0].classList).toContain('subject');
-            expect(contentFieldEle[1].classList).toContain('location');
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeNull();
+            expect(contentFieldEle[0].classList.contains('e-subject')).toEqual(true);
+            expect(contentFieldEle[1].classList.contains('e-location')).toEqual(true);
+            expect(cellPopup.querySelector('.footer-template')).toBeNull();
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
         });
 
         it('checking content and footer area for cell-quick popup', () => {
             schObj.quickInfoTemplates = {
-                header: '',
+                templateType: 'Cell',
+                header: null,
                 content: '#contentTemplate',
                 footer: '#footerTemplate'
             };
@@ -549,17 +542,14 @@ describe('Quick Popups', () => {
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
+            expect(cellPopup.querySelector('.header-template')).toBeNull();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
             let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-field'));
             expect(contentFieldEle.length).toEqual(2);
-            expect(contentFieldEle[0].classList).toContain('subject');
-            expect(contentFieldEle[1].classList).toContain('location');
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-cell-footer') as HTMLElement;
+            expect(contentFieldEle[0].classList.contains('e-subject')).toEqual(true);
+            expect(contentFieldEle[1].classList.contains('e-location')).toEqual(true);
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-cell-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-details');
             expect(footerEle.lastElementChild.classList).toContain('e-event-create');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
@@ -567,8 +557,9 @@ describe('Quick Popups', () => {
 
         it('checking header and footer area for cell-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Cell',
                 header: '#headerTemplate',
-                content: '',
+                content: null,
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
@@ -576,16 +567,28 @@ describe('Quick Popups', () => {
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-cell-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-cell-footer') as HTMLElement;
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-cell-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-details');
             expect(footerEle.lastElementChild.classList).toContain('e-event-create');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
+        });
+
+        it('checking header, content and footer area for cell-quick popup', () => {
+            schObj.quickInfoTemplates = {
+                templateType: 'Cell',
+                header: '#headerTemplate',
+                content: '#contentTemplate',
+                footer: '#footerTemplate'
+            };
+            schObj.dataBind();
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
+            workCells[1].click();
+            let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
+            expect(cellPopup.classList).toContain('e-popup-open');
+            schObj.refresh();
         });
     });
 
@@ -598,28 +601,30 @@ describe('Quick Popups', () => {
             EndTime: new Date(2017, 10, 1, 12),
         }];
         beforeAll((done: Function) => {
-            let hT: string = '<div>${if(elementType === "event")}<div class="e-event-header"><div class="e-header-icon-wrapper">' +
-                '<button class="e-close" title="CLOSE"></button></div></div>${/if}</div>';
-            let scriptEleHeader: HTMLScriptElement = document.createElement('script');
-            scriptEleHeader.type = 'text/x-template';
-            scriptEleHeader.id = 'headerTemplate';
-            scriptEleHeader.appendChild(document.createTextNode(hT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleHeader);
-            let cT: string = '<div>${if(elementType === "event")}<div class="e-event-content"><div class="e-subject-wrap">${if (Subject)}' +
-                '<div class="subject">${Subject}</div>${/if} ${if (Location)}<div class="location">${Location}</div>${/if} ' +
-                '${if (Description)}<div class="description">${Description}</div>${/if}</div></div>${/if}</div>';
-            let scriptEleContent: HTMLScriptElement = document.createElement('script');
-            scriptEleContent.type = 'text/x-template';
-            scriptEleContent.id = 'contentTemplate';
-            scriptEleContent.appendChild(document.createTextNode(cT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleContent);
-            let fT: string = '<div>${if(elementType === "event")}<div class="e-event-footer"><button class="e-event-edit" title="Edit">' +
-                'Edit</button><button class="e-event-delete" title="Delete">Delete</button></div>${/if}</div>';
-            let scriptEleFooter: HTMLScriptElement = document.createElement('script');
-            scriptEleFooter.type = 'text/x-template';
-            scriptEleFooter.id = 'footerTemplate';
-            scriptEleFooter.appendChild(document.createTextNode(fT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
+            let headerScript: HTMLElement = createElement('script', {
+                id: 'headerTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="header-template">${if(elementType === "cell")}<div class="e-cell-header">' +
+                    '<div class="e-header-icon-wrapper"><button class="e-close" title = "Close"></button></div></div>${else}' +
+                    '<div class="e-event-header"><div class="e-header-icon-wrapper"><button class="e-close" title="CLOSE"></button></div>' +
+                    '</div>${/if}</div>'
+            });
+            let contentScript: HTMLElement = createElement('script', {
+                id: 'contentTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="content-template">${if (elementType === "cell")}<div class="e-cell-content"><form class=' +
+                    '"e-schedule-form"><div><input class="e-subject e-field" type="text" name="Subject" placeholder="Title"></div><div>' +
+                    '<input class="e-location e-field" type="text" name="Location" placeholder="Location"></div></form></div>${else}' +
+                    '<div class="e-event-content"><div class="e-subject-wrap">${if (Subject)}' +
+                    '<div class="subject">${Subject}</div>${/if} ${if (Location)}<div class="location">${Location}</div>${/if} ' +
+                    '${if (Description)}<div class="description">${Description}</div>${/if}</div></div>${/if}</div>'
+            });
+            let footerScript: HTMLElement = createElement('script', {
+                id: 'footerTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="footer-template">${if (elementType === "cell")}<div class="e-cell-footer"><button class=' +
+                    '"e-event-details" title="Extra Details">Extra Details</button><button class="e-event-create" title="Add">Add' +
+                    '</button></div>${else}<div class="e-event-footer"><button class="e-event-edit" title="Edit">Edit</button>' +
+                    '<button class="e-event-delete" title="Delete">Delete</button></div>${/if}</div>'
+            });
+            append([headerScript, contentScript, footerScript], document.getElementsByTagName('head')[0]);
             let model: ScheduleModel = {
                 height: '500px', currentView: 'Week', selectedDate: new Date(2017, 10, 1),
                 views: ['Day', 'Week', 'WorkWeek', 'Month']
@@ -635,6 +640,7 @@ describe('Quick Popups', () => {
 
         it('checking header, content and footer area for event-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Event',
                 header: '#headerTemplate',
                 content: '#contentTemplate',
                 footer: '#footerTemplate'
@@ -643,16 +649,13 @@ describe('Quick Popups', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-event-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
-            let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-content'));
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
+            let contentFieldEle: HTMLElement[] = [].slice.call(cellPopup.querySelectorAll('.content-template'));
             expect(contentFieldEle.length).toEqual(1);
             expect(contentFieldEle[0].innerText).toContain('Testing');
-            expect(schObj.element.querySelector('.e-event-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-event-footer') as HTMLElement;
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-event-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-edit');
             expect(footerEle.lastElementChild.classList).toContain('e-event-delete');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
@@ -660,62 +663,56 @@ describe('Quick Popups', () => {
 
         it('checking header area of event-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Event',
                 header: '#headerTemplate',
-                content: '',
-                footer: ''
+                content: null,
+                footer: null
             };
             schObj.dataBind();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-footer')).toBeNull();
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeNull();
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
         });
 
         it('checking content area of event-quick popup', () => {
             schObj.quickInfoTemplates = {
-                header: '',
+                templateType: 'Event',
+                header: null,
                 content: '#contentTemplate',
-                footer: ''
+                footer: null
             };
             schObj.dataBind();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-event-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
-            let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-content'));
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
+            let contentFieldEle: HTMLElement[] = [].slice.call(cellPopup.querySelectorAll('.content-template'));
             expect(contentFieldEle.length).toEqual(1);
             expect(contentFieldEle[0].innerText).toContain('Testing');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-footer')).toBeNull();
+            expect(cellPopup.querySelector('.header-template')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeNull();
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
         });
 
         it('checking footer area of event-quick popup', () => {
             schObj.quickInfoTemplates = {
-                header: '',
-                content: '',
+                templateType: 'Event',
+                header: null,
+                content: null,
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-event-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-event-footer') as HTMLElement;
+            expect(cellPopup.querySelector('.header-template')).toBeNull();
+            expect(cellPopup.querySelector('.content-template')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-event-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-edit');
             expect(footerEle.lastElementChild.classList).toContain('e-event-delete');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
@@ -723,29 +720,28 @@ describe('Quick Popups', () => {
 
         it('checking header and content area for event-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Event',
                 header: '#headerTemplate',
                 content: '#contentTemplate',
-                footer: ''
+                footer: null
             };
             schObj.dataBind();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-event-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
-            let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-content'));
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
+            let contentFieldEle: HTMLElement[] = [].slice.call(cellPopup.querySelectorAll('.content-template'));
             expect(contentFieldEle.length).toEqual(1);
             expect(contentFieldEle[0].innerText).toContain('Testing');
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-footer')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeNull();
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
         });
 
         it('checking content and footer area for event-quick popup', () => {
             schObj.quickInfoTemplates = {
-                header: '',
+                templateType: 'Event',
+                header: null,
                 content: '#contentTemplate',
                 footer: '#footerTemplate'
             };
@@ -753,16 +749,13 @@ describe('Quick Popups', () => {
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-popup-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-event-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
-            let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-content'));
+            expect(cellPopup.querySelector('.header-template')).toBeNull();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
+            let contentFieldEle: HTMLElement[] = [].slice.call(cellPopup.querySelectorAll('.content-template'));
             expect(contentFieldEle.length).toEqual(1);
             expect(contentFieldEle[0].innerText).toContain('Testing');
-            expect(schObj.element.querySelector('.e-event-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-event-footer') as HTMLElement;
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-event-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-edit');
             expect(footerEle.lastElementChild.classList).toContain('e-event-delete');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
@@ -770,21 +763,19 @@ describe('Quick Popups', () => {
 
         it('checking header and footer area for event-quick popup', () => {
             schObj.quickInfoTemplates = {
+                templateType: 'Event',
                 header: '#headerTemplate',
-                content: '',
+                content: null,
                 footer: '#footerTemplate'
             };
             schObj.dataBind();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-event-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-event-footer') as HTMLElement;
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-event-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-edit');
             expect(footerEle.lastElementChild.classList).toContain('e-event-delete');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
@@ -800,34 +791,30 @@ describe('Quick Popups', () => {
             EndTime: new Date(2017, 10, 1, 12),
         }];
         beforeAll((done: Function) => {
-            let hT: string = '<div>${if(elementType === "cell")}<div class="e-cell-header"><div class="e-header-icon-wrapper">' +
-                '<button class="e-close" title="Close"></button></div></div>${else}<div class="e-event-header">' +
-                '<div class="e-header-icon-wrapper"><button class="e-close" title="CLOSE"></button></div></div>${/if}</div>';
-            let scriptEleHeader: HTMLScriptElement = document.createElement('script');
-            scriptEleHeader.type = 'text/x-template';
-            scriptEleHeader.id = 'headerTemplate';
-            scriptEleHeader.appendChild(document.createTextNode(hT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleHeader);
-            let cT: string = '<div>${if(elementType === "cell")}<div class="e-cell-content"><form class="e-schedule-form"><div>' +
-                '<input class="subject e-field" type="text" name="Subject" placeholder="Title"></div><div><input class="location ' +
-                'e-field" type="text" name="Location" placeholder="Location"></div></form></div>${else}<div class="e-event-content">' +
-                '<div class="e-subject-wrap">${if (Subject)}<div class="subject">${Subject}</div>${/if}${if (Location)}' +
-                '<div class="location">${Location}</div>${/if}${if (Description)}<div class="description">${Description}</div>${/if}' +
-                '</div></div>${/if}</div>';
-            let scriptEleContent: HTMLScriptElement = document.createElement('script');
-            scriptEleContent.type = 'text/x-template';
-            scriptEleContent.id = 'contentTemplate';
-            scriptEleContent.appendChild(document.createTextNode(cT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleContent);
-            let fT: string = '<div>${if(elementType === "cell")}<div class="e-cell-footer"><button class="e-event-details" ' +
-                'title="Extra Details">Extra Details</button><button class="e-event-create" title="Add">Add</button></div>${else}' +
-                '<div class="e-event-footer"><button class="e-event-edit" title="Edit">Edit</button><button class="e-event-delete" ' +
-                'title="Delete">Delete</button></div>${/if}</div>';
-            let scriptEleFooter: HTMLScriptElement = document.createElement('script');
-            scriptEleFooter.type = 'text/x-template';
-            scriptEleFooter.id = 'footerTemplate';
-            scriptEleFooter.appendChild(document.createTextNode(fT));
-            document.getElementsByTagName('head')[0].appendChild(scriptEleFooter);
+            let headerScript: HTMLElement = createElement('script', {
+                id: 'headerTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="header-template">${if(elementType === "cell")}<div class="e-cell-header">' +
+                    '<div class="e-header-icon-wrapper"><button class="e-close" title = "Close"></button></div></div>${else}' +
+                    '<div class="e-event-header"><div class="e-header-icon-wrapper"><button class="e-close" title="CLOSE"></button></div>' +
+                    '</div>${/if}</div>'
+            });
+            let contentScript: HTMLElement = createElement('script', {
+                id: 'contentTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="content-template">${if (elementType === "cell")}<div class="e-cell-content"><form class=' +
+                    '"e-schedule-form"><div><input class="e-subject e-field" type="text" name="Subject" placeholder="Title"></div><div>' +
+                    '<input class="e-location e-field" type="text" name="Location" placeholder="Location"></div></form></div>${else}' +
+                    '<div class="e-event-content"><div class="e-subject-wrap">${if (Subject)}' +
+                    '<div class="subject">${Subject}</div>${/if} ${if (Location)}<div class="location">${Location}</div>${/if} ' +
+                    '${if (Description)}<div class="description">${Description}</div>${/if}</div></div>${/if}</div>'
+            });
+            let footerScript: HTMLElement = createElement('script', {
+                id: 'footerTemplate', attrs: { type: 'text/x-template' },
+                innerHTML: '<div class="footer-template">${if (elementType === "cell")}<div class="e-cell-footer"><button class=' +
+                    '"e-event-details" title="Extra Details">Extra Details</button><button class="e-event-create" title="Add">Add' +
+                    '</button></div>${else}<div class="e-event-footer"><button class="e-event-edit" title="Edit">Edit</button>' +
+                    '<button class="e-event-delete" title="Delete">Delete</button></div>${/if}</div>'
+            });
+            append([headerScript, contentScript, footerScript], document.getElementsByTagName('head')[0]);
             let model: ScheduleModel = {
                 height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
                 quickInfoTemplates: { header: '#headerTemplate', content: '#contentTemplate', footer: '#footerTemplate' }
@@ -846,39 +833,40 @@ describe('Quick Popups', () => {
             workCells[1].click();
             let cellPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(cellPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-cell-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
-            let contentFieldEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-field'));
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.header-template .e-cell-header')).toBeTruthy();
+            expect(cellPopup.querySelector('.header-template .e-event-header')).toBeNull();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template .e-cell-content')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template .e-event-content')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.footer-template .e-cell-footer')).toBeTruthy();
+            expect(cellPopup.querySelector('.footer-template .e-event-footer')).toBeNull();
+            let contentFieldEle: HTMLElement[] = [].slice.call(cellPopup.querySelectorAll('.e-field'));
             expect(contentFieldEle.length).toEqual(2);
-            expect(contentFieldEle[0].classList).toContain('subject');
-            expect(contentFieldEle[1].classList).toContain('location');
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-event-footer')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let footerEle: HTMLElement = schObj.element.querySelector('.e-cell-footer') as HTMLElement;
+            expect(contentFieldEle[0].classList.contains('e-subject')).toEqual(true);
+            expect(contentFieldEle[1].classList.contains('e-location')).toEqual(true);
+            let footerEle: HTMLElement = cellPopup.querySelector('.e-cell-footer') as HTMLElement;
             expect(footerEle.firstElementChild.classList).toContain('e-event-details');
             expect(footerEle.lastElementChild.classList).toContain('e-event-create');
             (<HTMLElement>cellPopup.querySelector('.e-close')).click();
             util.triggerMouseEvent(schObj.element.querySelectorAll('.e-appointment')[0] as HTMLElement, 'click');
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup.classList).toContain('e-popup-open');
-            expect(schObj.element.querySelector('.e-event-header')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-header')).toBeNull();
-            expect(schObj.element.querySelector('.e-event-content')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-content')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-content')).toBeNull();
-            let eventContentEle: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-event-content'));
+            expect(cellPopup.querySelector('.header-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.header-template .e-cell-header')).toBeNull();
+            expect(cellPopup.querySelector('.header-template .e-event-header')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.content-template .e-cell-content')).toBeNull();
+            expect(cellPopup.querySelector('.content-template .e-event-content')).toBeTruthy();
+            expect(cellPopup.querySelector('.footer-template')).toBeTruthy();
+            expect(cellPopup.querySelector('.footer-template .e-cell-footer')).toBeNull();
+            expect(cellPopup.querySelector('.footer-template .e-event-footer')).toBeTruthy();
+            let eventContentEle: HTMLElement[] = [].slice.call(eventPopup.querySelectorAll('.e-event-content'));
             expect(eventContentEle.length).toEqual(1);
             expect(eventContentEle[0].innerText).toContain('Testing');
-            expect(schObj.element.querySelector('.e-event-footer')).toBeTruthy();
-            expect(schObj.element.querySelector('.e-cell-footer')).toBeNull();
-            expect(schObj.element.querySelector('.e-popup-footer')).toBeNull();
-            let eventFooterEle: HTMLElement = schObj.element.querySelector('.e-event-footer') as HTMLElement;
+            expect(eventPopup.querySelector('.e-event-footer')).toBeTruthy();
+            let eventFooterEle: HTMLElement = eventPopup.querySelector('.e-event-footer') as HTMLElement;
             expect(eventFooterEle.firstElementChild.classList).toContain('e-event-edit');
             expect(eventFooterEle.lastElementChild.classList).toContain('e-event-delete');
             (<HTMLElement>eventPopup.querySelector('.e-close')).click();
@@ -2376,6 +2364,221 @@ describe('Quick Popups', () => {
             };
             schObj.enableRtl = true;
             schObj.dataBind();
+        });
+    });
+
+    describe('closeQuickInfoPopup public method testing', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(schOptions, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking for cell click quick info popup', () => {
+            let workCell: HTMLElement = schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement;
+            util.triggerMouseEvent(workCell, 'click');
+            let popupElement: HTMLElement = document.querySelector('.e-popup-open') as HTMLElement;
+            expect(popupElement.children[0].classList.contains('e-cell-popup')).toEqual(true);
+            schObj.closeQuickInfoPopup();
+            let popupElementCount: number = document.querySelectorAll('.e-cell-popup').length;
+            expect(popupElementCount).toEqual(0);
+        });
+
+        it('Checking for event click quick info popup', () => {
+            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            eventElements[0].click();
+            let popupElement: HTMLElement = document.querySelector('.e-popup-open') as HTMLElement;
+            expect(popupElement.children[0].classList.contains('e-event-popup')).toEqual(true);
+            schObj.closeQuickInfoPopup();
+            let popupElementCount: number = document.querySelectorAll('.e-event-popup').length;
+            expect(popupElementCount).toEqual(0);
+        });
+    });
+
+
+    describe('CRUD Actions Using API', () => {
+        let schObj: Schedule;
+        let data: Object[] = [
+            {
+                Id: 1,
+                Subject: 'Paris',
+                StartTime: new Date(2017, 9, 29, 10, 0),
+                EndTime: new Date(2017, 9, 29, 11, 30),
+                IsAllDay: false
+            }, {
+                Id: 2,
+                Subject: 'Meeting - 1',
+                StartTime: new Date(2017, 9, 30, 10, 0),
+                EndTime: new Date(2017, 9, 30, 12, 30),
+                IsAllDay: false
+            }, {
+                Id: 3,
+                Subject: 'Meeting - 2',
+                StartTime: new Date(2017, 9, 30, 11, 0),
+                EndTime: new Date(2017, 9, 30, 14, 30),
+                IsAllDay: false
+            }, {
+                Id: 4,
+                StartTime: new Date(2017, 9, 31),
+                EndTime: new Date(2017, 10, 1),
+                IsAllDay: true
+            }, {
+                Id: 5,
+                Subject: 'Conference - 2',
+                StartTime: new Date(2017, 9, 31, 22, 0),
+                EndTime: new Date(2017, 10, 1, 0, 0),
+                IsAllDay: false
+            }
+        ];
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2017, 10, 1),
+                eventSettings: { allowAdding: false, allowEditing: false, allowDeleting: false }
+            };
+            schObj = util.createSchedule(model, data, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('Cell click and insert event', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('.' + cls.WORK_HOURS_CLASS), 'click');
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-close')).toEqual(true);
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Event Click and Delete event', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('.e-appointment:nth-child(2)'), 'click');
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-close')).toEqual(false);
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.quickPopup.quickPopup.element.querySelector('.e-delete'), 'click');
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-close')).toEqual(false);
+            expect(schObj.element.querySelector('.e-quick-popup-wrapper').classList.contains('e-popup-open')).toEqual(true);
+        });
+    });
+
+    describe('isMorePopup property checking on mobile view', () => {
+        let schObj: Schedule;
+        let uA: string = Browser.userAgent;
+        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
+            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
+
+        beforeAll((done: Function) => {
+            Browser.userAgent = androidUserAgent;
+            let model: ScheduleModel = {
+                currentView: 'Month',
+                views: ['Day', 'Month', 'Agenda', 'TimelineDay', 'TimelineMonth'],
+                selectedDate: new Date(2018, 4, 1)
+            };
+            schObj = util.createSchedule(model, timelineData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+            Browser.userAgent = uA;
+        });
+
+        it('More event popup checking on the month view', () => {
+            (schObj.element.querySelectorAll('.e-more-indicator')[2] as HTMLElement).click();
+            let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
+            expect(isVisible(moreEventPopup)).toBe(true);
+            let moreEventWrapper: HTMLElement = document.querySelector('.e-more-appointment-wrapper') as HTMLElement;
+            let moreEventCount: number = moreEventWrapper.childElementCount;
+            expect(moreEventCount).toEqual(15);
+            (document.querySelector('.e-more-event-close') as HTMLElement).click();
+        });
+
+        it('More event popup checking on timeline month view', (done: Function) => {
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
+                let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
+                // expect(isVisible(moreEventPopup)).toBe(true);
+                let moreEventWrapper: HTMLElement = document.querySelector('.e-more-appointment-wrapper') as HTMLElement;
+                let moreEventCount: number = moreEventWrapper.childElementCount;
+                expect(moreEventCount).toEqual(15);
+                (document.querySelector('.e-more-event-close') as HTMLElement).click();
+                done();
+            };
+        });
+
+        it('isMorePopup property is set to false and check the more indicator click navigation on timeline month view', () => {
+            schObj.isMorePopup = false;
+            schObj.dataBind();
+            (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
+            expect(schObj.currentView).toEqual('TimelineDay');
+        });
+
+        it('isMorePopup property is set to false and check the more indicator click navigation on month view', (done: Function) => {
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-more-indicator')[2] as HTMLElement).click();
+                expect(schObj.currentView).toEqual('Day');
+                done();
+            };
+        });
+    });
+
+    describe('isMorePopup property checking on Desktop mode', () => {
+        let schObj: Schedule;
+
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                currentView: 'Month',
+                views: ['Day', 'Month', 'Agenda', 'TimelineDay', 'TimelineMonth'],
+                selectedDate: new Date(2018, 4, 1)
+            };
+            schObj = util.createSchedule(model, timelineData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('More event popup checking on the month view', () => {
+            (schObj.element.querySelectorAll('.e-more-indicator')[2] as HTMLElement).click();
+            let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
+            expect(isVisible(moreEventPopup)).toBe(true);
+            let moreEventWrapper: HTMLElement = document.querySelector('.e-more-appointment-wrapper') as HTMLElement;
+            let moreEventCount: number = moreEventWrapper.childElementCount;
+            expect(moreEventCount).toEqual(15);
+            (document.querySelector('.e-more-event-close') as HTMLElement).click();
+        });
+
+        it('More event popup checking on timeline month view', (done: Function) => {
+            schObj.currentView = 'TimelineMonth';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
+                let moreEventPopup: Element = document.querySelector('.e-more-popup-wrapper');
+                expect(isVisible(moreEventPopup)).toBe(true);
+                let moreEventWrapper: HTMLElement = document.querySelector('.e-more-appointment-wrapper') as HTMLElement;
+                let moreEventCount: number = moreEventWrapper.childElementCount;
+                expect(moreEventCount).toEqual(15);
+                (document.querySelector('.e-more-event-close') as HTMLElement).click();
+                done();
+            };
+        });
+
+        it('isMorePopup property is set to false and check the more indicator click navigation on timeline month view', () => {
+            schObj.isMorePopup = false;
+            schObj.dataBind();
+            (schObj.element.querySelector('.e-more-indicator') as HTMLElement).click();
+            expect(schObj.currentView).toEqual('TimelineDay');
+        });
+
+        it('isMorePopup property is set to false and check the more indicator click navigation on month view', (done: Function) => {
+            schObj.currentView = 'Month';
+            schObj.dataBind();
+            schObj.dataBound = () => {
+                (schObj.element.querySelectorAll('.e-more-indicator')[2] as HTMLElement).click();
+                expect(schObj.currentView).toEqual('Day');
+                done();
+            };
         });
     });
 

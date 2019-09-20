@@ -481,10 +481,12 @@ export class CheckBoxFilter {
         if (this.options.type === 'boolean') {
             if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
-                parsed = 'true';
+                parsed = ((<{ getModuleName?: Function }>this.parent.getDataModule().dataManager.adaptor).getModuleName()
+                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? true : 'true';
             } else if (parsed !== undefined &&
                 this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((parsed as string).toLowerCase()) !== -1) {
-                parsed = 'false';
+                parsed = ((<{ getModuleName?: Function }>this.parent.getDataModule().dataManager.adaptor).getModuleName()
+                    === 'ODataAdaptor' || 'ODataV4Adaptor') ? false : 'false';
             }
             operator = 'equal';
         }

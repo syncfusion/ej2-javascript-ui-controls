@@ -2,7 +2,6 @@ import { EventHandler, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-bas
 import { createElement, remove, addClass, append, prepend } from '@syncfusion/ej2-base';
 import { IRenderer, TdData, RenderCellEventArgs, CellTemplateArgs, NotifyEventArgs, CellClickEventArgs } from '../base/interface';
 import { Schedule } from '../base/schedule';
-import { WorkCellInteraction } from '../actions/work-cells';
 import { ViewBase } from './view-base';
 import * as util from '../base/util';
 import * as event from '../base/constant';
@@ -16,7 +15,6 @@ export class Month extends ViewBase implements IRenderer {
     public dayNameFormat: string = 'wide';
     public viewClass: string = 'e-month-view';
     public isInverseTableSelect: boolean = false;
-    private workCellAction: WorkCellInteraction;
     private monthDates: { [key: string]: Date };
     /**
      * Constructor for month view
@@ -24,7 +22,6 @@ export class Month extends ViewBase implements IRenderer {
     constructor(parent: Schedule) {
         super(parent);
         this.monthDates = {};
-        this.workCellAction = new WorkCellInteraction(parent);
     }
     public addEventListener(): void {
         this.parent.on(event.scrollUiUpdate, this.onScrollUIUpdate, this);
@@ -39,7 +36,7 @@ export class Month extends ViewBase implements IRenderer {
     public onDataReady(args: NotifyEventArgs): void {
         let monthEvent: MonthEvent = new MonthEvent(this.parent);
         monthEvent.renderAppointments();
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(event.eventsLoaded, {});
     }
     public onCellClick(event: CellClickEventArgs): void {
         // Here cell click
@@ -157,9 +154,11 @@ export class Month extends ViewBase implements IRenderer {
         this.parent.updateLayoutTemplates();
     }
     private wireCellEvents(element: Element): void {
-        EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
-        EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
-        if (!this.parent.isAdaptive) { EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction); }
+        EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
+        EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
+        if (!this.parent.isAdaptive) {
+            EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
+        }
     }
     public renderHeader(): void {
         let tr: Element = createElement('tr');
@@ -409,10 +408,20 @@ export class Month extends ViewBase implements IRenderer {
             return;
         }
         let dateHeader: Element = createElement('div', { className: cls.DATE_HEADER_CLASS });
-        dateHeader.innerHTML =
-            (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
-                this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+        if (this.parent.activeViewOptions.cellHeaderTemplate) {
+            let args: CellTemplateArgs = { date: data.date, type: data.type, groupIndex: data.groupIndex };
+            let scheduleId: string = this.parent.element.id + '_';
+            let viewName: string = this.parent.activeViewOptions.cellHeaderTemplateName;
+            let templateId: string = scheduleId + viewName + 'cellHeaderTemplate';
+            let cellheaderTemplate: NodeList =
+                this.parent.getCellHeaderTemplate()(args, this.parent, 'cellHeaderTemplate', templateId, false);
+            append([].slice.call(cellheaderTemplate), dateHeader);
+        } else {
+            dateHeader.innerHTML =
+                (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
+                    this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                    this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+        }
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], cls.NAVIGATE_CLASS);
@@ -420,14 +429,16 @@ export class Month extends ViewBase implements IRenderer {
     }
 
     public getMonthStart(currentDate: Date): Date {
-        let monthStart: Date = util.getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.firstDayOfWeek);
+        let monthStart: Date =
+            util.getWeekFirstDate(this.parent.calendarUtil.firstDateOfMonth(currentDate), this.parent.activeViewOptions.firstDayOfWeek);
         let start: Date = new Date(monthStart.getFullYear(), monthStart.getMonth(), monthStart.getDate());
         return start;
     }
 
     public getMonthEnd(currentDate: Date): Date {
         let endDate: Date = util.addMonths(currentDate, this.parent.activeViewOptions.interval - 1);
-        let lastWeekOfMonth: Date = util.getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.firstDayOfWeek);
+        let lastWeekOfMonth: Date =
+            util.getWeekFirstDate(this.parent.calendarUtil.lastDateOfMonth(endDate), this.parent.activeViewOptions.firstDayOfWeek);
         let monthEnd: Date = util.addDays(lastWeekOfMonth, util.WEEK_LENGTH - 1);
         return monthEnd;
     }

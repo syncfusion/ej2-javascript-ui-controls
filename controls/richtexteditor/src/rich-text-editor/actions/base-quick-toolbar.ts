@@ -8,7 +8,7 @@ import { RenderType } from '../base/enum';
 import { setToolbarStatus, updateUndoRedoStatus, isIDevice } from '../base/util';
 import { IRichTextEditor, IToolbarRenderOptions, IDropDownRenderArgs, IToolbarItemModel, IColorPickerRenderArgs } from '../base/interface';
 import { IToolbarItems, IRenderer, IQuickToolbarOptions, IShowQuickTBarOptions, ISetToolbarStatusArgs } from '../base/interface';
-import { BeforeQuickToolbarOpenArgs } from '../base/interface';
+import { BeforeQuickToolbarOpenArgs, QuickToolbarArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { BaseToolbar } from './base-toolbar';
@@ -175,7 +175,7 @@ export class BaseQuickToolbar {
 
     public showPopup(x: number, y: number, target: Element): void {
         let eventArgs: BeforeQuickToolbarOpenArgs = isBlazor() ? { cancel: false, targetElement: target } :
-        { popup: this.popupObj, cancel: false, targetElement: target };
+            { popup: this.popupObj, cancel: false, targetElement: target };
         this.parent.trigger(events.beforeQuickToolbarOpen, eventArgs, (beforeQuickToolbarArgs: BeforeQuickToolbarOpenArgs) => {
             if (!beforeQuickToolbarArgs.cancel) {
                 let editPanelTop: number;
@@ -291,7 +291,7 @@ export class BaseQuickToolbar {
             this.colorPickerObj.destroyColorPicker();
             removeClass([this.element], [classes.CLS_POP]);
             detach(element);
-            let args: Popup = isBlazor() ? null : this.popupObj;
+            let args: QuickToolbarArgs | Popup = isBlazor() ? { element: this.popupObj.element } : this.popupObj;
             this.parent.trigger(events.quickToolbarClose, args);
         }
     }

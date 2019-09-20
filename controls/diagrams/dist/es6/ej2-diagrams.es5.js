@@ -2471,6 +2471,10 @@ var DiagramEvent;
     DiagramEvent[DiagramEvent["segmentCollectionChange"] = 24] = "segmentCollectionChange";
     DiagramEvent[DiagramEvent["commandExecute"] = 25] = "commandExecute";
     DiagramEvent[DiagramEvent["historyStateChange"] = 26] = "historyStateChange";
+    DiagramEvent[DiagramEvent["onUserHandleMouseDown"] = 27] = "onUserHandleMouseDown";
+    DiagramEvent[DiagramEvent["onUserHandleMouseUp"] = 28] = "onUserHandleMouseUp";
+    DiagramEvent[DiagramEvent["onUserHandleMouseEnter"] = 29] = "onUserHandleMouseEnter";
+    DiagramEvent[DiagramEvent["onUserHandleMouseLeave"] = 30] = "onUserHandleMouseLeave";
 })(DiagramEvent || (DiagramEvent = {}));
 /** Enables/Disables certain features of port connection
  * @aspNumberEnum
@@ -4746,15 +4750,17 @@ function findPointToPointOrtho(element, source, target, sourceNode, targetNode, 
                 else {
                     point = pointToPort(element, source, target);
                 }
-                checkPreviousSegment(point, element, source);
-                seg_1.points = [];
-                if (point.length >= 2) {
-                    for (j = 0; j < point.length; j++) {
-                        seg_1.points.push(point[j]);
+                if (point) {
+                    checkPreviousSegment(point, element, source);
+                    seg_1.points = [];
+                    if (point.length >= 2) {
+                        for (j = 0; j < point.length; j++) {
+                            seg_1.points.push(point[j]);
+                        }
                     }
-                }
-                else {
-                    removeSegment = i;
+                    else {
+                        removeSegment = i;
+                    }
                 }
             }
             if (sourcePort && i === 0) {
@@ -10349,8 +10355,8 @@ function renderContainerHelper(diagram, obj) {
             container = diagram.selectedItems.wrapper;
         }
         diagram.selectedObject.actualObject = object;
-        if (checkParentAsContainer(diagram, object) ||
-            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.connectors.length === 0)) {
+        if ((!diagram.currentSymbol) && (checkParentAsContainer(diagram, object) ||
+            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
             var node = {
                 id: 'helper',
                 rotateAngle: container.rotateAngle,
@@ -11188,11 +11194,19 @@ function checkPhaseOffset(obj, diagram) {
 function updateConnectorsProperties(connectors, diagram) {
     if (connectors && connectors.length > 0) {
         var edges = void 0;
+        if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+            diagram.lineRoutingModule.renderVirtualRegion(diagram, true);
+        }
         for (var i = 0; i < connectors.length; i++) {
             edges = diagram.getObject(connectors[i]);
-            diagram.connectorPropertyChange(edges, {}, {
-                sourceID: edges.sourceID, targetID: edges.targetID
-            });
+            if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+                diagram.lineRoutingModule.refreshConnectorSegments(diagram, edges, true);
+            }
+            else {
+                diagram.connectorPropertyChange(edges, {}, {
+                    sourceID: edges.sourceID, targetID: edges.targetID
+                });
+            }
         }
     }
 }
@@ -16601,7 +16615,7 @@ function wordWrapping(text, textValue, laneWidth) {
         words = text.textWrapping !== 'NoWrap' ? eachLine[j].split(' ') : eachLine;
         for (i = 0; i < words.length; i++) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
-            newText = txtValue + (words[i + 1] || '');
+            newText = txtValue + ' ' + (words[i + 1] || '');
             var width = bBoxText(newText, text);
             if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {
@@ -18734,7 +18748,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             }
             var dashArray = [];
             var fill = void 0;
-            if (style.dashArray !== undefined) {
+            if (style.dashArray) {
                 var canvasRenderer = new CanvasRenderer();
                 dashArray = canvasRenderer.parseDashArray(style.dashArray);
             }
@@ -18752,7 +18766,7 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
                 svg.setAttribute('stroke-width', style.strokeWidth.toString());
             }
             if (dashArray) {
-                svg.setAttribute('stroke-dasharray', dashArray.toString());
+                svg.setAttribute('stroke-dasharray', dashArray.toString() || 'none');
             }
             if (fill) {
                 svg.setAttribute('fill', fill);
@@ -21345,7 +21359,6 @@ var ConnectTool = /** @__PURE__ @class */ (function (_super) {
     };
     /**   @private  */
     ConnectTool.prototype.mouseUp = function (args) {
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         this.checkPropertyValue();
         this.commandHandler.updateSelector();
         this.commandHandler.removeSnap();
@@ -21588,7 +21601,6 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
         var historyAdded = false;
         var object;
         var redoObject = { nodes: [], connectors: [] };
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         if (this.objectType !== 'Port') {
             if (args.source instanceof Node || args.source instanceof Connector) {
                 if (args.source instanceof Node) {
@@ -21863,7 +21875,6 @@ var RotateTool = /** @__PURE__ @class */ (function (_super) {
     RotateTool.prototype.mouseUp = function (args) {
         this.checkPropertyValue();
         var object;
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         object = this.commandHandler.renderContainerHelper(args.source) || args.source;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
             var oldValue = { rotateAngle: object.wrapper.rotateAngle };
@@ -21972,7 +21983,6 @@ var ResizeTool = /** @__PURE__ @class */ (function (_super) {
         this.checkPropertyValue();
         this.commandHandler.removeSnap();
         var object;
-        this.commandHandler.updateSelectedNodeProperties(args.source);
         this.commandHandler.updateSelector();
         object = this.commandHandler.renderContainerHelper(args.source) || args.source;
         if (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY) {
@@ -23473,6 +23483,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     function DiagramEventHandler(diagram, commandHandler) {
         this.currentAction = 'None';
+        this.previousAction = 'None';
         /**   @private  */
         this.focus = false;
         this.isBlocked = false;
@@ -23690,6 +23701,31 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             _this.diagram.deleteVirtualObject = true;
         }, delay);
     };
+    DiagramEventHandler.prototype.checkPreviousAction = function () {
+        if (this.action !== this.previousAction && this.diagram.selectedItems.userHandles.length) {
+            for (var i = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
+                if (this.previousAction && this.diagram.selectedItems.userHandles[i]) {
+                    this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseLeave);
+                    this.previousAction = 'None';
+                }
+            }
+        }
+    };
+    DiagramEventHandler.prototype.checkUserHandleEvent = function (eventName) {
+        if (this.diagram.selectedItems && this.diagram.selectedItems.userHandles.length > 0) {
+            var currentAction = (eventName === DiagramEvent.onUserHandleMouseLeave) ? this.previousAction : this.action;
+            var arg = { element: undefined };
+            for (var i = 0; i < this.diagram.selectedItems.userHandles.length; i++) {
+                if (currentAction === this.diagram.selectedItems.userHandles[i].name) {
+                    arg.element = this.diagram.selectedItems.userHandles[i];
+                    if (eventName === DiagramEvent.onUserHandleMouseEnter) {
+                        this.previousAction = this.action;
+                    }
+                    this.diagram.triggerEvent(eventName, arg);
+                }
+            }
+        }
+    };
     DiagramEventHandler.prototype.mouseDown = function (evt) {
         this.focus = true;
         var touches;
@@ -23699,6 +23735,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             evt.preventDefault();
             return;
         }
+        this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseDown);
         if (!this.checkEditBoxAsTarget(evt) && (canUserInteract(this.diagram)) ||
             (canZoomPan(this.diagram) && !defaultTool(this.diagram))) {
             if (this.action === 'Select' || this.action === 'Drag') {
@@ -23880,6 +23917,8 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                         }
                     }
                     this.action = this.diagram.findActionToBeDone(obj, sourceElement, this.currentPosition, target);
+                    this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseEnter);
+                    this.checkPreviousAction();
                     this.getMouseEventArgs(this.currentPosition, this.eventArgs);
                     this.tool = this.getTool(this.action);
                     this.mouseEvents();
@@ -23966,9 +24005,11 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             this.blocked = !(this.tool.mouseMove(this.eventArgs));
         }
     };
+    /* tslint:disable */
     /** @private */
     DiagramEventHandler.prototype.mouseUp = function (evt) {
         var touches;
+        this.checkUserHandleEvent(DiagramEvent.onUserHandleMouseUp);
         if (this.diagram.mode === 'SVG' && canVitualize(this.diagram)) {
             this.updateVirtualization();
         }
@@ -24049,6 +24090,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
                     this.diagram.endGroupAction();
                 }
                 this.updateContainerBounds(true);
+                this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
@@ -24092,6 +24134,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         this.eventArgs = {};
         this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     };
+    /* tslint:enable */
     DiagramEventHandler.prototype.getBlazorClickEventArgs = function (arg) {
         arg = {
             element: this.eventArgs.source ? { selector: cloneBlazorObject(this.eventArgs.source) } :
@@ -28820,6 +28863,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
      */
     CommandHandler.prototype.updateSelectedNodeProperties = function (object) {
         if (this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting)) {
+            this.diagram.protectPropertyChange(true);
             var objects = [];
             var connectors = [];
             var actualObject = this.diagram.selectedObject.actualObject;
@@ -28831,7 +28875,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 var height = (helperObject.height - actualObject.height);
                 var rotateAngle = (helperObject.rotateAngle - actualObject.rotateAngle);
                 this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
-                if (actualObject instanceof Node) {
+                if (actualObject instanceof Node &&
+                    actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader) {
                     actualObject.offsetX += offsetX;
                     actualObject.offsetY += offsetY;
                     actualObject.width += width;
@@ -28846,16 +28891,19 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 else if (actualObject instanceof Selector) {
                     for (var i = 0; i < actualObject.nodes.length; i++) {
                         var node = actualObject.nodes[i];
-                        node.offsetX += offsetX;
-                        node.offsetY += offsetY;
-                        node.width += width;
-                        node.height += height;
-                        node.rotateAngle += rotateAngle;
-                        this.diagram.nodePropertyChange(node, {}, {
-                            offsetX: node.offsetX, offsetY: node.offsetY,
-                            width: node.width, height: node.height, rotateAngle: node.rotateAngle
-                        });
-                        objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds));
+                        if (node instanceof Node && node.shape.type !== 'SwimLane' && !node.isLane
+                            && !node.isPhase && !node.isHeader) {
+                            node.offsetX += offsetX;
+                            node.offsetY += offsetY;
+                            node.width += width;
+                            node.height += height;
+                            node.rotateAngle += rotateAngle;
+                            this.diagram.nodePropertyChange(node, {}, {
+                                offsetX: node.offsetX, offsetY: node.offsetY,
+                                width: node.width, height: node.height, rotateAngle: node.rotateAngle
+                            });
+                            objects = objects.concat(this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds));
+                        }
                     }
                 }
             }
@@ -28879,6 +28927,8 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     this.diagram.lineRoutingModule.refreshConnectorSegments(this.diagram, connector, true);
                 }
             }
+            this.updateSelector();
+            this.diagram.protectPropertyChange(false);
         }
     };
     /** @private */
@@ -30796,6 +30846,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var temp = _l[_k];
                 var view = this.views[temp];
                 if (!(view instanceof Diagram)) {
+                    if (newProp.scrollSettings && newProp.scrollSettings.currentZoom != oldProp.scrollSettings.currentZoom) {
+                        view.updateHtmlLayer(view);
+                    }
                     this.refreshCanvasDiagramLayer(view);
                 }
             }
@@ -30914,10 +30967,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         this.initializeDiagramLayers();
         this.diagramRenderer.setLayers();
         this.initObjects(true);
+        this.doLayout();
         if (this.lineRoutingModule) {
             this.lineRoutingModule.lineRouting(this);
         }
-        this.doLayout();
         this.validatePageSize();
         this.renderPageBreaks();
         this.diagramRenderer.renderSvgGridlines(this.snapSettings, getGridLayerSvg(this.element.id), this.scroller.transform, this.rulerSettings, this.hRuler, this.vRuler);
@@ -34018,7 +34071,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var setNodeTemplate = getFunction(this.setNodeTemplate);
-            if (setNodeTemplate) {
+            if (setNodeTemplate && obj.id !== 'helper') {
                 content = setNodeTemplate(obj, this);
             }
             if (!content) {
@@ -35909,6 +35962,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         return updateSelector;
     };
+    /* tslint:disable */
     /** @private */
     Diagram.prototype.connectorPropertyChange = function (actualObject, oldProp, newProp, disableBridging, propertyChange) {
         var existingBounds = actualObject.wrapper.bounds;
@@ -35931,6 +35985,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 outPort = this.findInOutConnectPorts(sourceNode, false);
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourceWrapper = sourceNode ? this.getEndNodeWrapper(sourceNode, actualObject, true) : undefined;
+                    if (actualObject.sourcePortID && newProp.sourcePortID === undefined) {
+                        actualObject.sourcePortWrapper = sourceNode ? this.getWrapper(sourceNode.wrapper, actualObject.sourcePortID) : undefined;
+                    }
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
                     var oldSource = this.nameTable[oldProp.sourceID];
@@ -35945,6 +36002,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 inPort = this.findInOutConnectPorts(targetNode, true);
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetWrapper = targetNode ? this.getEndNodeWrapper(targetNode, actualObject, false) : undefined;
+                    if (actualObject.targetPortID && newProp.targetPortID === undefined) {
+                        actualObject.targetPortWrapper = targetNode ? this.getWrapper(targetNode.wrapper, actualObject.targetPortID) : undefined;
+                    }
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
                     var oldTarget = this.nameTable[oldProp.targetID];
@@ -36030,6 +36090,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         this.triggerPropertyChange(propertyChange, actualObject, oldProp, newProp);
     };
+    /* tslint:enable */
     Diagram.prototype.getpropertyChangeArgs = function (element, oldProp, newProp, args) {
         args.element = { connector: cloneBlazorObject(element) };
         args.oldValue = { connector: cloneBlazorObject(oldProp) };
@@ -37335,6 +37396,18 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     ], Diagram.prototype, "collectionChange", void 0);
     __decorate([
         Event()
+    ], Diagram.prototype, "onUserHandleMouseDown", void 0);
+    __decorate([
+        Event()
+    ], Diagram.prototype, "onUserHandleMouseUp", void 0);
+    __decorate([
+        Event()
+    ], Diagram.prototype, "onUserHandleMouseEnter", void 0);
+    __decorate([
+        Event()
+    ], Diagram.prototype, "onUserHandleMouseLeave", void 0);
+    __decorate([
+        Event()
     ], Diagram.prototype, "segmentCollectionChange", void 0);
     __decorate([
         Event()
@@ -37912,7 +37985,7 @@ var PrintAndExport = /** @__PURE__ @class */ (function () {
         pageHeight = pageSize.height + y;
         var drawnX = 0;
         var drawnY = 0;
-        if (options && options.multiplePage && !(options.region === 'Content')) {
+        if (options && options.multiplePage) {
             div.style.height = 'auto';
             div.style.width = 'auto';
             var imgHeight = img.height;
@@ -44244,8 +44317,8 @@ var LineRouting = /** @__PURE__ @class */ (function () {
         /* tslint:disable */
         var right = diagram.spatialSearch['pageRight'] + this.size;
         var bottom = diagram.spatialSearch['pageBottom'] + this.size;
-        var left = diagram.spatialSearch['pageLeft'];
-        var top = diagram.spatialSearch['pageTop'];
+        var left = diagram.spatialSearch['pageLeft'] - this.size;
+        var top = diagram.spatialSearch['pageTop'] - this.size;
         left = left < 0 ? left - 20 : 0;
         top = top < 0 ? top - 20 : 0;
         /* tslint:enable */
@@ -44278,7 +44351,19 @@ var LineRouting = /** @__PURE__ @class */ (function () {
                 y += size;
             }
         }
-        this.updateNodesInVirtualRegion(diagram.nodes);
+        var nodes = this.findNodes(diagram.nodes);
+        this.updateNodesInVirtualRegion(nodes);
+    };
+    LineRouting.prototype.findNodes = function (nodes) {
+        var objects = [];
+        var node;
+        for (var i = 0; i < nodes.length; i++) {
+            node = nodes[i];
+            if (node.shape.type !== 'SwimLane' && !node.isLane && !node.isPhase && !node.isHeader) {
+                objects.push(node);
+            }
+        }
+        return objects;
     };
     LineRouting.prototype.updateNodesInVirtualRegion = function (diagramNodes) {
         var size = this.size;
@@ -44333,8 +44418,8 @@ var LineRouting = /** @__PURE__ @class */ (function () {
         }
         else {
             if ((isSource && this.startNode) || (!isSource && this.targetNode)) {
-                endPoint = (isSource) ? { x: this.startNode.offsetX, y: this.startNode.offsetY } :
-                    { x: this.targetNode.offsetX, y: this.targetNode.offsetY };
+                endPoint = (isSource) ? { x: this.startNode.wrapper.offsetX, y: this.startNode.wrapper.offsetY } :
+                    { x: this.targetNode.wrapper.offsetX, y: this.targetNode.wrapper.offsetY };
             }
             else {
                 endPoint = (isSource) ? { x: connector.sourcePoint.x, y: connector.sourcePoint.y } :
@@ -44387,11 +44472,13 @@ var LineRouting = /** @__PURE__ @class */ (function () {
                 for (var j = 0; j < this.noOfCols; j++) {
                     grid = this.gridCollection[i][j];
                     var rectangle = new Rect(grid.x, grid.y, grid.width, grid.height);
-                    if (rectangle.containsPoint(startPoint) && !this.startGrid) {
+                    if (rectangle.containsPoint(startPoint) && !this.startGrid &&
+                        (grid.nodeId.indexOf(sourceId) !== -1 || sourceId === '')) {
                         this.startGrid = (sourcePortID && this.startGrid &&
                             (sourcePortDirection === 'Left' || sourcePortDirection === 'Top')) ? this.startGrid : grid;
                     }
-                    if (rectangle.containsPoint(targetPoint) && !this.targetGrid) {
+                    if (rectangle.containsPoint(targetPoint) && !this.targetGrid &&
+                        (grid.nodeId.indexOf(targetId) !== -1 || targetId === '')) {
                         this.targetGrid = (targetPortID && this.targetGrid &&
                             (targetPortDirection === 'Left' || targetPortDirection === 'Top')) ? this.targetGrid : grid;
                     }
@@ -44427,49 +44514,13 @@ var LineRouting = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            if (!sourcePortID && this.startNode) {
-                for (var i = sourceLeft.gridX; i <= sourceRight.gridX; i++) {
-                    grid = this.gridCollection[i][sourceLeft.gridY];
-                    if (grid.nodeId.length === 1) {
-                        this.sourceGridCollection.push(grid);
-                    }
-                }
-                for (var i = sourceTop.gridY; i <= sourceBottom.gridY; i++) {
-                    grid = this.gridCollection[sourceTop.gridX][i];
-                    if (grid.nodeId.length === 1 && this.sourceGridCollection.indexOf(grid) === -1) {
-                        this.sourceGridCollection.push(grid);
-                    }
-                }
-            }
-            else {
-                this.sourceGridCollection.push(this.startGrid);
-            }
-            if (!targetPortID && this.targetNode) {
-                for (var i = targetLeft.gridX; i <= targetRight.gridX; i++) {
-                    grid = this.gridCollection[i][targetLeft.gridY];
-                    if (grid.nodeId.length === 1) {
-                        this.targetGridCollection.push(grid);
-                    }
-                }
-                for (var i = targetTop.gridY; i <= targetBottom.gridY; i++) {
-                    grid = this.gridCollection[targetTop.gridX][i];
-                    if (grid.nodeId.length === 1 && this.targetGridCollection.indexOf(grid) === -1) {
-                        this.targetGridCollection.push(grid);
-                    }
-                }
-                if (this.targetGridCollection.indexOf(this.targetGrid) === -1) {
-                    if (this.targetGrid.nodeId.length > 1 && this.targetGridCollection.length === 1) {
-                        this.targetGrid = this.targetGridCollection[0];
-                    }
-                }
-            }
-            else {
-                this.targetGridCollection.push(this.targetGrid);
-            }
+            this.findEdgeBoundary(sourcePortID, sourceLeft, sourceRight, sourceTop, sourceBottom, true);
+            this.findEdgeBoundary(targetPortID, targetLeft, targetRight, targetTop, targetBottom, false);
             this.startGrid.totalDistance = 0;
             this.startGrid.previousDistance = 0;
             this.intermediatePoints.push({ x: this.startGrid.gridX, y: this.startGrid.gridY });
             this.startArray.push(this.startGrid);
+            this.checkObstacles(connector);
             renderPathElement: while (this.startArray.length > 0) {
                 var startGridNode = this.startArray.pop();
                 for (var i = 0; i < this.targetGridCollection.length; i++) {
@@ -44490,6 +44541,81 @@ var LineRouting = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    LineRouting.prototype.findEdgeBoundary = function (portID, left, right, top, bottom, isSource) {
+        var grid;
+        var collection = (isSource) ? this.sourceGridCollection : this.targetGridCollection;
+        if (!portID && ((isSource) ? this.startNode : this.targetNode)) {
+            for (var i = left.gridX; i <= right.gridX; i++) {
+                grid = this.gridCollection[i][left.gridY];
+                if ((grid.nodeId.length === 1 && (i === left.gridX || i === right.gridX)) ||
+                    (i !== left.gridX && i !== right.gridX)) {
+                    collection.push(grid);
+                }
+            }
+            for (var i = top.gridY; i <= bottom.gridY; i++) {
+                grid = this.gridCollection[top.gridX][i];
+                if (((grid.nodeId.length === 1 && (i === top.gridY || i === bottom.gridY)) ||
+                    (i !== top.gridY && i !== bottom.gridY)) && collection.indexOf(grid) === -1) {
+                    collection.push(grid);
+                }
+            }
+        }
+        else {
+            collection.push((isSource) ? this.startGrid : this.targetGrid);
+        }
+    };
+    LineRouting.prototype.checkObstacles = function (connector) {
+        var neigbours = this.findNearestNeigbours(this.startGrid, this.gridCollection, true);
+        if (neigbours.length === 0) {
+            if (connector.sourcePortID !== '') {
+                var endPoint = { x: connector.sourcePortWrapper.offsetX, y: connector.sourcePortWrapper.offsetY };
+                var portDirection = getPortDirection(endPoint, undefined, connector.sourceWrapper.bounds, false);
+                if (portDirection === 'Top') {
+                    this.resetGridColl(this.startGrid, 'top', true);
+                }
+                else if (portDirection === 'Right') {
+                    this.resetGridColl(this.startGrid, 'right', true);
+                }
+                else if (portDirection === 'Bottom') {
+                    this.resetGridColl(this.startGrid, 'bottom', true);
+                }
+                else {
+                    this.resetGridColl(this.startGrid, 'left', true);
+                }
+            }
+            else {
+                this.resetGridColl(this.startGrid, 'top', true);
+                this.resetGridColl(this.startGrid, 'right', true);
+                this.resetGridColl(this.startGrid, 'bottom', true);
+                this.resetGridColl(this.startGrid, 'left', true);
+            }
+        }
+        neigbours = this.findNearestNeigbours(this.targetGrid, this.gridCollection, false);
+        if (neigbours.length === 0) {
+            if (connector.targetPortID !== '') {
+                var endPoint = { x: connector.targetPortWrapper.offsetX, y: connector.targetPortWrapper.offsetY };
+                var portDirection = getPortDirection(endPoint, undefined, connector.targetWrapper.bounds, false);
+                if (portDirection === 'Top') {
+                    this.resetGridColl(this.targetGrid, 'top', true);
+                }
+                else if (portDirection === 'Right') {
+                    this.resetGridColl(this.targetGrid, 'right', true);
+                }
+                else if (portDirection === 'Bottom') {
+                    this.resetGridColl(this.targetGrid, 'bottom', true);
+                }
+                else {
+                    this.resetGridColl(this.targetGrid, 'left', true);
+                }
+            }
+            else {
+                this.resetGridColl(this.targetGrid, 'top', false);
+                this.resetGridColl(this.targetGrid, 'right', false);
+                this.resetGridColl(this.targetGrid, 'bottom', false);
+                this.resetGridColl(this.targetGrid, 'left', false);
+            }
+        }
+    };
     // Get all the intermediated points from target grid
     LineRouting.prototype.getIntermediatePoints = function (target) {
         var distance;
@@ -44501,21 +44627,21 @@ var LineRouting = /** @__PURE__ @class */ (function () {
         this.intermediatePoints.reverse();
         if (this.intermediatePoints[0].x === this.intermediatePoints[1].x) {
             if (this.intermediatePoints[0].y < this.intermediatePoints[1].y) {
-                distance = this.neigbour(this.startGrid, 'bottom', undefined);
+                distance = this.neigbour(this.startGrid, 'bottom', undefined, true);
                 this.intermediatePoints[0].y += distance - 1;
             }
             else {
-                distance = this.neigbour(this.startGrid, 'top', undefined);
+                distance = this.neigbour(this.startGrid, 'top', undefined, true);
                 this.intermediatePoints[0].y -= distance - 1;
             }
         }
         else {
             if (this.intermediatePoints[0].x < this.intermediatePoints[1].x) {
-                distance = this.neigbour(this.startGrid, 'right', undefined);
+                distance = this.neigbour(this.startGrid, 'right', undefined, true);
                 this.intermediatePoints[0].x += distance - 1;
             }
             else {
-                distance = this.neigbour(this.startGrid, 'left', undefined);
+                distance = this.neigbour(this.startGrid, 'left', undefined, true);
                 this.intermediatePoints[0].x -= distance - 1;
             }
         }
@@ -44638,7 +44764,7 @@ var LineRouting = /** @__PURE__ @class */ (function () {
     LineRouting.prototype.findPath = function (startGrid) {
         var intermediatePoint;
         var collection = [];
-        var neigbours = this.findNearestNeigbours(startGrid, this.gridCollection);
+        var neigbours = this.findNearestNeigbours(startGrid, this.gridCollection, true);
         for (var i = 0; i < neigbours.length; i++) {
             intermediatePoint = this.findIntermediatePoints(neigbours[i].gridX, neigbours[i].gridY, startGrid.gridX, startGrid.gridY, this.targetGrid.gridX, this.targetGrid.gridY);
             if (intermediatePoint !== null) {
@@ -44689,7 +44815,7 @@ var LineRouting = /** @__PURE__ @class */ (function () {
         return t + e;
     };
     // Find the nearest neigbour from the current boundaries, the neigbour is use to find next intermdiate point.
-    LineRouting.prototype.findNearestNeigbours = function (startGrid, gridCollection) {
+    LineRouting.prototype.findNearestNeigbours = function (startGrid, gridCollection, isSource) {
         var neigbours = [];
         var parent = startGrid.parent;
         if (parent) {
@@ -44725,14 +44851,14 @@ var LineRouting = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            this.neigbour(startGrid, 'top', neigbours);
-            this.neigbour(startGrid, 'right', neigbours);
-            this.neigbour(startGrid, 'bottom', neigbours);
-            this.neigbour(startGrid, 'left', neigbours);
+            this.neigbour(startGrid, 'top', neigbours, isSource);
+            this.neigbour(startGrid, 'right', neigbours, isSource);
+            this.neigbour(startGrid, 'bottom', neigbours, isSource);
+            this.neigbour(startGrid, 'left', neigbours, isSource);
         }
         return neigbours;
     };
-    LineRouting.prototype.neigbour = function (startGrid, direction, neigbours) {
+    LineRouting.prototype.neigbour = function (startGrid, direction, neigbours, isSource) {
         var i = 1;
         var nearGrid;
         while (i > 0) {
@@ -44741,11 +44867,41 @@ var LineRouting = /** @__PURE__ @class */ (function () {
             var y = (direction === 'right' || direction === 'left') ?
                 (startGrid.gridY) : ((direction === 'top') ? startGrid.gridY - i : startGrid.gridY + i);
             nearGrid = this.gridCollection[x][y];
-            if (nearGrid && this.sourceGridCollection.indexOf(nearGrid) === -1) {
+            if (nearGrid && ((isSource && this.sourceGridCollection.indexOf(nearGrid) === -1)
+                || (!isSource && this.targetGridCollection.indexOf(nearGrid) === -1))) {
                 if (neigbours && this.isWalkable(x, y)) {
                     neigbours.push(nearGrid);
                 }
                 return i;
+            }
+            if (x > 0 && y > 0) {
+                i++;
+            }
+            else {
+                break;
+            }
+        }
+        return null;
+    };
+    LineRouting.prototype.resetGridColl = function (grid, direction, isSource) {
+        var i = 1;
+        var nearGrid;
+        while (i > 0) {
+            var x = (direction === 'top' || direction === 'bottom') ?
+                (grid.gridX) : ((direction === 'left') ? grid.gridX - i : grid.gridX + i);
+            var y = (direction === 'right' || direction === 'left') ?
+                (grid.gridY) : ((direction === 'top') ? grid.gridY - i : grid.gridY + i);
+            nearGrid = this.gridCollection[x][y];
+            if (nearGrid && ((isSource && this.sourceGridCollection.indexOf(nearGrid) === -1) ||
+                (!isSource && this.targetGridCollection.indexOf(nearGrid) === -1))) {
+                if (this.isWalkable(x, y)) {
+                    break;
+                }
+                else {
+                    var grid_1 = this.gridCollection[x][y];
+                    grid_1.nodeId = [];
+                    grid_1.walkable = true;
+                }
             }
             if (x > 0 && y > 0) {
                 i++;
@@ -50239,6 +50395,9 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
         if (element) {
             element.setAttribute('paletteId', this.element.id);
         }
+        if (isBlazor()) {
+            e.bindEvents(e.dragElement);
+        }
     };
     SymbolPalette.prototype.dragStop = function (e) {
         if (!parentsUntil(e.target, 'e-diagram')) {
@@ -50876,6 +51035,7 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
         }
         var attr = ({
             id: this.canvas.id + '_overviewsvg',
+            class: 'overviewsvg',
             version: '1.1',
             xlink: 'http://www.w3.org/1999/xlink',
             'style': 'position:absolute;left:0px;top:0px; aria-label:Specifies overview',
@@ -51089,7 +51249,7 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
         var difx = this.currentPoint.x - this.prevPoint.x;
         var dify = this.currentPoint.y - this.prevPoint.y;
         var zoom = Math.min(this.parent.scroller.viewPortWidth / offwidth, this.parent.scroller.viewPortHeight / offheight);
-        var svg = this.element.getElementsByTagName('svg')[2];
+        var svg = this.element.getElementsByClassName('overviewsvg')[0];
         var panel = svg.getElementById(this.canvas.id
             + 'overviewrect');
         var bounds = panel.getBBox();
@@ -51163,11 +51323,30 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
             this.parent.pan(delx, dely, focusPoint);
         }
     };
+    Overview.prototype.updateHtmlLayer = function (view) {
+        var htmlLayer = getHTMLLayer(view.element.id);
+        var bounds = this.parent.scroller.getPageBounds(true);
+        var width = bounds.width;
+        var height = bounds.height;
+        var w = Math.max(width, this.parent.scroller.viewPortWidth);
+        var h = Math.max(height, this.parent.scroller.viewPortHeight);
+        var scale = Math.min(Number(this.model.width) / w, Number(this.model.height) / h);
+        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + this.parent.scroller.transform.tx + 'px,'
+            + (this.parent.scroller.transform.ty) + 'px)';
+    };
     /** @private */
     Overview.prototype.updateView = function (view) {
         var width;
         var height;
         var bounds = this.parent.scroller.getPageBounds();
+        var diagramBoundsWidth = this.parent.scroller.viewPortWidth / this.parent.scroller.currentZoom;
+        var diagramBoundsHeight = this.parent.scroller.viewPortHeight / this.parent.scroller.currentZoom;
+        var transformWidth = 0;
+        var transformHeight = 0;
+        if (this.parent.scroller.currentZoom < 1 && diagramBoundsWidth > bounds.width && diagramBoundsHeight > bounds.height) {
+            transformWidth = (diagramBoundsWidth - bounds.width) / 2;
+            transformHeight = (diagramBoundsHeight - bounds.height) / 2;
+        }
         width = bounds.width;
         height = bounds.height;
         var offwidth = Number(this.model.width);
@@ -51180,7 +51359,8 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
         scale = Math.min(offwidth / w, offheight / h);
         var htmlLayer = document.getElementById(this.element.id + '_htmlLayer');
         htmlLayer.style.webkitTransform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
-        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + -bounds.x + 'px,' + (-bounds.y) + 'px)';
+        htmlLayer.style.transform = 'scale(' + scale + ') translate(' + ((-(bounds.x)) + transformWidth) + 'px,'
+            + (((-bounds.y) + transformHeight)) + 'px)';
         var ovw = document.getElementById(this.element.id + '_overviewlayer');
         ovw.setAttribute('transform', 'translate(' + (-bounds.x * scale) + ',' + (-bounds.y * scale) + ')');
         this.horizontalOffset = bounds.x * scale;

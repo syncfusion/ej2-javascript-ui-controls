@@ -121,12 +121,14 @@ describe('Chart Control Series', () => {
                 let series1: HTMLElement = document.getElementById('container_Series_1_Point_3_Symbol');
                 expect(series1.getAttribute('rx') == '5').toBe(true);
                 expect(series1.getAttribute('ry') == '5').toBe(true);
+                expect(series1.getAttribute('cx') == '353.25').toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
             chartObj.series[1].marker.visible = true;
             chartObj.series[1].marker.width = 10;
             chartObj.series[1].marker.height = 10;
+            chartObj.series[1].marker.offset = { x : -15 };
             chartObj.refresh();
         });
 
@@ -140,6 +142,7 @@ describe('Chart Control Series', () => {
             };
             chartObj.loaded = loaded;
             chartObj.series[1].marker.width = 0;
+            chartObj.series[1].marker.offset = { x : 0, y : 0 };
             chartObj.series[1].marker.height = 0;
             chartObj.refresh();
         });

@@ -139,9 +139,9 @@ export class Tooltip {
                 },
                 textStyle: {
                     size: this.heatMap.tooltipSettings.textStyle.size,
-                    fontWeight: this.heatMap.tooltipSettings.textStyle.fontWeight,
+                    fontWeight: this.heatMap.tooltipSettings.textStyle.fontWeight.toLowerCase(),
                     color: this.heatMap.tooltipSettings.textStyle.color,
-                    fontStyle: this.heatMap.tooltipSettings.textStyle.fontStyle,
+                    fontStyle: this.heatMap.tooltipSettings.textStyle.fontStyle.toLowerCase(),
                     fontFamily: this.heatMap.tooltipSettings.textStyle.fontFamily
                 },
                 areaBounds:

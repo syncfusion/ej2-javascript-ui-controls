@@ -291,3 +291,13 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
     // tslint:disable-next-line
     annotation: any;
 }
+
+/** 
+ * This event arguments provides the necessary information about thumbnail click event.
+ */
+export interface ThumbnailClickEventArgs extends BaseEventArgs {
+    /**
+     * Page number of the thumbnail in which click action is performed
+     */
+    pageNumber: number;
+}

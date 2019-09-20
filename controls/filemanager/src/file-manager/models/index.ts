@@ -15,3 +15,5 @@ export * from './navigation-pane-settings-model';
 export * from './navigation-pane-settings';
 export * from './upload-settings';
 export * from './upload-settings-model';
+export * from './column';
+export * from './column-model';

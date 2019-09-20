@@ -369,12 +369,14 @@ export class HtmlEditor {
         let nodes: Node[] = getTextNodesUnder(
             this.parent.contentModule.getDocument(),
             (this.parent.contentModule.getEditPanel() as HTMLElement));
-        this.parent.formatter.editorManager.nodeSelection.setSelectionText(
-            this.parent.contentModule.getDocument(),
-            nodes[0],
-            nodes[nodes.length - 1],
-            0,
-            nodes[nodes.length - 1].textContent.length);
+        if (nodes.length > 0) {
+            this.parent.formatter.editorManager.nodeSelection.setSelectionText(
+                this.parent.contentModule.getDocument(),
+                nodes[0],
+                nodes[nodes.length - 1],
+                0,
+                nodes[nodes.length - 1].textContent.length);
+            }
     }
 
     /**

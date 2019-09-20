@@ -122,7 +122,7 @@ export class RangeSlider {
         this.sliderY = bounds.y > this.thumpY ? this.thumpY : bounds.y;
         if (sliderGroup && !control.disableRangeSelector) {
             shadowElement = render.createDefs();
-            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="' + this.control.element.id + '_shadow' + '" x="0" ' +
+            shadowElement.innerHTML = '<rect xmlns="http://www.w3.org/2000/svg" id="path-1" x="0" ' +
                 'y="' + this.thumpY + '" width="' + control.themeStyle.thumbWidth + '" height="' + control.themeStyle.thumbHeight + '"' +
                 ' rx="' + (thump.type === 'Circle' ? '50%' : '0%') + '"/>' +
                 '<filter xmlns="http://www.w3.org/2000/svg" x="-25.0%" y="-20.0%" width="150.0%" height="150.0%"' +
@@ -382,7 +382,7 @@ export class RangeSlider {
         let control: RangeNavigator = this.control;
         let range: VisibleRangeModel = control.chartSeries.xAxis.actualRange;
         let trigger: boolean = control.enableDeferredUpdate;
-        let endbledTooltip: boolean = control.tooltip.enable;
+        let enabledTooltip: boolean = control.tooltip.enable;
         if (control.stockChart) {
             control.stockChart.zoomChange = false;
         }
@@ -416,11 +416,11 @@ export class RangeSlider {
             trigger = false;
         }
         if (this.isDrag && control.allowSnapping) {
-            this.setAllowSnapping(control, this.currentStart, this.currentEnd, trigger, endbledTooltip);
+            this.setAllowSnapping(control, this.currentStart, this.currentEnd, trigger, enabledTooltip);
             trigger = false;
         }
         if (trigger) {
-            this.setSlider(this.currentStart, this.currentEnd, true, endbledTooltip);
+            this.setSlider(this.currentStart, this.currentEnd, true, enabledTooltip);
         }
         if (this.currentSlider !== null) {
             if (this.control.periodSelectorSettings.periods.length > 0) {
@@ -491,6 +491,9 @@ export class RangeSlider {
      * Mouse Cancel Handler
      */
     private mouseCancelHandler(): void {
+        if (this.isDrag && this.control.allowSnapping) {
+            this.setAllowSnapping(this.control, this.currentStart, this.currentEnd, false, this.control.tooltip.enable);
+        }
         this.isDrag = false;
         this.currentSlider = null;
         this.control.startValue = this.currentStart;

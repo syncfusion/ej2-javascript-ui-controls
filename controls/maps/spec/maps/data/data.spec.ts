@@ -9062,6 +9062,1199 @@ export let usMap: Object =
 ]};
     
 
+export let populationDetails: object[] =[
+    {
+        "code": "Côte",
+        "value": "1000",
+        "name": "Côte d'Ivoire",
+        "population": 1000000000,
+        "density": -1
+    },
+    {
+        "code": "BH",
+        "value": "2000",
+        "name": "Bhutan",
+        "population": 202002020,
+        "density": -1
+    },
+    {
+        "code": "Ec",
+        "value": "2000",
+        "name": "Ecuador",
+        "population": 10102002,
+        "density": -1
+    },
+	{
+		"code": "AF",
+        "value": 53,
+        "name": "Afghanistan",
+        "population": 29863010,
+        "density": 119
+	},
+	{
+		"code": "AL",
+		"value": 117,
+        "name": "Albania",
+        "population": 3195000,
+        "density": 111
+	},
+	{
+		"code": "DZ",
+		"value": 15,
+        "name": "Algeria",
+        "population": 34895000,
+        "density": 15
+	},
+	{
+		"code": "AO",
+		"value": 15,
+        "name": "Angola",
+        "population": 18498000,
+        "density": 15
+	},
+	{
+		"code": "AR",
+		"value": 15,
+        "name": "Argentina",
+        "population": 40091359,
+        "density": 14
+	},
+	{
+		"code": "AM",
+		"value": 109,
+        "name": "Armenia",
+        "population": 3230100,
+        "density": 108
+	},
+	{
+		"code": "AU",
+		"value": 3,
+        "name": "Australia",
+        "population": 23839595,
+        "density": 3.3
+	},
+	{
+		"code": "AT",
+		"value": 102,
+        "name": "Austria",
+        "population": 8372930,
+        "density": 100
+	},
+	{
+		"code": "AZ",
+		"value": 110,
+        "name": "Azerbaijan",
+        "population": 9165000,
+        "density": 106
+	},
+	{
+		"code": "BS",
+		"value": 34,
+        "name": "Bahamas",
+        "population": 342000,
+        "density": 25
+	},
+	{
+		"code": "BD",
+		"value": 1142,
+		"name": "Bangladesh",
+        "population": 164994076,
+        "density": 1118
+	},
+	{
+		"code": "BY",
+		"value": 47,
+        "name": "Belarus",
+        "population": 9755106,
+        "density": 47
+	},
+	{
+		"code": "BE",
+		"value": 359,
+        "name": "Belgium",
+        "population": 10827519,
+        "density": 355
+	},
+	{
+		"code": "BZ",
+		"value": 15,
+        "name": "Belize",
+        "population": 322000,
+        "density": 14
+	},
+	{
+		"code": "BJ",
+		"value": 80,
+        "name": "Benin",
+        "population": 8935000,
+        "density": 79
+	},
+	{
+		"code": "BO",
+		"value": 9,
+        "name": "Bolivia",        
+        "population": 9879000,
+        "density": 9
+	},
+	{
+		"code": "BA",
+		"value": 73,
+        "name": "Bosnia and Herz.",
+        "population": 3843126,
+        "density": 75
+	},
+	{
+		"code": "BW",
+		"value": 4,
+        "name": "Botswana",
+        "population": 1950000,
+        "density": 3.4
+	},
+	{
+		"code": "BR",
+		"value": 23,
+        "name": "Brazil",
+        "population": 206598985,
+        "density": 24
+	},
+	{
+		"code": "BN",
+		"value": 76,
+        "name": "Brunei",
+        "population": 400000,
+        "density": 69
+	},
+	{
+		"code": "BG",
+		"value": 69,
+        "name": "Bulgaria",
+        "population": 7351234,
+        "density": 66
+	},
+	{
+		"code": "BF",
+		"value": 60,
+        "name": "Burkina Faso",
+        "population": 15757000,
+        "density": 58
+	},
+	{
+		"code": "BI",
+		"value": 326,
+        "name": "Burundi",
+        "population": 8303000,
+        "density": 298
+	},
+	{
+		"code": "KH",
+		"value": 80,
+        "name": "Cambodia",
+        "population": 14805000,
+        "density": 82
+	},
+	{
+		"code": "CM",
+		"value": 41,
+        "name": "Cameroon",
+        "population": 19522000,
+        "density": 106
+	},
+	{
+		"code": "CA",
+		"value": 4,
+        "name": "Canada",
+        "population": 35151728,
+        "density": 3.4
+	},
+	{
+		"code": "CF",
+		"value": 7,
+        "name": "Central African Rep.",
+        "population": 4422000,
+        "density": 7.1
+	},
+	{
+		"code": "TD",
+		"value": 9,
+        "name": "Chad",
+        "population": 11274106,
+        "density": 8.8
+	},
+	{
+		"code": "CL",
+		"value": 23,
+        "name": "Chile",
+        "population": 18349928,
+        "density": 24
+	},
+	{
+		"code": "CN",
+		"value": 143,
+        "name": "China",
+        "population": 1389750000,
+        "density": 144
+	},
+	{
+		"code": "CO",
+		"value": 42,
+        "name": "Colombia",
+        "population": 49471496,
+        "density": 43
+	},
+	{
+		"code": "CD",
+		"value": 29,
+        "name": "Dem. Rep. Congo",
+        "population": 68692542,
+        "density": 29
+	},
+	{
+		"code": "CG",
+		"value": 12,
+        "name": "Congo",
+        "population": 3998904,
+        "density": 12
+	},
+	{
+		"code": "CR",
+		"value": 91,
+        "name": "Costa Rica",
+        "population": 4579000,
+        "density": 90
+	},
+	{
+		"code": "HR",
+		"value": 79,
+        "name": "Croatia",
+        "population": 4443000,
+        "density": 79
+	},
+	{
+		"code": "CU",
+		"value": 106,
+        "name": "Cuba",
+        "population": 11241894,
+        "density": 102
+	},
+	{
+		"code": "CY",
+		"value": 119,
+        "name": "Cyprus",
+        "population": 801851,
+        "density": 87
+	},
+	{
+		"code": "CZ",
+		"value": 136,
+        "name": "Czech Rep.",
+        "population": 10532770,
+        "density": 134
+	},
+	{
+		"code": "DK",
+		"value": 131,
+        "name": "Denmark",
+        "population": 5532531,
+        "density": 128
+	},
+	{
+		"code": "DJ",
+		"value": 38,
+        "name": "Djibouti",
+        "population": 864000,
+        "density": 38
+	},
+	{
+		"code": "DO",
+		"value": 205,
+        "name": "Dominican Rep.",
+        "population": 10090000,
+        "density": 207
+	},
+	{
+		"code": "EG",
+		"value": 81,
+        "name": "Egypt",
+        "population": 90177649,
+        "density": 90
+	},
+	{
+		"code": "SV",
+		"value": 299,
+        "name": "El Salvador",
+        "population": 6163000,
+        "density": 293
+	},
+	{
+		"code": "ER",
+		"value": 52,
+        "name": "Eritrea",
+        "population": 5073000,
+        "density": 43
+	},
+	{
+		"code": "EE",
+		"value": 32,
+        "name": "Estonia",
+        "population": 1315819,
+        "density": 29
+	},
+	{
+		"code": "ET",
+		"value": 83,
+        "name": "Ethiopia",
+        "population": 79221000,
+        "density": 72
+	},
+	{
+		"code": "FJ",
+		"value": 47,
+        "name": "Fiji",
+        "population":849000,
+        "density": 46
+	},
+	{
+		"code": "FI",
+		"value": 18,
+        "name": "Finland",
+        "population": 5538741,
+        "density": 16
+	},
+	{
+		"code": "FR",
+		"value": 118,
+        "name": "France",
+        "population": 62793432,
+        "density": 114
+	},
+	{
+		"code": "GA",
+		"value": 6,
+        "name": "Gabon",
+        "population": 1475000,
+        "density": 5.5
+	},
+	{
+		"code": "GM",
+		"value": 173,
+        "name": "Gambia",
+        "population": 1705000,
+        "density": 151
+	},
+	{
+		"code": "GE",
+		"value": 78,
+        "name": "Georgia",
+        "population": 4465000,
+        "density": 64
+	},
+	{
+		"code": "DE",
+		"value": 234,
+        "name": "Germany",
+        "population": 81757600,
+        "density": 229
+	},
+	{
+		"code": "GH",
+		"value": 107,
+        "name": "Ghana",
+        "population": 23837000,
+        "density": 100
+	},
+	{
+		"code": "GR",
+		"value": 88,
+        "name": "Greece",
+        "population": 11306183,
+        "density": 86
+	},
+	{
+		"code": "GL",
+		"value": 0.02,
+        "name": "Greenland",
+        "population": 57001,
+        "density": 0.026
+	},
+	{
+		"code": "GT",
+		"value": 134,
+        "name": "Guatemala",
+        "population": 14027000,
+        "density": 129
+	},
+	{
+		"code": "GN",
+		"value": 41,
+        "name": "Guinea",
+        "population": 10069000,
+        "density": 41
+        
+	},
+	{
+		"code": "GW",
+		"value": 54,
+        "name": "Guinea-Bissau",
+        "population": 1611000,
+        "density": 45
+	},
+	{
+		"code": "GY",
+		"value": 4,
+        "name": "Guyana",
+        "population": 762000,
+        "density": 3.5
+	},
+	{
+		"code": "HT",
+		"value": 363,
+        "name": "Haiti",
+        "population": 10033000,
+        "density": 362
+	},
+	{
+		"code": "HN",
+		"value": 68,
+        "name": "Honduras",
+        "population": 7466000,
+        "density": 66
+	},
+	{
+		"code": "HU",
+		"value": 112,
+        "name": "Hungary",
+        "population": 10013628,
+        "density": 108
+	},
+	{
+		"code": "IS",
+		"value": 3,
+        "name": "Iceland",
+        "population": 318452,
+        "density": 3.1
+	},
+	{
+		"code": "IN",
+		"value": 394,
+        "name": "India",
+        "population": 1198003000,
+        "density": 364
+	},
+	{
+		"code": "ID",
+		"value": 132,
+        "name": "Indonesia",
+        "population": 237556363,
+        "density": 121
+	},
+	{
+		"code": "IR",
+		"value": 45,
+        "name": "Iran",
+        "population": 74196000,
+        "density": 117
+	},
+	{
+		"code": "IQ",
+		"value": 73,
+        "name": "Iraq",
+        "population": 30747000,
+        "density": 70
+	},
+	{
+		"code": "IE",
+		"value": 65,
+        "name": "Ireland",
+        "population": 4581269,
+        "density": 65
+	},
+	{
+		"code": "IL",
+		"value": 352,
+        "name": "Israel",
+        "population": 7697600,
+        "density": 371
+	},
+	{
+		"code": "IT",
+		"value": 206,
+        "name": "Italy",
+        "population": 60200060,
+        "density": 200
+	},
+	{
+		"code": "JM",
+		"value": 250,
+        "name": "Jamaica",
+        "population": 2719000,
+        "density": 247
+	},
+	{
+		"code": "JP",
+		"value": 350,
+        "name": "Japan",
+        "population": 127387000,
+        "density": 337
+	},
+	{
+		"code": "JO",
+		"value": 69,
+        "name": "Jordan",
+        "population": 6316000,
+        "density": 67
+	},
+	{
+		"code": "KZ",
+		"value": 6,
+        "name": "Kazakhstan",
+        "population": 17010000,
+        "density": 6.2
+	},
+	{
+		"code": "KE",
+		"value": 71,
+        "name": "Kenya",
+        "population": 39802000,
+        "density": 69
+	},
+	{
+		"code": "KP",
+		"value": 202,
+        "name": "Dem. Rep. Korea",
+        "population": 24051706,
+        "density": 200
+	},
+	{
+		"code": "KR",
+		"value": 504,
+        "name": "Korea",
+        "population": 48456369,
+        "density": 487
+	},
+	{
+		"code": "XK",
+		"value": 167,
+        "name": "Kosovo",
+        "population": 7800000,
+        "density": 101
+	},
+	{
+		"code": "KW",
+		"value": 154,
+        "name": "Kuwait",
+        "population": 3566437,
+        "density": 200
+	},
+	{
+		"code": "KG",
+		"value": 28,
+        "name": "Kyrgyzstan",
+        "population": 5482000,
+        "density": 27
+	},
+	{
+		"code": "LA",
+		"value": 27,
+        "name": "Lao PDR",
+        "population": 6320000,
+        "density": 27
+	},
+	{
+		"code": "LV",
+		"value": 36,
+        "name": "Latvia",
+        "population":2248961,
+        "density": 35
+	},
+	{
+		"code": "LB",
+		"value": 413,
+        "name": "Lebanon",
+        "population": 4224000,
+        "density": 404
+	},
+	{
+		"code": "LS",
+		"value": 72,
+        "name": "Lesotho",
+        "population": 2067000,
+        "density": 68
+	},
+	{
+		"code": "LR",
+		"value": 41,
+        "name": "Liberia",
+        "population": 3476608,
+        "density": 38
+	},
+	{
+		"code": "LY",
+		"value": 4,
+        "name": "Libya",
+        "population": 6420000,
+        "density": 3.6
+	},
+	{
+		"code": "LT",
+		"value": 53,
+        "name": "Lithuania",
+        "population": 3053800,
+        "density": 47
+	},
+	{
+		"code": "LU",
+		"value": 195,
+        "name": "Luxembourg",
+        "population": 502207,
+        "density": 194
+	},
+	{
+		"code": "MK",
+		"value": 82,
+        "name": "Macedonia",
+        "population": 2114550,
+        "density": 82
+	},
+	{
+		"code": "MG",
+		"value": 36,
+        "name": "Madagascar",
+        "population": 20653556,
+        "density": 35
+	},
+	{
+		"code": "MW",
+		"value": 158,
+        "name": "Malawi",
+        "population": 15263000,
+        "density": 129
+	},
+	{
+		"code": "MY",
+		"value": 86,
+        "name": "Malaysia",
+        "population": 28306700,
+        "density": 86
+	},
+	{
+		"code": "ML",
+		"value": 13,
+        "name": "Mali",
+        "population": 14517176,
+        "density": 12
+	},
+	{
+		"code": "MR",
+		"value": 3,
+        "name": "Mauritania",
+        "population": 3291000,
+        "density": 3.2
+	},
+	{
+		"code": "MX",
+		"value": 58,
+        "name": "Mexico",
+        "population": 107550697,
+        "density": 57
+	},	
+	{
+		"code": "MD",
+		"value": 124,
+        "name": "Moldova",
+        "population": 3567500,
+        "density": 105
+	},
+	{
+		"code": "MC",
+		"value": 17704,
+        "name": "Monaco",
+        "population": 33000,
+        "density": 16923
+	},
+	{
+		"code": "MN",
+		"value": 2,
+        "name": "Mongolia",
+        "population": 2671000,
+        "density": 1.7
+	},
+	{
+		"code": "ME",
+		"value": 47,
+        "name": "Montenegro",
+        "population": 630548,
+        "density": 45
+	},
+	{
+		"code": "MA",
+		"value": 72,
+        "name": "Morocco",
+        "population": 34407605,
+        "density": 77
+	},
+	{
+		"code": "MZ",
+		"value": 30,
+        "name": "Mozambique",
+        "population": 22894000,
+        "density": 29
+	},
+	{
+		"code": "MM",
+		"value": 73,
+        "name": "Myanmar",
+        "population": 50020000,
+        "density": 74
+	},
+	{
+		"code": "NA",
+		"value": 3,
+        "name": "Namibia",
+        "population": 2171000,
+        "density": 2.6
+	},
+	{
+		"code": "NP",
+		"value": 209,
+        "name": "Nepal",
+        "population": 29331000,
+        "density": 109
+	},
+	{
+		"code": "NL",
+		"value": 492,
+        "name": "Netherlands",
+        "population": 17250000,
+        "density": 415
+	},
+	{
+		"code": "NC",
+		"value": 14,
+        "name": "New Caledonia",
+        "population": 244410,
+        "density": 13
+	},
+	{
+		"code": "NZ",
+		"value": 17,
+        "name": "New Zealand",
+        "population": 4315800,
+        "density": 16
+	},
+	{
+		"code": "NI",
+		"value": 48,
+        "name": "Nicaragua",
+        "population": 5743000,
+        "density": 44
+	},
+	{
+		"code": "NE",
+		"value": 12,
+        "name": "Niger",
+        "population": 15290000,
+        "density": 12
+	},
+	{
+		"code": "NG",
+		"value": 174,
+        "name": "Nigeria",
+        "population": 154729000,
+        "density": 167
+	},
+	{
+		"code": "NO",
+		"value": 16,
+        "name": "Norway",
+        "population": 5279970,
+        "density": 14
+	},
+	{
+		"code": "OM",
+		"value": 9,
+        "name": "Oman",
+        "population": 2845000,
+        "density": 9.2
+	},
+	{
+		"code": "PK",
+		"value": 225,
+        "name": "Pakistan",
+        "population": 193231420,
+        "density": 245
+	},
+	{
+		"code": "PA",
+		"value": 47,
+        "name": "Panama",
+        "population": 3454000,
+        "density": 46
+	},
+	{
+		"code": "PG",
+		"value": 15,
+        "name": "Papua New Guinea",
+        "population": 6732000,
+        "density": 15
+	},
+	{
+		"code": "PY",
+		"value": 16,
+        "name": "Paraguay",
+        "population": 6349000,
+        "density": 16
+	},
+	{
+		"code": "PE",
+		"value": 23,
+        "name": "Peru",
+        "population": 29461933,
+        "density": 23
+	},
+	{
+		"code": "PH",
+		"value": 313,
+        "name": "Philippines",
+        "population": 100981437,
+        "density": 337
+	},
+	{
+		"code": "PL",
+		"value": 126,
+        "name": "Poland",
+        "population": 38163895,
+        "density": 122
+	},
+	{
+		"code": "PT",
+		"value": 116,
+        "name": "Portugal",
+        "population": 10636888,
+        "density": 115
+	},
+	{
+		"code": "PR",
+		"value": 449,
+        "name": "Puerto Rico",
+        "population": 3982000,
+        "density": 449
+	},
+	{
+		"code": "WA",
+		"value": 152,
+        "name": "Qatar",
+        "population": 1409000,
+        "density": 128
+	},
+	{
+		"code": "RO",
+		"value": 93,
+        "name": "Romania",
+        "population": 21466174,
+        "density": 90
+	},
+	{
+		"code": "RU",
+		"value": 9,
+        "name": "Russia",
+        "population": 142905208,
+        "density": 8.3
+	},
+	{
+		"code": "RW",
+		"value": 431,
+        "name": "Rwanda",
+        "population": 9998000,
+        "density": 380
+	},
+	{
+		"code": "SA",
+		"value": 14,
+        "name": "Saudi Arabia",
+        "population": 28146658,
+        "density": 12
+	},
+	{
+		"code": "SN",
+		"value": 65,
+        "name": "Senegal",
+        "population": 12534000,
+        "density": 64
+	},
+	{
+		"code": "RS",
+		"value": 83,
+        "name": "Serbia",
+        "population": 7800000,
+        "density": 101
+	},
+	{
+		"code": "SL",
+		"value": 82,
+        "name": "Sierra Leone",
+        "population": 5696000,
+        "density": 79
+	},
+	{
+		"code": "SK",
+		"value": 113,
+        "name": "Slovakia",
+        "population": 5424057,
+        "density": 111
+	},
+	{
+		"code": "SI",
+		"value": 102,
+        "name": "Slovenia",
+        "population": 2192912,
+        "density": 108
+	},
+	{
+		"code": "SB",
+		"value": 19,
+        "name": "Solomon Is.",
+        "population": 523000,
+        "density": 18
+	},
+	{
+		"code": "SO",
+		"value": 15,
+        "name": "Somalia",
+        "population": 9133000,
+        "density": 14
+	},
+	{
+		"code": "ZA",
+		"value": 41,
+        "name": "South Africa",
+        "population": 50586757,
+        "density": 41
+	},
+	{
+		"code": "SS",
+		"value": 13,
+        "name": "S. Sudan",
+        "population": 8260490,
+        "density": 13
+	},
+	{
+		"code": "ES",
+		"value": 92,
+        "name": "Spain",
+        "population": 46087170,
+        "density": 91
+	},
+	{
+		"code": "LK",
+		"value": 333,
+        "name": "Sri Lanka",
+        "population": 20238000,
+        "density": 308
+	},
+	{
+		"code": "SD",
+		"value": 16,
+        "name": "Sudan",
+        "population": 31894000,
+        "density": 17
+	},
+	{
+		"code": "SR",
+		"value": 3,
+        "name": "Suriname",
+        "population": 520000,
+        "density": 3.2
+	},
+	{
+		"code": "SZ",
+		"value": 69,
+        "name": "Swaziland",
+        "population": 1185000,
+        "density": 68
+	},
+	{
+		"code": "SE",
+		"value": 23,
+        "name": "Sweden",
+        "population": 9366092,
+        "density": 21
+	},
+	{
+		"code": "CH",
+		"value": 196,
+        "name": "Switzerland",
+        "population": 7866500,
+        "density": 191
+	},
+	{
+		"code": "SY",
+		"value": 111,
+        "name": "Syria",
+        "population": 21906000,
+        "density": 118
+	},
+	{
+		"code": "TJ",
+		"value": 49,
+        "name": "Tajikistan",
+        "population": 6952000,
+        "density": 49
+	},
+	{
+		"code": "TZ",
+		"value": 51,
+        "name": "Tanzania",
+        "population": 43739000,
+        "density": 46
+	},
+	{
+		"code": "TH",
+		"value": 135,
+        "name": "Thailand",
+        "population": 64232760,
+        "density": 125
+	},
+	{
+		"code": "TP",
+		"value": 76,
+        "name": "Timor-Leste",
+        "population": 1134000,
+        "density": 76
+	},
+	{
+		"code": "TG",
+		"value": 111,
+        "name": "Togo",
+        "population": 6619000,
+        "density": 117
+	},
+	{
+		"code": "TT",
+		"value": 261,
+        "name": "Trinidad and Tobago",
+        "population": 1339000,
+        "density": 261
+	},
+	{
+		"code": "TN",
+		"value": 68,
+        "name": "Tunisia",
+        "population": 10327800,
+        "density": 63
+	},
+	{
+		"code": "TR",
+		"value": 95,
+        "name": "Turkey",
+        "population": 77804122,
+        "density": 93
+	},
+	{
+		"code": "TM",
+		"value": 11,
+        "name": "Turkmenistan",
+        "population": 5110000,
+        "density": 11
+	},
+	{
+		"code": "UG",
+		"value": 170,
+        "name": "Uganda",
+        "population": 32710000,
+        "density": 136
+	},
+	{
+		"code": "UA",
+		"value": 79,
+        "name": "Ukraine",
+        "population": 46936000,
+        "density": 78
+	},
+	{
+		"code": "AE",
+		"value": 90,
+        "name": "United Arab Emirates",
+        "population": 8264070,
+        "density": 99
+	},
+	{
+		"code": "GB",
+		"value": 257,
+        "name": "United Kingdom",
+        "population": 62041708,
+        "density": 255
+	},
+	{
+		"code": "US",
+		"value": 34,
+        "name": "United States",
+        "population": 325020000,
+        "density": 33
+	},
+	{
+		"code": "UY",
+		"value": 19,
+        "name": "Uruguay",
+        "population": 3463197,
+        "density": 20
+	},
+	{
+		"code": "UZ",
+		"value": 66,
+        "name": "Uzbekistan",
+        "population": 27488000,
+        "density": 61
+	},
+	{
+		"code": "VU",
+		"value": 20,
+        "name": "Vanuatu",
+        "population": 240000,
+        "density": 20
+	},
+	{
+		"code": "VE",
+		"value": 33,
+        "name": "Venezuela",
+        "population": 32240855,
+        "density": 35
+	},
+	{
+		"code": "VN",
+		"value": 280,
+        "name": "Vietnam",
+        "population": 85789573,
+        "density": 259
+	},
+	{
+		"code": "EH",
+		"value": 2,
+        "name": "W. Sahara",
+        "population": 513000,
+        "density": 1.9
+	},
+	{
+		"code": "YE",
+		"value": 46,
+        "name": "Yemen",
+        "population": 23580000,
+        "density": 45
+	},
+	{
+		"code": "ZM",
+		"value": 17,
+        "name": "Zambia",
+        "population": 12935000,
+        "density": 17
+	},
+	{
+		"code": "ZW",
+		"value": 32,
+        "name": "Zimbabwe",
+        "population": 13009530,
+        "density": 33
+	}
+];    
 
 
 
@@ -9331,3 +10524,110 @@ export let usState: Object =
     { "type": "Feature", "properties": { "continent": "Africa", "name": "Zimbabwe", "admin": "Zimbabwe" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 31.287890625000017, -22.402050781250011 ], [ 31.197265625, -22.344921875000011 ], [ 31.073437500000011, -22.307812500000011 ], [ 30.916113281250006, -22.290722656250011 ], [ 30.711621093750011, -22.2978515625 ], [ 30.460156250000011, -22.329003906250009 ], [ 30.1904296875, -22.291113281250006 ], [ 29.90234375, -22.184179687500006 ], [ 29.6630859375, -22.146289062500003 ], [ 29.37744140625, -22.192773437500009 ], [ 29.36484375, -22.193945312500006 ], [ 29.315234375000017, -22.15771484375 ], [ 29.237207031250023, -22.079492187500009 ], [ 29.106835937500023, -22.065722656250003 ], [ 29.071484375000011, -22.047460937500006 ], [ 29.042382812500023, -22.018359375 ], [ 29.023339843750023, -21.98125 ], [ 29.015820312500011, -21.93994140625 ], [ 29.037304687500011, -21.811328125 ], [ 29.025585937500011, -21.796875 ], [ 28.99072265625, -21.781445312500011 ], [ 28.919335937500023, -21.766015625 ], [ 28.747753906250011, -21.707617187500006 ], [ 28.532031250000017, -21.651269531250009 ], [ 28.181640625, -21.58935546875 ], [ 28.045605468750011, -21.573046875 ], [ 28.014062500000023, -21.55419921875 ], [ 27.974609375, -21.506738281250009 ], [ 27.907421875000011, -21.359082031250011 ], [ 27.844140625000023, -21.261523437500003 ], [ 27.693457031250006, -21.111035156250011 ], [ 27.66943359375, -21.064257812500003 ], [ 27.676953125000011, -20.94482421875 ], [ 27.688085937500006, -20.848339843750011 ], [ 27.704296875000011, -20.76640625 ], [ 27.696972656250011, -20.689746093750003 ], [ 27.69482421875, -20.59453125 ], [ 27.699609375000023, -20.530664062500009 ], [ 27.679296875, -20.503027343750006 ], [ 27.624609375, -20.483593750000011 ], [ 27.468945312500011, -20.474804687500011 ], [ 27.28076171875, -20.478710937500011 ], [ 27.274609375000011, -20.3818359375 ], [ 27.256738281250023, -20.23203125 ], [ 27.221484375000017, -20.145800781250003 ], [ 27.17822265625, -20.100976562500009 ], [ 27.091796875, -20.05419921875 ], [ 26.916699218750011, -19.990136718750009 ], [ 26.67822265625, -19.892773437500011 ], [ 26.474609375, -19.748632812500006 ], [ 26.241015625000017, -19.5693359375 ], [ 26.168066406250006, -19.538281250000011 ], [ 26.081933593750023, -19.369921875 ], [ 25.95068359375, -19.081738281250011 ], [ 25.959179687500011, -18.985644531250003 ], [ 25.939355468750023, -18.938671875000011 ], [ 25.811914062500023, -18.797070312500011 ], [ 25.78369140625, -18.723535156250009 ], [ 25.76123046875, -18.64921875 ], [ 25.558300781250011, -18.441796875 ], [ 25.4892578125, -18.351269531250011 ], [ 25.436718750000011, -18.234960937500006 ], [ 25.384375, -18.141992187500009 ], [ 25.340234375000023, -18.1044921875 ], [ 25.282421875000011, -18.041210937500011 ], [ 25.242285156250006, -17.969042968750003 ], [ 25.224023437500023, -17.915234375000011 ], [ 25.239062500000017, -17.843066406250003 ], [ 25.2587890625, -17.793554687500006 ], [ 25.451757812500006, -17.845117187500009 ], [ 25.55712890625, -17.849511718750009 ], [ 25.6396484375, -17.824121093750009 ], [ 25.741601562500023, -17.858203125 ], [ 25.86328125, -17.951953125 ], [ 25.995898437500017, -17.969824218750006 ], [ 26.139550781250023, -17.91171875 ], [ 26.333398437500023, -17.929296875 ], [ 26.577539062500023, -18.022558593750006 ], [ 26.779882812500006, -18.04150390625 ], [ 27.020800781250017, -17.958398437500009 ], [ 27.235742187500023, -17.728320312500003 ], [ 27.437890625000023, -17.511914062500011 ], [ 27.63671875, -17.262109375 ], [ 27.756542968750011, -17.060351562500003 ], [ 27.932226562500006, -16.896191406250011 ], [ 28.163769531250011, -16.769726562500011 ], [ 28.399804687500023, -16.662792968750011 ], [ 28.760644531250023, -16.531933593750011 ], [ 28.760546875000017, -16.532128906250009 ], [ 28.832714843750011, -16.424121093750003 ], [ 28.856738281250017, -16.30615234375 ], [ 28.856738281250017, -16.142285156250011 ], [ 28.875585937500006, -16.0361328125 ], [ 28.9130859375, -15.98779296875 ], [ 28.973046875000023, -15.950097656250009 ], [ 29.050585937500017, -15.901171875 ], [ 29.287890625000017, -15.776464843750006 ], [ 29.4873046875, -15.69677734375 ], [ 29.729589843750006, -15.644628906250006 ], [ 29.994921875000017, -15.64404296875 ], [ 30.250683593750011, -15.643457031250009 ], [ 30.39609375, -15.64306640625 ], [ 30.398144531250011, -15.80078125 ], [ 30.409375, -15.978222656250011 ], [ 30.437792968750017, -15.995312500000011 ], [ 30.630175781250017, -15.999218750000011 ], [ 30.938769531250017, -16.01171875 ], [ 31.236230468750023, -16.023632812500011 ], [ 31.426171875000023, -16.15234375 ], [ 31.48984375, -16.1796875 ], [ 31.687597656250006, -16.214160156250003 ], [ 31.939843750000023, -16.428808593750006 ], [ 32.243261718750006, -16.44873046875 ], [ 32.451953125000017, -16.515722656250006 ], [ 32.635839843750006, -16.589453125 ], [ 32.741796875, -16.677636718750009 ], [ 32.810253906250011, -16.69765625 ], [ 32.902929687500006, -16.704199218750006 ], [ 32.948046875000017, -16.712304687500009 ], [ 32.937890625000023, -16.775976562500006 ], [ 32.876269531250017, -16.88359375 ], [ 32.884375, -17.037792968750011 ], [ 32.969335937500006, -17.2515625 ], [ 32.980761718750017, -17.4375 ], [ 32.9546875, -17.765429687500003 ], [ 32.95556640625, -18.082910156250009 ], [ 32.964648437500017, -18.1962890625 ], [ 32.978515625, -18.271484375 ], [ 32.996386718750017, -18.312597656250006 ], [ 32.993066406250023, -18.359570312500011 ], [ 32.942480468750006, -18.49267578125 ], [ 32.901660156250017, -18.632910156250006 ], [ 32.900292968750023, -18.6890625 ], [ 32.884570312500017, -18.728515625 ], [ 32.8544921875, -18.763671875 ], [ 32.721972656250017, -18.828417968750003 ], [ 32.69921875, -18.868457031250003 ], [ 32.69970703125, -18.94091796875 ], [ 32.716503906250011, -19.001855468750009 ], [ 32.766210937500006, -19.024316406250009 ], [ 32.826171875, -19.058789062500011 ], [ 32.849804687500011, -19.104394531250009 ], [ 32.85, -19.152441406250006 ], [ 32.830957031250023, -19.241406250000011 ], [ 32.777636718750017, -19.388769531250006 ], [ 32.830761718750011, -19.558203125 ], [ 32.890429687500017, -19.668066406250006 ], [ 32.97265625, -19.79541015625 ], [ 33.006738281250023, -19.873828125 ], [ 33.0048828125, -19.93017578125 ], [ 32.992773437500006, -19.98486328125 ], [ 32.86962890625, -20.2171875 ], [ 32.780859375, -20.361523437500011 ], [ 32.672558593750011, -20.51611328125 ], [ 32.529296875, -20.613085937500003 ], [ 32.492382812500011, -20.659765625 ], [ 32.477636718750006, -20.712988281250006 ], [ 32.482812500000023, -20.82890625 ], [ 32.476171875, -20.950097656250009 ], [ 32.353613281250006, -21.136523437500003 ], [ 32.429785156250006, -21.297070312500011 ], [ 32.412402343750017, -21.311816406250003 ], [ 32.37109375, -21.334863281250009 ], [ 32.194726562500023, -21.515429687500003 ], [ 32.016308593750011, -21.698046875 ], [ 31.885937500000011, -21.83154296875 ], [ 31.737695312500023, -21.9833984375 ], [ 31.571484375000011, -22.153515625000011 ], [ 31.429492187500017, -22.298828125 ], [ 31.287890625000017, -22.402050781250011 ] ] ] } }
     ]
 }
+
+export let internetUsers: any = [
+    { 'rank': 1, 'name': 'China', 'value': bubblesize(746662194), 'color': '#7F38A0', 'population': 746662194},
+    { 'rank': 2, 'name': 'India', 'value': bubblesize(391292635), 'color': '#7F38A0 ', 'population': 391292635 },
+    { 'rank': 3, 'name': 'United States', 'value': bubblesize(245436423), 'color': '#99295D ','population': 245436423 },
+    { 'rank': 4, 'name': 'Brazil', 'value': bubblesize(123927230), 'color': '#364A98','population': 123927230 },
+    { 'rank': 5, 'name': 'Japan', 'value': bubblesize(117528631), 'color': '#7F38A0 ','population': 117528631 },
+    { 'rank': 6, 'name': 'Russia', 'value': bubblesize(110003284), 'color': '#2E769F','population': 110003284 },
+    { 'rank': 7, 'name': 'Mexico', 'value': bubblesize(75937568), 'color': '#99295D ','population': 75937568 },
+    { 'rank': 8, 'name': 'Germany', 'value': bubblesize(73436503), 'color': '#2E769F', 'population': 73436503 },
+    { 'rank': 9, 'name': 'Indonesia', 'value': bubblesize(66244991), 'color': '#7F38A0 ', 'population': 66244991 },
+    { 'rank': 10, 'name': 'United Kingdom', 'value': bubblesize(62354410), 'color': '#2E769F', 'population': 62354410 },
+    { 'rank': 11, 'name': 'Philippines', 'value': bubblesize(57342723), 'color': '#7F38A0 ', 'population': 57342723 },
+    { 'rank': 12, 'name': 'France', 'value': bubblesize(55413854), 'color': '#2E769F', 'population': 55413854 },
+    { 'rank': 13, 'name': 'Nigeria', 'value': bubblesize(47743541), 'color': '#816F28', 'population': 47743541 },
+    { 'rank': 14, 'name': 'South Africa', 'value': bubblesize(47094267), 'color': '#816F28', 'population': 47094267 },
+    { 'rank': 15, 'name': 'Turkey', 'value': bubblesize(46395500), 'color': '#2E769F', 'population': 46395500 },
+    { 'rank': 16, 'name': 'Vietnam', 'value': bubblesize(43974618), 'color': '#7F38A0 ', 'population': 43974618 },
+    { 'rank': 17, 'name': 'Iran', 'value': bubblesize(42731675), 'color': '#7F38A0 ', 'population': 42731675 },
+    { 'rank': 18, 'name': 'Egypt', 'value': bubblesize(37519531), 'color': '#816F28', 'population': 37519531 },
+    { 'rank': 19, 'name': 'Spain', 'value': bubblesize(37337607), 'color': '#2E769F', 'population': 37337607 },
+    { 'rank': 20, 'name': 'Italy', 'value': bubblesize(36442438), 'color': '#2E769F', 'population': 36442438 },
+    { 'rank': 21, 'name': 'Thailand', 'value': bubblesize(32710169), 'color': '#7F38A0 ', 'population': 32710169 },
+    { 'rank': 22, 'name': 'Canada', 'value': bubblesize(32602776), 'color': '#99295D ', 'population': 32602776 },
+    { 'rank': 23, 'name': 'Argentina', 'value': bubblesize(30758972), 'color': '#364A98', 'population': 30758972 },
+    { 'rank': 24, 'name': 'South Africa', 'value': bubblesize(30248355), 'color': '#816F28', 'population': 30248355 },
+    { 'rank': 25, 'name': 'Pakistan', 'value': bubblesize(29965859), 'color': '#7F38A0 ', 'population': 29965859 },
+    { 'rank': 26, 'name': 'Bangladesh', 'value': bubblesize(29738660), 'color': '#7F38A0 ', 'population': 29738660 },
+    { 'rank': 27, 'name': 'Colombia', 'value': bubblesize(28287098), 'color': '#364A98', 'population': 28287098 },
+    { 'rank': 28, 'name': 'Poland', 'value': bubblesize(28018492), 'color': '#2E769F', 'population': 28018492 },
+    { 'rank': 29, 'name': 'Malaysia', 'value': bubblesize(24572446), 'color': '#7F38A0 ', 'population': 24572446 },
+    { 'rank': 30, 'name': 'Saudi Arabia', 'value': bubblesize(23803319), 'color': '#7F38A0 ', 'population': 23803319 },
+
+];
+
+export let bubbleData: any = [
+    {
+      "country": "AD",
+      "latitude": 42.546245,
+      "longitude": 1.601554,
+      "name": "Andorra",
+      "Measure_Example": 12
+    },
+    {
+      "country": "AE",
+      "latitude": 23.424076,
+      "longitude": 53.847818,
+      "name": "United Arab Emirates",
+      "Measure_Example": 34
+    },
+    {
+      "country": "AF",
+      "latitude": 33.93911,
+      "longitude": 67.709953,
+      "name": "Afghanistan",
+      "Measure_Example": 56
+    },
+    {
+      "country": "AG",
+      "latitude": 17.060816,
+      "longitude": -61.796428,
+      "name": "Antigua and Barbuda",
+      "Measure_Example": 78
+    },
+    {
+      "country": "AI",
+      "latitude": 18.220554,
+      "longitude": -63.068615,
+      "name": "Anguilla",
+      "Measure_Example": 90
+    },
+    {
+      "country": "AL",
+      "latitude": 41.153332,
+      "longitude": 20.168331,
+      "name": "Albania",
+      "Measure_Example": 1
+    },
+    {
+      "country": "AM",
+      "latitude": 40.069099,
+      "longitude": 45.038189,
+      "name": "Armenia",
+      "Measure_Example": 23
+    },
+    {
+      "country": "AN",
+      "latitude": 12.226079,
+      "longitude": -69.060087,
+      "name": "Netherlands Antilles",
+      "Measure_Example": 34
+    },
+    {
+      "country": "AO",
+      "latitude": -11.202692,
+      "longitude": 17.873887,
+      "name": "Angola",
+      "Measure_Example": 56
+    },
+    {
+      "country": "AQ",
+      "latitude": -75.250973,
+      "longitude": -0.071389,
+      "name": "Antarctica",
+      "Measure_Example": 78
+    }
+];

@@ -1,4 +1,4 @@
-import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { LabelPosition, Alignment, HighLightMode, SelectionMode, LabelIntersectAction, LabelPlacement } from '../utils/enum';import { LabelAlignment, LegendShape, LegendPosition, LegendMode, LegendOrientation } from '../utils/enum';import { Location } from '../utils/helper';import { defaultFont } from './constants';
+import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-base';import { LabelPosition, Alignment, HighLightMode, SelectionMode, LabelIntersectAction, LabelPlacement } from '../utils/enum';import { LabelAlignment, LegendShape, LegendPosition, LegendMode, LegendOrientation } from '../utils/enum';import { Location } from '../utils/helper';
 import {MarkerShape} from "./base";
 
 /**
@@ -70,7 +70,7 @@ export interface FontModel {
 
     /**
      * fontFamily for the text.
-     * @default ''
+     * @default null
      */
     fontFamily?: string;
 
@@ -510,13 +510,13 @@ export interface TooltipSettingsModel {
 
     /**
      * To fill the tooltip background.
-     * @default '#000816'
+     * @default null
      */
     fill?: string;
 
     /**
      * Specifies the opacity for fill.
-     * @default 0.75
+     * @default null
      */
     opacity?: number;
 

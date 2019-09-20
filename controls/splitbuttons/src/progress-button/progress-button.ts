@@ -1,6 +1,6 @@
 import { Button, IconPosition } from '@syncfusion/ej2-buttons';
 import { EventHandler, Property, INotifyPropertyChanged, NotifyPropertyChanges, Animation, Effect, attributes } from '@syncfusion/ej2-base';
-import { EmitType, Event, BaseEventArgs, remove, removeClass, Complex, ChildProperty } from '@syncfusion/ej2-base';
+import { EmitType, Event, BaseEventArgs, remove, removeClass, Complex, ChildProperty, isBlazor } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { ProgressButtonModel, SpinSettingsModel, AnimationSettingsModel } from './progress-button-model';
 
@@ -336,15 +336,37 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     }
 
     private setContent(): void {
-        let cont: string = this.element.innerHTML;
-        if (Object.keys(window).indexOf('ejsInterop') === -1) {
-            while (this.element.firstChild) {
-                this.element.removeChild(this.element.firstChild);
-            }
+        let cont: string;
+        if (isBlazor()) {
+            cont = this.content;
+            this.setContentIcon(cont);
         } else {
+            cont = this.element.innerHTML;
             this.element.innerHTML = '';
+            this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
         }
-        this.element.appendChild(this.createElement('span', { className: CONTENTCLS, innerHTML: cont }));
+    }
+
+    private setContentIcon(content: string): void {
+        let contElem: HTMLElement = this.createElement('span', { className: CONTENTCLS, innerHTML: content });
+        if (this.iconCss) {
+            let span: HTMLElement = this.createElement('span', { className: 'e-btn-icon ' + this.iconCss });
+            if (!this.element.textContent.trim()) {
+                this.element.classList.add('e-icon-btn');
+            } else {
+                span.classList.add('e-icon-' + this.iconPosition.toLowerCase());
+                if (this.iconPosition === 'Top' || this.iconPosition === 'Bottom') {
+                    this.element.classList.add('e-' + this.iconPosition.toLowerCase() + '-icon-btn');
+                }
+            }
+            let node: Node = contElem.childNodes[0];
+            if (node && (this.iconPosition === 'Left' || this.iconPosition === 'Top')) {
+                contElem.insertBefore(span, node);
+            } else {
+                contElem.appendChild(span);
+            }
+        }
+        this.element.appendChild(contElem);
     }
 
     private clickHandler(): void {
@@ -548,10 +570,23 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'content':
-                    this.setContent();
-                    this.createSpinner();
-                    if (this.enableProgress) {
-                        this.createProgress();
+                    if (isBlazor()) {
+                        let btnElem: HTMLElement = this.element.querySelector('.e-btn-content');
+                        if (this.iconCss) {
+                            if (this.iconPosition === 'Left' || this.iconPosition === 'Top') {
+                                btnElem.childNodes[1].textContent = this.content;
+                            } else {
+                                btnElem.childNodes[0].textContent = this.content;
+                            }
+                        } else {
+                            btnElem.textContent = this.content;
+                        }
+                    } else {
+                        this.setContent();
+                        this.createSpinner();
+                        if (this.enableProgress) {
+                            this.createProgress();
+                        }
                     }
                     ele.setAttribute('aria-label', ele.textContent + ' progress');
                     break;

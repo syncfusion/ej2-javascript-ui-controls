@@ -32,7 +32,10 @@ describe('TimePicker module', () => {
             editorObj = renderEditor({
                 mode: 'Inline',
                 type: 'Time',
-                value: currentDate
+                value: currentDate,
+                model: {
+                    cssClass: 'customCSS'
+                }
             });
             ele = editorObj.element;
             done();
@@ -53,6 +56,9 @@ describe('TimePicker module', () => {
         it('Clear icon availability testing', () => {
             expect(editorObj.timeModule.compObj.showClearButton).toBe(true);
             expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('cssClass availability testing', () => {
+            expect(editorObj.model.cssClass === 'customCSS e-editable-elements').toBe(true);
         });
         it('Clear icon availability testing for false', () => {
             editorObj.timeModule.compObj.showClearButton = false;

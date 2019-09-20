@@ -1445,7 +1445,7 @@ var Animations = /** @__PURE__ @class */ (function () {
                 markerElement.setAttribute('d', currentPath);
                 pointer.startValue = pointer.currentValue;
                 pointer.animationComplete = true;
-                _this.gauge.trigger(animationComplete, _this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
+                _this.gauge.trigger(animationComplete, { axis: !_this.gauge.isBlazor ? axis : null, pointer: pointer });
             }
         });
     };
@@ -1564,7 +1564,7 @@ var Animations = /** @__PURE__ @class */ (function () {
                     }
                 }
                 pointer.startValue = pointer.currentValue;
-                _this.gauge.trigger(animationComplete, _this.gauge.isBlazor ? {} : { axis: axis, pointer: pointer });
+                _this.gauge.trigger(animationComplete, { axis: !_this.gauge.isBlazor ? axis : null, pointer: pointer });
             }
         });
     };
@@ -1909,6 +1909,10 @@ var Annotations = /** @__PURE__ @class */ (function () {
             annotation: annotation, textStyle: annotation.font
         };
         argsData.textStyle.color = annotation.font.color || this.gauge.themeStyle.labelColor;
+        if (this.gauge.isBlazor) {
+            var cancel = argsData.cancel, name_1 = argsData.name, content = argsData.content, annotation_1 = argsData.annotation, textStyle = argsData.textStyle;
+            argsData = { cancel: cancel, name: name_1, content: content, annotation: annotation_1, textStyle: textStyle };
+        }
         this.gauge.trigger(annotationRender, argsData, function (observerArgs) {
             if (!argsData.cancel) {
                 var blazor = 'Blazor';
@@ -2064,15 +2068,25 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                 });
                 document.getElementById(this.gauge.element.id + '_Secondary_Element').appendChild(tooltipEle);
             }
+            if (tooltipEle.childElementCount !== 0 && !this.gauge.pointerDrag) {
+                return null;
+            }
             var location_1 = this.getTooltipLocation();
             var args_1 = {
-                name: tooltipRender, cancel: false, gauge: this.gauge, event: e, location: location_1, content: tooltipContent,
-                tooltip: this.tooltip, axis: this.currentAxis, pointer: this.currentPointer
+                name: tooltipRender,
+                cancel: false,
+                gauge: this.gauge,
+                event: e,
+                location: location_1,
+                content: tooltipContent,
+                tooltip: this.tooltip,
+                axis: this.currentAxis,
+                pointer: this.currentPointer
             };
             var tooltipPos_1 = this.getTooltipPosition();
             location_1.y += (this.tooltip.template && tooltipPos_1 === 'Top') ? 20 : 0;
             location_1.x += (this.tooltip.template && tooltipPos_1 === 'Right') ? 20 : 0;
-            this.gauge.trigger('tooltipRender', args_1, function (observedArgs) {
+            this.gauge.trigger(tooltipRender, args_1, function (observedArgs) {
                 var template = args_1.tooltip.template;
                 if (template !== null && Object.keys(template).length === 1) {
                     template = template[Object.keys(template)[0]];
@@ -2097,22 +2111,17 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                         areaBounds: new Rect(areaRect_1.left, tooltipPos_1 === 'Bottom' ? location_1.y : areaRect_1.top, tooltipPos_1 === 'Right' ? Math.abs(areaRect_1.left - location_1.x) : areaRect_1.width, areaRect_1.height),
                         textStyle: args_1.tooltip.textStyle,
                         border: args_1.tooltip.border,
-                        theme: args_1.gauge.theme
+                        theme: args_1.gauge.theme,
+                        blazorTemplate: { name: 'TooltipTemplate', parent: _this.gauge.tooltip }
                     });
                     _this.svgTooltip.opacity = _this.gauge.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
                     _this.svgTooltip.appendTo(tooltipEle);
-                    if (_this.gauge.tooltip.template) {
-                        updateBlazorTemplate(_this.gauge.element.id + 'Template', 'Template');
-                    }
                 }
             });
         }
         else {
             clearTimeout(this.clearTimeout);
             this.clearTimeout = setTimeout(this.removeTooltip.bind(this), 2000);
-            if (this.gauge.tooltip.template) {
-                resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
-            }
         }
     };
     GaugeTooltip.prototype.getTooltipPosition = function () {
@@ -2169,7 +2178,6 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
         if (document.getElementsByClassName('EJ2-LinearGauge-Tooltip').length > 0) {
             document.getElementsByClassName('EJ2-LinearGauge-Tooltip')[0].remove();
         }
-        resetBlazorTemplate(this.gauge.element.id + 'Template', 'Template');
     };
     GaugeTooltip.prototype.mouseUpHandler = function (e) {
         this.renderTooltip(e);
@@ -2338,7 +2346,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var blazor = 'Blazor';
         this.isBlazor = window[blazor];
         this.unWireEvents();
-        this.trigger(load, { gauge: this });
+        this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
         this.setCulture();
         this.createSvg();
@@ -2405,7 +2413,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         this.calculateBounds();
         this.renderAxisElements();
         this.renderComplete();
-        this.trigger(loaded, this.isBlazor ? {} : { gauge: this });
+        this.trigger(loaded, { gauge: !this.isBlazor ? this : null });
     };
     /**
      * @private
@@ -2527,7 +2535,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
     LinearGauge.prototype.gaugeResize = function (e) {
         var _this = this;
         var args = {
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             previousSize: new Size(this.availableSize.width, this.availableSize.height),
             name: resized,
             currentSize: new Size(0, 0)
@@ -2542,7 +2550,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
                 _this.calculateBounds();
                 _this.renderAxisElements();
                 args.currentSize = new Size(_this.availableSize.width, _this.availableSize.height);
-                _this.trigger(resized, _this.isBlazor ? {} : args);
+                _this.trigger(resized, args);
                 _this.render();
             }, 500);
         }
@@ -2621,7 +2629,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var clientRect = this.element.getBoundingClientRect();
         var current;
         var args = this.getMouseArgs(e, 'touchstart', gaugeMouseDown);
-        this.trigger('gaugeMouseDown', args, function (mouseArgs) {
+        this.trigger(gaugeMouseDown, args, function (mouseArgs) {
             _this.mouseX = args.x;
             _this.mouseY = args.y;
             if (args.target) {
@@ -2645,7 +2653,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         var current;
         var args = this.getMouseArgs(e, 'touchmove', gaugeMouseMove);
-        this.trigger('gaugeMouseMove', args, function (mouseArgs) {
+        this.trigger(gaugeMouseMove, args, function (mouseArgs) {
             _this.mouseX = args.x;
             _this.mouseY = args.y;
             if (args.target && !args.cancel) {
@@ -2763,10 +2771,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var parentNode;
         var isTouch = e.pointerType === 'touch' || e.pointerType === '2' || e.type === 'touchend';
         var args = this.getMouseArgs(e, 'touchend', gaugeMouseUp);
-        var blazorArgs = {
-            cancel: args.cancel, name: args.name, target: args.target, x: args.x, y: args.y
-        };
-        this.trigger(gaugeMouseUp, this.isBlazor ? blazorArgs : args);
+        this.trigger(gaugeMouseUp, args);
         if (!isNullOrUndefined(this.mouseElement)) {
             parentNode = this.element;
             parentNode.style.cursor = '';
@@ -2789,7 +2794,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         location.y += isTouch ? e.changedTouches[0].clientY : e.clientY;
         return {
             cancel: false, name: name,
-            model: this,
+            model: !this.isBlazor ? this : null,
             x: location.x, y: location.y,
             target: isTouch ? e.target : e.target
         };
@@ -2888,7 +2893,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var value = convertPixelToValue(this.element, this.mouseElement, this.orientation, active.axis, 'tooltip', null);
         var dragArgs = {
             name: 'valueChange',
-            gauge: this,
+            gauge: !this.isBlazor ? this : null,
             element: this.mouseElement,
             axisIndex: active.axisIndex,
             axis: active.axis,
@@ -2896,14 +2901,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
             pointer: active.pointer,
             value: value
         };
-        var dragBlazorArgs = {
-            name: 'valueChange',
-            element: this.mouseElement,
-            axisIndex: active.axisIndex,
-            pointerIndex: active.pointerIndex,
-            value: value
-        };
-        this.trigger(valueChange, this.isBlazor ? dragBlazorArgs : dragArgs);
+        this.trigger(valueChange, dragArgs);
     };
     /**
      * To set the pointer value using this method

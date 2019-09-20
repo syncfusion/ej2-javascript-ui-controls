@@ -127,7 +127,7 @@ describe('Diagram Control', () => {
             expect((Math.round(diagram.nodes[0].offsetX) === 250 &&
                 (Math.round(diagram.nodes[0].offsetY) === 200) || Math.round(diagram.nodes[0].offsetY) === 210)).toBe(true);
             let wrapper: Container = (diagram.nodes[0] as NodeModel).wrapper.children[0] as Container;
-            expect((Math.round(wrapper.children[10].offsetX) === 211 || Math.round(wrapper.children[10].offsetX) === 214 || Math.round(wrapper.children[10].offsetX) === 212) &&
+            expect((Math.round(wrapper.children[10].offsetX) === 211 || Math.round(wrapper.children[10].offsetX) === 213 || Math.round(wrapper.children[10].offsetX) === 214 || Math.round(wrapper.children[10].offsetX) === 212) &&
                 (Math.round(wrapper.children[10].offsetY) === 408 ||
                     Math.round(wrapper.children[10].offsetY) === 409 || Math.round(wrapper.children[10].offsetY) === 394)).toBe(true);
             done();

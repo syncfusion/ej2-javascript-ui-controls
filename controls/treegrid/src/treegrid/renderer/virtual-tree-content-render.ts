@@ -61,6 +61,9 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         getValue('virtualEle', this).setVirtualHeight(this.parent.getRowHeight() * e.count, '100%');
         let outBuffer: number = 4; // this.parent.pageSettings.pageSize - Math.ceil(this.parent.pageSettings.pageSize / 1.5);
       }
+      if (!isNullOrUndefined(e.requestType) && e.requestType.toString() === 'collapseAll') {
+        this.contents.scrollTop = 0;
+      }
     }
     public renderTable() : void {
       super.renderTable();
@@ -134,11 +137,10 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
       target.appendChild(newChild);
       let replace: string = 'replaceWith';
       (this.getTable().querySelector('tbody') as HTMLElement)[replace](target);
-
-      if (!this.isExpandCollapse) {
-          getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
+      if (!this.isExpandCollapse || this.translateY === 0) {
+        getValue('virtualEle', this).adjustTable(cOffset, this.translateY);
       } else {
-          this.isExpandCollapse = false;
+       this.isExpandCollapse = false;
       }
       setValue('prevInfo', info, this);
     }

@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';
@@ -276,7 +276,7 @@ export interface NodeKeyPressEventArgs {
     cancel: boolean;
     /**
      * Return the actual event.
-     * @blazorType UIKeyboardEventArgs
+     * @blazorType KeyboardEventArgs
      */
     event: KeyboardEventArgs;
     /**
@@ -544,6 +544,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private parentCheckData :  { [key: string]: Object }[];
     private expandChildren: string[] = [];
     private isBlazorPlatform: boolean;
+    private isFieldChange: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -1257,12 +1258,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let childCheckedElement: { [key: string]: Object }[];
         for (let i: number = 0; i < indeterminate.length; i++) {
             let node: Element = closest(indeterminate[i], '.' + LISTITEM);
-            let parentData: { [key: string]: Object }[] = this.getTreeData(node);
-            let id: string = parentData[0][this.fields.id].toString();
+            let nodeId: string =  node.getAttribute('data-uid').toString();
             if (this.dataType === 1) {
-                childCheckedElement = this.getChildNodes(this.treeData, id);
+                childCheckedElement = <{ [key: string]: Object }[]>new DataManager(this.treeData).
+                executeLocal(new Query().where(this.fields.parentID, 'equal', nodeId, true));
             } else {
-             childCheckedElement = getValue(this.fields.child.toString(), parentData[0]);
+             childCheckedElement = this.getChildNodes(this.treeData, nodeId);
             }
             let count: number = 0;
             if (childCheckedElement) {
@@ -1963,11 +1964,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private afterFinalized(): void {
         this.doSelectionAction();
         this.updateCheckedProp();
-        this.isLoaded = true;
         this.isAnimate = true;
         this.isInitalExpand = false;
-        let eventArgs: DataBoundEventArgs = { data: this.treeData };
-        this.trigger('dataBound', eventArgs);
+        if (!this.isLoaded || this.isFieldChange) {
+            let eventArgs: DataBoundEventArgs = { data: this.treeData };
+            this.trigger('dataBound', eventArgs);
+        }
+        this.isLoaded = true;
     }
 
     private doSelectionAction(): void {
@@ -3219,6 +3222,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.setTouchClass();
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
+        this.checkedElement = [];
         this.isLoaded = false;
         this.setDataBinding();
     }
@@ -3438,7 +3442,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 this.dragData = this.getNodeData(this.dragLi);
                 return virtualEle;
             },
-            dragStart: (e: DragEventArgs) => {
+            dragStart: (e: DragEventArgs & BlazorDragEventArgs) => {
                 addClass([this.element], DRAGGING);
                 let listItem: Element = closest(e.target, '.e-list-item'); let level: number;
                 if (listItem) {
@@ -3448,20 +3452,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 if (eventArgs.draggedNode.classList.contains(EDITING)) {
                     this.dragCancelAction(virtualEle);
                 } else {
-                    this.trigger('nodeDragStart', eventArgs, (observedArgs: DragAndDropEventArgs) => {
+                    this.trigger('nodeDragStart', eventArgs, (observedArgs: DragAndDropEventArgs & BlazorDragEventArgs) => {
                         if (observedArgs.cancel) {
                             this.dragCancelAction(virtualEle);
                         } else {
                             this.dragStartAction = true;
                         }
+                        if (isBlazor()) {
+                            e.bindEvents(getElement(e.dragElement));
+                        }
                     });
                 }
             },
             drag: (e: DragEventArgs) => {
-                if ((this.isBlazorPlatform && this.dragStartAction) || !this.isBlazorPlatform) {
-                    this.dragObj.setProperties({ cursorAt: { top: (!isNOU(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
-                    this.dragAction(e, virtualEle);
-                }
+                this.dragObj.setProperties({ cursorAt: { top: (!isNOU(e.event.targetTouches) || Browser.isDevice) ? 60 : -20 } });
+                this.dragAction(e, virtualEle);
             },
             dragStop: (e: { event: MouseEvent & TouchEvent, element: HTMLElement, target: Element, helper: HTMLElement }) => {
                 removeClass([this.element], DRAGGING);
@@ -3525,14 +3530,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (dropRoot) {
             let dropLi: Element = closest(e.target, '.' + LISTITEM);
+            let checkWrapper: HTMLElement = closest(e.target, '.' + CHECKBOXWRAP) as HTMLElement;
             if (!dropRoot.classList.contains(ROOT) || (dropWrap &&
                 (!dropLi.isSameNode(this.dragLi) && !this.isDescendant(this.dragLi, dropLi)))) {
-                    if (dropLi && e && (e.event.offsetY < 7) ) {
+                    if (dropLi && e && (e.event.offsetY < 7) && !checkWrapper) {
                         addClass([icon], DROPNEXT);
                         let virEle: Element = this.createElement('div', { className: SIBLING });
                         let index: number = this.fullRowSelect ? (1) : (0);
                         dropLi.insertBefore(virEle, dropLi.children[index]);
-                    } else if (dropLi && e && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10))) {
+                    } else if (dropLi && e && (e.target.offsetHeight > 0 && e.event.offsetY > (e.target.offsetHeight - 10)) && !checkWrapper) {
                         addClass([icon], DROPNEXT);
                         let virEle: Element = this.createElement('div', { className: SIBLING });
                         let index: number = this.fullRowSelect ? (2) : (1);
@@ -3627,7 +3633,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private appendNode(dropTarget: Element, dragLi: Element, dropLi: Element, e: DropEventArgs, dragObj: TreeView, offsetY: number): void {
-        if (!dragLi.classList.contains('e-disable') && !dropLi.classList.contains('e-disable')) {
+        let checkWrapper: HTMLElement = closest(dropTarget, '.' + CHECKBOXWRAP) as HTMLElement;
+        if (!dragLi.classList.contains('e-disable') && !dropLi.classList.contains('e-disable') && !checkWrapper) {
             if (dropTarget.nodeName === 'LI') {
                 this.dropAsSiblingNode(dragLi, dropLi, e, dragObj);
             } else if (dropTarget.firstElementChild && dropTarget.classList.contains(ROOT)) {
@@ -3637,6 +3644,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             } else {
                 this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY);
             }
+        } else if(checkWrapper) {
+            this.dropAsChildNode(dragLi, dropLi, dragObj, null, e, offsetY, true);
         }
     }
 
@@ -3662,14 +3671,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
     }
 
-    private dropAsChildNode(dragLi: Element, dropLi: Element, dragObj: TreeView, index?: number, e?: DropEventArgs, pos?: number): void {
+    private dropAsChildNode(dragLi: Element, dropLi: Element, dragObj: TreeView, index?: number, e?: DropEventArgs, pos?: number, isCheck?: boolean): void {
         let dragParentUl: Element = closest(dragLi, '.' + PARENTITEM);
         let dragParentLi: Element = closest(dragParentUl, '.' + LISTITEM);
         let dropParentUl: Element  = closest(dropLi, '.' + PARENTITEM);
-        if (e && (pos < 7)) {
+        if (e && (pos < 7) && !isCheck) {
             dropParentUl.insertBefore(dragLi, dropLi);
             this.moveData(dragLi, dropLi, dropParentUl, true, dragObj);
-        } else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10))) {
+        } else if (e && (e.target.offsetHeight > 0 && pos > (e.target.offsetHeight - 10)) && !isCheck) {
             dropParentUl.insertBefore(dragLi, dropLi.nextElementSibling);
             this.moveData(dragLi, dropLi, dropParentUl, false, dragObj);
         } else {
@@ -4660,11 +4669,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'fields':
                     this.isAnimate = false;
+                    this.isFieldChange = true;
                     this.initialRender = true;
                     this.updateListProp(this.fields);
                     this.reRenderNodes();
                     this.initialRender = false;
                     this.isAnimate = true;
+                    this.isFieldChange = false;
                     break;
                 case 'fullRowSelect':
                     this.setFullRow(this.fullRowSelect);
@@ -4734,7 +4745,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         nodes = JSON.parse(JSON.stringify(nodes));
         let dropLi: Element = this.getElement(target);
         this.preventExpand = preventTargetExpand;
-        if (this.fields.dataSource instanceof DataManager) {
+        if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
             let dropUl: Element;
             let icon: Element = dropLi ? dropLi.querySelector('.' + ICON) : null;
             let proxy: TreeView = this;
@@ -4878,49 +4889,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     public getAllCheckedNodes(): string[] {
         let checkNodes: string[] = this.checkedNodes;
-        let newCheck: string[] = [];
-        let i: number = 0;
-        let id: string = this.fields.id;
-        for (i; i < this.treeData.length; i++) {
-            //Checks if isChecked is enabled while node is not loaded in DOM
-            let checked: number = null;
-            let childNode: { [key: string]: Object; }[] = null;
-            let isLoaded: Element = this.element.querySelector('[data-uid="' + this.treeData[i][id].toString() + '"]');
-            if (isLoaded && isLoaded.querySelector('.e-list-item') === null) {
-                //Checks if isChecked is enabled for parent
-                if (this.getTreeData()[i][this.fields.isChecked] === true
-                    && this.checkedElement.indexOf(this.getTreeData()[i][id].toString()) === -1) {
-                    newCheck.push(this.treeData[i][id].toString());
-                    checked = 2;
-                }
-                //Checks for child nodes with isChecked enabled
-                if (checked !== 2) { checked = 1; }
-                childNode = this.getChildNodes(this.getTreeData(), this.getTreeData()[i][id].toString());
-                (childNode !== null && this.autoCheck) ? this.allCheckNode(childNode, newCheck, checked) : childNode = null;
-            }
-        }
-        i = 0;
-        //Gets checked nodes based on UI interaction
-        while (i < checkNodes.length) {
-            if (newCheck.indexOf(checkNodes[i]) !== -1) {
-                i++;
-                continue;
-            }
-            newCheck.push(checkNodes[i]);
-            //Gets all child which is not loaded while parent is checked
-            let parentNode: Element = this.element.querySelector('[data-uid="' + checkNodes[i] + '"]');
-            if (parentNode && parentNode.querySelector('.e-list-item') === null) {
-                let child: { [key: string]: Object }[] = this.getChildNodes(this.treeData, checkNodes[i].toString());
-                (child && this.autoCheck) ? this.allCheckNode(child, newCheck) : child = null;
-            }
-            i++;
-        }
-        return newCheck;
+        return checkNodes;
     }
 
     /**
      * Get the node's data such as id, text, parentID, selected, isChecked, and expanded by passing the node element or it's ID.
      * @param  {string | Element} node - Specifies ID of TreeView node/TreeView node.
+     * @BlazorType NodeData
      */
     public getNode(node: string | Element): { [key: string]: Object } {
         let ele: Element = this.getElement(node);

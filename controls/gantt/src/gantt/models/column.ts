@@ -57,8 +57,6 @@ export class Column {
      * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
      * also it will display tooltip while hover on ellipsis applied cell.
      * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
      * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode
@@ -257,8 +255,6 @@ export interface ColumnModel {
      * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
      * also it will display tooltip while hover on ellipsis applied cell.
      * @default Syncfusion.EJ2.Grids.ClipMode.EllipsisWithTooltip
-     * @aspDefaultValueIgnore
-     * @blazorDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.ClipMode
      * @blazorType Syncfusion.EJ2.Blazor.Grids.ClipMode

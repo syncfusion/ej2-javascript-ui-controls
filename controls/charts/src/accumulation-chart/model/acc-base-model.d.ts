@@ -119,6 +119,19 @@ export interface AccumulationDataLabelSettingsModel {
     ry?: number;
 
     /**
+     * Specifies angle for data label.
+     * @default 0
+     */
+    angle?: number;
+
+    /**
+     * Enables rotation for data label.
+     * @default false
+     */
+
+    enableRotation?: boolean;
+
+    /**
      * Option for customizing the border lines.
      */
 

@@ -7,6 +7,7 @@ import {
     LayerSettingsModel, MarkerSettingsModel, DataLabelSettingsModel, ShapeSettingsModel,
     MarkerType, LegendShape, Annotation, MarkerClusterSettingsModel
 } from '../index';
+import { ToolLocationModel, TextStyleModel } from '@syncfusion/ej2-svg-base';
 /**
  * Specifies Maps Events
  * @private
@@ -64,7 +65,7 @@ export interface IMouseEventArgs extends IMapsEventArgs {
     longitude?: number;
 }
 /**
- * Specifies the geo location. 
+ * Specifies the geo location.
  */
 export interface GeoPosition {
     /** Defines current latitude value of maps location */
@@ -94,14 +95,23 @@ export interface IFontMapping {
     fontStyle?: string;
     fontFamily?: string;
 }
+
+/** @private */
+export interface MapsTooltipOption {
+    location : ToolLocationModel;
+    text:  string[];
+    data: Object;
+    textStyle: TextStyleModel;
+    template: string;
+}
 /**
  * Specifies TooltipRender event arguments for maps.
  */
 export interface ITooltipRenderEventArgs extends IMapsEventArgs {
     /** Defines the current TreeMap instance */
-    maps: Maps;
+    maps?: Maps;
     /**
-     * Define the content 
+     * Define the content
      */
     content?: string | HTMLElement;
     /**
@@ -109,15 +119,15 @@ export interface ITooltipRenderEventArgs extends IMapsEventArgs {
      */
     options: Object;
     /**
-     * textStyle event argument 
+     * textStyle event argument
      */
     textStyle?: FontModel;
     /**
-     * border event argument 
+     * border event argument
      */
     border?: BorderModel;
     /**
-     * fill color event argument 
+     * fill color event argument
      */
     fill?: string;
     /**
@@ -127,12 +137,14 @@ export interface ITooltipRenderEventArgs extends IMapsEventArgs {
     /**
      * Define the mouse location.
      */
-    eventArgs: PointerEvent;
+    eventArgs?: PointerEvent;
 }
 /**
  * Specifies itemSelection event arguments for maps.
  */
 export interface ISelectionEventArgs extends IMapsEventArgs {
+    /** Defines the current Map instance */
+    maps?: Maps;
     /**
      * fill event argument
      */
@@ -145,8 +157,8 @@ export interface ISelectionEventArgs extends IMapsEventArgs {
      * border event argument
      */
     border?: BorderModel;
-    /** 
-     * Defines current mouse event target id 
+    /**
+     * Defines current mouse event target id
      */
     target?: string;
     /**
@@ -162,6 +174,8 @@ export interface ISelectionEventArgs extends IMapsEventArgs {
  * Specifies shapeSelected event arguments for maps.
  */
 export interface IShapeSelectedEventArgs extends IMapsEventArgs {
+    /** Defines the current Map instance */
+    maps?: Maps;
     /**
      * fill event argument
      */
@@ -175,11 +189,11 @@ export interface IShapeSelectedEventArgs extends IMapsEventArgs {
      */
     border?: BorderModel;
     /**
-     * shapeData event argument
+     * shapeData for the currently clicked shape
      */
     shapeData?: object;
     /**
-     * data source event argument
+     * data source for the currently clicked shape
      */
     data?: object;
     /** Defines current mouse event target id */
@@ -203,7 +217,7 @@ export interface IShapes {
  */
 export interface ILayerRenderingEventArgs extends IMapsEventArgs {
     /**
-     * layer index event argument 
+     * layer index event argument
      */
     index?: number;
     /**
@@ -221,7 +235,7 @@ export interface ILayerRenderingEventArgs extends IMapsEventArgs {
  */
 export interface IShapeRenderingEventArgs extends IMapsEventArgs {
     /**
-     * shape index event argument 
+     * shape index event argument
      */
     index?: number;
     /**
@@ -355,7 +369,7 @@ export interface IMarkerClickEventArgs extends IMouseEventArgs {
      */
     marker?: MarkerSettingsModel;
     /**
-     * marker data event argument
+     * defines the currently clicked marker data
      */
     data?: object;
 }
@@ -379,7 +393,7 @@ export interface IMarkerMoveEventArgs extends IMouseEventArgs {
  */
 export interface IMarkerClusterClickEventArgs extends IMouseEventArgs {
     /**
-     * marker data event argument
+     * defines the currently clicked marker data
      */
     data?: object;
     /**

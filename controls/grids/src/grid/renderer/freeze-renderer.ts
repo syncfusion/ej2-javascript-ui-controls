@@ -1,4 +1,4 @@
-import { remove, addClass } from '@syncfusion/ej2-base';
+import { remove, addClass, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IRenderer, IModelGenerator, NotifyArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { HeaderRender } from './header-renderer';
@@ -226,7 +226,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let height: number[] = [];
         let width: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue 
-            if (!fRows[i].classList.contains('e-columnheader')) {
+            if (!fRows[i].classList.contains('e-columnheader') && !isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
                 height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
                 width[i] = mRows[i].offsetHeight;
             }

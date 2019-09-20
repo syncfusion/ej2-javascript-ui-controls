@@ -127,7 +127,6 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers before gauge load.
      * @event
-     * @deprecated
      * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadEventArgs>;
@@ -150,7 +149,6 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers before each annotation gets rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'AnnotationRendering'
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
@@ -167,7 +165,6 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when mouse move on gauge area.
      * @event
-     * @deprecated
      * @blazorProperty 'OnGaugeMouseMove'
      */
 
@@ -184,7 +181,6 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers when mouse down on gauge area.
      * @event
-     * @deprecated
      * @blazorProperty 'OnGaugeMouseDown'
      */
 
@@ -201,6 +197,7 @@ export interface LinearGaugeModel extends ComponentModel{
     /**
      * Triggers while drag the pointer.
      * @event
+     * @deprecated
      * @blazorProperty 'ValueChange'
      */
 

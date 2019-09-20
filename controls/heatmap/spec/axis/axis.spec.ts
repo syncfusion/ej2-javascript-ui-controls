@@ -63,6 +63,22 @@ describe('Heatmap Control', () => {
             heatmap.created = created;
             heatmap.appendTo('#container');
         });
+        it('Row Wise Mnimum and Maximum', function () {
+            heatmap.paletteSettings.type = 'Gradient';
+            heatmap.paletteSettings.colorGradientMode = 'Row';
+            heatmap.yAxis.isInversed = false;
+            heatmap.refresh();
+            expect(heatmap.dataMax[0]).toBe(5);
+        });
+        it('Coloumn Wise Mnimum and Maximum', function () {
+            heatmap.paletteSettings.colorGradientMode = 'Column';
+            heatmap.xAxis.isInversed = true;
+            heatmap.refresh();
+            expect(heatmap.dataMax[1]).toBe(5);
+            heatmap.paletteSettings.colorGradientMode = 'Table';
+            heatmap.xAxis.isInversed = false;
+            heatmap.refresh();
+        });
         it('Checking x-axis title', () => {
             heatmap.xAxis.title.text = "XAxis";
             heatmap.showTooltip = false;

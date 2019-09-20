@@ -986,10 +986,12 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         this.select(this.selectedItem);
     }
     private setOrientation(place: Str, ele: HTEle): void {
-        if (place === 'Bottom' && Array.prototype.indexOf.call(this.element.children, ele) !== 1) {
+        let headerPos: number = Array.prototype.indexOf.call(this.element.children, ele);
+        let contentPos: number = Array.prototype.indexOf.call(this.element.children, this.element.querySelector('.' + CLS_CONTENT));
+        if (place === 'Bottom' && (contentPos > headerPos)) {
             this.element.appendChild(ele);
         } else {
-            this.element.insertBefore(ele, select('.' +  CLS_CONTENT, this.element));
+            this.element.insertBefore(ele, select('.' + CLS_CONTENT, this.element));
         }
     }
     private setCssClass(ele: HTEle, cls: Str, val: boolean): void {

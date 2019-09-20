@@ -20,5 +20,6 @@ export * from './renderer/agenda';
 export * from './renderer/month-agenda';
 export * from './renderer/timeline-view';
 export * from './renderer/timeline-month';
+export * from './renderer/timeline-year';
 export * from './timezone/timezone';
 export * from './exports/index';

@@ -1,4 +1,4 @@
-import { KeyboardEventArgs, L10n, EventHandler, TouchEventArgs, closest } from '@syncfusion/ej2-base';
+import { KeyboardEventArgs, L10n, closest } from '@syncfusion/ej2-base';
 import { extend, getValue, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
 import { remove } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -132,35 +132,6 @@ export class Edit implements IAction {
         this.updateColTypeObj();
     }
 
-    private wireEvents(): void {
-        EventHandler.add(this.parent.getContent(), 'touchstart', this.tapEvent, this);
-    }
-
-    private unwireEvents(): void {
-        EventHandler.remove(this.parent.getContent(), 'touchstart', this.tapEvent);
-    }
-
-    private tapEvent(e: TouchEventArgs): void {
-        if (this.getUserAgent()) {
-            if (!Global.timer) {
-                Global.timer = (setTimeout(
-                    () => {
-                        Global.timer = null;
-                    },
-                    300) as Object);
-            } else {
-                clearTimeout(Global.timer as number);
-                Global.timer = null;
-                this.parent.notify(events.doubleTap, e);
-            }
-        }
-    }
-
-    private getUserAgent(): boolean {
-        let userAgent: string = window.navigator.userAgent.toLowerCase();
-        return (/iphone|ipod|ipad/ as RegExp).test(userAgent);
-    }
-
     /**
      * Edits any bound record in the Grid by TR element.
      * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
@@ -170,6 +141,7 @@ export class Edit implements IAction {
         if (!gObj.editSettings.allowEditing || gObj.isEdit || gObj.editSettings.mode === 'Batch') {
             return;
         }
+        this.parent.element.classList.add('e-editing');
         if (!gObj.getSelectedRows().length) {
             if (!tr) {
                 this.showDialog('EditOperationAlert', this.alertDObj);
@@ -219,6 +191,7 @@ export class Edit implements IAction {
         if (!this.parent.editSettings.allowAdding) {
             return;
         }
+        this.parent.element.classList.add('e-editing');
         this.editModule.addRecord(data, index);
         if (!isBlazor()) {
             this.refreshToolbar();
@@ -352,6 +325,7 @@ export class Edit implements IAction {
     }
 
     private endEditing(): void {
+        this.parent.element.classList.remove('e-editing');
         this.editModule.endEdit();
         this.refreshToolbar();
     }
@@ -485,7 +459,6 @@ export class Edit implements IAction {
         this.actionCompleteFunction = this.actionComplete.bind(this);
         this.parent.addEventListener(events.actionBegin, this.actionBeginFunction);
         this.parent.addEventListener(events.actionComplete, this.actionCompleteFunction);
-        this.parent.on(events.initialEnd, this.wireEvents, this);
     }
 
     /**
@@ -502,7 +475,6 @@ export class Edit implements IAction {
         this.parent.off(events.destroyForm, this.destroyForm);
         this.parent.removeEventListener(events.actionComplete, this.actionCompleteFunction);
         this.parent.removeEventListener(events.actionBegin, this.actionBeginFunction);
-        this.parent.off(events.initialEnd, this.unwireEvents);
     }
 
     private actionComplete(e: NotifyArgs): void {
@@ -671,7 +643,6 @@ export class Edit implements IAction {
             remove(elem);
         }
         if (!hasGridChild) { return; }
-        this.unwireEvents();
         if (this.editModule) {
             this.editModule.destroy();
         }
@@ -893,9 +864,4 @@ export class Edit implements IAction {
     public static AddEditors(editors: object): void {
         Edit.editCellType = extend(Edit.editCellType, editors);
     }
-}
-
-/** @hidden */
-export namespace Global {
-    export let timer: Object = null;
 }

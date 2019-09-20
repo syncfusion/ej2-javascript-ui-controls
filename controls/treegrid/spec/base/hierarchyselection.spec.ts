@@ -779,4 +779,61 @@ describe('TreeGrid Hierarchy Selection', () => {
       destroy(gridObj);
     });
   });
+  
+  describe('HierarchySelection with dataRefresh - ', () => {
+    let gridObj: TreeGrid;
+    let actionComplete:() => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          allowFiltering: true,
+          autoCheckHierarchy: true,
+          columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, width: 120 },
+            { field: 'taskName', headerText: 'Task Name', width: 150, showCheckbox: true },
+            { field: 'duration', headerText: 'Duration', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Progress', width: 150 },
+            { field: 'startDate', headerText: 'Start Date', type: "date", format: 'yMd', width: 150 }
+          ],
+        },
+        done
+      );
+    });
+    it('checkedRecords count when dataSource refresh', (done: Function) => {
+     actionComplete = (args?: any): void => {
+      if (args.requestType === 'refresh') {
+       expect(gridObj.getCheckedRecords().length).toBe(0);
+       gridObj.selectCheckboxes([2]);
+       expect(gridObj.getCheckedRecords().length).toBe(1);
+      }
+      done();
+   };
+      gridObj.actionComplete = actionComplete;
+      gridObj.selectCheckboxes([5]);
+      gridObj.dataSource = [{
+        taskID: 1,
+        taskName: 'Planning',
+        startDate: new Date('02/03/2017'),
+        endDate: new Date('02/07/2017'),
+        progress: 100,
+        duration: 5,
+        collapsed: true,
+        priority: 'Normal',
+        approved: false,
+        subtasks: [
+            { taskID: 2, taskName: 'Plan timeline', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Normal', approved: false },
+            { taskID: 3, taskName: 'Plan budget', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, approved: true },
+            { taskID: 4, taskName: 'Allocate resources', startDate: new Date('02/03/2017'), endDate: new Date('02/07/2017'), duration: 5, progress: 100, priority: 'Critical', approved: false },
+            { taskID: 5, taskName: 'Planning complete', startDate: new Date('02/07/2017'), endDate: new Date('02/07/2017'), duration: 0, progress: 0, priority: 'Low', approved: true }
+        ]
+      }];
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 });

@@ -446,7 +446,7 @@ describe('Chart Control', () => {
 
             let animate: EmitType<IAnimationCompleteEventArgs> = (args: series1): void => {
                 let point = document.getElementById('container_Series_' + args.series.index + '_Point_0');
-                expect(point.getAttribute('transform') === null).toBe(true);
+                expect(point.getAttribute('transform') !== null).toBe(true);
                 done();
             };
             chartObj.series[0].animation.enable = true;

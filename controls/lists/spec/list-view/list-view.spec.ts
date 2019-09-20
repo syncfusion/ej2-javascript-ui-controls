@@ -3,7 +3,7 @@
  */
 import { createElement, isVisible, extend } from '@syncfusion/ej2-base';
 import { ListView, Virtualization, SelectEventArgs, SelectedItem } from '../../src/list-view/index';
-import { DataManager, ODataV4Adaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, Query, JsonAdaptor } from '@syncfusion/ej2-data';
 import '../../node_modules/es6-promise/dist/es6-promise';
 ListView.Inject(Virtualization);
 
@@ -29,7 +29,7 @@ function setStyle(ele: HTMLElement, height: number) {
 
 function simulateScrollEvent(target: HTMLElement, newScrollTop: number) {
     target.scrollTop = newScrollTop;
-    var e = document.createEvent("UIEvents");
+    const e: any = document.createEvent("UIEvents");
     e.initUIEvent("scroll", true, true, window, 1);
     target.dispatchEvent(e);
 }
@@ -75,6 +75,20 @@ let NestedData: any = [
     {
         id: '03', text: 'text3', icon: 'iconClass3', category: 'a'
     }
+];
+const nestedDataOG: any = [
+    {
+        id: '01', text: 'text1', icon: 'iconClass1', category: 'a',
+        child: [{ id: '01_1', text: 'subText1', icon: 'iconSubClass1', category: 'a' }]
+    },
+    {
+        id: '02', text: 'text2', icon: 'iconClass2', category: 'b',
+        child: [{ id: '02_1', text: 'subText1', icon: 'iconSubClass1', category: 'a', }]
+    },
+    {
+        id: '03', text: 'text3', icon: 'iconClass3', category: 'c',
+        child: [{ id: '03_1', text: 'subText1', icon: 'iconSubClass1', category: 'a', }]
+    },
 ];
 
 let nestedListData: any = [
@@ -578,16 +592,6 @@ describe('ListView', () => {
                 expect(findItemByLisItem.FirstName).toBe('Fuller');
             });
 
-            it('Add & removeItem should not have any effect for remote data', () => {
-                let data: { [key: string]: Object } = { EmployeeID: '777', FirstName: 'hitler' };
-                let data1: { [key: string]: Object } = { EmployeeID: '1002', FirstName: 'Fuller' };
-                expect(ele.querySelectorAll('.e-list-item').length).toBe(9);
-                nTree.addItem([data]);
-                expect(ele.querySelectorAll('.e-list-item').length).toBe(9);
-                nTree.removeItem(data1);
-                expect(ele.querySelectorAll('.e-list-item').length).toBe(9);
-            });
-
             it('check & uncheckItem should not have any effect for remote data', () => {
                 let liItem1: HTMLElement = nTree.element.querySelectorAll('.e-list-item')[0] as HTMLElement;
                 let liItem2: HTMLElement = nTree.element.querySelectorAll('.e-list-item')[1] as HTMLElement;
@@ -610,7 +614,6 @@ describe('ListView', () => {
         });
 
         describe('custom table name fields', () => {
-
             let ele: HTMLElement = document.createElement('div');
             ele.appendChild(document.createElement('ul'));
             ele.id = 'newTree';
@@ -712,7 +715,8 @@ describe('ListView', () => {
         beforeAll(() => {
             document.body.appendChild(ele);
             treeObj = new ListView({
-                dataSource: NestedData
+                dataSource: NestedData,
+                animation: { effect: 'None', duration: 0 }
             });
             treeObj.appendTo(ele);
         });
@@ -1103,10 +1107,10 @@ describe('ListView', () => {
         it('Check item using select method', () => {
             listObj = new ListView({ dataSource: dataSourceGroup, showCheckBox: true });
             listObj.appendTo('#listView');
-            let listItem: HTMLElement[] | HTMLElement = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-list-item');
+            let listItem: any = ele.getElementsByClassName('e-list-item');
             listObj.selectItem(listItem[0]);
             let selectedListItem = (listObj.getSelectedItems().item as Element[]);
-            listItem = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-active');
+            listItem = ele.getElementsByClassName('e-active');
             expect(selectedListItem[0]).toBe(listItem[0]);
             expect(selectedListItem[1]).toBe(listItem[1]);
             expect(selectedListItem.length).toBe(listItem.length);
@@ -1115,10 +1119,10 @@ describe('ListView', () => {
         it('Check multiple item using selectMultipleItem method', () => {
             listObj = new ListView({ dataSource: dataSourceGroup, showCheckBox: true });
             listObj.appendTo('#listView');
-            let listItem: HTMLElement[] | HTMLElement = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-list-item');
+            let listItem: any = ele.getElementsByClassName('e-list-item');
             listObj.selectMultipleItems([listItem[0], listItem[1]]);
             let selectedListItem = (listObj.getSelectedItems().item as HTMLElement[]);
-            listItem = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-active');
+            listItem = ele.getElementsByClassName('e-active');
             expect(listItem.length).toBe(selectedListItem.length);
             expect(listItem[0]).toBe(selectedListItem[0]);
         });
@@ -1126,11 +1130,11 @@ describe('ListView', () => {
         it('Check multiple item using selectMultipleItem method', () => {
             listObj = new ListView({ dataSource: dataSourceGroup, showCheckBox: true });
             listObj.appendTo('#listView');
-            let listItem: HTMLElement[] | HTMLElement = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-list-item');
+            let listItem: any = ele.getElementsByClassName('e-list-item');
             listObj.selectMultipleItems([listItem[0], listItem[1]]);
             let selectedListItem = (listObj.getSelectedItems().item as HTMLElement[]);
             (listObj as any).blazorGetSelectedItems(listObj.getSelectedItems());
-            listItem = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-active');
+            listItem = ele.getElementsByClassName('e-active');
             expect(listItem.length).toBe(selectedListItem.length);
             expect(listItem[0]).toBe(selectedListItem[0]);
             expect(listItem[1]).toBe(selectedListItem[1]);
@@ -1139,10 +1143,10 @@ describe('ListView', () => {
         it('Check multiple item using selectMultipleItem method for array of string dataSource', () => {
             listObj = new ListView({ dataSource: ['item1', 'item2', 'item3', 'item4'], showCheckBox: true });
             listObj.appendTo('#listView');
-            let listItem: HTMLElement[] | HTMLElement = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-list-item');
+            let listItem: any = ele.getElementsByClassName('e-list-item');
             listObj.selectMultipleItems([listItem[0], listItem[1]]);
             let selectedListItem = (listObj.getSelectedItems().item as HTMLElement[]);
-            listItem = <NodeListOf<HTMLElement> & HTMLElement[]>ele.getElementsByClassName('e-active');
+            listItem = ele.getElementsByClassName('e-active');
             expect(listItem.length).toBe(selectedListItem.length);
             expect(listItem[0]).toBe(selectedListItem[0]);
             expect(listItem[1]).toBe(selectedListItem[1]);
@@ -3070,5 +3074,91 @@ describe('ListView', () => {
             });
             listObj.appendTo(ele);
         });
-    })
+    });
+
+    describe('addItem testing', () => {
+        let listObj: ListView;
+        const ele: HTMLElement = createElement('div', { id: 'listview' });
+        document.body.appendChild(ele);
+
+        beforeAll(() => {
+            listObj = new ListView({
+                dataSource: [...NestedData],
+                animation: { effect: 'None', duration: 0 },
+                showHeader: true
+            });
+            listObj.appendTo(ele);
+        });
+
+        afterAll(() => {
+            listObj.destroy();
+            document.body.removeChild(ele);
+        });
+
+        it('go to a child view and addItem', () => {
+            listObj.selectItem({ id: '01' });
+            listObj.addItem([{ id: '01_4', text: 'subText4' }], { id: '01' });
+            expect(listObj.element.querySelector(`[data-uid = "01_4"]`) instanceof Node).toBe(true);
+        });
+
+        it('add item in the current view', () => {
+            listObj.addItem([{ id: '01_5', text: 'subText5' }], { id: '01' });
+            expect(listObj.element.querySelector(`[data-uid = "01_5"]`) instanceof Node).toBe(true);
+        });
+
+        it('go back and add item in the previous view', () => {
+            (listObj as any).back();
+            listObj.addItem([{ id: '01_6', text: 'subText6' }], { id: '01' });
+            listObj.addItem([{ id: '01_6_01', text: 'subText6_01' }], { id: '01_6' });
+            expect((listObj.dataSource as any)[0]
+                .child.filter((item: any) => item.id == '01_6')[0]
+                .child[0].text)
+                .toBe("subText6_01");
+            expect(listObj.element.querySelector(`[data-uid = "01_6"]`) instanceof Node).toBe(true);
+        });
+
+        it('add item to non rendered element', () => {
+            listObj.addItem([{ id: '02_10', text: 'subText10' }], { id: '02' });
+            expect((listObj.dataSource as any)[1].child[3].text).toBe("subText10");
+        });
+    });
+
+    describe('removeItem testing', () => {
+        let listObj: ListView;
+        const ele: HTMLElement = createElement('div', { id: 'listview' });
+        document.body.appendChild(ele);
+
+        beforeAll(() => {
+            listObj = new ListView({
+                dataSource: [...nestedDataOG],
+                animation: { effect: 'None', duration: 0 },
+                showHeader: true
+            });
+            listObj.appendTo(ele);
+        });
+
+        afterAll(() => {
+            listObj.destroy();
+            document.body.removeChild(ele);
+        });
+
+        it('go to a child view and delete its parent', () => {
+            listObj.selectItem({ id: '01' });
+            listObj.removeItem({ id: '01' });
+            expect((listObj as any).curViewDS[0].id).toBe("02");
+        });
+
+        it('remove a non-rendered child item', () => {
+            listObj.removeItem({ id: '02_1' });
+            expect((listObj as any).dataSource[0].child.length).toBe(0);
+        });
+
+        it('go to a child view and delete the current child', () => {
+            listObj.selectItem({ id: '03' });
+            listObj.removeItem({ id: '03_1' });
+            expect((listObj as any).dataSource[0].id).toBe("02");
+            expect((listObj as any).dataSource[1].child.length).toBe(0);
+            expect((listObj as any).dataSource.length).toBe(2);
+        });
+    });
 });

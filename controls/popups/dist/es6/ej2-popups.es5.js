@@ -2000,7 +2000,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             abort: '.e-dlg-closeicon-btn',
             handle: handleContent,
             dragStart: function (event) {
-                _this.trigger('dragStart', event);
+                _this.trigger('dragStart', event, function (dragEventArgs) {
+                    if (isBlazor()) {
+                        dragEventArgs.bindEvents(event.dragElement);
+                    }
+                });
             },
             dragStop: function (event) {
                 if (_this.isModal) {
@@ -3391,96 +3395,108 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             this.restoreElement(target_1);
         }
         this.showTooltip(target, this.animation.open, e);
-        this.wireMouseEvents(e, target);
     };
     Tooltip.prototype.showTooltip = function (target, showAnimation, e) {
         var _this = this;
         clearTimeout(this.showTimer);
         clearTimeout(this.hideTimer);
-        this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
-            { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
-        this.trigger('beforeRender', this.tooltipEventArgs, function (beforeRenderArgs) {
-            if (beforeRenderArgs.cancel) {
-                _this.isHidden = true;
-                _this.clear();
+        this.tooltipEventArgs = e
+            ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle }
+            : { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
+        var observeCallback = function (beforeRenderArgs) {
+            _this.beforeRenderCallback(beforeRenderArgs, target, e, showAnimation);
+        };
+        this.trigger('beforeRender', this.tooltipEventArgs, observeCallback.bind(this));
+    };
+    Tooltip.prototype.beforeRenderCallback = function (beforeRenderArgs, target, e, showAnimation) {
+        var _this = this;
+        if (beforeRenderArgs.cancel) {
+            this.isHidden = true;
+            this.clear();
+        }
+        else {
+            this.isHidden = false;
+            if (isNullOrUndefined(this.tooltipEle)) {
+                this.ctrlId = this.element.getAttribute('id') ?
+                    getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
+                this.tooltipEle = this.createElement('div', {
+                    className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
+                        role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
+                    }, styles: 'width:' +
+                        formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
+                });
+                if (this.cssClass) {
+                    addClass([this.tooltipEle], this.cssClass.split(' '));
+                }
+                if (Browser.isDevice) {
+                    addClass([this.tooltipEle], DEVICE$1);
+                }
+                if (this.width !== 'auto') {
+                    this.tooltipEle.style.maxWidth = formatUnit(this.width);
+                }
+                this.tooltipEle.appendChild(this.createElement('div', { className: CONTENT }));
+                document.body.appendChild(this.tooltipEle);
+                this.addDescribedBy(target, this.ctrlId + '_content');
+                this.renderContent(target);
+                addClass([this.tooltipEle], POPUP_OPEN);
+                if (this.showTipPointer) {
+                    this.renderArrow();
+                }
+                this.renderCloseIcon();
+                this.renderPopup(target);
             }
             else {
-                _this.isHidden = false;
-                if (isNullOrUndefined(_this.tooltipEle)) {
-                    _this.ctrlId = _this.element.getAttribute('id') ?
-                        getUniqueID(_this.element.getAttribute('id')) : getUniqueID('tooltip');
-                    _this.tooltipEle = _this.createElement('div', {
-                        className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
-                            role: 'tooltip', 'aria-hidden': 'false', 'id': _this.ctrlId + '_content'
-                        }, styles: 'width:' +
-                            formatUnit(_this.width) + ';height:' + formatUnit(_this.height) + ';position:absolute;'
-                    });
-                    if (_this.cssClass) {
-                        addClass([_this.tooltipEle], _this.cssClass.split(' '));
-                    }
-                    if (Browser.isDevice) {
-                        addClass([_this.tooltipEle], DEVICE$1);
-                    }
-                    if (_this.width !== 'auto') {
-                        _this.tooltipEle.style.maxWidth = formatUnit(_this.width);
-                    }
-                    _this.tooltipEle.appendChild(_this.createElement('div', { className: CONTENT }));
-                    document.body.appendChild(_this.tooltipEle);
-                    _this.addDescribedBy(target, _this.ctrlId + '_content');
-                    _this.renderContent(target);
-                    addClass([_this.tooltipEle], POPUP_OPEN);
-                    if (_this.showTipPointer) {
-                        _this.renderArrow();
-                    }
-                    _this.renderCloseIcon();
-                    _this.renderPopup(target);
-                }
-                else {
-                    _this.adjustArrow(target, _this.position, _this.tooltipPositionX, _this.tooltipPositionY);
-                    _this.addDescribedBy(target, _this.ctrlId + '_content');
-                    _this.renderContent(target);
-                    Animation.stop(_this.tooltipEle);
-                    _this.reposition(target);
-                }
-                removeClass([_this.tooltipEle], POPUP_OPEN);
-                addClass([_this.tooltipEle], POPUP_CLOSE);
-                _this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: _this.tooltipEle } :
-                    { type: null, cancel: false, target: target, event: null, element: _this.tooltipEle };
-                var this$_1 = _this;
-                if (_this.needTemplateReposition() && !_this.mouseTrail) {
-                    _this.tooltipEle.style.display = 'none';
-                }
-                _this.trigger('beforeOpen', _this.tooltipEventArgs, function (observedArgs) {
-                    if (observedArgs.cancel) {
-                        this$_1.isHidden = true;
-                        this$_1.clear();
-                        this$_1.restoreElement(target);
-                    }
-                    else {
-                        var openAnimation_1 = {
-                            name: showAnimation.effect,
-                            duration: showAnimation.duration,
-                            delay: showAnimation.delay,
-                            timingFunction: 'easeOut'
-                        };
-                        if (showAnimation.effect === 'None') {
-                            openAnimation_1 = undefined;
-                        }
-                        if (this$_1.openDelay > 0) {
-                            var show = function () {
-                                if (this$_1.popupObj) {
-                                    this$_1.popupObj.show(openAnimation_1, target);
-                                }
-                            };
-                            this$_1.showTimer = setTimeout(show, this$_1.openDelay);
-                        }
-                        else {
-                            this$_1.popupObj.show(openAnimation_1, target);
-                        }
-                    }
-                });
+                this.adjustArrow(target, this.position, this.tooltipPositionX, this.tooltipPositionY);
+                this.addDescribedBy(target, this.ctrlId + '_content');
+                this.renderContent(target);
+                Animation.stop(this.tooltipEle);
+                this.reposition(target);
             }
-        });
+            removeClass([this.tooltipEle], POPUP_OPEN);
+            addClass([this.tooltipEle], POPUP_CLOSE);
+            this.tooltipEventArgs = e ? { type: e.type, cancel: false, target: target, event: e, element: this.tooltipEle } :
+                { type: null, cancel: false, target: target, event: null, element: this.tooltipEle };
+            if (this.needTemplateReposition() && !this.mouseTrail) {
+                this.tooltipEle.style.display = 'none';
+            }
+            var observeCallback = function (observedArgs) {
+                _this.beforeOpenCallback(observedArgs, target, showAnimation, e);
+            };
+            this.trigger('beforeOpen', this.tooltipEventArgs, observeCallback.bind(this));
+        }
+    };
+    Tooltip.prototype.beforeOpenCallback = function (observedArgs, target, showAnimation, e) {
+        var _this = this;
+        if (observedArgs.cancel) {
+            this.isHidden = true;
+            this.clear();
+            this.restoreElement(target);
+        }
+        else {
+            var openAnimation_1 = {
+                name: showAnimation.effect,
+                duration: showAnimation.duration,
+                delay: showAnimation.delay,
+                timingFunction: 'easeOut'
+            };
+            if (showAnimation.effect === 'None') {
+                openAnimation_1 = undefined;
+            }
+            if (this.openDelay > 0) {
+                var show = function () {
+                    if (_this.popupObj) {
+                        _this.popupObj.show(openAnimation_1, target);
+                    }
+                };
+                this.showTimer = setTimeout(show, this.openDelay);
+            }
+            else {
+                this.popupObj.show(openAnimation_1, target);
+            }
+        }
+        if (e) {
+            this.wireMouseEvents(e, target);
+        }
     };
     Tooltip.prototype.needTemplateReposition = function () {
         // tslint:disable-next-line:no-any
@@ -4102,6 +4118,34 @@ var CLS_SPINARC = 'e-path-arc';
 var CLS_SPINLABEL = 'e-spin-label';
 var CLS_SPINTEMPLATE = 'e-spin-template';
 /**
+ * Function to change the Spinners in a page globally from application end.
+ * ```
+ * E.g : blazorSpinner({ action: "Create", options: {target: targetElement}, type: "" });
+ * ```
+ * @param args
+ * @private
+ */
+function blazorSpinner(action, options, target, type) {
+    switch (action) {
+        case 'Create':
+            var element = document.querySelector(options.target);
+            var args = { type: type, target: element, cssClass: options.cssClass,
+                label: options.label, width: options.width };
+            createSpinner(args);
+            break;
+        case 'Show':
+            showSpinner(document.querySelector(target));
+            break;
+        case 'Hide':
+            hideSpinner(document.querySelector(target));
+            break;
+        case 'Set':
+            var setArgs = { cssClass: options.cssClass, type: type };
+            setSpinner(setArgs);
+            break;
+    }
+}
+/**
  * Create a spinner for the specified target element.
  * ```
  * E.g : createSpinner({ target: targetElement, width: '34px', label: 'Loading..' });
@@ -4586,5 +4630,5 @@ function replaceTheme(container, theme, cssClass, makeEle) {
  * Popup Components
  */
 
-export { PositionData, Popup, getScrollableParent, getZindexPartial, getMaxZindex, calculateRelativeBasedPosition, calculatePosition, fit, isCollide, flip, ButtonProps, AnimationSettings, Dialog, DialogUtility, Animation$1 as Animation, Tooltip, createSpinner, showSpinner, hideSpinner, setSpinner };
+export { PositionData, Popup, getScrollableParent, getZindexPartial, getMaxZindex, calculateRelativeBasedPosition, calculatePosition, fit, isCollide, flip, ButtonProps, AnimationSettings, Dialog, DialogUtility, Animation$1 as Animation, Tooltip, blazorSpinner, createSpinner, showSpinner, hideSpinner, setSpinner };
 //# sourceMappingURL=ej2-popups.es5.js.map

@@ -2433,4 +2433,223 @@ describe('TextBox ', () => {
             expect(changeCount).toBe(1);
         });
     });
+
+    describe('autocomplete API testing', () => {
+        let inputObj: any;
+        beforeEach((): void => {
+            inputObj = undefined;
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (inputObj) {
+                inputObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Ensure the default autocomplete API testing', () => {
+            inputObj = new TextBox();
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe(null);
+        });
+
+        it('Ensure the autocomplete API with on value testing', () => {
+            inputObj = new TextBox({ autocomplete: 'on' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe(null);
+        });
+
+        it('Ensure the autocomplete API with off value testing', () => {
+            inputObj = new TextBox({ autocomplete: 'off' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete API with on value testing', () => {
+            inputObj = new TextBox({ htmlAttributes: { autocomplete: 'on' } });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('on');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('on');
+        });
+
+        it('Ensure the autocomplete API with off value testing', () => {
+            inputObj = new TextBox({ htmlAttributes: { autocomplete: 'off' } });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete API dynamic value testing', () => {
+            inputObj = new TextBox({ autocomplete: 'off' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+            inputObj.autocomplete = "on";
+            inputObj.dataBind();
+            expect(inputObj.element.autocomplete).toBe('');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe(null);
+        });
+
+        it('Ensure the autocomplete API dynamic value testing', () => {
+            inputObj = new TextBox({ autocomplete: 'on' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe(null);
+            inputObj.autocomplete = "off";
+            inputObj.dataBind();
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete API with html attribute testing', () => {
+            inputObj = new TextBox({ autocomplete: 'on', htmlAttributes: { autocomplete: 'off' } });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe(null);
+        });
+
+        it('Ensure the autocomplete API with html attribute testing', () => {
+            inputObj = new TextBox({ autocomplete: 'off' , htmlAttributes: { autocomplete: 'on' }});
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+    });
+
+    describe('autocomplete API testing with element attribute', () => {
+        let inputObj: any;
+        let ele: HTMLInputElement;
+        beforeEach((): void => {
+            inputObj = undefined;
+            ele = undefined;
+        });
+        afterEach((): void => {
+            if (inputObj) {
+                inputObj.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Ensure the autocomplete attribute with API testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "on");
+            inputObj = new TextBox();
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('on');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('on');
+        });
+
+        it('Ensure the autocomplete attribute with API testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "off");
+            inputObj = new TextBox();
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete attribute with API testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "on");
+            inputObj = new TextBox({ showClearButton: true });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('on');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('on');
+        });
+
+        it('Ensure the autocomplete attribute with API testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "off");
+            inputObj = new TextBox({ showClearButton: true });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete API with on value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "off");
+            inputObj = new TextBox({ autocomplete: 'on' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe(null);
+        });
+
+        it('Ensure the autocomplete API with on value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "on");
+            inputObj = new TextBox({ autocomplete: 'on' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe(null);
+        });
+
+        it('Ensure the autocomplete API with off value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "on");
+            inputObj = new TextBox({ autocomplete: 'off' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete API with off value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "off");
+            inputObj = new TextBox({ autocomplete: 'off' });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete API with on value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "off");
+            inputObj = new TextBox({ htmlAttributes: { autocomplete: 'on' } });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('on');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('on');
+        });
+
+        it('Ensure the autocomplete API with on value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "on");
+            inputObj = new TextBox({ htmlAttributes: { autocomplete: 'on' } });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('on');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('on');
+        });
+
+        it('Ensure the autocomplete API with off value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "on");
+            inputObj = new TextBox({ htmlAttributes: { autocomplete: 'off' } });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+
+        it('Ensure the autocomplete API with off value testing', () => {
+            ele = <HTMLInputElement>createElement('input', { id: 'textbox' });
+            document.body.appendChild(ele);
+            ele.setAttribute('autocomplete', "off");
+            inputObj = new TextBox({ htmlAttributes: { autocomplete: 'off' } });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.autocomplete).toBe('off');
+            expect(inputObj.element.getAttribute('autocomplete')).toBe('off');
+        });
+    });
 })

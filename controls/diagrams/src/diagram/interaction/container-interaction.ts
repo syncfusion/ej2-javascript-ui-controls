@@ -160,8 +160,8 @@ export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | Nod
             container = diagram.selectedItems.wrapper as Canvas;
         }
         diagram.selectedObject.actualObject = object as NodeModel;
-        if (checkParentAsContainer(diagram, object) ||
-            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.connectors.length === 0)) {
+        if ((!diagram.currentSymbol) && (checkParentAsContainer(diagram, object) ||
+            ((diagram.constraints & DiagramConstraints.LineRouting) && diagram.selectedItems.nodes.length > 0))) {
             let node: NodeModel = {
                 id: 'helper',
                 rotateAngle: container.rotateAngle,

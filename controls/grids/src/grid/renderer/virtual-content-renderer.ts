@@ -41,6 +41,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private isFocused: boolean = false;
     private isSelection: boolean = false;
     private selectedRowIndex: number;
+    private isBottom: boolean = false;
 
     constructor(parent: IGrid, locator?: ServiceLocator) {
         super(parent, locator);
@@ -216,6 +217,15 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.prevInfo = info;
         if (this.isFocused) {
             this.content.focus();
+        }
+        let lastPage: number = Math.ceil(this.getTotalBlocks() / 2);
+        if (this.isBottom) {
+            this.isBottom = false;
+            this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 1];
+        }
+        if ((this.parent.pageSettings.currentPage === lastPage) && blocks.length === 1) {
+            this.isBottom = true;
+            this.parent.getContent().firstElementChild.scrollTop = this.offsets[this.offsetKeys.length - 2];
         }
     }
 

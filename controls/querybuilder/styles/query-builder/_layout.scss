@@ -480,7 +480,19 @@
       & .e-horizontal-mode .e-rule-value,
       & .e-horizontal-mode .e-rule-value-delete {
         display: $qrybldr-device-diaplay;
-    }
+      }
+
+      & .e-rule-value {
+        &.e-hide {
+          display: none;
+        }
+      }
+
+      & .e-rule-value {
+        &.e-show {
+          display: inline-block;
+        }
+      }
 
       & .e-rule-field,
       & .e-rule-delete {

@@ -1,7 +1,6 @@
-import { isNullOrUndefined, extend, EventHandler, formatUnit, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, EventHandler, formatUnit, Browser, isBlazor } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, removeClass, append, prepend } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
-import { WorkCellInteraction } from '../actions/work-cells';
 import { ViewBase, ViewHelper } from './view-base';
 import { VerticalEvent } from '../event-renderer/vertical-view';
 import { MonthEvent } from '../event-renderer/month';
@@ -18,13 +17,11 @@ export class VerticalView extends ViewBase implements IRenderer {
     public viewClass: string = 'e-day-view';
     public isInverseTableSelect: boolean = true;
     public baseCssClass: string = 'e-vertical-view';
-    public workCellAction: WorkCellInteraction;
     /**
      * Constructor for vertical view
      */
     constructor(parent: Schedule) {
         super(parent);
-        this.workCellAction = new WorkCellInteraction(parent);
     }
     public addEventListener(): void {
         this.parent.on(event.scrollUiUpdate, this.scrollUiUpdate, this);
@@ -42,7 +39,7 @@ export class VerticalView extends ViewBase implements IRenderer {
             let appointment: MonthEvent = new MonthEvent(this.parent);
             appointment.renderAppointments();
         }
-        this.parent.notify('events-loaded', {});
+        this.parent.notify(event.eventsLoaded, {});
     }
     private onContentScroll(e: Event): void {
         this.parent.removeNewEventElement();
@@ -480,12 +477,14 @@ export class VerticalView extends ViewBase implements IRenderer {
         return tdEle;
     }
     private wireCellEvents(element: Element): void {
-        EventHandler.add(element, 'mousedown', this.workCellAction.cellMouseDown, this.workCellAction);
+        EventHandler.add(element, 'mousedown', this.parent.workCellAction.cellMouseDown, this.parent.workCellAction);
         this.wireMouseEvents(element);
     }
     private wireMouseEvents(element: Element): void {
-        EventHandler.add(element, 'click', this.workCellAction.cellClick, this.workCellAction);
-        if (!this.parent.isAdaptive) { EventHandler.add(element, 'dblclick', this.workCellAction.cellDblClick, this.workCellAction); }
+        EventHandler.add(element, 'click', this.parent.workCellAction.cellClick, this.parent.workCellAction);
+        if (!this.parent.isAdaptive) {
+            EventHandler.add(element, 'dblclick', this.parent.workCellAction.cellDblClick, this.parent.workCellAction);
+        }
     }
     private renderTimeCells(): HTMLElement {
         let wrap: HTMLElement = createElement('div', { className: cls.TIME_CELLS_WRAP_CLASS });
@@ -493,7 +492,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         let trEle: Element = createElement('tr');
         let handler: Function = (r: TimeSlotData): TimeSlotData => {
             r.type = r.first ? 'majorSlot' : 'minorSlot';
-            r.className = r.last ? [cls.TIME_CELLS_CLASS] : [];
+            r.className = r.last ? [cls.TIME_CELLS_CLASS, cls.TIME_SLOT_CLASS] : [cls.TIME_SLOT_CLASS];
             let ntr: Element = trEle.cloneNode() as Element;
             let data: TdData = { date: r.date, type: r.type, className: r.className };
             ntr.appendChild(this.createTd(data));
@@ -674,6 +673,10 @@ export class VerticalView extends ViewBase implements IRenderer {
             }
             if (this.parent.resourceBase) {
                 this.parent.resourceBase.destroy();
+            }
+            if (isBlazor()) {
+                this.parent.resetLayoutTemplates();
+                this.parent.resetEventTemplates();
             }
             remove(this.element);
             this.element = null;

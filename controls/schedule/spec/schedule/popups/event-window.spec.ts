@@ -12,7 +12,7 @@ import { RecurrenceEditor, RecurrenceEditorModel } from '../../../src/recurrence
 import { EJ2Instance, PopupOpenEventArgs, ActionEventArgs } from '../../../src/schedule/base/interface';
 import * as util from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
-import { stringData } from '../base/datasource.spec';
+import { stringData, defaultData } from '../base/datasource.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
 Schedule.Inject(Week);
@@ -68,7 +68,6 @@ describe('Schedule event window initial load', () => {
         CalendarId: 1,
         Description: 'Enjoying Holiday in Paris'
     }];
-
 
     beforeAll(() => {
         // tslint:disable-next-line:no-any
@@ -748,7 +747,7 @@ describe('Schedule event window initial load', () => {
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'click');
             util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]') as HTMLElement, 'dblclick');
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-            let deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
+            let deleteButton: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.DELETE_EVENT_CLASS);
             deleteButton.click();
             let deleteButton1: HTMLInputElement = <HTMLInputElement>document.querySelector('.e-quick-dialog-delete');
             deleteButton1.click();
@@ -883,13 +882,11 @@ describe('Schedule event window initial load', () => {
             schObj.dataBound = () => {
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement, 'click');
                 util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement, 'dblclick');
-                let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
-                let saveButton: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS);
-                let deleteButton: HTMLElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_DELETE_BUTTON_CLASS);
-                expect(((saveButton as EJ2Instance).ej2_instances[0] as Button).disabled).toBeUndefined();
-                expect(((deleteButton as EJ2Instance).ej2_instances[0] as Button).disabled).toBeUndefined();
-                let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
-                cancelButton.click();
+                expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+                // tslint:disable:no-any
+                expect((((<any>schObj.eventWindow).getInstance(cls.EVENT_WINDOW_SAVE_BUTTON_CLASS)) as Button).disabled).toEqual(false);
+                expect((((<any>schObj.eventWindow).getInstance(cls.DELETE_EVENT_CLASS)) as Button).disabled).toEqual(false);
+                // tslint:enable:no-any
                 done();
             };
             schObj.readonly = true;
@@ -1220,7 +1217,7 @@ describe('Schedule event window initial load', () => {
                             value: (<{ [key: string]: string }>args.data)['RecurrenceRule']
                         });
                         recurrenceObj.appendTo(recurrenceEditor);
-                        schObj.updateRecurrenceEditor(recurrenceObj);
+                        schObj.setRecurrenceEditor(recurrenceObj);
                     }
                 }
             };
@@ -1719,6 +1716,36 @@ describe('Schedule event window initial load', () => {
         });
     });
 
+    describe('closeEditor public method testing', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = { height: '500px', selectedDate: new Date(2017, 10, 1) };
+            schObj = util.createSchedule(model, defaultData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Checking for cell double click event editor', () => {
+            let workCellElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            util.triggerMouseEvent(workCellElements[0], 'click');
+            util.triggerMouseEvent(workCellElements[0], 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            schObj.closeEditor();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+
+        it('Checking for event double click event editor', () => {
+            let eventElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            eventElements[0].click();
+            let editButton: HTMLElement = document.querySelectorAll('.e-edit')[0] as HTMLElement;
+            util.triggerMouseEvent(editButton, 'click');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            schObj.closeEditor();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+    });
+
     describe('Add Event With Editor Template', () => {
         let schObj: Schedule;
         let beginArgs: string;
@@ -1765,6 +1792,345 @@ describe('Schedule event window initial load', () => {
             let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
             let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
             saveButton.click();
+        });
+    });
+
+    describe('Recurrence Validation', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 3),
+                enableRecurrenceValidation: false
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Wrong Pattern Alert', (done: Function) => {
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let repeatElement: DropDownList =
+                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let repeatInterval: NumericTextBox =
+                (dialogElement.querySelector('.e-repeat-interval') as EJ2Instance).ej2_instances[0] as NumericTextBox;
+            let endOnElement: DropDownList =
+                (dialogElement.querySelector('.e-end-on-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            repeatElement.index = 1; repeatElement.dataBind();
+            endOnElement.index = 1; endOnElement.dataBind();
+            repeatInterval.value = 1;
+            let untilDateElement: DatePicker =
+                (dialogElement.querySelector('.e-end-on-date .e-datepicker') as EJ2Instance).ej2_instances[0] as DatePicker;
+            untilDateElement.value = new Date('10/1/2017');
+            untilDateElement.dataBind();
+            schObj.dataBind();
+            saveButton.click();
+            let okButton: HTMLElement = document.querySelector('.e-quick-alertok') as HTMLElement;
+            okButton.click();
+            let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
+            cancelButton.click();
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+            done();
+        });
+
+        it('Create Error Alert', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('.e-work-cells')[0] as HTMLElement, 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let startDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS);
+            startDateElement.value = '11/19/17 11:00 AM';
+            let endDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            endDateElement.value = '12/30/17 11:30 AM';
+            let repeatElement: DropDownList =
+                (dialogElement.querySelector('.e-repeat-element') as EJ2Instance).ej2_instances[0] as DropDownList;
+            let repeatInterval: NumericTextBox =
+                (dialogElement.querySelector('.e-repeat-interval') as EJ2Instance).ej2_instances[0] as NumericTextBox;
+            repeatElement.index = 3; repeatElement.dataBind();
+            repeatInterval.value = 1;
+            saveButton.click();
+        });
+
+        it('Edit Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(7);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'dblclick');
+            let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let subjectElement: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
+            subjectElement.value = 'Test';
+            saveButton.click();
+        });
+
+        it('Series Alert', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                let dataObj: { [key: string]: Object }[] = schObj.eventsData as { [key: string]: Object }[];
+                let subject: String = dataObj[4].Subject as string;
+                expect(subject).toEqual('EditSeries');
+                done();
+            };
+            let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let subjectElement: HTMLInputElement = dialogElement.querySelector('.' + cls.SUBJECT_CLASS);
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[0] as HTMLElement, 'dblclick');
+            (<HTMLElement>eventDialog.querySelector('.e-quick-dialog-series-event')).click();
+            subjectElement.value = 'EditSeries';
+            saveButton.click();
+        });
+
+        it('Same Day Alert', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(7);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[1] as HTMLElement, 'click');
+            util.triggerMouseEvent(schObj.element.querySelectorAll('[data-id="Appointment_5"]')[1] as HTMLElement, 'dblclick');
+            let eventDialog: HTMLElement = document.querySelector('.e-quick-dialog') as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.e-quick-dialog-occurrence-event') as HTMLElement;
+            editButton.click();
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let startDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_START_CLASS);
+            startDateElement.value = '11/19/17 11:30 AM';
+            let endDateElement: HTMLInputElement = <HTMLInputElement>dialogElement.querySelector('.' + cls.EVENT_WINDOW_END_CLASS);
+            endDateElement.value = '11/20/17 14:45 AM';
+            saveButton.click();
+        });
+    });
+
+    describe('All CRUD Action Properties as false', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                eventSettings: { allowAdding: false, allowEditing: false, allowDeleting: false }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Ensure New Event Creation', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-close')).toEqual(true);
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(false);
+        });
+
+        it('Ensure Edit Event', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-quick-popup-wrapper .e-edit'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+        });
+
+        it('Ensure Delete Event', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-quick-popup-wrapper .e-delete'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+        });
+    });
+
+    describe('CRUD Actions with AllowAdding', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                eventSettings: { allowAdding: true, allowEditing: false, allowDeleting: false }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Ensure New Event Creation', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveButton.click();
+        });
+
+        it('Ensure Edit Event', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+
+        it('Ensure Delete Event', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-quick-popup-wrapper .e-delete'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+        });
+    });
+
+    describe('CRUD Actions with AllowEditing', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                eventSettings: { allowAdding: false, allowEditing: true, allowDeleting: false }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Ensure New Event Creation', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(false);
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-close')).toEqual(true);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+            expect(schObj.eventsData.length).toEqual(5);
+        });
+
+        it('Ensure Edit Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(5);
+                let editedObj: { [key: string]: string } = schObj.eventsData[0] as { [key: string]: string };
+                expect(editedObj.Subject).toEqual('Test');
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(5);
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'dblclick');
+            let eventDialog: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            (eventDialog.querySelector('.' + cls.SUBJECT_CLASS) as HTMLInputElement).value = 'Test';
+            util.triggerMouseEvent(eventDialog.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS), 'click');
+        });
+
+        it('Ensure Delete Event', () => {
+            expect(schObj.eventsData.length).toEqual(5);
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            util.triggerMouseEvent(schObj.eventWindow.dialogObject.element.querySelector('.' + cls.DELETE_EVENT_CLASS), 'click');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            expect(schObj.eventsData.length).toEqual(5);
+        });
+    });
+
+    describe('CRUD Actions with AllowDeleting', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                eventSettings: { allowAdding: false, allowEditing: false, allowDeleting: true }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Ensure New Event Creation', () => {
+            expect(schObj.eventsData.length).toEqual(5);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'dblclick');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
+        });
+
+        it('Ensure Edit Event', () => {
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.quickPopup.quickPopup.element.querySelector('.e-edit'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+        });
+
+        it('Ensure Delete Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(4);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(true);
+            util.triggerMouseEvent(schObj.quickPopup.quickPopup.element.querySelector('.e-delete'), 'click');
+            util.triggerMouseEvent(schObj.quickPopup.quickDialog.element.querySelector('.e-quick-dialog-delete'), 'click');
+            expect(schObj.quickPopup.quickPopup.element.classList.contains('e-popup-open')).toEqual(false);
+        });
+    });
+
+    describe('All CRUD Action Properties as true', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                height: '500px', currentView: 'Week', views: ['Week'], selectedDate: new Date(2017, 10, 1),
+                eventSettings: { allowAdding: true, allowEditing: true, allowDeleting: true }
+            };
+            schObj = util.createSchedule(model, appointments, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Ensure New Event Creation', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                done();
+            };
+            expect(schObj.eventsData.length).toEqual(5);
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('.e-work-cells'), 'dblclick');
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveButton.click();
+        });
+
+        it('Ensure Edit Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(6);
+                let editedObj: { [key: string]: string } = schObj.eventsData[0] as { [key: string]: string };
+                expect(editedObj.Subject).toEqual('Test');
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'dblclick');
+            let eventDialog: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let editButton: HTMLElement = eventDialog.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            let subjectElement: HTMLInputElement = eventDialog.querySelector('.' + cls.SUBJECT_CLASS);
+            subjectElement.value = 'Test';
+            editButton.click();
+        });
+
+        it('Ensure Delete Event', (done: Function) => {
+            schObj.dataBound = () => {
+                expect(schObj.eventsData.length).toEqual(5);
+                done();
+            };
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'click');
+            util.triggerMouseEvent(schObj.element.querySelector('[data-id="Appointment_1"]'), 'dblclick');
+            let eventDialog: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            let deleteButton: HTMLElement = eventDialog.querySelector('.' + cls.DELETE_EVENT_CLASS) as HTMLElement;
+            deleteButton.click();
+            let deleteButton1: HTMLInputElement = <HTMLInputElement>document.querySelector('.e-quick-dialog-delete');
+            deleteButton1.click();
         });
     });
 

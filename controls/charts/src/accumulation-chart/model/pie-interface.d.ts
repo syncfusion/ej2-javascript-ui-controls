@@ -111,3 +111,13 @@ export interface IAccLegendRenderEventArgs extends IChartEventArgs {
     /** Defines the current legend text */
     text: string;
 }
+export interface IAccChartTooltipTemplate {
+    /** accumulation point x value */
+    x?: Object;
+    /** accumulation point y value */
+    y?: number;
+    /** accumulation point color */
+    label?: string;
+    /** accumulation point percentage value */
+    percentage?: number;
+}

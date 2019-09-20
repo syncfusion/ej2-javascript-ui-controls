@@ -96,6 +96,7 @@ describe('TreeGrid Toolbar module', () => {
         let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
         (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '124';
         (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'fourth';
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'startDate') as any).value = '2/3/2017';
         (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
     afterAll(() => {

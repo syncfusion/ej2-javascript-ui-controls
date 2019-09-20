@@ -274,4 +274,9 @@
       content: '\ea9f';
     }
   }
+
+  .e-south-east::before,
+  .e-south-west::before {
+    content: '\eb05';
+  }
 }
